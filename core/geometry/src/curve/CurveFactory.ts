@@ -85,7 +85,7 @@ export interface MiteredSweepOptions {
   wrapIfPhysicallyClosed?: boolean;
   /** Whether to output sections only, or sections plus optional geometry constructed from them. Default value is `MiteredSweepOutputSelect.Sections`. */
   outputSelect?: MiteredSweepOutputSelect;
-  /** How to stroke smooth input curves and the ruled sweep (if outputting a mesh). If undefined, default stroke options are used. */
+  /** How to stroke smooth input curves. If undefined, default stroke options are used. */
   strokeOptions?: StrokeOptions;
   /** Whether to cap the ruled sweep if outputting a ruled sweep or mesh. Default value is `false`. */
   capped?: boolean;
@@ -364,6 +364,44 @@ export class CurveFactory {
     }
     return undefined;
   }
+  /** Get start point and tangent for variant curve data. */
+  private static startPointAndTangent(curve: IndexedXYZCollection | Point3d[] | CurvePrimitive): Ray3d | undefined {
+    if (curve instanceof CurvePrimitive)
+      return curve.fractionToPointAndDerivative(0.0);
+    if (curve.length < 2)
+      return undefined;
+    if (Array.isArray(curve))
+      curve = new Point3dArrayCarrier(curve);
+    const ray = Ray3d.createZero();
+    curve.getPoint3dAtUncheckedPointIndex(0, ray.origin);
+    curve.vectorIndexIndex(0, 1, ray.direction);
+    return ray;
+  };
+  /** Create an [[Arc3d]] from `sectionData` that has its center at the start point of the centerline. */
+  public static createArcFromSectionData(
+    centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d,
+  ): Arc3d | undefined {
+    const ray = CurveFactory.startPointAndTangent(centerline);
+    if (!ray)
+      return undefined;
+    let arc: Arc3d;
+    if (sectionData instanceof Arc3d) {
+      arc = sectionData.clone();
+      arc.center = ray.origin;
+    } else {
+      const vector0 = Vector3d.create();
+      const vector90 = Vector3d.create();
+      const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
+      const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
+      const baseFrame = Matrix3d.createRigidHeadsUp(ray.direction, AxisOrder.ZXY);
+      baseFrame.columnX(vector0).scaleInPlace(length0);
+      baseFrame.columnY(vector90).scaleInPlace(length90);
+      arc = Arc3d.create(ray.origin, vector0, vector90);
+    }
+    if (arc.binormalVector().dotProduct(ray.direction) < 0.0)
+      arc.reverseInPlace();
+    return arc;
+  }
   /**
    * Create section arcs for mitered pipe.
    * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
@@ -376,61 +414,22 @@ export class CurveFactory {
    * lengths, or an Arc3d:
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
-   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
-   * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[createMiteredSweepSections]] with default options.
    * @param centerline centerline of pipe. For best results, ensure no successive duplicate points with e.g.,
    * [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
+   * @returns array of sections or empty array if section creation failed.
    */
   public static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[] {
-    const arcs: Arc3d[] = [];
-    if (centerline.length < 2)
+    const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
+    if (!arc)
       return [];
-    const vector0 = Vector3d.create();
-    const vector90 = Vector3d.create();
-    const vectorBC = Vector3d.create();
-    const sweep = AngleSweep.create360();
-    centerline.vectorIndexIndex(0, 1, vectorBC)!; // initially, the start tangent
-    if (sectionData instanceof Arc3d) {
-      vector0.setFrom(sectionData.vector0);
-      vector90.setFrom(sectionData.vector90);
-      sweep.setFrom(sectionData.sweep); // allow e.g., half-pipe
-      const sectionFacesForward = sectionData.matrixRef.columnDotXYZ(AxisIndex.Z, vectorBC.x, vectorBC.y, vectorBC.z) > 0;
-      if (sectionFacesForward !== sectionData.sweep.isCCW)
-        sweep.reverseInPlace();
-    } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
-      const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
-      const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
-      const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
-      baseFrame.columnX(vector0).scaleInPlace(length0);
-      baseFrame.columnY(vector90).scaleInPlace(length90);
-    } else {
-      return [];
-    }
-    // ASSUME: initial section normal points toward sweep direction for subsequent facet creation
-    const initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
-    centerline.getPoint3dAtUncheckedPointIndex(0, initialSection.centerRef);
-    arcs.push(initialSection);
-    const vectorAB = Vector3d.create();
-    const bisector = Vector3d.create();
-    const center = Point3d.create();
-    for (let i = 1; i < centerline.length; i++) {
-      vectorAB.setFromVector3d(vectorBC);
-      centerline.getPoint3dAtUncheckedPointIndex(i, center);
-      if (i + 1 < centerline.length)
-        centerline.vectorIndexIndex(i, i + 1, vectorBC)!;
-      else
-        vectorBC.setFromVector3d(vectorAB);
-      if (vectorAB.normalizeInPlace() && vectorBC.normalizeInPlace()) {
-        vectorAB.interpolate(0.5, vectorBC, bisector);
-        // At pipe end, the ellipse center comes directly from centerline[i], and vector0/vector90 are
-        // obtained by sweeping the corresponding vectors of the pipe start ellipse to the bisector plane.
-        moveVectorToPlane(vector0, vectorAB, bisector, vector0);
-        moveVectorToPlane(vector90, vectorAB, bisector, vector90);
-        arcs.push(Arc3d.create(center, vector0, vector90, sweep));
-      }
-    }
-    return arcs;
+    const miteredSweeps = CurveFactory.createMiteredSweepSections(centerline, arc);
+    if (miteredSweeps)
+      return miteredSweeps.sections as Arc3d[];
+    return [];
   }
 
   /** For a smooth curve, stroke and return unnormalized start/end tangents. */
@@ -552,8 +551,10 @@ export class CurveFactory {
   public static createMiteredSweepSections(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain,
     initialSection: AnyCurve,
-    options: MiteredSweepOptions,
+    options?: MiteredSweepOptions,
   ): SectionSequenceWithPlanes | undefined {
+    if (!options)
+      options = {};
     const rail = this.strokeSmoothCurve(centerline, options.strokeOptions);
     if (!rail)
       return undefined;
@@ -799,12 +800,4 @@ export class CurveFactory {
     }
     return undefined;
   }
-}
-/** Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal. */
-function moveVectorToPlane(vectorR: Vector3d, vectorV: Vector3d, planeNormal: Vector3d, result?: Vector3d): Vector3d {
-  // find s such that (vectorR + s * vectorV) DOT planeNormal = 0.
-  const dotRN = vectorR.dotProduct(planeNormal);
-  const dotVN = vectorV.dotProduct(planeNormal);
-  const s = Geometry.safeDivideFraction(dotRN, dotVN, 0.0);
-  return vectorR.plusScaled(vectorV, -s, result);
 }
