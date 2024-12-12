@@ -410,7 +410,6 @@ export class AccuDraw {
     decorate(context: DecorateContext): void;
     // @internal (undocumented)
     readonly delta: Vector3d;
-    // @internal (undocumented)
     disableForSession(): void;
     // (undocumented)
     distanceIndexing: boolean;
@@ -423,7 +422,6 @@ export class AccuDraw {
     dontMoveFocus: boolean;
     // @internal (undocumented)
     downgradeInactiveState(): boolean;
-    // @internal (undocumented)
     enableForSession(): void;
     // @internal (undocumented)
     protected readonly _fillColor: ColorDef;
@@ -669,6 +667,7 @@ export class AccuDrawHintBuilder {
     static getSnapRotation(snap: SnapDetail, matrix?: Matrix3d): Matrix3d | undefined;
     static get isActive(): boolean;
     static get isEnabled(): boolean;
+    static processHintsImmediate(): void;
     static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     sendHints(activate?: boolean): boolean;
