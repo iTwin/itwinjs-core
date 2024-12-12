@@ -122,6 +122,10 @@ export class EmbeddedFontFile extends FontFileImpl {
 }
 
 export function shxFontFileFromBlob(args: CreateFontFileFromShxBlobArgs): FontFile {
+  if (args.familyName.length === 0) {
+    throw new Error("Font family name cannot be empty");
+  }
+
 // An SHX file with fewer than 40 bytes isn't valid.
   const minShxSize = 40;
 

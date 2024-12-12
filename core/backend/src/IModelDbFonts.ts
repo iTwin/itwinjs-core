@@ -21,9 +21,9 @@ export interface IModelDbFonts {
 
   queryDescriptors(): Iterable<FontFamilyDescriptor>;
 
-  queryEmbeddedFamilies(): Iterable<FontProps>;
+  queryMappedEmbeddedFamilies(): Iterable<FontProps>;
 
-  queryFontFiles(): Iterable<FontFile>;
+  queryEmbeddedFontFiles(): Iterable<FontFile>;
 
   embedFontFile(args: EmbedFontFileArgs): Promise<void>;
 

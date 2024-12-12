@@ -8,7 +8,6 @@
 
 import { DbResult, FontFamilyDescriptor, FontId, FontProps, FontType } from "@itwin/core-common";
 import { _implementationProhibited, _nativeDb } from "./Symbols";
-import { FontFile } from "../FontFile";
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts } from "../IModelDbFonts";
 import { EmbeddedFontFile, FontFileImpl } from "./FontFileImpl";
@@ -27,13 +26,13 @@ class IModelDbFontsImpl implements IModelDbFonts {
     return this.#queryFontTable().filter((x) => { return { name: x.name, type: x.type } });
   }
 
-  public queryEmbeddedFamilies(): Iterable<FontProps> {
+  public queryMappedEmbeddedFamilies(): Iterable<FontProps> {
     const fontProps = this.#queryFontTable();
     const fontNames = this.#getEmbeddedFontNames();
     return fontProps.filter((x) => fontNames.includes(x.name));
   }
 
-  public queryFontFiles(): Iterable<FontFileImpl> {
+  public queryEmbeddedFontFiles(): Iterable<FontFileImpl> {
     let files: FontFileImpl[] = [];
     this.#db.withSqliteStatement(`SELECT Id,StrData FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -68,7 +67,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
       throw new Error("invalid FontFile");
     }
 
-    for (const existing of this.queryFontFiles()) {
+    for (const existing of this.queryEmbeddedFontFiles()) {
       if (existing.key === file.key) {
         // Already embedded - it's a no-op.
         return;
