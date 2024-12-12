@@ -52,7 +52,7 @@ export class GraphicOwner extends Graphic {
   public get isDisposed(): boolean { return this._isDisposed; }
   public dispose(): void { this._isDisposed = true; }
   public disposeGraphic(): void {
-    this.graphic.dispose();
+    this.graphic[Symbol.dispose]();
   }
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
@@ -98,9 +98,9 @@ export class PerTargetBatchData {
     this.target = target;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._thematicSensors = dispose(this._thematicSensors);
-    this._contours = this._contours?.dispose();
+    this._contours = this._contours?.[Symbol.dispose]();
     for (const value of this._featureOverrides.values())
       dispose(value);
 
@@ -133,7 +133,7 @@ export class PerTargetBatchData {
 
   public getContours(batch: Batch): Contours {
     if (this._contours && !this._contours.matchesTargetAndFeatureCount(this.target, batch.featureTable))
-      this._contours = this._contours.dispose();
+      this._contours = this._contours[Symbol.dispose]();
 
     if (!this._contours) {
       this._contours = Contours.createFromTarget(this.target, batch.options);
@@ -162,7 +162,7 @@ export class PerTargetBatchData {
     const ovrs = this._featureOverrides.get(source);
     if (ovrs) {
       this._featureOverrides.delete(source);
-      ovrs.dispose();
+      ovrs[Symbol.dispose]();
     }
   }
 }
@@ -176,10 +176,10 @@ export class PerTargetData {
     this._batch = batch;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const data of this._data) {
       data.target.onBatchDisposed(this._batch);
-      data.dispose();
+      data[Symbol.dispose]();
     }
 
     this._data.length = 0;
@@ -198,7 +198,7 @@ export class PerTargetData {
       return;
 
     const data = this._data[index];
-    data.dispose();
+    data[Symbol.dispose]();
     this._data.splice(index, 1);
   }
 
@@ -289,7 +289,7 @@ export class Batch extends Graphic {
   public dispose() {
     dispose(this.graphic);
 
-    this.perTargetData.dispose();
+    this.perTargetData[Symbol.dispose]();
     this._isDisposed = true;
   }
 
@@ -392,7 +392,7 @@ export class Branch extends Graphic {
   }
 
   public dispose() {
-    this.branch.dispose();
+    this.branch[Symbol.dispose]();
   }
 
   public override get isPickable(): boolean {
@@ -445,7 +445,7 @@ export class AnimationTransformBranch extends Graphic {
   }
 
   public override dispose() {
-    this.graphic.dispose();
+    this.graphic[Symbol.dispose]();
   }
 
   public override get isDisposed() {

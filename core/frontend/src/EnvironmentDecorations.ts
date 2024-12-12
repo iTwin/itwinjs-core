@@ -58,7 +58,7 @@ export class EnvironmentDecorations {
       this.loadGround();
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._ground = undefined;
     this._sky.params = this._sky.promise = undefined;
 

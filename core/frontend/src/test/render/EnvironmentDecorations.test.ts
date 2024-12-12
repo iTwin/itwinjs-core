@@ -173,7 +173,7 @@ describe("EnvironmentDecorations", () => {
     expect(dec.sky.promise).toBeUndefined();
     expect(dec.sky.params).toBeDefined();
 
-    dec.dispose();
+    dec[Symbol.dispose]();
     expect(disposed).toBe(true);
     expect(dec.ground).toBeUndefined();
     expect(dec.sky.promise).toBeUndefined();

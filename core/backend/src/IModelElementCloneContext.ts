@@ -51,7 +51,12 @@ export class IModelElementCloneContext {
   public get isBetweenIModels(): boolean { return this.sourceDb !== this.targetDb; }
 
   /** Dispose any native resources associated with this IModelElementCloneContext. */
-  public dispose(): void { this._nativeContext.dispose(); }
+  public [Symbol.dispose](): void { this._nativeContext.dispose(); }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
+  }
 
   /** Debugging aid that dumps the Id remapping details and other information to the specified output file.
    * @internal

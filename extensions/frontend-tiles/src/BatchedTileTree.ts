@@ -52,9 +52,9 @@ export class BatchedTileTree extends TileTree {
     });
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     this.decoder.release();
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   public override get rootTile(): BatchedTile {
@@ -70,7 +70,7 @@ export class BatchedTileTree extends TileTree {
   }
 
   public override get viewFlagOverrides(): ViewFlagOverrides {
-    return frontendTilesOptions.enableEdges ?{ } : defaultViewFlags;
+    return frontendTilesOptions.enableEdges ? {} : defaultViewFlags;
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -155,7 +155,7 @@ describe("TiledGraphicsProvider", () => {
   });
 
   afterEach(() => {
-    viewport.dispose();
+    viewport[Symbol.dispose]();
   });
 
   afterAll(async () => {

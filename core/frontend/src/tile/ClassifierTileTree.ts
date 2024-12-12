@@ -36,7 +36,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     tileTree: undefined,
     loadStatus: TileTreeLoadStatus.NotFound,
     load: () => undefined,
-    dispose: () => undefined,
+    [Symbol.dispose]: () => undefined,
     loadTree: async () => undefined,
     iModel: undefined as unknown as IModelConnection,
   };

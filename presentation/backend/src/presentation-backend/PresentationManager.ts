@@ -448,8 +448,13 @@ export class PresentationManager {
   }
 
   /** Dispose the presentation manager. Must be called to clean up native resources. */
+  public [Symbol.dispose]() {
+    this._detail[Symbol.dispose]();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
   public dispose() {
-    this._detail.dispose();
+    this[Symbol.dispose]();
   }
 
   /** @internal */
@@ -752,23 +757,23 @@ export class PresentationManager {
     const { itemBatches, count } =
       "elementIds" in elementsIdentifier
         ? getContentItemsObservableFromElementIds(
-            requestOptions.imodel,
-            descriptorGetter,
-            contentSetGetter,
-            elementsIdentifier.elementIds,
-            classParallelism,
-            batchesParallelism,
-            batchSize,
-          )
+          requestOptions.imodel,
+          descriptorGetter,
+          contentSetGetter,
+          elementsIdentifier.elementIds,
+          classParallelism,
+          batchesParallelism,
+          batchSize,
+        )
         : getContentItemsObservableFromClassNames(
-            requestOptions.imodel,
-            descriptorGetter,
-            contentSetGetter,
-            elementsIdentifier.elementClasses,
-            classParallelism,
-            batchesParallelism,
-            batchSize,
-          );
+          requestOptions.imodel,
+          descriptorGetter,
+          contentSetGetter,
+          elementsIdentifier.elementClasses,
+          classParallelism,
+          batchesParallelism,
+          batchSize,
+        );
     return {
       total: await firstValueFrom(count),
       async *iterator() {
@@ -832,9 +837,9 @@ export class PresentationManager {
       isComputeSelectionRequestOptions(requestOptions)
         ? requestOptions
         : (function () {
-            const { ids, scopeId, ...rest } = requestOptions;
-            return { ...rest, elementIds: ids, scope: { id: scopeId } };
-          })(),
+          const { ids, scopeId, ...rest } = requestOptions;
+          return { ...rest, elementIds: ids, scope: { id: scopeId } };
+        })(),
     );
   }
 

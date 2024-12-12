@@ -39,7 +39,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   afterAll(async () => {
-    viewport.dispose();
+    viewport[Symbol.dispose]();
     await MockRender.App.shutdown();
   });
 
@@ -63,7 +63,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {type: GraphicType.Scene, viewport });
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -390,7 +390,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   function createMeshBuilder(type: MeshPrimitiveType, range: Range3d, options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>): MeshBuilder {
-    options = options ?? { };
+    options = options ?? {};
     const tolerance = options.tolerance ?? 0.15;
     return MeshBuilder.create({
       quantizePositions: false,

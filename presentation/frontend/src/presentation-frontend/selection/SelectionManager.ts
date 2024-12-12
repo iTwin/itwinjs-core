@@ -7,7 +7,7 @@
  */
 
 import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
-import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
+import { Id64, Id64Arg, Id64Array, IDisposable } from "@itwin/core-bentley";
 import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
 import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
 import {
@@ -84,7 +84,7 @@ export class SelectionManager implements ISelectionProvider {
     );
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._selectionEventsSubscription.unsubscribe();
     this._listeners.forEach((dispose) => dispose());
   }
@@ -123,25 +123,26 @@ export class SelectionManager implements ISelectionProvider {
           this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount });
         } else {
           this._imodelToolSelectionSyncHandlers.delete(imodel);
-          registration.handler.dispose();
+          registration.handler[Symbol.dispose]();
         }
       }
     }
   }
 
   /**
-   * Temporarily suspends tool selection synchronization until the returned `IDisposable`
+   * Temporarily suspends tool selection synchronization until the returned `Disposable`
    * is disposed.
    */
-  public suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable {
+  public suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable & Disposable { // eslint-disable-line @typescript-eslint/no-deprecated
     const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
     if (!registration) {
-      return { dispose: () => {} };
+      return { dispose: () => { }, [Symbol.dispose]: () => { } };
     }
 
     const wasSuspended = registration.handler.isSuspended;
     registration.handler.isSuspended = true;
-    return { dispose: () => (registration.handler.isSuspended = wasSuspended) };
+    const handler = () => (registration.handler.isSuspended = wasSuspended);
+    return { [Symbol.dispose]: handler, dispose: handler };
   }
 
   /** Get the selection levels currently stored in this manager for the specified imodel */
@@ -400,7 +401,7 @@ export class SelectionManager implements ISelectionProvider {
 }
 
 /** @internal */
-export class ToolSelectionSyncHandler implements IDisposable {
+export class ToolSelectionSyncHandler implements Disposable {
   private _selectionSourceName = "Tool";
   private _logicalSelection: SelectionManager;
   private _imodel: IModelConnection;
@@ -414,8 +415,13 @@ export class ToolSelectionSyncHandler implements IDisposable {
     this._imodelToolSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onToolSelectionChanged);
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._imodelToolSelectionListenerDisposeFunc();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** note: used only it tests */
@@ -470,19 +476,18 @@ export class ToolSelectionSyncHandler implements IDisposable {
     }
 
     const parsedIds = parseIds(ids);
-    await using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
-      switch (ev.type) {
-        case SelectionSetEventType.Add:
-          await changer.add(parsedIds.transient, parsedIds.persistent, selectionLevel);
-          break;
-        case SelectionSetEventType.Replace:
-          await changer.replace(parsedIds.transient, parsedIds.persistent, selectionLevel);
-          break;
-        case SelectionSetEventType.Remove:
-          await changer.remove(parsedIds.transient, parsedIds.persistent, selectionLevel);
-          break;
-      }
-    });
+    using _r = this._asyncsTracker.trackAsyncTask();
+    switch (ev.type) {
+      case SelectionSetEventType.Add:
+        await changer.add(parsedIds.transient, parsedIds.persistent, selectionLevel);
+        break;
+      case SelectionSetEventType.Replace:
+        await changer.replace(parsedIds.transient, parsedIds.persistent, selectionLevel);
+        break;
+      case SelectionSetEventType.Remove:
+        await changer.remove(parsedIds.transient, parsedIds.persistent, selectionLevel);
+        break;
+    }
   };
 }
 

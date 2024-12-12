@@ -110,7 +110,7 @@ export namespace MockRender {
   export class Branch extends Graphic {
     public constructor(public readonly branch: GraphicBranch, public readonly transform: Transform, public readonly options?: GraphicBranchOptions) { super(); }
 
-    public override dispose() { this.branch.dispose(); }
+    public override dispose() { this.branch[Symbol.dispose](); }
   }
 
   export class Batch extends Graphic {
@@ -129,7 +129,7 @@ export namespace MockRender {
     public constructor(public readonly renderGeometryType: "mesh" | "polyline" | "point-string") {
 
     }
-    public dispose(): void { this.isDisposed = true; }
+    public [Symbol.dispose](): void { this.isDisposed = true; }
     public collectStatistics(): void { }
     public computeRange() { return new Range3d(); }
   }
@@ -137,7 +137,7 @@ export namespace MockRender {
   /** @internal */
   export class AreaPattern implements RenderAreaPattern {
     public readonly [_implementationProhibited] = "renderAreaPattern";
-    public dispose(): void { }
+    public [Symbol.dispose](): void { }
     public collectStatistics(): void { }
   }
 

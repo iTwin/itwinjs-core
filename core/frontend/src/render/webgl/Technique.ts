@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, using } from "@itwin/core-bentley";
+import { assert, dispose } from "@itwin/core-bentley";
 import { BlurType } from "./CachedGeometry";
 import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
@@ -82,8 +82,13 @@ export class SingularTechnique implements Technique {
 
   public get isDisposed(): boolean { return this.program.isDisposed; }
 
+  public [Symbol.dispose](): void {
+    this.program[Symbol.dispose]();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
   public dispose(): void {
-    dispose(this.program);
+    this[Symbol.dispose]();
   }
 }
 
@@ -136,24 +141,30 @@ export abstract class VariedTechnique implements Technique {
   private _isDisposed = false;
   public get isDisposed(): boolean { return this._isDisposed; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._isDisposed)
       return;
 
     for (const program of this._basicPrograms) {
       assert(undefined !== program);
-      dispose(program);
+      program[Symbol.dispose]();
     }
 
     this._basicPrograms.length = 0;
     for (const clipShaderObj of this._clippingPrograms) {
       assert(undefined !== clipShaderObj);
-      clipShaderObj.dispose();
+      clipShaderObj[Symbol.dispose]();
     }
 
     this._clippingPrograms.length = 0;
     this._isDisposed = true;
   }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
+  }
+
 
   protected constructor(numPrograms: number) {
     this._basicPrograms.length = numPrograms;
@@ -773,7 +784,7 @@ abstract class MultipleTechnique implements Technique {
     return allCompiled;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._isDisposed)
       return;
 
@@ -955,10 +966,10 @@ export class Techniques implements WebGLDisposable {
   public execute(target: Target, commands: DrawCommands, renderPass: RenderPass) {
     assert(RenderPass.None !== renderPass, "invalid render pass");
 
-    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
-      for (const command of commands)
-        command.execute(executor);
-    });
+    using executor = new ShaderProgramExecutor(target, renderPass);
+    for (const command of commands)
+      command.execute(executor);
+
     System.instance.frameBufferStack.markTargetsDirty();
   }
 
@@ -972,21 +983,26 @@ export class Techniques implements WebGLDisposable {
   public draw(params: DrawParams): void {
     const tech = this.getTechnique(params.geometry.techniqueId);
     const program = tech.getShader(TechniqueFlags.defaults);
-    using(new ShaderProgramExecutor(params.target, params.renderPass, program), (executor: ShaderProgramExecutor) => {
-      assert(executor.isValid);
-      if (executor.isValid) {
-        executor.draw(params);
-      }
-    });
+
+    using executor = new ShaderProgramExecutor(params.target, params.renderPass, program);
+    assert(executor.isValid);
+    if (executor.isValid) {
+      executor.draw(params);
+    }
     System.instance.frameBufferStack.markTargetsDirty();
   }
 
   public get isDisposed(): boolean { return 0 === this._list.length; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const tech of this._list)
       dispose(tech);
     this._list.length = 0;
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
