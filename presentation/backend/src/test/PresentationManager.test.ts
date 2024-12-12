@@ -116,7 +116,7 @@ describe("PresentationManager", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch { }
+      } catch {}
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -309,7 +309,7 @@ describe("PresentationManager", () => {
       it("creates with ipc updates handler for IPC hosts", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
-        using _ = new PresentationManager()
+        using _ = new PresentationManager();
         expect(constructorSpy.firstCall.firstArg.updateCallback).to.eq(ipcUpdatesHandler);
       });
     });
@@ -330,9 +330,7 @@ describe("PresentationManager", () => {
         const dirs = ["test1", "test2", "test2"];
         const addonDirs = ["test1", "test2"];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        {
-          using _pm = new PresentationManager({ addon: addon.object, rulesetDirectories: dirs });
-        }
+        using _pm = new PresentationManager({ addon: addon.object, rulesetDirectories: dirs });
         addon.verifyAll();
       });
 
@@ -377,7 +375,7 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "metric";
-      using manager = new PresentationManager({ addon: addonMock.object })
+      using manager = new PresentationManager({ addon: addonMock.object });
       addonMock
         .setup(async (x) =>
           x.handleRequest(
@@ -820,7 +818,7 @@ describe("PresentationManager", () => {
       });
       sinon.stub(manager.getDetail(), "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
         }),
       );
     }
@@ -3421,7 +3419,7 @@ describe("PresentationManager", () => {
         manager = new PresentationManager({ addon: nativePlatformMock.object, getLocalizedString: getLocalizedStringSpy });
         sinon.stub(manager.getDetail(), "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
-            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
           }),
         );
         // what the addon returns

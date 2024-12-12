@@ -268,10 +268,10 @@ export class PresentationManagerDetail implements Disposable {
     const reviver = (key: string, value: any) => {
       return key === ""
         ? {
-          total: value.total,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          items: value.items.map(DisplayValueGroup.fromJSON),
-        }
+            total: value.total,
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            items: value.items.map(DisplayValueGroup.fromJSON),
+          }
         : value;
     };
     return JSON.parse(await this.request(params), reviver);
@@ -615,4 +615,4 @@ export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
 
 /** @internal */
 // istanbul ignore next
-export function noopUpdatesHandler(_info: UpdateInfo | undefined) { }
+export function noopUpdatesHandler(_info: UpdateInfo | undefined) {}

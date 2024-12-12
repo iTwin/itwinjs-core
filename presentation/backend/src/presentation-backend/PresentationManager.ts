@@ -453,6 +453,7 @@ export class PresentationManager {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -757,23 +758,23 @@ export class PresentationManager {
     const { itemBatches, count } =
       "elementIds" in elementsIdentifier
         ? getContentItemsObservableFromElementIds(
-          requestOptions.imodel,
-          descriptorGetter,
-          contentSetGetter,
-          elementsIdentifier.elementIds,
-          classParallelism,
-          batchesParallelism,
-          batchSize,
-        )
+            requestOptions.imodel,
+            descriptorGetter,
+            contentSetGetter,
+            elementsIdentifier.elementIds,
+            classParallelism,
+            batchesParallelism,
+            batchSize,
+          )
         : getContentItemsObservableFromClassNames(
-          requestOptions.imodel,
-          descriptorGetter,
-          contentSetGetter,
-          elementsIdentifier.elementClasses,
-          classParallelism,
-          batchesParallelism,
-          batchSize,
-        );
+            requestOptions.imodel,
+            descriptorGetter,
+            contentSetGetter,
+            elementsIdentifier.elementClasses,
+            classParallelism,
+            batchesParallelism,
+            batchSize,
+          );
     return {
       total: await firstValueFrom(count),
       async *iterator() {
@@ -837,9 +838,9 @@ export class PresentationManager {
       isComputeSelectionRequestOptions(requestOptions)
         ? requestOptions
         : (function () {
-          const { ids, scopeId, ...rest } = requestOptions;
-          return { ...rest, elementIds: ids, scope: { id: scopeId } };
-        })(),
+            const { ids, scopeId, ...rest } = requestOptions;
+            return { ...rest, elementIds: ids, scope: { id: scopeId } };
+          })(),
     );
   }
 

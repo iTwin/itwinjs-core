@@ -29,8 +29,6 @@ describe("ConnectivityInformationProvider", () => {
       NativeApp.onInternetConnectivityChanged.clear();
     });
 
-    afterEach(() => { });
-
     describe("constructor", () => {
       it("sets current status to the result of `NativeApp.checkInternetConnectivity` if not set already", async () => {
         const internetConnectivityResult = new ResolvablePromise<InternetConnectivityStatus>();

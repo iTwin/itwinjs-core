@@ -94,7 +94,7 @@ export class Presentation {
   private static _rpcImpl: PresentationRpcImpl | undefined;
 
   /* istanbul ignore next */
-  private constructor() { }
+  private constructor() {}
 
   /** Properties used to initialize the presentation framework */
   public static get initProps() {

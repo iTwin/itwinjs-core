@@ -49,7 +49,7 @@ export interface PresentationProps {
  */
 export class Presentation {
   /* istanbul ignore next */
-  private constructor() { }
+  private constructor() {}
 
   /**
    * Initializes Presentation library for the frontend.

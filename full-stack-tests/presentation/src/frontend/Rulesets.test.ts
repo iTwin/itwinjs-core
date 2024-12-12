@@ -57,13 +57,10 @@ describe("Rulesets", async () => {
   });
 
   it("creates ruleset from json and gets root node using it", async () => {
-    {
-      using _ = await Presentation.presentation.rulesets().add(RULESET_1);
-      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
-      expect(rootNodes.length).to.be.equal(1);
-      expect(rootNodes[0].label.displayValue).to.equal("label 1");
-    }
-    await Presentation.presentation.rulesets().clear();
+    using _registered = await Presentation.presentation.rulesets().add(RULESET_1);
+    const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
+    expect(rootNodes.length).to.be.equal(1);
+    expect(rootNodes[0].label.displayValue).to.equal("label 1");
   });
 
   it("removes ruleset", async () => {
@@ -143,7 +140,7 @@ describe("Rulesets", async () => {
 
     it("can use the same frontend-registered ruleset after backend is reset", async () => {
       const props = { imodel, rulesetOrId: RULESET_1.id };
-      using _ = await frontend.rulesets().add(RULESET_1);
+      using _registered = await frontend.rulesets().add(RULESET_1);
       const rootNodes1 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
       expect(rootNodes1.length).to.be.equal(1);
       expect(rootNodes1[0].label.displayValue).to.be.equal("label 1");

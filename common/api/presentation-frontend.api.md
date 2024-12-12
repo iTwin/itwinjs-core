@@ -30,7 +30,6 @@ import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
 import { InstanceKey } from '@itwin/presentation-common';
 import { InternetConnectivityStatus } from '@itwin/core-common';
@@ -541,13 +540,15 @@ export class SelectionHelper {
 }
 
 // @public
-export class SelectionManager implements ISelectionProvider {
+export class SelectionManager implements ISelectionProvider, Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
     constructor(props: SelectionManagerProps);
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
+    // @deprecated (undocumented)
+    dispose(): void;
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getHiliteSetIterator(imodel: IModelConnection): AsyncIterableIterator<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
@@ -561,7 +562,10 @@ export class SelectionManager implements ISelectionProvider {
     readonly scopes: SelectionScopesManager;
     readonly selectionChange: SelectionChangeEvent;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
-    suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable & Disposable;
+    suspendIModelToolSelectionSync(imodel: IModelConnection): {
+        dispose: () => void;
+        [Symbol.dispose]: () => void;
+    };
 }
 
 // @public
@@ -591,8 +595,6 @@ export class ToolSelectionSyncHandler implements Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
     constructor(imodel: IModelConnection, logicalSelection: SelectionManager);
-    // @deprecated (undocumented)
-    dispose(): void;
     // (undocumented)
     isSuspended?: boolean;
     get pendingAsyncs(): Set<string>;

@@ -7,7 +7,7 @@
  */
 
 import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
-import { Id64, Id64Arg, Id64Array, IDisposable } from "@itwin/core-bentley";
+import { Id64, Id64Arg, Id64Array } from "@itwin/core-bentley";
 import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
 import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
 import {
@@ -44,7 +44,7 @@ export interface SelectionManagerProps {
  * The selection manager which stores the overall selection.
  * @public
  */
-export class SelectionManager implements ISelectionProvider {
+export class SelectionManager implements ISelectionProvider, Disposable {
   private _selectionStorage: SelectionStorage;
   private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number; handler: ToolSelectionSyncHandler }>();
   private _hiliteSetProviders = new Map<IModelConnection, HiliteSetProvider>();
@@ -87,6 +87,12 @@ export class SelectionManager implements ISelectionProvider {
   public [Symbol.dispose]() {
     this._selectionEventsSubscription.unsubscribe();
     this._listeners.forEach((dispose) => dispose());
+  }
+
+  /** @deprecated in 5.0. Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   private onConnectionClose(imodel: IModelConnection): void {
@@ -133,16 +139,17 @@ export class SelectionManager implements ISelectionProvider {
    * Temporarily suspends tool selection synchronization until the returned `Disposable`
    * is disposed.
    */
-  public suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable & Disposable { // eslint-disable-line @typescript-eslint/no-deprecated
+  public suspendIModelToolSelectionSync(imodel: IModelConnection) {
     const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
     if (!registration) {
-      return { dispose: () => { }, [Symbol.dispose]: () => { } };
+      const noop = () => {};
+      return { [Symbol.dispose]: noop, dispose: noop };
     }
 
     const wasSuspended = registration.handler.isSuspended;
     registration.handler.isSuspended = true;
-    const handler = () => (registration.handler.isSuspended = wasSuspended);
-    return { [Symbol.dispose]: handler, dispose: handler };
+    const doDispose = () => (registration.handler.isSuspended = wasSuspended);
+    return { [Symbol.dispose]: doDispose, dispose: doDispose };
   }
 
   /** Get the selection levels currently stored in this manager for the specified imodel */
@@ -417,11 +424,6 @@ export class ToolSelectionSyncHandler implements Disposable {
 
   public [Symbol.dispose]() {
     this._imodelToolSelectionListenerDisposeFunc();
-  }
-
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  public dispose() {
-    this[Symbol.dispose]();
   }
 
   /** note: used only it tests */

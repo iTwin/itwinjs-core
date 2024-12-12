@@ -201,10 +201,10 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
   }
 
   public [Symbol.dispose]() {
+    // istanbul ignore else
     if (isDisposable(this._connectivityInfo)) {
       this._connectivityInfo[Symbol.dispose]();
-    }
-    else if (isIDisposable(this._connectivityInfo)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
+    } else if (isIDisposable(this._connectivityInfo)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
       this._connectivityInfo.dispose();
     }
   }
@@ -334,13 +334,13 @@ export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage
     return undefined;
   }
   // istanbul ignore next
-  public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) { }
+  public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) {}
   // istanbul ignore next
   public async loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
     return undefined;
   }
   // istanbul ignore next
-  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> { }
+  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> {}
 }
 
 /** @internal */

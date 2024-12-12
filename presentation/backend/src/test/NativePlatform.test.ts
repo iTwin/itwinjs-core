@@ -24,7 +24,7 @@ describe("default NativePlatform", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch { }
+      } catch {}
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -34,7 +34,7 @@ describe("default NativePlatform", () => {
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
       taskAllocationsMap: {},
-      updateCallback: () => { },
+      updateCallback: () => {},
     });
     nativePlatform = new TNativePlatform();
     // we're replacing the native addon with our mock - make sure the original
@@ -75,7 +75,7 @@ describe("default NativePlatform", () => {
     it("calls addon", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0") }), cancel: () => { } }))
+        .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0") }), cancel: () => {} }))
         .verifiable();
       expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
@@ -84,14 +84,14 @@ describe("default NativePlatform", () => {
     it("throws on cancellation response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => { } }));
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => {} }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
     });
 
     it("throws on error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => {} }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
     });
 
@@ -100,7 +100,7 @@ describe("default NativePlatform", () => {
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({
           result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.ResultSetTooLarge, message: "test" } }),
-          cancel: () => { },
+          cancel: () => {},
         }));
       await expect(nativePlatform.handleRequest(undefined, ""))
         .to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test")
@@ -115,7 +115,7 @@ describe("default NativePlatform", () => {
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
         .returns(() => ({
           result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "" }, diagnostics }),
-          cancel: () => { },
+          cancel: () => {},
         }));
       await expect(nativePlatform.handleRequest(undefined, ""))
         .to.eventually.be.rejectedWith(PresentationNativePlatformResponseError)
@@ -142,7 +142,7 @@ describe("default NativePlatform", () => {
     };
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-      .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0"), diagnostics }), cancel: () => { } }));
+      .returns(() => ({ result: Promise.resolve({ result: Buffer.from("0"), diagnostics }), cancel: () => {} }));
     expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
     addonMock.verifyAll();
   });

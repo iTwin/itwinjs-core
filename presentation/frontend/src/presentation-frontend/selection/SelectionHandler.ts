@@ -86,6 +86,7 @@ export class SelectionHandler implements Disposable {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
   public dispose() {
     this[Symbol.dispose]();
   }

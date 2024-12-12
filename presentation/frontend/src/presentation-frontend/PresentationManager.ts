@@ -267,6 +267,7 @@ export class PresentationManager implements Disposable {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -306,14 +307,14 @@ export class PresentationManager implements Disposable {
    * Function that is called when a new IModelConnection is used to retrieve data.
    * @internal
    */
-  public startIModelInitialization(_: IModelConnection) { }
+  public startIModelInitialization(_: IModelConnection) {}
 
   /**
    * Function that should be called to finish initialization that was started at [[PresentationManager.startIModelInitialization]].
    * Can be removed when [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]] are removed.
    * @internal
    */
-  public async ensureIModelInitialized(_: IModelConnection) { }
+  public async ensureIModelInitialized(_: IModelConnection) {}
 
   /**
    * Create a new PresentationManager instance

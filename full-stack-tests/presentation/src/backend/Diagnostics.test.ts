@@ -67,19 +67,17 @@ describe("Diagnostics", async () => {
 
   it("includes diagnostics if request fails", async () => {
     const requestDiagnosticsSpy = sinon.spy();
+    using manager = new PresentationManager();
     await expect(
-      (async () => {
-        using manager = new PresentationManager();
-        await manager.getNodes({
-          imodel,
-          rulesetOrId: ruleset,
-          instanceFilter: {} as any,
-          diagnostics: {
-            dev: "error",
-            handler: requestDiagnosticsSpy,
-          },
-        });
-      })()
+      manager.getNodes({
+        imodel,
+        rulesetOrId: ruleset,
+        instanceFilter: {} as any,
+        diagnostics: {
+          dev: "error",
+          handler: requestDiagnosticsSpy,
+        },
+      }),
     ).to.eventually.be.rejectedWith(PresentationError);
     expect(requestDiagnosticsSpy).to.be.calledOnceWith(sinon.match((d: Diagnostics) => d && d.logs && d.logs.length > 0));
   });
@@ -87,7 +85,7 @@ describe("Diagnostics", async () => {
   it("doesn't report request diagnostics if not requested when manager diagnostics requested", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
-    using manager = new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } })
+    using manager = new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } });
     await manager.getNodes({
       imodel,
       rulesetOrId: ruleset,
