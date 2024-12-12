@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { DbResult, FontFamilyDescriptor, FontId, FontProps } from "@itwin/core-common";
+import { DbResult, FontFamilyDescriptor, FontId, FontProps, FontType } from "@itwin/core-common";
 import { _implementationProhibited, _nativeDb } from "./Symbols";
 import { FontFile } from "../FontFile";
 import { IModelDb } from "../IModelDb";
@@ -16,18 +16,20 @@ import { assert } from "@itwin/core-bentley";
 
 class IModelDbFontsImpl implements IModelDbFonts {
   public readonly [_implementationProhibited] = undefined;
-  private readonly _db: IModelDb;
+  readonly #db: IModelDb;
 
   public constructor(iModel: IModelDb) {
-    this._db = iModel;
+    this.#db = iModel;
   }
 
   public queryDescriptors(): Iterable<FontFamilyDescriptor> {
-    throw new Error("###TODO");
+    return this.#queryFontTable().filter((x) => { return { name: x.name, type: x.type } });
   }
 
   public queryEmbeddedFamilies(): Iterable<FontProps> {
-    throw new Error("###TODO");
+    const fontProps = this.#queryFontTable();
+    const fontNames = this.#getEmbeddedFontNames();
+    return fontProps.filter((x) => fontNames.includes(x.name));
   }
 
   public queryFontFiles(): Iterable<FontFileImpl> {
@@ -36,6 +38,8 @@ class IModelDbFontsImpl implements IModelDbFonts {
   }
 
   public async embedFontFile(args: EmbedFontFileArgs): Promise<void> {
+    this.#requireWritable();
+
     const file = args.file;
     if (!(file instanceof FontFileImpl)) {
       throw new Error("invalid FontFile");
@@ -48,22 +52,23 @@ class IModelDbFontsImpl implements IModelDbFonts {
       }
     }
 
+    let id = 0;
+    if (false) {
     // ###TODO Add a new CodeService method to reserve (or look up a previously-reserved) Id for
     // this FontFile, if CodeService is configured for the iModel.
-
-    // CodeService not configured - schema lock required to prevent conflicting Ids in be_Prop table.
-    await this._db.acquireSchemaLock();
-    let id = 0;
-    this._db.withSqliteStatement(`SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
-      const result = stmt.step();
-      assert(result === DbResult.BE_SQLITE_ROW);
-      id = stmt.getValueInteger(0) + 1;
-    });
+    } else {
+      // CodeService not configured - schema lock required to prevent conflicting Ids in be_Prop table.
+      await this.#db.acquireSchemaLock();
+      this.#db.withSqliteStatement(`SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
+        const result = stmt.step();
+        assert(result === DbResult.BE_SQLITE_ROW);
+        id = stmt.getValueInteger(0) + 1;
+      });
+    }
     
     assert(id > 0);
-    
     const data = file.getData();
-    this._db[_nativeDb].embedFontFile(id, file.faceProps, data, true);
+    this.#db[_nativeDb].embedFontFile(id, file.faceProps, data, true);
 
     if (args.dontAllocateFontIds) {
       return;
@@ -72,16 +77,80 @@ class IModelDbFontsImpl implements IModelDbFonts {
     // ###TODO allocate font Id for each family in file.
   }
 
-  public findId(_descriptor: FontFamilyDescriptor): FontId | undefined {
-    throw new Error("###TODO");
+  public findId(descriptor: FontFamilyDescriptor): FontId | undefined {
+    let id;
+    this.#db.withPreparedSqliteStatement("SELECT Id FROM dgn_Font WHERE Name=? AND Type=?", (stmt) => {
+      stmt.bindString(1, descriptor.name);
+      stmt.bindInteger(2, descriptor.type);
+      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        id = stmt.getValueInteger(0);
+      }
+    });
+
+    return id;
   }
 
-  public findDescriptor(_id: FontId): FontFamilyDescriptor | undefined {
-    throw new Error("###TODO");
+  public findDescriptor(id: FontId): FontFamilyDescriptor | undefined {
+    let name, type;
+    this.#db.withPreparedSqliteStatement("SELECT Name,Type FROM dgn_Font WHERE Id=?", (stmt) => {
+      stmt.bindInteger(1, id);
+      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const stmtName = stmt.getValueString(0);
+        if (stmtName.length > 0) {
+          name = stmtName;
+          const typeCode = stmt.getValueInteger(1);
+          type = (typeCode === FontType.Shx || typeCode === FontType.Rsc) ? typeCode : FontType.TrueType;
+        }
+      }
+    });
+
+    return undefined !== name && undefined !== type ? { name, type } : undefined;
   }
 
   public async acquireId(_descriptor: FontFamilyDescriptor): Promise<FontId> {
+    this.#requireWritable();
+
     throw new Error("###TODO");
+  }
+
+  #requireWritable(): void {
+    if (this.#db.isReadonly) {
+      throw new Error("iModel is read-only");
+    }
+  }
+
+  #getEmbeddedFontNames(): string[] {
+    const names: string[] = [];
+
+    const sql = `select DISTINCT json_extract(face.value, '$.familyName') from be_Prop, json_each(be_Prop.StrData) as face where namespace="dgn_Font" and name="EmbeddedFaceData"`;
+    this.#db.withPreparedSqliteStatement(sql, (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        names.push(stmt.getValueString(0));
+      }
+    });
+
+    return names;
+  }
+
+  #queryFontTable(): Array<FontProps> {
+    const fonts: FontProps[] = [];
+    const sql = `SELECT Id,Name,Type FROM dgn_Font`;
+    this.#db.withPreparedSqliteStatement(sql, (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const name = stmt.getValueString(1);
+        const typeCode = stmt.getValueInteger(2);
+        const type = (typeCode === FontType.Shx || typeCode === FontType.Rsc) ? typeCode : FontType.TrueType;
+        if (name.length > 0) {
+          fonts.push({
+            name,
+            type,
+            id: stmt.getValueInteger(0),
+          });
+        }
+      }
+    });
+
+    return fonts;
   }
 }
 
