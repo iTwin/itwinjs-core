@@ -672,6 +672,7 @@ public;class;ScrollViewTool
 beta;interface;SectionDrawingAttachmentHitInfo
 internal;interface;SectionDrawingInfo
 public;class;SectionDrawingModelState
+public;interface;SelectableIds
 public;interface;SelectAddEvent
 internal;interface;SelectedAndReadyTiles
 public;interface;SelectedViewportChangedArgs
