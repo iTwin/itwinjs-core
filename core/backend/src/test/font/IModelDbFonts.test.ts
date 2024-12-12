@@ -34,6 +34,10 @@ describe.only("IModelDbFonts", () => {
     return FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile(fontName));
   }
 
+  function createTTFace(familyName: string, faceName: "regular" | "bold" | "italic" | "bolditalic", subId = 0): IModelJsNative.FontFaceProps {
+    return { familyName, faceName, type: FontType.TrueType, subId };
+  }
+
   function expectEmbeddedFontFiles(expected: Array<IModelJsNative.FontFaceProps[]>) {
     const fonts = Array.from(db.fonts.queryEmbeddedFontFiles());
     const actualFaceProps: Array<IModelJsNative.FontFaceProps[]> = fonts.map((x) => {
@@ -78,6 +82,19 @@ describe.only("IModelDbFonts", () => {
         subId: 0,
       }]);
 
+      await embedAndTest(createTTFile("Karla-Regular.ttf"), [createTTFace("Karla", "regular")]);
+
+      await embedAndTest(createTTFile("Sitka.ttc"), [
+        createTTFace("Sitka Banner", "regular", 5),
+        createTTFace("Sitka Display", "regular", 4),
+        createTTFace("Sitka Heading", "regular", 3),
+        createTTFace("Sitka Small", "regular", 0),
+        createTTFace("Sitka Subheading", "regular", 2),
+        createTTFace("Sitka Text", "regular", 1),
+      ]);
+
+      await embedAndTest(createTTFile("DejaVuSans.ttf"), [createTTFace("DejaVu Sans", "regular")]);
+      await embedAndTest(createTTFile("DejaVuSans-Bold.ttf"), [createTTFace("DejaVu Sans", "bold")]);
     });
 
     it("is a no-op if file is already embedded", async () => {
