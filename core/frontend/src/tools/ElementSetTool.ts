@@ -412,13 +412,19 @@ export abstract class ElementSetTool extends PrimitiveTool {
   */
   protected setPreferredElementSource(): void {
     this._useSelectionSet = false;
-    if (this.iModel.selectionSet.elements.size === 0) {
-      if (this.iModel.selectionSet.isActive) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, CoreTools.translate("ElementSet.Error.ActiveSSWithoutElems")));
-      }
+    if (!this.iModel.selectionSet.isActive)
       return;
-    }
-    if (this.allowSelectionSet && this.iModel.selectionSet.elements.size >= this.requiredElementCount)
+
+    const isSelectionSetValid = (): boolean => {
+      if (0 === this.iModel.selectionSet.elements.size) {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, CoreTools.translate("ElementSet.Error.ActiveSSWithoutElems")));
+        return false;
+      }
+
+      return (this.iModel.selectionSet.elements.size >= this.requiredElementCount);
+    };
+
+    if (this.allowSelectionSet && isSelectionSetValid())
       this._useSelectionSet = true;
     else if (this.clearSelectionSet)
       this.iModel.selectionSet.emptyAll();
