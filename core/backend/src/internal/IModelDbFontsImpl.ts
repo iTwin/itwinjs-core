@@ -11,8 +11,9 @@ import { _implementationProhibited, _nativeDb } from "./Symbols";
 import { FontFile } from "../FontFile";
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts } from "../IModelDbFonts";
-import { FontFileImpl } from "./FontFileImpl";
+import { EmbeddedFontFile, FontFileImpl } from "./FontFileImpl";
 import { assert } from "@itwin/core-bentley";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 
 class IModelDbFontsImpl implements IModelDbFonts {
   public readonly [_implementationProhibited] = undefined;
@@ -33,8 +34,30 @@ class IModelDbFontsImpl implements IModelDbFonts {
   }
 
   public queryFontFiles(): Iterable<FontFileImpl> {
-    // ###TODO
-    return [];
+    let files: FontFileImpl[] = [];
+    this.#db.withSqliteStatement(`SELECT Id,StrData FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        let faces;
+        try {
+          faces = JSON.parse(stmt.getValueString(1)) as IModelJsNative.FontFaceProps[];
+        } catch (_) {
+          //
+        }
+
+        if (!Array.isArray(faces) || faces.length === 0) {
+          continue;
+        }
+
+        let type = faces[0].type;
+        if (type !== FontType.Rsc && type !== FontType.Shx) {
+          type = FontType.TrueType;
+        }
+
+        files.push(new EmbeddedFontFile(this.#db, stmt.getValueInteger(0), type, faces));
+      }
+    });
+
+    return files;
   }
 
   public async embedFontFile(args: EmbedFontFileArgs): Promise<void> {
