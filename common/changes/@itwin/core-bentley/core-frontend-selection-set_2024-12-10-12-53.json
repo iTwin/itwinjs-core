@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Fix `Uint32Set.delete` leaving artifacts in internal map, causing `isEmpty` to return incorrect value.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support Models' and SubCategories' selection in `SelectionSet`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

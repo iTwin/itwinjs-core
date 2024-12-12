@@ -575,8 +575,11 @@ export namespace Id64 {
     /** Remove an Id from the set. */
     public delete(low: number, high: number): void {
       const set = this._map.get(high);
-      if (undefined !== set)
+      if (undefined !== set) {
         set.delete(low);
+        if (set.size === 0)
+          this._map.delete(high);
+      }
     }
 
     /** Returns true if the set contains the specified Id. */

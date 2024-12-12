@@ -203,7 +203,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
 
     if (deletedIds) {
       this.iModel.selectionSet.remove(deletedIds);
-      this.iModel.hilited.setHilite(deletedIds, false);
+      this.iModel.hilited.remove({ elements: deletedIds });
     }
 
     this.onGeometryChanges.raiseEvent(changes, this);

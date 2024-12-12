@@ -4876,8 +4876,9 @@ export interface Hilites {
 // @public
 export class HiliteSet {
     constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
+    add(additions: SelectableIds): void;
     clear(): void;
-    get elements(): Id64.Uint32Set;
+    readonly elements: Id64.Uint32Set;
     // (undocumented)
     iModel: IModelConnection;
     get isEmpty(): boolean;
@@ -4885,6 +4886,9 @@ export class HiliteSet {
     get modelSubCategoryMode(): ModelSubCategoryHiliteMode;
     set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode);
     readonly onModelSubCategoryModeChanged: BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>;
+    remove(removals: SelectableIds): void;
+    replace(ids: SelectableIds): void;
+    // @deprecated
     setHilite(arg: Id64Arg, onOff: boolean): void;
     readonly subcategories: Id64.Uint32Set;
     get wantSyncWithSelectionSet(): boolean;
@@ -10654,8 +10658,20 @@ export class SectionDrawingModelState extends DrawingModelState {
 }
 
 // @public
+export interface SelectableIds {
+    // (undocumented)
+    elements?: Id64Arg;
+    // (undocumented)
+    models?: Id64Arg;
+    // (undocumented)
+    subcategories?: Id64Arg;
+}
+
+// @public
 export interface SelectAddEvent {
+    // @deprecated
     added: Id64Arg;
+    additions: SelectableIds;
     set: SelectionSet;
     // (undocumented)
     type: SelectionSetEventType.Add;
@@ -10702,20 +10718,27 @@ export enum SelectionProcessing {
 // @public
 export class SelectionSet {
     constructor(iModel: IModelConnection);
-    add(elem: Id64Arg): boolean;
-    addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean;
-    get elements(): Set<string>;
+    get active(): {
+        [P in keyof SelectableIds]-?: Set<Id64String>;
+    };
+    add(adds: Id64Arg | SelectableIds): boolean;
+    addAndRemove(adds: Id64Arg | SelectableIds, removes: Id64Arg | SelectableIds): boolean;
+    get elements(): Set<Id64String>;
     emptyAll(): void;
+    // @deprecated
     has(elemId?: string): boolean;
     // (undocumented)
     iModel: IModelConnection;
-    invert(elem: Id64Arg): boolean;
+    invert(ids: Id64Arg | SelectableIds): boolean;
     get isActive(): boolean;
+    // @deprecated
     isSelected(elemId?: Id64String): boolean;
+    get models(): Set<Id64String>;
     readonly onChanged: BeEvent<(ev: SelectionSetEvent) => void>;
-    remove(elem: Id64Arg): boolean;
-    replace(elem: Id64Arg): void;
+    remove(removes: Id64Arg | SelectableIds): boolean;
+    replace(ids: Id64Arg | SelectableIds): boolean;
     get size(): number;
+    get subcategories(): Set<Id64String>;
 }
 
 // @public
@@ -10835,6 +10858,8 @@ export enum SelectParent {
 
 // @public
 export interface SelectRemoveEvent {
+    removals: SelectableIds;
+    // @deprecated
     removed: Id64Arg;
     set: SelectionSet;
     type: SelectionSetEventType.Remove | SelectionSetEventType.Clear;
@@ -10842,7 +10867,11 @@ export interface SelectRemoveEvent {
 
 // @public
 export interface SelectReplaceEvent {
+    // @deprecated
     added: Id64Arg;
+    additions: SelectableIds;
+    removals: SelectableIds;
+    // @deprecated
     removed: Id64Arg;
     set: SelectionSet;
     // (undocumented)
