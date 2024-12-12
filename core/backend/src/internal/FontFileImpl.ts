@@ -10,6 +10,7 @@ import { CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
 import { _implementationProhibited } from "./Symbols";
 import { compareNumbersOrUndefined } from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost";
+import { IModelDb } from "../IModelDb";
 
 interface TrueTypeFontSource {
   readonly type: FontType.TrueType;
@@ -24,21 +25,17 @@ interface CadFontSource {
 
 type FontSource = TrueTypeFontSource | CadFontSource;
 
-export class FontFileImpl implements FontFile {
+export abstract class FontFileImpl implements FontFile {
   public readonly [_implementationProhibited] = undefined;
 
   public readonly faces: ReadonlyArray<Readonly<FontFace>>;
-  public get type(): FontType { return this.#source.type; }
-  public get isEmbeddable(): boolean {
-    return this.#source.type !== FontType.TrueType || this.#source.embeddable;
-  }
+  public abstract get type(): FontType;
+  public get isEmbeddable(): boolean { return true; }
 
   public readonly key: string;
   public readonly faceProps: IModelJsNative.FontFaceProps[];
-  readonly #source: FontSource;
 
-  public constructor(source: FontSource, faces: IModelJsNative.FontFaceProps[]) {
-    this.#source = source;
+  protected constructor(faces: IModelJsNative.FontFaceProps[]) {
     this.faces = faces.map((face) => {
       return {
         familyName: face.familyName,
@@ -58,12 +55,69 @@ export class FontFileImpl implements FontFile {
     this.key = JSON.stringify(this.faceProps, ["familyName", "faceName", "type", "subId"]);
   }
 
-  public getData(): Uint8Array {
-    if (this.#source.type !== FontType.TrueType) {
-      return this.#source.data;
+  public abstract getData(): Uint8Array;
+}
+
+class TrueTypeFontFile extends FontFileImpl {
+  readonly #fileName: LocalFileName;
+  readonly #embeddable: boolean;
+  
+  public constructor(fileName: LocalFileName, embeddable: boolean, faces: IModelJsNative.FontFaceProps[]) {
+    super(faces);
+    this.#fileName = fileName;
+    this.#embeddable = embeddable;
+  }
+
+  public override get type(): FontType { return FontType.TrueType; }
+  public override get isEmbeddable(): boolean { return this.#embeddable; }
+
+  public override getData(): Uint8Array {
+    return fs.readFileSync(this.#fileName);
+  }
+}
+
+export class CadFontFile extends FontFileImpl {
+  readonly #data: Uint8Array;
+  readonly #type: FontType.Shx | FontType.Rsc;
+
+  public constructor(data: Uint8Array, type: FontType.Shx | FontType.Rsc, faces: IModelJsNative.FontFaceProps[]) {
+    super(faces);
+    this.#data = data;
+    this.#type = type;
+  }
+
+  public override get type(): FontType { return this.#type; }
+
+  public override getData(): Uint8Array { return this.#data; }
+}
+
+export class EmbeddedFontFile extends FontFileImpl {
+  // The value of the Id column for the row in the be_Prop table that embeds this font's data.
+  readonly #db: IModelDb;
+  readonly #id: number;
+  readonly #type: FontType;
+
+  public constructor(db: IModelDb, id: number, type: FontType, faces: IModelJsNative.FontFaceProps[]) {
+    super(faces);
+    this.#db = db;
+    this.#id = id;
+    this.#type = type;
+  }
+
+  public override get type(): FontType { return this.#type; }
+
+  public override getData(): Uint8Array {
+    const data = this.#db.queryFilePropertyBlob({
+      namespace: "dgn_Font",
+      name: "EmbeddedFaceData",
+      id: this.#id,
+    });
+
+    if (!data) {
+      throw new Error("Embedded font not found");
     }
 
-    return fs.readFileSync(this.#source.fileName);
+    return data;
   }
 }
 
@@ -93,13 +147,10 @@ export function shxFontFileFromBlob(args: CreateFontFileFromShxBlobArgs): FontFi
 
   validateShx(args.blob);
 
-  return new FontFileImpl({
+  return new CadFontFile(args.blob, FontType.Shx, [{
+    faceName: "regular",
+    familyName: args.familyName,
     type: FontType.Shx,
-    data: args.blob,
-  }, [{
-      faceName: "regular",
-      familyName: args.familyName,
-      type: FontType.Shx,
   }]);
 }
 
@@ -110,6 +161,6 @@ export function trueTypeFontFileFromFileName(fileName: LocalFileName): FontFile 
     throw new Error("Failed to read font file");
   }
 
-  return new FontFileImpl({ type: FontType.TrueType, fileName, embeddable: metadata.embeddable }, metadata.faces);
+  return new TrueTypeFontFile(fileName, metadata.embeddable, metadata.faces);
 }
 
