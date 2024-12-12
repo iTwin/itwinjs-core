@@ -6,11 +6,13 @@
  * @module iModels
  */
 
-import { FontFamilyDescriptor, FontId, FontProps } from "@itwin/core-common";
-import { _implementationProhibited } from "./Symbols";
+import { DbResult, FontFamilyDescriptor, FontId, FontProps } from "@itwin/core-common";
+import { _implementationProhibited, _nativeDb } from "./Symbols";
 import { FontFile } from "../FontFile";
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts } from "../IModelDbFonts";
+import { FontFileImpl } from "./FontFileImpl";
+import { assert } from "@itwin/core-bentley";
 
 class IModelDbFontsImpl implements IModelDbFonts {
   public readonly [_implementationProhibited] = undefined;
@@ -28,12 +30,46 @@ class IModelDbFontsImpl implements IModelDbFonts {
     throw new Error("###TODO");
   }
 
-  public queryFontFiles(): Iterable<FontFile> {
-    throw new Error("###TODO");
+  public queryFontFiles(): Iterable<FontFileImpl> {
+    // ###TODO
+    return [];
   }
 
-  public async embedFontFile(_args: EmbedFontFileArgs): Promise<void> {
-    throw new Error("###TODO");
+  public async embedFontFile(args: EmbedFontFileArgs): Promise<void> {
+    const file = args.file;
+    if (!(file instanceof FontFileImpl)) {
+      throw new Error("invalid FontFile");
+    }
+
+    for (const existing of this.queryFontFiles()) {
+      if (existing.key === file.key) {
+        // Already embedded - it's a no-op.
+        return;
+      }
+    }
+
+    // ###TODO Add a new CodeService method to reserve (or look up a previously-reserved) Id for
+    // this FontFile, if CodeService is configured for the iModel.
+
+    // CodeService not configured - schema lock required to prevent conflicting Ids in be_Prop table.
+    await this._db.acquireSchemaLock();
+    let id = 0;
+    this._db.withSqliteStatement(`SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
+      const result = stmt.step();
+      assert(result === DbResult.BE_SQLITE_ROW);
+      id = stmt.getValueInteger(0) + 1;
+    });
+    
+    assert(id > 0);
+    
+    const data = file.getData();
+    this._db[_nativeDb].embedFontFile(id, file.faceProps, data, true);
+
+    if (args.dontAllocateFontIds) {
+      return;
+    }
+
+    // ###TODO allocate font Id for each family in file.
   }
 
   public findId(_descriptor: FontFamilyDescriptor): FontId | undefined {

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as fs from "fs";
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
@@ -23,20 +24,21 @@ interface CadFontSource {
 
 type FontSource = TrueTypeFontSource | CadFontSource;
 
-class FontFileImpl implements FontFile {
+export class FontFileImpl implements FontFile {
   public readonly [_implementationProhibited] = undefined;
 
   public readonly faces: ReadonlyArray<Readonly<FontFace>>;
-  public get type(): FontType { return this.source.type; }
+  public get type(): FontType { return this.#source.type; }
   public get isEmbeddable(): boolean {
-    return this.source.type !== FontType.TrueType || this.source.embeddable;
+    return this.#source.type !== FontType.TrueType || this.#source.embeddable;
   }
 
-  public readonly source: FontSource;
+  public readonly key: string;
   public readonly faceProps: IModelJsNative.FontFaceProps[];
+  readonly #source: FontSource;
 
   public constructor(source: FontSource, faces: IModelJsNative.FontFaceProps[]) {
-    this.source = source;
+    this.#source = source;
     this.faces = faces.map((face) => {
       return {
         familyName: face.familyName,
@@ -47,10 +49,21 @@ class FontFileImpl implements FontFile {
 
     this.faceProps = faces;
 
-    // Establish canonical ordering of key properties. This uniquely identifies a FontFile embedded as a row in an iModel's be_Prop table.
+    // Sort the face props in canonical order so we can compare FontFiles for equivalent contents.
     this.faceProps.sort((a, b) =>
       a.familyName.localeCompare(b.familyName) || a.faceName.localeCompare(b.faceName) || compareNumbersOrUndefined(a.subId, b.subId)
     );
+
+    // Stringify the face props so that the key properties (and no other properties) appear in a canonical order. for trivial comparisons.
+    this.key = JSON.stringify(this.faceProps, ["familyName", "faceName", "subId"]);
+  }
+
+  public getData(): Uint8Array {
+    if (this.#source.type !== FontType.TrueType) {
+      return this.#source.data;
+    }
+
+    return fs.readFileSync(this.#source.fileName);
   }
 }
 

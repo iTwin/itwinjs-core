@@ -4,6 +4,32 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 
-describe("IModelDbFonts", () => {
-  // ###TODO
+describe.only("IModelDbFonts", () => {
+  
+
+  describe("embedFontFile", () => {
+    it("embeds font files", async () => {
+      
+    });
+
+    it("is a no-op if file is already embedded", async () => {
+      
+    });
+
+    it("throws if file is read-only", async () => {
+      
+    });
+
+    it("throws if font is not embeddable", async () => {
+      
+    });
+
+    it("allocates font Ids unless otherwise specified", async () => {
+      
+    });
+
+    it("requires schema lock if CodeService is not configured", async () => {
+      
+    });
+  })
 });
