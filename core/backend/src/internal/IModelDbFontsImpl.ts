@@ -85,11 +85,8 @@ class IModelDbFontsImpl implements IModelDbFonts {
     } else {
       // CodeService not configured - schema lock required to prevent conflicting Ids in be_Prop table.
       await this.#db.acquireSchemaLock();
-      this.#db.withSqliteStatement(`SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
-        const result = stmt.step();
-        assert(result === DbResult.BE_SQLITE_ROW);
-        id = stmt.getValueInteger(0) + 1;
-      });
+      const sql = `SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`;
+      this.#db.withSqliteStatement(sql, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) : 1);
     }
     
     assert(id > 0);
@@ -133,10 +130,34 @@ class IModelDbFontsImpl implements IModelDbFonts {
     return undefined !== name && undefined !== type ? { name, type } : undefined;
   }
 
-  public async acquireId(_descriptor: FontFamilyDescriptor): Promise<FontId> {
+  public async acquireId(descriptor: FontFamilyDescriptor): Promise<FontId> {
     this.#requireWritable();
 
-    throw new Error("###TODO");
+    let id = this.findId(descriptor);
+    if (undefined !== id) {
+      return id;
+    }
+
+    const codes = this.#db.codeService?.internalCodes;
+    if (codes) {
+      id = await codes.writeLocker.reserveFontId({ fontName: descriptor.name, fontType: descriptor.type });
+    } else {
+      // No CodeService configured. We must obtain the schema lock and use the next available Id.
+      await this.#db.acquireSchemaLock();
+      id = this.#db.withSqliteStatement(`SELECT MAX(Id) FROM dgn_Font`, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
+    }
+
+    this.#db.withSqliteStatement(`INSERT INTO dgn_Font (Id,Type,Name) VALUES (?,?,?)`, (stmt) => {
+      stmt.bindInteger(1, id);
+      stmt.bindInteger(2, descriptor.type);
+      stmt.bindString(3, descriptor.name);
+
+      if (DbResult.BE_SQLITE_DONE !== stmt.step()) {
+        throw new Error("Failed to insert font Id mapping");
+      }
+    });
+
+    return id;
   }
 
   #requireWritable(): void {

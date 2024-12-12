@@ -122,7 +122,7 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("throws if file is read-only", async () => {
-      
+      // ###TODO
     });
 
     it("throws if font is not embeddable", async () => {
@@ -131,7 +131,7 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("allocates font Ids unless otherwise specified", async () => {
-      
+      // ###TODO
     });
 
     it("requires schema lock if CodeService is not configured", async () => {
@@ -140,6 +140,43 @@ describe.only("IModelDbFonts", () => {
       expect(spy.callCount).to.equal(1);
       await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
       expect(spy.callCount).to.equal(2);
+
+      // ###TODO test acquireFontId
     });
+  });
+
+  it("assigns and queries font Ids", async () => {
+    expect(db.fonts.findDescriptor(1)).to.be.undefined;
+
+    const cdmShx = { name: "Cdm", type: FontType.Shx };
+    expect(db.fonts.findId(cdmShx)).to.be.undefined;
+
+    const cdmShxId = await db.fonts.acquireId(cdmShx);
+    expect(cdmShxId).to.equal(1);
+
+    const cdmShxId2 = await db.fonts.acquireId(cdmShx);
+    expect(cdmShxId2).to.equal(cdmShxId);
+
+    expect(db.fonts.findDescriptor(cdmShxId)).to.deep.equal(cdmShx);
+    expect(db.fonts.findId(cdmShx)).to.equal(cdmShxId);
+
+    const cdmRsc = { name: "Cdm", type: FontType.Rsc };
+    expect(db.fonts.findId(cdmRsc)).to.be.undefined;
+
+    const cdmRscId = await db.fonts.acquireId(cdmRsc);
+    expect(cdmRscId).to.equal(2);
+    
+    expect(db.fonts.findId(cdmRsc)).to.equal(cdmRscId);
+    expect(db.fonts.findDescriptor(cdmRscId)).to.deep.equal(cdmRsc);
+
+    const arial = { name: "Arial", type: FontType.TrueType };
+    const arialId = await db.fonts.acquireId(arial);
+    expect(arialId).to.equal(3);
+    expect(db.fonts.findId(arial)).to.equal(arialId);
+    expect(db.fonts.findDescriptor(arialId)).to.deep.equal(arial);
+  });
+
+  it("queries font data", async () => {
+    // ###TODO
   });
 });
