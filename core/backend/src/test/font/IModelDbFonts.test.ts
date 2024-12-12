@@ -145,37 +145,52 @@ describe.only("IModelDbFonts", () => {
     });
   });
 
-  it("assigns and queries font Ids", async () => {
-    expect(db.fonts.findDescriptor(1)).to.be.undefined;
+  describe("acquireId", () => {
+    it("assigns font Ids", async () => {
+      expect(db.fonts.findDescriptor(1)).to.be.undefined;
 
-    const cdmShx = { name: "Cdm", type: FontType.Shx };
-    expect(db.fonts.findId(cdmShx)).to.be.undefined;
+      const cdmShx = { name: "Cdm", type: FontType.Shx };
+      expect(db.fonts.findId(cdmShx)).to.be.undefined;
 
-    const cdmShxId = await db.fonts.acquireId(cdmShx);
-    expect(cdmShxId).to.equal(1);
+      const cdmShxId = await db.fonts.acquireId(cdmShx);
+      expect(cdmShxId).to.equal(1);
 
-    const cdmShxId2 = await db.fonts.acquireId(cdmShx);
-    expect(cdmShxId2).to.equal(cdmShxId);
+      const cdmShxId2 = await db.fonts.acquireId(cdmShx);
+      expect(cdmShxId2).to.equal(cdmShxId);
 
-    expect(db.fonts.findDescriptor(cdmShxId)).to.deep.equal(cdmShx);
-    expect(db.fonts.findId(cdmShx)).to.equal(cdmShxId);
+      expect(db.fonts.findDescriptor(cdmShxId)).to.deep.equal(cdmShx);
+      expect(db.fonts.findId(cdmShx)).to.equal(cdmShxId);
 
-    const cdmRsc = { name: "Cdm", type: FontType.Rsc };
-    expect(db.fonts.findId(cdmRsc)).to.be.undefined;
+      const cdmRsc = { name: "Cdm", type: FontType.Rsc };
+      expect(db.fonts.findId(cdmRsc)).to.be.undefined;
 
-    const cdmRscId = await db.fonts.acquireId(cdmRsc);
-    expect(cdmRscId).to.equal(2);
+      const cdmRscId = await db.fonts.acquireId(cdmRsc);
+      expect(cdmRscId).to.equal(2);
     
-    expect(db.fonts.findId(cdmRsc)).to.equal(cdmRscId);
-    expect(db.fonts.findDescriptor(cdmRscId)).to.deep.equal(cdmRsc);
+      expect(db.fonts.findId(cdmRsc)).to.equal(cdmRscId);
+      expect(db.fonts.findDescriptor(cdmRscId)).to.deep.equal(cdmRsc);
 
-    const arial = { name: "Arial", type: FontType.TrueType };
-    const arialId = await db.fonts.acquireId(arial);
-    expect(arialId).to.equal(3);
-    expect(db.fonts.findId(arial)).to.equal(arialId);
-    expect(db.fonts.findDescriptor(arialId)).to.deep.equal(arial);
+      const arial = { name: "Arial", type: FontType.TrueType };
+      const arialId = await db.fonts.acquireId(arial);
+      expect(arialId).to.equal(3);
+      expect(db.fonts.findId(arial)).to.equal(arialId);
+      expect(db.fonts.findDescriptor(arialId)).to.deep.equal(arial);
+    });
+
+    it("requires schema lock if CodeService is not configured", async () => {
+      const spy = sinon.spy(db, "acquireSchemaLock");
+      const cdmShx = { name: "Cdm", type: FontType.Shx };
+      await db.fonts.acquireId(cdmShx);
+      expect(spy.callCount).to.equal(1);
+
+      await db.fonts.acquireId(cdmShx);
+      expect(spy.callCount).to.equal(1);
+
+      await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      expect(spy.callCount).to.equal(2);
+    });
   });
-
+  
   it("queries font data", async () => {
     // ###TODO
   });
