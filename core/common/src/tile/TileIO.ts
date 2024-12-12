@@ -72,7 +72,7 @@ const readStatusMessages = [
   "Invalid scene",
   "Invalid feature table",
   "Major version too new",
-  "Canceled"
+  "Canceled",
 ];
 
 /** Exception thrown by functions that deserialize tiles.
