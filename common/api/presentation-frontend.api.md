@@ -563,8 +563,8 @@ export class SelectionManager implements ISelectionProvider, Disposable {
     readonly selectionChange: SelectionChangeEvent;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
     suspendIModelToolSelectionSync(imodel: IModelConnection): {
-        dispose: () => void;
         [Symbol.dispose]: () => void;
+        dispose: () => void;
     };
 }
 
