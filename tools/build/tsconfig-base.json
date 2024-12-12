@@ -23,6 +23,7 @@
     "strict": true,
     "strictNullChecks": true,
     "stripInternal": false,
-    "target": "ES2021"
+    "useDefineForClassFields": false,
+    "target": "ES2023"
   }
 }
