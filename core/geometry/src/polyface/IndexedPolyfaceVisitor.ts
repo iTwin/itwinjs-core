@@ -227,12 +227,15 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
    * @param activeFacetIndices array of indices of facets in the client polyface to visit. This array is cloned.
    * @param numWrap number of vertices replicated in the visitor arrays to facilitate simpler caller code. Default is zero.
    */
-  public static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number = 0): IndexedPolyfaceSubsetVisitor {
+  public static createSubsetVisitor(
+    polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number = 0,
+  ): IndexedPolyfaceSubsetVisitor {
     return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices, numWrap);
   }
   /**
    * Advance the iterator to a particular facet in the subset of client polyface facets.
-   * @param activeIndex the index of the facet within the subset, not to be confused with the index of the facet within the client polyface.
+   * @param activeIndex the index of the facet within the subset, not to be confused with the index of the facet within
+   * the client polyface.
    * @return whether the iterator was successfully moved.
    */
   public override moveToReadIndex(activeIndex: number): boolean {
@@ -285,13 +288,18 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
    * Default is [[Geometry.smallAngleRadians]].
    * @param numWrap optional number of entries replicated in visitor arrays. Default is 0.
   */
-  public static createNormalComparison(mesh: IndexedPolyface | IndexedPolyfaceVisitor, compareVector: Vector3d = Vector3d.unitZ(), sideAngle: Angle = Angle.createSmallAngle(), numWrap: number = 0): IndexedPolyfaceSubsetVisitor {
+  public static createNormalComparison(
+    mesh: IndexedPolyface | IndexedPolyfaceVisitor,
+    compareVector: Vector3d = Vector3d.unitZ(),
+    sideAngle: Angle = Angle.createSmallAngle(),
+    numWrap: number = 0,
+  ): IndexedPolyfaceSubsetVisitor {
     if (mesh instanceof IndexedPolyface)
       return this.createNormalComparison(mesh.createVisitor(), compareVector, sideAngle, numWrap);
     const visitor = mesh;
     const facets: number[] = [];
     const facetNormal = Vector3d.createZero();
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+    for (visitor.reset(); visitor.moveToNextFacet();) {
       if (!PolygonOps.unitNormal(visitor.point, facetNormal))
         continue; // degenerate facet
       if (facetNormal.dotProduct(compareVector) < 0.0)

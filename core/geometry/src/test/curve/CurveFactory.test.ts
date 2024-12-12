@@ -405,14 +405,12 @@ describe("PipeConnections", () => {
           } else {
             ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (capped=false)");
           }
-          // if (capped && sweep.isFullCircle) {
-          //   const edges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, Angle.createDegrees(70), true);
-          //   ck.testExactNumber(
-          //     edges.length,
-          //     2 * numFacetAround,
-          //     "number of cap edges is a double of numFacetAround",
-          //   );
-          // }
+          if (!capped && sweep.isFullCircle)
+            ck.testExactNumber(
+              PolyfaceQuery.boundaryEdges(mesh)!.children.length,
+              2 * numFacetAround,
+              "number of cap edges is a double of numFacetAround",
+            );
         }
       }
       dy += 3;

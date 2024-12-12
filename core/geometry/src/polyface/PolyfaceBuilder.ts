@@ -2035,7 +2035,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const strokeOptions = this._options.clone();
     const outputSelect = MiteredSweepOutputSelect.AlsoMesh;
     const startTangent = sectionData instanceof Arc3d ? arc.binormalVector() : undefined; // preserve arc orientation
-    const options = {strokeOptions, capped, outputSelect, startTangent};
+    const options = { strokeOptions, capped, outputSelect, startTangent };
     const sections = CurveFactory.createMiteredSweepSections(centerline, section, options);
     if (sections && sections.mesh)
       this.addIndexedPolyface(sections.mesh);
