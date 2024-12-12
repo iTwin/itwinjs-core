@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
+import * as sinon from "sinon";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DbResult, Guid } from "@itwin/core-bentley";
@@ -62,7 +63,7 @@ describe.only("IModelDbFonts", () => {
   }
 
   describe("embedFontFile", () => {
-    it.only("embeds font files", async () => {
+    it("embeds font files", async () => {
       expectEmbeddedFontFiles([]);
 
       const expectedFiles: Array<IModelJsNative.FontFaceProps[]> = [];
@@ -98,7 +99,26 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("is a no-op if file is already embedded", async () => {
-      
+      expectEmbeddedFontFiles([]);
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
+      expectEmbeddedFontFiles([[
+        createTTFace("Sitka Banner", "regular", 5),
+        createTTFace("Sitka Display", "regular", 4),
+        createTTFace("Sitka Heading", "regular", 3),
+        createTTFace("Sitka Small", "regular", 0),
+        createTTFace("Sitka Subheading", "regular", 2),
+        createTTFace("Sitka Text", "regular", 1),
+      ]]);
+
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
+      expectEmbeddedFontFiles([[
+        createTTFace("Sitka Banner", "regular", 5),
+        createTTFace("Sitka Display", "regular", 4),
+        createTTFace("Sitka Heading", "regular", 3),
+        createTTFace("Sitka Small", "regular", 0),
+        createTTFace("Sitka Subheading", "regular", 2),
+        createTTFace("Sitka Text", "regular", 1),
+      ]]);
     });
 
     it("throws if file is read-only", async () => {
@@ -106,7 +126,8 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("throws if font is not embeddable", async () => {
-      
+      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
+      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
     });
 
     it("allocates font Ids unless otherwise specified", async () => {
@@ -114,11 +135,11 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("requires schema lock if CodeService is not configured", async () => {
-      
-    });
-
-    it("assigns sequential Ids in be_Prop table", async () => {
-      
+      const spy = sinon.spy(db, "acquireSchemaLock");
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf") });
+      expect(spy.callCount).to.equal(1);
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
+      expect(spy.callCount).to.equal(2);
     });
   });
 });

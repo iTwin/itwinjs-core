@@ -62,6 +62,10 @@ class IModelDbFontsImpl implements IModelDbFonts {
   public async embedFontFile(args: EmbedFontFileArgs): Promise<void> {
     this.#requireWritable();
 
+    if (!args.file.isEmbeddable) {
+      throw new Error("Font does not permit embedding");
+    }
+
     const file = args.file;
     if (!(file instanceof FontFileImpl)) {
       throw new Error("invalid FontFile");
