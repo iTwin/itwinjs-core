@@ -97,7 +97,9 @@ class IModelDbFontsImpl implements IModelDbFonts {
       return;
     }
 
-    // ###TODO allocate font Id for each family in file.
+    const familyNames = new Set<string>(args.file.faces.map((x) => x.familyName));
+    const acquireIds = Array.from(familyNames).map((x) => this.#acquireId({ name: x, type: args.file.type }, true).catch());
+    await Promise.allSettled(acquireIds);
   }
 
   public findId(descriptor: FontFamilyDescriptor): FontId | undefined {
@@ -132,7 +134,10 @@ class IModelDbFontsImpl implements IModelDbFonts {
 
   public async acquireId(descriptor: FontFamilyDescriptor): Promise<FontId> {
     this.#requireWritable();
+    return this.#acquireId(descriptor, false);
+  }
 
+  async #acquireId(descriptor: FontFamilyDescriptor, embeddingFaceData: boolean): Promise<FontId> {
     let id = this.findId(descriptor);
     if (undefined !== id) {
       return id;
@@ -142,8 +147,12 @@ class IModelDbFontsImpl implements IModelDbFonts {
     if (codes) {
       id = await codes.writeLocker.reserveFontId({ fontName: descriptor.name, fontType: descriptor.type });
     } else {
-      // No CodeService configured. We must obtain the schema lock and use the next available Id.
-      await this.#db.acquireSchemaLock();
+      // If we're being called from `embedFontFile` then the schema lock is already held, don't bother re-acquiring it.
+      if (!embeddingFaceData) {
+        // No CodeService configured. We must obtain the schema lock and use the next available Id.
+        await this.#db.acquireSchemaLock();
+      }
+      
       id = this.#db.withSqliteStatement(`SELECT MAX(Id) FROM dgn_Font`, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
     }
 

@@ -131,17 +131,29 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("allocates font Ids unless otherwise specified", async () => {
-      // ###TODO
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), dontAllocateFontIds: true });
+      expect(db.fonts.findId({ name: "Karla", type: FontType.TrueType })).to.be.undefined;
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf") });
+      expect(db.fonts.findId({ name: "Karla", type: FontType.TrueType })).not.to.be.undefined;
+
+      const sitkaFamilies = ["Banner", "Display", "Header", "Small", "Subheading", "Text"].map((x) => `Sitka ${x}`);
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: true });
+      for (const name of sitkaFamilies) {
+        expect(db.fonts.findId({ name, type: FontType.TrueType })).to.be.undefined;
+      }
+
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: false });
+      for (const name of sitkaFamilies) {
+        expect(db.fonts.findId({ name, type: FontType.TrueType })).not.to.be.undefined;
+      }
     });
 
     it("requires schema lock if CodeService is not configured", async () => {
       const spy = sinon.spy(db, "acquireSchemaLock");
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf") });
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), dontAllocateFontIds: true });
       expect(spy.callCount).to.equal(1);
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc") });
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: false });
       expect(spy.callCount).to.equal(2);
-
-      // ###TODO test acquireFontId
     });
   });
 
