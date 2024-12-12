@@ -697,7 +697,7 @@ function areIdsEqual(lhs: Set<Id64String>, rhs: Id64Arg): boolean {
   return true;
 }
 
-function addIds({ target, ids, onAdd }: { target: Id64Set; ids: Id64Arg; onAdd?: (id: Id64String) => void; onDuplicate?: (id: Id64String) => void }) {
+function addIds({ target, ids, onAdd }: { target: Id64Set; ids: Id64Arg; onAdd?: (id: Id64String) => void }) {
   let size = target.size;
   for (const id of Id64.iterable(ids)) {
     target.add(id);
