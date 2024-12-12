@@ -86,7 +86,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
       // CodeService not configured - schema lock required to prevent conflicting Ids in be_Prop table.
       await this.#db.acquireSchemaLock();
       const sql = `SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`;
-      this.#db.withSqliteStatement(sql, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) : 1);
+      id = this.#db.withSqliteStatement(sql, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
     }
     
     assert(id > 0);
