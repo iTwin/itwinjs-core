@@ -34,30 +34,6 @@ describe.only("IModelDbFonts", () => {
     return FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile(fontName));
   }
 
-  function queryEmbeddedFamilyNames(): string[] {
-    const names: string[] = [];
-
-    const sql = `select DISTINCT json_extract(face.value, '$.familyName') from be_Prop, json_each(be_Prop.StrData) as face where namespace="dgn_Font" and name="EmbeddedFaceData"`;
-    db.withPreparedSqliteStatement(sql, (stmt) => {
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        names.push(stmt.getValueString(0));
-      }
-    });
-
-    return names;
-  }
-
-  function queryEmbeddedFonts(): Array<IModelJsNative.FontFaceProps[]> {
-    const result: Array<IModelJsNative.FontFaceProps[]> = [];
-    db.withPreparedSqliteStatement("select StrData from be_Prop where namespace='dgn_Font' and name='EmbeddedFaceData'", (stmt) => {
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        result.push(JSON.parse(stmt.getValueString(0)) as IModelJsNative.FontFaceProps[]);
-      }
-    });
-
-    return result;
-  }
-
   function expectEmbeddedFontFiles(expected: Array<IModelJsNative.FontFaceProps[]>) {
     const fonts = Array.from(db.fonts.queryEmbeddedFontFiles());
     const actualFaceProps: Array<IModelJsNative.FontFaceProps[]> = fonts.map((x) => {
@@ -81,39 +57,27 @@ describe.only("IModelDbFonts", () => {
     expect(actualFaces).to.deep.equal(expectedFaces);
   }
 
-  function expectFamilyNames(expected: string[]): void {
-    expected.sort();
-    const actual = queryEmbeddedFamilyNames().sort();
-    expect(actual).to.deep.equal(expected);
-  }
-
   describe("embedFontFile", () => {
     it.only("embeds font files", async () => {
-      expect(queryEmbeddedFamilyNames().length).to.equal(0);
+      expectEmbeddedFontFiles([]);
+
+      const expectedFiles: Array<IModelJsNative.FontFaceProps[]> = [];
+  
+      async function embedAndTest(file: FontFile, expectedFaces: IModelJsNative.FontFaceProps[]): Promise<void> {
+        await db.fonts.embedFontFile({ file });
+        expectedFiles.push(expectedFaces);
+        expectEmbeddedFontFiles(expectedFiles);
+      }
 
       const fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
       const blob = fs.readFileSync(fileName);
-      const font = FontFile.createFromShxFontBlob({ blob, familyName: "Cdm" });
-      await db.fonts.embedFontFile({ file: font });
-
-      const fonts = queryEmbeddedFonts();
-      expect(fonts.length).to.equal(1);
-      expect(fonts[0].length).to.equal(1);
-      expect(fonts[0][0]).to.deep.equal({
+      await embedAndTest(FontFile.createFromShxFontBlob({ blob, familyName: "Cdm" }), [{
         familyName: "Cdm",
         type: FontType.Shx,
         faceName: "regular",
         subId: 0,
-      });
+      }]);
 
-      expectEmbeddedFontFiles([[{
-        familyName: "Cdm",
-        type: FontType.Shx,
-        faceName: "regular",
-        subId: 0,
-      }]]);
-      
-      expectFamilyNames(["Cdm"]);
     });
 
     it("is a no-op if file is already embedded", async () => {
