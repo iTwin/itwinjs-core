@@ -1732,7 +1732,7 @@ export class SchemaCache implements ISchemaLocater {
 // @beta
 export class SchemaContext implements ISchemaItemLocater {
     constructor();
-    // (undocumented)
+    addFallbackLocater(locater: ISchemaLocater): void;
     addLocater(locater: ISchemaLocater): void;
     addSchema(schema: Schema): Promise<void>;
     // @deprecated
@@ -1750,6 +1750,8 @@ export class SchemaContext implements ISchemaItemLocater {
     getSchemaItems(): IterableIterator<SchemaItem>;
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
+    // (undocumented)
+    get locaters(): ISchemaLocater[];
     schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
 }
 
