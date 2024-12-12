@@ -688,12 +688,17 @@ function areEqual(lhs: { [P in keyof SelectableIds]-?: Id64Set }, rhs: Id64Arg |
 
 function areIdsEqual(lhs: Set<Id64String>, rhs: Id64Arg): boolean {
   // Size is unreliable if input can contain duplicates...
-  if (Array.isArray(rhs)) rhs = Id64.toIdSet(rhs);
-
-  if (lhs.size !== Id64.sizeOf(rhs)) return false;
-
-  for (const id of Id64.iterable(rhs)) if (!lhs.has(id)) return false;
-
+  if (Array.isArray(rhs)) {
+    rhs = Id64.toIdSet(rhs);
+  }
+  if (lhs.size !== Id64.sizeOf(rhs)) {
+    return false;
+  }
+  for (const id of Id64.iterable(rhs)) {
+    if (!lhs.has(id)) {
+      return false;
+    }
+  }
   return true;
 }
 
