@@ -15,7 +15,6 @@
     "build": "npm run -s build:frontend-vite && npm run -s build:backend",
     "build:stats": "cross-env OUTPUT_STATS=TRUE npm run build",
     "build:backend": "tsc -p tsconfig.backend.json",
-    "build:backend-webpack": "backend-webpack-tools build -s ./lib/backend/DtaElectronMain.js -o ./lib/build/",
     "build:frontend": "tsc",
     "build:frontend-vite": "cross-env NODE_OPTIONS=--max_old_space_size=8192 vite build",
     "build:bundle": "npm run build:frontend-vite && npm run build:backend-webpack",
@@ -25,7 +24,6 @@
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/DtaElectronMain.js --inspect --remote-debugging-port=9223",
-    "start:electron-webpack": "electron ./lib/build/DtaElectronMain.js --trace-warnings --enable-logging --inspect --remote-debugging-port=9223",
     "start:webserver": "cross-env NODE_ENV=development vite",
     "start:mobile": "cross-env NODE_ENV=development vite --host",
     "start:backend": "node --max-http-header-size=16000 lib/backend/WebMain.js",
@@ -37,7 +35,7 @@
     "build:mobile-frontend": "cross-env PUBLIC_URL=./ npm run -s build:frontend-vite",
     "build:mobile-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/mobile --env entry=./lib/backend/MobileMain.js --env bundlename=main",
     "build:mobile-env-json": "node ./scripts/buildEnvJson.mjs",
-    "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch x86_64 -sdk iphonesimulator -configuration Debug",
+    "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch arm64 -sdk iphonesimulator -configuration Debug",
     "ios": "node ./scripts/runIosSimulator.mjs",
     "ios:all": "npm run build:mobile && npm run build:ios-app && npm run ios",
     "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build",
@@ -79,9 +77,7 @@
     "vhacd-js": "^0.0.1"
   },
   "devDependencies": {
-    "@itwin/backend-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/express": "^4.17.20",
     "@types/express-ws": "^3.0.3",
@@ -114,7 +110,7 @@
     "vite": "^5.4.6",
     "vite-plugin-env-compatible": "^2.0.1",
     "vite-plugin-inspect": "^0.8.4",
-    "webpack": "^5.76.0"
+    "webpack": "^5.97.1"
   },
   "browserslist": [
     "last 4 chrome version",

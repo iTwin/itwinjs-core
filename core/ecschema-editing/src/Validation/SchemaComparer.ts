@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttribute, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
+  CustomAttributeContainerProps, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
   SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, Unit,
 } from "@itwin/ecschema-metadata";
@@ -51,6 +51,13 @@ export interface ISchemaComparer {
   compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): void;
   comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): void;
   compareConstants(constantA: Constant, constantB: Constant): void;
+
+  /** @internal */
+  resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined>;
+  /** @internal */
+  resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
+  /** @internal */
+  areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean;
 }
 
 function labelsMatch(label1?: string, label2?: string) {
@@ -76,6 +83,32 @@ export class SchemaComparer {
   constructor(...reporters: ISchemaCompareReporter[]) {
     this._compareDirection = SchemaCompareDirection.Forward;
     this._reporters = reporters;
+  }
+
+  /**
+   * Resolves a schema Item from the given lookup schema.
+   * @internal
+   */
+  public async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
+    return lookupSchema.lookupItem<TItem>(item.name);
+  }
+
+  /**
+   * Resolves a property from a class.
+   * @internal
+   */
+  public async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
+    return ecClass.getProperty(propertyA.name) as Promise<AnyProperty | undefined>;
+  }
+
+  /**
+   * Compares two schema items to determine if they are the same by name.
+   * @internal
+   */
+  public areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean {
+    const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
+    const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
+    return nameA === nameB;
   }
 
   /**
@@ -863,8 +896,7 @@ export class SchemaComparer {
     topLevelSchemaNameA: string,
     topLevelSchemaNameB: string | undefined ): boolean {
 
-    const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
-    const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
+    const equalByName = this.areEqualByName(itemKeyA, itemKeyB);
 
     const schemaNameA = itemKeyA
       ? SchemaItem.isSchemaItem(itemKeyA)
@@ -878,7 +910,7 @@ export class SchemaComparer {
         : itemKeyB.schemaName
       : undefined;
 
-    return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (nameA === nameB && schemaNameA === schemaNameB);
+    return (equalByName && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (equalByName && schemaNameA === schemaNameB);
   }
 
   /**
