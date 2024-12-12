@@ -230,6 +230,10 @@ function verifyPrimitiveArray(actualValue: IPrimitiveArray, expectedValue: IPrim
   }
 }
 
+function verifySystemProperty(actualValue: TestElement | TestElementAspect | TestElementRefersToElements, expectedValue: TestElement | TestElementAspect | TestElementRefersToElements) {
+  assert.deepEqual(actualValue, expectedValue, "System property did not roundtrip as expected");
+}
+
 function verifyTestElement(actualValue: TestElement, expectedValue: TestElement) {
   verifyPrimitive(actualValue, expectedValue);
   verifyPrimitiveArray(actualValue, expectedValue);
@@ -552,6 +556,17 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.isTrue(Id64.isValidId64(id), "insert worked");
     imodel.saveChanges();
 
+    const expectedSystemProperty = {
+      id,
+      className: `ElementRoundTripTest.TestElement`,
+      model: {
+        id: newModelId,
+        relClassName: `BisCore.ModelContainsElements`,
+      }
+    } as unknown as TestElement;
+
+    const relClassId = imodel.getMetaData("BisCore:ModelContainsElements").classId;
+
     // verify inserted element properties
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
     verifyTestElement(actualValue, expectedValue);
@@ -570,6 +585,21 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       const stmtRow = stmt.getRow() as TestElement;
       verifyTestElement(stmtRow, expectedValue);
     });
+
+    // Verify system properties via ecsql statement
+    await imodel.withPreparedStatement("select ECInstanceId, ECClassId, Model from ts.TestElement", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      verifySystemProperty(stmt.getRow() as TestElement, expectedSystemProperty);
+    });
+
+    // Verify system properties via concurrent query
+    let reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, Model.Id, Model.RelECClassId FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    assert.isTrue(await reader.step());
+    assert.equal(reader.current.ECInstanceId, id);
+    assert.equal(reader.current.ECClassId, geomElement.getClassMetaData()?.classId);
+    assert.equal(reader.current.Id, newModelId);
+    assert.equal(reader.current.RelECClassId, relClassId);
+    assert.isFalse(await reader.step());
 
     // update the element autohandled properties
     Object.assign(actualValue, {
@@ -602,10 +632,25 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       verifyTestElement(stmtRow, actualValue);
     });
 
+    // Verify system properties via ecsql statement
+    await imodel.withPreparedStatement("select ECInstanceId, ECClassId, Model from ts.TestElement", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      verifySystemProperty(stmt.getRow() as TestElement, expectedSystemProperty);
+    });
+
+    // Verify system properties via concurrent query
+    reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, Model.Id, Model.RelECClassId FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    assert.isTrue(await reader.step());
+    assert.equal(reader.current.ECInstanceId, id);
+    assert.equal(reader.current.ECClassId, geomElement.getClassMetaData()?.classId);
+    assert.equal(reader.current.Id, newModelId);
+    assert.equal(reader.current.RelECClassId, relClassId);
+    assert.isFalse(await reader.step());
+
     imodel.close();
   });
 
-  async function verifyElementAspect(elementAspect: ElementAspectProps, elementId: string, expectedAspectFullName: string, iModel: SnapshotDb): Promise<ElementAspectProps[]>{
+  async function verifyElementAspect(elementAspectId: Id64String, elementAspect: ElementAspectProps, elementId: string, expectedAspectFullName: string, iModel: SnapshotDb): Promise<ElementAspectProps[]>{
     // Verify updated values
     const updatedAspectValue: ElementAspectProps[] = iModel.elements.getAspects(elementId, expectedAspectFullName).map((x) => x.toJSON());
     assert.equal(updatedAspectValue.length, 1);
@@ -624,6 +669,30 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementAspect;
       verifyTestElementAspect(stmtRow, elementAspect);
+    });
+
+    const expectedSystemProperty = {
+      id: elementAspectId,
+      className: `ElementRoundTripTest.TestElementAspect`,
+      element: {
+        id: elementId,
+        relClassName: `BisCore.ElementOwnsUniqueAspect`,
+      },
+    } as unknown as ElementAspectProps;
+
+    // Verify via a concurrent query
+    const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Element.Id, Element.RelECClassId FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    assert.isTrue(await reader.step());
+    assert.equal(reader.current.ECInstanceId, elementAspectId);
+    assert.equal(reader.current.ECClassId, iModel.getMetaData("ElementRoundTripTest:TestElementAspect").classId);
+    assert.equal(reader.current.Id, elementId);
+    assert.equal(reader.current.RelECClassId, iModel.getMetaData("BisCore:ElementOwnsUniqueAspect").classId);
+    assert.isFalse(await reader.step());
+
+    // Verify via an ECSql statement
+    await iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId, Element FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      verifySystemProperty(stmt.getRow() as TestElementAspect, expectedSystemProperty);
     });
 
     return updatedAspectValue;
@@ -651,11 +720,11 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     }) as TestElementAspect;
 
     // Insert an element aspect
-    imodel.elements.insertAspect(expectedAspectValue);
+    const elementAspectId = imodel.elements.insertAspect(expectedAspectValue);
     imodel.saveChanges();
 
     // Verify inserted element aspect properties
-    const actualAspectValue = await verifyElementAspect(expectedAspectValue, elId, expectedAspectValue.classFullName, imodel);
+    const actualAspectValue = await verifyElementAspect(elementAspectId, expectedAspectValue, elId, expectedAspectValue.classFullName, imodel);
 
     // Update the element's autohandled properties
     Object.assign(actualAspectValue[0], {
@@ -670,7 +739,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // Verify updated element aspect properties
-    await verifyElementAspect(actualAspectValue[0], elId, expectedAspectValue.classFullName, imodel);
+    await verifyElementAspect(elementAspectId, actualAspectValue[0], elId, expectedAspectValue.classFullName, imodel);
 
     imodel.close();
   });
@@ -726,11 +795,40 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     }
     assert.equal(rowCount, 1);
 
-    // verify via ecsql statement614
+    // verify via ecsql statement
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
       verifyTestElementRefersToElements(stmtRow, expectedRelationshipValue);
+    });
+
+    const expectedSystemProperties = {
+      id: expectedRelationshipValue.id,
+      className: `ElementRoundTripTest.TestElementRefersToElements`,
+      sourceId: elId1,
+      sourceClassName: `ElementRoundTripTest.TestElement`,
+      targetId: elId2,
+      targetClassName: `ElementRoundTripTest.TestElement`,
+    } as unknown as TestElementRefersToElements;
+
+    const classId = imodel.getMetaData("ElementRoundTripTest:TestElementRefersToElements").classId;
+    const testElementId = imodel.getMetaData("ElementRoundTripTest:TestElement").classId;
+
+    // verify system properties via concurrent query
+    let reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    assert.isTrue(await reader.step());
+    assert.equal(reader.current.ECInstanceId, relationshipId);
+    assert.equal(reader.current.ECClassId, classId);
+    assert.equal(reader.current.SourceECInstanceId, elId1);
+    assert.equal(reader.current.SourceECClassId, testElementId);
+    assert.equal(reader.current.TargetECInstanceid, elId2);
+    assert.equal(reader.current.TargetECClassId, testElementId);
+    assert.isFalse(await reader.step());
+
+    // verify system properties via ecsql statement
+    await imodel.withPreparedStatement("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      verifySystemProperty(stmt.getRow() as TestElementRefersToElements, expectedSystemProperties);
     });
 
     const updatedExpectedValue = actualRelationshipValue;
@@ -763,6 +861,23 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
       verifyTestElementRefersToElements(stmtRow, updatedExpectedValue);
+    });
+
+    // verify system properties via concurrent query
+    reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
+    assert.isTrue(await reader.step());
+    assert.equal(reader.current.ECInstanceId, relationshipId);
+    assert.equal(reader.current.ECClassId, classId);
+    assert.equal(reader.current.SourceECInstanceId, elId1);
+    assert.equal(reader.current.SourceECClassId, testElementId);
+    assert.equal(reader.current.TargetECInstanceid, elId2);
+    assert.equal(reader.current.TargetECClassId, testElementId);
+    assert.isFalse(await reader.step());
+
+    // verify system properties via ecsql statement
+    await imodel.withPreparedStatement("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      verifySystemProperty(stmt.getRow() as TestElementRefersToElements, expectedSystemProperties);
     });
 
     imodel.close();
