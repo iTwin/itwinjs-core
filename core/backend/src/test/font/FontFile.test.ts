@@ -7,6 +7,8 @@ import { expect } from "chai";
 import { FontFace, FontType } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { FontFile } from "../../FontFile";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { FontFileImpl } from "../../internal/FontFileImpl";
 
 function expectFaces(file: FontFile, expected: FontFace[]): void {
   const actual = Array.from(file.faces);
@@ -112,3 +114,42 @@ describe.only("FontFile", () => {
     });
   });
 })
+
+describe.only("FontFileImpl", () => {
+  it("produces canonical keys from faces", () => {
+    function expectKey(faces: IModelJsNative.FontFaceProps[], expected: string): void {
+      const file = new FontFileImpl({ type: FontType.Shx, data: new Uint8Array() }, faces);
+      expect(file.key).to.equal(expected);
+    }
+
+    expectKey([{
+      familyName: "Arial", faceName: "regular", subId: 1, type: FontType.Shx,
+    }], `[{"familyName":"Arial","faceName":"regular","type":3,"subId":1}]`);
+
+    expectKey([{
+      subId: 1, faceName: "regular", type: FontType.Shx, familyName: "Arial",
+    }], `[{"familyName":"Arial","faceName":"regular","type":3,"subId":1}]`);
+
+    expectKey([{
+      familyName: "Arial", faceName: "regular", subId: 2, type: FontType.Shx,
+    }, {
+      subId: 1, faceName: "regular", type: FontType.Shx, familyName: "Arial",
+    }], `[{"familyName":"Arial","faceName":"regular","type":3,"subId":1},{"familyName":"Arial","faceName":"regular","type":3,"subId":2}]`);
+
+    expectKey([{
+      familyName: "Arial", faceName: "regular", subId: 2, type: FontType.Shx,
+    }, {
+      subId: 1, faceName: "bolditalic", type: FontType.Shx, familyName: "Arial",
+    }, {
+      familyName: "Arial", faceName: "bold", subId: 3, type: FontType.Shx,
+    }], `[{"familyName":"Arial","faceName":"bold","type":3,"subId":3},{"familyName":"Arial","faceName":"bolditalic","type":3,"subId":1},{"familyName":"Arial","faceName":"regular","type":3,"subId":2}]`);
+
+    expectKey([{
+      familyName: "Consolas", faceName: "regular", subId: 1, type: FontType.Shx,
+    }, {
+      faceName: "italic", subId: 2, type: FontType.Shx, familyName: "Comic Sans",
+    }, {
+      familyName: "Arial", faceName: "regular", subId: 0, type: FontType.Shx,
+    }], `[{"familyName":"Arial","faceName":"regular","type":3,"subId":0},{"familyName":"Comic Sans","faceName":"italic","type":3,"subId":2},{"familyName":"Consolas","faceName":"regular","type":3,"subId":1}]`);
+  });
+});

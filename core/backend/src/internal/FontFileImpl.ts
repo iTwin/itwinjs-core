@@ -55,7 +55,7 @@ export class FontFileImpl implements FontFile {
     );
 
     // Stringify the face props so that the key properties (and no other properties) appear in a canonical order. for trivial comparisons.
-    this.key = JSON.stringify(this.faceProps, ["familyName", "faceName", "subId"]);
+    this.key = JSON.stringify(this.faceProps, ["familyName", "faceName", "type", "subId"]);
   }
 
   public getData(): Uint8Array {
