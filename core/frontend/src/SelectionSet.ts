@@ -348,7 +348,7 @@ export class SelectionSet {
   }
 
   /** Get the active selection as a collection of geometric element, model and subcategory ids.
-   * @note Do not the sets in returned collection directly. Instead, use methods like [[SelectionSet.add]].
+   * @note Do not modify the sets in returned collection directly. Instead, use methods like [[SelectionSet.add]].
    */
   public get active(): { [P in keyof SelectableIds]-?: Set<Id64String> } {
     return { ...this.#selection };
