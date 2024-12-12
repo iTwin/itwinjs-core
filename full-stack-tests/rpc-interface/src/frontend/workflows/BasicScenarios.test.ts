@@ -19,7 +19,7 @@ describe("Basic Scenarios", async () => {
 
   before(async () => {
     testContext = await TestContext.instance();
-    const accessToken = testContext.adminUserAccessToken;
+    const accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
