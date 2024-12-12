@@ -140,6 +140,7 @@ internal;function;createMaskTreeReference
 internal;function;createModelMapLayerTileTreeReference
 internal;function;createOrbitGtTileTreeReference
 internal;function;createPrimaryTileTreeReference
+internal;function;createReaderPropsWithBaseUrl
 internal;function;createRealityTileTreeReference
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
