@@ -147,7 +147,7 @@ export async function decodeMeshoptBuffer(source: Uint8Array, args: DecodeMeshop
     return undefined;
   }
 
-  var target = new Uint8Array(args.count * args.byteStride);
+  const target = new Uint8Array(args.count * args.byteStride);
   decoder.decodeGltfBuffer(target, args.count, args.byteStride, source, args.mode, args.filter);
   return target;
 }
