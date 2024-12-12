@@ -62,7 +62,6 @@ export enum TileReadStatus {
   InvalidFeatureTable,
   NewerMajorVersion,
   Canceled,
-  UnsupportedMeshoptCompression,
 }
 
 const readStatusMessages = [
@@ -73,8 +72,7 @@ const readStatusMessages = [
   "Invalid scene",
   "Invalid feature table",
   "Major version too new",
-  "Canceled",
-  "Unsupported meshopt compression",
+  "Canceled"
 ];
 
 /** Exception thrown by functions that deserialize tiles.

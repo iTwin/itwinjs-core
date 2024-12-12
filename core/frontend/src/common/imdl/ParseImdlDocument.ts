@@ -309,7 +309,7 @@ class Parser {
     if (this.hasMeshoptCompression()) {
       this._meshoptDecoder = await getMeshoptDecoder();
       if (!this._meshoptDecoder)
-        return TileReadStatus.UnsupportedMeshoptCompression;
+        return TileReadStatus.InvalidTileData;
     }
 
     const rtcCenter = this._document.rtcCenter ? {

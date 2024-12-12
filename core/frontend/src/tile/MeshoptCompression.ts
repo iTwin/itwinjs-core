@@ -6,12 +6,9 @@
  * @module Tiles
  */
 
+import { Logger } from "@itwin/core-bentley";
 import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../common/gltf/GltfSchema";
-
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 
 /** @internal */
 export interface MeshoptDecoder {
@@ -34,6 +31,7 @@ async function getDecoder(): Promise<MeshoptDecoder | undefined> {
   const wasmpack = new Uint8Array([32, 0, 65, 2, 1, 106, 34, 33, 3, 128, 11, 4, 13, 64, 6, 253, 10, 7, 15, 116, 127, 5, 8, 12, 40, 16, 19, 54, 20, 9, 27, 255, 113, 17, 42, 67, 24, 23, 146, 148, 18, 14, 22, 45, 70, 69, 56, 114, 101, 21, 25, 63, 75, 136, 108, 28, 118, 29, 73, 115]);
 
   if (typeof WebAssembly !== 'object') {
+    Logger.logError(FrontendLoggerCategory.Render, "WebAssembly is not supported in this environment");
     return undefined;
   }
 
@@ -46,7 +44,8 @@ async function getDecoder(): Promise<MeshoptDecoder | undefined> {
     instance = result.instance;
     instance.exports.__wasm_call_ctors();
   }
-  catch {
+  catch (err) {
+    Logger.logException(FrontendLoggerCategory.Render, err);
     return undefined;
   }
 
