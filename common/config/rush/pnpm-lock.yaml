@@ -16,8 +16,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.0.16
-        version: 5.0.16
+        specifier: 5.0.17
+        version: 5.0.17
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -805,9 +805,6 @@ importers:
       fuse.js:
         specifier: ^3.3.0
         version: 3.3.0
-      meshoptimizer:
-        specifier: ~0.20.0
-        version: 0.20.0
       wms-capabilities:
         specifier: 0.4.0
         version: 0.4.0
@@ -4714,8 +4711,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.0.16':
-    resolution: {integrity: sha512-gZra2byir80tJvJ7TezkRqAv1F94ajrhxYMmhAlhXkIbGcXPamiEi+mnHbMS5JPWbrl2RhyHrV1IfCFnoyyKpA==}
+  '@bentley/imodeljs-native@5.0.17':
+    resolution: {integrity: sha512-/bGAGDLzvWGX83VydYUT1598mD7C94m1HG1P4jBRZkQi0qeaLDfMCj9FO5gwNrb7N+6+KqOuep+jA9GrI7wxVQ==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -8504,9 +8501,6 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  meshoptimizer@0.20.0:
-    resolution: {integrity: sha512-olcJ1q+YVnjroRJpCL1Dj5aZxr2JMr2hRutMUwhuHZvpAL7SIZgOT6eMlFF4TbBGSR89tawE/gqB79J/LrW/Nw==}
-
   methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
@@ -11013,7 +11007,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.0.16': {}
+  '@bentley/imodeljs-native@5.0.17': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -15441,8 +15435,6 @@ snapshots:
   merge-stream@2.0.0: {}
 
   merge2@1.4.1: {}
-
-  meshoptimizer@0.20.0: {}
 
   methods@1.1.2: {}
 
