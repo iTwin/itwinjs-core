@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as sinon from "sinon";
-import { StandaloneDb } from "../../IModelDb";
+import { BriefcaseDb, IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Guid } from "@itwin/core-bentley";
 import { FontFace } from "@itwin/core-common";
@@ -13,22 +13,57 @@ import { FontFile } from "../../FontFile";
 import { FontType } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { _faceProps, _getData } from "../../internal/Symbols";
+import { CodeService } from "../../CodeService";
+import { HubMock } from "../../HubMock";
+import { KnownTestLocations } from "../KnownTestLocations";
+import { BriefcaseManager } from "../../BriefcaseManager";
 
 describe.only("IModelDbFonts", () => {
-  let db: StandaloneDb;
+  let db: IModelDb;
 
-  beforeEach(() => {
-    db = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("IModelDbFonts", "IModelDbFonts.bim"), {
-      rootSubject: { name: "IModelDbFonts tests", description: "IModelDbFonts tests" },
-      client: "IModelDbFonts",
-      globalOrigin: { x: 0, y: 0 },
-      projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-      guid: Guid.createValue(),
-    });
+  class MockCodeService {
+    public static enable = false;
+    public static nextFaceDataId = 1;
+    public static nextFontId = 1;
+
+    public static reset() {
+      this.enable = false;
+      this.nextFaceDataId = this.nextFontId = 1;
+    }
+
+    public static get internalCodes() {
+      if (!MockCodeService.enable) {
+        return undefined;
+      }
+
+      return {
+        reserveFontId: () => MockCodeService.nextFontId++,
+        reserveEmbeddedFaceDataId: () => MockCodeService.nextFaceDataId++,
+      };
+    }
+  }
+
+  before(() => HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir));
+  after(() => HubMock.shutdown());
+
+  beforeEach(async () => {
+    // CodeService.createForIModel = () => MockCodeService as any;
+    // db = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("IModelDbFonts", "IModelDbFonts.bim"), {
+    //   rootSubject: { name: "IModelDbFonts tests", description: "IModelDbFonts tests" },
+    //   client: "IModelDbFonts",
+    //   globalOrigin: { x: 0, y: 0 },
+    //   projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
+    //   guid: Guid.createValue(),
+    // });
+    const iModelId = await HubMock.createNewIModel({ iModelName: "IModelDbFontsTest", iTwinId: HubMock.iTwinId });
+    const bcProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test", iTwinId: HubMock.iTwinId, iModelId });
+    db = await BriefcaseDb.open({ fileName: bcProps.fileName});
   });
 
   afterEach(() => {
+    db.abandonChanges();
     db.close();
+    CodeService.createForIModel = undefined;
   });
 
   function createTTFile(fontName: string): FontFile {
@@ -149,6 +184,10 @@ describe.only("IModelDbFonts", () => {
       expect(spy.callCount).to.equal(2);
     });
 
+    it("obtains face data Ids from CodeService if configured", async () => {
+      // ###TODO
+    });
+
     it("round-trips font data", async () => {
       const inputData = fs.readFileSync(IModelTestUtils.resolveFontFile("Cdm.shx"));
       await db.fonts.embedFontFile({ file: FontFile.createFromShxFontBlob({ blob: inputData, familyName: "Cdm" }) });
@@ -205,6 +244,10 @@ describe.only("IModelDbFonts", () => {
 
       await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
       expect(spy.callCount).to.equal(2);
+    });
+
+    it("acquires font Ids from CodeService if configured", async () => {
+      // ###TODO
     });
   });
   
