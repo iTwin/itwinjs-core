@@ -23,12 +23,13 @@ describe.only("IModelDbFonts", () => {
 
   class MockCodeService {
     public static enable = false;
-    public static nextFaceDataId = 1;
-    public static nextFontId = 1;
+    public static nextFaceDataId = 10;
+    public static nextFontId = 100;
 
     public static reset() {
       this.enable = false;
-      this.nextFaceDataId = this.nextFontId = 1;
+      this.nextFaceDataId = 10;
+      this.nextFontId = 100;
     }
 
     public static get internalCodes() {
@@ -36,13 +37,17 @@ describe.only("IModelDbFonts", () => {
         return undefined;
       }
 
-      return {
+      const obj = {
         reserveFontId: () => MockCodeService.nextFontId++,
         reserveEmbeddedFaceDataId: () => MockCodeService.nextFaceDataId++,
       };
+
+      (obj as any).writeLocker = obj;
+      return obj;
     }
 
     public static close() { }
+
   }
 
   before(() => HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir));
@@ -58,6 +63,7 @@ describe.only("IModelDbFonts", () => {
   afterEach(() => {
     db.abandonChanges();
     db.close();
+    MockCodeService.reset();
     CodeService.createForIModel = undefined;
   });
 
@@ -241,8 +247,21 @@ describe.only("IModelDbFonts", () => {
       expect(spy.callCount).to.equal(2);
     });
 
-    it("acquires font Ids from CodeService if configured", async () => {
-      // ###TODO
+    it.only("acquires font Ids from CodeService if configured", async () => {
+      MockCodeService.enable = true;
+      const spy = sinon.spy(db, "acquireSchemaLock");
+
+      const cdmShx = { name: "Cdm", type: FontType.Shx };
+      const cdmShxId = await db.fonts.acquireId(cdmShx);
+      expect(cdmShxId).to.equal(100);
+
+      const cdmShxId2 = await db.fonts.acquireId(cdmShx);
+      expect(cdmShxId2).to.equal(cdmShxId);
+
+      const arialId = await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      expect(arialId).to.equal(101);
+
+      expect(spy.callCount).to.equal(0);
     });
   });
   
