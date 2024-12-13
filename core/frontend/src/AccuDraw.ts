@@ -870,13 +870,23 @@ export class AccuDraw {
     // animator -> ChangeOfRotation(Matrix3d:: FromColumnVectors(oldRotation[0], oldRotation[1], oldRotation[2]));
   }
 
-  /** @internal */
+  /**
+   * Enable AccuDraw so that it can be used by interactive tools.
+   * This method is public to allow applications to provide a user interface to enable/disable AccuDraw.
+   * @note Should not be called by interactive tools, those should use [[AccuDrawHintBuilder]]. AccuDraw is enabled for applications by default.
+   * @see [[disableForSession]]
+   */
   public enableForSession(): void {
     if (CurrentState.NotEnabled === this.currentState)
       this.currentState = CurrentState.Inactive;
   }
 
-  /** @internal */
+  /**
+   * Disable AccuDraw so that it can not be used by interactive tools.
+   * This method is public to allow applications to provide a user interface to enable/disable AccuDraw.
+   * @note Should not be called by interactive tools, those should use [[AccuDrawHintBuilder]]. AccuDraw is enabled for applications by default.
+   * @see [[enableForSession]]
+   */
   public disableForSession(): void {
     this.currentState = CurrentState.NotEnabled;
     this.flags.redrawCompass = true; // Make sure decorators are called so we don't draw (i.e. erase AccuDraw compass)
@@ -3284,6 +3294,14 @@ export class AccuDrawHintBuilder {
 
   /** Whether AccuDraw compass is currently displayed and points are being adjusted */
   public static get isActive(): boolean { return IModelApp.accuDraw.isActive; }
+
+  /**
+   * Immediately process pending hints and update tool dynamics using the adjusted point when not called from a button down event.
+   * @note Provided to help with exceptions cases, such as starting an InputCollector from the active tool's drag event, that are not handled by normal hint processing.
+   * A typical interactive tool should not call this method and should only be calling sendHints.
+   * @see [[sendHints]]
+   */
+  public static processHintsImmediate(): void { return IModelApp.accuDraw.refreshDecorationsAndDynamics(); }
 
   /**
    * Provide hints to AccuDraw using the current builder state.

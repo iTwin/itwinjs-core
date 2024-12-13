@@ -219,7 +219,8 @@ export class PolylineOps {
       (data as Point3d[]).pop();
     }
   }
-  /** Create an array of planes.
+  /**
+   * Create an array of planes.
    * * First plane has origin at first centerline point, with unit normal directed at the next point.
    * * Intermediate planes have origin at intermediate points, with unit normals computed from the average of unit vectors
    *   along the incoming and outgoing segments.
