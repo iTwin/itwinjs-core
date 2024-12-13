@@ -10,7 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOutputSelect } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -2001,58 +2001,44 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => { this.addTriangleFacet(triangle.points); },
     );
   }
-  private addMiteredPipesFromPoints(
-    centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d, numFacetAround: number = 12,
-  ): void {
-    const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
-    const pointA0 = Point3d.create();
-    const pointA1 = Point3d.create();
-    const pointB0 = Point3d.create();
-    const pointB1 = Point3d.create();
-    if (numFacetAround < 3)
-      numFacetAround = 3;
-    const df = 1.0 / numFacetAround;
-    for (let i = 1; i < sections.length; i++) {
-      const arcA = sections[i - 1];
-      const arcB = sections[i];
-      arcA.fractionToPoint(0.0, pointA0);
-      arcB.fractionToPoint(0.0, pointB0);
-      for (let k = 1; k <= numFacetAround; k++, pointA0.setFromPoint3d(pointA1), pointB0.setFromPoint3d(pointB1)) {
-        const f = k * df;
-        arcA.fractionToPoint(f, pointA1);
-        arcB.fractionToPoint(f, pointB1);
-        this.addQuadFacet([pointA0, pointB0, pointB1, pointA1]);
-      }
-    }
-  }
   /**
    * Add quad facets along a mitered pipe that follows a centerline curve.
+   * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
+   * centerline segments.
    * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis
-   * lengths, or a full Arc3d:
-   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
-   *    * For Arc3d input, the center is translated to the centerline start point to act as initial cross section.
-   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
-   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d.
+   * lengths, or an Arc3d:
+   *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
+   * start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[CurveFactory.createMiteredSweepSections]], passing in the `startTangent`
+   * option to preserve the rotation of Arc3d-type `sectionData`.
+   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
+   * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
+   * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
    * @param numFacetAround how many equal parameter-space chords around each section.
+   * @param capped if `true`, add a cap at each end of the pipe; defaults to `false`.
    */
   public addMiteredPipes(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive,
     sectionData: number | XAndY | Arc3d,
     numFacetAround: number = 12,
+    capped: boolean = false,
   ): void {
-    if (Array.isArray(centerline)) {
-      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround);
-    } else if (centerline instanceof GrowableXYZArray) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
-    } else if (centerline instanceof IndexedXYZCollection) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
-    } else if (centerline instanceof LineString3d) {
-      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround);
-    } else if (centerline instanceof GeometryQuery) {
-      const linestring = LineString3d.create();
-      centerline.emitStrokes(linestring, this._options);
-      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround);
-    }
+    const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
+    if (!arc)
+      return;
+    if (numFacetAround < 3)
+      numFacetAround = 3;
+    const section = LineString3d.create();
+    section.appendFractionalStrokePoints(arc, numFacetAround, 0.0, 1.0, true);
+    const strokeOptions = this._options.clone();
+    const outputSelect = MiteredSweepOutputSelect.AlsoMesh;
+    const startTangent = sectionData instanceof Arc3d ? arc.binormalVector() : undefined; // preserve arc orientation
+    const options = { strokeOptions, capped, outputSelect, startTangent };
+    const sections = CurveFactory.createMiteredSweepSections(centerline, section, options);
+    if (sections && sections.mesh)
+      this.addIndexedPolyface(sections.mesh);
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {

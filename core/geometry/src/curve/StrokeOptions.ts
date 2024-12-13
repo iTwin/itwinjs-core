@@ -32,9 +32,9 @@ import { Angle } from "../geometry3d/Angle";
  * @public
  */
 export class StrokeOptions {
-  /** Distance from stroke to actual geometry */
+  /** Distance from stroke to actual geometry. */
   public chordTol?: number;
-  /** Turning angle between strokes. */
+  /** Turning angle between strokes. Larger value leads to fewer strokes. */
   public angleTol?: Angle;
   /** Maximum length of a single stroke. */
   public maxEdgeLength?: number;
@@ -43,9 +43,9 @@ export class StrokeOptions {
    * @deprecated in 4.x - never used. See [[shouldTriangulate]] and [[maximizeConvexFacets]].
    */
   public needConvexFacets?: boolean;
-  /** Minimum strokes on a primitive */
+  /** Minimum strokes on a primitive. */
   public minStrokesPerPrimitive?: number;
-  /** Whether or not to triangulate each added facet */
+  /** Whether or not to triangulate each added facet. */
   public shouldTriangulate: boolean = false;
   private _needNormals?: boolean;
   private _needTwoSided?: boolean;

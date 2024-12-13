@@ -39,6 +39,8 @@ import { OffsetOptions } from "./OffsetOptions";
 import { Path } from "./Path";
 import { StrokeOptions } from "./StrokeOptions";
 
+// cspell:words binormal
+
 /**
  * Compact vector form of an elliptic arc defined by center, vectors at 0 and 90 degrees, and angular sweep.
  * * @see [Curve Collections]($docs/learning/geometry/CurvePrimitive.md) learning article for further details of the
@@ -237,9 +239,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private static _workVectorU = Vector3d.create();
   private static _workVectorV = Vector3d.create();
   private static _workVectorW = Vector3d.create();
-  /** Read property for (clone of) center. */
+  /** Read/write the center. Getter returns clone. */
   public get center(): Point3d {
     return this._center.clone();
+  }
+  public set center(center: XYAndZ) {
+    this._center.setFrom(center);
+  }
+  /** Read property for (reference to) center. */
+  public get centerRef(): Point3d {
+    return this._center;
   }
   /** Read property for (clone of) vector0. */
   public get vector0(): Vector3d {
@@ -249,7 +258,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public get vector90(): Vector3d {
     return this._matrix.columnY();
   }
-  /** Read property for (clone of) plane normal, with arbitrary length. */
+  /**
+   * Compute an arc binormal vector with arbitrary length.
+   * * The arc parameterization is counter-clockwise with respect to this vector.
+   * * This vector is parallel to [[perpendicularVector]] and possibly opposite.
+   */
+  public binormalVector(result?: Vector3d): Vector3d {
+    const plane = this.fractionToPointAnd2Derivatives(0.0);
+    return plane.vectorU.crossProduct(plane.vectorV, result);
+  }
+  /**
+   * Read property for (clone of) plane normal, with arbitrary length.
+   * * Does not take arc sweep direction into account. See also [[binormalVector]].
+   */
   public get perpendicularVector(): Vector3d {
     return this._matrix.columnZ();
   }
@@ -261,7 +282,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public get matrixRef(): Matrix3d {
     return this._matrix;
   }
-  /** Sweep of the angle. */
+  /** Read/write the sweep. Getter returns reference. */
   public get sweep(): AngleSweep {
     return this._sweep;
   }
