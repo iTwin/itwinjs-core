@@ -16,7 +16,7 @@ function expectFaces(file: FontFile, expected: FontFace[]): void {
   expect(actual).to.deep.equal(expected);
 }
 
-describe.only("FontFile", () => {
+describe("FontFile", () => {
   describe("createFromShxBlob", () => {
     it("creates a valid font", () => {
       const fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
@@ -116,7 +116,7 @@ describe.only("FontFile", () => {
   });
 })
 
-describe.only("FontFileImpl", () => {
+describe("FontFileImpl", () => {
   it("produces canonical keys from faces", () => {
     function expectKey(faces: IModelJsNative.FontFaceProps[], expected: string): void {
       const file = new CadFontFile(new Uint8Array(), FontType.Shx, faces);

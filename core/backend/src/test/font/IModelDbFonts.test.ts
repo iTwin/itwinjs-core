@@ -18,7 +18,7 @@ import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BriefcaseManager } from "../../BriefcaseManager";
 
-describe.only("IModelDbFonts", () => {
+describe("IModelDbFonts", () => {
   let db: IModelDb;
 
   class MockCodeService {
