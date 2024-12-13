@@ -186,7 +186,15 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("obtains face data Ids from CodeService if configured", async () => {
-      // ###TODO
+      MockCodeService.enable = true;
+      const spy = sinon.spy(db, "acquireSchemaLock");
+
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), dontAllocateFontIds: true });
+      
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: false });
+
+      expect(spy.callCount).to.equal(0);
+      expect(MockCodeService.nextFaceDataId).to.equal(12);
     });
 
     it("round-trips font data", async () => {
@@ -247,7 +255,7 @@ describe.only("IModelDbFonts", () => {
       expect(spy.callCount).to.equal(2);
     });
 
-    it.only("acquires font Ids from CodeService if configured", async () => {
+    it("acquires font Ids from CodeService if configured", async () => {
       MockCodeService.enable = true;
       const spy = sinon.spy(db, "acquireSchemaLock");
 
