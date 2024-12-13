@@ -150,7 +150,7 @@ SELECT e.bin FROM aps.TestElement e where e.bin = ? limit 1
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | bin          | false     | 0     | bin      | bin  | Json         | string   | Blob | bin                |
+| AllProperties:IPrimitive | bin          | false     | 0     | bin      | bin  | undefined    | binary   | Blob | bin                |
 
 | bin                                         |
 | ------------------------------------------- |

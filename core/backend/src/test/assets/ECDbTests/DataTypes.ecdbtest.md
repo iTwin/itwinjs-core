@@ -254,7 +254,7 @@ SELECT e.bin FROM aps.TestElement e LIMIT 1;
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | bin          | false     | 0     | bin      | bin  | Json         | string   | Blob | bin                |
+| AllProperties:IPrimitive | bin          | false     | 0     | bin      | bin  | undefined    | binary   | Blob | bin                |
 
 ```json
 [
@@ -274,7 +274,7 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 
 | className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
 | ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
-| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray | array_bin          |
+| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | undefined    | binary   | PrimitiveArray | array_bin          |
 
 ```json
 [
@@ -297,7 +297,7 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 
 | className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
 | ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
-| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray | array_bin          |
+| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | undefined    | binary   | PrimitiveArray | array_bin          |
 
 ```json
 [

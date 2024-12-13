@@ -10,7 +10,7 @@ with tmp(x) as (SELECT e.bin FROM aps.TestElement e LIMIT 1) select * from tmp
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    | Json         | string   | Blob |
+|           | x            | true      | 0     | x        | x    | undefined    | binary   | Blob |
 
 | x          |
 | ---------- |
@@ -26,7 +26,7 @@ with tmp(x) as (SELECT e.array_bin FROM aps.TestElement e LIMIT 1) select * from
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
-|           | x            | true      | 0     | x        | x    | Json         | string   | PrimitiveArray |
+|           | x            | true      | 0     | x        | x    | undefined    | binary   | PrimitiveArray |
 
 ```json
 [
