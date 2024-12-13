@@ -130,7 +130,7 @@ describe.only("IModelDbFonts", () => {
       await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
     });
 
-    it.only("allocates font Ids unless otherwise specified", async () => {
+    it("allocates font Ids unless otherwise specified", async () => {
       await db.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf") });
       expect(db.fonts.findId({ name: "DejaVu Sans", type: FontType.TrueType })).not.to.be.undefined;
 
@@ -150,6 +150,19 @@ describe.only("IModelDbFonts", () => {
       expect(spy.callCount).to.equal(1);
       await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: false });
       expect(spy.callCount).to.equal(2);
+    });
+
+    it("round-trips font data", async () => {
+      const inputData = fs.readFileSync(IModelTestUtils.resolveFontFile("Cdm.shx"));
+      await db.fonts.embedFontFile({ file: FontFile.createFromShxFontBlob({ blob: inputData, familyName: "Cdm" }) });
+
+      const embeddedFiles = Array.from(db.fonts.queryEmbeddedFontFiles());
+      expect(embeddedFiles.length).to.equal(1);
+      const embeddedFile = embeddedFiles[0] as FontFileImpl;
+      expect(embeddedFile instanceof FontFileImpl).to.be.true;
+
+      const embeddedData = embeddedFile.getData();
+      expect(Array.from(embeddedData)).to.deep.equal(Array.from(inputData));
     });
   });
 
