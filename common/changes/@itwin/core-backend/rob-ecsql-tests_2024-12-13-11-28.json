@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add ECSql test suite",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
