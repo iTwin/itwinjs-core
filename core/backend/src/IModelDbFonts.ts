@@ -23,6 +23,7 @@ export interface IModelDbFonts {
 
   queryMappedEmbeddedFamilies(): Iterable<FontProps>;
 
+  // Note that you can embed returned FontFiles into a different iModel as long as you keep the source iModel open for the duration.
   queryEmbeddedFontFiles(): Iterable<FontFile>;
 
   embedFontFile(args: EmbedFontFileArgs): Promise<void>;
