@@ -823,6 +823,7 @@ export class CheckpointManager {
 export interface CheckpointProps extends TokenArg {
     readonly allowPreceding?: boolean;
     readonly changeset: ChangesetIdWithIndex;
+    readonly doPrefetch?: boolean;
     // (undocumented)
     readonly expectV2?: boolean;
     readonly iModelId: GuidString;
@@ -5927,7 +5928,6 @@ export interface V2CheckpointAccessProps {
 
 // @internal
 export class V2CheckpointManager {
-    // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
         container: CloudSqlite.CloudContainer;
