@@ -215,8 +215,6 @@ WHERE
 | 0x1b         |
 | 0x1d         |
 
-
-
 # SubqueryTestExp with EXISTS and cte subquery
 
 - dataset: AllProperties.bim
@@ -306,7 +304,6 @@ WHERE
 | 0x1b         |
 | 0x1c         |
 | 0x1d         |
-
 
 # Simple LIMIT and OFFSET test
 
@@ -802,7 +799,6 @@ PRAGMA explain_query (
 | 20 | 19     | 216     | SCAN cnt          |
 | 31 | 0      | 215     | SCAN cnt          |
 
-
 # Using Scalar values in select clause with + operator
 
 - dataset: AllProperties.bim
@@ -885,7 +881,7 @@ LIMIT
 | className                | accessString | generated | index | jsonName | name   | extendedType | typeName | type    | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ------- | ------------------ |
 | AllProperties:IPrimitive | i            | false     | 0     | i        | i      | undefined    | int      | Int     | i                  |
-|                          | binary       | true      | 1     | binary   | binary | Json         | string   | Blob    | undefined          |
+|                          | binary       | true      | 1     | binary   | binary | undefined    | binary   | Blob    | undefined          |
 |                          | bool         | true      | 2     | bool     | bool   | undefined    | boolean  | Boolean | undefined          |
 
 | i   | binary    | time      |

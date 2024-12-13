@@ -101,7 +101,7 @@ SELECT count(*) as Total_Count, bin, NullProp FROM aps.TestElement group by bin,
 | className                 | accessString | generated | index | jsonName    | name        | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ------ | ------------------ |
 |                           | Total_Count  | true      | 0     | total_Count | Total_Count | undefined    | long     | Int64  | undefined          |
-| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | undefined    | binary   | Blob   | bin                |
 | AllProperties:TestElement | NullProp     | false     | 2     | nullProp    | NullProp    | undefined    | string   | String | NullProp           |
 
 | Total_Count | bin                                | NullProp  |
@@ -379,7 +379,7 @@ HAVING
 | className                 | accessString | generated | index | jsonName    | name        | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ------ | ------------------ |
 | AllProperties:TestElement | NullProp     | false     | 0     | nullProp    | NullProp    | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | undefined    | binary   | Blob   | bin                |
 |                           | Total_Count  | true      | 2     | total_Count | Total_Count | undefined    | long     | Int64  | undefined          |
 
 | NullProp | bin                                | Total_Count |
@@ -396,7 +396,7 @@ SELECT  bin,  Count(Distinct(bin)) as distinct_count FROM  aps.TestElement GROUP
 
 | className                | accessString   | generated | index | jsonName       | name           | extendedType | typeName | type  | originPropertyName |
 | ------------------------ | -------------- | --------- | ----- | -------------- | -------------- | ------------ | -------- | ----- | ------------------ |
-| AllProperties:IPrimitive | bin            | false     | 0     | bin            | bin            | Json         | string   | Blob  | bin                |
+| AllProperties:IPrimitive | bin            | false     | 0     | bin            | bin            | undefined    | binary   | Blob  | bin                |
 |                          | distinct_count | true      | 1     | distinct_count | distinct_count | undefined    | long     | Int64 | undefined          |
 
 | bin                                | distinct_count |
@@ -424,7 +424,7 @@ GROUP BY
 
 | className                 | accessString | generated | index | jsonName    | name        | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ------ | ------------------ |
-| AllProperties:IPrimitive  | bin          | false     | 0     | bin         | bin         | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 0     | bin         | bin         | undefined    | binary   | Blob   | bin                |
 | AllProperties:TestElement | NullProp     | false     | 1     | nullProp    | NullProp    | undefined    | string   | String | NullProp           |
 |                           | Total_Count  | true      | 2     | total_Count | Total_Count | undefined    | long     | Int64  | undefined          |
 
@@ -456,7 +456,7 @@ ORDER BY
 | className                 | accessString | generated | index | jsonName    | name        | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ------ | ------------------ |
 | AllProperties:TestElement | DirectStr    | false     | 0     | directStr   | DirectStr   | undefined    | string   | String | DirectStr          |
-| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | undefined    | binary   | Blob   | bin                |
 | AllProperties:TestElement | NullProp     | false     | 2     | nullProp    | NullProp    | undefined    | string   | String | NullProp           |
 |                           | Total_Count  | true      | 3     | total_Count | Total_Count | undefined    | long     | Int64  | undefined          |
 
@@ -488,7 +488,7 @@ ORDER BY
 | className                 | accessString | generated | index | jsonName    | name        | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ------ | ------------------ |
 | AllProperties:TestElement | DirectStr    | false     | 0     | directStr   | DirectStr   | undefined    | string   | String | DirectStr          |
-| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 1     | bin         | bin         | undefined    | binary   | Blob   | bin                |
 | AllProperties:TestElement | NullProp     | false     | 2     | nullProp    | NullProp    | undefined    | string   | String | NullProp           |
 |                           | Total_Count  | true      | 3     | total_Count | Total_Count | undefined    | long     | Int64  | undefined          |
 

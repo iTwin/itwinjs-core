@@ -64,7 +64,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp, bin
 | ------------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
 | AllProperties:TestElement | NullProp     | false     | 1     | nullProp | NullProp     | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | undefined    | binary   | Blob   | bin                |
 
 | ECInstanceId | bin                                | NullProp  |
 | ------------ | ---------------------------------- | --------- |
@@ -91,7 +91,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp desc, 
 | ------------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
 | AllProperties:TestElement | NullProp     | false     | 1     | nullProp | NullProp     | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | undefined    | binary   | Blob   | bin                |
 
 | ECInstanceId | NullProp  | bin                                |
 | ------------ | --------- | ---------------------------------- |
@@ -118,7 +118,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp, bin d
 | ------------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
 | AllProperties:TestElement | NullProp     | false     | 1     | nullProp | NullProp     | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | undefined    | binary   | Blob   | bin                |
 
 | ECInstanceId | bin                                | NullProp  |
 | ------------ | ---------------------------------- | --------- |
@@ -145,7 +145,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement GROUP BY NullProp ORDER 
 | ------------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
 | AllProperties:TestElement | NullProp     | false     | 1     | nullProp | NullProp     | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | undefined    | binary   | Blob   | bin                |
 
 | ECInstanceId | bin                                | NullProp  |
 | ------------ | ---------------------------------- | --------- |
@@ -173,7 +173,7 @@ ORDER BY
 | ------------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
 | AllProperties:TestElement | NullProp     | false     | 1     | nullProp | NullProp     | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 2     | bin      | bin          | undefined    | binary   | Blob   | bin                |
 
 | ECInstanceId | NullProp  | bin                                |
 | ------------ | --------- | ---------------------------------- |
@@ -192,7 +192,7 @@ SELECT DirectStr, NullProp, bin FROM aps.TestElement ORDER BY LENGTH(bin)
 | ------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ | ------------------ |
 | AllProperties:TestElement | DirectStr    | false     | 0     | directStr | DirectStr | undefined    | string   | String | DirectStr          |
 | AllProperties:TestElement | NullProp     | false     | 1     | nullProp  | NullProp  | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 2     | bin       | bin       | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 2     | bin       | bin       | undefined    | binary   | Blob   | bin                |
 
 | DirectStr | bin                                | NullProp  |
 | --------- | ---------------------------------- | --------- |
@@ -233,7 +233,7 @@ ORDER BY
 | AllProperties:TestElement | DirectLong   | false     | 1     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
 | AllProperties:TestElement | DirectDouble | false     | 2     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 | AllProperties:TestElement | NullProp     | false     | 3     | nullProp     | NullProp     | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 4     | bin          | bin          | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 4     | bin          | bin          | undefined    | binary   | Blob   | bin                |
 
 | ECInstanceId | DirectLong | DirectDouble | bin                                | NullProp  |
 | ------------ | ---------- | ------------ | ---------------------------------- | --------- |
@@ -274,7 +274,7 @@ ORDER BY
 | AllProperties:TestElement | DirectLong   | false     | 1     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
 | AllProperties:TestElement | DirectDouble | false     | 2     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 | AllProperties:TestElement | NullProp     | false     | 3     | nullProp     | NullProp     | undefined    | string   | String | NullProp           |
-| AllProperties:IPrimitive  | bin          | false     | 4     | bin          | bin          | Json         | string   | Blob   | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 4     | bin          | bin          | undefined    | binary   | Blob   | bin                |
 
 | ECInstanceId | DirectLong | DirectDouble | bin                                | NullProp  |
 | ------------ | ---------- | ------------ | ---------------------------------- | --------- |

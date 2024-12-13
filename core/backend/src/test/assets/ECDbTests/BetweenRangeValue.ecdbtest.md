@@ -197,7 +197,7 @@ LIMIT
 | AllProperties:IPrimitive | b            | false     | 3     | b        | b    | undefined    | boolean  | Boolean  | b                  |
 | AllProperties:IPrimitive | dt           | false     | 4     | dt       | dt   | undefined    | dateTime | DateTime | dt                 |
 | AllProperties:IPrimitive | s            | false     | 5     | s        | s    | undefined    | string   | String   | s                  |
-| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | Json         | string   | Blob     | bin                |
+| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | undefined    | binary   | Blob     | bin                |
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 
@@ -237,7 +237,7 @@ LIMIT
 | AllProperties:IPrimitive | b            | false     | 3     | b        | b    | undefined    | boolean  | Boolean  | b                  |
 | AllProperties:IPrimitive | dt           | false     | 4     | dt       | dt   | undefined    | dateTime | DateTime | dt                 |
 | AllProperties:IPrimitive | s            | false     | 5     | s        | s    | undefined    | string   | String   | s                  |
-| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | Json         | string   | Blob     | bin                |
+| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | undefined    | binary   | Blob     | bin                |
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 
@@ -277,7 +277,7 @@ LIMIT
 | AllProperties:IPrimitive | b            | false     | 3     | b        | b    | undefined    | boolean  | Boolean  | b                  |
 | AllProperties:IPrimitive | dt           | false     | 4     | dt       | dt   | undefined    | dateTime | DateTime | dt                 |
 | AllProperties:IPrimitive | s            | false     | 5     | s        | s    | undefined    | string   | String   | s                  |
-| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | Json         | string   | Blob     | bin                |
+| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | undefined    | binary   | Blob     | bin                |
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 
@@ -317,7 +317,7 @@ LIMIT
 | AllProperties:IPrimitive | b            | false     | 3     | b        | b    | undefined    | boolean  | Boolean  | b                  |
 | AllProperties:IPrimitive | dt           | false     | 4     | dt       | dt   | undefined    | dateTime | DateTime | dt                 |
 | AllProperties:IPrimitive | s            | false     | 5     | s        | s    | undefined    | string   | String   | s                  |
-| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | Json         | string   | Blob     | bin                |
+| AllProperties:IPrimitive | bin          | false     | 6     | bin      | bin  | undefined    | binary   | Blob     | bin                |
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 

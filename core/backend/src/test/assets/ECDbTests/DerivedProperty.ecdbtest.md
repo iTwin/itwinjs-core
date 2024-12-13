@@ -28,7 +28,7 @@ LIMIT
 | BisCore:Element           | Model        | false     | 1     | model        | Model        | undefined    | navigation | Navigation | Model              |
 | AllProperties:IPrimitive  | dt           | false     | 2     | dt           | dt           | undefined    | dateTime   | DateTime   | dt                 |
 | AllProperties:IPrimitive  | b            | false     | 3     | b            | b            | undefined    | boolean    | Boolean    | b                  |
-| AllProperties:IPrimitive  | bin          | false     | 3     | bin          | bin          | Json         | string     | Blob       | bin                |
+| AllProperties:IPrimitive  | bin          | false     | 3     | bin          | bin          | undefined    | binary     | Blob       | bin                |
 | AllProperties:TestElement | DirectStr    | false     | 4     | directStr    | DirectStr    | undefined    | string     | String     | DirectStr          |
 | AllProperties:TestElement | DirectLong   | false     | 5     | directLong   | DirectLong   | undefined    | long       | Int64      | DirectLong         |
 | AllProperties:TestElement | DirectDouble | false     | 6     | directDouble | DirectDouble | undefined    | double     | Double     | DirectDouble       |
@@ -68,7 +68,6 @@ SELECT ECInstanceId, DirectLong + DirectDouble as Computed_Value from aps.TestEl
 | 0x1b         | 1014.1                        |
 | 0x1c         | 1016.1                        |
 | 0x1d         | 1018.1                        |
-
 
 # Using a computation of three columns
 
@@ -132,7 +131,6 @@ FROM
 | 0x1c | 1016.1       |
 | 0x1d | 1018.1       |
 
-
 # Using UPPER and LOWER functions
 
 - dataset: AllProperties.bim
@@ -164,7 +162,6 @@ ORDER BY
 | STR2      | str2      |
 | STR1      | str1      |
 | STR0      | str0      |
-
 
 # Using Case
 
@@ -204,7 +201,6 @@ FROM
 | 0x1c         | Lower        |
 | 0x1d         | Lower        |
 
-
 # With string functions
 
 - dataset: AllProperties.bim
@@ -236,7 +232,6 @@ FROM
 | str7 str7  | str7,str7     | "7"          |
 | str8 str8  | str8,str8     | "8"          |
 | str9 str9  | str9,str9     | "9"          |
-
 
 # With Window function
 
@@ -272,7 +267,6 @@ FROM
 | 0x19         | 0x11    | 3      |
 | 0x1b         | 0x11    | 4      |
 | 0x1d         | 0x11    | 5      |
-
 
 # Order by with Window function
 
@@ -310,7 +304,6 @@ ORDER BY
 | 0x17         | 0x11    | 2      |
 | 0x14         | 0x11    | 1      |
 | 0x15         | 0x11    | 1      |
-
 
 # Group by nav prop
 
