@@ -8,7 +8,8 @@ import { FontFace, FontType } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { FontFile } from "../../FontFile";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { CadFontFile, FontFileImpl } from "../../internal/FontFileImpl";
+import { CadFontFile } from "../../internal/FontFileImpl";
+import { _key } from "../../internal/Symbols";
 
 function expectFaces(file: FontFile, expected: FontFace[]): void {
   const actual = Array.from(file.faces);
@@ -119,7 +120,7 @@ describe.only("FontFileImpl", () => {
   it("produces canonical keys from faces", () => {
     function expectKey(faces: IModelJsNative.FontFaceProps[], expected: string): void {
       const file = new CadFontFile(new Uint8Array(), FontType.Shx, faces);
-      expect(file.key).to.equal(expected);
+      expect(file[_key]).to.equal(expected);
     }
 
     expectKey([{

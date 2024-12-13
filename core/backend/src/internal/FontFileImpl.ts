@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
-import { _implementationProhibited } from "./Symbols";
+import { _faceProps, _getData, _key, _implementationProhibited } from "./Symbols";
 import { compareNumbersOrUndefined } from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost";
 import { IModelDb } from "../IModelDb";
@@ -25,15 +25,15 @@ interface CadFontSource {
 
 type FontSource = TrueTypeFontSource | CadFontSource;
 
-export abstract class FontFileImpl implements FontFile {
+abstract class FontFileImpl implements FontFile {
   public readonly [_implementationProhibited] = undefined;
 
   public readonly faces: ReadonlyArray<Readonly<FontFace>>;
   public abstract get type(): FontType;
   public get isEmbeddable(): boolean { return true; }
 
-  public readonly key: string;
-  public readonly faceProps: IModelJsNative.FontFaceProps[];
+  public readonly [_key]: string;
+  public readonly [_faceProps]: IModelJsNative.FontFaceProps[];
 
   protected constructor(faces: IModelJsNative.FontFaceProps[]) {
     this.faces = faces.map((face) => {
@@ -44,18 +44,18 @@ export abstract class FontFileImpl implements FontFile {
       };
     });
 
-    this.faceProps = faces;
+    this[_faceProps] = faces;
 
     // Sort the face props in canonical order so we can compare FontFiles for equivalent contents.
-    this.faceProps.sort((a, b) =>
+    this[_faceProps].sort((a, b) =>
       a.familyName.localeCompare(b.familyName) || a.faceName.localeCompare(b.faceName) || compareNumbersOrUndefined(a.subId, b.subId)
     );
 
     // Stringify the face props so that the key properties (and no other properties) appear in a canonical order. for trivial comparisons.
-    this.key = JSON.stringify(this.faceProps, ["familyName", "faceName", "type", "subId"]);
+    this[_key] = JSON.stringify(this[_faceProps], ["familyName", "faceName", "type", "subId"]);
   }
 
-  public abstract getData(): Uint8Array;
+  public abstract [_getData](): Uint8Array;
 }
 
 class TrueTypeFontFile extends FontFileImpl {
@@ -71,7 +71,7 @@ class TrueTypeFontFile extends FontFileImpl {
   public override get type(): FontType { return FontType.TrueType; }
   public override get isEmbeddable(): boolean { return this.#embeddable; }
 
-  public override getData(): Uint8Array {
+  public override [_getData](): Uint8Array {
     return fs.readFileSync(this.#fileName);
   }
 }
@@ -88,7 +88,7 @@ export class CadFontFile extends FontFileImpl {
 
   public override get type(): FontType { return this.#type; }
 
-  public override getData(): Uint8Array { return this.#data; }
+  public override [_getData](): Uint8Array { return this.#data; }
 }
 
 export class EmbeddedFontFile extends FontFileImpl {
@@ -106,7 +106,7 @@ export class EmbeddedFontFile extends FontFileImpl {
 
   public override get type(): FontType { return this.#type; }
 
-  public override getData(): Uint8Array {
+  public override [_getData](): Uint8Array {
     const data = this.#db.queryFilePropertyBlob({
       namespace: "dgn_Font",
       name: "EmbeddedFaceData",

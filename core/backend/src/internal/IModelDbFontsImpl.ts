@@ -7,12 +7,13 @@
  */
 
 import { DbResult, FontFamilyDescriptor, FontId, FontProps, FontType } from "@itwin/core-common";
-import { _implementationProhibited, _nativeDb } from "./Symbols";
+import { _faceProps, _getData, _key, _implementationProhibited, _nativeDb } from "./Symbols";
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts } from "../IModelDbFonts";
-import { EmbeddedFontFile, FontFileImpl } from "./FontFileImpl";
+import { EmbeddedFontFile } from "./FontFileImpl";
 import { assert } from "@itwin/core-bentley";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
+import { FontFile } from "../FontFile";
 
 class IModelDbFontsImpl implements IModelDbFonts {
   public readonly [_implementationProhibited] = undefined;
@@ -32,8 +33,8 @@ class IModelDbFontsImpl implements IModelDbFonts {
     return fontProps.filter((x) => fontNames.includes(x.name));
   }
 
-  public queryEmbeddedFontFiles(): Iterable<FontFileImpl> {
-    let files: FontFileImpl[] = [];
+  public queryEmbeddedFontFiles(): Iterable<FontFile> {
+    let files: FontFile[] = [];
     this.#db.withSqliteStatement(`SELECT Id,StrData FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         let faces;
@@ -67,12 +68,8 @@ class IModelDbFontsImpl implements IModelDbFonts {
     }
 
     const file = args.file;
-    if (!(file instanceof FontFileImpl)) {
-      throw new Error("invalid FontFile");
-    }
-
     for (const existing of this.queryEmbeddedFontFiles()) {
-      if (existing.key === file.key) {
+      if (existing[_key] === file[_key]) {
         // Already embedded - it's a no-op.
         return;
       }
@@ -90,8 +87,8 @@ class IModelDbFontsImpl implements IModelDbFonts {
     }
     
     assert(id > 0);
-    const data = file.getData();
-    this.#db[_nativeDb].embedFontFile(id, file.faceProps, data, true);
+    const data = file[_getData]();
+    this.#db[_nativeDb].embedFontFile(id, file[_faceProps], data, true);
 
     if (args.dontAllocateFontIds) {
       return;

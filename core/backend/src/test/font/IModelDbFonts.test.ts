@@ -7,12 +7,12 @@ import * as fs from "fs";
 import * as sinon from "sinon";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { DbResult, Guid } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
 import { FontFace } from "@itwin/core-common";
 import { FontFile } from "../../FontFile";
 import { FontType } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { FontFileImpl } from "../../internal/FontFileImpl";
+import { _faceProps, _getData } from "../../internal/Symbols";
 
 describe.only("IModelDbFonts", () => {
   let db: StandaloneDb;
@@ -41,10 +41,7 @@ describe.only("IModelDbFonts", () => {
 
   function expectEmbeddedFontFiles(expected: Array<IModelJsNative.FontFaceProps[]>) {
     const fonts = Array.from(db.fonts.queryEmbeddedFontFiles());
-    const actualFaceProps: Array<IModelJsNative.FontFaceProps[]> = fonts.map((x) => {
-      expect(x instanceof FontFileImpl).to.be.true;
-      return (x as FontFileImpl).faceProps;
-    });
+    const actualFaceProps: Array<IModelJsNative.FontFaceProps[]> = fonts.map((x) => x[_faceProps]);
 
     expect(actualFaceProps).to.deep.equal(expected);
 
@@ -158,10 +155,9 @@ describe.only("IModelDbFonts", () => {
 
       const embeddedFiles = Array.from(db.fonts.queryEmbeddedFontFiles());
       expect(embeddedFiles.length).to.equal(1);
-      const embeddedFile = embeddedFiles[0] as FontFileImpl;
-      expect(embeddedFile instanceof FontFileImpl).to.be.true;
+      const embeddedFile = embeddedFiles[0];
 
-      const embeddedData = embeddedFile.getData();
+      const embeddedData = embeddedFile[_getData]();
       expect(Array.from(embeddedData)).to.deep.equal(Array.from(inputData));
     });
   });

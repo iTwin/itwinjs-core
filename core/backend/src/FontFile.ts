@@ -7,15 +7,32 @@
  */
 
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
-import { _implementationProhibited } from "./internal/Symbols";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import { _faceProps, _getData, _key, _implementationProhibited } from "./internal/Symbols";
 import { shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontFileImpl"; 
 
 export interface FontFile {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
+
   readonly type: FontType;
   readonly faces: ReadonlyArray<Readonly<FontFace>>;
   readonly isEmbeddable: boolean;
+
+  /**
+   * @internal
+   */
+  readonly [_key]: string;
+
+  /**
+   * @internal
+   */
+  readonly [_getData]: () => Uint8Array;
+
+  /**
+   * @internal
+   */
+   readonly [_faceProps]: IModelJsNative.FontFaceProps[];
 }
 
 export interface CreateFontFileFromShxBlobArgs {
