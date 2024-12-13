@@ -105,9 +105,8 @@ if (doMask) {
   if (kClassifierDisplay_Off == param) {
     discard;
     return vec4(0);
-}
-`
-  ;
+  }
+`;
 
 // Currently we discard if classifier is pure black (acts as clipping mask).
 // These could be more efficiently handled with masks.

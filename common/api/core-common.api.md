@@ -7639,7 +7639,23 @@ export interface RealityDataSourceProps {
 }
 
 // @beta
+export interface RealityMeshDisplayProps {
+    bgMapDrape?: boolean;
+}
+
+// @beta
+export class RealityMeshDisplaySettings {
+    readonly bgMapDrape: boolean;
+    clone(changedProps: RealityMeshDisplayProps): RealityMeshDisplaySettings;
+    static defaults: RealityMeshDisplaySettings;
+    equals(other: RealityMeshDisplaySettings): boolean;
+    static fromJSON(props?: RealityMeshDisplayProps): RealityMeshDisplaySettings;
+    toJSON(): RealityMeshDisplayProps | undefined;
+}
+
+// @beta
 export interface RealityModelDisplayProps {
+    mesh?: RealityMeshDisplayProps;
     overrideColorRatio?: number;
     pointCloud?: PointCloudDisplayProps;
 }
@@ -7650,6 +7666,7 @@ export class RealityModelDisplaySettings {
     static defaults: RealityModelDisplaySettings;
     equals(other: RealityModelDisplaySettings): boolean;
     static fromJSON(props?: RealityModelDisplayProps): RealityModelDisplaySettings;
+    readonly mesh: RealityMeshDisplaySettings;
     readonly overrideColorRatio: number;
     readonly pointCloud: PointCloudDisplaySettings;
     toJSON(): RealityModelDisplayProps | undefined;
