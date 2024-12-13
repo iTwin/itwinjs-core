@@ -144,7 +144,7 @@ export abstract class RealityTileLoader {
         break;
       case TileFormat.Gltf:
         const tree = tile.tree as RealityTileTree;
-        const baseUrl = tree.rdSourceId;
+        const baseUrl = tree.baseUrl;
         const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, baseUrl);
         if (props) {
           reader = new GltfGraphicsReader(props, {

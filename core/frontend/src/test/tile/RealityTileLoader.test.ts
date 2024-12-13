@@ -78,18 +78,18 @@ describe("createReaderPropsWithBaseUrl", () => {
     let props = createReaderPropsWithBaseUrl(glb, false, "http://localhost:8080/tileset.json");
     expect(props?.baseUrl?.toString()).to.equal("http://localhost:8080/tileset.json");
 
+    props = createReaderPropsWithBaseUrl(glb, false, "https://some-blob-storage.com/tileset.json");
+    expect(props?.baseUrl?.toString()).to.equal("https://some-blob-storage.com/tileset.json");
+
     props = createReaderPropsWithBaseUrl(glb, false, "https://some-blob-storage.com/tileset.json?with-some-query-params");
     expect(props?.baseUrl?.toString()).to.equal("https://some-blob-storage.com/tileset.json?with-some-query-params");
   });
 
   it("should not add an invalid base url to the reader props", {}, () => {
-    let props = createReaderPropsWithBaseUrl(glb, false, "someIdThatIsNotAUrl");
+    let props = createReaderPropsWithBaseUrl(glb, false, "");
     expect(props?.baseUrl).to.be.undefined;
 
-    props = createReaderPropsWithBaseUrl(glb, false, "");
-    expect(props?.baseUrl).to.be.undefined;
-
-    props = createReaderPropsWithBaseUrl(glb, false, "textures/someRelativePath");
+    props = createReaderPropsWithBaseUrl(glb, false, "some-invalid-url");
     expect(props?.baseUrl).to.be.undefined;
   });
 });
