@@ -19,7 +19,7 @@ enum TestDataset {
 
 const snapshotDbs: { [key in TestDataset]?: SnapshotDb } = {};
 
-describe.only("Markdown based ECDb test runner", async () => {
+describe("Markdown based ECDb test runner", async () => {
   before(async () => {
     await ECDbMarkdownDatasets.generateFiles();
     const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECDbTests", TestDataset.AllProperties);
