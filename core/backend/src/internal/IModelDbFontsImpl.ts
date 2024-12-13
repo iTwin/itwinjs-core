@@ -76,9 +76,9 @@ class IModelDbFontsImpl implements IModelDbFonts {
     }
 
     let id = 0;
-    if (false) {
-    // ###TODO Add a new CodeService method to reserve (or look up a previously-reserved) Id for
-    // this FontFile, if CodeService is configured for the iModel.
+    const codes = this.#db.codeService?.internalCodes;
+    if (codes) {
+      id = await codes.writeLocker.reserveEmbeddedFaceDataId(args.file[_key]);
     } else {
       // CodeService not configured - schema lock required to prevent conflicting Ids in be_Prop table.
       await this.#db.acquireSchemaLock();
