@@ -9088,6 +9088,8 @@ export namespace RealityDataSource {
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // @alpha
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    // @internal
+    export function getTilesetUrlFromTilesetUrlImpl(rdSource: RealityDataSource): string | undefined;
 }
 
 // @alpha
@@ -9516,6 +9518,8 @@ export class RealityTileRegion {
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
+    // @internal (undocumented)
+    readonly baseUrl?: string;
     // @beta
     get batchTableProperties(): BatchTableProperties | undefined;
     // @internal (undocumented)
@@ -9558,8 +9562,6 @@ export class RealityTileTree extends TileTree {
     get parentsAndChildrenExclusive(): boolean;
     // @internal (undocumented)
     prune(): void;
-    // @internal (undocumented)
-    readonly rdSourceId?: string;
     // @internal
     reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
@@ -9585,11 +9587,11 @@ export class RealityTileTree extends TileTree {
 // @internal (undocumented)
 export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
+    readonly baseUrl?: string;
+    // (undocumented)
     readonly gcsConverterAvailable: boolean;
     // (undocumented)
     readonly loader: RealityTileLoader;
-    // (undocumented)
-    readonly rdSourceId?: string;
     // (undocumented)
     readonly rootTile: RealityTileParams;
     // (undocumented)
