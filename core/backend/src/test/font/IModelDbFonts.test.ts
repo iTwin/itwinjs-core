@@ -41,20 +41,15 @@ describe.only("IModelDbFonts", () => {
         reserveEmbeddedFaceDataId: () => MockCodeService.nextFaceDataId++,
       };
     }
+
+    public static close() { }
   }
 
   before(() => HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir));
   after(() => HubMock.shutdown());
 
   beforeEach(async () => {
-    // CodeService.createForIModel = () => MockCodeService as any;
-    // db = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("IModelDbFonts", "IModelDbFonts.bim"), {
-    //   rootSubject: { name: "IModelDbFonts tests", description: "IModelDbFonts tests" },
-    //   client: "IModelDbFonts",
-    //   globalOrigin: { x: 0, y: 0 },
-    //   projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-    //   guid: Guid.createValue(),
-    // });
+    CodeService.createForIModel = () => MockCodeService as any;
     const iModelId = await HubMock.createNewIModel({ iModelName: "IModelDbFontsTest", iTwinId: HubMock.iTwinId });
     const bcProps = await BriefcaseManager.downloadBriefcase({ accessToken: "test", iTwinId: HubMock.iTwinId, iModelId });
     db = await BriefcaseDb.open({ fileName: bcProps.fileName});
