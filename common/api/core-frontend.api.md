@@ -410,7 +410,6 @@ export class AccuDraw {
     decorate(context: DecorateContext): void;
     // @internal (undocumented)
     readonly delta: Vector3d;
-    // @internal (undocumented)
     disableForSession(): void;
     // (undocumented)
     distanceIndexing: boolean;
@@ -423,7 +422,6 @@ export class AccuDraw {
     dontMoveFocus: boolean;
     // @internal (undocumented)
     downgradeInactiveState(): boolean;
-    // @internal (undocumented)
     enableForSession(): void;
     // @internal (undocumented)
     protected readonly _fillColor: ColorDef;
@@ -669,6 +667,7 @@ export class AccuDrawHintBuilder {
     static getSnapRotation(snap: SnapDetail, matrix?: Matrix3d): Matrix3d | undefined;
     static get isActive(): boolean;
     static get isEnabled(): boolean;
+    static processHintsImmediate(): void;
     static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     sendHints(activate?: boolean): boolean;
@@ -4013,6 +4012,9 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
 
+// @internal (undocumented)
+export function getMeshoptDecoder(): Promise<MeshoptDecoder | undefined>;
+
 // @public
 export interface GetPixelDataWorldPointArgs {
     out?: Point3d;
@@ -4877,8 +4879,9 @@ export interface Hilites {
 // @public
 export class HiliteSet {
     constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
+    add(additions: SelectableIds): void;
     clear(): void;
-    get elements(): Id64.Uint32Set;
+    readonly elements: Id64.Uint32Set;
     // (undocumented)
     iModel: IModelConnection;
     get isEmpty(): boolean;
@@ -4886,6 +4889,9 @@ export class HiliteSet {
     get modelSubCategoryMode(): ModelSubCategoryHiliteMode;
     set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode);
     readonly onModelSubCategoryModeChanged: BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>;
+    remove(removals: SelectableIds): void;
+    replace(ids: SelectableIds): void;
+    // @deprecated
     setHilite(arg: Id64Arg, onOff: boolean): void;
     readonly subcategories: Id64.Uint32Set;
     get wantSyncWithSelectionSet(): boolean;
@@ -7605,6 +7611,18 @@ export interface MeshArgs {
         uvParams: Point2d[];
     };
     vertIndices: number[];
+}
+
+// @internal (undocumented)
+export interface MeshoptDecoder {
+    // (undocumented)
+    decodeGltfBuffer(target: Uint8Array, count: number, size: number, source: Uint8Array, mode: string, filter?: string): void;
+    // (undocumented)
+    decodeIndexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+    // (undocumented)
+    decodeIndexSequence: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+    // (undocumented)
+    decodeVertexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, filter?: string) => void;
 }
 
 // @public
@@ -10655,8 +10673,20 @@ export class SectionDrawingModelState extends DrawingModelState {
 }
 
 // @public
+export interface SelectableIds {
+    // (undocumented)
+    elements?: Id64Arg;
+    // (undocumented)
+    models?: Id64Arg;
+    // (undocumented)
+    subcategories?: Id64Arg;
+}
+
+// @public
 export interface SelectAddEvent {
+    // @deprecated
     added: Id64Arg;
+    additions: SelectableIds;
     set: SelectionSet;
     // (undocumented)
     type: SelectionSetEventType.Add;
@@ -10703,20 +10733,27 @@ export enum SelectionProcessing {
 // @public
 export class SelectionSet {
     constructor(iModel: IModelConnection);
-    add(elem: Id64Arg): boolean;
-    addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean;
-    get elements(): Set<string>;
+    get active(): {
+        [P in keyof SelectableIds]-?: Set<Id64String>;
+    };
+    add(adds: Id64Arg | SelectableIds): boolean;
+    addAndRemove(adds: Id64Arg | SelectableIds, removes: Id64Arg | SelectableIds): boolean;
+    get elements(): Set<Id64String>;
     emptyAll(): void;
+    // @deprecated
     has(elemId?: string): boolean;
     // (undocumented)
     iModel: IModelConnection;
-    invert(elem: Id64Arg): boolean;
+    invert(ids: Id64Arg | SelectableIds): boolean;
     get isActive(): boolean;
+    // @deprecated
     isSelected(elemId?: Id64String): boolean;
+    get models(): Set<Id64String>;
     readonly onChanged: BeEvent<(ev: SelectionSetEvent) => void>;
-    remove(elem: Id64Arg): boolean;
-    replace(elem: Id64Arg): void;
+    remove(removes: Id64Arg | SelectableIds): boolean;
+    replace(ids: Id64Arg | SelectableIds): boolean;
     get size(): number;
+    get subcategories(): Set<Id64String>;
 }
 
 // @public
@@ -10836,6 +10873,8 @@ export enum SelectParent {
 
 // @public
 export interface SelectRemoveEvent {
+    removals: SelectableIds;
+    // @deprecated
     removed: Id64Arg;
     set: SelectionSet;
     type: SelectionSetEventType.Remove | SelectionSetEventType.Clear;
@@ -10843,7 +10882,11 @@ export interface SelectRemoveEvent {
 
 // @public
 export interface SelectReplaceEvent {
+    // @deprecated
     added: Id64Arg;
+    additions: SelectableIds;
+    removals: SelectableIds;
+    // @deprecated
     removed: Id64Arg;
     set: SelectionSet;
     // (undocumented)
