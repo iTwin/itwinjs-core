@@ -268,8 +268,10 @@ export class AccuDraw {
       this.onCompassDisplayChange(wasActive ? "hide" : "show");
   }
 
-  public compassMode = CompassMode.Rectangular; // Compass mode
-  public rotationMode = RotationMode.View; // Compass rotation
+  /** The current compass mode */
+  public compassMode = CompassMode.Rectangular;
+  /** The current compass rotation */
+  public rotationMode = RotationMode.View;
   /** @internal */
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
   /** @internal */
@@ -348,16 +350,25 @@ export class AccuDraw {
   /** @internal */
   protected readonly _fillColorNoFocus = ColorDef.create(ColorByName.lightGrey);
 
-  // User Preference Settings...
+  /** Keyins aren't dumb? :) */
   public smartKeyin = true;
+  /** When true the compass follows the origin hint as opposed to remaining at a fixed location */
   public floatingOrigin = true;
+  /** When true the z input field will remain locked with it's current value after a data button  */
   public stickyZLock = false;
+  /** When true the compass is always active and on screen instead of following the current tools request to activate */
   public alwaysShowCompass = false;
+  /** When true all tool hints are applied as opposed to only selected hints */
   public contextSensitive = true;
+  /** When true the current point is adjusted to the x and y axes when within a close tolerance */
   public axisIndexing = true;
+  /** When true the current point is adjusted to the last locked distance value when within a close tolerance */
   public distanceIndexing = true;
+  /** When true locking the angle also moves focus to the angle input field */
   public autoFocusFields = true;
+  /** When true fully specifying a point by entering both distance and angle in polar mode or XY[Z] in rectangular mode, the point is automatically accepted */
   public autoPointPlacement = false;
+
   private static _tempRot = new Matrix3d();
 
   /** @internal */
@@ -371,9 +382,13 @@ export class AccuDraw {
     return rMatrix;
   }
 
-  public get isActive(): boolean { return CurrentState.Active === this.currentState; }
+  /** When true AccuDraw is enabled by the application and can be used by interactive tools */
   public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
+  /** When true the compass is displayed and adjusting input points for the current interactive tool */
+  public get isActive(): boolean { return CurrentState.Active === this.currentState; }
+  /** When true the compass is not displayed or adjusting points, but it can be automatically activated by the current interactive tool or via shortcuts */
   public get isInactive(): boolean { return (CurrentState.Inactive === this.currentState); }
+  /** When true the compass is not displayed or adjusting points, the current interactive tool has disabled automatic activation, but can still be enabled via shortcuts */
   public get isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
 
   /** Get the current lock state for the supplied input field */
