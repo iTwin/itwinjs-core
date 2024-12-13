@@ -6,10 +6,10 @@
  * @module ElementGeometry
  */
 
-import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
+import { FontFace, FontType, LocalFileName, RscFontEncodingProps } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { _faceProps, _getData, _key, _implementationProhibited } from "./internal/Symbols";
-import { shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontFileImpl"; 
+import { rscFontFileFromBlob, shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontFileImpl"; 
 
 export interface FontFile {
   /** @internal */
@@ -43,6 +43,7 @@ export interface CreateFontFileFromShxBlobArgs {
 export interface CreateFontFileFromRscBlobArgs {
   familyName: string;
   blob: Uint8Array;
+  encoding?: RscFontEncodingProps;
 }
 
 export namespace FontFile {
@@ -54,7 +55,7 @@ export namespace FontFile {
     return shxFontFileFromBlob(args);
   }
 
-  export function createFromRscFontBlob(_args: CreateFontFileFromRscBlobArgs): FontFile {
-    throw new Error("###TODO");
+  export function createFromRscFontBlob(args: CreateFontFileFromRscBlobArgs): FontFile {
+    return rscFontFileFromBlob(args);
   }
 }

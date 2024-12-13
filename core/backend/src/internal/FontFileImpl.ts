@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
+import { CreateFontFileFromRscBlobArgs, CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
 import { _faceProps, _getData, _key, _implementationProhibited } from "./Symbols";
 import { compareNumbersOrUndefined } from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost";
@@ -155,6 +155,23 @@ export function shxFontFileFromBlob(args: CreateFontFileFromShxBlobArgs): FontFi
     faceName: "regular",
     familyName: args.familyName,
     type: FontType.Shx,
+  }]);
+}
+
+export function rscFontFileFromBlob(args: CreateFontFileFromRscBlobArgs): FontFile {
+  if (args.familyName.length === 0) {
+    throw new Error("Font family name cannot be empty");
+  }
+
+  if (!IModelHost.platform.isRscFontData(args.blob)) {
+    throw new Error("Failed to read font file");
+  }
+
+  return new CadFontFile(args.blob, FontType.Rsc, [{
+    faceName: "regular",
+    familyName: args.familyName,
+    type: FontType.Rsc,
+    encoding: args.encoding,
   }]);
 }
 

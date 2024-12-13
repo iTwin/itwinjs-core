@@ -36,6 +36,13 @@ export interface FontFace {
   isItalic: boolean;
 }
 
+export interface RscFontEncodingProps {
+  codePage?: number;
+  degree?: number;
+  plusMinus?: number;
+  diameter?: number;
+}
+
 /** The properties of a FontMap
  * @public
  * @extensions
