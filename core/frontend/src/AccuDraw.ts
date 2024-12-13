@@ -25,7 +25,7 @@ import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
-import { ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
+import { FormatterSpec, FormatType, ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
 import { GraphicType } from "./common/render/GraphicType";
 
 // cspell:ignore dont primitivetools
@@ -1015,6 +1015,11 @@ export class AccuDraw {
     return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
   }
 
+  /** Allow the AccuDraw user interface to supply the distance parser */
+  public getLengthFormatter(): FormatterSpec | undefined {
+    return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+  }
+
   private stringToDistance(str: string): QuantityParseResult {
     const parserSpec = this.getLengthParser();
     if (parserSpec)
@@ -1022,13 +1027,29 @@ export class AccuDraw {
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
+  private stringFromDistance(distance: number): string {
+    const formatterSpec = this.getLengthFormatter();
+    let formattedValue = distance.toString();
+    if (formatterSpec)
+      formattedValue = IModelApp.quantityFormatter.formatQuantity(distance, formatterSpec);
+    return formattedValue;
+  }
+
   /** Allow the AccuDraw user interface to specify bearing */
-  public get isBearingMode(): boolean { return false; }
+  public get isBearingMode(): boolean { return this.getAngleParser()?.format.type === FormatType.Bearing; }
+
+  /** Allow the AccuDraw user interface to specify bearing directions are always in xy plane */
+  public get bearingFixedToPlane2d() { return this.flags.bearingFixToPlane2D; }
+  public set bearingFixedToPlane2d(enable: boolean) { this.flags.bearingFixToPlane2D = enable; }
 
   /** Allow the AccuDraw user interface to supply the angle/direction parser */
   public getAngleParser(): ParserSpec | undefined {
-    // TODO: Use QuantityType.Angle when isBearingMode=false and "Bearing" for isBearingMode=true.
     return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
+  }
+
+  /** Allow the AccuDraw user interface to supply the angle/direction formatter */
+  public getAngleFormatter(): FormatterSpec | undefined {
+    return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
   }
 
   private stringToAngle(inString: string): QuantityParseResult {
@@ -1036,6 +1057,33 @@ export class AccuDraw {
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
     return { ok: false, error: ParseError.InvalidParserSpec };
+  }
+
+  private stringFromAngle(angle: number): string {
+    if (this.isBearingMode && this.flags.bearingFixToPlane2D) {
+      const point = Vector3d.create(this.axes.x.x, this.axes.x.y, 0.0);
+
+      point.normalizeInPlace();
+      let adjustment = Math.acos(point.x);
+
+      if (point.y < 0.0)
+        adjustment = -adjustment;
+      angle += adjustment;
+    }
+
+    const formatterSpec = this.getAngleFormatter();
+    let formattedValue = angle.toString();
+    if (formatterSpec)
+      formattedValue = IModelApp.quantityFormatter.formatQuantity(angle, formatterSpec);
+    return formattedValue;
+  }
+
+  /** Can be called by sub-classes to get a formatted value to display for an AccuDraw input field */
+  public getFormattedValueByIndex(index: ItemField): string {
+    const value = IModelApp.accuDraw.getValueByIndex(index);
+    if (ItemField.ANGLE_Item === index)
+      return this.stringFromAngle(value);
+    return this.stringFromDistance(value);
   }
 
   private updateFieldValue(index: ItemField, input: string): BentleyStatus {
@@ -2836,9 +2884,38 @@ export class AccuDraw {
   /** @internal */
   public onEndDynamics(): boolean { return this.downgradeInactiveState(); }
 
+  /** Can be called by sub-classes as the default implementation of onMotion.
+   * @see [[onMotion]]
+   * @note Input fields are expected to call [[AccuDrawShortcuts.itemFieldNewInput]] when the user enters a value that is not a shortcut
+   * and call [[AccuDrawShortcuts.itemFieldCompletedInput]] when a value is accepted, such as when focusing out of the field. This is
+   * required for processMotion to correctly handle updating dynamic field values to reflect the current cursor location.
+   */
+  public processMotion(): void {
+    if (this.flags.dialogNeedsUpdate || !this.isActive) {
+      if (this.isActive && this.smartKeyin) {
+        // NOTE: fixPointRectangular sets newFocus to either x or y based on which axis is closer to the input point...
+        if (CompassMode.Rectangular === this.compassMode && !this.dontMoveFocus && !this.getFieldLock(this.newFocus))
+          this.setFocusItem(this.newFocus);
+      }
+
+      const sendDynamicFieldValueChange = (item: ItemField): void => {
+        if (KeyinStatus.Dynamic === this.getKeyinStatus(item))
+          this.onFieldValueChange(item);
+      };
+
+      // NOTE: Shows the current deltas for rectangular mode when active and current coordinate when not active...
+      sendDynamicFieldValueChange(ItemField.X_Item);
+      sendDynamicFieldValueChange(ItemField.Y_Item);
+      sendDynamicFieldValueChange(ItemField.Z_Item);
+      sendDynamicFieldValueChange(ItemField.ANGLE_Item);
+      sendDynamicFieldValueChange(ItemField.DIST_Item);
+    }
+  }
+
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
    * axis isn't locked to support "smart lock".
+   * @see [[processMotion]]
    */
   public onMotion(_ev: BeButtonEvent): void { }
 
