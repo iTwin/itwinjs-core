@@ -350,7 +350,7 @@ export class AccuDraw {
   /** @internal */
   protected readonly _fillColorNoFocus = ColorDef.create(ColorByName.lightGrey);
 
-  /** Keyins aren't dumb? :) */
+  /** When true improve behavior for +/- input when cursor switches side and try to automatically manage focus */
   public smartKeyin = true;
   /** When true the compass follows the origin hint as opposed to remaining at a fixed location */
   public floatingOrigin = true;
