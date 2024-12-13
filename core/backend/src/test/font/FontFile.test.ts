@@ -39,6 +39,21 @@ describe("FontFile", () => {
     });
   });
 
+  describe("createFromRscBlob", () => {
+    it("creates a valid font", () => {
+      const blob = fs.readFileSync(IModelTestUtils.resolveFontFile("ENGINEERING.bin"));
+      const file = FontFile.createFromRscFontBlob({ familyName: "ENGINEERING", blob });
+      expect(file.type).to.equal(FontType.Rsc);
+      expect(file.isEmbeddable).to.be.true;
+      expectFaces(file, [{ familyName: "ENGINEERING", isBold: false, isItalic: false }]);
+    });
+
+    it("throws on non-font data", () => {
+      const blob = new Uint8Array();
+      expect(() => FontFile.createFromRscFontBlob({ familyName: "not-a-font", blob })).to.throw("Failed to read font file");
+    });
+  });
+  
   describe("TrueType fonts", () => {
     describe("createFromTrueTypeFileName", () => {
       it("throws on non-existent file", () => {

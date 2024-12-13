@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Guid } from "@itwin/core-bentley";
-import { FontFace } from "@itwin/core-common";
+import { FontFace, RscFontEncodingProps } from "@itwin/core-common";
 import { FontFile } from "../../FontFile";
 import { FontType } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
@@ -129,6 +129,24 @@ describe("IModelDbFonts", () => {
 
       await embedAndTest(createTTFile("DejaVuSans.ttf"), [createTTFace("DejaVu Sans", "regular")]);
       await embedAndTest(createTTFile("DejaVuSans-Bold.ttf"), [createTTFace("DejaVu Sans", "bold")]);
+
+      const rscBlob = fs.readFileSync(IModelTestUtils.resolveFontFile("ENGINEERING.bin"));
+      const encoding: RscFontEncodingProps = {
+        degree: 5,
+        plusMinus: 100,
+      };
+      await embedAndTest(FontFile.createFromRscFontBlob({ blob: rscBlob, familyName: "ENGINEERING", encoding }), [{
+        familyName: "ENGINEERING",
+        type: FontType.Rsc,
+        faceName: "regular",
+        subId: 0,
+        encoding: {
+          ...encoding,
+          // omitted properties get default values
+          diameter: 216,
+          codePage: -1,
+        }
+      }]);
     });
 
     it("is a no-op if file is already embedded", async () => {
