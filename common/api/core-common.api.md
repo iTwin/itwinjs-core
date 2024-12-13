@@ -1142,6 +1142,7 @@ export type ChangesetIndexOrId = ChangesetIndexAndId | {
 // @public
 export interface ChangesetProps {
     briefcaseId: number;
+    changedFiles?: string[];
     changesType: ChangesetType;
     description: string;
     id: ChangesetId;
@@ -1149,6 +1150,7 @@ export interface ChangesetProps {
     parentId: ChangesetId;
     pushDate: string;
     size: number;
+    taskId?: string;
     userCreated: string;
 }
 
