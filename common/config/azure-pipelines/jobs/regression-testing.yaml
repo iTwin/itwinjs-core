@@ -22,9 +22,9 @@ jobs:
       - name: linux_pool
         value: "imodelNative-Debian12"
       - name: mac_pool
-        value: iModelTechCI
+        value: iModelTechMacArm
       - name: win_pool
-        value: iModelTechCI
+        value: imodelNative-Win11-VS2022
 
     strategy:
       matrix:
