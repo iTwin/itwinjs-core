@@ -34,7 +34,8 @@
     "@itwin/service-authorization": "^1.0.0",
     "@xmldom/xmldom": "~0.8.5",
     "azurite": "^3.32.0",
-    "fs-extra": "^8.1.0"
+    "fs-extra": "^8.1.0",
+    "get-system-fonts": "^2.0.2"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
