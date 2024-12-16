@@ -292,8 +292,8 @@ export class AccuDraw {
   private readonly _angleRoundOff = new RoundOff(); // angle round off enabled and unit
   /** @internal */
   public readonly flags = new Flags(); // current state flags
-  private readonly _fieldLocked: boolean[] = []; // locked state of fields
-  private readonly _keyinStatus: KeyinStatus[] = []; // state of input field
+  private readonly _fieldLocked: [boolean, boolean, boolean, boolean, boolean] = [false, false, false, false, false]; // locked state of fields
+  private readonly _keyinStatus: [KeyinStatus, KeyinStatus, KeyinStatus, KeyinStatus, KeyinStatus] = [KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic]; // state of input field
   /** @internal */
   public readonly savedStateViewTool = new SavedState(); // Restore point for shortcuts/tools...
   /** @internal */
@@ -396,8 +396,12 @@ export class AccuDraw {
   /** @internal */
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
 
-  /** Implement this method to set focus to the AccuDraw UI. */
+  /** Get whether AccuDraw currently has input focus */
+  public get hasInputFocus() { return true; }
+  /** Called to request input focus be set to AccuDraw. Focus is managed by AccuDraw UI. */
   public grabInputFocus() { }
+  /** Get default focus item for the current compass mode */
+  public defaultFocusItem(): ItemField { return (CompassMode.Polar === this.compassMode ? ItemField.DIST_Item : this.newFocus); }
 
   /** @internal */
   public activate(): void {
@@ -1093,7 +1097,9 @@ export class AccuDraw {
     return formattedValue;
   }
 
-  /** Can be called by sub-classes to get a formatted value to display for an AccuDraw input field */
+  /** Can be called by sub-classes to get a formatted value to display for an AccuDraw input field
+   * @see [[onFieldValueChange]]
+   */
   public getFormattedValueByIndex(index: ItemField): string {
     const value = IModelApp.accuDraw.getValueByIndex(index);
     if (ItemField.ANGLE_Item === index)
@@ -1175,7 +1181,7 @@ export class AccuDraw {
 
   /** @internal */
   public unlockAllFields(): void {
-    this.locked = 0;
+    this.locked = LockedStates.NONE_LOCKED;;
 
     if (CompassMode.Polar === this.compassMode) {
       if (this._fieldLocked[ItemField.DIST_Item])
@@ -1584,6 +1590,7 @@ export class AccuDraw {
 
   /** @internal */
   public changeCompassMode(animate: boolean = false): void {
+    this.unlockAllFields(); // Clear locks for the current mode and send change notifications...
     this.setCompassMode(CompassMode.Polar === this.compassMode ? CompassMode.Rectangular : CompassMode.Polar);
 
     const viewport = this.currentView;
@@ -2266,9 +2273,7 @@ export class AccuDraw {
   public onFieldLockChange(_index: ItemField) { }
   /** Called after input field value changes */
   public onFieldValueChange(_index: ItemField) { }
-  /** Whether AccuDraw currently has input focus */
-  public get hasInputFocus() { return true; }
-  /** Set focus to the specified input field */
+  /** Called to request focus change to the specified input field */
   public setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
