@@ -115,11 +115,7 @@ jobs:
           useCurrentConnectorFrameworkDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
 
       # Currently BeMetalsmith is an internal only tool
-<<<<<<< HEAD
-      - script: npm install @bentley/bemetalsmith@5.3.x
-=======
       - script: npm install @bentley/bemetalsmith@5.5.x
->>>>>>> 906f63a8b6 (Docs: workaround for typedoc issue #2802 (#7470))
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
