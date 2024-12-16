@@ -372,33 +372,29 @@ export class AccuDraw {
     activate(): void;
     // @internal (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean;
-    // (undocumented)
     alwaysShowCompass: boolean;
     // @internal (undocumented)
     angleLock(): void;
     // @internal (undocumented)
     protected _animationFrames: number;
-    // (undocumented)
     autoFocusFields: boolean;
-    // (undocumented)
     autoPointPlacement: boolean;
     // @internal (undocumented)
     readonly axes: ThreeAxes;
-    // (undocumented)
     axisIndexing: boolean;
     // @internal (undocumented)
     readonly baseAxes: ThreeAxes;
+    get bearingFixedToPlane2d(): boolean;
+    set bearingFixedToPlane2d(enable: boolean);
     // @internal (undocumented)
     changeBaseRotationMode(mode: RotationMode): void;
     // @internal (undocumented)
     changeCompassMode(animate?: boolean): void;
     // @internal (undocumented)
     clearTentative(): boolean;
-    // (undocumented)
     compassMode: CompassMode;
     // @internal (undocumented)
     protected _compassSizeInches: number;
-    // (undocumented)
     contextSensitive: boolean;
     get currentState(): CurrentState;
     set currentState(state: CurrentState);
@@ -408,11 +404,10 @@ export class AccuDraw {
     deactivate(): void;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
+    defaultFocusItem(): ItemField;
     // @internal (undocumented)
     readonly delta: Vector3d;
-    // @internal (undocumented)
     disableForSession(): void;
-    // (undocumented)
     distanceIndexing: boolean;
     // @internal (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
@@ -423,7 +418,6 @@ export class AccuDraw {
     dontMoveFocus: boolean;
     // @internal (undocumented)
     downgradeInactiveState(): boolean;
-    // @internal (undocumented)
     enableForSession(): void;
     // @internal (undocumented)
     protected readonly _fillColor: ColorDef;
@@ -435,20 +429,22 @@ export class AccuDraw {
     fixPointRectangular(vp: Viewport): void;
     // @internal (undocumented)
     readonly flags: Flags;
-    // (undocumented)
     floatingOrigin: boolean;
     // @internal (undocumented)
     protected readonly _frameColor: ColorDef;
     // @internal (undocumented)
     protected readonly _frameColorNoFocus: ColorDef;
+    getAngleFormatter(): FormatterSpec | undefined;
     getAngleParser(): ParserSpec | undefined;
     // @internal (undocumented)
     static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined;
     // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getFieldLock(index: ItemField): boolean;
+    getFormattedValueByIndex(index: ItemField): string;
     // @internal (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
+    getLengthFormatter(): FormatterSpec | undefined;
     getLengthParser(): ParserSpec | undefined;
     // @internal (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
@@ -467,14 +463,10 @@ export class AccuDraw {
     indexed: LockedStates;
     // @internal (undocumented)
     protected _indexToleranceInches: number;
-    // (undocumented)
     get isActive(): boolean;
     get isBearingMode(): boolean;
-    // (undocumented)
     get isDeactivated(): boolean;
-    // (undocumented)
     get isEnabled(): boolean;
-    // (undocumented)
     get isInactive(): boolean;
     // @internal (undocumented)
     isZLocked(vp: Viewport): boolean;
@@ -524,13 +516,13 @@ export class AccuDraw {
     processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void>;
     // @internal (undocumented)
     processHints(): void;
+    processMotion(): void;
     // @internal (undocumented)
     readonly published: AccudrawData;
     // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
     // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
-    // (undocumented)
     rotationMode: RotationMode;
     // @internal (undocumented)
     saveCoordinate(index: ItemField, value: number): void;
@@ -554,11 +546,9 @@ export class AccuDraw {
     setLastPoint(pt: Point3d): void;
     setRotationMode(mode: RotationMode): void;
     setValueByIndex(index: ItemField, value: number): void;
-    // (undocumented)
     smartKeyin: boolean;
     // @internal (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
-    // (undocumented)
     stickyZLock: boolean;
     // @internal (undocumented)
     testDecorationHit(id: string): boolean;
@@ -669,6 +659,7 @@ export class AccuDrawHintBuilder {
     static getSnapRotation(snap: SnapDetail, matrix?: Matrix3d): Matrix3d | undefined;
     static get isActive(): boolean;
     static get isEnabled(): boolean;
+    static processHintsImmediate(): void;
     static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     sendHints(activate?: boolean): boolean;
@@ -877,6 +868,8 @@ export class AccuDrawShortcuts {
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
+    // (undocumented)
+    static itemFieldCompletedInput(index: ItemField): void;
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
     // (undocumented)

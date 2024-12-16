@@ -3,11 +3,136 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
+import { assert } from "@itwin/core-bentley";
+import { Geometry, IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, GeometryStreamProps } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, SnapStatus,
+  AccuDraw,
+  AccuDrawHintBuilder, BeButtonEvent, CanvasDecoration, CompassMode, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, ItemField, PrimitiveTool, SnapStatus,
 } from "@itwin/core-frontend";
+
+interface AccuDrawItemFieldData { itemField: number, value: number, displayValue: string, locked: boolean }
+
+class AccuDrawInputFields implements CanvasDecoration {
+  public position = new Point3d();
+  protected fieldData: AccuDrawItemFieldData[] = [];
+  protected focusItem: ItemField;
+
+  constructor(position: Point3d, fieldData: AccuDrawItemFieldData[], focusItem: ItemField) {
+    this.position.setFrom(position);
+    this.fieldData = fieldData;
+    this.focusItem = focusItem;
+  }
+
+  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.shadowColor = "black";
+
+    let yOffset = 0;
+
+    const drawField = (field: AccuDrawItemFieldData) => {
+      const metrics = ctx.measureText(field.displayValue);
+      const textWidth = metrics.width;
+      const textHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+      const textValueHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+      if (field.itemField === this.focusItem) {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(0, 225, 255, 0.4)";
+        ctx.fillRect(0, yOffset, textWidth, textValueHeight);
+      }
+
+      ctx.shadowBlur = 5;
+      ctx.fillStyle = (field.locked ? "orange" : "white");
+      ctx.fillText(field.displayValue, 0, yOffset);
+
+      yOffset += textHeight;
+    };
+
+    for (const field of this.fieldData)
+      drawField(field);
+  }
+
+  public addDecoration(context: DecorateContext) {
+    context.addCanvasDecoration(this);
+  }
+}
+
+export class DisplayTestAppAccuDraw extends AccuDraw {
+  protected itemFieldData: AccuDrawItemFieldData[] = [];
+  protected focusItem: ItemField;
+  protected cursorPoint = new Point3d();
+
+  public constructor() {
+    super();
+
+    for (let index = ItemField.DIST_Item; index <= ItemField.Z_Item; ++index)
+      this.itemFieldData.push({ itemField: index, value: 0, displayValue: "", locked: false });
+
+    this.focusItem = this.defaultFocusItem();
+  }
+
+  public override decorate(context: DecorateContext): void {
+    super.decorate(context);
+
+    if (!this.isActive)
+      return; // Don't show spatial coordinates for rectangular mode at cursor when inactive...
+
+    if (context.viewport !== IModelApp.toolAdmin.cursorView)
+      return;
+
+    const position = context.viewport.worldToView(this.cursorPoint);
+    position.x += Math.floor(context.viewport.pixelsFromInches(0.4)) + 0.5; // Offset from snap location...
+    position.y += Math.floor(context.viewport.pixelsFromInches(0.1)) + 0.5; // Offset from snap location...
+    if (!context.viewport.viewRect.containsPoint(position))
+      return; // Could choose another location to ensure fields are in view...
+
+    const activeFields: AccuDrawItemFieldData[] = [];
+
+    if (CompassMode.Polar === this.compassMode) {
+      activeFields.push(this.itemFieldData[ItemField.DIST_Item]);
+      activeFields.push(this.itemFieldData[ItemField.ANGLE_Item]);
+    } else {
+      activeFields.push(this.itemFieldData[ItemField.X_Item]);
+      activeFields.push(this.itemFieldData[ItemField.Y_Item]);
+    }
+
+    if (context.viewport.view.allow3dManipulations() && (!Geometry.isAlmostEqualNumber(this.itemFieldData[ItemField.Z_Item].value, 0.0) || this.itemFieldData[ItemField.Z_Item].locked))
+      activeFields.push(this.itemFieldData[ItemField.Z_Item]);
+
+    const displayedFields = new AccuDrawInputFields(position, activeFields, this.focusItem);
+    displayedFields.addDecoration(context);
+  }
+
+  public override setFocusItem(index: ItemField) {
+    this.focusItem = index;
+  }
+
+  public override onCompassDisplayChange(_state: "show" | "hide"): void {
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
+  public override onCompassModeChange(): void {
+    this.focusItem = this.defaultFocusItem();
+  }
+
+  public override onFieldLockChange(index: ItemField) {
+    this.itemFieldData[index].locked = !this.itemFieldData[index].locked;
+    assert(this.itemFieldData[index].locked === this.getFieldLock(index)); // Make sure lock change notifications weren't omitted...
+  }
+
+  public override onFieldValueChange(index: ItemField) {
+    this.itemFieldData[index].value = this.getValueByIndex(index);
+    this.itemFieldData[index].displayValue = this.getFormattedValueByIndex(index);
+  }
+
+  public override onMotion(ev: BeButtonEvent): void {
+    this.processMotion();
+    this.cursorPoint.setFrom(ev.point);
+  }
+}
 
 export class DrawingAidTestTool extends PrimitiveTool {
   public static override toolId = "DrawingAidTest.Points";
