@@ -29,7 +29,7 @@ import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransfor
 import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
-import { DrawingAidTestTool } from "./DrawingAidTestTool";
+import { DisplayTestAppAccuDraw, DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -242,6 +242,7 @@ export class DisplayTestApp {
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
+        accuDraw: new DisplayTestAppAccuDraw(),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
