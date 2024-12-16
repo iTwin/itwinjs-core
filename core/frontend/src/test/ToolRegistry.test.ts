@@ -62,7 +62,7 @@ describe("ToolRegistry", () => {
     await TestCommandApp.shutdown();
   });
 
-  it.only("Should find Select tool", async () => {
+  it("Should find Select tool", async () => {
     const command = IModelApp.tools.findExactMatch("Select Elements");
     expect(command).toBeDefined();
     if (command) {
