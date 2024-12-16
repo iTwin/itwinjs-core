@@ -14,24 +14,26 @@
   - [Contributing](#contributing)
 - [Licensing](#licensing)
 
-The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing.
+The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing. For detailed API documentation, see our [iTwin.js references documentation](https://www.itwinjs.org/reference/core-quantity/quantity/).
+
+Also check the [iTwin.js learnings documentation](https://www.itwinjs.org/learning/frontend/quantityformatting/#quantity-package) explaining quantity formatting and it's basic concepts.
 
 ## Terms and Concepts
 
 ### Common Terms
 
-- [Unit]($quantity)/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label. The definition of any unit is represented through it's `UnitProps`.
-- [UnitsProvider]($quantity) - An interface that locates the UnitProps for a unit given name or label. This interface also provides methods for [UnitConversion]($quantity) to allow converting from one unit to another.
-- Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
+- `Unit`/`UnitProps` - A named unit of measure which can be located by its name or label. The definition of any unit is represented through it's `UnitProps`.
+- `UnitsProvider` - An interface that locates the UnitProps for a unit given name or label. This interface also provides methods for `UnitConversion` to allow converting from one unit to another.
+- Unit Family/`Phenomenon` - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
 - Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel.
 - Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
   - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
-- [FormatterSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the UnitsProvider during the formatting process.
-- [ParserSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the UnitsProvider and also done to allow a user to enter `43in` even when in "metric" unit system and have the string properly converted to meters.
-- [Formatter]($quantity) - A class that holds methods to format a quantity value into a text string. Given a FormatterSpec object - containing one or many Unit definitions each with their own Unit Conversion info and a Format passed in - and a single `magnitude` number, the Formatter can convert that number into a text string, adhering to the properties passed to the formatTraits of a Format.
-- [Parser]($quantity) - A class that holds methods to parse a text string into a single number. Given a ParserSpec object containing a Format's Units and their Unit Conversions, as well as an input string, the Parser can either return an object `QuantityParseResult` that contains the magnitude of type `number`, or an object `ParseQuantityError`.
+- `FormatterSpec` - Holds the format specification as well as the `UnitConversion` between the persistence unit and all units defined in the format. This is done to avoid any async calls by the UnitsProvider during the formatting process.
+- `ParserSpec` - Holds the format specification as well as the `UnitConversion` between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the UnitsProvider and also done to allow a user to enter `43in` even when in "metric" unit system and have the string properly converted to meters.
+- `Formatter` - A class that holds methods to format a quantity value into a text string. Given a FormatterSpec object - containing one or many Unit definitions each with their own Unit Conversion info and a Format passed in - and a single `magnitude` number, the Formatter can convert that number into a text string, adhering to the properties passed to the formatTraits of a Format.
+- `Parser` - A class that holds methods to parse a text string into a single number. Given a ParserSpec object containing a Format's Units and their Unit Conversions, as well as an input string, the Parser can either return an object `QuantityParseResult` that contains the magnitude of type `number`, or an object `ParseQuantityError`.
 
-See the [iTwin.js](https://www.itwinjs.org/learning/frontend/quantityformatting/#quantity-package) documentation on quantity formatting for more information.
+
 
 ### Concepts
 
@@ -39,15 +41,15 @@ See the [iTwin.js](https://www.itwinjs.org/learning/frontend/quantityformatting/
 
 To appropriately parse and output formatted values, A units provider is used to define all available units and provides conversion factors between units. There are a couple implementations of the UnitsProvider across iTwin.js:
 
-The [BasicUnitsProvider]($frontend) holds many common units and their conversions between each other.
+The `BasicUnitsProvider` holds many common units and their conversions between each other.
 
-The [SchemaUnitProvider]($ecschema-metadata) is another example, used to load unit definitions of schemas from an iModel. This holds more extensive units through the Units schema, while also allowing users to define their own units.
+The `SchemaUnitProvider` is another example, used to load unit definitions of schemas from an iModel. This holds more extensive units through the Units schema, while also allowing users to define their own units.
 
-The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family/Phenomenon, as well as the label of units in a Composite format are used.
+The `AlternateUnitLabelsProvider` interface allows users to specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family/Phenomenon, as well as the label of units in a Composite format are used.
 
 #### Unit Conversion
 
-Unit conversion is performed through [UnitConversionSpec]($quantity). These objects are generated by a UnitsProvider, with the implementation determined by each specific provider. During initialization, a ParserSpec/FormatterSpec can ask for UnitConversionSpec objects provided via the UnitsProvider. During parsing and formatting, the specification will retrieve the UnitConversionSpec between the source and destination units to apply the unit conversion.
+Unit conversion is performed through `UnitConversionSpec`. These objects are generated by a UnitsProvider, with the implementation determined by each specific provider. During initialization, a ParserSpec/FormatterSpec can ask for UnitConversionSpec objects provided via the UnitsProvider. During parsing and formatting, the specification will retrieve the UnitConversionSpec between the source and destination units to apply the unit conversion.
 
 <!-- #### How a value is formatted
 
