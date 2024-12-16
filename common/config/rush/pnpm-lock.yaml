@@ -1826,8 +1826,8 @@ importers:
   ../../example-code/snippets:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.24.0
-        version: 12.24.0
+        specifier: ^12.26.0
+        version: 12.26.0
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
@@ -1868,8 +1868,8 @@ importers:
         specifier: ~0.8.5
         version: 0.8.5
       azurite:
-        specifier: ^3.32.0
-        version: 3.32.0
+        specifier: ^3.33.0
+        version: 3.33.0
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
@@ -2204,8 +2204,8 @@ importers:
   ../../full-stack-tests/backend:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.24.0
-        version: 12.24.0
+        specifier: ^12.26.0
+        version: 12.26.0
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
         version: 1.0.3
@@ -2288,8 +2288,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/perf-tools
       azurite:
-        specifier: ^3.32.0
-        version: 3.32.0
+        specifier: ^3.33.0
+        version: 3.33.0
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -2361,8 +2361,8 @@ importers:
   ../../full-stack-tests/core:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.24.0
-        version: 12.24.0
+        specifier: ^12.26.0
+        version: 12.26.0
       '@itwin/browser-authorization':
         specifier: ^1.0.1
         version: 1.0.1(@itwin/core-bentley@..+core+bentley)
@@ -2433,8 +2433,8 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1(@itwin/core-bentley@..+core+bentley)
       azurite:
-        specifier: ^3.32.0
-        version: 3.32.0
+        specifier: ^3.33.0
+        version: 3.33.0
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -4563,10 +4563,6 @@ packages:
     resolution: {integrity: sha512-An7l1hEr0w1HMMh1LU+rtDtqL7/jw74ORlc9Wnh06v7TU/xpG39/Zdr1ZJu3QpjUfKJ+E0/OXMW8DRSWTlh7qQ==}
     engines: {node: '>=16'}
 
-  '@azure/storage-blob@12.24.0':
-    resolution: {integrity: sha512-l8cmWM4C7RoNCBOImoFMxhTXe1Lr+8uQ/IgnhRNMpfoA9bAFWoLG4XrWm6O5rKXortreVQuD+fc1hbzWklOZbw==}
-    engines: {node: '>=18.0.0'}
-
   '@azure/storage-blob@12.26.0':
     resolution: {integrity: sha512-SriLPKezypIsiZ+TtlFfE46uuBIap2HeaQVS78e1P7rz5OSbq0rsd52WE1mC5f7vAeLiXqv7I7oRhL3WFZEw3Q==}
     engines: {node: '>=18.0.0'}
@@ -6207,8 +6203,8 @@ packages:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
 
-  azurite@3.32.0:
-    resolution: {integrity: sha512-1qwJ8NQpv31V/sr4OIYqUd/DkOTzR6UjRoDv14youv764rnvq0/5/JbAcz/pFvxSDTRaU/hUe58VB2J3vpmaYA==}
+  azurite@3.33.0:
+    resolution: {integrity: sha512-GakEj0w7jjDVdQ8Nm3K+MooQxQpFBxCrWA470YFj0Na5/GKFvXtGZQ/3rj2f75jz0X8eJDDVPE1FhoSyfdWH9Q==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
 
@@ -10821,24 +10817,6 @@ snapshots:
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
 
-  '@azure/storage-blob@12.24.0':
-    dependencies:
-      '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.9.0
-      '@azure/core-client': 1.9.2
-      '@azure/core-http-compat': 2.1.2
-      '@azure/core-lro': 2.7.2
-      '@azure/core-paging': 1.6.2
-      '@azure/core-rest-pipeline': 1.18.1
-      '@azure/core-tracing': 1.2.0
-      '@azure/core-util': 1.11.0
-      '@azure/core-xml': 1.4.4
-      '@azure/logger': 1.1.4
-      events: 3.3.0
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@azure/storage-blob@12.26.0':
     dependencies:
       '@azure/abort-controller': 2.1.2
@@ -11344,7 +11322,7 @@ snapshots:
 
   '@itwin/imodels-client-authoring@5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)':
     dependencies:
-      '@azure/storage-blob': 12.24.0
+      '@azure/storage-blob': 12.26.0
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/object-storage-azure': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
       '@itwin/object-storage-core': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -11381,7 +11359,7 @@ snapshots:
   '@itwin/object-storage-azure@2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)':
     dependencies:
       '@azure/core-paging': 1.6.2
-      '@azure/storage-blob': 12.24.0
+      '@azure/storage-blob': 12.26.0
       '@itwin/cloud-agnostic-core': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
       '@itwin/object-storage-core': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
     optionalDependencies:
@@ -12725,7 +12703,7 @@ snapshots:
 
   axobject-query@4.1.0: {}
 
-  azurite@3.32.0:
+  azurite@3.33.0:
     dependencies:
       '@azure/ms-rest-js': 1.11.2
       args: 5.0.3
