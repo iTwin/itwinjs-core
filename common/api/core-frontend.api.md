@@ -404,6 +404,7 @@ export class AccuDraw {
     deactivate(): void;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
+    defaultFocusItem(): ItemField;
     // @internal (undocumented)
     readonly delta: Vector3d;
     disableForSession(): void;
