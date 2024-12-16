@@ -323,7 +323,7 @@ The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
 ```Typescript
-const unitsProvider = IModelApp.quantityFormatter.unitsProvider; // Uses the BasicUnitsProvider by default
+const unitsProvider = new BasicUnitsProvider(); // If @itwin/core-frontend is available, can use IModelApp.quantityFormatter.unitsProvider
 const outUnit = await unitsProvider.findUnitByName("Units.FT");
 
 const formatData = {
