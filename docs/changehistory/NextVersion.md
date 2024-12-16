@@ -6,7 +6,10 @@ publish: false
 
 Table of contents:
 
+- [Selection set](#selection-set)
 - [API deprecations](#api-deprecations)
+  - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/core-frontend](#itwincore-frontend)
   - [@itwin/presentation-common](#itwinpresentation-common)
 - [Breaking Changes](#breaking-changes)
   - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
@@ -18,6 +21,17 @@ Table of contents:
     - [@itwin/core-electron](#itwincore-electron)
   - [Packages dropped](#packages-dropped)
 
+## Selection set
+
+There are two similar selection-related concepts in `@itwin/core-frontend` - [SelectionSet]($core-frontend) and [HiliteSet]($core-frontend). The former is generally used by interactive tools (e.g. the "Move element" tool), so it contains what tools think is selected. The latter is used by the graphics system to know what elements to highlight, so it contains what users think is selected. Generally, we want the two sets to be in sync to avoid confusion why tools act on different elements than what users think are selected. Keeping them in sync was not always possible, because `HiliteSet` may store Model and SubCategory ids, but `SelectionSet` could only store Element ids. So we could end up in situations where a Model id is added to `HiliteSet` and `SelectionSet` is empty, making users think that all elements in that model are selected, but tools not knowing anything about it.
+
+To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to support storing Model and SubCategory ids, similar to what `HiliteSet` does. The change has been made in a backwards compatible way, so all existing code using `SelectionSet` should continue to work as before:
+
+- `SelectionSet` modification methods `add`, `addAndRemove`, `remove`, `replace` now, in addition to existing `Id64Arg` argument, accept the `SelectableIds` structure.
+- `SelectionSetEvent` attributes `added` and `removed` have been deprecated, but continue to work as before, containing only element ids. In addition, the event object now contains new `additions` and `removals` attributes, which are instances of `SelectableIds` and contain all ids that were added or removed from the selection set, including those of Model and SubCategory.
+
+Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
+
 ## API deprecations
 
 ### @itwin/core-bentley
@@ -25,23 +39,35 @@ Table of contents:
 - The [IDisposable]($core-bentley) interface, along with related [isIDisposable]($core-bentley) and [using]($core-bentley) utilities, have been deprecated in favor of [TypeScript's built-in](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) `Disposable` type and `using` declarations (from the upcoming [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) feature in ECMAScript).
 
   For example, the following:
+
   ```typescript
-    import { using } from "@itwin/core-bentley";
-    export function doSomeWork() {
-      using(new SomethingDisposable(), (temp) => {
-        // do something with temp
-      });
-    }
-  ```
-  should now be rewritten as:
-  ```typescript
-    export function doSomeWork() {
-      using temp = new SomethingDisposable();
+  import { using } from "@itwin/core-bentley";
+  export function doSomeWork() {
+    using(new SomethingDisposable(), (temp) => {
       // do something with temp
-    }
+    });
+  }
   ```
 
-  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both!  Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+  should now be rewritten as:
+
+  ```typescript
+  export function doSomeWork() {
+    using temp = new SomethingDisposable();
+    // do something with temp
+  }
+  ```
+
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+
+### @itwin/core-frontend
+
+- Deprecated [SelectionSet]($core-frontend)-related APIs:
+
+  - `SelectionSet.has` and `SelectionSet.isSelected` - use `SelectionSet.elements.has(id)` instead.
+  - `SelectionSetEvent.added` and `SelectionSetEvent.removed` - use `SelectionSetEvent.additions.elements` and `SelectionSetEvent.removals.elements` instead.
+
+- Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
 ### @itwin/presentation-common
 
@@ -86,7 +112,7 @@ The following previously-deprecated APIs have been removed:
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                               |
-| ------------------------------ | --------------------------------------------------------- |
+| Removed                        | Replacement                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
+| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
