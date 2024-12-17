@@ -3,9 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as path from "path";
+import * as fs from "fs";
 import { expect } from "chai";
 import getSystemFonts from "get-system-fonts";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { IModelTestUtils, KnownTestLocations } from "./IModelTestUtils";
 import {
     BlobContainer,
   EditableWorkspaceContainer, EditableWorkspaceDb, FontFile, IModelHost, SettingGroupSchema, SettingsContainer,
@@ -15,7 +17,7 @@ import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 import { FontFamilyDescriptor, FontId, FontType } from "@itwin/core-common";
 
-describe("Font Examples", () => {
+describe.only("Font Examples", () => {
   let iModel: StandaloneDb;
 
   before(async () => {
@@ -89,5 +91,23 @@ describe("Font Examples", () => {
 
     const sysFontId = await selectSystemFont();
     expect(sysFontId).to.equal(1);
+  });
+
+  it("embeds user-provided SHX font", async () => {
+    // __PUBLISH_EXTRACT_START__ Fonts.embedShxFont
+    async function embedShxFont(filename: string): Promise<FontId> {
+      const blob = fs.readFileSync(filename);
+      const familyName = path.basename(filename, path.extname(filename));
+      const fontFile = FontFile.createFromShxFontBlob({ blob, familyName });
+      await iModel.fonts.embedFontFile({ file: fontFile });
+      const fontId = iModel.fonts.findId({ name: familyName, type: FontType.Shx });
+      assert(undefined !== fontId);
+      return fontId;
+    }
+    // __PUBLISH_EXTRACT_END__
+
+    const shxFileName = path.join(KnownTestLocations.assetsDir, "Cdm.shx");
+    const shxFontId = await embedShxFont(shxFileName);
+    expect(shxFontId).greaterThan(0);
   });
 });
