@@ -103,11 +103,6 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  */
 export type MaybePromise<T> = T | Promise<T>;
 
-/** A type that is either `T` or `undefined`.
- * @public
- */
-export type Maybe<T> = T | undefined;
-
 /** Extracts the type to which the Promise returned by an async function resolves.
  * @public
  */

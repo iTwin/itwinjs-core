@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, Maybe, OrderedId64Array
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -286,14 +286,17 @@ class ChangedEntitiesProc {
 
 /** @internal */
 interface IConflictHandler {
-  handler: (arg: RebaseChangesetConflictArgs) => Maybe<DbConflictResolution>;
-  next: Maybe<IConflictHandler>;
+  handler: (arg: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+  next: IConflictHandler | undefined;
   id: string;
 }
 
-/** @internal */
+/**
+ * @internal
+ * Manages conflict resolution during a merge operation.
+*/
 export class ChangeMergeManager {
-  private _conflictHandlers: Maybe<IConflictHandler>;
+  private _conflictHandlers?: IConflictHandler;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
   public setMergeMethod(method: PullMergeMethod) {
     this._iModel[_nativeDb].pullMergeSetMethod(method)
@@ -307,7 +310,7 @@ export class ChangeMergeManager {
   public inProgress() {
     return this._iModel[_nativeDb].pullMergeInProgress();
   }
-  public onConflict(args: RebaseChangesetConflictArgs): Maybe<DbConflictResolution> {
+  public onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined {
     let curr = this._conflictHandlers;
     while (curr) {
       const resolution = curr.handler(args);
@@ -319,7 +322,7 @@ export class ChangeMergeManager {
     }
     return undefined
   }
-  public addConflictHandler(args: { id: string, handler: (args: RebaseChangesetConflictArgs) => Maybe<DbConflictResolution> }) {
+  public addConflictHandler(args: { id: string, handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined }) {
     const idExists = (id: string) => {
       let curr = this._conflictHandlers;
       while (curr) {
@@ -367,7 +370,7 @@ export class TxnManager {
     return this._isDisposed;
   }
 
-  /**  @internal */
+  /** @internal */
   public readonly changeMergeManager: ChangeMergeManager;
 
   /** @internal */
@@ -495,31 +498,55 @@ export class TxnManager {
 
   /** @internal */
   protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution {
-    try {
-      const resolution = this.changeMergeManager.onConflict(args);
-      if (resolution !== undefined)
-        return resolution;
-    } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err));
-      return DbConflictResolution.Abort;
-    }
-
-    const category = "DgnCore";
     const interpretConflictCause = (cause: DbConflictCause) => {
       switch (cause) {
         case DbConflictCause.Data:
           return "data";
         case DbConflictCause.NotFound:
-          return "not found";
+          return "notfound";
         case DbConflictCause.Conflict:
           return "conflict";
         case DbConflictCause.Constraint:
           return "constraint";
         case DbConflictCause.ForeignKey:
-          return "foreign key";
+          return "foreignkey";
       }
     };
 
+    const primaryKeyValues = () => {
+      const pkv = [];
+
+      const stage = args.opcode === DbOpcode.Insert ? DbChangeStage.New : DbChangeStage.Old;
+      for (const pk of args.getPrimaryKeyColumns()) {
+        const type = args.getValueType(pk, stage);
+        if (type === DbValueType.IntegerVal)
+          pkv.push(args.getValueId(pk, stage));
+        else if (type === DbValueType.TextVal)
+          pkv.push(args.getValueText(pk, stage));
+        else if (type === DbValueType.FloatVal)
+          pkv.push(args.getValueDouble(pk, stage));
+        else if (type === DbValueType.BlobVal)
+          pkv.push(args.getValueBinary(pk, stage));
+        else
+          pkv.push(null);
+      }
+      return pkv;
+    };
+
+    const getChangeMetaData = () => {
+      return {
+        parent: this._iModel.changeset,
+        txn: args.txn,
+        table: args.tableName,
+        op: args.opcode === DbOpcode.Delete ? "delete" : args.opcode === DbOpcode.Insert ? "insert" : "update",
+        cause: interpretConflictCause(args.cause),
+        indirect: args.indirect,
+        primarykey: primaryKeyValues(),
+        fkConflictCount: args.cause === DbConflictCause.ForeignKey ? args.getForeignKeyConflicts() : 0,
+      };
+    }
+
+    // Default conflict resolution for which custom handler is never called.
     if (args.cause === DbConflictCause.Data && !args.indirect) {
       if (args.tableName === "be_Prop") {
         if (args.getValueText(0, DbChangeStage.Old) === "ec_Db" && args.getValueText(1, DbChangeStage.Old) === "localDbInfo") {
@@ -529,50 +556,54 @@ export class TxnManager {
       if (args.tableName.startsWith("ec_")) {
         return DbConflictResolution.Skip;
       }
-      const msg = "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.";
-      args.setLastError(msg);
-      Logger.logError(category, msg);
-      args.dump();
-      return DbConflictResolution.Replace;
     }
 
     if (args.cause === DbConflictCause.Conflict) {
       if (args.tableName.startsWith("ec_")) {
         return DbConflictResolution.Skip;
       }
-      const msg = "PRIMARY KEY INSERT CONFLICT - rejecting this changeset";
-      args.setLastError(msg);
-      Logger.logError(category, msg);
-      args.dump();
-      return DbConflictResolution.Abort;
+    }
 
+    try {
+      const resolution = this.changeMergeManager.onConflict(args);
+      if (resolution !== undefined)
+        return resolution;
+    } catch (err) {
+      const msg = `Rebase failed. Custom conflict handler should not throw exception. Aborting txn. ${BentleyError.getErrorMessage(err)}`;
+      Logger.logError(BackendLoggerCategory.IModelDb, msg, getChangeMetaData());
+      args.setLastError(msg);
+      return DbConflictResolution.Abort;
+    }
+
+    if (args.cause === DbConflictCause.Data && !args.indirect) {
+      Logger.logInfo(BackendLoggerCategory.IModelDb, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered. Local change will replace existing.", getChangeMetaData());
+      return DbConflictResolution.Replace;
+    }
+
+    if (args.cause === DbConflictCause.Conflict) {
+      const msg = "PRIMARY KEY insert conflict. Aborting rebase.";
+      Logger.logError(BackendLoggerCategory.IModelDb, msg, getChangeMetaData());
+      args.setLastError(msg);
+      return DbConflictResolution.Abort;
     }
 
     if (args.cause === DbConflictCause.ForeignKey) {
-      const nConflicts = args.getForeignKeyConflicts();
-      const msg = `Detected ${nConflicts} foreign key conflicts in ChangeSet. Aborting merge.`;
+      const msg = `Foreign key conflicts in ChangeSet. Aborting rebase.`;
+      Logger.logInfo(BackendLoggerCategory.IModelDb, msg, getChangeMetaData());
       args.setLastError(msg);
       return DbConflictResolution.Abort;
     }
 
     if (args.cause === DbConflictCause.NotFound) {
+      Logger.logInfo(BackendLoggerCategory.IModelDb, "PRIMARY KEY not found. Skipping local change.", getChangeMetaData());
       return DbConflictResolution.Skip;
     }
 
     if (args.cause === DbConflictCause.Constraint) {
-      if (Logger.isEnabled(category, LogLevel.Info)) {
-        Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
-        args.dump();
-      }
-      Logger.logWarning(category, "Constraint conflict handled by rejecting incoming change. Constraint conflicts are NOT expected. These happen most often when two clients both insert elements with the same code. That indicates a bug in the client or the code server.");
+      Logger.logInfo(BackendLoggerCategory.IModelDb, "Constraint voilation detected. Generally caused by db constraints like UNIQUE index. Skipping local change.", getChangeMetaData());
       return DbConflictResolution.Skip;
     }
 
-    if (Logger.isEnabled(category, LogLevel.Info)) {
-      Logger.logInfo(category, `Conflict detected - Cause: ${interpretConflictCause(args.cause)}`);
-      args.dump();
-      Logger.logInfo(category, "Conflicting resolved by replacing the existing entry with the change");
-    }
     return DbConflictResolution.Replace;
   }
 

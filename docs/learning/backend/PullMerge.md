@@ -14,16 +14,33 @@ SQLite records changes by recording INSERT/UPDATE/DELETE operations with old and
 
 Things get interesting when there are local changes specifically to the same data as the incoming changeset. This operation is called pull-merge. Doing that can result in conflicts which from the SQLite perspective is as follows.
 
-|  | Operation | Conflict description                                                    | Type         |
-|--|-----------|-------------------------------------------------------------------------|--------------|
-|  | `INSERT`  | 1. PRIMARY KEY already exists                                           | `Conflict`   |
-|  | `DELETE`  | 2. PRIMARY KEY does not exist                                           | `NotFound`   |
-|  | `UPDATE`  | 3. PRIMARY KEY does not exist                                           | `NotFound`   |
-|  |           | 1. Database constraint voliation e.g. UNIQUE, CHECK                     | `Constraint` |
-|  |           | 2. PRIMARY KEY does not exist but other fields values does not match    | `Data`       |
-|  |           | 3. PRIMARY KEY does not exist but other fields values does not match.   | `Data`       |
-|  |           | 4. Database constraint voliation e.g. UNIQUE, CHECK                     | `Constraint` |
-|  | -         | Forignkey voliations. Its is not for given row but for whole changeset. | `ForeignKey` |
+|  | Operation | Conflict description                                                   | Type         |
+|--|-----------|------------------------------------------------------------------------|--------------|
+|  | `INSERT`  | 1. PRIMARY KEY already exists                                          | `Conflict`   |
+|  |           | 2. Database constraint voliation e.g. UNIQUE, CHECK                    | `Constraint` |
+|  | `DELETE`  | 1. PRIMARY KEY does not exist                                          | `NotFound`   |
+|  |           | 2. PRIMARY KEY does exist but other fields values does not match       | `Data`       |
+|  |           | 3. Database constraint voliation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
+|  | `UPDATE`  | 1. PRIMARY KEY does not exist                                          | `NotFound`   |
+|  |           | 2. PRIMARY KEY does not exist but data fields values does not match    | `Data`       |
+|  |           | 3. Database constraint voliation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
+|  | -         | Forignkey voliations. Its is not for given row but for whole changeset | `ForeignKey` |
+
+Above conflict can be resolved in on of the followed allowed ways. A `REPLACE` resolution may cause `CONSTRAINT` conflict afterword if db constrain are voilated by `REPLACE` action. If `CONSTRAINT` conflict is skipped then it can cause `ForeignKey` voliation at the end of changeset apply.
+
+|  | Operation | Conflict     | Skip                        | Replace                                   | Abort   | Default   |
+|--|-----------|--------------|-----------------------------|-------------------------------------------|---------|-----------|
+|  | `INSERT`  | `Conflict`   | Allowed                     | Allowed but may cause constraint conflict | Allowed | `ABORT`   |
+|  |           | `Constraint` | Allowed. Change is ignored. | n/a                                       | Allowed | `SKIP`    |
+|  | `DELETE`  | `NotFound`   | Allowed                     | n/a                                       | Allowed | `ABORT`   |
+|  |           | `Data`       | Allowed                     | Allowed but may cause constraint conflict | Allowed | `REPLACE` |
+|  |           | `Constraint` | Allowed. Change is ignored. | n/a                                       | Allowed | `SKIP`    |
+|  | `UPDATE`  | `NotFound`   | Allowed                     | n/a                                       | Allowed | `ABORT`   |
+|  |           | `Data`       | Allowed                     | Allowed but may cause constraint conflict | Allowed | `REPLACE` |
+|  |           | `Constraint` | Allowed. Change is ignored. | n/a                                       | Allowed | `SKIP`    |
+|  | -         | `ForeignKey` | n/a                         | n/a                                       | Allowed | `ABORT`   |
+
+> Note even ForeignKey can be skipped but this will cause db integrity check to fail or any change to db in future may fail.
 
 The foreign key one is the only one that is not associated with a specific row/table as it is a count of FK left unresolved and is a fatal error pointing to an error in application logic.
 

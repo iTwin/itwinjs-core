@@ -26,6 +26,7 @@ export interface ChangesetConflictArgs {
   getValueInteger: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
   getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
   isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
+  getColumnNames(): string[];
 }
 
 export interface MergeChangesetConflictArgs extends ChangesetConflictArgs {

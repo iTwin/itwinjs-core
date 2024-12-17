@@ -199,7 +199,10 @@ export interface IModelHostOptions {
    */
   allowSharedChannel?: boolean;
 
-  /** @internal */
+  /**
+   * @internal
+   * The pull merge method used by the IModelHost. Defaults to "Merge".
+  */
   pullMergeMethod?: PullMergeMethod;
 }
 
@@ -470,14 +473,6 @@ export class IModelHost {
   public static get pullMergeMethod(): PullMergeMethod {
     return this.configuration?.pullMergeMethod ?? IModelHostConfiguration.defaultPullMergeMethod;
   }
-  /** Gets the pull merge method used by the IModelHost.
-   * @internal
-   * @note If a custom pull merge method is not configured, the default pull merge method is used.
-   * @returns The pull merge method.
-   */
-  // public static set pullMergeMethod(method: PullMergeMethod):  {
-  //   return this.configuration?.pullMergeMethod ?? IModelHostConfiguration.defaultPullMergeMethod;
-  // }
 
   private static _isValid = false;
 

@@ -17,7 +17,8 @@ import {
   ChannelControl,
   DictionaryModel,
   IModelHost,
-  SpatialCategory
+  SpatialCategory,
+  SqliteChangesetReader
 } from "../../core-backend";
 import { HubMock } from "../../HubMock";
 import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
@@ -321,7 +322,7 @@ describe("Change merge method", () => {
     b2.close();
   });
 
-  it("rebase with be_props (insert conflict) ", async () => {
+  it("rebase with be_props (insert conflict)", async () => {
     const b1 = await ctx.openB1();
     b1.txns.changeMergeManager.setMergeMethod("Rebase");
 
@@ -334,9 +335,10 @@ describe("Change merge method", () => {
 
     b2.saveFileProperty({ namespace: "test", name: "test" }, "test2");
     b2.saveChanges("test2");
+
     await assertThrowsAsync(
       async () => b2.pushChanges({ description: "test2" }),
-      "PRIMARY KEY INSERT CONFLICT - rejecting this changeset");
+      "PRIMARY KEY insert conflict. Aborting rebase.");
 
     assert.equal(b2.queryFilePropertyString({ namespace: "test", name: "test" }), "test1");
 
@@ -351,6 +353,10 @@ describe("Change merge method", () => {
         if (args.cause === DbConflictCause.Conflict) {
           if (args.tableName === "be_Prop") {
             if (args.opcode === DbOpcode.Insert) {
+              chai.expect(args.getColumnNames()).to.be.deep.equal(["Namespace", "Name", "Id", "SubId", "TxnMode", "StrData", "RawSize", "Data"]);
+              chai.expect(args.txn.id).to.be.equal("0x100000000");
+              chai.expect(args.txn.descr).to.be.equal("test2");
+              chai.expect(args.txn.type).to.be.equal("Data");
               const localChangedVal = args.getValueText(5, DbChangeStage.New);
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
               b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
@@ -364,7 +370,23 @@ describe("Change merge method", () => {
 
     // resume rebase see if it resolve the conflict
     b2.txns.changeMergeManager.resume();
+
+    // use changeset api to read txn directly
+    const reader = SqliteChangesetReader.openTxn({ db: b2, txnId: "0x100000000" });
+    chai.expect(reader.step()).to.be.true;
+    chai.expect(reader.tableName).to.be.equal("be_Prop");
+    chai.expect(reader.getColumnNames(reader.tableName)[5]).to.be.equal("StrData");
+    // note the operation changed from insert to update
+    chai.expect(reader.op).to.be.equal("Updated");
+    // note this old value is from master branch after changeset was recomputed
+    chai.expect(reader.getChangeValueText(5, "Old")).to.be.equal("test1");
+    // note this new value is from local branch after merger.
+    chai.expect(reader.getChangeValueText(5, "New")).to.be.equal("test1 + test2");
+    reader.close();
+
     assert.equal(b2.queryFilePropertyString({ namespace: "test", name: "test" }), "test1 + test2");
+
+
 
     await b2.pushChanges({ description: "test2" });
     await b1.pullChanges();

@@ -146,7 +146,6 @@ import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
-import { Maybe } from '@itwin/core-bentley';
 import { Metadata } from '@itwin/object-storage-core';
 import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
@@ -676,20 +675,20 @@ export interface ChangeInstanceKey {
     id: Id64String;
 }
 
-// @internal (undocumented)
+// @internal
 export class ChangeMergeManager {
     constructor(_iModel: BriefcaseDb | StandaloneDb);
     // (undocumented)
     addConflictHandler(args: {
         id: string;
-        handler: (args: RebaseChangesetConflictArgs) => Maybe<DbConflictResolution>;
+        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     // (undocumented)
-    getMergeMethod(): "Merge" | "Rebase";
+    getMergeMethod(): "Rebase" | "Merge";
     // (undocumented)
     inProgress(): boolean;
     // (undocumented)
-    onConflict(args: RebaseChangesetConflictArgs): Maybe<DbConflictResolution>;
+    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
     // (undocumented)
     removeConflictHandler(id: string): void;
     // (undocumented)
@@ -3523,7 +3522,7 @@ export interface IModelHostOptions {
     maxTileCacheDbSize?: number;
     // @beta
     profileName?: string;
-    // @internal (undocumented)
+    // @internal
     pullMergeMethod?: PullMergeMethod;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
