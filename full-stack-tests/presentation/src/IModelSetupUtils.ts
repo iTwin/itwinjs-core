@@ -2,6 +2,8 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
+import { XMLParser } from "fast-xml-parser";
 import path from "path";
 import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
@@ -18,7 +20,6 @@ import {
   PhysicalElementProps,
 } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { XMLParser } from "fast-xml-parser";
 
 export class TestIModelConnection extends IModelConnection {
   constructor(private readonly _db: IModelDb) {
@@ -26,9 +27,12 @@ export class TestIModelConnection extends IModelConnection {
     IModelConnection.onOpen.raiseEvent(this);
   }
 
-  public override get isClosed(): boolean { return !this._db.isOpen }
+  public override get isClosed(): boolean {
+    return !this._db.isOpen;
+  }
 
   public override async close(): Promise<void> {
+    IModelConnection.onClose.raiseEvent(this);
     this._db.close();
   }
 
@@ -192,11 +196,11 @@ export function insertPhysicalElement<TAdditionalProps extends object>(
     code: Code.createEmpty(),
     ...(parentId
       ? {
-        parent: {
-          id: parentId,
-          relClassName: `BisCore:PhysicalElementAssemblesElements`,
-        },
-      }
+          parent: {
+            id: parentId,
+            relClassName: `BisCore:PhysicalElementAssemblesElements`,
+          },
+        }
       : undefined),
     ...elementProps,
   } as PhysicalElementProps);

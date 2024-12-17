@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
-import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
+import { PublishedSchemaXmlFileLocater, SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
@@ -209,5 +209,8 @@ describe("SchemaXmlFileLocater tests:", () => {
   it("getSchemaKey, invalid version, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" version=""> </ECSchema>`;
     expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+  });
+  it("PublishedSchemaXmlFileLocater - should throw with incorrect argument", async () => {
+    assert.throw(() => new PublishedSchemaXmlFileLocater(__dirname), Error, `The directory ${path.join(__dirname, "ECSchemas")} containing standard schemas does not exist.`);
   });
 });
