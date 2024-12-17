@@ -140,8 +140,12 @@ export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implemen
   public constructor(knownBackendAssetsDir: string) {
     super();
 
+    const ecSchemaDir = path.join(knownBackendAssetsDir, "ECSchemas");
+    if (!fs.existsSync(ecSchemaDir))
+      throw new Error(`The directory ${ecSchemaDir} containing standard schemas does not exist.`);
+
     // Pre-defined set of standard schema search paths
-    this.searchPaths.push(...globSync(path.join(knownBackendAssetsDir, "ECSchemas", "*/"), { windowsPathsNoEscape: true }).filter(fs.existsSync));
+    this.searchPaths.push(...globSync(path.join(ecSchemaDir, "*/"), { windowsPathsNoEscape: true }).filter(fs.existsSync));
   }
 
   /**

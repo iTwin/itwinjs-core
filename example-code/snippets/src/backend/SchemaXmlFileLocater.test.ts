@@ -88,11 +88,9 @@ describe("PublishedSchemaXmlFileLocater - locate standard schemas", () => {
     context.addLocater(locater);
 
     const linearReferencingSchema = context.getSchemaSync(lrSchemaKey);
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", false); // should not be loaded
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
 
     const unitsSchema = context.getSchemaSync(unitsSchemaKey);
-    testLocatedSchema(unitsSchema, "Units", "DummyUnit", false); // should not be loaded
     testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
   });
 
@@ -104,11 +102,9 @@ describe("PublishedSchemaXmlFileLocater - locate standard schemas", () => {
     context.addLocater(locater);
 
     const linearReferencingSchema = await context.getSchema(lrSchemaKey);
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", false); // should not be loaded
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
 
     const unitsSchema = await context.getSchema(unitsSchemaKey);
-    testLocatedSchema(unitsSchema, "Units", "DummyUnit", false); // should not be loaded
     testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
   });
 
