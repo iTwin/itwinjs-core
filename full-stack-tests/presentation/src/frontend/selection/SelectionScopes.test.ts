@@ -2,13 +2,14 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../IntegrationTests";
-import { waitFor } from "../Utils";
-import { TestIModelConnection } from "../IModelSetupUtils";
+import { TestIModelConnection } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests";
+import { waitFor } from "../../Utils";
 
 describe("Selection Scopes", () => {
   let imodel: IModelConnection;
