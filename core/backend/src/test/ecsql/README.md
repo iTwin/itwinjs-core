@@ -1,6 +1,6 @@
 # Readme for ECDb tests
 
-This file is the readme for the ECDB SQL test runner. All files ending in .ecdbtest.md in the directory will be used.
+This file is the readme for the ECDB SQL test runner. All files ending in .ecsql.md in the directory will be used.
 
 A h1-header (#) indicates a new test and is at the same time the title of the test. A file may contain multiple tests
 Regular text, blockquotes or html comments can be used to describe the test, they do not affect test execution
@@ -78,7 +78,7 @@ SELECT * from meta.ECSchemaDef LIMIT 5
 - bindInt 1, 23
 - bindInt param2, 3
 
-For all example related to binders please follow `Binders.ecdbtest.md` file
+For all example related to binders please follow `Binders.ecsql.md` file
 
 > If we expect prepare to fail use:
 >
@@ -170,15 +170,15 @@ As an alternative, column infos can be formatted as json in a code block like th
 ]
 ```
 
-> Note :- When dealing with binary data always enclose the Uint8Array values within `BIN()`. Follow examples written in `DataTypes.ecdbtest.md`
+> Note :- When dealing with binary data always enclose the Uint8Array values within `BIN()`. Follow examples written in `DataTypes.ecsql.md`
 
-Check out the Examples.ecdbtest.md or other files in this directory.
+Check out the Examples.ecsql.md or other files in this directory.
 
 ## Test generator
 
 There is a script which takes a statement as input and generates a test from it.
 Check ECDbMarkdownTestGenerator.ts, it can be called like this:
-`node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t`
+`node lib\cjs\test\ecsql\src\ECSqlTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t`
 
 ## Generate coverage
 
@@ -188,4 +188,4 @@ Link the native addon into you itwinjs-core directory ( iModelJsNodeAddon\linkna
 Build the tests ( npm run build in core/backend )
 This is the command to run from the core/backend working dir to generate coverage:
 
-> OpenCppCoverage --sources (pathToNative)\src\imodel-native\iModelCore\ECDb\* --modules iTwin* --cover_children --export_type html:lib/coverage -- "C:\Program Files\nodejs\npm.cmd" run test
+> OpenCppCoverage --sources (pathToNative)\src\imodel-native\iModelCore\ECDb\* --modules iTwin\* --cover_children --export_type html:lib/coverage -- "C:\Program Files\nodejs\npm.cmd" run test

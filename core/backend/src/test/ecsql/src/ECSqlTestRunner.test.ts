@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../core-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend";
+import { KnownTestLocations } from "../../KnownTestLocations";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
-import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECDbMarkdownTestParser";
+import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
 import * as path from "path";
 import * as fs from "fs";
-import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
+import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 
 enum TestDataset {
@@ -21,8 +21,8 @@ const snapshotDbs: { [key in TestDataset]?: SnapshotDb } = {};
 
 describe("Markdown based ECDb test runner", async () => {
   before(async () => {
-    await ECDbMarkdownDatasets.generateFiles();
-    const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECDbTests", TestDataset.AllProperties);
+    await ECSqlDatasets.generateFiles();
+    const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECSqlTests", TestDataset.AllProperties);
     if (!fs.existsSync(datasetFilePath)) {
       throw new Error(`Dataset file ${datasetFilePath} does not exist`);
     }

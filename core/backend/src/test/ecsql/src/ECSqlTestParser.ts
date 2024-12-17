@@ -5,7 +5,6 @@
 import * as path from "path";
 import * as fs from "fs";
 import { marked, Tokens } from "marked";
-import { IModelTestUtils } from "../IModelTestUtils";
 
 export interface ECDbTestProps {
   fileName: string;
@@ -180,8 +179,8 @@ function understandAndReplaceBinaryData(str: string): any{
 
 export class ECDbMarkdownTestParser {
   public static parse(): ECDbTestProps[] {
-    const testAssetsDir = IModelTestUtils.resolveAssetFile("ECDbTests");
-    const testFiles = fs.readdirSync(testAssetsDir, "utf-8").filter((fileName) => fileName.toLowerCase().endsWith("ecdbtest.md"));
+    const testAssetsDir = path.join(__dirname ,"..","queries");
+    const testFiles = fs.readdirSync(testAssetsDir, "utf-8").filter((fileName) => fileName.toLowerCase().endsWith("ecsql.md"));
     const out: ECDbTestProps[] = [];
 
     for (const fileName of testFiles) {

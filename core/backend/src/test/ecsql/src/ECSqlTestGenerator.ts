@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb, SnapshotDb } from "../../core-backend";
+import { IModelDb, SnapshotDb } from "../../../core-backend";
 import { DbResult, ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
-import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
+import { KnownTestLocations } from "../../KnownTestLocations";
 import { format } from "sql-formatter";
 
 // Call like this:
-// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t
-// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT te.ECInstanceId [MyId], te.s, te.DT [Date], row_number() over(PARTITION BY te.DT ORDER BY te.ECInstanceId) as [RowNumber] from aps.TestElement te WHERE te.i < 106" -t
+// node lib\cjs\test\ecsql\src\ECSqlTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t
+// node lib\cjs\test\ecsql\src\ECSqlTestGenerator.js AllProperties.bim "SELECT te.ECInstanceId [MyId], te.s, te.DT [Date], row_number() over(PARTITION BY te.DT ORDER BY te.ECInstanceId) as [RowNumber] from aps.TestElement te WHERE te.i < 106" -t
 async function runConcurrentQuery(imodel: IModelDb, sql: string): Promise<{metadata: any[], rows: any[] }> {
   const queryOptions: QueryOptionsBuilder = new QueryOptionsBuilder();
   queryOptions.setRowFormat(QueryRowFormat.UseECSqlPropertyNames);
@@ -109,7 +109,7 @@ ${JSON.stringify(results, null, 2)}
 `;
   }
 
-  const outputFilePath = path.join(__dirname, "generated.ecdbtest.md");
+  const outputFilePath = path.join(__dirname, "generated.ecsql.md");
   fs.appendFileSync(outputFilePath, markdownContent, "utf-8");
   // eslint-disable-next-line no-console
   console.log(`Results written to ${outputFilePath}`);
@@ -127,8 +127,8 @@ async function main() {
   const useTables = tablesFlag === "-t";
   let imodel: IModelDb | undefined;
   try {
-    await ECDbMarkdownDatasets.generateFiles();
-    const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECDbTests", dataset);
+    await ECSqlDatasets.generateFiles();
+    const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECSqlTests", dataset);
     imodel = SnapshotDb.openFile(datasetFilePath);
     const { metadata, rows } = await runConcurrentQuery(imodel, sql);
     pullAdditionalMetadataThroughECSqlStatement(imodel, metadata, sql);
