@@ -210,7 +210,7 @@ export class MapFeatureInfoDecorator implements Decorator {
 
     if (this._draper) {
       // Dispose draper every time?
-      this._draper.dispose();
+      this._draper[Symbol.dispose]();
       this._draper = undefined;
     }
   };

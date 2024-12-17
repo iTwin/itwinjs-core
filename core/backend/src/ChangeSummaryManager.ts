@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, using } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -101,9 +101,8 @@ export class ChangeSummaryManager {
 
     const changesCacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModel.iModelId);
     if (!IModelJsFs.existsSync(changesCacheFilePath)) {
-      using(new ECDb(), (changeCacheFile: ECDb) => {
-        ChangeSummaryManager.createChangeCacheFile(iModel, changeCacheFile, changesCacheFilePath);
-      });
+      using changeCacheFile = new ECDb();
+      ChangeSummaryManager.createChangeCacheFile(iModel, changeCacheFile, changesCacheFilePath);
     }
 
     assert(IModelJsFs.existsSync(changesCacheFilePath));
@@ -380,9 +379,8 @@ export class ChangeSummaryManager {
     if (!IModelJsFs.existsSync(changeset.pathname))
       throw new IModelError(IModelStatus.FileNotFound, `Failed to download change set: ${changeset.pathname}`);
 
-    let changesFile: ECDb | undefined;
     try {
-      changesFile = ChangeSummaryManager.openOrCreateChangesFile(iModel);
+      using changesFile = ChangeSummaryManager.openOrCreateChangesFile(iModel);
       assert(changesFile[_nativeDb] !== undefined, "Invalid changesFile - should've caused an exception");
 
       let changeSummaryId = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, changesetId);
@@ -402,8 +400,6 @@ export class ChangeSummaryManager {
       changesFile.saveChanges();
       return changeSummaryId;
     } finally {
-      if (changesFile !== undefined)
-        changesFile.dispose();
       IModelJsFs.unlinkSync(changeset.pathname);
     }
   }

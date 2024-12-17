@@ -152,7 +152,7 @@ export class Presentation {
    */
   public static terminate(): void {
     if (this._clientsStorage) {
-      this._clientsStorage.dispose();
+      this._clientsStorage[Symbol.dispose]();
       this._clientsStorage = undefined;
     }
     if (this._disposeIModelOpenedListener) {
@@ -165,7 +165,7 @@ export class Presentation {
     }
     RpcManager.unregisterImpl(PresentationRpcInterface);
     if (this._rpcImpl) {
-      this._rpcImpl.dispose();
+      this._rpcImpl[Symbol.dispose]();
       this._rpcImpl = undefined;
     }
     if (this._disposeIpcHandler) {
@@ -188,7 +188,7 @@ export class Presentation {
   }
 
   private static disposeClientManager(_id: string, storeItem: ClientStoreItem) {
-    storeItem.manager.dispose();
+    storeItem.manager[Symbol.dispose]();
   }
 
   /**

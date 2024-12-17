@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { assert, IDisposable, using } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { CategoryDescription } from "./Category";
 import { Content } from "./Content";
 import { Descriptor } from "./Descriptor";
@@ -312,7 +312,7 @@ export function traverseContentItem(visitor: IContentVisitor, descriptor: Descri
   traverseContent(visitor, new Content(descriptor, [item]));
 }
 
-class VisitedCategories implements IDisposable {
+class VisitedCategories implements Disposable {
   private _visitedCategories: CategoryDescription[];
   private _didVisitAllHierarchy: boolean;
   constructor(
@@ -338,7 +338,7 @@ class VisitedCategories implements IDisposable {
       }
     }
   }
-  public dispose() {
+  public [Symbol.dispose]() {
     while (this._visitedCategories.pop()) {
       this._visitor.finishCategory();
     }
@@ -355,11 +355,10 @@ function traverseContentItemFields(visitor: IContentVisitor, fieldHierarchies: F
 
   try {
     fieldHierarchies.forEach((fieldHierarchy) => {
-      using(new VisitedCategories(visitor, fieldHierarchy.field.category), (res) => {
-        if (res.shouldContinue) {
-          traverseContentItemField(visitor, fieldHierarchy, item);
-        }
-      });
+      using res = new VisitedCategories(visitor, fieldHierarchy.field.category)
+      if (res.shouldContinue) {
+        traverseContentItemField(visitor, fieldHierarchy, item);
+      }
     });
   } finally {
     visitor.finishItem();

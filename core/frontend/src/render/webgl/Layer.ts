@@ -23,7 +23,7 @@ abstract class GraphicWrapper extends Graphic {
   }
 
   public dispose(): void {
-    this.graphic.dispose();
+    this.graphic[Symbol.dispose]();
   }
 
   public get isDisposed(): boolean {

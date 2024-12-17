@@ -15,7 +15,7 @@ describe("BufferHandle", () => {
   it("disposes", () => {
     const buf = new BufferHandle(GL.Buffer.Target.ArrayBuffer);
     expect(buf.isDisposed).toBe(false);
-    buf.dispose();
+    buf[Symbol.dispose]();
     expect(buf.isDisposed).toBe(true);
   });
 

@@ -47,7 +47,7 @@ export class EdgeGeometry extends MeshGeometry {
       && this._endPointAndQuadIndices.isDisposed;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.buffers);
     dispose(this._indices);
     dispose(this._endPointAndQuadIndices);
@@ -105,8 +105,8 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
 
   public override get isDisposed(): boolean { return super.isDisposed && this._normalPairs.isDisposed; }
 
-  public override dispose() {
-    super.dispose();
+  public override[Symbol.dispose]() {
+    super[Symbol.dispose]();
     dispose(this._normalPairs);
   }
 
@@ -140,7 +140,7 @@ export class PolylineEdgeGeometry extends MeshGeometry {
 
   public get isDisposed(): boolean { return this._buffers.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this._buffers);
   }
 

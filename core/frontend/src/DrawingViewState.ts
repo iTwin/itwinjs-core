@@ -230,8 +230,8 @@ class SectionAttachment {
     this._drawingExtents.z = Math.abs(this._drawingExtents.z);
   }
 
-  public dispose(): void {
-    this.viewport.dispose();
+  public [Symbol.dispose](): void {
+    this.viewport[Symbol.dispose]();
   }
 
   public addToScene(context: SceneContext): void {

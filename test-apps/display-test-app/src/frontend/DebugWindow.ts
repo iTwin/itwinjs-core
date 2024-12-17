@@ -36,8 +36,8 @@ export class DebugWindow extends Window {
     });
   }
 
-  public dispose(): void {
-    this._panel.dispose();
+  public [Symbol.dispose](): void {
+    this._panel[Symbol.dispose]();
     this.hide();
     this._dispose();
   }
