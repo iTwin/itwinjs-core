@@ -6,15 +6,15 @@ import { expect } from "chai";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { TestIModelConnection } from "../IModelSetupUtils";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
 import { collect, getFieldByLabel } from "../Utils";
-import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("Localization", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await initialize({ localization: testLocalization });
+    await initialize({ imodelAppProps: { localization: testLocalization } });
     await IModelApp.localization.registerNamespace("Test");
     Presentation.presentation.activeLocale = "test";
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";

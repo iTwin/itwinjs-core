@@ -1908,6 +1908,7 @@ importers:
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/unified-selection': ^1.2.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -1962,6 +1963,7 @@ importers:
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/unified-selection': 1.2.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/chai-jest-snapshot': 1.3.8
@@ -2362,7 +2364,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@itwin/presentation-common': workspace:*
-      '@itwin/unified-selection': ^1.1.1
+      '@itwin/unified-selection': ^1.2.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.8
@@ -2394,7 +2396,7 @@ importers:
       typemoq: ^2.1.0
       typescript: ~5.6.2
     dependencies:
-      '@itwin/unified-selection': 1.1.1
+      '@itwin/unified-selection': 1.2.0
       rxjs: 7.8.1
       rxjs-for-await: 1.0.0_rxjs@7.8.1
     devDependencies:
@@ -4109,8 +4111,8 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/core-bentley/4.9.5:
-    resolution: {integrity: sha512-2cFqJnWKdGyNgZziqYHg4KkYVXD3+f4WQ5xhVPkEYffcOpXXz4yFh8nDOZmhgOLAmJo6KDH2x+uNJembcX6wjQ==}
+  /@itwin/core-bentley/4.10.2:
+    resolution: {integrity: sha512-LJ9AGsibfEZedKtScJKRPSFClFrFFUIQcQWTV+SA21fUkz1zoxVGKOAXEikCR2IF4tGfnqY1AfIJjE0eSblsAw==}
     dev: false
 
   /@itwin/core-common/4.8.1_67wltvhdskk2oee2c3z2o4tfly:
@@ -4338,10 +4340,10 @@ packages:
       - '@itwin/core-geometry'
       - supports-color
 
-  /@itwin/presentation-shared/1.1.0:
-    resolution: {integrity: sha512-H0NiWIYpxPSg4bJdQdSo4epdFUqoza/4UEbRj6nin906Mr2oKWu7Jep9OLbFXTmarMtP+q+5iSlp/eTRhTc/Cg==}
+  /@itwin/presentation-shared/1.2.0:
+    resolution: {integrity: sha512-+esa0GJhWxO1MaF5cGH439mOXPXWNX/SZGgaVfPyRE/1DdH33ECaXaeJVSpFqNrrBHn5XxYN5/7Rayb78k2LOg==}
     dependencies:
-      '@itwin/core-bentley': 4.9.5
+      '@itwin/core-bentley': 4.10.2
     dev: false
 
   /@itwin/reality-data-client/1.2.1_mdtbcqczpmeuv6yjzfaigjndwi:
@@ -4386,11 +4388,11 @@ packages:
       - '@itwin/core-geometry'
       - supports-color
 
-  /@itwin/unified-selection/1.1.1:
-    resolution: {integrity: sha512-myygzispTehbgeZBFbOipyt3AvTr9Lx+QvP5hPG3YKyEvGimAtO3Mh6unwmdCxrM9Ue9w5El63Jbr0N+f+ZdVg==}
+  /@itwin/unified-selection/1.2.0:
+    resolution: {integrity: sha512-SeIjqYGNq0k4YiMzix+haRDOhmSu8gpVQOP/iE29HVGbFABUIIKM07PzjV4zSSWh6Ctu2Nq4dPdhiPE9se0C+g==}
     dependencies:
-      '@itwin/core-bentley': 4.9.5
-      '@itwin/presentation-shared': 1.1.0
+      '@itwin/core-bentley': 4.10.2
+      '@itwin/presentation-shared': 1.2.0
       rxjs: 7.8.1
       rxjs-for-await: 1.0.0_rxjs@7.8.1
     dev: false
