@@ -9,21 +9,8 @@ import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { CreateFontFileFromRscBlobArgs, CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
 import { _faceProps, _getData, _key, _implementationProhibited } from "./Symbols";
 import { compareNumbersOrUndefined } from "@itwin/core-bentley";
-import { IModelHost } from "../IModelHost";
+import { IModelNative } from "./NativePlatform"; 
 import { IModelDb } from "../IModelDb";
-
-interface TrueTypeFontSource {
-  readonly type: FontType.TrueType;
-  readonly fileName: LocalFileName;
-  readonly embeddable: boolean;
-}
-
-interface CadFontSource {
-  readonly type: FontType.Shx | FontType.Rsc;
-  readonly data: Uint8Array;
-}
-
-type FontSource = TrueTypeFontSource | CadFontSource;
 
 abstract class FontFileImpl implements FontFile {
   public readonly [_implementationProhibited] = undefined;
@@ -58,6 +45,7 @@ abstract class FontFileImpl implements FontFile {
   public abstract [_getData](): Uint8Array;
 }
 
+/** Points to an OpenType font file on disk. */
 class TrueTypeFontFile extends FontFileImpl {
   readonly #fileName: LocalFileName;
   readonly #embeddable: boolean;
@@ -76,6 +64,7 @@ class TrueTypeFontFile extends FontFileImpl {
   }
 }
 
+/** Holds the binary representation of a SHX or RSC font in memory. */
 export class CadFontFile extends FontFileImpl {
   readonly #data: Uint8Array;
   readonly #type: FontType.Shx | FontType.Rsc;
@@ -91,6 +80,7 @@ export class CadFontFile extends FontFileImpl {
   public override [_getData](): Uint8Array { return this.#data; }
 }
 
+/** Points to a font file in any format embedded in an iModel. */
 export class EmbeddedFontFile extends FontFileImpl {
   // The value of the Id column for the row in the be_Prop table that embeds this font's data.
   readonly #db: IModelDb;
@@ -163,7 +153,7 @@ export function rscFontFileFromBlob(args: CreateFontFileFromRscBlobArgs): FontFi
     throw new Error("Font family name cannot be empty");
   }
 
-  if (!IModelHost.platform.isRscFontData(args.blob)) {
+  if (!IModelNative.platform.isRscFontData(args.blob)) {
     throw new Error("Failed to read font file");
   }
 
@@ -176,7 +166,7 @@ export function rscFontFileFromBlob(args: CreateFontFileFromRscBlobArgs): FontFi
 }
 
 export function trueTypeFontFileFromFileName(fileName: LocalFileName): FontFile {
-  const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
+  const metadata = IModelNative.platform.getTrueTypeFontMetadata(fileName);
   if (metadata.faces.length === 0) {
     // The input was almost certainly not a TrueType font file.
     throw new Error("Failed to read font file");

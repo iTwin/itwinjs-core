@@ -60,6 +60,7 @@ export interface FontProps extends FontFamilyDescriptor {
 
 /** A specific variation of the glyphs defined by a [font family]($docs/learning/backend/Fonts.md).
  * Each face can be italicized, bolded, both, or neither.
+ * Font faces are stored in [FontFile]($backend)s.
  * @beta
  */
 export interface FontFace {
@@ -71,7 +72,7 @@ export interface FontFace {
 
 /** Information about the encoding of a [[FontType.Rsc]] [FontFile]($backend), used when embedding such a font into an iModel.
  * Currently, no public APIs exist to create such fonts.
- * @beta
+ * @alpha
  */
 export interface RscFontEncodingProps {
   codePage?: number;
