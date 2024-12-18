@@ -5,11 +5,11 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../core-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../../core-backend";
+import { IModelTestUtils } from "../../IModelTestUtils";
 import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
+import { KnownTestLocations } from "../../KnownTestLocations";
 
 
 interface IPrimitiveBase {
@@ -164,14 +164,14 @@ function createElemWithNavProp(className: string, _iModelName: IModelDb, modId: 
   } as TestElementWithNavProps;
 }
 
-export class ECDbMarkdownDatasets {
+export class ECSqlDatasets {
   public static async generateFiles(): Promise<void> {
     const fileName = "AllProperties.bim";
 
     await IModelHost.startup();
-    const filePath = IModelTestUtils.prepareOutputFile("ECDbTests", fileName);
+    const filePath = IModelTestUtils.prepareOutputFile("ECSqlTests", fileName);
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "AllPropertiesTest" } });
-    const testSchemaPath = path.join(KnownTestLocations.assetsDir, "ECDbTests", "AllProperties.ecschema.xml");
+    const testSchemaPath = path.join(KnownTestLocations.assetsDir, "ECSqlTests", "AllProperties.ecschema.xml");
     await iModel.importSchemas([testSchemaPath]);
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "MySpatialCategory");
