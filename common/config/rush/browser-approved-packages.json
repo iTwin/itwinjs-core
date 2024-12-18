@@ -348,7 +348,7 @@
     },
     {
       "name": "@itwin/unified-selection",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
