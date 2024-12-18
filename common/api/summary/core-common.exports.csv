@@ -289,9 +289,12 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
+public;interface;FontFamilyDescriptor
 public;type;FontId
 public;class;FontMap
+deprecated;class;FontMap
 public;interface;FontMapProps
+deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;interface;FormDataCommon
@@ -761,6 +764,7 @@ beta;class;RpcRoutingToken
 internal;interface;RpcSerializedValue
 internal;namespace;RpcSerializedValue
 internal;class;RpcSessionInvocation
+beta;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult

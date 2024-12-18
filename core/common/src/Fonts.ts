@@ -7,10 +7,7 @@
  */
 
 /** The [FontFile]($backend) encodings understood by iTwin.js.
- * [[FontType.Rsc]] and [[FontType.Shx]] are primitive formats originating in the early days of computer-aided drafting. They describe glyphs as simple shapes
- * (e.g., collections of line strings - hence the moniker "stick font").
- * [[FontType.TrueType]] is far more prevalent and generally preferred for more aesthetically pleasing text.
- * @see [FontFile]($backend) to work with fonts in these formats.
+ * @see [this article]($docs/learning/backend/Fonts.md) to learn more about fonts in iModels.
  * @public
  * @extensions
  */
@@ -34,7 +31,7 @@ export enum FontType {
   Shx = 3,
 }
 
-/** An unsigned integer uniquely identifying a font family in the context of an [[IModel]].
+/** An unsigned integer uniquely identifying a [font family]($docs/learning/backend/Fonts.md) in the context of an [[IModel]].
  * The iModel stores a mapping between `FontId`s and [[FontFamilyDescriptor]]s.
  * [[TextString]]s refer to fonts by the their `FontId`s.
  * @see [IModelDbFonts]($backend) to work with font Ids.
@@ -43,28 +40,39 @@ export enum FontType {
  */
 export type FontId = number;
 
-/** Uniquely describes one or more [[FontFace]]s sharing the same name and type.
- * blah blah blah
+/** Uniquely describes one or more [[FontFace]]s sharing the same name and type comprising a single [font family]($docs/learning/backend/Fonts.md).
  * @public
  */
 export interface FontFamilyDescriptor {
+  /** The encoding in which the font family's faces are stored. */
   type: FontType;
+  /** The name of the family. */
   name: string;
 }
 
-/** ###TODO
+/** Represents a [[FontFamilyDescriptor]] stored in an iModel with a unique numeric Id.
  * @public
  */
 export interface FontProps extends FontFamilyDescriptor {
+  /** An integer that uniquely identifies this font family in the context of the iModel in which it is stored. */
   id: FontId;
 }
 
+/** A specific variation of the glyphs defined by a [font family]($docs/learning/backend/Fonts.md).
+ * Each face can be italicized, bolded, both, or neither.
+ * @beta
+ */
 export interface FontFace {
+  /** The name of the font family to which this face belongs. */
   familyName: string;
   isBold: boolean;
   isItalic: boolean;
 }
 
+/** Information about the encoding of a [[FontType.Rsc]] [FontFile]($backend), used when embedding such a font into an iModel.
+ * Currently, no public APIs exist to create such fonts.
+ * @beta
+ */
 export interface RscFontEncodingProps {
   codePage?: number;
   degree?: number;
@@ -75,6 +83,7 @@ export interface RscFontEncodingProps {
 /** The properties of a FontMap
  * @public
  * @extensions
+ * @deprecated in 5.0.0. Use [IModelDb.fonts]($backend)
  */
 export interface FontMapProps { fonts: FontProps[] }
 
@@ -82,9 +91,9 @@ export interface FontMapProps { fonts: FontProps[] }
  * A FontMap holds the set of font names available in an iModel.
  * Within the GeometryStream of an Element, a specific font is referenced by its FontId that is local to the iModel.
  * This class maps FontIds to FontProps.
- * @note The font map is generally established when the iModel is first created to specify the set of fonts available
- * for editors. Adding new entries requires that the schema lock be held.
+ * @note This API has never worked properly. Don't use it.
  * @public
+ * @deprecated in 5.0.0. Use [IModelDb.fonts]($backend) instead.
  */
 export class FontMap {
   public readonly fonts = new Map<FontId, FontProps>();

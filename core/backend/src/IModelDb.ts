@@ -175,6 +175,7 @@ export abstract class IModelDb extends IModel {
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
+  /** @deprecated in 5.0.0. Use [[fonts]]. */
   protected _fontMap?: FontMap;
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
@@ -193,7 +194,7 @@ export abstract class IModelDb extends IModel {
   /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
-  /** ###TODO
+  /** Provides methods for interacting with [font-related information]($docs/learning/backend/Fonts.md) stored in this iModel.
    * @beta
    */
   public get fonts(): IModelDbFonts { return this._fonts; }
@@ -234,6 +235,7 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].restartDefaultTxn();
   }
 
+  /** @deprecated in 5.0.0. Use [[fonts]]. */
   public get fontMap(): FontMap {
     return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap()));
   }
@@ -250,6 +252,7 @@ export abstract class IModelDb extends IModel {
    * @returns The FontId for the newly added font. If a font by that name/type already exists, this method does not fail, it returns the existing Id.
    * @see [FontId and FontMap]($docs/learning/backend/Fonts.md#fontid-and-fontmap)
    * @beta
+   * @deprecated ###TODO remove this
    */
   public addNewFont(name: string, type?: FontType): FontId {
     this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
