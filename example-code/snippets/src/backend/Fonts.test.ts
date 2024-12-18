@@ -10,7 +10,7 @@ import getSystemFonts from "get-system-fonts";
 import { IModelTestUtils, KnownTestLocations } from "./IModelTestUtils";
 import {
     BlobContainer,
-  EditableWorkspaceContainer, EditableWorkspaceDb, FontFile, IModelHost, SettingGroupSchema, SettingsContainer,
+  EditableWorkspaceContainer, EditableWorkspaceDb, FontFile, IModelDb, IModelHost, SettingGroupSchema, SettingsContainer,
   SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
@@ -35,8 +35,11 @@ describe.only("Font Examples", () => {
 
     // __PUBLISH_EXTRACT_START__ Fonts.getSystemFontFamilies
     async function getSystemFontFamilies(includeNonEmbeddable = false): Promise<Map<string, FontFile[]>> {
+      // Map font family names to the font file(s) containing their faces.
       const families = new Map<string, FontFile[]>();
+      // Query the absolute filename for every available system font.
       const systemFontPaths = await getSystemFonts();
+      // Add the font families from each font file to the map.
       for (const path of systemFontPaths) {
         let fontFile;
         try {
@@ -66,10 +69,13 @@ describe.only("Font Examples", () => {
     expect(sysFams.size).greaterThan(0);
     
     // __PUBLISH_EXTRACT_START__ Fonts.selectSystemFont
-    async function selectSystemFont(): Promise<FontId | undefined> {
+    async function selectAndEmbedSystemFont(db: IModelDb): Promise<FontId | undefined> {
+      // Query available font families.
       const availableFamilies = await getSystemFontFamilies();
+      // Ask the user to select the family to be installed.
       const familyToInstall = await askUserToChooseFontFamilyToInstall(availableFamilies.keys());
       if (!familyToInstall || !availableFamilies.get(familyToInstall)) {
+        // No family selected to install.
         return undefined;
       }
 
@@ -78,36 +84,44 @@ describe.only("Font Examples", () => {
         type: FontType.TrueType,
       };
 
-      const fontId = iModel.fonts.findId(descriptor);
-      if (undefined !== fontId) {
-        return fontId;
+      // If the family's faces are already embedded and the family is already assigned an Id, we're finished.
+      for (const family of db.fonts.queryMappedEmbeddedFamilies()) {
+        if (family.name === descriptor.name && family.type === descriptor.type) {
+          return family.id;
+        }
       }
-      
+
+      // Install all of the font files containing the selected families faces.
       const filesToInstall = availableFamilies.get(familyToInstall)!;
-      await Promise.all(filesToInstall.map((file) => iModel.fonts.embedFontFile({ file })));
-      return iModel.fonts.findId(descriptor);
+      await Promise.all(filesToInstall.map((file) => db.fonts.embedFontFile({ file })));
+      return db.fonts.findId(descriptor);
     }
     // __PUBLISH_EXTRACT_END__
 
-    const sysFontId = await selectSystemFont();
+    const sysFontId = await selectAndEmbedSystemFont(iModel);
     expect(sysFontId).to.equal(1);
   });
 
   it("embeds user-provided SHX font", async () => {
     // __PUBLISH_EXTRACT_START__ Fonts.embedShxFont
-    async function embedShxFont(filename: string): Promise<FontId> {
+    async function embedShxFont(filename: string, db: IModelDb): Promise<FontId> {
+      // Read the contents of the SHX file into memory.
       const blob = fs.readFileSync(filename);
+      // Use the base file name as the family name.
+      // Alternatively, this function could be adjusted to accept the family name as an argument.
       const familyName = path.basename(filename, path.extname(filename));
+      // Embed the font file into the iModel, automatically allocating a corresponding FontId for the font family it contains.
       const fontFile = FontFile.createFromShxFontBlob({ blob, familyName });
-      await iModel.fonts.embedFontFile({ file: fontFile });
-      const fontId = iModel.fonts.findId({ name: familyName, type: FontType.Shx });
+      await db.fonts.embedFontFile({ file: fontFile });
+      // Query and return the font Id.
+      const fontId = db.fonts.findId({ name: familyName, type: FontType.Shx });
       assert(undefined !== fontId);
       return fontId;
     }
     // __PUBLISH_EXTRACT_END__
 
     const shxFileName = path.join(KnownTestLocations.assetsDir, "Cdm.shx");
-    const shxFontId = await embedShxFont(shxFileName);
+    const shxFontId = await embedShxFont(shxFileName, iModel);
     expect(shxFontId).greaterThan(0);
   });
 });

@@ -1,45 +1,3 @@
-# Concepts
-
-## Definitions
-
-https://www.howtogeek.com/325644/whats-the-difference-between-a-font-a-typeface-and-a-font-family/
-  Type Family = design of all the characters in a family and all its faces. Examples: Helvetica, Helvetica Condensed, DejaVu Sans, DejaVu Sans Mono, etc.
-  Typeface - a specific weight/instace of a particular family. eg bold, italic, bold-italic. e.g., Helvetica Bold, DejaVu Sans Italic.
-  Font - the computer file containing info about a specific typeface
-    [FontFile is a computer file containing info about any number of typefaces]
-    [more generally the digital computer-readable representation thereof]
-  Font Face - somewhat interchangeable with Typeface.
-
-https://graphicdesign.stackexchange.com/questions/35619/difference-between-font-face-typeface-font-in-the-context-of-typography
-  Font - as above
-  Typeface - as above
-  Font Family - as above
-
-So we can use
-  Font face = Typeface
-  FontFile = Font
-  Font Family = Type Family
-FontId is a misnomer - should be FontFamilyId.
-Font name always refers to font family name (eg in FontDescriptor)
-
-# Topics to cover
-
-- What are fonts
-- Licensing and embedding rights
-- What are fonts used for in iModels
-- Types of iModel fonts
-- How fonts are stored and referenced in iModels
-  - Diagram: be_Props and dgn_Font and relationship between font family name in dgn_Font to family names in EmbeddedFaceData
-- How to locate and embed fonts
-  - Could obtain from system/project administrator
-    - Example: creating a shx font and a TT font from a filename
-  - Or query and embed selected system font(s)
-    - Example
-- How to query fonts in iModels
-
-
-
-
 # Fonts in iModels
 
 Text is an important part of many iModel workflows, especially those involving the production of [drawings and sheets](../../bis/domains/drawing-sheets.md). Every piece of text in an iModel uses a font to define the appearance and layout of the glyphs (i.e., letters, or characters) that comprise it. To store text in an iModel that uses a particular font, the font itself must first be embedded into the iModel. iTwin.js provides APIs to read font objects from the file system or memory, embed them into iModels, query those embeddings, and associate Ids with specific *font families*.
@@ -91,12 +49,40 @@ To use a font family, you must first embed one or more [font files](#font-files)
 
 Case #1 above is the optimal one, and [IModelDbFonts.embedFontFile]($backend) by default ensures that a font Id is allocated for each font family in the [FontFile]($backend) being embedded. Case #4 can be addressed by embedding the required font file(s). You may encounter cases #2 and #3 when dealing with font information created by older connectors. You can address #2 by embedding the required font file(s), and #3 by using [IModelDbFonts.acquireId]($backend).
 
-## Locating and embedding fonts
+## IModelDbFonts
 
+[IModelDb.fonts]($backend) provides APIs for reading and writing font-related information in an iModel.
 
+### Embedding font files
 
+[IModelDbFonts.embedFontFile]($backend) embeds a [FontFile]($backend) into the iModel, if it is not already embedded. By default, it also ensures a [FontId]($common) is allocated for each font family in the file. If you override this default behavior, you can allocate font Ids manually using [IModelDbFonts.acquireId]($backend).
 
-## Querying fonts
+#### Embedding a font file directly
+
+In the following example, the application provides a filename for an SHX font to be embedded into the iModel.
+
+```ts
+[[include:Fonts.embedShxFont]]
+```
+
+#### Querying and embedding system fonts
+
+The following function uses the [get-system-fonts](https://www.npmjs.com/package/get-system-fonts) package to query all fonts available on the user's machine. It returns a mapping of font family name to the [FontFile]($backend)(s) containing faces belonging to that family. It omits non-embeddable font files by default.
+
+```ts
+[[include:Fonts.getSystemFontFamilies]]
+```
+
+The following function uses the `getSystemFontFamilies` function defined above to permit the user to select a font family from their system to embed into an iModel. It ensures that the selected family's information is stored in the iModel and returns the corresponding [FontId]($common).
+
+```ts
+[[include:Fonts.selectSystemFont]]
+```
+
+### Querying font information
+
+The following methods query font-related information.
+- [IModelDbFonts.queryDescriptors]($backend): the font families 
 
 
 
