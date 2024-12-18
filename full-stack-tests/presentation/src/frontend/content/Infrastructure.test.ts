@@ -18,9 +18,13 @@ describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
   before(async () => {
     await terminate();
     await initialize({
-      // this defaults to 0, which means "no timeouts" - reinitialize with non-zero
-      backendTimeout: 9999,
-      frontendTimeout,
+      presentationBackendProps: {
+        // this defaults to 0, which means "no timeouts" - reinitialize with non-zero
+        requestTimeout: 9999,
+      },
+      presentationFrontendProps: {
+        presentation: { requestTimeout: frontendTimeout },
+      },
     });
   });
 
