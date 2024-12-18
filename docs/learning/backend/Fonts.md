@@ -78,3 +78,9 @@ The following function uses the `getSystemFontFamilies` function defined above t
 ```ts
 [[include:Fonts.selectSystemFont]]
 ```
+
+#### Multi-user considerations
+
+If more than one user is modifying font data in the same iModel, conflicts must be avoided. For example, the same font file should not be embedded more than once, and the same font family should not be mapped to two different font Ids.
+
+If a [CodeService](./CodeService.md) is configured for the iModel, then it will be utilized to ensure no such conflicts arise, without requiring any users to acquire locks on the iModel. Otherwise, methods like [IModelDbFonts.embedFontFile]($backend) and [IModelDbFonts.acquireId]($backend) will attempt to [lock](./ConcurrencyControl.md) the entire iModel before making any changes, and throw an exception if it cannot obtain the lock.
