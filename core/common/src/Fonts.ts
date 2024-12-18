@@ -91,20 +91,20 @@ export interface FontMapProps { fonts: FontProps[] }
  * A FontMap holds the set of font names available in an iModel.
  * Within the GeometryStream of an Element, a specific font is referenced by its FontId that is local to the iModel.
  * This class maps FontIds to FontProps.
- * @note This API has never worked properly. Don't use it.
+ * @note This API has never worked properly. Don't use it. Use [IModelDb.fonts]($backend) instead.
  * @public
  * @deprecated in 5.0.0. Use [IModelDb.fonts]($backend) instead.
  */
 export class FontMap {
   public readonly fonts = new Map<FontId, FontProps>();
-  constructor(props?: FontMapProps) {
+  constructor(props?: FontMapProps) { // eslint-disable-line @typescript-eslint/no-deprecated
     if (undefined !== props)
       this.addFonts(props.fonts);
   }
   public addFonts(fonts: FontProps[]) {
     fonts.forEach((font) => this.fonts.set(font.id, font));
   }
-  public toJSON(): FontMapProps {
+  public toJSON(): FontMapProps { // eslint-disable-line @typescript-eslint/no-deprecated
     const fonts: FontProps[] = [];
     this.fonts.forEach((font) => fonts.push(font));
     return { fonts };

@@ -160,11 +160,14 @@ export abstract class IModelConnection extends IModel {
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
+  /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled.
+   * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   */
   public fontMap?: FontMap;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
+   * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public async loadFontMap(): Promise<FontMap> {
     if (undefined === this.fontMap) {
