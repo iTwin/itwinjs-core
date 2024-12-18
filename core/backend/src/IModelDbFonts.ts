@@ -15,13 +15,15 @@ export interface EmbedFontFileArgs {
   dontAllocateFontIds?: boolean;
 }
 
+export interface QueryMappedFamiliesArgs {
+  includeNonEmbedded?: boolean;
+}
+
 export interface IModelDbFonts {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
 
-  queryDescriptors(): Iterable<FontFamilyDescriptor>;
-
-  queryMappedEmbeddedFamilies(): Iterable<FontProps>;
+  queryMappedFamilies(args?: QueryMappedFamiliesArgs): Iterable<FontProps>;
 
   // Note that you can embed returned FontFiles into a different iModel as long as you keep the source iModel open for the duration.
   queryEmbeddedFontFiles(): Iterable<FontFile>;

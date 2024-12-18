@@ -9,7 +9,7 @@
 import { DbResult, FontFamilyDescriptor, FontId, FontProps, FontType } from "@itwin/core-common";
 import { _faceProps, _getData, _key, _implementationProhibited, _nativeDb } from "./Symbols";
 import { IModelDb } from "../IModelDb";
-import { EmbedFontFileArgs, IModelDbFonts } from "../IModelDbFonts";
+import { EmbedFontFileArgs, IModelDbFonts, QueryMappedFamiliesArgs } from "../IModelDbFonts";
 import { EmbeddedFontFile } from "./FontFileImpl";
 import { assert } from "@itwin/core-bentley";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
@@ -23,12 +23,12 @@ class IModelDbFontsImpl implements IModelDbFonts {
     this.#db = iModel;
   }
 
-  public queryDescriptors(): Iterable<FontFamilyDescriptor> {
-    return this.#queryFontTable().filter((x) => { return { name: x.name, type: x.type } });
-  }
-
-  public queryMappedEmbeddedFamilies(): Iterable<FontProps> {
+  public queryMappedFamilies(args?: QueryMappedFamiliesArgs): Iterable<FontProps> {
     const fontProps = this.#queryFontTable();
+    if (args?.includeNonEmbedded) {
+      return fontProps;
+    }
+
     const fontNames = this.#getEmbeddedFontNames();
     return fontProps.filter((x) => fontNames.includes(x.name));
   }

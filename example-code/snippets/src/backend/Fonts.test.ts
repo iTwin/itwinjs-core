@@ -85,7 +85,7 @@ describe.only("Font Examples", () => {
       };
 
       // If the family's faces are already embedded and the family is already assigned an Id, we're finished.
-      for (const family of db.fonts.queryMappedEmbeddedFamilies()) {
+      for (const family of db.fonts.queryMappedFamilies()) {
         if (family.name === descriptor.name && family.type === descriptor.type) {
           return family.id;
         }

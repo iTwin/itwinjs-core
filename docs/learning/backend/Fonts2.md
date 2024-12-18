@@ -65,7 +65,7 @@ In the following example, the application provides a filename for an SHX font to
 [[include:Fonts.embedShxFont]]
 ```
 
-#### Querying and embedding system fonts
+#### Embedding system fonts
 
 The following function uses the [get-system-fonts](https://www.npmjs.com/package/get-system-fonts) package to query all fonts available on the user's machine. It returns a mapping of font family name to the [FontFile]($backend)(s) containing faces belonging to that family. It omits non-embeddable font files by default.
 
@@ -78,12 +78,3 @@ The following function uses the `getSystemFontFamilies` function defined above t
 ```ts
 [[include:Fonts.selectSystemFont]]
 ```
-
-### Querying font information
-
-The following methods query font-related information.
-- [IModelDbFonts.queryDescriptors]($backend): the font families 
-
-
-
-
