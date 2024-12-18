@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Raise `IModelConnection.onChange` when a new `BlankConnection` is created.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

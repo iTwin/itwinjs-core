@@ -62,11 +62,7 @@ describe("Selection manager", () => {
     it("handles multiple blank connections", async () => {
       const blank1 = BlankConnection.create({ name: "1", extents: Range3d.createNull(), location: Cartographic.createZero() });
       const blank2 = BlankConnection.create({ name: "2", extents: Range3d.createNull(), location: Cartographic.createZero() });
-
       try {
-        // should this be called automatically?..
-        [blank1, blank2].forEach((connection) => IModelConnection.onOpen.raiseEvent(connection));
-
         selectionStorage.addToSelection({ imodelKey: blank1.name, source: "test", selectables: [createTestECInstanceKey({ id: "0x1" })] });
         await waitFor(() => {
           expect(Presentation.selection.getSelection(blank1).size).to.eq(1);
