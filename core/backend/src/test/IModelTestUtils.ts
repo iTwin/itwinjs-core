@@ -11,7 +11,7 @@ import * as path from "path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
-  ElementProps, Environment, ExternalSourceProps, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
+  ElementProps, Environment, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
   GeometryStreamProps, ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName,
   PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager,
   RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
@@ -725,11 +725,11 @@ export class ExtensiveTestScenario {
     FunctionalSchema.registerSchema();
   }
 
-  public static populateDb(sourceDb: IModelDb): void {
-
+  public static async populateDb(sourceDb: IModelDb): Promise<void> {
     // make sure Arial is in the font table
-    sourceDb.addNewFont("Arial");
-    assert.exists(sourceDb.fontMap.getFont("Arial"));
+    const arialFontId = await sourceDb.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+    expect(arialFontId).not.to.be.undefined;
+    expect(arialFontId).greaterThan(0);
 
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);

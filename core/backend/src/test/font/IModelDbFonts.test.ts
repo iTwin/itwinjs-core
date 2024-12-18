@@ -5,9 +5,8 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as sinon from "sinon";
-import { BriefcaseDb, IModelDb, StandaloneDb } from "../../IModelDb";
+import { BriefcaseDb, IModelDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Guid } from "@itwin/core-bentley";
 import { FontFace, RscFontEncodingProps } from "@itwin/core-common";
 import { FontFile } from "../../FontFile";
 import { FontType } from "@itwin/core-common";

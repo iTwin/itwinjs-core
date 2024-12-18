@@ -59,7 +59,7 @@ describe("FontFile", () => {
       it("throws on non-existent file", () => {
         let fileName = IModelTestUtils.resolveFontFile("Karla-Regular.ttf");
         expect(fs.existsSync(fileName)).to.be.true;
-        fileName = fileName + "no-existe";
+        fileName = `${fileName  }no-existe`;
         expect(fs.existsSync(fileName)).to.be.false;
         expect(() => FontFile.createFromTrueTypeFileName(fileName)).to.throw("Failed to read font file");
       });

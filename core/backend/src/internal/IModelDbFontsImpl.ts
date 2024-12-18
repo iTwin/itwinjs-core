@@ -7,7 +7,7 @@
  */
 
 import { DbResult, FontFamilyDescriptor, FontId, FontProps, FontType } from "@itwin/core-common";
-import { _faceProps, _getData, _key, _implementationProhibited, _nativeDb } from "./Symbols";
+import { _faceProps, _getData, _implementationProhibited, _key, _nativeDb } from "./Symbols";
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts, QueryMappedFamiliesArgs } from "../IModelDbFonts";
 import { EmbeddedFontFile } from "./FontFileImpl";
@@ -34,7 +34,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
   }
 
   public queryEmbeddedFontFiles(): Iterable<FontFile> {
-    let files: FontFile[] = [];
+    const files: FontFile[] = [];
     this.#db.withSqliteStatement(`SELECT Id,StrData FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         let faces;
@@ -95,7 +95,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
     }
 
     const familyNames = new Set<string>(args.file.faces.map((x) => x.familyName));
-    const acquireIds = Array.from(familyNames).map((x) => this.#acquireId({ name: x, type: args.file.type }, true).catch());
+    const acquireIds = Array.from(familyNames).map(async (x) => this.#acquireId({ name: x, type: args.file.type }, true).catch());
     await Promise.allSettled(acquireIds);
   }
 

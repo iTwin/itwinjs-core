@@ -176,7 +176,7 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   /** @deprecated in 5.0.0. Use [[fonts]]. */
-  protected _fontMap?: FontMap;
+  protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
 
@@ -236,13 +236,13 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @deprecated in 5.0.0. Use [[fonts]]. */
-  public get fontMap(): FontMap {
-    return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap()));
+  public get fontMap(): FontMap { // eslint-disable-line @typescript-eslint/no-deprecated
+    return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap())); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /** @internal */
   public clearFontMap(): void {
-    this._fontMap = undefined;
+    this._fontMap = undefined; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /**

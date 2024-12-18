@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { CreateFontFileFromRscBlobArgs, CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
-import { _faceProps, _getData, _key, _implementationProhibited } from "./Symbols";
+import { _faceProps, _getData, _implementationProhibited, _key } from "./Symbols";
 import { compareNumbersOrUndefined } from "@itwin/core-bentley";
 import { IModelNative } from "./NativePlatform"; 
 import { IModelDb } from "../IModelDb";
