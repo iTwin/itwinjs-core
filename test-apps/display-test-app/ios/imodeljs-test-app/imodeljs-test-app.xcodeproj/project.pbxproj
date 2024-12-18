@@ -453,7 +453,11 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
+<<<<<<< HEAD
 				version = 4.10.29;
+=======
+				version = 5.0.20;
+>>>>>>> 46b679a54b (Add ECSql tests for ECDb (#7323))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
