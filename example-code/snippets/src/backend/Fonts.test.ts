@@ -8,13 +8,8 @@ import * as fs from "fs";
 import { expect } from "chai";
 import getSystemFonts from "get-system-fonts";
 import { IModelTestUtils, KnownTestLocations } from "./IModelTestUtils";
-import {
-    BlobContainer,
-  EditableWorkspaceContainer, EditableWorkspaceDb, FontFile, IModelDb, IModelHost, SettingGroupSchema, SettingsContainer,
-  SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
-} from "@itwin/core-backend";
-import { assert, Guid, OpenMode } from "@itwin/core-bentley";
-import { AzuriteTest } from "./AzuriteTest";
+import { FontFile, IModelDb, StandaloneDb } from "@itwin/core-backend";
+import { assert } from "@itwin/core-bentley";
 import { FontFamilyDescriptor, FontId, FontType } from "@itwin/core-common";
 
 describe("Font Examples", () => {
