@@ -17,7 +17,7 @@ import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 import { FontFamilyDescriptor, FontId, FontType } from "@itwin/core-common";
 
-describe.only("Font Examples", () => {
+describe("Font Examples", () => {
   let iModel: StandaloneDb;
 
   before(async () => {
