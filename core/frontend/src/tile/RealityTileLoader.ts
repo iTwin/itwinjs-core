@@ -247,19 +247,10 @@ export abstract class RealityTileLoader {
 /** Exposed strictly for testing purposes.
 * @internal
 */
-export function createReaderPropsWithBaseUrl(streamBuffer: ByteStream | Uint8Array, yAxisUp: boolean, baseUrl?: string): GltfReaderProps | undefined {
-  if(streamBuffer instanceof ByteStream) {
-    return (!baseUrl || !isValidURL(baseUrl)) ? GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp) : GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp, new URL(baseUrl));
-  }
-  return (!baseUrl || !isValidURL(baseUrl)) ? GltfReaderProps.create(streamBuffer, yAxisUp) : GltfReaderProps.create(streamBuffer, yAxisUp, new URL(baseUrl));
-
-}
-
-function isValidURL(url: string){
+export function createReaderPropsWithBaseUrl(streamBuffer: ByteStream, yAxisUp: boolean, baseUrl?: string): GltfReaderProps | undefined {
+  let url: URL | undefined;
   try {
-    new URL(url);
-  } catch {
-    return false;
-  }
-  return true;
-}
+    url = new URL(baseUrl);
+  } catch (_) { }
+  
+  return GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp, url);
