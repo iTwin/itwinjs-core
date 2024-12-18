@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { assert, BeDuration, Id64, Id64String, StopWatch, using } from "@itwin/core-bentley";
+import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
 import {
@@ -37,15 +38,12 @@ describe("SelectionManager", () => {
   let imodel: IModelConnection;
 
   const scopesManager = {
+    activeScope: undefined as undefined | string | SelectionScope,
     getSelectionScopes: sinon.stub<Parameters<SelectionScopesManager["getSelectionScopes"]>, ReturnType<SelectionScopesManager["getSelectionScopes"]>>(),
     computeSelection: sinon.stub<Parameters<SelectionScopesManager["computeSelection"]>, ReturnType<SelectionScopesManager["computeSelection"]>>(),
   };
 
   const source: string = "test";
-
-  function setActiveScope(scope: SelectionScope | string) {
-    Object.assign(scopesManager, { activeScope: scope });
-  }
 
   async function waitForSelection(size: number, targetImodel: IModelConnection, level?: number) {
     return waitFor(() => {
@@ -62,9 +60,10 @@ describe("SelectionManager", () => {
       selectionSet: (ss = new SelectionSet(imodel)),
     });
 
+    scopesManager.activeScope = undefined;
     scopesManager.computeSelection.reset();
     scopesManager.getSelectionScopes.reset();
-    Object.assign(scopesManager, { activeScope: undefined });
+
     baseSelection = generateSelection();
   });
 
@@ -435,20 +434,20 @@ describe("SelectionManager", () => {
       });
 
       it("fires `selectionChange` event after `addToSelection`, `replaceSelection`, `clearSelection`, `removeFromSelection` with `BlankConnection", async () => {
-        // creating blank connection does not raise `IModelConnection.onOpen` event.
-        const blankImodel = { key: "blank", name: "blankConnection" } as BlankConnection;
-        const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
-        selectionManager.addToSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(1));
-        selectionManager.removeFromSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(2));
-        selectionManager.replaceSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(3));
-        selectionManager.clearSelection(source, blankImodel);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4));
-
-        // simulate connection closing
-        IModelConnection.onClose.raiseEvent(blankImodel);
+        const blankImodel = BlankConnection.create({ name: "blankConnection", extents: { low: {}, high: {} }, location: Cartographic.createZero() });
+        try {
+          const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
+          selectionManager.addToSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(1));
+          selectionManager.removeFromSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(2));
+          selectionManager.replaceSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(3));
+          selectionManager.clearSelection(source, blankImodel);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4));
+        } finally {
+          await blankImodel.close();
+        }
       });
     });
 
@@ -520,7 +519,7 @@ describe("SelectionManager", () => {
           });
 
           it('uses "element" scope when `activeScope = "element"`', async () => {
-            setActiveScope("element");
+            scopesManager.activeScope = "element";
             scopesManager.computeSelection.resolves(new KeySet([createTestECInstanceKey()]));
             ss.add({ elements: createRandomId() });
             await waitForPendingAsyncs(syncer);
@@ -561,7 +560,7 @@ describe("SelectionManager", () => {
             logicalSelectionChangesListener.reset();
             selectionManager.selectionChange.addListener(logicalSelectionChangesListener);
 
-            setActiveScope(scope);
+            scopesManager.activeScope = scope;
             scopesManager.computeSelection.callsFake(async (_, ids) => {
               const keys = new KeySet();
               for (const id of Id64.iterable(ids)) {
@@ -1185,9 +1184,11 @@ describe("SelectionManager", () => {
       });
 
       it("handles blank connection events", async () => {
-        const blank = { key: "", name: "blank" } as BlankConnection;
-        IModelConnection.onOpen.raiseEvent(blank);
-
+        const blank = BlankConnection.create({
+          name: "blank",
+          extents: { low: {}, high: {} },
+          location: Cartographic.createZero(),
+        });
         storage.addToSelection({
           imodelKey: blank.name,
           source,
