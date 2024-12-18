@@ -7,11 +7,13 @@
  */
 
 import * as path from "path";
+import * as fs from "fs";
 import { DOMParser } from "@xmldom/xmldom";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import { globSync } from "glob";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files
@@ -118,5 +120,49 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 
     const key = new SchemaKey(name[1], ECVersion.fromString(version[1]));
     return key;
+  }
+}
+
+/**
+ * This locater is responsible for locating standard schema files that are released by the core-backend package.
+ * The locater needs an argument to the known backend assets directory where the core-backend package is installed.
+ * This can be accessed by the KnownLocations.nativeAssetsDir getter provided by core-backend.
+ *
+ * @note This locater is read-only and does not allow adding new schema search paths.
+ * @note This locater should be used as a fallback/last chance locater in the schema context as any user defined schema should have higher precedence over the standard schema.
+ * @beta This is a workaround due to the current lack of a full xml parser.
+ */
+export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
+  /**
+   * Constructs a new PublishedSchemaXmlFileLocater
+   * @param knownBackendAssetsDir The assets directory where the core-backend package is installed. Can be accessed by the KnownLocations.nativeAssetsDir getter provided by core-backend.
+   */
+  public constructor(knownBackendAssetsDir: string) {
+    super();
+
+    const ecSchemaDir = path.join(knownBackendAssetsDir, "ECSchemas");
+    if (!fs.existsSync(ecSchemaDir))
+      throw new Error(`The directory ${ecSchemaDir} containing standard schemas does not exist.`);
+
+    // Pre-defined set of standard schema search paths
+    this.searchPaths.push(...globSync(path.join(ecSchemaDir, "*/"), { windowsPathsNoEscape: true }).filter(fs.existsSync));
+  }
+
+  /**
+   * Overrides the addSchemaSearchPath method to prevent adding new schema search paths.
+   *
+   * @param _schemaPath - The schema path to add (ignored).
+   */
+  public override addSchemaSearchPath(_schemaPath: string): void {
+    return; // Do nothing, this is a read-only locator
+  }
+
+  /**
+   * Overrides the addSchemaSearchPaths method to prevent adding new schema search paths.
+   *
+   * @param _schemaPaths - The schema paths to add (ignored).
+   */
+  public override addSchemaSearchPaths(_schemaPaths: string[]): void {
+    return; // Do nothing, this is a read-only locator
   }
 }

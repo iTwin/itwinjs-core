@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { assert, BeDuration, Id64, Id64String, StopWatch, using } from "@itwin/core-bentley";
+import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
 import {
@@ -37,15 +38,12 @@ describe("SelectionManager", () => {
   let imodel: IModelConnection;
 
   const scopesManager = {
+    activeScope: undefined as undefined | string | SelectionScope,
     getSelectionScopes: sinon.stub<Parameters<SelectionScopesManager["getSelectionScopes"]>, ReturnType<SelectionScopesManager["getSelectionScopes"]>>(),
     computeSelection: sinon.stub<Parameters<SelectionScopesManager["computeSelection"]>, ReturnType<SelectionScopesManager["computeSelection"]>>(),
   };
 
   const source: string = "test";
-
-  function setActiveScope(scope: SelectionScope | string) {
-    Object.assign(scopesManager, { activeScope: scope });
-  }
 
   async function waitForSelection(size: number, targetImodel: IModelConnection, level?: number) {
     return waitFor(() => {
@@ -62,9 +60,10 @@ describe("SelectionManager", () => {
       selectionSet: (ss = new SelectionSet(imodel)),
     });
 
+    scopesManager.activeScope = undefined;
     scopesManager.computeSelection.reset();
     scopesManager.getSelectionScopes.reset();
-    Object.assign(scopesManager, { activeScope: undefined });
+
     baseSelection = generateSelection();
   });
 
@@ -435,20 +434,20 @@ describe("SelectionManager", () => {
       });
 
       it("fires `selectionChange` event after `addToSelection`, `replaceSelection`, `clearSelection`, `removeFromSelection` with `BlankConnection", async () => {
-        // creating blank connection does not raise `IModelConnection.onOpen` event.
-        const blankImodel = { key: "blank", name: "blankConnection" } as BlankConnection;
-        const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
-        selectionManager.addToSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(1));
-        selectionManager.removeFromSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(2));
-        selectionManager.replaceSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(3));
-        selectionManager.clearSelection(source, blankImodel);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4));
-
-        // simulate connection closing
-        IModelConnection.onClose.raiseEvent(blankImodel);
+        const blankImodel = BlankConnection.create({ name: "blankConnection", extents: { low: {}, high: {} }, location: Cartographic.createZero() });
+        try {
+          const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
+          selectionManager.addToSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(1));
+          selectionManager.removeFromSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(2));
+          selectionManager.replaceSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(3));
+          selectionManager.clearSelection(source, blankImodel);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4));
+        } finally {
+          await blankImodel.close();
+        }
       });
     });
 
@@ -520,7 +519,7 @@ describe("SelectionManager", () => {
           });
 
           it('uses "element" scope when `activeScope = "element"`', async () => {
-            setActiveScope("element");
+            scopesManager.activeScope = "element";
             scopesManager.computeSelection.resolves(new KeySet([createTestECInstanceKey()]));
             ss.add({ elements: createRandomId() });
             await waitForPendingAsyncs(syncer);
@@ -561,7 +560,7 @@ describe("SelectionManager", () => {
             logicalSelectionChangesListener.reset();
             selectionManager.selectionChange.addListener(logicalSelectionChangesListener);
 
-            setActiveScope(scope);
+            scopesManager.activeScope = scope;
             scopesManager.computeSelection.callsFake(async (_, ids) => {
               const keys = new KeySet();
               for (const id of Id64.iterable(ids)) {
@@ -928,7 +927,7 @@ describe("SelectionManager", () => {
     }
 
     async function collectInstanceKeys(seletableId: string) {
-      const selectables = storage.getSelection({ iModelKey: imodel.key });
+      const selectables = storage.getSelection({ imodelKey: imodel.key });
       const selectable = selectables.custom.get(seletableId);
       assert(selectable !== undefined);
       const loadedKeys = [];
@@ -981,7 +980,7 @@ describe("SelectionManager", () => {
     describe("creates selection set from", () => {
       it("instance key selectable", async () => {
         const instanceKey = createTestECInstanceKey({ id: "0x1" });
-        storage.addToSelection({ iModelKey: imodel.key, source, selectables: [instanceKey], level: 0 });
+        storage.addToSelection({ imodelKey: imodel.key, source, selectables: [instanceKey], level: 0 });
         const selectionSet = await waitForSelection(1, imodel);
         expect(selectionSet.has(instanceKey)).to.be.true;
       });
@@ -989,7 +988,7 @@ describe("SelectionManager", () => {
       it("custom selectable", async () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })];
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom", loadInstanceKeys: () => createAsyncGenerator(instanceKeys), data: {} }],
           level: 0,
@@ -1006,7 +1005,7 @@ describe("SelectionManager", () => {
           createAsyncGenerator(instanceKeys),
         );
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom", loadInstanceKeys, data: {} }],
           level: 0,
@@ -1033,13 +1032,13 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 0,
         });
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 0,
@@ -1064,13 +1063,13 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 0,
         });
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 0,
@@ -1096,13 +1095,13 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 0,
         });
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 1,
@@ -1132,14 +1131,14 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 1,
         });
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 0,
@@ -1163,12 +1162,53 @@ describe("SelectionManager", () => {
       const selectable1instanceKeys = [createTestECInstanceKey({ id: "0x3" }), createTestECInstanceKey({ id: "0x4" })];
       const selectable2instanceKeys = [createTestECInstanceKey({ id: "0x5" }), createTestECInstanceKey({ id: "0x6" })];
 
+      it("ignores selection changes to unknown imodels", async () => {
+        storage.addToSelection({
+          imodelKey: "unknown-imodel",
+          source,
+          selectables: [{ className: "BisCore:Element", id: "0x1" }],
+        });
+        await waitFor(() => {
+          expect(changeListener).not.to.be.called;
+        });
+
+        // just confirm that adding to a known imodel does raise the event
+        storage.addToSelection({
+          imodelKey: imodel.key,
+          source,
+          selectables: [{ className: "BisCore:Element", id: "0x2" }],
+        });
+        await waitFor(() => {
+          expect(changeListener).to.be.calledOnce;
+        });
+      });
+
+      it("handles blank connection events", async () => {
+        const blank = BlankConnection.create({
+          name: "blank",
+          extents: { low: {}, high: {} },
+          location: Cartographic.createZero(),
+        });
+        storage.addToSelection({
+          imodelKey: blank.name,
+          source,
+          selectables: instanceKeys,
+        });
+        await waitFor(() => {
+          expect(changeListener).to.be.calledOnceWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.imodel === blank && args.keys.size === instanceKeys.length && args.keys.hasAll(instanceKeys);
+            }),
+          );
+        });
+      });
+
       it("converts add event selectables", async () => {
         const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
         const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
 
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], selectable1],
         });
@@ -1186,7 +1226,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[1], selectable2],
         });
@@ -1208,7 +1248,7 @@ describe("SelectionManager", () => {
         const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], selectable1],
         });
@@ -1226,7 +1266,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[1], selectable2],
         });
@@ -1248,7 +1288,7 @@ describe("SelectionManager", () => {
         const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
 
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], instanceKeys[1], selectable1, selectable2],
         });
@@ -1258,7 +1298,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.removeFromSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], selectable1],
         });
@@ -1276,7 +1316,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.removeFromSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[1], selectable2],
         });
