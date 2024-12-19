@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Make classIdsToClassNames explicit parameter independent of UseJsPropertyNames",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
