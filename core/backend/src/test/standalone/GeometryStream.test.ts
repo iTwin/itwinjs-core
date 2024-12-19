@@ -1125,7 +1125,7 @@ describe("GeometryStream", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const foundFont = imodel.fontMap.getFont("Vera");
+    const foundFont = imodel.fonts.findId({ name: "Vera" })!;
     assert.exists(foundFont);
 
     const testOrigin = Point3d.create(5, 10, 0);
@@ -1136,7 +1136,7 @@ describe("GeometryStream", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: foundFont!.id,
+      font: foundFont,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -1852,7 +1852,7 @@ describe("ElementGeometry", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const foundFont = imodel.fontMap.getFont("Vera");
+    const foundFont = imodel.fonts.findId({ name: "Vera" })!;
     assert.exists(foundFont);
 
     const testOrigin = Point3d.create(5, 10, 0);
@@ -1864,7 +1864,7 @@ describe("ElementGeometry", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: foundFont!.id,
+      font: foundFont,
       height: 2,
       bold: true,
       origin: testOrigin,

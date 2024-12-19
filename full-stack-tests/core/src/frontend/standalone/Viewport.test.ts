@@ -116,7 +116,7 @@ describe("Viewport", () => {
   });
 
   it("loadFontMap", async () => {
-    const fonts1 = await imodel.loadFontMap();
+    const fonts1 = await imodel.loadFontMap(); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
@@ -135,7 +135,7 @@ describe("Viewport", () => {
     assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 4, by name");
     assert.equal(4, fonts1.getFont("cAlIbRi")!.id, "get Font 4, by name case insensitive");
     assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap"); // eslint-disable-line @typescript-eslint/no-deprecated
   });
 
   it("creates a RenderPlan from a viewport", () => {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add new font APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

@@ -72,10 +72,6 @@ function prepareOutputFile(subDirName: string, fileName: string): LocalFileName 
 }
 
 function populateDb(sourceDb: IModelDb) {
-  // make sure Arial is in the font table
-  sourceDb.addNewFont("Arial");
-  assert.exists(sourceDb.fontMap.getFont("Arial"));
-
   // Initialize project extents
   const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
   sourceDb.updateProjectExtents(projectExtents);

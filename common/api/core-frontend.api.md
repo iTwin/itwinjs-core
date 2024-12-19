@@ -5481,6 +5481,7 @@ export abstract class IModelConnection extends IModel {
     // @deprecated
     expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
+    // @deprecated
     fontMap?: FontMap;
     // @internal
     protected _gcsDisabled: boolean;
@@ -5508,6 +5509,7 @@ export abstract class IModelConnection extends IModel {
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
+    // @deprecated
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal

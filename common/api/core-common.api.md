@@ -3492,10 +3492,32 @@ export interface FlatBufferGeometryStream {
     format: "flatbuffer";
 }
 
+// @beta
+interface FontFace_2 {
+    familyName: string;
+    // (undocumented)
+    isBold: boolean;
+    // (undocumented)
+    isItalic: boolean;
+}
+export { FontFace_2 as FontFace }
+
+// @public
+export interface FontFamilyDescriptor {
+    name: string;
+    type: FontType;
+}
+
+// @beta
+export interface FontFamilySelector {
+    name: string;
+    type?: FontType;
+}
+
 // @public
 export type FontId = number;
 
-// @public
+// @public @deprecated
 export class FontMap {
     constructor(props?: FontMapProps);
     // (undocumented)
@@ -3507,26 +3529,21 @@ export class FontMap {
     toJSON(): FontMapProps;
 }
 
-// @public
+// @public @deprecated
 export interface FontMapProps {
     // (undocumented)
     fonts: FontProps[];
 }
 
 // @public
-export interface FontProps {
+export interface FontProps extends FontFamilyDescriptor {
     id: FontId;
-    name: string;
-    type: FontType;
 }
 
 // @public
 export enum FontType {
-    // (undocumented)
     Rsc = 2,
-    // (undocumented)
     Shx = 3,
-    // (undocumented)
     TrueType = 1
 }
 
@@ -8994,6 +9011,18 @@ export class RpcSessionInvocation extends RpcInvocation {
     static create(request: InterceptedRpcRequest): RpcSessionInvocation;
     // (undocumented)
     get rejected(): boolean;
+}
+
+// @alpha
+export interface RscFontEncodingProps {
+    // (undocumented)
+    codePage?: number;
+    // (undocumented)
+    degree?: number;
+    // (undocumented)
+    diameter?: number;
+    // (undocumented)
+    plusMinus?: number;
 }
 
 // @beta (undocumented)

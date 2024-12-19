@@ -18,7 +18,7 @@ import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
@@ -67,6 +67,8 @@ import { LockControl } from "./LockControl";
 import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
+import { IModelDbFonts } from "./IModelDbFonts";
+import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 
 // spell:ignore fontid fontmap
@@ -173,7 +175,9 @@ export abstract class IModelDb extends IModel {
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
-  protected _fontMap?: FontMap;
+  /** @deprecated in 5.0.0. Use [[fonts]]. */
+  protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
+  private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
 
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
@@ -189,6 +193,11 @@ export abstract class IModelDb extends IModel {
 
   /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+  /** Provides methods for interacting with [font-related information]($docs/learning/backend/Fonts.md) stored in this iModel.
+   * @beta
+   */
+  public get fonts(): IModelDbFonts { return this._fonts; }
 
   /**
    * Get the [[Workspace]] for this iModel.
@@ -226,27 +235,15 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].restartDefaultTxn();
   }
 
-  public get fontMap(): FontMap {
-    return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap()));
+  /** @deprecated in 5.0.0. Use [[fonts]]. */
+  public get fontMap(): FontMap { // eslint-disable-line @typescript-eslint/no-deprecated
+    return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap())); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /** @internal */
   public clearFontMap(): void {
-    this._fontMap = undefined;
-  }
-
-  /**
-   * Add a new font name/type to the FontMap for this iModel and return its FontId.
-   * @param name The name of the font to add
-   * @param type The type of the font. Default is TrueType.
-   * @returns The FontId for the newly added font. If a font by that name/type already exists, this method does not fail, it returns the existing Id.
-   * @see [FontId and FontMap]($docs/learning/backend/Fonts.md#fontid-and-fontmap)
-   * @beta
-   */
-  public addNewFont(name: string, type?: FontType): FontId {
-    this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
-    this.clearFontMap();
-    return this[_nativeDb].addNewFont({ name, type: type ?? FontType.TrueType });
+    this._fontMap = undefined; // eslint-disable-line @typescript-eslint/no-deprecated
+    this[_nativeDb].invalidateFontMap();
   }
 
   /** Check if this iModel has been opened read-only or not. */
