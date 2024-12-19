@@ -270,6 +270,9 @@ export class BriefcaseManager {
       throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
     }
     try {
+      if (IModelHost.pullMergeMethod !== "Merge") {
+        nativeDb.pullMergeSetMethod(IModelHost.pullMergeMethod);
+      }
       nativeDb.enableWalMode(); // local briefcases should use WAL journal mode
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getCurrentChangeset().id !== checkpoint.changeset.id)
@@ -522,11 +525,25 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
+    db[_nativeDb].pullMergeBegin();
     for (const changeset of changesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-      await this.applySingleChangeset(db, changeset);
-      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      try {
+        await this.applySingleChangeset(db, changeset);
+        Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (err: any) {
+        if (err instanceof Error) {
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
+        }
+        db.abandonChanges();
+        db[_nativeDb].pullMergeEnd();
+        throw err;
+      }
+    }
+    db[_nativeDb].pullMergeEnd();
+    if (!db.isReadonly) {
+      db.saveChanges("Merge.");
     }
     // notify listeners
     db.notifyChangesetApplied();
