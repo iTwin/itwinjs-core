@@ -64,6 +64,7 @@ import { FrameStatsCollector } from "../FrameStats";
 import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
 import { _implementationProhibited } from "../../common/internal/Symbols";
+import { IModelApp } from "../../IModelApp";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -1177,12 +1178,23 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(): HTMLCanvasElement {
+  public copyImageToCanvas(combineCanvas?: boolean): HTMLCanvasElement {
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
     const pixelRatio = this.devicePixelRatio;
     retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
+
+    if (combineCanvas) {
+      const vp = IModelApp.viewManager.selectedView;
+      if (vp) {
+        const twoDCanvas = vp.canvas;
+        const ctx = retCanvas.getContext("2d")!;
+        ctx.drawImage(twoDCanvas, 0, 0);
+      }
+    }
+
+
     return retCanvas;
   }
 
@@ -1513,7 +1525,7 @@ export class OnScreenTarget extends Target {
   }
 
   public override readImageToCanvas(): HTMLCanvasElement {
-    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
+    return this._usingWebGLCanvas ? this.copyImageToCanvas(true) : this._2dCanvas.canvas;
   }
 }
 

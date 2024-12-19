@@ -3048,6 +3048,7 @@ export class ScreenViewport extends Viewport {
   private readonly _backStack: ViewPose[] = [];
   private _currentBaseline?: ViewPose;
   private _lastPose?: ViewPose; // the pose the last time this view was rendered
+  // probably the webgl canvas
   private _webglCanvas?: HTMLCanvasElement;
   private _logo!: HTMLImageElement;
   private readonly _decorationCache = new DecorationsCache();
@@ -3057,6 +3058,7 @@ export class ScreenViewport extends Viewport {
   /** The div created to hold all viewport elements. */
   public readonly vpDiv: HTMLDivElement;
   /** The canvas to display the view contents. */
+  // probable the 2d canvas on top
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
    * @internal
