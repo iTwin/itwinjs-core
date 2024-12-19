@@ -32,7 +32,7 @@ describe("IModel Connection", () => {
     if (!testContext.settings.runiModelReadRpcTests)
       this.skip();
 
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
@@ -101,7 +101,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -367,7 +367,7 @@ describe("Snapping", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });

@@ -348,7 +348,7 @@
     },
     {
       "name": "@itwin/unified-selection",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -675,6 +675,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "marked",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
     },
@@ -829,6 +833,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sql-formatter",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "stream-browserify",
