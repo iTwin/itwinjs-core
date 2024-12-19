@@ -15,6 +15,7 @@ import { CodeService } from "../../CodeService";
 import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BriefcaseManager } from "../../BriefcaseManager";
+import { QueryMappedFamiliesArgs } from "../../IModelDbFonts";
 
 describe("IModelDbFonts", () => {
   let db: IModelDb;
@@ -170,10 +171,6 @@ describe("IModelDbFonts", () => {
       ]]);
     });
 
-    it("throws if file is read-only", async () => {
-      // ###TODO
-    });
-
     it("throws if font is not embeddable", async () => {
       await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
       await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
@@ -311,7 +308,20 @@ describe("IModelDbFonts", () => {
     });
   });
 
-  it("queries font data", async () => {
-    // ###TODO
+  describe("queryMappedFamilies", () => {
+    it("omits entries with no embedded face data by default", async () => {
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf") });
+      await db.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf"), dontAllocateFontIds: true });
+      await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+
+      function expectFamilies(expected: string[], args?: QueryMappedFamiliesArgs): void {
+        const actual = Array.from(db.fonts.queryMappedFamilies(args)).map((x) => x.name).sort();
+        expect(actual).to.deep.equal(expected.sort());
+      }
+
+      expectFamilies(["Karla"]);
+      expectFamilies(["Karla"], { includeNonEmbedded: false })
+      expectFamilies(["Arial", "Karla"], { includeNonEmbedded: true });
+    });
   });
 });

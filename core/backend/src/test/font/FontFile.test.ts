@@ -118,12 +118,6 @@ describe("FontFile", () => {
         expectEmbeddable(true, "Sitka-Banner.ttf");
       });
 
-      it("prohibits embedding a file if any face is not embeddable", () => {
-        expectEmbeddable(true, "Sitka.ttc");
-
-        // ###TODO need a file with one face not embeddable
-      });
-
       it("uses the least restrictive embedding rights if multiple bits are set", () => {
         expectEmbeddable(true, "Karla-MultipleEmbeddingRights.ttf");
       });
