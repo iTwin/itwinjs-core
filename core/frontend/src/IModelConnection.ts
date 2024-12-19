@@ -163,21 +163,21 @@ export abstract class IModelConnection extends IModel {
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled.
    * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
-  public fontMap?: FontMap;
+  public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
-  public async loadFontMap(): Promise<FontMap> {
-    if (undefined === this.fontMap) {
-      this.fontMap = new FontMap();
+  public async loadFontMap(): Promise<FontMap> { // eslint-disable-line @typescript-eslint/no-deprecated
+    if (undefined === this.fontMap) { // eslint-disable-line @typescript-eslint/no-deprecated
+      this.fontMap = new FontMap(); // eslint-disable-line @typescript-eslint/no-deprecated
       if (this.isOpen) {
         const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps());
-        this.fontMap.addFonts(fontProps.fonts);
+        this.fontMap.addFonts(fontProps.fonts); // eslint-disable-line @typescript-eslint/no-deprecated
       }
     }
-    return this.fontMap;
+    return this.fontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.

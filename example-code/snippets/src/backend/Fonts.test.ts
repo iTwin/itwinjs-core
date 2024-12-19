@@ -35,14 +35,14 @@ describe("Font Examples", () => {
       // Query the absolute filename for every available system font.
       const systemFontPaths = await getSystemFonts();
       // Add the font families from each font file to the map.
-      for (const path of systemFontPaths) {
+      for (const systemFontPath of systemFontPaths) {
         let fontFile;
         try {
-          fontFile = FontFile.createFromTrueTypeFileName(path);
+          fontFile = FontFile.createFromTrueTypeFileName(systemFontPath);
           if (!includeNonEmbeddable && !fontFile.isEmbeddable) {
             continue;
           }
-        } catch (_) {
+        } catch (_) { // eslint-disable-line @typescript-eslint/no-unused-vars
           continue;
         }
 
@@ -88,7 +88,7 @@ describe("Font Examples", () => {
 
       // Install all of the font files containing the selected families faces.
       const filesToInstall = availableFamilies.get(familyToInstall)!;
-      await Promise.all(filesToInstall.map((file) => db.fonts.embedFontFile({ file })));
+      await Promise.all(filesToInstall.map(async (file) => db.fonts.embedFontFile({ file })));
       return db.fonts.findId(descriptor);
     }
     // __PUBLISH_EXTRACT_END__
