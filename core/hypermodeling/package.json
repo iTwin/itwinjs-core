@@ -1,6 +1,6 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "4.8.0-dev.34",
+  "version": "5.0.0-dev.28",
   "description": "iTwin.js hypermodeling package",
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",
@@ -13,9 +13,9 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "cover": "npm -s test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/hypermodeling-frontend/file.json --tsIndexFile=./hypermodeling-frontend.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/hypermodeling-frontend/file.json --tsIndexFile=./hypermodeling-frontend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=hypermodeling-frontend",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
     "test:debug": "certa -r chrome --debug",
@@ -37,10 +37,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.8.0-dev.34",
-    "@itwin/core-common": "workspace:^4.8.0-dev.34",
-    "@itwin/core-frontend": "workspace:^4.8.0-dev.34",
-    "@itwin/core-geometry": "workspace:^4.8.0-dev.34"
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -49,21 +49,21 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
-    "webpack": "^5.76.0"
+    "typescript": "~5.6.2",
+    "webpack": "^5.97.1"
   },
   "dependencies": {
     "@itwin/appui-abstract": "workspace:*"

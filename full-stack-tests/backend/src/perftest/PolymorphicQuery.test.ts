@@ -113,7 +113,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     return schemaPath;
   }
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     multiHierarchyCount = configData.polymorphic.multi.hierarchyCount;
     multiSeedCount = configData.polymorphic.multi.seedCount;
     multiOpCount = configData.polymorphic.multi.opCount;
@@ -223,7 +223,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           totalTime = totalTime + elapsedTime;
-        } catch (err) {
+        } catch {
           assert.isTrue(false);
         }
       }
@@ -259,7 +259,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           parentTime = elapsedTime;
         else
           totalTime = totalTime + elapsedTime;
-      } catch (err) {
+      } catch {
         assert.isTrue(false);
       }
     }

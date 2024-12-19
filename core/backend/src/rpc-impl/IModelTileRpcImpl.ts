@@ -74,7 +74,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     if (tileQP.isPending) {
       this.log("issuing pending status for", props);
-      throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+      throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
     }
 
     this.deleteMemoized(props);
@@ -87,7 +87,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     assert(tileQP.isRejected);
     this.log("rejected", props);
-    throw tileQP.error; // eslint-disable-line no-throw-literal
+    throw tileQP.error;
   }
 }
 
@@ -140,7 +140,7 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
     };
-    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
+    await IModelHost.tileStorage?.uploadTile(props.tokenProps.iModelId ?? db.iModelId, props.tokenProps.changeset?.id ?? db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
     const { accessToken: _, ...safeProps } = props;
     Logger.logInfo(BackendLoggerCategory.IModelTileRequestRpc, "Generated and uploaded tile", { tileMetadata, ...safeProps });
 
@@ -186,11 +186,11 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, 
 }
 
 function currentActivity() {
-  return RpcTrace.expectCurrentActivity; // eslint-disable-line deprecation/deprecation
+  return RpcTrace.expectCurrentActivity;
 }
 
 /** @internal */
-export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface { // eslint-disable-line deprecation/deprecation
+export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {

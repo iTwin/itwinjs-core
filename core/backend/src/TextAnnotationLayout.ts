@@ -7,7 +7,7 @@
  */
 
 import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Range2d } from "@itwin/core-geometry";
+import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
@@ -87,6 +87,49 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult {
   const layout = layoutTextBlock(args);
   return layout.toResult();
+}
+
+/**
+ * Arguments supplied to [[computeGraphemeOffsets]].
+ * @beta
+ */
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+  /** The index of the [Paragraph]($common) in the text block that contains the run layout result text. */
+  paragraphIndex: number;
+  /** The run layout result for which grapheme ranges will be computed. */
+  runLayoutResult: RunLayoutResult;
+  /** An array of starting character indexes for each grapheme. Each entry represents the index of the first character in a grapheme. */
+  graphemeCharIndexes: number[];
+};
+
+/**
+ * Computes the range from the start of a [RunLayoutResult]($common) to the trailing edge of each grapheme.
+ * It is the responsibility of the caller to determine the number and character indexes of the graphemes.
+ * @returns If the [RunLayoutResult]($common)'s source is a [TextRun]($common), it returns an array containing the range of each grapheme.
+ * Otherwise, it returns and empty array.
+ * @beta
+ */
+export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[] {
+  const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
+  const findFontId = args.findFontId ?? ((name) => iModel.fontMap.getFont(name)?.id ?? 0);
+  const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
+  const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
+  const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
+
+  if (source.type !== "text" || runLayoutResult.characterCount === 0) {
+    return [];
+  }
+
+  const style = TextStyleSettings.fromJSON(runLayoutResult.textStyle);
+
+  const layoutContext = new LayoutContext(textBlock, computeTextRange, findTextStyle, findFontId);
+  const graphemeRanges: Range2d[] = [];
+
+  graphemeCharIndexes.forEach((_, index) => {
+    const nextGraphemeCharIndex = graphemeCharIndexes[index + 1] ?? runLayoutResult.characterCount;
+    graphemeRanges.push(layoutContext.computeRangeForTextRun(style, source, runLayoutResult.characterOffset, nextGraphemeCharIndex).layout);
+  });
+  return graphemeRanges;
 }
 
 function scaleRange(range: Range2d, scale: number): void {
@@ -314,7 +357,7 @@ export class RunLayout {
     return this.source.type === "text";
   }
 
-  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
+  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number }): RunLayout {
     assert(this.canWrap());
 
     return new RunLayout({
@@ -452,8 +495,10 @@ export class TextBlockLayout {
   public source: TextBlock;
   public range = new Range2d();
   public lines: LineLayout[] = [];
+  private _context: LayoutContext;
 
   public constructor(source: TextBlock, context: LayoutContext) {
+    this._context = context;
     this.source = source;
 
     if (source.width > 0) {
@@ -515,7 +560,7 @@ export class TextBlockLayout {
 
         const runWidth = run.range.xLength();
         const lineWidth = curLine.range.xLength();
-        if (runWidth + lineWidth <= doc.width) {
+        if (runWidth + lineWidth < doc.width || Geometry.isAlmostEqualNumber(runWidth + lineWidth, doc.width, Geometry.smallMetricDistance)) {
           curLine.append(run);
           continue;
         }

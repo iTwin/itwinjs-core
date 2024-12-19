@@ -285,7 +285,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         await offline(async () => storage.saveProperties(new Set(["a"]), "b", "c"));
         expect(await offline(async () => storage.loadProperties("b", "c"))).to.not.be.undefined;
         // call save while online
-        impl.saveProperties.returns(Promise.reject());
+        impl.saveProperties.returns(Promise.reject(new Error()));
         const set = new Set(["d"]);
         await storage.saveProperties(set, "b", "c");
         expect(impl.saveProperties).to.be.calledOnceWith(set, "b", "c");
@@ -322,7 +322,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
       });
 
       it("stores properties to offline cache the last value when `impl` request fails before offline call", async () => {
-        impl.saveProperties.returns(Promise.reject());
+        impl.saveProperties.returns(Promise.reject(new Error()));
         const result = Promise.all([
           online(async () => storage.saveProperties(new Set(["1"]), "x", "z")),
           offline(async () => storage.saveProperties(new Set(["2"]), "x", "z")),
@@ -383,7 +383,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
       it("loads from cache if `impl` load fails", async () => {
         await offline(async () => storage.saveProperties(new Set(["cached"]), "a", "b"));
-        impl.loadProperties.returns(Promise.reject());
+        impl.loadProperties.returns(Promise.reject(new Error()));
         const result = await storage.loadProperties("a", "b");
         expect(impl.loadProperties).to.be.calledOnce;
         expect(result?.size).to.eq(1);
@@ -441,7 +441,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
         await offline(async () => storage.savePropertiesOrder([createRandomPropertiesOrderInfo()], "b", "c"));
         expect(await offline(async () => storage.loadPropertiesOrder("b", "c"))).to.not.be.undefined;
         // call save while online
-        impl.savePropertiesOrder.returns(Promise.reject());
+        impl.savePropertiesOrder.returns(Promise.reject(new Error()));
         const order = createRandomPropertiesOrderInfo();
         await storage.savePropertiesOrder([order], "b", "c");
         expect(impl.savePropertiesOrder).to.be.calledOnceWith([order], "b", "c");
@@ -481,7 +481,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
       it("stores properties order to offline cache the last value when `impl` request fails before offline call", async () => {
         const orderInfos = [0, 1].map(() => createRandomPropertiesOrderInfo());
-        impl.savePropertiesOrder.returns(Promise.reject());
+        impl.savePropertiesOrder.returns(Promise.reject(new Error()));
         const result = Promise.all([
           online(async () => storage.savePropertiesOrder([orderInfos[0]], "x", "z")),
           offline(async () => storage.savePropertiesOrder([orderInfos[1]], "x", "z")),
@@ -544,7 +544,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
       it("loads from cache if `impl` load fails", async () => {
         const order = createRandomPropertiesOrderInfo();
         await offline(async () => storage.savePropertiesOrder([order], "a", "b"));
-        impl.loadPropertiesOrder.returns(Promise.reject());
+        impl.loadPropertiesOrder.returns(Promise.reject(new Error()));
         const result = await storage.loadPropertiesOrder("a", "b");
         expect(impl.loadPropertiesOrder).to.be.calledOnce;
         expect(result?.length).to.eq(1);

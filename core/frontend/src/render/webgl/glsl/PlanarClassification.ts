@@ -174,7 +174,7 @@ const applyPlanarClassificationColorForThematic = applyPlanarClassificationPrelu
 `;
 
 const overrideFeatureId = `
-  if (u_pClassColorParams.x > kClassifierDisplay_Element) return currentId;
+  if (u_pClassColorParams.x != kClassifierDisplay_Element) return currentId;
   vec2 classPos = v_pClassPos / v_pClassPosW;
   vec4 featureTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, (1.0 + classPos.y) /  u_pClassColorParams.z));
   return (featureTexel == vec4(0)) ? currentId : addUInt32s(u_batchBase, featureTexel * 255.0) / 255.0;

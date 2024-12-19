@@ -63,6 +63,7 @@ import { VisibleTileFeatures } from "./VisibleTileFeatures";
 import { FrameStatsCollector } from "../FrameStats";
 import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
+import { _implementationProhibited } from "../../common/internal/Symbols";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -98,12 +99,16 @@ interface ReadPixelResources {
 
 /** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
+  protected override readonly [_implementationProhibited] = undefined;
   public readonly graphics = new TargetGraphics();
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _worldDecorations?: WorldDecorations;
+  private _currPickExclusions = new Id64.Uint32Set();
+  private _swapPickExclusions = new Id64.Uint32Set();
+  public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _hilites: Hilites = new EmptyHiliteSet();
-  private _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
+  private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
   private _flashedId = Id64.invalid;
   private _flashIntensity: number = 0;
@@ -187,6 +192,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get hilites(): Hilites { return this._hilites; }
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
+
+  public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
 
   public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
   public get flashedId(): Id64String { return this._flashedId; }
@@ -434,7 +441,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     });
   }
 
-  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<String, T> | undefined, newMap: Map<String, T> | undefined): void {
+  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<string, T> | undefined, newMap: Map<string, T> | undefined): void {
     if (undefined === newMap) {
       if (undefined !== oldMap)
         for (const value of oldMap.values())
@@ -523,6 +530,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
 
     this.uniforms.thematic.update(this);
+
+    this.uniforms.contours.update(this);
 
     this.uniforms.atmosphere.update(this);
 
@@ -741,7 +750,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return true;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void {
     if (!this.assignDC())
       return;
 
@@ -766,9 +775,30 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let result: Pixel.Buffer | undefined;
 
     this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      let updatedExclusions = false;
+      if (excludedElements) {
+        const swap = this._swapPickExclusions;
+        swap.clear();
+        for (const exclusion of excludedElements) {
+          swap.addId(exclusion);
+        }
+
+        if (!this._currPickExclusions.equals(swap)) {
+          this._swapPickExclusions = this._currPickExclusions;
+          this._currPickExclusions = swap;
+          updatedExclusions = true;
+          desync(this.pickExclusionsSyncTarget);
+        }
+      }
+
       this._drawNonLocatable = !excludeNonLocatable;
       result = this.readPixelsFromFbo(rect, selector);
       this._drawNonLocatable = true;
+
+      if (updatedExclusions) {
+        this._currPickExclusions.clear();
+        desync(this.pickExclusionsSyncTarget);
+      }
     });
 
     this.disposeOrReuseReadPixelResources(resources);
@@ -971,7 +1001,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.renderSystem.frameBufferStack.execute(this._fbo, true, false, () => {
       try {
         context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
-      } catch (e) {
+      } catch {
         didSucceed = false;
       }
     });

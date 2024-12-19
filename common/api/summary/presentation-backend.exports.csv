@@ -1,43 +1,43 @@
 sep=;
-Release Tag;API Item
-public;BackendDiagnosticsAttribute
-public;BackendDiagnosticsHandler
-public;BackendDiagnosticsOptions
-internal;combineDiagnosticsOptions(...options: Array
-public;ContentCacheConfig
-public;DiskHierarchyCacheConfig 
-internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
-internal;getLocalizedStringEN(key: string): string
-public;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
-public;HierarchyCacheConfigBase
-public;HierarchyCacheMode
-public;HybridCacheConfig 
-public;MemoryHierarchyCacheConfig 
-public;MultiElementPropertiesResponse
-public;MultiManagerPresentationProps = PresentationProps
-deprecated;MultiManagerPresentationProps = PresentationProps
-internal;normalizeVersion(version?: string): string
-public;Presentation
-public;PresentationAssetsRootConfig
-public;PresentationBackendLoggerCategory
-public;PresentationBackendNativeLoggerCategory
-public;PresentationManager
-public;PresentationManagerCachingConfig
-public;PresentationManagerMode
-deprecated;PresentationManagerMode
-public;PresentationManagerProps
-public;PresentationProps 
-public;PresentationPropsBase = PresentationProps
-deprecated;PresentationPropsBase = PresentationProps
-internal;reportDiagnostics
-public;RulesetEmbedder
-public;RulesetEmbedderProps
-public;RulesetInsertOptions
-public;RulesetManager
-internal;RulesetManagerImpl 
-public;RulesetVariablesManager
-internal;RulesetVariablesManagerImpl 
-public;SingleManagerPresentationProps = Omit
-deprecated;SingleManagerPresentationProps = Omit
-public;UnitSystemFormat = UnitSystemFormat_2
-deprecated;UnitSystemFormat = UnitSystemFormat_2
+Release Tag;API Item Type;API Item Name
+public;interface;BackendDiagnosticsAttribute
+public;type;BackendDiagnosticsHandler
+public;interface;BackendDiagnosticsOptions
+internal;function;combineDiagnosticsOptions
+public;interface;ContentCacheConfig
+public;interface;DiskHierarchyCacheConfig
+internal;function;getElementKey
+internal;function;getLocalizedStringEN
+public;type;HierarchyCacheConfig
+public;interface;HierarchyCacheConfigBase
+public;enum;HierarchyCacheMode
+public;interface;HybridCacheConfig
+public;interface;MemoryHierarchyCacheConfig
+public;interface;MultiElementPropertiesResponse
+public;type;MultiManagerPresentationProps
+deprecated;type;MultiManagerPresentationProps
+internal;function;normalizeVersion
+public;class;Presentation
+public;interface;PresentationAssetsRootConfig
+public;enum;PresentationBackendLoggerCategory
+public;enum;PresentationBackendNativeLoggerCategory
+public;class;PresentationManager
+public;interface;PresentationManagerCachingConfig
+public;enum;PresentationManagerMode
+deprecated;enum;PresentationManagerMode
+public;interface;PresentationManagerProps
+public;interface;PresentationProps
+public;type;PresentationPropsBase
+deprecated;type;PresentationPropsBase
+internal;function;reportDiagnostics
+public;class;RulesetEmbedder
+public;interface;RulesetEmbedderProps
+public;interface;RulesetInsertOptions
+public;interface;RulesetManager
+internal;class;RulesetManagerImpl
+public;interface;RulesetVariablesManager
+internal;class;RulesetVariablesManagerImpl
+public;type;SingleManagerPresentationProps
+deprecated;type;SingleManagerPresentationProps
+public;type;UnitSystemFormat
+deprecated;type;UnitSystemFormat

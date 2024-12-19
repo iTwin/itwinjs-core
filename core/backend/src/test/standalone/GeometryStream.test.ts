@@ -179,7 +179,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const brep = ElementGeometry.toBRep(entry);
           assert.exists(brep);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toBRep(expected[i].originalEntry!);
+            const other = ElementGeometry.toBRep(expected[i].originalEntry);
             assert.exists(other);
             // NOTE: Don't compare brep type; set from entity data by backend, ignored if supplied to update...
             const transform = Transform.fromJSON(brep?.transform);
@@ -194,7 +194,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const text = ElementGeometry.toTextString(entry);
           assert.exists(text);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toTextString(expected[i].originalEntry!);
+            const other = ElementGeometry.toTextString(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(text?.font === other?.font);
             assert.isTrue(text?.text === other?.text);
@@ -215,7 +215,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const image = ElementGeometry.toImageGraphic(entry);
           assert.exists(image);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry!);
+            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(image?.textureId === other?.textureId);
             assert.isTrue(image?.hasBorder === other?.hasBorder);
@@ -241,7 +241,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
       assert.exists(part);
       if (!isWorld && undefined !== expected[i].originalEntry) {
         const otherToElement = Transform.createIdentity();
-        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry!, otherToElement);
+        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry, otherToElement);
         assert.exists(other);
         assert.isTrue(partToElement.isAlmostEqual(otherToElement));
       }
@@ -250,7 +250,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
         const updated = ElementGeometry.updateGeometryParams(entry, geomParams);
         assert.isTrue(updated);
         if (!isWorld && undefined !== expected[i].geomParams)
-          assert.isTrue(geomParams.isEquivalent(expected[i].geomParams!));
+          assert.isTrue(geomParams.isEquivalent(expected[i].geomParams));
       }
     }
   });
@@ -1792,6 +1792,58 @@ describe("ElementGeometry", () => {
     imodel.saveChanges();
 
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+  });
+
+  it("test BRep entity transform", async () => {
+    const localToWorld = Transform.createOriginAndMatrix(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0).toMatrix3d());
+    const worldToLocal = localToWorld.inverse()!;
+
+    // Specify an entity transform that won't have translation/rotation fully cancelled out by placement...
+    const brepProps = createBRepDataProps(Point3d.create(15, 25, 5), YawPitchRollAngles.createDegrees(90, 0, 0));
+    const brepEntry = ElementGeometry.fromBRep(brepProps, worldToLocal);
+    assert.exists(brepEntry);
+
+    const brepToWorldExpected = Transform.fromJSON(brepProps.transform);
+    const brepToLocalExpected = worldToLocal.multiplyTransformTransform(brepToWorldExpected);
+
+    // Check for expected brep to local transform...
+    const brepPropsLocal = ElementGeometry.toBRep(brepEntry!, false);
+    assert.exists(brepPropsLocal);
+    const brepToLocal = Transform.fromJSON(brepPropsLocal!.transform);
+    assert.isTrue(brepToLocalExpected.isAlmostEqual(brepToLocal));
+
+    // Check for expected brep to world transform...
+    const brepPropsWorld = ElementGeometry.toBRep(brepEntry!, false, localToWorld);
+    assert.exists(brepPropsWorld);
+    const brepToWorld = Transform.fromJSON(brepPropsWorld!.transform);
+    assert.isTrue(brepToWorldExpected.isAlmostEqual(brepToWorld));
+
+    // Ensure that applying transform directly to flat buffer data produces same result...
+    ElementGeometry.transformBRep(brepEntry!, localToWorld);
+
+    const brepPropsWorld2 = ElementGeometry.toBRep(brepEntry!, false);
+    assert.exists(brepPropsWorld2);
+    const brepToWorld2 = Transform.fromJSON(brepPropsWorld2!.transform);
+    assert.isTrue(brepToWorldExpected.isAlmostEqual(brepToWorld2));
+
+    // Check json format geometry stream...
+    const builder = new GeometryStreamBuilder();
+    builder.setLocalToWorld(localToWorld);
+    builder.appendBRepData(brepProps);
+
+    const itLocal = new GeometryStreamIterator(builder.geometryStream);
+    for (const entry of itLocal) {
+      assertTrue(entry.primitive.type === "brep");
+      const brepToLocalGSB = Transform.fromJSON(entry.primitive.brep.transform);
+      assert.isTrue(brepToLocalExpected.isAlmostEqual(brepToLocalGSB));
+    }
+
+    const itWorld = new GeometryStreamIterator(builder.geometryStream, undefined, localToWorld);
+    for (const entry of itWorld) {
+      assertTrue(entry.primitive.type === "brep");
+      const brepToWorldGSB = Transform.fromJSON(entry.primitive.brep.transform);
+      assert.isTrue(brepToWorldExpected.isAlmostEqual(brepToWorldGSB));
+    }
   });
 
   it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {

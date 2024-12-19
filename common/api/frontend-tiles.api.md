@@ -25,6 +25,16 @@ export interface BaseGeoscienceArgs {
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
+// @internal
+export function createGraphicRepresentationsQueryUrl(args: {
+    sourceId: string;
+    sourceType: string;
+    urlPrefix?: string;
+    changeId?: string;
+    enableCDN?: boolean;
+    numExports?: number;
+}): string;
+
 // @beta
 export interface DataSource {
     changeId?: string;
@@ -151,8 +161,10 @@ export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promis
 // @beta
 export interface ObtainIModelTilesetUrlArgs {
     accessToken: AccessToken;
+    changesetId?: string;
     enableCDN?: boolean;
-    iModel: IModelConnection;
+    iModelId?: string;
+    iTwinId?: string;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
 }
@@ -173,6 +185,7 @@ export interface QueryGraphicRepresentationsArgs {
     enableCDN?: boolean;
     format: GraphicRepresentationFormat;
     includeIncomplete?: boolean;
+    numExports?: number;
     sessionId: string;
     urlPrefix?: string;
 }
@@ -188,6 +201,7 @@ export interface QueryMeshExportsArgs {
     iModelId: string;
     includeIncomplete?: boolean;
     iTwinId: string;
+    numExports?: number;
     urlPrefix?: string;
 }
 

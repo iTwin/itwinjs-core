@@ -17,8 +17,9 @@ import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfacePara
 import { MeshParams } from "./MeshParams";
 import { Point3dList } from "./MeshPrimitive";
 import { VertexIndices } from "./VertexIndices";
-import { MeshArgs, PolylineArgs } from "./MeshPrimitives";
 import { createEdgeParams } from "./EdgeParams";
+import { MeshArgs } from "../../../render/MeshArgs";
+import { PolylineArgs } from "../../../render/PolylineArgs";
 
 /** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number, enableIndexedEdges: boolean): MeshParams {

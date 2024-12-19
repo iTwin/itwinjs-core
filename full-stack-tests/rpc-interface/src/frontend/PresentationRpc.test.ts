@@ -23,7 +23,7 @@ describe("PresentationRpcInterface tests", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    const accessToken = testContext.adminUserAccessToken;
+    const accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -92,7 +92,7 @@ describe("PresentationRpcInterface tests", () => {
     const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
     const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
     const keys = new KeySet([key1, key2]);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const contentAndSize = await Presentation.presentation.getContentAndSize({
       imodel,
       rulesetOrId: createContentRuleset(),
@@ -106,7 +106,7 @@ describe("PresentationRpcInterface tests", () => {
     const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
     const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
     const keys = new KeySet([key1, key2]);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const content = await Presentation.presentation.getContent({
       imodel,
       rulesetOrId: createContentRuleset(),

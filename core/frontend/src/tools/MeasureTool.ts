@@ -93,7 +93,7 @@ class MeasureMarker extends Marker {
       ctx.stroke();
     };
 
-    this.drawFunc = markerDrawFunc; // eslint-disable-line @typescript-eslint/unbound-method
+    this.drawFunc = markerDrawFunc;
     this.title = title;
     this.label = label;
     this.labelFont = "16px sans-serif";
@@ -566,7 +566,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
           return true;
         };
 
-        marker.onMouseButton = segMarkerButtonFunc; // eslint-disable-line @typescript-eslint/unbound-method
+        marker.onMouseButton = segMarkerButtonFunc;
         this._acceptedSegments.push({ distance, slope, start, end, delta, adjustedStart, adjustedEnd, adjustedDelta, refAxes, marker });
       }
     }
@@ -1273,7 +1273,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   /** @internal */
   public override async onCleanup() {
     if (0 !== this._acceptedIds.length)
-      this.iModel.hilited.setHilite(this._acceptedIds, false);
+      this.iModel.hilited.remove({ elements: this._acceptedIds });
   }
 
   /** @internal */
@@ -1575,7 +1575,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
 
     this._acceptedMeasurements.push(marker);
     this._acceptedIds.push(hit.sourceId);
-    this.iModel.hilited.setHilite(hit.sourceId, true);
+    this.iModel.hilited.add({ elements: hit.sourceId });
 
     await this.updateTotals();
     this.setupAndPromptForNextAction();
@@ -1595,7 +1595,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
       await this.onReinitialize();
     } else {
       if (0 !== this._acceptedIds.length) {
-        this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false);
+        this.iModel.hilited.remove({ elements: this._acceptedIds[this._acceptedIds.length - 1] });
         this._acceptedIds.pop();
       }
 

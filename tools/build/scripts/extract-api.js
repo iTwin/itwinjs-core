@@ -15,9 +15,16 @@ if (argv.entry === undefined) {
   return;
 }
 
+function getEntryPointDirName(){
+  const dirname = path.dirname(argv.entry);
+  return dirname === "." ? "./lib/cjs" : dirname;
+};
+
 const isCI = (process.env.TF_BUILD);
-const entryPointFileName = argv.entry;
+const entryPointFileName = path.basename(argv.entry);
+const entryPointDirName = getEntryPointDirName();
 const ignoreMissingTags = argv.ignoreMissingTags;
+const includeUnexportedApis = argv.includeUnexportedApis;
 
 // Resolves the root of the Rush repo
 const resolveRoot = relativePath => {
@@ -42,9 +49,11 @@ const apiReportFolder = argv.apiReportFolder ?? path.join(rushCommon(), "/api");
 const apiReportTempFolder = argv.apiReportTempFolder ?? path.join(rushCommon(), "/temp/api");
 const apiSummaryFolder = argv.apiSummaryFolder ?? path.join(rushCommon(), "/api/summary");
 
+const appDir = path.join(paths.appSrc, "..");
+const projectFolder = path.relative(entryPointDirName, appDir);
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-  projectFolder: "../../",
+  projectFolder,
   compiler: {
     tsconfigFilePath: "<projectFolder>/tsconfig.json"
   },
@@ -53,6 +62,7 @@ const config = {
     enabled: true,
     reportFolder: path.resolve(apiReportFolder),
     reportTempFolder: path.resolve(apiReportTempFolder),
+    includeForgottenExports: !!includeUnexportedApis,
   },
   docModel: {
     enabled: false
@@ -102,12 +112,12 @@ const config = {
   }
 };
 
-if (!fs.existsSync("lib")) {
-  process.stderr.write("`lib` folder not found. Build the package(s) before running `extract-api`");
+if (!fs.existsSync(entryPointDirName)) {
+  process.stderr.write(`\`${entryPointDirName}\` folder not found. Build the package(s) before running \`extract-api\``);
   process.exit(1);
 }
 
-const configFileName = `lib/cjs/${entryPointFileName}.json`;
+const configFileName = path.format({ dir: entryPointDirName, name: entryPointFileName, ext: ".json" });
 fs.writeFileSync(configFileName, JSON.stringify(config, null, 2));
 
 const args = [

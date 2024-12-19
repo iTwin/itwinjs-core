@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "KeySet: Always store instance key class name in `Schema:Class` format.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

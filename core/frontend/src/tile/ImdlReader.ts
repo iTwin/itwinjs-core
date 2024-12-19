@@ -21,8 +21,6 @@ import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, p
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
 import { BatchOptions } from "../common/render/BatchOptions";
 
-/* eslint-disable no-restricted-syntax */
-
 /** @internal */
 export interface ImdlReaderResult extends IModelTileContent {
   readStatus: TileReadStatus;
@@ -101,7 +99,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     modelGroups: args.modelGroups,
   };
 
-  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument({ ...parseOpts, timeline: args.timeline });
+  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : await parseImdlDocument({ ...parseOpts, timeline: args.timeline });
   if (isCanceled())
     return { isLeaf: true, readStatus: TileReadStatus.Canceled };
   else if (typeof document === "number")

@@ -11,16 +11,7 @@ import rimraf from "rimraf";
 import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
-import {
-  AuthorizationClient,
-  EmptyLocalization,
-  IModelReadRpcInterface,
-  Localization,
-  RpcConfiguration,
-  RpcDefaultConfiguration,
-  RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
+import { EmptyLocalization, IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
@@ -43,8 +34,8 @@ function loadEnv(envFile: string) {
     return;
   }
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -103,11 +94,10 @@ export function setupTestsOutputDirectory() {
   return outputRoot;
 }
 
-const initializeCommon = async (props: {
-  backendTimeout?: number;
-  frontendTimeout?: number;
-  authorizationClient?: AuthorizationClient;
-  localization?: Localization;
+export const initialize = async (props?: {
+  presentationBackendProps?: PresentationBackendProps;
+  presentationFrontendProps?: PresentationFrontendProps;
+  imodelAppProps?: IModelAppOptions;
 }) => {
   // init logging
   Logger.initializeToConsole();
@@ -125,7 +115,7 @@ const initializeCommon = async (props: {
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
-    requestTimeout: props.backendTimeout,
+    requestTimeout: DEFAULT_BACKEND_TIMEOUT,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
@@ -134,17 +124,18 @@ const initializeCommon = async (props: {
         mode: HierarchyCacheMode.Memory,
       },
     },
+    ...props?.presentationBackendProps,
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {
-      requestTimeout: props.frontendTimeout,
       activeLocale: "en-PSEUDO",
     },
+    ...props?.presentationFrontendProps,
   };
 
   const frontendAppOptions: IModelAppOptions = {
-    authorizationClient: props.authorizationClient,
-    localization: props.localization ?? new EmptyLocalization(),
+    localization: new EmptyLocalization(),
+    ...props?.imodelAppProps,
   };
 
   const presentationTestingInitProps: PresentationInitProps = {
@@ -163,13 +154,6 @@ const initializeCommon = async (props: {
 
   // eslint-disable-next-line no-console
   console.log(`[${new Date().toISOString()}] Tests initialized`);
-};
-
-export const initialize = async (props?: { backendTimeout?: number; frontendTimeout?: number; localization?: Localization }) => {
-  await initializeCommon({
-    backendTimeout: DEFAULT_BACKEND_TIMEOUT,
-    ...props,
-  });
 };
 
 export const terminate = async () => {
@@ -230,7 +214,7 @@ async function initializePresentation(props: PresentationInitProps) {
   }
 
   // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
+  initializeRpcInterfaces([IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
 
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory

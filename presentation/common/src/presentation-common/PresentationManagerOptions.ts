@@ -196,23 +196,22 @@ export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementPro
  * Request type for single element properties requests.
  * @public
  */
-export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export interface SingleElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
   /** ID of the element to get properties for. */
   elementId: Id64String;
+
+  /**
+   * Content parser that creates a result item based on given content descriptor and content item. Defaults
+   * to a parser that creates [[ElementProperties]] objects.
+   */
+  contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
 }
 
 /**
- * Request type for multiple elements properties requests.
+ * Base request type for multiple elements properties requests.
  * @public
  */
-export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
-  /**
-   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
-   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
-   * "<schema name or alias>:<class_name>".
-   */
-  elementClasses?: string[];
-
+export interface MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
   /**
    * Content parser that creates a result item based on given content descriptor and content item. Defaults
    * to a parser that creates [[ElementProperties]] objects.
@@ -226,6 +225,37 @@ export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = 
    */
   batchSize?: number;
 }
+/**
+ * Request type for multiple elements properties requests, where elements are specified by class.
+ * @public
+ */
+export interface MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent = ElementProperties>
+  extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
+  /**
+   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
+   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
+   * "<schema name or alias>:<class_name>".
+   */
+  elementClasses?: string[];
+}
+/**
+ * Request type for multiple elements properties requests, where elements are specified by element id.
+ * @public
+ */
+export interface MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent = ElementProperties>
+  extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
+  /**
+   * A list of `bis.Element` IDs to get properties for.
+   */
+  elementIds?: Id64String[];
+}
+/**
+ * Request type for multiple elements properties requests.
+ * @public
+ */
+export type MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
+  | MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent>
+  | MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent>;
 
 /**
  * Request type for content instance keys' requests.
@@ -264,7 +294,7 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
  * Request options used for selection scope related requests
  * @public
  */
-export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
@@ -313,7 +343,7 @@ export interface PageOptions {
  * A wrapper type that injects [[PageOptions]] into supplied type
  * @public
  */
-export type Paged<TOptions extends {}> = TOptions & {
+export type Paged<TOptions extends object> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
 };
@@ -322,7 +352,7 @@ export type Paged<TOptions extends {}> = TOptions & {
  * A wrapper type that injects priority into supplied type.
  * @public
  */
-export type Prioritized<TOptions extends {}> = TOptions & {
+export type Prioritized<TOptions extends object> = TOptions & {
   /** Optional priority */
   priority?: number;
 };
@@ -341,7 +371,7 @@ export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent 
  * A wrapper type that injects cancelEvent into supplied type.
  * @public
  */
-export type WithCancelEvent<TOptions extends {}> = TOptions & {
+export type WithCancelEvent<TOptions extends object> = TOptions & {
   /** Event which is triggered when the request is canceled */
   cancelEvent?: BeEvent<() => void>;
 };

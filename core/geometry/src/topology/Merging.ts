@@ -12,15 +12,15 @@ import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range3d } from "../geometry3d/Range";
 import { ClusterableArray } from "../numerics/ClusterableArray";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem } from "../numerics/SmallSystem";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
 import { RegularizationContext } from "./RegularizeFace";
 import { Triangulator } from "./Triangulation";
-import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 
 export class GraphSplitData {
   public numUpEdge = 0;
@@ -593,8 +593,8 @@ export class HalfEdgeGraphMerge {
 
   /**
    * * Input is random linestrings, not necessarily loops
-   * * Graph gets full splitEdges, regularize, and triangulate.
-   * @returns triangulated graph, or undefined if bad data.
+   * * Graph gets full splitEdges, regularize (optional), and triangulate.
+   * @returns graph, or undefined if bad data.
    */
   public static formGraphFromChains(chains: MultiLineStringDataVariant, regularize: boolean = true, mask: HalfEdgeMask = HalfEdgeMask.PRIMARY_EDGE): HalfEdgeGraph | undefined {
     if (chains.length < 1)

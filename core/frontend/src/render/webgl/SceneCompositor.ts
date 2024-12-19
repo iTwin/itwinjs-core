@@ -599,8 +599,10 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 interface BatchInfo {
   featureTable: RenderFeatureTable;
   iModel?: IModelConnection;
+  transformFromIModel?: Transform;
   tileId?: string;
   viewAttachmentId?: Id64String;
+  inSectionDrawingAttachment?: boolean;
 }
 
 // Represents a view of data read from a region of the frame buffer.
@@ -645,8 +647,16 @@ class PixelBuffer implements Pixel.Buffer {
     const featureId = this.getFeatureId(pixelIndex);
     if (undefined !== featureId) {
       const batch = this._batchState.find(featureId);
-      if (undefined !== batch)
-        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId, viewAttachmentId: batch.viewAttachmentId };
+      if (undefined !== batch) {
+        return {
+          featureTable: batch.featureTable,
+          iModel: batch.batchIModel,
+          transformFromIModel: batch.transformFromBatchIModel,
+          tileId: batch.tileId,
+          viewAttachmentId: batch.viewAttachmentId,
+          inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
+        };
+      }
     }
 
     return undefined;
@@ -732,12 +742,14 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel, tileId, viewAttachmentId;
+    let featureTable, iModel, transformToIModel, tileId, viewAttachmentId, inSectionDrawingAttachment;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
       iModel = batchInfo.iModel;
+      transformToIModel = batchInfo.transformFromIModel;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
+      inSectionDrawingAttachment = batchInfo.inSectionDrawingAttachment;
     }
 
     return new Pixel.Data({
@@ -747,8 +759,10 @@ class PixelBuffer implements Pixel.Buffer {
       planarity,
       batchType: featureTable?.type,
       iModel,
+      transformFromIModel: transformToIModel,
       tileId,
       viewAttachmentId,
+      inSectionDrawingAttachment,
     });
   }
 
@@ -1609,7 +1623,7 @@ class Compositor extends SceneCompositor {
     System.instance.frameBufferStack.execute(fbo, true, false, () => {
       try {
         gl.readPixels(rect.left, bottom, rect.width, rect.height, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
-      } catch (e) {
+      } catch {
         result = undefined;
       }
     });

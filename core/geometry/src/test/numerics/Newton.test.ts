@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Newton1dUnbounded, Newton1dUnboundedApproximateDerivative, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD, NewtonEvaluatorRtoR, NewtonEvaluatorRtoRD, SimpleNewton } from "../../numerics/Newton";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -81,7 +81,7 @@ describe("Newton", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -144,7 +144,7 @@ describe("Newton", () => {
       ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
       GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2, n: iterator.numIterations });
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Newton1dUnboundedApproximateDerivative", () => {
     const ck = new Checker();
@@ -166,7 +166,7 @@ describe("Newton", () => {
       ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
       GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2, n: iterator.numIterations });
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Newton2dUnboundedWithDerivativeExample1", () => {
     const ck = new Checker();
@@ -206,7 +206,7 @@ describe("Newton", () => {
         n: iterator.numIterations,
       });
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Newton2dUnboundedWithDerivativeExample2", () => {
     const ck = new Checker();
@@ -246,7 +246,7 @@ describe("Newton", () => {
         n: iterator.numIterations,
       });
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SimpleNewton", () => {
     const ck = new Checker();
@@ -263,6 +263,6 @@ describe("Newton", () => {
     ck.testCoordinate(solution, expectedSolution2, "Newton converted to correct value");
     GeometryCoreTestIO.consoleLog({ solution, expectedSolution: expectedSolution2 });
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

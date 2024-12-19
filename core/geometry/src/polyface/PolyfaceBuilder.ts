@@ -9,10 +9,10 @@
 
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOutputSelect } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -51,6 +51,7 @@ import { Sphere } from "../solid/Sphere";
 import { SweepContour } from "../solid/SweepContour";
 import { TorusPipe } from "../solid/TorusPipe";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/Graph";
+import { InsertedVertexZOptions } from "../topology/InsertAndRetriangulateContext";
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
@@ -1177,17 +1178,28 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /** Construct facets for a rotational sweep. */
   public addRotationalSweep(surface: RotationalSweep): void {
-    const contour = surface.getCurves();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
+    const contour = surface.getSweepContourRef();
+    const section0 = StrokeCountSection.createForParityRegionOrChain(contour.getCurves(), this._options);
     const baseStrokes = section0.getStrokes();
+    // ensure sweep is positive for buildRotationalNormalsInLineStrings
     const axis = surface.cloneAxisRay();
+    const sweepAngle = surface.getSweep();
+    if (sweepAngle.radians < 0.0) {
+      axis.direction.scaleInPlace(-1);
+      sweepAngle.setRadians(-sweepAngle.radians);
+    }
+    // swingVector points in the direction of positive sweep
     const perpendicularVector = CylindricalRangeQuery.computeMaxVectorFromRay(axis, baseStrokes);
     const swingVector = axis.direction.crossProduct(perpendicularVector);
+    // ensure contour computed normal is aligned with swingVector for buildRotationalNormalsInLineStrings
+    const contourNormalAgreesWithSwingDir = contour.localToWorld.matrix.dotColumnZ(swingVector) > 0;
+    if (!contourNormalAgreesWithSwingDir)
+      baseStrokes.reverseInPlace();
     if (this._options.needNormals)
       CylindricalRangeQuery.buildRotationalNormalsInLineStrings(baseStrokes, axis, swingVector);
     const maxDistance = perpendicularVector.magnitude();
-    const maxPath = Math.abs(maxDistance * surface.getSweep().radians);
-    let numStep = StrokeOptions.applyAngleTol(this._options, 1, surface.getSweep().radians, undefined);
+    const maxPath = Math.abs(maxDistance * sweepAngle.radians);
+    let numStep = StrokeOptions.applyAngleTol(this._options, 1, sweepAngle.radians, undefined);
     numStep = StrokeOptions.applyMaxEdgeLength(this._options, numStep, maxPath);
     for (let i = 1; i <= numStep; i++) {
       const transformA = surface.getFractionalRotationTransform((i - 1) / numStep);
@@ -1195,11 +1207,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.addBetweenRotatedStrokeSets(baseStrokes, transformA, i - 1, transformB, i);
     }
     if (surface.capped) {
-      const capContour = surface.getSweepContourRef();
-      capContour.purgeFacets();
-      capContour.emitFacets(this, true, undefined);
-      // final loop pass left transformA at end
-      capContour.emitFacets(this, false, surface.getFractionalRotationTransform(1.0));
+      contour.purgeFacets();
+      const reverseNearCap = contourNormalAgreesWithSwingDir;
+      contour.emitFacets(this, reverseNearCap, undefined);
+      contour.emitFacets(this, !reverseNearCap, surface.getFractionalRotationTransform(1.0));
     }
   }
   /** Construct facets for any planar region. */
@@ -1222,7 +1233,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const children = data.children;
       if (children)
         for (const child of children)
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           this.applyStrokeCountsToCurvePrimitives(child);
     }
   }
@@ -1262,9 +1273,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const normalIndices = ls.ensureEmptyNormalIndices();
       const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform);
       normalIndices.push(normalIndex0!);
-      let normalIndexA = normalIndex0;
-      let normalIndexB: number | undefined;
       if (n > 1) {
+        let normalIndexA = normalIndex0;
+        let normalIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA);
           normalIndices.push(normalIndexB!);
@@ -1279,9 +1290,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const uvIndices = ls.ensureEmptyUVIndices();
       const uvIndex0 = this.findOrAddParamInLineString(ls, 0, vParam);
       uvIndices.push(uvIndex0!);
-      let uvIndexA = uvIndex0;
-      let uvIndexB: number | undefined;
       if (n > 1) {
+        let uvIndexA = uvIndex0;
+        let uvIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           uvIndexB = this.findOrAddParamInLineString(ls, i, vParam, uvIndexA);
           uvIndices.push(uvIndexB!);
@@ -1327,8 +1338,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (surface.capped && contour.isAnyRegionType) {
       const contourA = surface.getSweepContourRef();
       contourA.purgeFacets();
-      contourA.emitFacets(this, true, undefined);
-      contourA.emitFacets(this, false, sweepTransform);
+      const reverseNearCap = contourA.localToWorld.matrix.dotColumnZ(sweepVector) > 0;
+      contourA.emitFacets(this, reverseNearCap, undefined);
+      contourA.emitFacets(this, !reverseNearCap, sweepTransform);
     }
   }
   /** Add facets from a ruled sweep. */
@@ -1953,14 +1965,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Create a polyface from a triangulation of the points.
    * * The triangulation is computed as seen in the top view: z-coordinates are ignored.
+   * * The highest z-coordinate is preserved for points that are separated by a vertical distance.
    * @param points an array of points.
-   * @param options (optional) stroke options. Currently only two options are supported. If `options.needNormals` is
-   * true, all facets are assigned the single normal 001. If `options.needParams` is true, all facet vertices are
-   * assigned uv-parameters equal to their xy-coordinates. These options are rarely useful.
+   * @param options (optional) stroke options:
+   * * `options.chordTol`: xy-distance for equating points. For DTM points, 1-2mm may suffice. Default value is
+   * `Geometry.smallMetricDistance`.
+   * * `options.needNormals`: whether to assign 001 to all facets (rarely useful).
+   * * `options.needParams`: whether to assign all vertices uv-parameters equal to their xy-coordinates (rarely useful).
    * @returns triangulated polyface or `undefined` if triangulation was not possible.
    */
   public static pointsToTriangulatedPolyface(points: Point3d[], options?: StrokeOptions): IndexedPolyface | undefined {
-    const graph = Triangulator.createTriangulatedGraphFromPoints(points);
+    const graph = Triangulator.createTriangulatedGraphFromPoints(points, InsertedVertexZOptions.ReplaceIfLarger, options?.chordTol);
     if (graph)
       return PolyfaceBuilder.graphToPolyface(graph, options);
     return undefined;
@@ -1986,58 +2001,44 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => { this.addTriangleFacet(triangle.points); },
     );
   }
-  private addMiteredPipesFromPoints(
-    centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d, numFacetAround: number = 12,
-  ): void {
-    const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
-    const pointA0 = Point3d.create();
-    const pointA1 = Point3d.create();
-    const pointB0 = Point3d.create();
-    const pointB1 = Point3d.create();
-    if (numFacetAround < 3)
-      numFacetAround = 3;
-    const df = 1.0 / numFacetAround;
-    for (let i = 1; i < sections.length; i++) {
-      const arcA = sections[i - 1];
-      const arcB = sections[i];
-      arcA.fractionToPoint(0.0, pointA0);
-      arcB.fractionToPoint(0.0, pointB0);
-      for (let k = 1; k <= numFacetAround; k++, pointA0.setFromPoint3d(pointA1), pointB0.setFromPoint3d(pointB1)) {
-        const f = k * df;
-        arcA.fractionToPoint(f, pointA1);
-        arcB.fractionToPoint(f, pointB1);
-        this.addQuadFacet([pointA0, pointB0, pointB1, pointA1]);
-      }
-    }
-  }
   /**
    * Add quad facets along a mitered pipe that follows a centerline curve.
+   * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
+   * centerline segments.
    * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis
-   * lengths, or a full Arc3d:
-   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
-   *    * For Arc3d input, the center is translated to the centerline start point to act as initial cross section.
-   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
-   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d.
+   * lengths, or an Arc3d:
+   *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
+   * start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[CurveFactory.createMiteredSweepSections]], passing in the `startTangent`
+   * option to preserve the rotation of Arc3d-type `sectionData`.
+   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
+   * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
+   * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
    * @param numFacetAround how many equal parameter-space chords around each section.
+   * @param capped if `true`, add a cap at each end of the pipe; defaults to `false`.
    */
   public addMiteredPipes(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive,
     sectionData: number | XAndY | Arc3d,
     numFacetAround: number = 12,
+    capped: boolean = false,
   ): void {
-    if (Array.isArray(centerline)) {
-      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround);
-    } else if (centerline instanceof GrowableXYZArray) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
-    } else if (centerline instanceof IndexedXYZCollection) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
-    } else if (centerline instanceof LineString3d) {
-      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround);
-    } else if (centerline instanceof GeometryQuery) {
-      const linestring = LineString3d.create();
-      centerline.emitStrokes(linestring, this._options);
-      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround);
-    }
+    const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
+    if (!arc)
+      return;
+    if (numFacetAround < 3)
+      numFacetAround = 3;
+    const section = LineString3d.create();
+    section.appendFractionalStrokePoints(arc, numFacetAround, 0.0, 1.0, true);
+    const strokeOptions = this._options.clone();
+    const outputSelect = MiteredSweepOutputSelect.AlsoMesh;
+    const startTangent = sectionData instanceof Arc3d ? arc.binormalVector() : undefined; // preserve arc orientation
+    const options = { strokeOptions, capped, outputSelect, startTangent };
+    const sections = CurveFactory.createMiteredSweepSections(centerline, section, options);
+    if (sections && sections.mesh)
+      this.addIndexedPolyface(sections.mesh);
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {

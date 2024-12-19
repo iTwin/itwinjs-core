@@ -40,8 +40,7 @@ steps:
       stagingDir: ${{ parameters.stagingDir }}
       pipelineId: 8594 # iTwin AppUI/AppUI Docs CI
       artifactName: AppUI Docs
-      # buildTag: hasDocs
-      specificBuild: 2959617 # temporarily until appui pr merged and new docs produced.
+      buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentAppUIDocsArtifact }}
 
   # BIS
@@ -104,12 +103,6 @@ steps:
       artifactName: Connector-Framework Docs
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
-      stagingSteps:
-        - task: CopyFiles@2
-          displayName: Copy Connector Framework Docs to staging
-          inputs:
-            SourceFolder: $(Pipeline.Workspace)/Connector-Framework Docs
-            TargetFolder: ${{ parameters.stagingDir }}/reference/connector-framework/
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

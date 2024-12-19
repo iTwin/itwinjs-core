@@ -58,10 +58,16 @@ export * from "./Relationship";
 export * from "./rpc/tracing";
 export * from "./Schema";
 export * from "./SchemaUtils";
+export * from "./SheetIndex";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./TextAnnotationElement";
-export { computeLayoutTextBlockResult, LayoutTextBlockArgs } from "./TextAnnotationLayout";
+export {
+  computeGraphemeOffsets,
+  computeLayoutTextBlockResult,
+  ComputeGraphemeOffsetsArgs,
+  LayoutTextBlockArgs,
+} from "./TextAnnotationLayout";
 export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";

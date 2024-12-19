@@ -271,7 +271,7 @@ export class AccuSnap implements Decorator {
   /** Get the current snap divisor to use to use for SnapMode.NearestKeypoint.
    * @public
    */
-  public get keypointDivisor() { return 2; }
+  public get keypointDivisor() { return this._settings.keypointDivisor; }
 
   /** Get the current active SnapModes. SnapMode position determines priority, with the first entry being the highest. The SnapDetail will be returned for the first SnapMode that produces a hot snap.
    * @public
@@ -399,7 +399,7 @@ export class AccuSnap implements Decorator {
         const msg = await IModelApp.toolAdmin.getToolTip(hit);
         if (this._toolTipPromise === promise) // have we abandoned this request while awaiting getToolTip?
           this.showLocateMessage(viewPt, vp, msg);
-      } catch (error) { } // happens if getToolTip was canceled
+      } catch { } // happens if getToolTip was canceled
     });
   }
 
@@ -684,7 +684,12 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const hitVp = thisHit.viewAttachment ? thisHit.viewAttachment.viewport : thisHit.viewport;
+    let hitVp;
+    if (thisHit.path) {
+      hitVp = thisHit.path.sectionDrawingAttachment?.viewport ?? thisHit.path.viewAttachment?.viewport;
+    }
+
+    hitVp = hitVp ?? thisHit.viewport;
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
       const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
@@ -707,6 +712,7 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
+      modelToWorld: thisHit.transformFromSourceIModel?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
@@ -768,12 +774,17 @@ export class AccuSnap implements Decorator {
         return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
       };
 
+      let displayTransform;
+      if (undefined !== thisHit.modelId) {
+        displayTransform = thisHit.viewport.view.computeDisplayTransform({
+          modelId: thisHit.modelId,
+          elementId: thisHit.sourceId,
+          viewAttachmentId: thisHit.path?.viewAttachment?.id,
+          inSectionDrawingAttachment: undefined !== thisHit.path?.sectionDrawingAttachment,
+        });
+      }
+
       const snapPoint = Point3d.fromJSON(result.snapPoint);
-      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({
-        modelId: thisHit.modelId,
-        elementId: thisHit.sourceId,
-        viewAttachmentId: thisHit.viewAttachment?.id,
-      }) : undefined;
       displayTransform?.multiplyPoint3d(snapPoint, snapPoint);
 
       const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
@@ -807,7 +818,7 @@ export class AccuSnap implements Decorator {
 
       const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
       return intersect;
-    } catch (_err) {
+    } catch {
       if (out)
         out.snapStatus = SnapStatus.Aborted;
 
@@ -1204,7 +1215,7 @@ export class TentativeOrAccuSnap {
 }
 
 /** @public */
-export namespace AccuSnap { // eslint-disable-line no-redeclare
+export namespace AccuSnap {
   export class ToolState {
     public enabled = false;
     public locate = false;
@@ -1224,12 +1235,21 @@ export namespace AccuSnap { // eslint-disable-line no-redeclare
   }
 
   export class Settings {
+    /** How far cursor can be from snap location (relative to snap aperture) and be considered a hot snap */
     public hotDistanceFactor = 1.2;
+    /** When moving along an element, affects the affinity for snapping to the same curve as the previous snap */
     public stickyFactor = 1.0;
+    /** Factor applied to locate aperture when snapping is enabled and used to pick snap candidates */
     public searchDistance = 2.0;
+    /** Whether the snapped element is also hilited when the snap is not hot */
     public hiliteColdHits = true;
+    /** Enables snap on cursor motion when true, only snap using Tentative snap when false */
     public enableFlag = true;
+    /** Whether to show a tooltip for snap and element locate */
     public toolTip = true;
-    public toolTipDelay = BeDuration.fromSeconds(.5); // delay before tooltip pops up
+    /** Delay before tooltip appears */
+    public toolTipDelay = BeDuration.fromSeconds(.5);
+    /** Curve segment divisor used by SnapMode.NearestKeypoint */
+    public keypointDivisor = 2;
   }
 }

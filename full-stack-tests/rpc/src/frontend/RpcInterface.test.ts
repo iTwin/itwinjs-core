@@ -10,7 +10,7 @@ import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
   RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WebAppRpcRequest, WipRpcInterface,
+  SerializedRpcActivity, WebAppRpcRequest,
 } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
@@ -19,12 +19,11 @@ import {
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 /* eslint-disable @typescript-eslint/unbound-method */
 // cspell:ignore oldvalue newvalue
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const testToken: IModelRpcProps = { key: "test", iTwinId: "test", iModelId: "test", changeset: { id: "test" } };
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
@@ -104,7 +103,7 @@ describe("RpcInterface", () => {
     try {
       await TestRpcInterface2.getClient().op1(1);
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
 
@@ -173,7 +172,7 @@ describe("RpcInterface", () => {
     try {
       await RpcManager.getClientForInterface(LocalInterface).op();
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
     initializeLocalInterface();
@@ -182,7 +181,7 @@ describe("RpcInterface", () => {
     try {
       await RpcManager.getClientForInterface(LocalInterface).op();
       assert(false);
-    } catch (err) {
+    } catch {
       assert(true);
     }
     initializeLocalInterface();
@@ -241,8 +240,8 @@ describe("RpcInterface", () => {
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
-        return btoa(id); // eslint-disable-line deprecation/deprecation
+      if (typeof (btoa) !== "undefined")
+        return btoa(id);
       return Buffer.from(id, "binary").toString("base64");
     };
 
@@ -517,11 +516,6 @@ describe("RpcInterface", () => {
     assert.equal(2, await TestRpcInterface.getClient().op14(1, 1));
   });
 
-  it("should successfully call WipRpcInterface.placeholder", async () => {
-    const s: string = await WipRpcInterface.getClient().placeholder(testToken);
-    assert.equal(s, "placeholder");
-  });
-
   it("should send app version to backend", async () => {
     const backupFn = RpcConfiguration.requestContext.serialize;
 
@@ -539,7 +533,7 @@ describe("RpcInterface", () => {
     try {
       await TestRpcInterface.getClient().op15();
       assert(true);
-    } catch (err) {
+    } catch {
       assert(false);
     } finally {
       RpcConfiguration.requestContext.serialize = backupFn;

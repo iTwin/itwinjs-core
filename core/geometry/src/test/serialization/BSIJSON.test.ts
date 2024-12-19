@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { BagOfCurves } from "../../curve/CurveCollection";
@@ -151,7 +151,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.angle) {
         exercise(a);
         const a1 = Angle.fromJSON(a.toJSON());
-        expect(a.isAlmostEqualAllowPeriodShift(a1)).equals(true);
+        expect(a.isAlmostEqualAllowPeriodShift(a1)).toBe(true);
       }
     }
     {
@@ -159,7 +159,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.point3d) {
         exercise(a);
         const a1 = Point3d.fromJSON(a.toJSON());
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -168,7 +168,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.point2d) {
         exercise(a);
         const a1 = Point2d.fromJSON(a.toJSON());
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -177,7 +177,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       for (a of Sample.point4d) {
         exercise(a);
         const a1 = Point4d.fromJSON(a.toJSON());
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -191,7 +191,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Vector2d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
     {
@@ -204,14 +204,14 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Vector3d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
     {
       const a = YawPitchRollAngles.createDegrees(10, 20, 30);
       exercise(a);
       const a1 = YawPitchRollAngles.fromJSON(a.toJSON());
-      expect(a.isAlmostEqual(a1)).equals(true);
+      expect(a.isAlmostEqual(a1)).toBe(true);
     }
 
     {
@@ -219,7 +219,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       exercise(a);
       const a1 = Complex.fromJSON(a.toJSON());
       // GeometryCoreTestIO.consoleLog(a, a1);
-      expect(a.isAlmostEqual(a1)).equals(true);
+      expect(a.isAlmostEqual(a1)).toBe(true);
     }
 
     {
@@ -228,7 +228,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
         exercise(a);
         const a1 = Plane3dByOriginAndUnitNormal.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -238,7 +238,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
         exercise(a);
         const a1 = Ray3d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -248,7 +248,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
         exercise(a);
         const a1 = Angle.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
-        expect(a.isAlmostEqualNoPeriodShift(a1)).equals(true);
+        expect(a.isAlmostEqualNoPeriodShift(a1)).toBe(true);
       }
     }
 
@@ -258,7 +258,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
         exercise(a);
         const a1 = AngleSweep.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
-        expect(a.isAlmostEqualNoPeriodShift(a1)).equals(true);
+        expect(a.isAlmostEqualNoPeriodShift(a1)).toBe(true);
       }
     }
 
@@ -272,7 +272,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = LineSegment3d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -289,7 +289,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = LineString3d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
     {
@@ -302,7 +302,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Range1d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
     {
@@ -315,7 +315,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Range2d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
     {
@@ -328,7 +328,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Range3d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -343,7 +343,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Transform.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
     // exercise variants of row-major array json ..
@@ -363,7 +363,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Matrix3d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -378,7 +378,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Matrix4d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -393,7 +393,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
           GeometryCoreTestIO.consoleLog("FAIL", a, a1);
           a1 = Map4d.fromJSON(a.toJSON());
         }
-        expect(a.isAlmostEqual(a1)).equals(true);
+        expect(a.isAlmostEqual(a1)).toBe(true);
       }
     }
 
@@ -438,8 +438,8 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       GeometryCoreTestIO.consoleLog(bsiJsonPunchList);
 
     ck.checkpoint("BSIJSON.ExerciseAllTypes");
-    expect(ck.getNumErrors()).equals(0);
-    expect(errors).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
+    expect(errors).toBe(0);
   });
 });
 
@@ -473,7 +473,7 @@ describe("BSIJSONValuesQuick", () => {
     exerciseBSIJSONValuesQuick("Complex", Complex.create(1, 2));
 
     ck.checkpoint("BSIJSONValuesQuick.Test1");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

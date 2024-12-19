@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for reading and interpreting Cesium tiles containing EXT_mesh_features extension.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -11,7 +11,7 @@ import { Angle } from "../geometry3d/Angle";
 import { StrokeOptions } from "./StrokeOptions";
 
 /**
- * Control parameters for joint construction, used in offset construction methods such as [[RegionOps.constructPolygonWireXYOffset]] and [[Region.Ops.constructCurveXYOffset]].
+ * Control parameters for joint construction, used in offset construction methods such as [[RegionOps.constructPolygonWireXYOffset]] and [[RegionOps.constructCurveXYOffset]].
  *   * Define a "joint" as the common point between adjacent segments of the input curve.
  *   * Define the "turn angle" at a joint to be the angle in [0,pi] between the first derivatives (tangents) of
  * the segments at the joint.
@@ -32,7 +32,7 @@ export class JointOptions {
    */
   public minArcDegrees = 180.0;
   /** Largest turn angle at which to construct a sharp corner, or largest turn angle in a multi-segment chamfer. */
-  public maxChamferTurnDegrees = 90;
+  public maxChamferTurnDegrees = 91.0;
   /**
    * Whether to remove the internal turn angle upper bound for sharp corner construction.
    * * By default, a sharp corner is not created at a joint when the turn angle is too large, so as to avoid offsets whose
@@ -53,7 +53,7 @@ export class JointOptions {
    * * minArcDegrees and maxChamferDegrees are optional.
    */
   constructor(
-    leftOffsetDistance: number, minArcDegrees = 180, maxChamferDegrees = 90,
+    leftOffsetDistance: number, minArcDegrees = 180, maxChamferDegrees = 91,
     preserveEllipticalArcs = false, allowSharpestCorners = false,
   ) {
     this.leftOffsetDistance = leftOffsetDistance;
@@ -90,7 +90,7 @@ export class JointOptions {
   }
   /** Return true if the options indicate this amount of turn should be handled with an arc. */
   public needArc(theta: Angle): boolean {
-    return Math.abs(theta.degrees) >= this.minArcDegrees;
+    return Math.abs(theta.degrees) >= this.minArcDegrees - Geometry.smallAngleDegrees;
   }
   /** Return the number of corners needed to chamfer the given turn angle. */
   public numChamferPoints(theta: Angle): number {
@@ -101,7 +101,7 @@ export class JointOptions {
       maxStepDegreesClamp = this.maxChamferTurnDegrees;
     }
     const stepDegrees = Geometry.clamp(this.maxChamferTurnDegrees, minStepDegreesClamp, maxStepDegreesClamp);
-    if (degrees <= stepDegrees)
+    if (degrees <= stepDegrees + Geometry.smallAngleDegrees)
       return 1;
     return Math.ceil(degrees / stepDegrees);
   }

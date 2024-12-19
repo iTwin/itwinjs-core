@@ -6,47 +6,86 @@ publish: false
 
 Table of contents:
 
-- [Workspaces](#workspaces)
-- [Electron 31 support](#electron-31-support)
-- [Type-safe Worker APIs](#type-safe-worker-apis)
-- [Creating graphics in Workers](#creating-graphics-in-workers)
-- [Internal APIs](#internal-apis)
-- [ListenerType helper](#listenertype-helper)
-- [CustomAttributeClass containerType renamed](#customattributeclass-containertype-renamed)
-- [Improve the performance of the ECSchemaRpcLocater](#improve-the-performance-of-the-ecschemarpclocater)
+- [Selection set](#selection-set)
+- [API deprecations](#api-deprecations)
+  - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/presentation-common](#itwinpresentation-common)
+- [Breaking Changes](#breaking-changes)
+  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+  - [Updated minimum requirements](#updated-minimum-requirements)
+    - [Node.js](#nodejs)
+    - [Electron](#electron)
+  - [Deprecated API removals](#deprecated-api-removals)
+    - [@itwin/appui-abstract](#itwinappui-abstract)
+    - [@itwin/core-electron](#itwincore-electron)
+  - [Packages dropped](#packages-dropped)
 
-## Workspaces
+## Selection set
 
-The `beta` [Workspace]($backend) and [Settings]($backend) APIs have been updated to make them easier to use, including the addition of the [WorkspaceEditor]($backend) API for creating new [WorkspaceDb]($backend)s to hold workspace resources. Consult the [learning article](../learning/backend/Workspace) for a comprehensive overview with examples.
+There are two similar selection-related concepts in `@itwin/core-frontend` - [SelectionSet]($core-frontend) and [HiliteSet]($core-frontend). The former is generally used by interactive tools (e.g. the "Move element" tool), so it contains what tools think is selected. The latter is used by the graphics system to know what elements to highlight, so it contains what users think is selected. Generally, we want the two sets to be in sync to avoid confusion why tools act on different elements than what users think are selected. Keeping them in sync was not always possible, because `HiliteSet` may store Model and SubCategory ids, but `SelectionSet` could only store Element ids. So we could end up in situations where a Model id is added to `HiliteSet` and `SelectionSet` is empty, making users think that all elements in that model are selected, but tools not knowing anything about it.
 
-## Electron 31 support
+To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to support storing Model and SubCategory ids, similar to what `HiliteSet` does. The change has been made in a backwards compatible way, so all existing code using `SelectionSet` should continue to work as before:
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 31](https://www.electronjs.org/blog/electron-31-0).
+- `SelectionSet` modification methods `add`, `addAndRemove`, `remove`, `replace` now, in addition to existing `Id64Arg` argument, accept the `SelectableIds` structure.
+- `SelectionSetEvent` attributes `added` and `removed` have been deprecated, but continue to work as before, containing only element ids. In addition, the event object now contains new `additions` and `removals` attributes, which are instances of `SelectableIds` and contain all ids that were added or removed from the selection set, including those of Model and SubCategory.
 
-## Type-safe Worker APIs
+Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
 
-The [WorkerProxy APIs](../learning/frontend/WorkerProxy.md) provide an easy way to leverage [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker)s in a type-safe way to move processing out of the JavaScript main thread into a background thread.
+## API deprecations
 
-## Creating graphics in Workers
+### @itwin/core-frontend
 
-Typically, you would use a [GraphicBuilder]($frontend) to create graphics. `GraphicBuilder` produces a [RenderGraphic]($frontend) containing WebGL resources like textures and vertex buffers, so it must execute on the main JavaScript thread. This is fine for simple decorations, but imagine you are streaming large data sets like GeoJSON or point clouds that must be processed into graphics - that would require far more processing which, if executed on the main thread, would utterly degrade the responsiveness of the application by blocking the event loop.
+- Deprecated [SelectionSet]($core-frontend)-related APIs:
 
-[GraphicDescriptionBuilder]($frontend) has been introduced to address this problem. In conjunction with a [WorkerProxy](#type-safe-worker-apis), you can move the heavy processing into a background thread to produce a [GraphicDescription]($frontend), leaving to the main thread the fast and straighforward task of converting that description into a [RenderGraphic]($frontend) using [RenderSystem.createGraphicFromDescription]($frontend). See [this article](../learning/frontend/WorkerProxy.md) for an example.
+  - `SelectionSet.has` and `SelectionSet.isSelected` - use `SelectionSet.elements.has(id)` instead.
+  - `SelectionSetEvent.added` and `SelectionSetEvent.removed` - use `SelectionSetEvent.additions.elements` and `SelectionSetEvent.removals.elements` instead.
 
-## Internal APIs
+- Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
-iTwin.js categorizes the stability of each API using [release tags](../learning/api-support-policies.md#api-categories) like `@public`, `@beta`, and `@internal`. `@internal` APIs are intended strictly for use inside of the itwinjs-core repository. They can be tricky to use correctly, and may be changed or removed at any time, so consumers of iTwin.js should not write code that depends on them. Unfortunately, up until now they have been exported from the iTwin.js core packages just like any other type of APIs, making it easy for anyone to accidentally or intentionally introduce a dependency on them. To ensure that we can adhere to our commitment to providing stable libraries, we have begun to transition to a new approach to handling these kinds of APIs.
+### @itwin/presentation-common
 
-The [details](../learning/guidelines/release-tags-guidelines.md) are relevant primarily to contributors, but consumers should expect to find that `@internal` APIs they currently depend upon have been marked as deprecated. The deprecation messages include information about alternative public APIs to use instead, where appropriate. If you encounter a dependency on an `@internal` API which you struggle to remove, please [let us know](https://github.com/orgs/iTwin/discussions). Beginning in iTwin.js 5.0, you will no longer be able to access any `@internal` APIs.
+- All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
 
-## ListenerType helper
+## Breaking Changes
 
-We added a new helper type [ListenerType]($core-bentley) to retrieve the type of the callback function for a given [BeEvent]($core-bentley). This is useful when implicit types cannot be used - for example, when you need to define a listener outside of a call to [BeEvent.addListener]($core-bentley).
+### Opening connection to local snapshot requires IPC
 
-## ecschema-metadata CustomAttributeClass.containerType deprecated and replaced with appliesTo
+[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
 
-The Xml and JSON representations of a custom attribute (and related TypeScript interfaces) all use a property named `appliesTo` of type [CustomAttributeContainerType]($ecschema-metadata) to indicate the kind(s) of schema entities to which the attribute can be applied. Confusingly, the `@beta` [CustomAttributeClass]($ecschema-metadata) class exposes this same information via a property named `containerType`. To address this discrepancy, `containerType` has been deprecated in favor of the new `appliesTo` property. The protected `_containerType` property was renamed to `_appliesTo`.
+### Updated minimum requirements
 
-## Improve the performance of the ECSchemaRpcLocater
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
 
-Improve the performance of the ECSchemaRpcLocater by making all of the underlying ECSchemaRpcInterface methods GET by default so responses are cached by default. Previously each client had to set the methods to be GET or they would default to POST and were not cached.
+#### Node.js
+
+Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov-file#release-schedule) soon and will no longer be supported. iTwin.js 5.0 requires a minimum of Node 20.9.0, though we recommend using the latest long-term-support version.
+
+#### Electron
+
+iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+
+### Deprecated API removals
+
+The following previously-deprecated APIs have been removed:
+
+#### @itwin/appui-abstract
+
+| Removed                     | Replacement |
+| --------------------------- | ----------- |
+| `EditorPosition.columnSpan` | N/A         |
+
+#### @itwin/core-electron
+
+| Removed                             | Replacement                                               |
+| ----------------------------------- | --------------------------------------------------------- |
+| `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
+| `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+
+### Packages dropped
+
+As of iTwin.js 5.0, the following packages have been removed and are no longer available:
+
+| Removed                        | Replacement                                               |
+| ------------------------------ | --------------------------------------------------------- |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
+| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |

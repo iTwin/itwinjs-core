@@ -86,7 +86,7 @@ Very rarely, a critical security issue may arise that cannot reasonably be addre
 | ------------- | --------------- | ---------- | ------------ | ----------------- | ------------------ |
 | 1.x           | **End of life** | 2019-06-03 | 2020-05-07   | n/a               | 2020-11-01         |
 | 2.x           | **End of life** | 2020-05-07 | 2022-01-24   | 2022-12-31        | 2023-3-31          |
-| 3.x           | **Maintenance** | 2022-01-24 | 2023-05-22   | 2023-11-22        | **_2024-05-22_\*** |
+| 3.x           | **End of life** | 2022-01-24 | 2023-05-22   | 2023-11-22        | 2024-05-22         |
 | 4.x           | **Current**     | 2023-05-22 | TBD          | TBD               | TBD                |
 
 _\*Dates are subject to change._

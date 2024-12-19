@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Id64, JsonUtils } from "@itwin/core-bentley";
+import { assert, Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
@@ -19,11 +19,15 @@ import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTabl
 import { VertexIndices } from "../common/internal/render/VertexIndices";
 import type { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
-import type { RenderGeometry, RenderSystem } from "../render/RenderSystem";
-import type { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
+import type { RenderSystem } from "../render/RenderSystem";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { GraphicDescription, GraphicDescriptionContext } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
+import { _implementationProhibited, _textures } from "../common/internal/Symbols";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -74,10 +78,10 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return options.system.createTextureFromElement(name, options.iModel, params, namedTex.format);
-  } catch (_) {
+  } catch {
     return undefined;
   }
 }
@@ -191,7 +195,7 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return col ? ColorDef.from(col[0] * 255 + 0.5, col[1] * 255 + 0.5, col[2] * 255 + 0.5) : undefined;
   }
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const params = new RenderMaterial.Params(mat);
   params.diffuseColor = colorDefFromJson(json.diffuseColor);
   if (json.diffuse !== undefined)
@@ -218,7 +222,7 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
   if (undefined !== json.textureMapping)
     params.textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return options.system.createMaterial(params, options.iModel);
 }
 
@@ -226,19 +230,13 @@ function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instance
   const mod = primitive.modifier;
   switch (mod?.type) {
     case "instances":
-      return {
-        instances: {
-          ...mod,
-          transformCenter: Point3d.fromJSON(mod.transformCenter),
-          range: mod.range ? Range3d.fromJSON(mod.range) : undefined,
-        },
-      };
+      return { instances: InstancedGraphicParams.fromProps(mod) };
     case "viewIndependentOrigin":
       return {
         viOrigin: Point3d.fromJSON(mod.origin),
       };
     default:
-      return { };
+      return {};
   }
 }
 
@@ -475,43 +473,57 @@ function remapGraphicDescription(descr: GraphicDescriptionImpl, context: Graphic
 }
 
 /** @internal */
-export async function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): Promise<RenderGraphic | undefined> {
+export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate {
   if (!isGraphicDescription(descr)) {
     throw new Error("Invalid GraphicDescription");
   }
 
   remapGraphicDescription(descr, context);
 
-  const graphics: RenderGraphic[] = [];
   const graphicsOptions: GraphicsOptions = {
     system,
-    textures: new Map(),
+    textures: context[_textures],
     patterns: new Map(),
   };
 
+  const geometry: RenderGeometry[] = [];
   for (const primitive of descr.primitives) {
-    const gf = createPrimitiveGraphic(primitive, graphicsOptions);
-    if (gf) {
-      graphics.push(gf);
+    const mods = getModifiers(primitive);
+
+    // GraphicDescriptionBuilder providers no way to include instances in a GraphicDescription.
+    assert(undefined === mods?.instances);
+
+    const geom = createPrimitiveGeometry(primitive, graphicsOptions, mods.viOrigin);
+    if (geom) {
+      geometry.push(geom);
     }
   }
 
-  if (graphics.length === 0) {
-    return undefined;
-  }
-
-  let graphic = graphics.length === 1 ? graphics[0] : system.createGraphicList(graphics);
-
+  let batch: GraphicTemplateBatch | undefined;
   if (descr.batch) {
     const featureTable = convertFeatureTable(descr.batch.featureTable, descr.batch.modelId);
-    graphic = system.createBatch(graphic, featureTable, Range3d.fromJSON(descr.batch.range), descr.batch);
+    batch = {
+      options: { ...descr.batch },
+      range: Range3d.fromJSON(descr.batch.range),
+      featureTable,
+    };
   }
 
+  let branch: GraphicTemplateBranch | undefined;
   if (descr.translation) {
-    const branch = new GraphicBranch(true);
-    branch.add(graphic);
-    graphic = system.createBranch(branch, Transform.createTranslation(Point3d.fromJSON(descr.translation)));
+    branch = { transform: Transform.createTranslation(Point3d.fromJSON(descr.translation)) };
   }
 
-  return graphic;
+  return createGraphicTemplate({
+    nodes: [{ geometry }],
+    batch,
+    branch,
+    noDispose: true,
+  });
+}
+
+/** @internal */
+export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined {
+  const template = createGraphicTemplateFromDescription(descr, context, system);
+  return system.createGraphicFromTemplate({ template });
 }

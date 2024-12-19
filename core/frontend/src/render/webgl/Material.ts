@@ -39,7 +39,7 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/ren
  * @internal
  */
 export class Material extends RenderMaterial {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
   // Used for type-switching vs MaterialAtlas
@@ -51,9 +51,19 @@ export class Material extends RenderMaterial {
   public get overridesAlpha() { return this.rgba[3] >= 0; }
   public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
 
-  // eslint-disable-next-line deprecation/deprecation
+  /** Strictly for testing. */
+  public static preserveParams = false;
+  /** Strictly for testing. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public params?: RenderMaterial.Params;
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(params: RenderMaterial.Params) {
     super(params);
+
+    if (Material.preserveParams) {
+      this.params = params;
+    }
 
     if (undefined !== params.diffuseColor) {
       const rgb = FloatRgb.fromColorDef(params.diffuseColor);

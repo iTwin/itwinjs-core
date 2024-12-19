@@ -18,9 +18,13 @@ describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
   before(async () => {
     await terminate();
     await initialize({
-      // this defaults to 0, which means "no timeouts" - reinitialize with non-zero
-      backendTimeout: 9999,
-      frontendTimeout,
+      presentationBackendProps: {
+        // this defaults to 0, which means "no timeouts" - reinitialize with non-zero
+        requestTimeout: 9999,
+      },
+      presentationFrontendProps: {
+        presentation: { requestTimeout: frontendTimeout },
+      },
     });
   });
 
@@ -30,7 +34,7 @@ describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
     // mock `Promise.race` to always reject
     const raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      (values as Array<Promise<any>>).splice(0, 0, Promise.reject());
+      (values as Array<Promise<any>>).splice(0, 0, Promise.reject(new Error()));
       return realRace.call(Promise, values);
     });
     try {

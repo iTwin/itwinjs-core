@@ -24,7 +24,7 @@ describe("default NativePlatform", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch (_e) {}
+      } catch {}
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }

@@ -1,5 +1,5 @@
 import { CustomAttribute, CustomAttributeContainerProps, DelayedPromiseWithProps, ECClass, ECName,
-  EnumerationProperty, NavigationProperty, PrimitiveProperty,
+  EnumerationProperty, KindOfQuantity, NavigationProperty, PrimitiveProperty,
   PropertyCategory, SchemaItemKey, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
 import { SchemaContextEditor } from "./Editor";
@@ -28,7 +28,7 @@ export class Properties {
     let newName: ECName;
     try {
       newName = new ECName(newPropertyName);
-    } catch(e: any) {
+    } catch {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
         new SchemaEditingError(ECEditingStatus.InvalidECName, new PropertyId(this.ecClassType, classKey, newPropertyName)));
     }
@@ -144,6 +144,31 @@ export class Properties {
   }
 
   /**
+   * Sets the KindOfQuantity of a property.
+   * @param classKey The SchemaItemKey of the class.
+   * @param propertyName The name of the property.
+   * @param kindOfQuantityKey The SchemaItemKey of the KindOfQuantity.
+   */
+  public async setKindOfQuantity(classKey: SchemaItemKey, propertyName: string, kindOfQuantityKey: SchemaItemKey) {
+    const property = await this.getProperty<MutableProperty>(classKey, propertyName)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
+      });
+
+    const koq = await this._schemaEditor.lookupSchemaItem<KindOfQuantity>(property.class.schema, kindOfQuantityKey, SchemaItemType.KindOfQuantity)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
+      });
+
+    const currentKoq = await property.kindOfQuantity;
+    if(currentKoq && currentKoq.persistenceUnit && koq.persistenceUnit && !currentKoq.persistenceUnit.matchesFullName(koq.persistenceUnit.fullName)) {
+      throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), undefined, undefined, "KindOfQuantity can only be changed if it has the same persistence unit as the property.");
+    }
+
+    property.setKindOfQuantity(new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(kindOfQuantityKey, async () => koq));
+  }
+
+  /**
    * Adds a CustomAttribute instance to the Property identified by the given SchemaItemKey and property name.
    * @param classKey The SchemaItemKey identifying the class.
    * @param propertyName The name of the property.
@@ -201,7 +226,7 @@ export class Properties {
   private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
     const derivedClasses: Array<MutableClass> = [];
 
-    for await (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
+    for (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
       if(ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
         if (!mutableClass.key.matches(schemaItem.key)) {
           derivedClasses.push(schemaItem as MutableClass);
@@ -291,10 +316,10 @@ class PrimitiveOrEnumProperties extends Properties {
   }
 
   /**
-   * Sets the extendTypeName attribute value.
+   * Sets the extendedTypeName attribute value.
    * @param classKey The SchemaItemKey of the class.
    * @param propertyName The name of the property.
-   * @param extendTypeName The extended type name of the property.
+   * @param extendedTypeName The extended type name of the property.
    */
   public async setExtendedTypeName(classKey: SchemaItemKey, propertyName: string, extendedTypeName: string) {
     const property = await this.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName)

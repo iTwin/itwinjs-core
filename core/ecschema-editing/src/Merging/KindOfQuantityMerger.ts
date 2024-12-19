@@ -2,76 +2,99 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { type KindOfQuantityDifference } from "../Differencing/SchemaDifference";
-import { type SchemaItemMergerHandler, updateSchemaItemFullName } from "./SchemaItemMerger";
-import { type MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
-import { SchemaMergeContext } from "./SchemaMerger";
+import type { KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference } from "../Differencing/SchemaDifference";
+import type { MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
+import type { SchemaMergeContext } from "./SchemaMerger";
+import { Format, InvertedUnit, OverrideFormat, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
+import { toItemKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 /**
- * Defines a merge handler to merge KindOfQuantity schema items.
+ * Merges a new KindOfQuantity into the target schema.
  * @internal
  */
-export const kindOfQuantityMerger: SchemaItemMergerHandler<KindOfQuantityDifference> = {
-  async add(context, change) {
-    if (change.difference.persistenceUnit === undefined) {
-      throw new Error("KindOfQuantity must define persistenceUnit");
-    }
-    if (change.difference.relativeError === undefined) {
-      throw new Error("KindOfQuantity must define relativeError");
-    }
-    change.difference.persistenceUnit = await updateSchemaItemFullName(context, change.difference.persistenceUnit);
-    if(change.difference.presentationUnits) {
-      if(Array.isArray(change.difference.presentationUnits)) {
-        for(let index = 0; index < change.difference.presentationUnits.length; index++) {
-          change.difference.presentationUnits[index] = await updateOverrideFormat(context, change.difference.presentationUnits[index]);
-        }
-      } else {
-        change.difference.presentationUnits = await updateOverrideFormat(context, change.difference.presentationUnits);
+export async function addKindOfQuantity(context: SchemaMergeContext, change: KindOfQuantityDifference) {
+  if (change.difference.persistenceUnit === undefined) {
+    throw new Error("KindOfQuantity must define persistenceUnit");
+  }
+  if (change.difference.relativeError === undefined) {
+    throw new Error("KindOfQuantity must define relativeError");
+  }
+  change.difference.persistenceUnit = await updateSchemaItemFullName(context, change.difference.persistenceUnit);
+  if(change.difference.presentationUnits) {
+    if(Array.isArray(change.difference.presentationUnits)) {
+      for(let index = 0; index < change.difference.presentationUnits.length; index++) {
+        const presentationFormat = await updateOverrideFormat(context, change.difference.presentationUnits[index]);
+        change.difference.presentationUnits[index] = presentationFormat.fullName;
       }
+    } else {
+      const presentationFormat = await updateOverrideFormat(context, change.difference.presentationUnits);
+      change.difference.presentationUnits = presentationFormat.name;
     }
+  }
 
-    return context.editor.kindOfQuantities.createFromProps(context.targetSchemaKey, {
-      ...change.difference,
-      name: change.itemName,
-      schemaItemType: change.schemaType,
-      persistenceUnit: change.difference.persistenceUnit,
-      presentationUnits: change.difference.presentationUnits,
-      relativeError: change.difference.relativeError,
-    });
-  },
-  async modify(_context, change, itemKey, item: MutableKindOfQuantity) {
-    if(change.difference.label !== undefined) {
-      item.setDisplayLabel(change.difference.label);
-    }
-    if(change.difference.description !== undefined) {
-      item.setDescription(change.difference.description);
-    }
-    if(change.difference.relativeError !== undefined) {
-      item.setRelativeError(change.difference.relativeError);
-    }
-    if(change.difference.persistenceUnit !== undefined) {
-      // TODO: It should be checked if the unit is the same, but referring to the source schema.
-      throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
-    }
-  },
-};
+  await context.editor.kindOfQuantities.createFromProps(context.targetSchemaKey, {
+    ...change.difference,
+    name: change.itemName,
+    schemaItemType: change.schemaType,
+    persistenceUnit: change.difference.persistenceUnit,
+    presentationUnits: change.difference.presentationUnits,
+    relativeError: change.difference.relativeError,
+  });
+}
 
-async function updateOverrideFormat(context: SchemaMergeContext, formatString: string) {
+/**
+ * Merges differences to an existing KindOfQuantity in the target schema.
+ * @internal
+ */
+export async function modifyKindOfQuantity(context: SchemaMergeContext, change: KindOfQuantityDifference, itemKey: SchemaItemKey) {
+  const kindOfQuantity = await context.targetSchema.lookupItem(itemKey) as MutableKindOfQuantity;
+  if(change.difference.label !== undefined) {
+    await context.editor.kindOfQuantities.setDisplayLabel(itemKey, change.difference.label);
+  }
+  if(change.difference.description !== undefined) {
+    await context.editor.kindOfQuantities.setDescription(itemKey, change.difference.description);
+  }
+  if(change.difference.relativeError !== undefined) {
+    kindOfQuantity.setRelativeError(change.difference.relativeError);
+  }
+  if(change.difference.persistenceUnit !== undefined) {
+    // TODO: It should be checked if the unit is the same, but referring to the source schema.
+    throw new Error(`Changing the kind of quantity '${change.itemName}' persistenceUnit is not supported.`);
+  }
+}
+/**
+ * Merges a new presentation format into the target kind of quantity
+ * @internal
+*/
+export async function addPresentationFormat(context: SchemaMergeContext, change: KindOfQuantityPresentationFormatDifference) {
+  for (const formatString of change.difference) {
+    const koqKey = toItemKey(context, change.itemName);
+    const presentationFormat = await updateOverrideFormat(context, formatString);
+    if (OverrideFormat.isOverrideFormat(presentationFormat)) {
+      await context.editor.kindOfQuantities.addPresentationOverrideFormat(koqKey, presentationFormat);
+    } else {
+      await context.editor.kindOfQuantities.addPresentationFormat(koqKey, presentationFormat.key);
+    }
+  }
+}
+
+async function updateOverrideFormat(context: SchemaMergeContext, formatString: string): Promise<Format | OverrideFormat> {
   // https://www.itwinjs.org/v1/bis/ec/kindofquantity/#format-string
-  const match = formatString.match(/^([^(]+)\((\d+)\)\[(.*)\]$/);
-  if(match === null) {
-    return formatString;
+  const match = OverrideFormat.parseFormatString(formatString);
+  const formatKey = await updateSchemaItemKey(context, match.name);
+  const format = await context.targetSchema.lookupItem(formatKey) as Format;
+
+  if (undefined === match.precision && undefined === match.unitAndLabels)
+    return format;
+
+  let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+  if (undefined !== match.unitAndLabels) {
+    unitAndLabels = [];
+    for (const unitOverride of match.unitAndLabels) {
+      const unitKey = await updateSchemaItemKey(context, unitOverride[0]);
+      const unit = await context.targetSchema.lookupItem(unitKey) as Unit | InvertedUnit;
+      unitAndLabels.push([unit, unitOverride[1]]);
+    }
   }
-
-  const originalFormat = match[1];
-  const updatedFormat = await updateSchemaItemFullName(context, originalFormat);
-
-  const unitOverrides  = match[3].split("][");
-  for(let index=0; index< unitOverrides.length; index++) {
-    const [unit, label] = unitOverrides[index].split("|");
-    const updatedUnit = await updateSchemaItemFullName(context, unit);
-    unitOverrides[index] = `${updatedUnit}${label ? `|${label}` : ""}`;
-  }
-
-  return `${updatedFormat}(${match[2]})[${unitOverrides.join("][")}]`;
+  return context.editor.kindOfQuantities.createFormatOverride(formatKey, match.precision, unitAndLabels);
 }
