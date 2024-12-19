@@ -102,11 +102,18 @@ steps:
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
+<<<<<<< HEAD
   # Tests seem broken on ci, contacted Travis.Cobby to investigate
   # - script: npm run ios:all
   #   workingDirectory: core/backend
   #   displayName: Build & run iOS backend unit tests in Simulator
   #   condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+=======
+  - script: npm run ios:all
+    workingDirectory: core/backend
+    displayName: Build & run iOS backend unit tests in Simulator
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+>>>>>>> 7ca1331603 (Fix iOS backend unit test crash (#7502))
 
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
