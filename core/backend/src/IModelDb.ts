@@ -243,6 +243,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public clearFontMap(): void {
     this._fontMap = undefined; // eslint-disable-line @typescript-eslint/no-deprecated
+    this[_nativeDb].invalidateFontMap();
   }
 
   /** Check if this iModel has been opened read-only or not. */
