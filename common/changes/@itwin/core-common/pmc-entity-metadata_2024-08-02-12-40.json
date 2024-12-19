@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Clean up EntityMetaData APIs and promote to public.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
