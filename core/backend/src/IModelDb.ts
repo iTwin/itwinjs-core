@@ -245,21 +245,6 @@ export abstract class IModelDb extends IModel {
     this._fontMap = undefined; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
-  /**
-   * Add a new font name/type to the FontMap for this iModel and return its FontId.
-   * @param name The name of the font to add
-   * @param type The type of the font. Default is TrueType.
-   * @returns The FontId for the newly added font. If a font by that name/type already exists, this method does not fail, it returns the existing Id.
-   * @see [FontId and FontMap]($docs/learning/backend/Fonts.md#fontid-and-fontmap)
-   * @beta
-   * @deprecated ###TODO remove this
-   */
-  public addNewFont(name: string, type?: FontType): FontId {
-    this.locks.checkExclusiveLock(IModel.repositoryModelId, "schema", "addNewFont");
-    this.clearFontMap();
-    return this[_nativeDb].addNewFont({ name, type: type ?? FontType.TrueType });
-  }
-
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
