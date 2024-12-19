@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -36,8 +36,11 @@ export interface ComputeRangesForTextLayoutArgs {
  */
 export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) => TextLayoutRanges;
 
-/** @internal */
-export type FindFontId = (name: string) => FontId;
+/** A function that looks up the font Id corresponding to a [FontFamilyDescriptor]($common).
+ * If no type is provided, the function can return a font of any type matching `name` (there may be more than one, of different types).
+ * @internal
+ */
+export type FindFontId = (name: string, type?: FontType) => FontId;
 
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;

@@ -50,6 +50,19 @@ export interface FontFamilyDescriptor {
   name: string;
 }
 
+/** A [[FontFamilyDescriptor]] in which the [[FontType]] is optional, used when querying [[FontId]]s via [IModelDbFonts.findId]($backend).
+ * If a font type is provided, this selector exactly identifies a unique font family, just like [[FontFamilyDescriptor]] does.
+ * If the type is omitted, then the selector refers to the first font family that matches the specified [[name]]. If multiple families
+ * with the same name exist, then a TrueType font will be preferred over a RSC font, and a RSC font preferred over an SHX font.
+ * @beta
+ */
+export interface FontFamilySelector {
+  /** The encoding in which the font family's faces are stored. */
+  type?: FontType;
+  /** The name of the family. */
+  name: string;
+}
+
 /** Represents a [[FontFamilyDescriptor]] stored in an iModel with a unique numeric Id.
  * @public
  */

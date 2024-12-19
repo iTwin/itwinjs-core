@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { FontFamilyDescriptor, FontId, FontProps } from "@itwin/core-common";
+import { FontFamilyDescriptor, FontFamilySelector, FontId, FontProps } from "@itwin/core-common";
 import { _implementationProhibited } from "./internal/Symbols";
 import { FontFile } from "./FontFile";
 
@@ -50,10 +50,12 @@ export interface IModelDbFonts {
   embedFontFile(args: EmbedFontFileArgs): Promise<void>;
 
   /** Returns the Id assigned to the specified font family, or `undefined` if no Id has been assigned.
+   * If only a name is supplied instead of a descriptor, and more than one family with the same name but different types exist, then
+   * [FontType.TrueType]($common) will be preferred over [FontType.Rsc]($common), and [FontType.Rsc]($common) over [FontType.Shx]($common).
    * @see [[acquireId]] to assign an Id.
    * @see [[findDescriptor]] to perform a reverse lookup.
    */
-  findId(descriptor: FontFamilyDescriptor): FontId | undefined;
+  findId(selector: FontFamilySelector): FontId | undefined;
 
   /** Returns the font family associated with the specified Id, or `undefined` if no such mapping exists.
    * @see [[findId]] to perform a reverse lookup.

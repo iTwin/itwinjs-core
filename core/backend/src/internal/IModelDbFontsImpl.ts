@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { DbResult, FontFamilyDescriptor, FontId, FontProps, FontType } from "@itwin/core-common";
+import { DbResult, FontFamilyDescriptor, FontFamilySelector, FontId, FontProps, FontType } from "@itwin/core-common";
 import { _faceProps, _getData, _implementationProhibited, _key, _nativeDb } from "./Symbols";
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts, QueryMappedFamiliesArgs } from "../IModelDbFonts";
@@ -99,11 +99,16 @@ class IModelDbFontsImpl implements IModelDbFonts {
     await Promise.allSettled(acquireIds);
   }
 
-  public findId(descriptor: FontFamilyDescriptor): FontId | undefined {
+  public findId(selector: FontFamilySelector): FontId | undefined {
     let id;
-    this.#db.withPreparedSqliteStatement("SELECT Id FROM dgn_Font WHERE Name=? AND Type=?", (stmt) => {
-      stmt.bindString(1, descriptor.name);
-      stmt.bindInteger(2, descriptor.type);
+    const sqlPostlude = undefined === selector.type ? " ORDER BY Type ASC" : " AND Type=?";
+    const sql = `SELECT Id FROM dgn_Font WHERE Name=?${sqlPostlude}`;
+    this.#db.withPreparedSqliteStatement(sql, (stmt) => {
+      stmt.bindString(1, selector.name);
+      if (undefined !== selector.type) {
+        stmt.bindInteger(2, selector.type);
+      }
+      
       if (DbResult.BE_SQLITE_ROW === stmt.step()) {
         id = stmt.getValueInteger(0);
       }
