@@ -91,13 +91,13 @@ class IModelDbFontsImpl implements IModelDbFonts {
     const data = file[_getData]();
     this.#db[_nativeDb].embedFontFile(id, file[_faceProps], data, true);
 
-    if (args.dontAllocateFontIds) {
-      return;
+    if (!args.dontAllocateFontIds) {
+      const familyNames = new Set<string>(args.file.faces.map((x) => x.familyName));
+      const acquireIds = Array.from(familyNames).map(async (x) => this.#acquireId({ name: x, type: args.file.type }, true).catch());
+      await Promise.allSettled(acquireIds);
     }
 
-    const familyNames = new Set<string>(args.file.faces.map((x) => x.familyName));
-    const acquireIds = Array.from(familyNames).map(async (x) => this.#acquireId({ name: x, type: args.file.type }, true).catch());
-    await Promise.allSettled(acquireIds);
+    this.#db.clearFontMap();
   }
 
   public findId(selector: FontFamilySelector): FontId | undefined {
@@ -169,6 +169,8 @@ class IModelDbFontsImpl implements IModelDbFonts {
       }
     });
 
+    this.#db.clearFontMap();
+  
     return id;
   }
 
