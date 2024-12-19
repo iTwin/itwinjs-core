@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef,  FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -839,10 +839,8 @@ describe("layoutTextBlock", () => {
       test("Comic Sans", comic);
       test("Consolas", 0);
 
-      // ###TODO: native code uses SQLite's NOCASE collation; TypeScript FontMap does not.
-      // ###TODO: we need to fix the collation to use Unicode; SQLite only applies to ASCII characters.
-      // test("arial", arial);
-      // test("aRIaL", arial);
+      test("arial", arial);
+      test("aRIaL", arial);
     });
 
     function computeDimensions(args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number }): { x: number, y: number } {
@@ -938,8 +936,10 @@ describe("layoutTextBlock", () => {
 });
 
 function mockIModel(): IModelDb {
-  const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
-    fontMap: new FontMap(),
+  const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
+    fonts: {
+      findId: () => 0,
+    } as any,
     computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) }; },
     forEachMetaData: () => undefined,
   };
