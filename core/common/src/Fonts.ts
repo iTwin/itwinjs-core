@@ -34,6 +34,7 @@ export enum FontType {
 /** An unsigned integer uniquely identifying a [font family]($docs/learning/backend/Fonts.md) in the context of an [[IModel]].
  * The iModel stores a mapping between `FontId`s and [[FontFamilyDescriptor]]s.
  * [[TextString]]s refer to fonts by the their `FontId`s.
+ * A font Id of zero represents an invalid/non-existent font.
  * @see [IModelDbFonts]($backend) to work with font Ids.
  * @public
  * @extensions
