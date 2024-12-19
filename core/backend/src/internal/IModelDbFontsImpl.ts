@@ -11,9 +11,10 @@ import { _faceProps, _getData, _implementationProhibited, _key, _nativeDb } from
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts, QueryMappedFamiliesArgs } from "../IModelDbFonts";
 import { EmbeddedFontFile } from "./FontFileImpl";
-import { assert } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { FontFile } from "../FontFile";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 class IModelDbFontsImpl implements IModelDbFonts {
   public readonly [_implementationProhibited] = undefined;
@@ -40,8 +41,8 @@ class IModelDbFontsImpl implements IModelDbFonts {
         let faces;
         try {
           faces = JSON.parse(stmt.getValueString(1)) as IModelJsNative.FontFaceProps[];
-        } catch (_) {
-          //
+        } catch (e) {
+          Logger.logException(BackendLoggerCategory.IModelDb, e);
         }
 
         if (!Array.isArray(faces) || faces.length === 0) {

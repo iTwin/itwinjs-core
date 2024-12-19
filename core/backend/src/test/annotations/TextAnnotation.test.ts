@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontMap, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -814,19 +814,17 @@ describe("layoutTextBlock", () => {
 
     after(() => iModel.close());
 
-    it("maps font names to Id", () => {
-      const vera = iModel.fontMap.getFont("Vera")!.id;
+    it("maps font names to Id", async () => {
+      const vera = iModel.fonts.findId({ name: "Vera" });
       expect(vera).to.equal(1);
 
-      iModel.addNewFont("Arial");
-      iModel.addNewFont("Comic Sans");
+      const arial = await iModel.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      const comic = await iModel.fonts.acquireId({ name: "Comic Sans", type: FontType.TrueType });
       iModel.saveChanges();
 
-      const arial = iModel.fontMap.getFont("Arial")!.id;
-      const comic = iModel.fontMap.getFont("Comic Sans")!.id;
       expect(arial).to.equal(2);
       expect(comic).to.equal(3);
-      expect(iModel.fontMap.getFont("Consolas")).to.be.undefined;
+      expect(iModel.fonts.findId({ name: "Consolas" })).to.be.undefined;
 
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create({ styleName: "" });
