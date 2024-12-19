@@ -14,6 +14,7 @@ import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Impact of Mixins", () => {
+  console.log("*** here 1");
   const outDir: string = path.join(KnownTestLocations.outputDir, "MixinPerformance");
   let hierarchyCounts: number[];
   let seedCount = 0;
@@ -113,22 +114,39 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   }
 
   before(async () => {
+    console.log("-> entered in before");
     const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     seedCount = configData.mixin.seedCount;
     propCount = configData.mixin.propCount;
     hierarchyCounts = configData.mixin.mixinLevels;
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+    console.log("-> before if KnownTestLocations.outputDir");
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
+      console.log("-> entered if KnownTestLocations.outputDir")
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-    if (!IModelJsFs.existsSync(outDir))
+      console.log("-> after dir creation KnownTestLocations.outputDir")
+    }
+    console.log("-> after if KnownTestLocations.outputDir");
+    if (!IModelJsFs.existsSync(outDir)) {
+      console.log("**before create");
       IModelJsFs.mkdirSync(outDir);
+      console.log("**after create");
+    }
+    console.log('before for (const hCount of hierarchyCounts) {');
     for (const hCount of hierarchyCounts) {
       const st = createSchema(hCount);
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `mixin_${hCount}.bim`);
+      console.log("-> before if (!IModelJsFs.existsSync(seedName))");
+      console.log(String(seedName))
       if (!IModelJsFs.existsSync(seedName)) {
-        await IModelHost.startup();
+        console.log("-> before IModelHost.startup");
+        console.log(String(path.join(__dirname, ".cache")));
+        await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
+        console.log("-> after IModelHost.startup");
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
+        console.log("-> after const seedIModel = SnapshotDb.createEmpty");
         await seedIModel.importSchemas([st]);
+        console.log("-> before seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned)");
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
@@ -136,6 +154,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
         if (undefined === spatialCategoryId)
           spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
         // create base class elements
+        console.log("-> before for (let i = 0; i < seedCount; ++i)");
         for (let i = 0; i < seedCount; ++i) {
           let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:propElement");
           let geomElement = seedIModel.elements.createElement(elementProps);
@@ -161,12 +180,15 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
         }
+        console.log("-> After if");
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), ((2 * seedCount * hCount) + seedCount));
         seedIModel.close();
         await IModelHost.shutdown();
+        console.log("-> after await IModelHost.shutdown();");
       }
     }
+    console.log('-> "Before" section finished');
   });
   after(() => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
