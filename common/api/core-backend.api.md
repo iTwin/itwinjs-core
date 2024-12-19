@@ -90,6 +90,7 @@ import { ExternalSourceProps } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
 import { FontFace as FontFace_2 } from '@itwin/core-common';
 import { FontFamilyDescriptor } from '@itwin/core-common';
+import { FontFamilySelector } from '@itwin/core-common';
 import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
@@ -3111,8 +3112,6 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
-    // @beta @deprecated
-    addNewFont(name: string, type?: FontType): FontId;
     // @internal
     protected beforeClose(): void;
     // @internal
@@ -3387,7 +3386,7 @@ export interface IModelDbFonts {
     acquireId(descriptor: FontFamilyDescriptor): Promise<FontId>;
     embedFontFile(args: EmbedFontFileArgs): Promise<void>;
     findDescriptor(id: FontId): FontFamilyDescriptor | undefined;
-    findId(descriptor: FontFamilyDescriptor): FontId | undefined;
+    findId(selector: FontFamilySelector): FontId | undefined;
     queryEmbeddedFontFiles(): Iterable<FontFile>;
     queryMappedFamilies(args?: QueryMappedFamiliesArgs): Iterable<FontProps>;
 }

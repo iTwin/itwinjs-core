@@ -290,6 +290,7 @@ public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
 public;interface;FontFamilyDescriptor
+beta;interface;FontFamilySelector
 public;type;FontId
 public;class;FontMap
 deprecated;class;FontMap
@@ -764,7 +765,7 @@ beta;class;RpcRoutingToken
 internal;interface;RpcSerializedValue
 internal;namespace;RpcSerializedValue
 internal;class;RpcSessionInvocation
-beta;interface;RscFontEncodingProps
+alpha;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult

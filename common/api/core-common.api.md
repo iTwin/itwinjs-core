@@ -3508,6 +3508,12 @@ export interface FontFamilyDescriptor {
     type: FontType;
 }
 
+// @beta
+export interface FontFamilySelector {
+    name: string;
+    type?: FontType;
+}
+
 // @public
 export type FontId = number;
 
@@ -9007,7 +9013,7 @@ export class RpcSessionInvocation extends RpcInvocation {
     get rejected(): boolean;
 }
 
-// @beta
+// @alpha
 export interface RscFontEncodingProps {
     // (undocumented)
     codePage?: number;
