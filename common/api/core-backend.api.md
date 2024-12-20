@@ -88,8 +88,12 @@ import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
+import { FontFace as FontFace_2 } from '@itwin/core-common';
+import { FontFamilyDescriptor } from '@itwin/core-common';
+import { FontFamilySelector } from '@itwin/core-common';
 import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
+import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
@@ -194,6 +198,7 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RscFontEncodingProps } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
@@ -1224,6 +1229,8 @@ export namespace CodeService {
         // @internal (undocumented)
         reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
         // @internal (undocumented)
+        reserveEmbeddedFaceDataId(facesKey: string): Promise<number>;
+        // @internal (undocumented)
         reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
     }
     export type IterationReturn = void | "stop";
@@ -1398,6 +1405,19 @@ export interface CreateChangeSummaryArgs extends TokenArg {
     iModelId: GuidString;
     iTwinId: GuidString;
     range: ChangesetRange;
+}
+
+// @alpha
+export interface CreateFontFileFromRscBlobArgs {
+    blob: Uint8Array;
+    encoding?: RscFontEncodingProps;
+    familyName: string;
+}
+
+// @beta
+export interface CreateFontFileFromShxBlobArgs {
+    blob: Uint8Array;
+    familyName: string;
 }
 
 // @public
@@ -2281,6 +2301,12 @@ export class EmbeddedFileLink extends LinkElement {
     static get className(): string;
 }
 
+// @beta
+export interface EmbedFontFileArgs {
+    file: FontFile;
+    skipFontIdAllocation?: boolean;
+}
+
 // @public
 export class Entity {
     protected constructor(props: EntityProps, iModel: IModelDb);
@@ -2607,6 +2633,29 @@ export class FolderContainsRepositories extends ElementOwnsChildElements {
 export class FolderLink extends UrlLink {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface FontFile {
+    // @internal
+    readonly [_faceProps]: IModelJsNative.FontFaceProps[];
+    // @internal
+    readonly [_getData]: () => Uint8Array;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    readonly [_key]: string;
+    readonly faces: ReadonlyArray<Readonly<FontFace_2>>;
+    readonly isEmbeddable: boolean;
+    readonly type: FontType;
+}
+
+// @beta (undocumented)
+export namespace FontFile {
+    // @alpha
+    export function createFromRscFontBlob(args: CreateFontFileFromRscBlobArgs): FontFile;
+    export function createFromShxFontBlob(args: CreateFontFileFromShxBlobArgs): FontFile;
+    export function createFromTrueTypeFileName(fileName: LocalFileName): FontFile;
 }
 
 // @public
@@ -3063,8 +3112,6 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
-    // @beta
-    addNewFont(name: string, type?: FontType): FontId;
     // @internal
     protected beforeClose(): void;
     // @internal
@@ -3107,10 +3154,12 @@ export abstract class IModelDb extends IModel {
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
-    // (undocumented)
+    // @deprecated (undocumented)
     get fontMap(): FontMap;
-    // (undocumented)
+    // @deprecated (undocumented)
     protected _fontMap?: FontMap;
+    // @beta
+    get fonts(): IModelDbFonts;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
@@ -3328,6 +3377,18 @@ export namespace IModelDb {
         get viewStore(): ViewStore.CloudAccess;
         set viewStore(viewStore: ViewStore.CloudAccess);
     }
+}
+
+// @beta
+export interface IModelDbFonts {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    acquireId(descriptor: FontFamilyDescriptor): Promise<FontId>;
+    embedFontFile(args: EmbedFontFileArgs): Promise<void>;
+    findDescriptor(id: FontId): FontFamilyDescriptor | undefined;
+    findId(selector: FontFamilySelector): FontId | undefined;
+    queryEmbeddedFontFiles(): Iterable<FontFile>;
+    queryMappedFamilies(args?: QueryMappedFamiliesArgs): Iterable<FontProps>;
 }
 
 // @beta
@@ -4557,6 +4618,11 @@ export interface PushChangesArgs extends TokenArg {
 export interface QueryLocalChangesArgs {
     readonly includedClasses?: string[];
     readonly includeUnsavedChanges?: boolean;
+}
+
+// @beta
+export interface QueryMappedFamiliesArgs {
+    includeNonEmbedded?: boolean;
 }
 
 // @beta
