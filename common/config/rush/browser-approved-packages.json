@@ -671,6 +671,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "marked",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
     },
@@ -825,6 +829,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sql-formatter",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "stream-browserify",
