@@ -91,7 +91,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
     const data = file[_getData]();
     this.#db[_nativeDb].embedFontFile(id, file[_faceProps], data, true);
 
-    if (!args.dontAllocateFontIds) {
+    if (!args.skipFontIdAllocation) {
       const familyNames = new Set<string>(args.file.faces.map((x) => x.familyName));
       const acquireIds = Array.from(familyNames).map(async (x) => this.#acquireId({ name: x, type: args.file.type }, true).catch());
       await Promise.allSettled(acquireIds);

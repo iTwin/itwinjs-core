@@ -2303,8 +2303,8 @@ export class EmbeddedFileLink extends LinkElement {
 
 // @beta
 export interface EmbedFontFileArgs {
-    dontAllocateFontIds?: boolean;
     file: FontFile;
+    skipFontIdAllocation?: boolean;
 }
 
 // @public

@@ -180,21 +180,21 @@ describe("IModelDbFonts", () => {
       await db.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf") });
       expect(db.fonts.findId({ name: "DejaVu Sans", type: FontType.TrueType })).not.to.be.undefined;
 
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: false });
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
       const sitkaFamilies = ["Banner", "Display", "Heading", "Small", "Subheading", "Text"].map((x) => `Sitka ${x}`);
       for (const name of sitkaFamilies) {
         expect(db.fonts.findId({ name, type: FontType.TrueType })).not.to.be.undefined;
       }
 
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), dontAllocateFontIds: true });
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
       expect(db.fonts.findId({ name: "Karla", type: FontType.TrueType })).to.be.undefined;
     });
 
     it("requires schema lock if CodeService is not configured", async () => {
       const spy = sinon.spy(db, "acquireSchemaLock");
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), dontAllocateFontIds: true });
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
       expect(spy.callCount).to.equal(1);
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: false });
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
       expect(spy.callCount).to.equal(2);
     });
 
@@ -202,9 +202,9 @@ describe("IModelDbFonts", () => {
       MockCodeService.enable = true;
       const spy = sinon.spy(db, "acquireSchemaLock");
 
-      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), dontAllocateFontIds: true });
+      await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
       
-      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), dontAllocateFontIds: false });
+      await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
 
       expect(spy.callCount).to.equal(0);
       expect(MockCodeService.nextFaceDataId).to.equal(12);
@@ -311,7 +311,7 @@ describe("IModelDbFonts", () => {
   describe("queryMappedFamilies", () => {
     it("omits entries with no embedded face data by default", async () => {
       await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf") });
-      await db.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf"), dontAllocateFontIds: true });
+      await db.fonts.embedFontFile({ file: createTTFile("DejaVuSans.ttf"), skipFontIdAllocation: true });
       await db.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
 
       function expectFamilies(expected: string[], args?: QueryMappedFamiliesArgs): void {

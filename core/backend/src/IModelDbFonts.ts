@@ -17,7 +17,7 @@ export interface EmbedFontFileArgs {
   /** The file to embed. */
   file: FontFile;
   /** Unless true, [[IModelDbFonts.acquireId]] will be used to ensure that every font family in [[file]] is assigned a [FontId]($common). */
-  dontAllocateFontIds?: boolean;
+  skipFontIdAllocation?: boolean;
 }
 
 /** Arguments supplied to [[IModelDbFonts.queryMappedFamilies]].
