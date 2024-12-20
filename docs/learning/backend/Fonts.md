@@ -43,7 +43,7 @@ A font family is uniquely identified across iModels by its name and type, as enc
 
 To use a font family, you must first embed one or more [font files](#font-files) containing the face(s) belonging to that family. Then, you must associate a [FontId]($common) with the [FontFamilyDescriptor]($common). The mapping of family descriptors to font Ids is stored independently from the embedded font files. So, for a given font family, any of the following is possible:
 1. The iModel contains a font Id for the family, and one or more font files containing faces belonging to that family; or
-2. The iModel contains a font Id for the family, but not corresponding font files; or
+2. The iModel contains a font Id for the family, but no corresponding font files; or
 3. The iModel contains font files defining faces belonging to that family, but no corresponding font Id; or
 4. No information about the family exists in the iModel.
 
