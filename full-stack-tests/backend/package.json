@@ -27,7 +27,7 @@
     "perftest:ecSqlRowPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlRow.test.js\""
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.24.0",
+    "@azure/storage-blob": "^12.26.0",
     "@bentley/aec-units-schema": "^1.0.3",
     "@bentley/cif-bridge-schema": "^1.0.5",
     "@bentley/cif-common-schema": "^1.0.3",
@@ -53,9 +53,9 @@
     "@itwin/imodels-access-backend": "^5.2.1",
     "@itwin/imodels-client-authoring": "^5.8.1",
     "@itwin/itwins-client": "^1.2.0",
-    "@itwin/oidc-signin-tool": "^4.3.7",
+    "@itwin/oidc-signin-tool": "^4.4.0",
     "@itwin/perf-tools": "workspace:*",
-    "azurite": "^3.32.0",
+    "azurite": "^3.33.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",

@@ -252,6 +252,30 @@ describe("PipeConnections", () => {
     }
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("createArcFromSectionData", () => {
+    const ck = new Checker();
+
+    let centerline = Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90));
+    let sectionData: Arc3d | number = Arc3d.create(Point3d.create(1), Vector3d.create(1), Vector3d.create(0, 2));
+    let arc = CurveFactory.createArcFromSectionData(centerline, sectionData)!;
+    ck.testDefined(arc);
+    ck.testPoint3d(arc.center, centerline.startPoint());
+    ck.testVector3d(arc.vector0, sectionData.vector0);
+    ck.testVector3d(arc.vector90, sectionData.vector90);
+
+    centerline = Arc3d.create(
+      undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    sectionData = 0.2;
+    arc = CurveFactory.createArcFromSectionData(centerline, sectionData)!;
+    ck.testDefined(arc);
+    ck.testPoint3d(arc.center, centerline.startPoint());
+    ck.testVector3d(arc.matrixClone().columnZ(), centerline.fractionToPointAndUnitTangent(0).direction);
+    ck.testCoordinate(arc.vector0.magnitude(), sectionData);
+    ck.testCoordinate(arc.vector90.magnitude(), sectionData);
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
   it("createMiteredPipeSections", () => {
     const ck = new Checker();
@@ -341,6 +365,7 @@ describe("PipeConnections", () => {
     ]
     const centerline = [
       Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
       BSplineCurve3dH.createUniformKnots([
         Point4d.create(-1.5, -1, 0, 1),
@@ -352,20 +377,22 @@ describe("PipeConnections", () => {
         Point4d.create(1.5, 1, 1, 1),
       ], 3,
       )!,
+      [Point3d.create(-1, -1), Point3d.create(-1), Point3d.create(0, 1), Point3d.create(1, 1)],
     ];
     for (const sweep of sectionSweeps) {
       dx = 0;
       const sectionData = [
-        Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
+        Arc3d.create(undefined, Vector3d.create(0, 0, 0.3), Vector3d.create(0.5), sweep),
+        Arc3d.create(undefined, Vector3d.create(0, 0, 0.3), Vector3d.create(0.5, 0.5), sweep),
         Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
         0.2,
+        0.1,
       ];
       ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
       let builder: PolyfaceBuilder;
       for (const capped of [true, false]) {
         for (let i = 0; i < sectionData.length; ++i) {
           builder = PolyfaceBuilder.create();
-          builder.options.angleTol = Angle.createDegrees(15);
           builder.addMiteredPipes(centerline[i], sectionData[i], numFacetAround, capped);
           const mesh = builder.claimPolyface();
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx, dy);
@@ -378,6 +405,12 @@ describe("PipeConnections", () => {
           } else {
             ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (capped=false)");
           }
+          if (!capped && sweep.isFullCircle)
+            ck.testExactNumber(
+              PolyfaceQuery.boundaryEdges(mesh)!.children.length,
+              2 * numFacetAround,
+              "number of cap edges is a double of numFacetAround",
+            );
         }
       }
       dy += 3;
@@ -625,13 +658,15 @@ describe("PipeConnections", () => {
     let dx = 0, dy = 0;
     const sectionSweeps: AngleSweep[] = [
       AngleSweep.create360(),
-      // AngleSweep.createStartEndDegrees(360, 0),
+      AngleSweep.createStartEndDegrees(360, 0),
       AngleSweep.createStartEndDegrees(0, 90),
       AngleSweep.createStartEndDegrees(180, 90),
     ]
     const centerline = [
       Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, -90)),
       BSplineCurve3dH.createUniformKnots([
         Point4d.create(-1.5, -1, 0, 1),
         Point4d.create(-0.25, -0.5, 0, 0.5),
@@ -647,18 +682,16 @@ describe("PipeConnections", () => {
       dx = 0;
       const sectionData = [
         Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
-        Arc3d.create(Point3d.create(0.5, 0, 0), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
+        Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0.5), sweep),
+        Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
+        Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
         Arc3d.create(Point3d.create(-1.5, -1, 0), Vector3d.create(0, 0.2), Vector3d.create(0, 0, 0.2), sweep),
       ];
       ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
       for (const capped of [true, false]) {
         for (let i = 0; i < sectionData.length; ++i) {
-          const options = new StrokeOptions();
-          options.angleTol = Angle.createDegrees(15);
-          const linestring = LineString3d.create();
-          centerline[i].emitStrokes(linestring, options);
           const sections = CurveFactory.createMiteredSweepSections(
-            linestring.points,
+            centerline[i],
             sectionData[i],
             { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped },
           )!;

@@ -7,8 +7,6 @@
  * @module Curve
  */
 
-// import { Geometry, Angle, AngleSweep } from "../Geometry";
-
 import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -33,12 +31,13 @@ import { TorusPipe } from "../solid/TorusPipe";
 import { Arc3d, ArcBlendData } from "./Arc3d";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyCurve } from "./CurveTypes";
+import { AnyCurve, AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
 import { Path } from "./Path";
+import { RegionOps } from "./RegionOps";
 import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
 import { StrokeOptions } from "./StrokeOptions";
@@ -86,23 +85,28 @@ export interface MiteredSweepOptions {
   wrapIfPhysicallyClosed?: boolean;
   /** Whether to output sections only, or sections plus optional geometry constructed from them. Default value is `MiteredSweepOutputSelect.Sections`. */
   outputSelect?: MiteredSweepOutputSelect;
-  /** How to stroke the ruled sweep if outputting a mesh. If undefined, default stroke options are used. */
+  /** How to stroke smooth input curves. If undefined, default stroke options are used. */
   strokeOptions?: StrokeOptions;
   /** Whether to cap the ruled sweep if outputting a ruled sweep or mesh. Default value is `false`. */
   capped?: boolean;
-  /**
-   * If the centerline is not physically closed, the first section's normal is aligned to this vector (typically points
-   * toward the swept geometry). If the centerline is physically closed, the first section's normal is aligned to this
-   * vector if and only if endTangent is provided and is equal to startTangent.
-   */
+  /** The first section's normal is aligned to this vector, typically the start tangent of the smooth curve stroked for the centerline. */
   startTangent?: Vector3d;
-  /**
-   * If the centerline is not physically closed, the last section's normal is aligned to this vector (typically points
-   * away from the swept geometry). If the centerline is physically closed, the last section's normal is aligned to this
-   * vector if and only if startTangent is provided and is equal to endTangent.
-   */
+  /** The last section's normal is aligned to this vector, typically the end tangent of the smooth curve stroked for the centerline. */
   endTangent?: Vector3d;
 }
+
+/**
+ * Curve strokes plus start/end tangents.
+ * @internal
+*/
+interface SmoothCurveData {
+  /** Samples along a curve. */
+  strokes: IndexedXYZCollection;
+  /** Start tangent (unnormalized). May be undefined if the curve is linear. */
+  startTangent?: Vector3d;
+  /** End tangent (unnormalized). May be undefined if the curve is linear. */
+  endTangent?: Vector3d;
+};
 
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
@@ -360,6 +364,44 @@ export class CurveFactory {
     }
     return undefined;
   }
+  /** Get start point and tangent for variant curve data. */
+  private static startPointAndTangent(curve: IndexedXYZCollection | Point3d[] | CurvePrimitive): Ray3d | undefined {
+    if (curve instanceof CurvePrimitive)
+      return curve.fractionToPointAndDerivative(0.0);
+    if (curve.length < 2)
+      return undefined;
+    if (Array.isArray(curve))
+      curve = new Point3dArrayCarrier(curve);
+    const ray = Ray3d.createZero();
+    curve.getPoint3dAtUncheckedPointIndex(0, ray.origin);
+    curve.vectorIndexIndex(0, 1, ray.direction);
+    return ray;
+  };
+  /** Create an [[Arc3d]] from `sectionData` that has its center at the start point of the centerline. */
+  public static createArcFromSectionData(
+    centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d,
+  ): Arc3d | undefined {
+    const ray = CurveFactory.startPointAndTangent(centerline);
+    if (!ray)
+      return undefined;
+    let arc: Arc3d;
+    if (sectionData instanceof Arc3d) {
+      arc = sectionData.clone();
+      arc.center = ray.origin;
+    } else {
+      const vector0 = Vector3d.create();
+      const vector90 = Vector3d.create();
+      const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
+      const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
+      const baseFrame = Matrix3d.createRigidHeadsUp(ray.direction, AxisOrder.ZXY);
+      baseFrame.columnX(vector0).scaleInPlace(length0);
+      baseFrame.columnY(vector90).scaleInPlace(length90);
+      arc = Arc3d.create(ray.origin, vector0, vector90);
+    }
+    if (arc.binormalVector().dotProduct(ray.direction) < 0.0)
+      arc.reverseInPlace();
+    return arc;
+  }
   /**
    * Create section arcs for mitered pipe.
    * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
@@ -372,140 +414,176 @@ export class CurveFactory {
    * lengths, or an Arc3d:
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
-   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
-   * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[createMiteredSweepSections]] with default options.
    * @param centerline centerline of pipe. For best results, ensure no successive duplicate points with e.g.,
    * [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
+   * @returns array of sections or empty array if section creation failed.
    */
   public static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[] {
-    const arcs: Arc3d[] = [];
-    if (centerline.length < 2)
+    const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
+    if (!arc)
       return [];
-    const vector0 = Vector3d.create();
-    const vector90 = Vector3d.create();
-    const vectorBC = Vector3d.create();
-    const sweep = AngleSweep.create360();
-    centerline.vectorIndexIndex(0, 1, vectorBC)!; // initially, the start tangent
-    if (sectionData instanceof Arc3d) {
-      vector0.setFrom(sectionData.vector0);
-      vector90.setFrom(sectionData.vector90);
-      sweep.setFrom(sectionData.sweep); // allow e.g., half-pipe
-      const sectionFacesForward = sectionData.matrixRef.columnDotXYZ(AxisIndex.Z, vectorBC.x, vectorBC.y, vectorBC.z) > 0;
-      if (sectionFacesForward !== sectionData.sweep.isCCW)
-        sweep.reverseInPlace();
-    } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
-      const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
-      const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
-      const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
-      baseFrame.columnX(vector0).scaleInPlace(length0);
-      baseFrame.columnY(vector90).scaleInPlace(length90);
-    } else {
-      return [];
-    }
-    // ASSUME: initial section normal points toward sweep direction for subsequent facet creation
-    const initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
-    centerline.getPoint3dAtUncheckedPointIndex(0, initialSection.centerRef);
-    arcs.push(initialSection);
-    const vectorAB = Vector3d.create();
-    const bisector = Vector3d.create();
-    const center = Point3d.create();
-    for (let i = 1; i < centerline.length; i++) {
-      vectorAB.setFromVector3d(vectorBC);
-      centerline.getPoint3dAtUncheckedPointIndex(i, center);
-      if (i + 1 < centerline.length)
-        centerline.vectorIndexIndex(i, i + 1, vectorBC)!;
-      else
-        vectorBC.setFromVector3d(vectorAB);
-      if (vectorAB.normalizeInPlace() && vectorBC.normalizeInPlace()) {
-        vectorAB.interpolate(0.5, vectorBC, bisector);
-        // At pipe end, the ellipse center comes directly from centerline[i], and vector0/vector90 are
-        // obtained by sweeping the corresponding vectors of the pipe start ellipse to the bisector plane.
-        moveVectorToPlane(vector0, vectorAB, bisector, vector0);
-        moveVectorToPlane(vector90, vectorAB, bisector, vector90);
-        arcs.push(Arc3d.create(center, vector0, vector90, sweep));
+    const miteredSweeps = CurveFactory.createMiteredSweepSections(centerline, arc);
+    if (miteredSweeps)
+      return miteredSweeps.sections as Arc3d[];
+    return [];
+  }
+
+  /** For a smooth curve, stroke and return unnormalized start/end tangents. */
+  private static strokeSmoothCurve(
+    curve: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain,
+    options?: StrokeOptions,
+  ): SmoothCurveData | undefined {
+    let startTangent, endTangent: Vector3d | undefined;
+    if (curve instanceof CurvePrimitive) {
+      startTangent = curve.fractionToPointAndDerivative(0.0).direction;
+      endTangent = curve.fractionToPointAndDerivative(1.0).direction;
+      const strokes = LineString3d.create();
+      curve.emitStrokes(strokes, options);
+      curve = strokes.packedPoints;
+    } else if (curve instanceof CurveChain) {
+      startTangent = curve.startPointAndDerivative()?.direction;
+      endTangent = curve.endPointAndDerivative()?.direction;
+      const strokes = curve.getPackedStrokes(options);
+      if (!strokes)
+        return undefined;
+      curve = strokes;
+    } else if (Array.isArray(curve))
+      curve = new Point3dArrayCarrier(curve);
+    return { strokes: curve, startTangent, endTangent };
+  }
+
+  /**
+   * Align two bisector plane normals to given smooth rail tangents or optional overrides.
+   * * Optionally average the normals for physically closed rail.
+   */
+  private static alignFirstAndLastBisectorPlanes(
+    firstPlane: Plane3dByOriginAndUnitNormal,
+    lastPlane: Plane3dByOriginAndUnitNormal,
+    smoothRailData?: SmoothCurveData,
+    options?: MiteredSweepOptions,
+  ) {
+    const normal0 = options?.startTangent ?? (smoothRailData?.startTangent ?? firstPlane.getNormalRef());
+    const normal1 = options?.endTangent ?? (smoothRailData?.endTangent ?? lastPlane.getNormalRef());
+    if (options?.wrapIfPhysicallyClosed && firstPlane.getOriginRef().isAlmostEqual(lastPlane.getOriginRef())) {
+      const avgNormal = normal0.plus(normal1);
+      if (avgNormal.tryNormalizeInPlace()) { // ignore cusp at seam
+        firstPlane.getNormalRef().setFrom(avgNormal);
+        lastPlane.getNormalRef().setFrom(avgNormal);
+        return;
       }
     }
-    return arcs;
+    if (normal0.tryNormalizeInPlace())
+      firstPlane.getNormalRef().setFrom(normal0);
+    if (normal1.tryNormalizeInPlace())
+      lastPlane.getNormalRef().setFrom(normal1);
   }
+
+  /** Reverse a closed curve or region if necessary so that its orientation is CCW with respect to the plane normal. */
+  private static alignClosedCurveToPlane(curve: AnyCurve, planeNormal: Vector3d) {
+    let closedCurve: AnyRegion | undefined;
+    if (curve instanceof CurvePrimitive) {
+      if (curve.startPoint().isAlmostEqual(curve.endPoint()))
+        closedCurve = Loop.create(curve);
+    } else if (curve.isAnyRegion())
+      closedCurve = curve;
+    if (closedCurve) {
+      // The alignment condition is equivalent to positive projected curve area computed wrt to the plane normal.
+      const toLocal = Matrix3d.createRigidHeadsUp(planeNormal).transpose();
+      const projection = closedCurve.cloneTransformed(Transform.createOriginAndMatrix(undefined, toLocal));
+      if (projection) { // now we can ignore z-coords
+        const areaXY = RegionOps.computeXYArea(projection as AnyRegion);
+        if (areaXY && areaXY < 0)
+          curve.reverseInPlace();
+      }
+    }
+  }
+
   /**
-   * Sweep the initialSection along each segment of the centerLine until it hits the bisector plane at the next vertex.
-   * * The caller should place the initialSection on a plane perpendicular to the first edge.
-   *   * This plane is commonly (but not necessarily) through the start point itself.
-   *   * If the initialSection is not "on a perpendicular plane", the output geometry will still be flattened onto the
-   *     various planes.
-   * * In the "open path" case (i.e when `wrapIfPhysicallyClosed` is false or the path does not have matched first and
-   *   last points), the first/last output plane will be at the start/end of the first/last edge and on a perpendicular
-   *   plane.
-   * * In the "closed path" case, if start/edn tangents are not provided in the `options`, then the output plane for the
-   *   first and last point is the bisector of the start and end planes from the "open path" case, and the first/last
-   *   section geometry may be different from `initialSection`.
-   * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector
-   *   planes.
-   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve.
+   * Projection to target plane, constructing sweep direction from two given planes.
+   * * If successful, push the target plane and swept section to the output arrays and return the swept section.
+   * * If unsuccessful, leave the output arrays alone and return the input section.
+   */
+  private static doSweepToPlane(
+    output: SectionSequenceWithPlanes,
+    edgePlane0: Plane3dByOriginAndUnitNormal,
+    edgePlane1: Plane3dByOriginAndUnitNormal,
+    targetPlane: Plane3dByOriginAndUnitNormal,
+    section: AnyCurve,
+  ): AnyCurve {
+    const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
+    const transform = Transform.createFlattenAlongVectorToPlane(
+      sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef(),
+    );
+    if (transform === undefined)
+      return section;
+    const transformedSection = section.cloneTransformed(transform);
+    if (transformedSection === undefined)
+      return section;
+    output.planes.push(targetPlane);
+    output.sections.push(transformedSection);
+    return transformedSection;
+  }
+
+  /**
+   * Sweep the `initialSection` along each segment of the (stroked) `centerline` until it hits the bisector plane at
+   * the next vertex.
+   * * For best results, the caller should place `initialSection` in a plane perpendicular to the `centerline`
+   * start tangent.
+   *   * This plane is commonly (but not necessarily) through the centerline start point itself.
+   *   * To compute the sections, `initialSection` is projected in the direction of the centerline start tangent onto
+   * the first bisector plane at the centerline start. The result of this projection will be likewise projected onto
+   * the second plane, and so on in sequence.
+   * * By default, the first/last bisector plane normals are set to the centerline start/end tangents. The caller can
+   * override these with tangents supplied in `options`. If the centerline is physically closed and
+   * `options.wrapIfPhysicallyClosed` is true, the first and last plane normals are averaged and equated.
+   * * The centerline path does NOT have to be planar, however non-planarity will result in twisting of the sections
+   * in the bisector planes.
+   * @param centerline sweep path. Will be stroked if smooth.
    * @param initialSection profile curve to be swept. As noted above, this should be on a plane perpendicular to the
-   * first segment of the centerline.
+   * centerline start tangent.
    * @param options options for computation and output.
-   * @return array of sections, starting with `initialSection` projected along the first edge to the first plane.
+   * @return array of sections, formed from projecting `initialSection` successively onto the bisector planes.
    */
   public static createMiteredSweepSections(
-    centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions,
+    centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain,
+    initialSection: AnyCurve,
+    options?: MiteredSweepOptions,
   ): SectionSequenceWithPlanes | undefined {
+    if (!options)
+      options = {};
+    const rail = this.strokeSmoothCurve(centerline, options.strokeOptions);
+    if (!rail)
+      return undefined;
+    const planes = PolylineOps.createBisectorPlanesForDistinctPoints(rail.strokes);
+    if (!planes || planes.length < 2)
+      return undefined;
+    this.alignFirstAndLastBisectorPlanes(planes[0], planes[planes.length - 1], rail, options);
+
+    // RuledSweep facet construction assumes the contours are oriented CCW with respect to the sweep direction so that
+    // facet normals point outward. We only have to align the first contour; the rest will inherit its orientation.
+    this.alignClosedCurveToPlane(initialSection, planes[0].getNormalRef());
+
     const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
-    const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerline, options.wrapIfPhysicallyClosed);
-    // apply start/end tangent options
-    if (planes !== undefined && planes.length > 1) {
-      const firstPlane = planes[0];
-      const lastPlane = planes[planes.length - 1];
-      const startTang = options.startTangent;
-      const endTang = options.endTangent;
-      if (!firstPlane.getOriginRef().isAlmostEqual(lastPlane.getOriginRef()) ||
-        (startTang && endTang && startTang.isAlmostEqual(endTang, 0.0))) {
-        if (startTang?.tryNormalizeInPlace())
-          firstPlane.getNormalRef().setFrom(startTang);
-        if (endTang?.tryNormalizeInPlace())
-          lastPlane.getNormalRef().setFrom(endTang);
-      }
-      // Projection to target plane, constructing sweep direction from two given planes.
-      // If successful, push the target plane and swept section to the output arrays and return the swept section.
-      // If unsuccessful, leave the output arrays alone and return the input section.
-      const doSweepToPlane = function (
-        edgePlane0: Plane3dByOriginAndUnitNormal,
-        edgePlane1: Plane3dByOriginAndUnitNormal,
-        targetPlane: Plane3dByOriginAndUnitNormal,
-        section: AnyCurve,
-      ) {
-        const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
-        const transform = Transform.createFlattenAlongVectorToPlane(
-          sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef(),
-        );
-        if (transform === undefined)
-          return section;
-        const transformedSection = section.cloneTransformed(transform);
-        if (transformedSection === undefined)
-          return section;
-        sectionData.planes.push(targetPlane);
-        sectionData.sections.push(transformedSection);
-        return transformedSection;
-      };
-      let currentSection = doSweepToPlane(planes[0], planes[1], planes[0], initialSection);
-      for (let i = 1; i < planes.length; i++) {
-        currentSection = doSweepToPlane(planes[i - 1], planes[i], planes[i], currentSection);
-      }
-      if (options.outputSelect) {
-        const ruledSweep = RuledSweep.create(sectionData.sections, options.capped ?? false);
-        if (ruledSweep) {
-          sectionData.ruledSweep = ruledSweep;
-          if (MiteredSweepOutputSelect.AlsoMesh === options.outputSelect) {
-            const builder = PolyfaceBuilder.create(options.strokeOptions);
-            builder.addRuledSweep(ruledSweep);
-            sectionData.mesh = builder.claimPolyface();
-          }
+    let currentSection = this.doSweepToPlane(sectionData, planes[0], planes[1], planes[0], initialSection);
+    for (let i = 1; i < planes.length; i++)
+      currentSection = this.doSweepToPlane(sectionData, planes[i - 1], planes[i], planes[i], currentSection);
+
+    if (options.outputSelect) {
+      const ruledSweep = RuledSweep.create(sectionData.sections, options.capped ?? false);
+      if (ruledSweep) {
+        sectionData.ruledSweep = ruledSweep;
+        if (MiteredSweepOutputSelect.AlsoMesh === options.outputSelect) {
+          const builder = PolyfaceBuilder.create(options.strokeOptions);
+          builder.addRuledSweep(ruledSweep);
+          sectionData.mesh = builder.claimPolyface();
         }
       }
-      return sectionData;
     }
-    return undefined;
+    return sectionData;
   }
   /**
    * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep.
@@ -722,12 +800,4 @@ export class CurveFactory {
     }
     return undefined;
   }
-}
-/** Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal. */
-function moveVectorToPlane(vectorR: Vector3d, vectorV: Vector3d, planeNormal: Vector3d, result?: Vector3d): Vector3d {
-  // find s such that (vectorR + s * vectorV) DOT planeNormal = 0.
-  const dotRN = vectorR.dotProduct(planeNormal);
-  const dotVN = vectorV.dotProduct(planeNormal);
-  const s = Geometry.safeDivideFraction(dotRN, dotVN, 0.0);
-  return vectorR.plusScaled(vectorV, -s, result);
 }
