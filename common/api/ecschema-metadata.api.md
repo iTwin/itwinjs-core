@@ -1416,6 +1416,8 @@ export class RelationshipClass extends ECClass {
     // (undocumented)
     fromJSONSync(relationshipClassProps: RelationshipClassProps): void;
     // (undocumented)
+    readonly schema: Schema;
+    // (undocumented)
     readonly schemaItemType = SchemaItemType.RelationshipClass;
     // @alpha
     protected setSourceConstraint(source: RelationshipConstraint): void;
