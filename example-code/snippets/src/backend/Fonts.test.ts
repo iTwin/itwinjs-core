@@ -16,7 +16,7 @@ describe("Font Examples", () => {
   let iModel: StandaloneDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModelForWrite("test.bim");
+    iModel = IModelTestUtils.openIModelForWrite("test.bim", { copyFilename: "FontExamples.bim" });
   });
 
   it("queries and embeds system fonts", async () => {
