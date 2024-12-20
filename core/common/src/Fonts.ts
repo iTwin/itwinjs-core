@@ -26,7 +26,7 @@ export enum FontType {
   Rsc = 2,
   /** [SHX](https://help.autodesk.com/view/OARX/2024/ENU/?guid=GUID-DE941DB5-7044-433C-AA68-2A9AE98A5713) is a simple font format originating in
    * [AutoCAD](https://en.wikipedia.org/wiki/AutoCAD). SHX fonts are generally distributed as files with a ".shx" suffix.
-   * @see [FontFile.createFromShxFontFileBlob]($backend) to work with font files in this format.
+   * @see [FontFile.createFromShxFontBlob]($backend) to work with font files in this format.
    */
   Shx = 3,
 }

@@ -1,6 +1,6 @@
 # Fonts in iModels
 
-Text is an important part of many iModel workflows, especially those involving the production of [drawings and sheets](../../bis/domains/drawing-sheets.md). Every piece of text in an iModel uses a font to define the appearance and layout of the glyphs (i.e., letters, or characters) that comprise it. To store text in an iModel that uses a particular font, the font itself must first be embedded into the iModel. iTwin.js provides APIs to read font objects from the file system or memory, embed them into iModels, query those embeddings, and associate Ids with specific *font families*.
+Text is an important part of many iModel workflows, especially those involving the production of [drawings and sheets](../../bis/domains/drawings-sheets.md). Every piece of text in an iModel uses a font to define the appearance and layout of the glyphs (i.e., letters, or characters) that comprise it. To store text in an iModel that uses a particular font, the font itself must first be embedded into the iModel. iTwin.js provides APIs to read font objects from the file system or memory, embed them into iModels, query those embeddings, and associate Ids with specific *font families*.
 
 ## Terminology
 
@@ -27,7 +27,7 @@ iTwin.js supports three font file formats, represented by the [FontType]($common
 
 SHX and RSC were designed for early [computer-aided design](https://en.wikipedia.org/wiki/Computer-aided_design) workflows and are hence sometimes referred to as "CAD fonts". They consist of a single font face generally comprising extremely simple representations of glyphs (e.g., basic line segments) and little to no support for Unicode characters. By contrast, OpenType fonts are generally more visually appealing, support Unicode, and provide multiple faces per family.
 
-RSC fonts in iModels are stored in a binary format, not as .rsc files. No public API currently exists to convert to this representation, so for now the only way to embed a RSC font into an iModel is through a connector.
+RSC fonts in iModels are stored in a binary format, not as .rsc files. No public API currently exists to convert to this representation, so for now the only way to embed an RSC font into an iModel is through a connector.
 
 ### Embedding rights
 
