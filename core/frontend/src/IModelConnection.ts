@@ -731,7 +731,7 @@ export class BlankConnection extends IModelConnection {
    * @param props The properties to use for the new BlankConnection.
    */
   public static create(props: BlankConnectionProps): BlankConnection {
-    return new this({
+    const connection = new BlankConnection({
       name: props.name,
       rootSubject: { name: props.name },
       projectExtents: props.extents,
@@ -740,6 +740,8 @@ export class BlankConnection extends IModelConnection {
       key: "",
       iTwinId: props.iTwinId,
     });
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
   }
 
   /** There are no connections to the backend to close in the case of a BlankConnection.

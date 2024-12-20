@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Expose `SelectionManager.selectionStorage` as a readonly member. This gives consumers a chance to start using selection storage directly instead of through soon-to-be-deprecated `SelectionManager`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}
