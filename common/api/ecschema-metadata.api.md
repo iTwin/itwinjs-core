@@ -334,7 +334,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     get properties(): IterableIterator<Property> | undefined;
     // (undocumented)
     protected _properties?: Map<string, Property>;
-    setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
+    protected setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
