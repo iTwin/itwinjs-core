@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Upgrade compile target to ES2023 and module to ES2022",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

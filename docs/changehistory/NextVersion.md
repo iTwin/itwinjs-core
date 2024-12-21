@@ -18,6 +18,7 @@ Table of contents:
   - [Updated minimum requirements](#updated-minimum-requirements)
     - [Node.js](#nodejs)
     - [Electron](#electron)
+    - [ECMAScript](#ecmascript)
   - [Deprecated API removals](#deprecated-api-removals)
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-electron](#itwincore-electron)
@@ -84,6 +85,10 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 #### Electron
 
 iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+
+#### ECMAScript
+
+`@itwin/build-tools` has bumped the [TypeScript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2021](https://262.ecma-international.org/12.0/) to [ES2023](https://262.ecma-international.org/14.0/). This means that JavaScript files provided by core packages should be run in [environments supporting ES2023 features](https://compat-table.github.io/compat-table/es2016plus/).
 
 ### Deprecated API removals
 
