@@ -423,8 +423,6 @@ public;class;IModel
 public;type;IModelConnectionProps
 beta;interface;IModelCoordinatesRequestProps
 beta;interface;IModelCoordinatesResponseProps
-public;interface;IModelEncryptionProps
-deprecated;interface;IModelEncryptionProps
 public;class;IModelError
 public;type;IModelErrorNumber
 public;class;IModelNotFoundResponse
