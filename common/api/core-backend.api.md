@@ -1776,8 +1776,6 @@ export class ECDb implements IDisposable {
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
-    // @internal @deprecated (undocumented)
-    get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
@@ -3197,8 +3195,6 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal @deprecated (undocumented)
-    get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -5422,8 +5418,6 @@ export class SQLiteDb {
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @internal @deprecated (undocumented)
-    get nativeDb(): IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
     // @beta (undocumented)
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
