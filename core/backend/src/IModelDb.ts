@@ -86,6 +86,18 @@ export interface UpdateModelOptions extends ModelProps {
   geometryChanged?: boolean;
 }
 
+/** Options supposed to [[IModelDb.Elements.insertElement]].
+ * @public
+ */
+export interface InsertElementOptions {
+  /** If true, instead of assigning a new, unique Id to the inserted element, the inserted element will use the Id specified by the supplied [ElementProps]($common).
+   * This is chiefly useful when applying a filtering transformation - i.e., copying some elements from a source iModel to a target iModel and adding no new elements.
+   * If this option is `true` then [ElementProps.id]($common) must be a valid Id that is not already used by an element in the iModel.
+   * @beta
+   */
+  forceUseId?: boolean;
+}
+
 /** Options supplied to [[IModelDb.computeProjectExtents]].
  * @public
  */
@@ -1884,9 +1896,9 @@ export namespace IModelDb {
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
      */
-    public insertElement(elProps: ElementProps): Id64String {
+    public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
-        return elProps.id = this._iModel[_nativeDb].insertElement(elProps);
+        return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options ? { ...options, forceUseId: !!options.forceUseId } : undefined);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
         err.metadata = { elProps };

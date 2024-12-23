@@ -257,6 +257,7 @@ public;class;InformationRecordModel
 public;class;InformationRecordPartition
 public;class;InformationReferenceElement
 internal;function;initializeTracing
+public;interface;InsertElementOptions
 beta;interface;InstanceChange
 public;class;IpcHandler
 public;class;IpcHost
