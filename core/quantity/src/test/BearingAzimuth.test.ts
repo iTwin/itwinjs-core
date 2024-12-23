@@ -7,11 +7,20 @@ import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
+import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider, ParseQuantityError, ParseError } from "../core-quantity";
 
-describe("Bearing format tests:", () => {
-  it("Roundtrip persisted radian to and from bearing", async () => {
-    const unitsProvider = new TestUnitsProvider();
+describe("Bearing format tests:", async () => {
+  let unitsProvider: TestUnitsProvider;
+  let degree: UnitProps;
+  let rad: UnitProps;
+  let bearingDMS: Format;
+
+  // Set up used in all tests
+  beforeEach(async () => {
+    unitsProvider = new TestUnitsProvider();
+
+    degree = await unitsProvider.findUnitByName("Units.ARC_DEG");
+    rad = await unitsProvider.findUnitByName("Units.RAD");
 
     const bearingDMSJson: FormatProps = {
       minWidth: 2,
@@ -29,6 +38,17 @@ describe("Bearing format tests:", () => {
       },
     };
 
+    bearingDMS = new Format("BearingDMS");
+    await bearingDMS.fromJSON(unitsProvider, bearingDMSJson).catch(() => {});
+  });
+
+  it("should have valid units and format", () => {
+    assert.isTrue(degree.isValid);
+    assert.isTrue(rad.isValid);
+    assert.isTrue(bearingDMS.hasUnits);
+  });
+
+  it("Roundtrip persisted radian to and from bearing", async () => {
     const bearingDMSWithLabelJson: FormatProps = {
       minWidth: 2,
       precision: 0,
@@ -63,10 +83,6 @@ describe("Bearing format tests:", () => {
       },
     };
 
-    const bearingDMS = new Format("BearingDMS");
-    await bearingDMS.fromJSON(unitsProvider, bearingDMSJson).catch(() => { });
-    assert.isTrue(bearingDMS.hasUnits);
-
     const bearingDMSWithLabel = new Format("BearingDMSWithLabel");
     await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson).catch(() => { });
     assert.isTrue(bearingDMSWithLabel.hasUnits);
@@ -75,8 +91,6 @@ describe("Bearing format tests:", () => {
     await bearingDecimal.fromJSON(unitsProvider, bearingDecimalJson).catch(() => { });
     assert.isTrue(bearingDecimal.hasUnits);
 
-    const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
-    assert.isTrue(rad.isValid);
     const bearingDMSFormatter = await FormatterSpec.create("RadToBearingDMS", bearingDMS, unitsProvider, rad);
     const bearingDMSWithLabelFormatter = await FormatterSpec.create("RadToBearingDMSWithLabel", bearingDMSWithLabel, unitsProvider, rad);
     const bearingDecimalFormatter = await FormatterSpec.create("RadToBearingDecimal", bearingDecimal, unitsProvider, rad);
@@ -143,39 +157,103 @@ describe("Bearing format tests:", () => {
     }
   });
 
-  it("should return error if prefix or suffix is missing in bearing string", async () => {
-    const unitsProvider = new TestUnitsProvider();
+  it("should handle mixed case directions in bearing strings", async () => {
+    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
 
-    const bearingDMSJson: FormatProps = {
-      minWidth: 2,
-      precision: 0,
-      type: "Bearing",
-      revolutionUnit: "Units.REVOLUTION",
-      composite: {
-        includeZero: true,
-        spacer: ":",
-        units: [
-          { name: "Units.ARC_DEG" },
-          { name: "Units.ARC_MINUTE" },
-          { name: "Units.ARC_SECOND" },
-        ],
-      },
-    };
+    const testData = [
+      { input: "N45:00:00E", expected:  45.0 },
+      { input: "n45:00:00e", expected:  45.0 },
+      { input: "s45:00:00w", expected:  225.0 },
+      { input: "S45:00:00E", expected:  135.0 },
+    ];
 
-    const bearingDMS = new Format("BearingDMS");
-    await bearingDMS.fromJSON(unitsProvider, bearingDMSJson).catch(() => { });
-    const rad = await unitsProvider.findUnitByName("Units.RAD");
+    for (const entry of testData) {
+      const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
+      if (!Parser.isParsedQuantity(parseResult)) {
+        assert.fail(`Expected a parsed quantity for input ${entry.input}`);
+      }
+      expect(parseResult.value).to.be.eql(entry.expected);
+    }
+  });
+
+  it("should handle special formats for bearing strings", async () => {
+    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
+
+    const testData = [
+      { input: "N", expected: 0.0 },
+      { input: "NE", expected: 45.0 },
+      { input: "E", expected: 90.0 },
+      { input: "SE", expected: 135.0 },
+      { input: "S", expected: 180.0 },
+      { input: "SW", expected: 225.0 },
+      { input: "W", expected: 270.0 },
+      { input: "NW", expected: 315.0 },
+    ];
+
+    for (const entry of testData) {
+      const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
+      if (!Parser.isParsedQuantity(parseResult)) {
+        assert.fail(`Expected a parsed quantity for input ${entry.input}`);
+      }
+      expect(parseResult.value).to.be.eql(entry.expected); ;
+    }
+  });
+
+  it("should handle value out of bound", async () => {
+    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
+
+    const testData = [
+      {input: "N-45:00:00E", expected: 315.0},
+      {input: "S361:00:00E", expected: 179.0},
+      {input: "S45:99:00E", expected: 133.35}, // 180 - 45 - 99/60 = 133.35
+    ]
+
+    for (const entry of testData) {
+      const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
+      if (!Parser.isParsedQuantity(parseResult)) {
+        assert.fail(`Expected a parsed quantity for input ${entry.input}`);
+      }
+      expect(parseResult.value).closeTo(entry.expected, 0.01);
+    }
+
+  });
+
+  it("should return ParseQuantityError if prefix or suffix is missing in bearing string", async () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, rad);
 
-    let parseResult = Parser.parseQuantityString("00:00:00E", bearingDMSParser);
-    expect(parseResult.ok).to.be.false;
+    const testData = ["S4" , "S45", "S45:", "00:00:00E", "N00:00:00", "00:00:00"];
 
-    parseResult = Parser.parseQuantityString("N00:00:00", bearingDMSParser);
-    expect(parseResult.ok).to.be.false;
-
-    parseResult = Parser.parseQuantityString("00:00:00", bearingDMSParser);
-    expect(parseResult.ok).to.be.false;
+    for (const entry of testData) {
+      const parseResult = Parser.parseQuantityString(entry, bearingDMSParser);
+      if (Parser.isParseError(parseResult)) {
+        expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
+      } else {
+        assert.fail(`Expected a ParseQuantityError for input ${entry}`);
+      }
+    }
   });
+
+  it("should return ParseQuantityError if bearing string is invalid", async () => {
+    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
+
+    const testData = [
+      {input: "N45:00:00F", expected: ParseError.BearingPrefixOrSuffixMissing},
+      {input: "NNF", expected: ParseError.BearingPrefixOrSuffixMissing},
+      {input: "NFE", expected: ParseError.NoValueOrUnitFoundInString},
+      // only putting negative sign on first number is allowed, others will be considered as mathematic operation
+      {input: "S45:00:-99W", expected: ParseError.MathematicOperationFoundButIsNotAllowed},
+    ]
+
+    for (const entry of testData) {
+      const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
+      if (Parser.isParseError(parseResult)) {
+        expect(parseResult.error).to.be.eql(entry.expected);
+      } else {
+        assert.fail(`Expected a ParseQuantityError for input ${entry.input}`);
+      }
+    }
+  });
+
 });
 
 describe("Azimuth format tests:", () => {
