@@ -5402,6 +5402,8 @@ export class SQLiteDb {
     readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
+    // @beta
+    get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @internal (undocumented)
     static createBlobIO(): SQLiteDb.BlobIO;
     createDb(dbName: string): void;

@@ -139,6 +139,13 @@ export class SQLiteDb {
     }
   }
 
+  /** The cloud container backing this SQLite database, if any.
+   * @beta
+   */
+  public get cloudContainer(): CloudSqlite.CloudContainer | undefined {
+    return this[_nativeDb].cloudContainer;
+  }
+
   /**
    * Perform an operation on a database in a CloudContainer with the write lock held.
    *
