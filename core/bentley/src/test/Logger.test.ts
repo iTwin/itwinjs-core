@@ -6,7 +6,6 @@ import { assert, describe, expect, it } from "vitest";
 import { BentleyError, LoggingMetaData } from "../BentleyError";
 import { using } from "../Disposable";
 import { Logger, LogLevel, PerfLogger } from "../Logger";
-import { staticLoggerMetadata } from "../internal/staticLoggerMetadata";
 import { BeDuration } from "../Time";
 
 let outerr: any[];
@@ -93,13 +92,13 @@ describe("Logger", () => {
     assert.equal(out, `{${aProps}}`);
 
     // use a function for static metadata
-    staticLoggerMetadata.set("meta1", () => ({ prop1: "test1", prop2: "test2", prop3: "test3" }));
+    Logger.staticMetaData.set("meta1", () => ({ prop1: "test1", prop2: "test2", prop3: "test3" }));
 
     out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${meta1Props},${aProps}}`);
 
     // use an object for static metadata
-    staticLoggerMetadata.set("meta2", { value2: "v2" });
+    Logger.staticMetaData.set("meta2", { value2: "v2" });
 
     // metadata from an object
     out = Logger.stringifyMetaData({ a: "hello" });
@@ -114,11 +113,11 @@ describe("Logger", () => {
     assert.equal(out, `{${meta1Props},${meta2Props}}`);
 
     // delete static metadata
-    staticLoggerMetadata.delete("meta1");
+    Logger.staticMetaData.delete("meta1");
     out = Logger.stringifyMetaData({ a: "hello" });
     assert.equal(out, `{${meta2Props},${aProps}}`, "meta2 still exists");
 
-    staticLoggerMetadata.delete("meta2");
+    Logger.staticMetaData.delete("meta2");
     out = Logger.stringifyMetaData({ a: "hello" });
     // no static metadata
     assert.equal(out, `{${aProps}}`);

@@ -67,6 +67,8 @@ beta;function;convertEC2SchemasToEC3Schemas
 internal;interface;CrashReportingConfig
 internal;interface;CrashReportingConfigNameValuePair
 beta;interface;CreateChangeSummaryArgs
+alpha;interface;CreateFontFileFromRscBlobArgs
+beta;interface;CreateFontFileFromShxBlobArgs
 public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
@@ -143,6 +145,7 @@ beta;class;ElementTreeWalkerScope
 public;class;ElementUniqueAspect
 public;class;ElevationCallout
 public;class;EmbeddedFileLink
+beta;interface;EmbedFontFileArgs
 public;class;Entity
 public;type;EntityClassType
 alpha;namespace;EntityReferences
@@ -178,6 +181,9 @@ public;class;FileNameResolver
 deprecated;class;FileNameResolver
 beta;class;FolderContainsRepositories
 alpha;class;FolderLink
+beta;interface;FontFile
+beta;namespace;FontFile
+alpha;function;createFromRscFontBlob
 public;class;FunctionalBreakdownElement
 public;class;FunctionalComponentElement
 public;class;FunctionalComposite
@@ -233,6 +239,7 @@ public;class;IModelDb
 public;namespace;IModelDb
 internal;enum;TileContentState
 internal;class;Tiles
+beta;interface;IModelDbFonts
 beta;class;IModelElementCloneContext
 public;class;IModelHost
 public;class;IModelHostConfiguration
@@ -323,6 +330,7 @@ beta;namespace;PropertyStore
 public;type;PullChangesArgs
 public;interface;PushChangesArgs
 beta;interface;QueryLocalChangesArgs
+beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
 beta;class;RecipeDefinitionElement

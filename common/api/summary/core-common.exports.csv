@@ -289,9 +289,13 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
+public;interface;FontFamilyDescriptor
+beta;interface;FontFamilySelector
 public;type;FontId
 public;class;FontMap
+deprecated;class;FontMap
 public;interface;FontMapProps
+deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;interface;FormDataCommon
@@ -419,8 +423,6 @@ public;class;IModel
 public;type;IModelConnectionProps
 beta;interface;IModelCoordinatesRequestProps
 beta;interface;IModelCoordinatesResponseProps
-public;interface;IModelEncryptionProps
-deprecated;interface;IModelEncryptionProps
 public;class;IModelError
 public;type;IModelErrorNumber
 public;class;IModelNotFoundResponse
@@ -761,6 +763,7 @@ beta;class;RpcRoutingToken
 internal;interface;RpcSerializedValue
 internal;namespace;RpcSerializedValue
 internal;class;RpcSessionInvocation
+alpha;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
