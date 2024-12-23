@@ -603,6 +603,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "get-system-fonts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
