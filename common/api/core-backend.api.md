@@ -5418,6 +5418,7 @@ export class SQLiteDb {
     // @deprecated
     dispose(): void;
     executeSQL(sql: string): DbResult;
+    getLastInsertRowId(): number;
     get isOpen(): boolean;
     get isReadonly(): boolean;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;

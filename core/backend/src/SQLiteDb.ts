@@ -146,6 +146,11 @@ export class SQLiteDb {
     return this[_nativeDb].cloudContainer;
   }
 
+  /** Returns the Id of the most-recently-inserted row in this database, per [sqlite3_last_insert_rowid](https://www.sqlite.org/c3ref/last_insert_rowid.html). */
+  public getLastInsertRowId(): number {
+    return this[_nativeDb].getLastInsertRowId();
+  }
+
   /**
    * Perform an operation on a database in a CloudContainer with the write lock held.
    *
