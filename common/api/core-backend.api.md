@@ -5609,6 +5609,8 @@ export enum SqliteValueType {
 // @public
 export class StandaloneDb extends BriefcaseDb {
     // @beta
+    static convertToStandalone(iModelFileName: LocalFileName): void;
+    // @beta
     createClassViews(): void;
     static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     // (undocumented)

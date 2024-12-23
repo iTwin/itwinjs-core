@@ -3433,6 +3433,22 @@ export class StandaloneDb extends BriefcaseDb {
       nativeDb.closeFile();
       throw error;
     }
+  }
 
+  /** Convert an iModel stored on the local file system into a StandaloneDb, chiefly for testing purposes.
+   * The file must not be open in any application.
+   * @param iModelFileName the path to the iModel on the local file system.
+   * @beta
+   */
+  public static convertToStandalone(iModelFileName: LocalFileName): void {
+    const nativeDb = new IModelNative.platform.DgnDb();
+    nativeDb.openIModel(iModelFileName, OpenMode.ReadWrite);
+    nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
+    nativeDb.saveChanges(); // save change to iTwinId
+    nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
+    nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));
+    nativeDb.saveChanges(); // save change to briefcaseId
+    nativeDb.closeFile();
   }
 }
