@@ -102,8 +102,9 @@ The following previously-deprecated APIs have been removed:
 | `IModelDb.nativeDb`         | N/A         |
 | `ECDb.nativeDb`             | N/A         |
 | `SQLiteDb.nativeDb`         | N/A         |
+| `IModelHost.platform`       | N/A         |
 
-All three `nativeDb` fields have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
+All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
 #### @itwin/appui-abstract
 
