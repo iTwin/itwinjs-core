@@ -130,6 +130,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     readStatus: TileReadStatus.Success,
     isLeaf: content.isLeaf,
     sizeMultiplier: content.sizeMultiplier,
+    disallowMagnification: content.disallowMagnification,
     contentRange: content.contentRange.isNull ? undefined : content.contentRange,
     graphic,
     emptySubRangeMask: content.emptySubRangeMask,
