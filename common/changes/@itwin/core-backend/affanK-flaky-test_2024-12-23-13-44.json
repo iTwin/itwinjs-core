@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Disable a flaky unit test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
