@@ -5892,6 +5892,7 @@ export class TxnManager {
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
     endMultiTxnOperation(): DbResult;
+    getChangeTrackingMemoryUsed(): number;
     getCurrentTxnId(): TxnIdString;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
