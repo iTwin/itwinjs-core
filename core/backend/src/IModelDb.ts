@@ -186,7 +186,7 @@ export interface SimplifyElementGeometryArgs {
   /** The Id of the [[GeometricElement]] or [[GeometryPart]] whose geometry is to be simplified. */
   id: Id64String;
   /** If true, simplify by converting each [BRepEntity]($common) in the element's geometry stream to a high-resolution
-   * [Polyface]($geometry) or [CurveVector]($geometry).
+   * mesh or curve geometry.
    */
   convertBReps?: boolean;
 }
