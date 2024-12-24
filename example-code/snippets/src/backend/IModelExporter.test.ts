@@ -41,9 +41,7 @@ class CodeExporter extends IModelExportHandler {
 import * as path from "path";
 import { IModelTestUtils } from "./IModelTestUtils";
 
-// ###TODO: @itwin/imodel-transformer tries to access IModelDb.nativeDb which was removed in 5.0, test will fail
-// until that package is updated to 5.0.
-describe.skip("IModelExporter", () => {
+describe("IModelExporter", () => {
   let iModelDb: SnapshotDb;
   before(() => {
     iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim");
