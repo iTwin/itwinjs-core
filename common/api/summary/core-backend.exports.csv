@@ -258,6 +258,7 @@ public;class;InformationRecordModel
 public;class;InformationRecordPartition
 public;class;InformationReferenceElement
 internal;function;initializeTracing
+beta;interface;InlineGeometryPartsResult
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
 public;class;IpcHandler
@@ -393,6 +394,7 @@ beta;interface;SheetReferenceCreateArgs
 beta;class;SheetReferenceRefersToSheet
 public;class;SheetTemplate
 public;class;SheetViewDefinition
+beta;interface;SimplifyElementGeometryArgs
 public;class;SnapshotDb
 public;type;SnapshotDbOpenArgs
 public;class;SpatialCategory

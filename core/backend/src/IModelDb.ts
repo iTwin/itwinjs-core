@@ -179,6 +179,33 @@ export interface ExportSchemaArgs {
   outputFileName?: string;
 }
 
+/** Arguments supplied to [[IModelDb.simplifyElementGeometry]].
+ * @beta
+ */
+export interface SimplifyElementGeometryArgs {
+  /** The Id of the [[GeometricElement]] or [[GeometryPart]] whose geometry is to be simplified. */
+  id: Id64String;
+  /** If true, simplify by converting each [BRepEntity]($common) in the element's geometry stream to a high-resolution
+   * [Polyface]($geometry) or [CurveVector]($geometry).
+   */
+  convertBReps?: boolean;
+}
+
+/** The output of [[IModelDb.inlineGeometryParts]].
+ * If [[numCandidateParts]], [[numRefsInlined]], and [[numPartsDeleted ]] are all the same, the operation was fully successful.
+ * Otherwise, some errors occurred inlining and/or deleting one or more parts.
+ * A part will not be deleted unless it is first successfully inlined.
+ * @beta
+ */
+export interface InlineGeometryPartsResult {
+  /** The number of parts that were determined to have exactly one reference, making them candidates for inlining. */
+  numCandidateParts: number;
+  /** The number of part references successfully inlined. */
+  numRefsInlined: number;
+  /** The number of candidate parts that were successfully deleted after inlining. */
+  numPartsDeleted: number;
+}
+
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -1510,6 +1537,24 @@ export abstract class IModelDb extends IModel {
   public exportSchemas(outputDirectory: LocalFileName): void {
     processSchemaWriteStatus(this[_nativeDb].exportSchemas(outputDirectory));
   }
+
+  /** Attempt to simplify the geometry stream of a single [[GeometricElement]] or [[GeometryPart]] as specified by `args`.
+   * @beta
+   */
+  public simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus {
+    // ###TODO fix NativeLibraryts - it claims this returns DbResult but it returns DgnDbStatus aka IModelStatus.
+    return this[_nativeDb].simplifyElementGeometry(args) as unknown as IModelStatus;
+  }
+
+  /** Attempts to optimize all of the geometry in this iModel by identifying [[GeometryPart]]s that are referenced by exactly one
+   * element's geometry stream. Each such reference is replaced by inserting the part's geometry directly into the element's geometry stream.
+   * Then, the no-longer-used geometry part is deleted.
+   * This can improve performance when a connector inadvertently creates large numbers of parts that are each only used once.
+   * @beta
+   */
+  public inlineGeometryParts(): InlineGeometryPartsResult {
+    return this[_nativeDb].inlineGeometryPartReferences();
+  }
 }
 
 function processSchemaWriteStatus(status: SchemaWriteStatus): void {
@@ -1937,6 +1982,8 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
+        // ###TODO: fix NativeLibrary.ts to not declare `forceUseId` as required - it's not.
+        // Then remove the spread operator below.
         return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options ? { ...options, forceUseId: !!options.forceUseId } : undefined);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;

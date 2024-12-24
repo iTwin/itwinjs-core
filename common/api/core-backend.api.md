@@ -3187,6 +3187,8 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
+    // @beta
+    inlineGeometryParts(): InlineGeometryPartsResult;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -3254,6 +3256,8 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
+    // @beta
+    simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -3685,6 +3689,13 @@ export abstract class InformationReferenceElement extends InformationContentElem
 
 // @internal (undocumented)
 export function initializeTracing(enableOpenTelemetry?: boolean): void;
+
+// @beta
+export interface InlineGeometryPartsResult {
+    numCandidateParts: number;
+    numPartsDeleted: number;
+    numRefsInlined: number;
+}
 
 // @public
 export interface InsertElementOptions {
@@ -5226,6 +5237,12 @@ export class SheetTemplate extends Document_2 {
 export class SheetViewDefinition extends ViewDefinition2d {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface SimplifyElementGeometryArgs {
+    convertBReps?: boolean;
+    id: Id64String;
 }
 
 // @public
