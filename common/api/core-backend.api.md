@@ -2509,6 +2509,13 @@ export interface ExportPartLinesInfo {
 }
 
 // @beta
+export interface ExportSchemaArgs {
+    outputDirectory: LocalFileName;
+    outputFileName?: string;
+    schemaName: string;
+}
+
+// @beta
 export class ExternalSource extends InformationReferenceElement {
     protected constructor(props: ExternalSourceProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3150,6 +3157,10 @@ export abstract class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
+    // @beta
+    exportSchema(args: ExportSchemaArgs): void;
+    // @beta
+    exportSchemas(outputDirectory: LocalFileName): void;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
     // @deprecated (undocumented)

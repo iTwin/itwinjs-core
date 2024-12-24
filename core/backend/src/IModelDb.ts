@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import { join } from "path";
 import * as touch from "touch";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
@@ -163,6 +163,20 @@ class IModelSettings extends SettingsImpl {
     yield* super.getSettingEntries(name);
     yield* IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
+}
+
+/** Arguments supplied to [[IModelDb.exportSchema]] specifying which ECSchema to write to what location on the local file system.
+ * @beta
+ */
+export interface ExportSchemaArgs {
+  /** The name of the ECSchema to export. */
+  schemaName: string;
+  /** The directory in which to place the created schema file. */
+  outputDirectory: LocalFileName;
+  /** Optionally, the name of the file to create in [[outputDirectory]].
+   * Defaults to <SchemaName>.<SchemaVersion>.ecschema.xml
+   */
+  outputFileName?: string;
 }
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
@@ -1481,6 +1495,31 @@ export abstract class IModelDb extends IModel {
       layout: Range2d.fromJSON(props.layout),
       justification: Range2d.fromJSON(props.justification),
     };
+  }
+
+  /** Writes the contents of a single ECSchema to a file on the local file system.
+   * @beta
+   */
+  public exportSchema(args: ExportSchemaArgs): void {
+    processSchemaWriteStatus(this[_nativeDb].exportSchema(args.schemaName, args.outputDirectory, args.outputFileName));
+  }
+
+  /** Writes the contents of all ECSchemas in this iModel to files in a directory on the local file system.
+   * @beta
+   */
+  public exportSchemas(outputDirectory: LocalFileName): void {
+    processSchemaWriteStatus(this[_nativeDb].exportSchemas(outputDirectory));
+  }
+}
+
+function processSchemaWriteStatus(status: SchemaWriteStatus): void {
+  switch (status) {
+    case SchemaWriteStatus.Success: return;
+    case SchemaWriteStatus.FailedToSaveXml: throw new Error("Failed to save schema XML");
+    case SchemaWriteStatus.FailedToCreateXml: throw new Error("Failed to create schema XML");
+    case SchemaWriteStatus.FailedToCreateJson: throw new Error("Failed to create schema JSON");
+    case SchemaWriteStatus.FailedToWriteFile: throw new Error("Failed to write schema file");
+    default: throw new Error("Unknown error while exporting schema");
   }
 }
 

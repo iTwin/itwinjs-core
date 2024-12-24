@@ -168,6 +168,7 @@ public;interface;ExportPartInfo
 public;interface;ExportPartInstanceInfo
 public;type;ExportPartLinesFunction
 public;interface;ExportPartLinesInfo
+beta;interface;ExportSchemaArgs
 beta;class;ExternalSource
 public;class;ExternalSourceAspect
 public;namespace;ExternalSourceAspect
