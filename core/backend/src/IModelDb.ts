@@ -349,8 +349,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  protected initializeIModelDb() {
-    const props = this[_nativeDb].getIModelProps();
+  protected initializeIModelDb(when?: "pullMerge") {
+    const props = this[_nativeDb].getIModelProps(when);
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -3006,7 +3006,7 @@ export class BriefcaseDb extends IModelDb {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
       if (!this.skipSyncSchemasOnPullAndPush)
         await SchemaSync.pull(this);
-      this.initializeIModelDb();
+      this.initializeIModelDb("pullMerge");
     });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
@@ -3092,7 +3092,7 @@ export class BriefcaseDb extends IModelDb {
     // pushing changes requires a writeable briefcase
     await this.executeWritable(async () => {
       await BriefcaseManager.pullMergePush(this, arg);
-      this.initializeIModelDb();
+      this.initializeIModelDb("pullMerge");
     });
 
     const changeset = this.changeset as ChangesetIndexAndId;
