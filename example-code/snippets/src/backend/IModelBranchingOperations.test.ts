@@ -181,7 +181,7 @@ namespace arbitraryEdit {
 
 // ###TODO: @itwin/imodel-transformer tries to access IModelDb.nativeDb which was removed in 5.0, test will fail
 // until that package is updated to 5.0.
-describe.only("IModelBranchingOperations", () => {
+describe.skip("IModelBranchingOperations", () => {
   const version0Path = path.join(KnownTestLocations.outputDir, "branching-ops.bim");
 
   before(async () => {
