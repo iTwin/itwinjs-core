@@ -1542,8 +1542,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus {
-    // ###TODO fix NativeLibraryts - it claims this returns DbResult but it returns DgnDbStatus aka IModelStatus.
-    return this[_nativeDb].simplifyElementGeometry(args) as unknown as IModelStatus;
+    return this[_nativeDb].simplifyElementGeometry(args);
   }
 
   /** Attempts to optimize all of the geometry in this iModel by identifying [[GeometryPart]]s that are referenced by exactly one
@@ -1992,9 +1991,7 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
-        // ###TODO: fix NativeLibrary.ts to not declare `forceUseId` as required - it's not.
-        // Then remove the spread operator below.
-        return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options ? { ...options, forceUseId: !!options.forceUseId } : undefined);
+        return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
         err.metadata = { elProps };
