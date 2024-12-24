@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add InsertElementOptions.forceUseId.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
