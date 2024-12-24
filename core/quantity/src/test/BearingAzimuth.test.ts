@@ -7,7 +7,7 @@ import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider, ParseQuantityError, ParseError } from "../core-quantity";
+import { FormatProps, ParseError, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
 
 describe("Bearing format tests:", async () => {
   let unitsProvider: TestUnitsProvider;
@@ -240,8 +240,7 @@ describe("Bearing format tests:", async () => {
       {input: "N45:00:00F", expected: ParseError.BearingPrefixOrSuffixMissing},
       {input: "NNF", expected: ParseError.BearingPrefixOrSuffixMissing},
       {input: "NFE", expected: ParseError.NoValueOrUnitFoundInString},
-      // only putting negative sign on first number is allowed, others will be considered as mathematic operation
-      {input: "S45:00:-99W", expected: ParseError.MathematicOperationFoundButIsNotAllowed},
+      {input: "S45:00:-99W", expected: ParseError.MathematicOperationFoundButIsNotAllowed}, // only putting negative sign on first number is allowed, others will be
     ]
 
     for (const entry of testData) {

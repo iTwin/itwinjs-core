@@ -702,14 +702,14 @@ export class Parser {
 
   private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     const specialDirections: Record<string, number> = {
-      N: 0,
-      NE: 45,
-      E: 90,
-      SE: 135,
-      S: 180,
-      SW: 225,
-      W: 270,
-      NW: 315,
+      n: 0,
+      ne: 45,
+      e: 90,
+      se: 135,
+      s: 180,
+      sw: 225,
+      w: 270,
+      nw: 315,
     };
 
     // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
@@ -742,8 +742,8 @@ export class Parser {
 
     // check if the remaining string is a special direction
     if (inString.trim() === "") {
-      const prefix = matchedPrefix || "";
-      const suffix = matchedSuffix || "";
+      const prefix = matchedPrefix?.toLowerCase() || "";
+      const suffix = matchedSuffix?.toLowerCase() || "";
       const specialDirection = specialDirections[`${prefix}${suffix}`];
       if (specialDirection !== undefined)
         return { ok: true, value: specialDirection };
