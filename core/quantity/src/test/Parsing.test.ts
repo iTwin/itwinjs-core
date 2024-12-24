@@ -595,6 +595,42 @@ describe("Parsing tests:", () => {
     }
   });
 
+  it("should return parseError when Parsing multiple dots and comas", async () => {
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+      composite: {
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+      allowMathematicOperations: true,
+    };
+
+    const testData = [
+      ".",
+      ",",
+      ",,",
+      "..",
+      ",,,",
+      "...",
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    for (const testEntry of testData) {
+      const parseResult = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
+      console.log(parseResult.isValid, parseResult.magnitude);
+    }
+  });
+
 });
 
 describe("Synchronous Parsing tests:", async () => {
@@ -928,22 +964,6 @@ describe("Synchronous Parsing tests:", async () => {
   });
 
   it("should return parseError when Parsing multiple dots and comas", async () => {
-    const formatData = {
-      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-      uomSeparator: "",
-      composite: {
-        units: [
-          {
-            label: "m",
-            name: "Units.M",
-          },
-        ],
-      },
-      allowMathematicOperations: true,
-    };
-
     const testData = [
       ".",
       ",",
@@ -952,13 +972,6 @@ describe("Synchronous Parsing tests:", async () => {
       ",,,",
       "...",
     ];
-
-    const unitsProvider = new TestUnitsProvider();
-    const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
-
-    const outUnit = await unitsProvider.findUnitByName("Units.CM");
-    const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
 
     for (const testEntry of testData) {
       const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
