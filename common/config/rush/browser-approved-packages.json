@@ -348,7 +348,7 @@
     },
     {
       "name": "@itwin/unified-selection",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -603,6 +603,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "get-system-fonts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -669,6 +673,10 @@
     {
       "name": "lodash",
       "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "marked",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "memfs",
@@ -825,6 +833,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sql-formatter",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "stream-browserify",
