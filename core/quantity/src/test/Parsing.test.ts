@@ -927,4 +927,47 @@ describe("Synchronous Parsing tests:", async () => {
     }
   });
 
+  it("should return parseError when Parsing multiple dots and comas", async () => {
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+      composite: {
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+      allowMathematicOperations: true,
+    };
+
+    const testData = [
+      ".",
+      ",",
+      ",,",
+      "..",
+      ",,,",
+      "...",
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    const outUnit = await unitsProvider.findUnitByName("Units.CM");
+    const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
+      if (Parser.isParseError(parseResult)){
+        expect(parseResult.error).to.eql(ParseError.NoValueOrUnitFoundInString);
+      } else {
+        assert.fail("Expected a ParseError with input: " + testEntry);
+      }
+    }
+  });
+
 });

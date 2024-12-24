@@ -352,7 +352,7 @@ export class Parser {
 
     // handle case where end of input string is reached.
     if (wipToken.length > 0) {
-      if (processingNumber) {
+      if (processingNumber  && !isNaN(Number(wipToken))) {
         if (signToken.length > 0) {
           wipToken = signToken + wipToken;
         }
