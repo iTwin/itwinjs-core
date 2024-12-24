@@ -1555,6 +1555,16 @@ export abstract class IModelDb extends IModel {
   public inlineGeometryParts(): InlineGeometryPartsResult {
     return this[_nativeDb].inlineGeometryPartReferences();
   }
+
+  /** Returns a string representation of the error that most recently arose during an operation on the underlying SQLite database.
+   * If no errors have occurred, an empty string is returned.
+   * Otherwise, a string of the format `message (code)` is returned, where `message` is a human-readable diagnostic string and `code` is an integer status code.
+   * See [SQLite error codes and messages](https://www.sqlite.org/c3ref/errcode.html)
+   * @note Do not rely upon this value or its specific contents in error handling logic. It is only intended for use in debugging.
+   */
+  public getLastError(): string {
+    return this[_nativeDb].getLastError();
+  }
 }
 
 function processSchemaWriteStatus(status: SchemaWriteStatus): void {
