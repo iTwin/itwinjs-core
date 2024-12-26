@@ -11,7 +11,7 @@ import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
  * @beta
  */
 /* eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents */
-export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
+export type GraphicRepresentationFormat = "IMODEL" | "3DTiles" | "CESIUM" | string;
 
 /** Graphic representations are generated from Data Sources.
  * The status of a Graphic Representation indicates the progress of that generation process.
@@ -19,10 +19,10 @@ export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
  */
 // ###TODO this needs to be expanded to include more statuses, and/or "failed" needs to be replaced with "invalid".
 export enum GraphicRepresentationStatus {
-  InProgress = "In progress",
+  InProgress = "InProgress",
   Complete = "Complete",
-  NotStarted = "Not started",
-  Failed = "Failed",
+  NotStarted = "NotStarted",
+  Invalid = "Invalid",
 }
 
 /**
