@@ -595,7 +595,7 @@ describe("Parsing tests:", () => {
     }
   });
 
-  it("should return parseError when Parsing multiple dots and comas", async () => {
+  it("should return parseError when parsing only special characters", async () => {
     const formatData = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
       precision: 4,
@@ -619,6 +619,9 @@ describe("Parsing tests:", () => {
       "..",
       ",,,",
       "...",
+      ".,",
+      ",.",
+      "!@#$%^&*()_", // special characters
     ];
 
     const unitsProvider = new TestUnitsProvider();
@@ -627,7 +630,7 @@ describe("Parsing tests:", () => {
 
     for (const testEntry of testData) {
       const parseResult = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
-      console.log(parseResult.isValid, parseResult.magnitude);
+      expect(parseResult.isValid).to.eql(false);
     }
   });
 
@@ -963,7 +966,7 @@ describe("Synchronous Parsing tests:", async () => {
     }
   });
 
-  it("should return parseError when Parsing multiple dots and comas", async () => {
+  it("should return parseError when parsing only special characters", async () => {
     const testData = [
       ".",
       ",",
@@ -971,6 +974,9 @@ describe("Synchronous Parsing tests:", async () => {
       "..",
       ",,,",
       "...",
+      ".,",
+      ",.",
+      "!@#$%^&*()_",
     ];
 
     for (const testEntry of testData) {
@@ -978,7 +984,7 @@ describe("Synchronous Parsing tests:", async () => {
       if (Parser.isParseError(parseResult)){
         expect(parseResult.error).to.eql(ParseError.NoValueOrUnitFoundInString);
       } else {
-        assert.fail("Expected a ParseError with input: " + testEntry);
+        assert.fail(`Expected a ParseError with input: ${testEntry}`);
       }
     }
   });

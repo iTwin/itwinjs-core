@@ -85,6 +85,10 @@ class ParseToken {
 
   public get isString(): boolean { return !this.isOperator && typeof this.value === "string"; }
   public get isNumber(): boolean { return typeof this.value === "number"; }
+  public get isSpecialCharacter(): boolean {
+    const format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/;
+    return this.isString && this.value.toString().match(format) !== null;
+  }
 }
 
 /** A ScientificToken holds an index and string representing the exponent.
@@ -582,6 +586,12 @@ export class Parser {
     let sign: 1 | -1 = 1;
 
     let compositeUnitIndex = 0;
+
+    // if every token is a special character then return error.
+    if(tokens.every((token) => token.isSpecialCharacter)){
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+    }
+
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
       if(!tokenPair || tokenPair.length === 0){
@@ -634,6 +644,7 @@ export class Parser {
         }
       }
     }
+
     return { ok: true, value: mag };
   }
 
