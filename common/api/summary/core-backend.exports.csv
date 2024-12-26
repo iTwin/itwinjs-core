@@ -168,6 +168,7 @@ public;interface;ExportPartInfo
 public;interface;ExportPartInstanceInfo
 public;type;ExportPartLinesFunction
 public;interface;ExportPartLinesInfo
+beta;interface;ExportSchemaArgs
 beta;class;ExternalSource
 public;class;ExternalSourceAspect
 public;namespace;ExternalSourceAspect
@@ -257,6 +258,8 @@ public;class;InformationRecordModel
 public;class;InformationRecordPartition
 public;class;InformationReferenceElement
 internal;function;initializeTracing
+beta;interface;InlineGeometryPartsResult
+public;interface;InsertElementOptions
 beta;interface;InstanceChange
 public;class;IpcHandler
 public;class;IpcHost
@@ -391,6 +394,7 @@ beta;interface;SheetReferenceCreateArgs
 beta;class;SheetReferenceRefersToSheet
 public;class;SheetTemplate
 public;class;SheetViewDefinition
+beta;interface;SimplifyElementGeometryArgs
 public;class;SnapshotDb
 public;type;SnapshotDbOpenArgs
 public;class;SpatialCategory
