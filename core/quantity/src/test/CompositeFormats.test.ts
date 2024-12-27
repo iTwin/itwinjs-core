@@ -727,4 +727,56 @@ describe("Composite Formats tests:", () => {
     await format.fromJSON(unitsProvider, compositeFormat).catch(() => { });
     expect(JSON.stringify(format.toJSON().composite)).to.eql(`{"spacer":"","includeZero":true,"units":[{"name":"Units.KM"},{"name":"Units.M","label":""},{"name":"Units.CM","label":"CM"},{"name":"Units.MM","label":"'"}]}`);
   });
+
+  it("Test roundFactor with Composite Format", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "",
+            name: "Units.M",
+          },
+        ],
+      },
+      formatTraits: ["applyRounding"],
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
+
+    const testQuantityData = [
+      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, result: "0.0254" }, // round factor defaults to 0
+      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, roundFactor: 0.5, result: "0" },
+      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, roundFactor: 0.01, result: "0.03" },
+
+      { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0, result: "1" },
+      { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.5, result: "1" },
+      { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.1, result: "1" },
+      { magnitude: 1.23, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.1, result: "1.2" },
+      { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.6, result: "1.2" },
+      { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.3, result: "0.9" },
+      { magnitude: 987.65, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 100, result: "1000" },
+      { magnitude: 987.65, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 1000, result: "1000" },
+      { magnitude: 987.65, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 2000, result: "0" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      if (testEntry.roundFactor)
+        format.roundFactor = testEntry.roundFactor;
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+
+      assert.isTrue(formattedValue.length > 0);
+      assert.strictEqual(formattedValue, testEntry.result);
+    }
+  })
+
 });
