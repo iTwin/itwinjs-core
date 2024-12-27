@@ -8,7 +8,7 @@ import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatTraits } from "../core-quantity";
+import { DecimalPrecision, FormatTraits } from "../core-quantity";
 
 describe("Composite Formats tests:", () => {
   it("Bad Composite unit order", async () => {
@@ -752,30 +752,47 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, result: "0.0254" }, // round factor defaults to 0
-      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, roundFactor: 0.5, result: "0" },
-      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, roundFactor: 0.01, result: "0.03" },
-
       { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0, result: "1" },
       { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.5, result: "1" },
       { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.1, result: "1" },
       { magnitude: 1.23, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.1, result: "1.2" },
+      { magnitude: 1.23, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.05, precision: 1, result: "1.3" }, // apply rounding but precision is higher
+
       { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.6, result: "1.2" },
       { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.3, result: "0.9" },
+
+
       { magnitude: 987.65, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 100, result: "1000" },
       { magnitude: 987.65, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 1000, result: "1000" },
       { magnitude: 987.65, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 2000, result: "0" },
+
+      // negative value
+      { magnitude: -1.23, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.1, result: "-1.2" },
+      { magnitude: -1.23, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: -0.5, result: "-1" },
+      { magnitude: -1.23, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0.5, result: "-1" },
+      { magnitude: 1.23, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: -0.5, result: "1" }, // TODO: should this one give an error?
+
+      // with unit conversion
+      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, result: "0.0254" }, // round factor defaults to 0
+      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, roundFactor: 0.5, result: "0" },
+      { magnitude: 1, unit: { name: "Units.IN", label: "in", contextId: "Units.LENGTH" }, roundFactor: 0.01, result: "0.03" },
     ];
 
     for (const testEntry of testQuantityData) {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       if (testEntry.roundFactor)
         format.roundFactor = testEntry.roundFactor;
+      if (testEntry.precision)
+        format.precision = testEntry.precision;
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
 
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
+
+      // reset format
+      format.roundFactor = 0;
+      format.precision = 12 as DecimalPrecision;
     }
   })
 
