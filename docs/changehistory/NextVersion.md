@@ -24,6 +24,7 @@ Table of contents:
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-electron](#itwincore-electron)
   - [Packages dropped](#packages-dropped)
+- [Change to pull/merge method](#change-to-pullmerge)
 
 ## Selection set
 
@@ -127,3 +128,29 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | ------------------------------ | --------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
 | `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
+
+### Change to pullMerge
+
+On 5.x itwin.js switch from merge to rebase + fastforward method to merge changes. There is no change required by user and its enable by default.
+
+#### No pending/local changes
+
+* Incomming changes are applied using "fast-forward" method.
+
+#### With pending/local changes
+
+1. For each incomming change a attempt is made to apply it using *fastforward* method. If all go well we are done.
+2. if for any incomming change the fast-forward method fail we abandon that changeset and use rebase method.
+3. Rebase is executed as following
+   - We reverse all local txns.
+   - Then use fast-forward to apply all incomming changesets.
+   - We reinstate the local txns one by one. Any conflicts are reported to TxnManager.
+   - Once local changeset is rebased local txn is updated with rebased changeset.
+
+Some of the advantage of this method are
+
+1. Allow application to have a way to actully resolve any conflicts.
+2. Application after pull/merge still have ability to undo/redo its local txns.
+3. Chances of pushing a currupt changeset is next to none. As rebase process capture modified merge changeset and in no way alter data outside change tracking session.
+4. In future this method will be core to lock-less editing as it will allow application to merge changes with domain intelligence.
+

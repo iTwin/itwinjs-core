@@ -50,10 +50,11 @@ When SQLite applies a changeset and detects a conflict, it will call the conflic
 
 Now that we have a somewhat understanding of key concepts about change merging and conflicts, we can talk about how to merge conflicting changes.
 
-itwinjs supports two types of change merging:
+itwinjs supports three types of change merging:
 
-1. **Merge**: pull new changes & apply these changes on top of local changes (default)
-2. **Rebase**: pull new changes, rollback local changes, apply new changes, and then apply local changes. (new as in 5.x but not default, WIP/internal)
+1. **Merge**: pull new changes & apply these changes on top of local changes (Removed/unsupported)
+2. **Rebase**: pull new changes, rollback local changes, apply new changes, and then apply local changes. (Its default)
+3. **Fast-forward**: attempt to apply incomming changes and if it fail then try rebasing.
 
 Note: Since a briefcase as of now use locks to serialize changes between two or more users. The two methods specified does not really make any difference. The locks ensure only one user can change a given element and thus we do not expect low level sqlite conflict for any directly changed data.
 
