@@ -5976,13 +5976,13 @@ export class TxnManager {
     // @internal (undocumented)
     protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution;
     // @internal (undocumented)
-    readonly onRebaseLTxnEnd: BeEvent<(txn: TxnArgs) => void>;
-    // @internal (undocumented)
-    protected _onRebaseLTxnEnd(txn: TxnArgs): void;
-    // @internal (undocumented)
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
     // @internal (undocumented)
     protected _onRebaseTxnBegin(txn: TxnArgs): void;
+    // @internal (undocumented)
+    readonly onRebaseTxnEnd: BeEvent<(txn: TxnArgs) => void>;
+    // @internal (undocumented)
+    protected _onRebaseTxnEnd(txn: TxnArgs): void;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
