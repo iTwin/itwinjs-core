@@ -48,6 +48,11 @@ Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective
 Optional, defaults to false
 If true, the statement is expected to fail during prepare.
 
+- indexesToInclude: [1, 2, ...]
+
+Optional.
+if the rowFormat is ECSqlIndexes then there is no way to uniquely identify the columns other than the property indexes, in that case this flag is used to tag the property indexes for checking expected Results and ignore the rest, if this flag is not given while the rowFormat is ECSqlIndexes then the expected Results column will assume an incremental 0 based indexing by default. This flag serves as a mapping for the actual results while checking with the expected results.
+
 ## SQL
 
 The first sql code block found after a header indicates the sql to execute
@@ -173,6 +178,19 @@ As an alternative, column infos can be formatted as json in a code block like th
 > Note :- When dealing with binary data always enclose the Uint8Array values within `BIN()`. Follow examples written in `DataTypes.ecsql.md`
 
 Check out the Examples.ecsql.md or other files in this directory.
+
+## Checking only certain columns in expected results
+
+To check only certain columns of expected results, the steps are the folllowing:
+
+### If the rowFormat is ECSqlNames or JsNames
+
+- Simply remove the column from the expected results table or the property from the expected results json object which we donot want to check.
+
+### If the rowFormat is ECSqlIndexes
+
+- Simply remove the column from the expected results table or the property from the expected results json object which we donot want to check.
+- In the indexesToInclude property add the indexes in order in the form of an array. These indexes will be used to tag the columns of our expected results table or properties of our expected results json in the same order as they are specified.
 
 ## Test generator
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added new feature in the markdown testing framework which now allows us to check some specific columns in expected Results table as per our choice. So now we can omit columns and choose what columns our test should test the data against",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
