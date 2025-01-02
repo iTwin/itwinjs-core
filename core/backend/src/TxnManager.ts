@@ -485,8 +485,8 @@ export class TxnManager {
   }
 
   /** @internal */
-  protected _onRebaseLTxnEnd(txn: TxnArgs) {
-    this.onRebaseLTxnEnd.raiseEvent(txn);
+  protected _onRebaseTxnEnd(txn: TxnArgs) {
+    this.onRebaseTxnEnd.raiseEvent(txn);
   }
 
   /** @internal */
@@ -659,7 +659,7 @@ export class TxnManager {
   /** @internal */
   public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnArgs) => void>();
   /** @internal */
-  public readonly onRebaseLTxnEnd = new BeEvent<(txn: TxnArgs) => void>();
+  public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnArgs) => void>();
   /**
    * if handler is set and it does not return undefiend then default handler will not be called
    * @internal
