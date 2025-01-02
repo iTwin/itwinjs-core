@@ -22,7 +22,7 @@ Things get interesting when there are local changes specifically to the same dat
 |  |           | 2. PRIMARY KEY does exist but other fields values does not match       | `Data`       |
 |  |           | 3. Database constraint voliation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
 |  | `UPDATE`  | 1. PRIMARY KEY does not exist                                          | `NotFound`   |
-|  |           | 2. PRIMARY KEY does not exist but data fields values does not match    | `Data`       |
+|  |           | 2. PRIMARY KEY exist but data fields values does not match             | `Data`       |
 |  |           | 3. Database constraint voliation e.g. UNIQUE, CHECK caused by update   | `Constraint` |
 |  | -         | Forignkey voliations. Its is not for given row but for whole changeset | `ForeignKey` |
 
@@ -96,18 +96,6 @@ As one of the most important take away in rebase is application control of merge
 ## Rebase API workflow
 
 At the moment only one set of changes does not require locks and we will use that as example. Its local properties of briefcase. Currently two user can change them and it can cause conflicts.
-
-After downloading briefcase you can explicitly change merge method to rebase.
-
-```ts
-    b1.txns.changeMergeManager.setMergeMethod("Rebase");
-```
-
-you can also set it by default this will cause any new briefcase to automatcally use "Rebase" as default method.
-
-```ts
-  await IModelHost.startup({ pullMergeMethod: "Rebase" });
-```
 
 We download and open two briefcases for the same iModel, then set a property on b1 and push the changes. Note that the property being set did not exist, so it causes an INSERT operation at the database level.
 
