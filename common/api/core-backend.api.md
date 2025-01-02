@@ -689,8 +689,6 @@ export class ChangeMergeManager {
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     // (undocumented)
-    getMergeMethod(): "Rebase" | "Merge";
-    // (undocumented)
     inProgress(): boolean;
     // (undocumented)
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
@@ -698,8 +696,6 @@ export class ChangeMergeManager {
     removeConflictHandler(id: string): void;
     // (undocumented)
     resume(): void;
-    // (undocumented)
-    setMergeMethod(method: PullMergeMethod): void;
 }
 
 // @beta
@@ -3492,8 +3488,6 @@ export class IModelHost {
     // @beta
     static get profileName(): string;
     // @internal
-    static get pullMergeMethod(): PullMergeMethod;
-    // @internal
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
@@ -3539,8 +3533,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultLogTileSizeThreshold: number;
     // @internal (undocumented)
     static defaultMaxTileCacheDbSize: number;
-    // @internal (undocumented)
-    static defaultPullMergeMethod: PullMergeMethod;
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @internal (undocumented)
@@ -3549,8 +3541,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
     logTileSizeThreshold: number;
-    // @internal (undocumented)
-    pullMergeMethod: PullMergeMethod;
     // @beta (undocumented)
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
@@ -3583,8 +3573,6 @@ export interface IModelHostOptions {
     maxTileCacheDbSize?: number;
     // @beta
     profileName?: string;
-    // @internal
-    pullMergeMethod?: PullMergeMethod;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
@@ -4637,9 +4625,6 @@ export namespace PropertyStore {
 export type PullChangesArgs = ToChangesetArgs & {
     onProgress?: ProgressFunction;
 };
-
-// @internal (undocumented)
-export type PullMergeMethod = "Merge" | "Rebase";
 
 // @public
 export interface PushChangesArgs extends TokenArg {

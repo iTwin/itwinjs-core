@@ -329,7 +329,6 @@ public;type;ProgressFunction
 public;enum;ProgressStatus
 beta;namespace;PropertyStore
 public;type;PullChangesArgs
-internal;type;PullMergeMethod
 public;interface;PushChangesArgs
 beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
