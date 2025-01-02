@@ -115,7 +115,7 @@ describe("Change merge method", () => {
   });
 
   it.skip("rebase events", async () => {
-    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseLTxnEnd" }[]>();
+    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
@@ -123,8 +123,8 @@ describe("Change merge method", () => {
 
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b1.txns.onRebaseLTxnEnd.addListener((args) => {
-      events.get(b1.briefcaseId)?.push({ args, event: "onRebaseLTxnEnd" });
+    b1.txns.onRebaseTxnEnd.addListener((args) => {
+      events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
     const b2 = await ctx.openB2();
@@ -132,8 +132,8 @@ describe("Change merge method", () => {
     b2.txns.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
-    b2.txns.onRebaseLTxnEnd.addListener((args) => {
-      events.get(b2.briefcaseId)?.push({ args, event: "onRebaseLTxnEnd" });
+    b2.txns.onRebaseTxnEnd.addListener((args) => {
+      events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
     });
 
 
@@ -165,7 +165,7 @@ describe("Change merge method", () => {
     assert.equal(events.get(b2.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x40000000001]");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.type, "Data");
 
-    assert.equal(events.get(b2.briefcaseId)?.[3].event, "onRebaseLTxnEnd");
+    assert.equal(events.get(b2.briefcaseId)?.[3].event, "onRebaseTxnEnd");
     assert.equal(events.get(b2.briefcaseId)?.[3].args.id, "0x100000001");
     assert.equal(events.get(b2.briefcaseId)?.[3].args.descr, "inserted physical object [id=0x40000000002]");
     assert.equal(events.get(b2.briefcaseId)?.[3].args.type, "Data");
@@ -188,7 +188,7 @@ describe("Change merge method", () => {
     assert.equal(events.get(b1.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x30000000003]");
     assert.equal(events.get(b1.briefcaseId)?.[0].args.type, "Data");
 
-    assert.equal(events.get(b1.briefcaseId)?.[3].event, "onRebaseLTxnEnd");
+    assert.equal(events.get(b1.briefcaseId)?.[3].event, "onRebaseTxnEnd");
     assert.equal(events.get(b1.briefcaseId)?.[3].args.id, "0x100000001");
     assert.equal(events.get(b1.briefcaseId)?.[3].args.descr, "inserted physical object [id=0x30000000004]");
     assert.equal(events.get(b1.briefcaseId)?.[3].args.type, "Data");
