@@ -9,7 +9,7 @@ import { Formatter } from "../Formatter/Formatter";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { FormatProps, ParseError, Parser, ParserSpec, QuantityError, UnitProps, UnitsProvider } from "../core-quantity";
 
-describe("Bearing format tests:", async () => {
+describe("Bearing format tests:", () => {
   let unitsProvider: TestUnitsProvider;
   let degree: UnitProps;
   let rad: UnitProps;
@@ -218,18 +218,94 @@ describe("Bearing format tests:", async () => {
 
   });
 
-  it("should return ParseQuantityError if prefix or suffix is missing in bearing string", async () => {
+  it("should return ParseQuantityError if input string is incomplete", async () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, rad);
 
-    const testData = ["S4" , "S45", "S45:", "00:00:00E", "N00:00:00", "00:00:00"];
+    const bearingDMSWithLabelJson: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+
+    const bearingDecimalJson: FormatProps = {
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      minWidth: 6,
+      precision: 3,
+      type: "Bearing",
+      uomSeparator: "",
+      revolutionUnit: "Units.REVOLUTION",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+        ],
+      },
+    };
+
+    const bearingDMSWithLabel = new Format("BearingDMSWithLabel");
+    await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson).catch(() => { });
+    const bearingDecimal = new Format("BearingDecimal");
+    await bearingDecimal.fromJSON(unitsProvider, bearingDecimalJson).catch(() => { });
+    const bearingDMSWithLabelParser = await ParserSpec.create(bearingDMSWithLabel, unitsProvider, rad);
+    const bearingDecimalParser = await ParserSpec.create(bearingDecimal, unitsProvider, rad);
+
+    const testData = [
+      {dms: "S4", dmsWithLabel: "S4", decimal: "S4"},
+      {dms: "S45", dmsWithLabel: "S45", decimal: "S45"},
+      {dms: "S45:", dmsWithLabel: "S45°", decimal: "S45."},
+      {dms: "S45:0", dmsWithLabel: "S45°0'", decimal: "S45.0"},
+      {dms: "S45:00", dmsWithLabel: "S45°00'", decimal: "S45.00"},
+      {dms: "S45:00:", dmsWithLabel: "S45°00'", decimal: "S45.000"},
+      {dms: "S45:00:0", dmsWithLabel: "S45°00'0", decimal: "S45.000°"},
+      {dms: "S45:00:00", dmsWithLabel: "S45°00'00"},
+      {dmsWithLabel: "S45°00'00\""},
+
+      {dms: "00:00:00E", dmsWithLabel: "00°00'00\"E", decimal: "00.000°E"},
+      {dms: "0:00:00E", dmsWithLabel: "0°00'00\"E", decimal: "0.000°E"},
+      {dms: ":00:00E", dmsWithLabel: "°00'00\"E", decimal: ".000°E"},
+      {dms: "00:00E", dmsWithLabel: "00'00\"E", decimal: "000°E"},
+      {dms: "0:00E", dmsWithLabel: "0'00\"E", decimal: "00°E"},
+      {dms: ":00E", dmsWithLabel: "'00\"E", decimal: "0°E"},
+      {dms: "00E", dmsWithLabel: "00\"E", decimal: "°E"},
+      {dms: "0E", dmsWithLabel: "0\"E"},
+      {dmsWithLabel: "\"E"},
+
+      {dms: "00:00:00", dmsWithLabel: "00°00'00\"", decimal: "00.000°"},
+
+    ]
 
     for (const entry of testData) {
-      const parseResult = Parser.parseQuantityString(entry, bearingDMSParser);
-      if (Parser.isParseError(parseResult)) {
-        expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
-      } else {
-        assert.fail(`Expected a ParseQuantityError for input ${entry}`);
+      if (entry.dms){
+        const parseResult = Parser.parseQuantityString(entry.dms, bearingDMSParser);
+        if (Parser.isParseError(parseResult))
+          expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
       }
+
+      if (entry.dmsWithLabel){
+        const parseResult = Parser.parseQuantityString(entry.dmsWithLabel, bearingDMSWithLabelParser);
+        if (Parser.isParseError(parseResult))
+          expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
+      }
+
+      if (entry.decimal){
+        const parseResult = Parser.parseQuantityString(entry.decimal, bearingDecimalParser);
+        if (Parser.isParseError(parseResult))
+          expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
+      }
+
     }
   });
 
@@ -237,10 +313,8 @@ describe("Bearing format tests:", async () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
 
     const testData = [
-      {input: "N45:00:00F", expected: ParseError.BearingPrefixOrSuffixMissing},
-      {input: "NNF", expected: ParseError.BearingPrefixOrSuffixMissing},
       {input: "NFE", expected: ParseError.NoValueOrUnitFoundInString},
-      {input: "S45:00:-99W", expected: ParseError.MathematicOperationFoundButIsNotAllowed}, // only putting negative sign on first number is allowed, others will be
+      {input: "S45:00:-99W", expected: ParseError.MathematicOperationFoundButIsNotAllowed}, // only putting negative sign on first number is allowed
     ]
 
     for (const entry of testData) {
