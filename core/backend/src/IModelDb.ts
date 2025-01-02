@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import { join } from "path";
 import * as touch from "touch";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
@@ -86,6 +86,18 @@ export interface UpdateModelOptions extends ModelProps {
   geometryChanged?: boolean;
 }
 
+/** Options supposed to [[IModelDb.Elements.insertElement]].
+ * @public
+ */
+export interface InsertElementOptions {
+  /** If true, instead of assigning a new, unique Id to the inserted element, the inserted element will use the Id specified by the supplied [ElementProps]($common).
+   * This is chiefly useful when applying a filtering transformation - i.e., copying some elements from a source iModel to a target iModel and adding no new elements.
+   * If this option is `true` then [ElementProps.id]($common) must be a valid Id that is not already used by an element in the iModel.
+   * @beta
+   */
+  forceUseId?: boolean;
+}
+
 /** Options supplied to [[IModelDb.computeProjectExtents]].
  * @public
  */
@@ -151,6 +163,47 @@ class IModelSettings extends SettingsImpl {
     yield* super.getSettingEntries(name);
     yield* IModelHost.appWorkspace.settings.getSettingEntries(name);
   }
+}
+
+/** Arguments supplied to [[IModelDb.exportSchema]] specifying which ECSchema to write to what location on the local file system.
+ * @beta
+ */
+export interface ExportSchemaArgs {
+  /** The name of the ECSchema to export. */
+  schemaName: string;
+  /** The directory in which to place the created schema file. */
+  outputDirectory: LocalFileName;
+  /** Optionally, the name of the file to create in [[outputDirectory]].
+   * Defaults to <SchemaName>.<SchemaVersion>.ecschema.xml
+   */
+  outputFileName?: string;
+}
+
+/** Arguments supplied to [[IModelDb.simplifyElementGeometry]].
+ * @beta
+ */
+export interface SimplifyElementGeometryArgs {
+  /** The Id of the [[GeometricElement]] or [[GeometryPart]] whose geometry is to be simplified. */
+  id: Id64String;
+  /** If true, simplify by converting each [BRepEntity]($common) in the element's geometry stream to a high-resolution
+   * mesh or curve geometry.
+   */
+  convertBReps?: boolean;
+}
+
+/** The output of [[IModelDb.inlineGeometryParts]].
+ * If [[numCandidateParts]], [[numRefsInlined]], and [[numPartsDeleted ]] are all the same, the operation was fully successful.
+ * Otherwise, some errors occurred inlining and/or deleting one or more parts.
+ * A part will not be deleted unless it is first successfully inlined.
+ * @beta
+ */
+export interface InlineGeometryPartsResult {
+  /** The number of parts that were determined to have exactly one reference, making them candidates for inlining. */
+  numCandidateParts: number;
+  /** The number of part references successfully inlined. */
+  numRefsInlined: number;
+  /** The number of candidate parts that were successfully deleted after inlining. */
+  numPartsDeleted: number;
 }
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
@@ -254,11 +307,6 @@ export abstract class IModelDb extends IModel {
     assert(undefined !== super.iModelId);
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
-
-  /** @internal
-   * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelDb's public API instead.
-   */
-  public get nativeDb(): IModelJsNative.DgnDb { return this[_nativeDb]; }
 
   /** @internal*/
   public readonly [_nativeDb]: IModelJsNative.DgnDb;
@@ -1475,6 +1523,58 @@ export abstract class IModelDb extends IModel {
       justification: Range2d.fromJSON(props.justification),
     };
   }
+
+  /** Writes the contents of a single ECSchema to a file on the local file system.
+   * @beta
+   */
+  public exportSchema(args: ExportSchemaArgs): void {
+    processSchemaWriteStatus(this[_nativeDb].exportSchema(args.schemaName, args.outputDirectory, args.outputFileName));
+  }
+
+  /** Writes the contents of all ECSchemas in this iModel to files in a directory on the local file system.
+   * @beta
+   */
+  public exportSchemas(outputDirectory: LocalFileName): void {
+    processSchemaWriteStatus(this[_nativeDb].exportSchemas(outputDirectory));
+  }
+
+  /** Attempt to simplify the geometry stream of a single [[GeometricElement]] or [[GeometryPart]] as specified by `args`.
+   * @beta
+   */
+  public simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus {
+    return this[_nativeDb].simplifyElementGeometry(args);
+  }
+
+  /** Attempts to optimize all of the geometry in this iModel by identifying [[GeometryPart]]s that are referenced by exactly one
+   * element's geometry stream. Each such reference is replaced by inserting the part's geometry directly into the element's geometry stream.
+   * Then, the no-longer-used geometry part is deleted.
+   * This can improve performance when a connector inadvertently creates large numbers of parts that are each only used once.
+   * @beta
+   */
+  public inlineGeometryParts(): InlineGeometryPartsResult {
+    return this[_nativeDb].inlineGeometryPartReferences();
+  }
+
+  /** Returns a string representation of the error that most recently arose during an operation on the underlying SQLite database.
+   * If no errors have occurred, an empty string is returned.
+   * Otherwise, a string of the format `message (code)` is returned, where `message` is a human-readable diagnostic string and `code` is an integer status code.
+   * See [SQLite error codes and messages](https://www.sqlite.org/c3ref/errcode.html)
+   * @note Do not rely upon this value or its specific contents in error handling logic. It is only intended for use in debugging.
+   */
+  public getLastError(): string {
+    return this[_nativeDb].getLastError();
+  }
+}
+
+function processSchemaWriteStatus(status: SchemaWriteStatus): void {
+  switch (status) {
+    case SchemaWriteStatus.Success: return;
+    case SchemaWriteStatus.FailedToSaveXml: throw new Error("Failed to save schema XML");
+    case SchemaWriteStatus.FailedToCreateXml: throw new Error("Failed to create schema XML");
+    case SchemaWriteStatus.FailedToCreateJson: throw new Error("Failed to create schema JSON");
+    case SchemaWriteStatus.FailedToWriteFile: throw new Error("Failed to write schema file");
+    default: throw new Error("Unknown error while exporting schema");
+  }
 }
 
 /** @public */
@@ -1889,9 +1989,9 @@ export namespace IModelDb {
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
      * if you intend to continue working with it. That will ensure its values reflect the persistent state.
      */
-    public insertElement(elProps: ElementProps): Id64String {
+    public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
-        return elProps.id = this._iModel[_nativeDb].insertElement(elProps);
+        return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
         err.metadata = { elProps };
@@ -3187,8 +3287,8 @@ export class SnapshotDb extends IModelDb {
   public static readonly onOpened = new BeEvent<(_iModelDb: SnapshotDb) => void>();
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() }); // eslint-disable-line @typescript-eslint/no-deprecated
-    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite; // eslint-disable-line @typescript-eslint/no-deprecated
+    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });  
+    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;  
   }
 
   public static override findByKey(key: string): SnapshotDb {
@@ -3441,6 +3541,22 @@ export class StandaloneDb extends BriefcaseDb {
       nativeDb.closeFile();
       throw error;
     }
+  }
 
+  /** Convert an iModel stored on the local file system into a StandaloneDb, chiefly for testing purposes.
+   * The file must not be open in any application.
+   * @param iModelFileName the path to the iModel on the local file system.
+   * @beta
+   */
+  public static convertToStandalone(iModelFileName: LocalFileName): void {
+    const nativeDb = new IModelNative.platform.DgnDb();
+    nativeDb.openIModel(iModelFileName, OpenMode.ReadWrite);
+    nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
+    nativeDb.saveChanges(); // save change to iTwinId
+    nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
+    nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));
+    nativeDb.saveChanges(); // save change to briefcaseId
+    nativeDb.closeFile();
   }
 }
