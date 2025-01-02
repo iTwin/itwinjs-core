@@ -203,7 +203,7 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
           logWarning("Abbreviate blobs is not supported for statement tests");
 
         const actualResult = stmt.getRow(rowArgs);
-        CheckingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
+        checkingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
       }
       resultCount++;
     }
@@ -366,7 +366,7 @@ async function runConcurrentQueryTest(test: ECDbTestProps, dataset: TestDataset)
       expectedResult = buildBinaryData(expectedResult);
 
       const actualResult = rows[resultCount] // TODO: should we test getValue() as well?
-      CheckingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
+      checkingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
     }
     resultCount++;
   }
@@ -381,9 +381,9 @@ async function runConcurrentQueryTest(test: ECDbTestProps, dataset: TestDataset)
   }
 }
 
-function CheckingExpectedResults(rowFormat : ECDbTestRowFormat, actualResult: any, expectedResult: any,  indexesToInclude?: number[])
+function checkingExpectedResults(rowFormat : ECDbTestRowFormat, actualResult: any, expectedResult: any,  indexesToInclude?: number[])
 {
-  if(rowFormat == ECDbTestRowFormat.ECSqlIndexes && indexesToInclude)
+  if(rowFormat === ECDbTestRowFormat.ECSqlIndexes && indexesToInclude)
   {
     let i: any = 0;
     for(const key of Object.keys(expectedResult))
