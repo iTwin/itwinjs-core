@@ -476,8 +476,6 @@ export class Parser {
    */
   public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0 || (!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)))
-      return new Quantity();
 
     return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
   }
@@ -580,6 +578,12 @@ export class Parser {
    * Accumulate the given list of tokens into a single quantity value. Formatting the tokens along the way.
    */
   private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[], defaultUnitConversion?: UnitConversionProps ): QuantityParseResult {
+    if (tokens.length === 0)
+      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
+
+    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens))
+      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+
     if (
       tokens.some((token) => token.isNumber && isNaN(token.value as number)) ||
       tokens.every((token) => token.isSpecialCharacter)
@@ -898,13 +902,6 @@ export class Parser {
 
   private static parseAndProcessTokens(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0)
-      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
-
-    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)){
-      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
-    }
-
     if (Parser._log) {
       // eslint-disable-next-line no-console
       console.log(`Parse tokens`);
