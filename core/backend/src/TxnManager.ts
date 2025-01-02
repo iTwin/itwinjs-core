@@ -18,7 +18,6 @@ import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
-import { PullMergeMethod } from "./IModelHost";
 
 /** A string that identifies a Txn.
  * @public
@@ -298,12 +297,6 @@ interface IConflictHandler {
 export class ChangeMergeManager {
   private _conflictHandlers?: IConflictHandler;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
-  public setMergeMethod(method: PullMergeMethod) {
-    this._iModel[_nativeDb].pullMergeSetMethod(method)
-  }
-  public getMergeMethod() {
-    return this._iModel[_nativeDb].pullMergeGetMethod()
-  }
   public resume() {
     this._iModel[_nativeDb].pullMergeResume();
   }
@@ -550,7 +543,7 @@ export class TxnManager {
     if (args.cause === DbConflictCause.Data && !args.indirect) {
       if (args.tableName === "be_Prop") {
         if (args.getValueText(0, DbChangeStage.Old) === "ec_Db" && args.getValueText(1, DbChangeStage.Old) === "localDbInfo") {
-          return DbConflictResolution.Replace;
+          return DbConflictResolution.Skip;
         }
       }
       if (args.tableName.startsWith("ec_")) {

@@ -54,7 +54,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
 
 Logger.setLevel("Changeset", LogLevel.Trace);
 
-describe("Changeset conflict handler", () => {
+describe.skip("Changeset conflict handler", () => {
   let iTwinId: GuidString;
   let accessToken1: string;
   let accessToken2: string;

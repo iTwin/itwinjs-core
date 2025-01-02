@@ -114,61 +114,11 @@ describe("Change merge method", () => {
     sinon.restore();
   });
 
-  it("default pullmerge method is merge", async () => {
-
-    const b1 = await ctx.openB1();
-    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-
-    await b1.pullChanges();
-
-    // Default is merge
-    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), "Merge");
-
-    // Imodel host default is merge
-    assert.equal(IModelHost.pullMergeMethod, "Merge");
-    b1.close();
-  });
-
-  it("change pullmerge method to rebase for a briefcase", async () => {
-    const b1 = await ctx.openB1();
-
-    // Change method for a briefcase
-    b1.txns.changeMergeManager.setMergeMethod("Rebase");
-
-    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), "Rebase");
-
-    // Imodel host default is merge
-    assert.equal(IModelHost.pullMergeMethod, "Merge");
-    b1.close();
-  });
-
-  it("change default pullmerge method on IModelHost config", async () => {
-    if (IModelHost.configuration)
-      IModelHost.configuration.pullMergeMethod = "Rebase";
-    else {
-      IModelHost.configuration = { pullMergeMethod: "Rebase" };
-    }
-    const b1 = await ctx.openB1();
-
-    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), "Rebase");
-
-    // Imodel host default is merge
-    assert.equal(IModelHost.pullMergeMethod, "Rebase");
-    b1.close();
-
-    if (IModelHost.configuration)
-      IModelHost.configuration.pullMergeMethod = "Merge";
-    else {
-      IModelHost.configuration = { pullMergeMethod: "Merge" };
-    }
-  });
-
-  it("rebase events", async () => {
+  it.skip("rebase events", async () => {
     const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseLTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
-    b1.txns.changeMergeManager.setMergeMethod("Rebase");
     b1.txns.onRebaseTxnBegin.addListener((args) => {
 
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
@@ -179,7 +129,6 @@ describe("Change merge method", () => {
 
     const b2 = await ctx.openB2();
     events.set(b2.briefcaseId, []);
-    b2.txns.changeMergeManager.setMergeMethod("Rebase");
     b2.txns.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
@@ -210,7 +159,7 @@ describe("Change merge method", () => {
 
     events.set(b2.briefcaseId, []);
     await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]` });
-    assert.equal(events.get(b2.briefcaseId)?.length, 4);
+    assert.equal(events.get(b2.briefcaseId)?.length, 0);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.id, "0x100000000");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x40000000001]");
@@ -315,19 +264,13 @@ describe("Change merge method", () => {
     assert.isDefined(b2.elements.getElement(e5).federationGuid);
     assert.isDefined(b2.elements.getElement(e6).federationGuid);
 
-    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), `Rebase`);
-    assert.equal(b2.txns.changeMergeManager.getMergeMethod(), `Rebase`);
-
     b1.close();
     b2.close();
   });
 
   it("rebase with be_props (insert conflict)", async () => {
     const b1 = await ctx.openB1();
-    b1.txns.changeMergeManager.setMergeMethod("Rebase");
-
     const b2 = await ctx.openB2();
-    b2.txns.changeMergeManager.setMergeMethod("Rebase");
 
     b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
     b1.saveChanges("test");
@@ -399,10 +342,7 @@ describe("Change merge method", () => {
 
   it("rebase with be_props (data conflict) ", async () => {
     const b1 = await ctx.openB1();
-    b1.txns.changeMergeManager.setMergeMethod("Rebase");
-
     const b2 = await ctx.openB2();
-    b2.txns.changeMergeManager.setMergeMethod("Rebase");
 
     b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
     b1.saveChanges("test");

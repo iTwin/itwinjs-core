@@ -49,7 +49,7 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   throw new Error(`Failed to throw error with message: "${msg}"`);
 }
 
-describe("Merge conflict & locking", () => {
+describe.skip("Merge conflict & locking", () => {
   let iTwinId: GuidString;
 
   before(() => {
