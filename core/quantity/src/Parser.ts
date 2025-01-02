@@ -356,11 +356,15 @@ export class Parser {
 
     // handle case where end of input string is reached.
     if (wipToken.length > 0) {
-      if (processingNumber  && !isNaN(Number(wipToken))) {
+      if (processingNumber) {
         if (signToken.length > 0) {
           wipToken = signToken + wipToken;
         }
-        tokens.push(new ParseToken(parseFloat(wipToken)));
+        if (isNaN(Number(wipToken))) {
+          tokens.push(new ParseToken(NaN));
+        } else {
+          tokens.push(new ParseToken(parseFloat(wipToken)));
+        }
       } else {
         tokens.push(new ParseToken(wipToken));
       }
@@ -576,6 +580,13 @@ export class Parser {
    * Accumulate the given list of tokens into a single quantity value. Formatting the tokens along the way.
    */
   private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[], defaultUnitConversion?: UnitConversionProps ): QuantityParseResult {
+    if (
+      tokens.some((token) => token.isNumber && isNaN(token.value as number)) ||
+      tokens.every((token) => token.isSpecialCharacter)
+    ) {
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+    }
+
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
     defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
 
@@ -587,10 +598,6 @@ export class Parser {
 
     let compositeUnitIndex = 0;
 
-    // if every token is a special character then return error.
-    if(tokens.every((token) => token.isSpecialCharacter)){
-      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
-    }
 
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);

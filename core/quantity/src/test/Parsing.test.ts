@@ -982,11 +982,28 @@ describe("Synchronous Parsing tests:", async () => {
     for (const testEntry of testData) {
       const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
       if (Parser.isParseError(parseResult)){
-        expect(parseResult.error).to.eql(ParseError.NoValueOrUnitFoundInString);
+        expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
       } else {
         assert.fail(`Expected a ParseError with input: ${testEntry}`);
       }
     }
   });
+
+  it("should return parseError when parsing a string with invalid special characters mixed into numbers", async () => {
+    const testData = [
+      "10..",
+      "1.2,,3..4...7",
+      ",,3.."
+      ];
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
+      if (Parser.isParseError(parseResult)){
+        expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
+      } else {
+        assert.fail(`Expected a ParseError with input: ${testEntry}`);
+      }
+    }
+    });
 
 });
