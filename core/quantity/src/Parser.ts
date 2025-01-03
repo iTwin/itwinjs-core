@@ -85,6 +85,10 @@ class ParseToken {
 
   public get isString(): boolean { return !this.isOperator && typeof this.value === "string"; }
   public get isNumber(): boolean { return typeof this.value === "number"; }
+  public get isSpecialCharacter(): boolean {
+    const format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/;
+    return this.isString && this.value.toString().match(format) !== null;
+  }
 }
 
 /** A ScientificToken holds an index and string representing the exponent.
@@ -356,7 +360,11 @@ export class Parser {
         if (signToken.length > 0) {
           wipToken = signToken + wipToken;
         }
-        tokens.push(new ParseToken(parseFloat(wipToken)));
+        if (isNaN(Number(wipToken))) {
+          tokens.push(new ParseToken(NaN));
+        } else {
+          tokens.push(new ParseToken(parseFloat(wipToken)));
+        }
       } else {
         tokens.push(new ParseToken(wipToken));
       }
@@ -468,8 +476,6 @@ export class Parser {
    */
   public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0 || (!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)))
-      return new Quantity();
 
     return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
   }
@@ -572,6 +578,19 @@ export class Parser {
    * Accumulate the given list of tokens into a single quantity value. Formatting the tokens along the way.
    */
   private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[], defaultUnitConversion?: UnitConversionProps ): QuantityParseResult {
+    if (tokens.length === 0)
+      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
+
+    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens))
+      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+
+    if (
+      tokens.some((token) => token.isNumber && isNaN(token.value as number)) ||
+      tokens.every((token) => token.isSpecialCharacter)
+    ) {
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+    }
+
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
     defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
 
@@ -582,6 +601,8 @@ export class Parser {
     let sign: 1 | -1 = 1;
 
     let compositeUnitIndex = 0;
+
+
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
       if(!tokenPair || tokenPair.length === 0){
@@ -634,6 +655,7 @@ export class Parser {
         }
       }
     }
+
     return { ok: true, value: mag };
   }
 
@@ -880,13 +902,6 @@ export class Parser {
 
   private static parseAndProcessTokens(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0)
-      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
-
-    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)){
-      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
-    }
-
     if (Parser._log) {
       // eslint-disable-next-line no-console
       console.log(`Parse tokens`);
