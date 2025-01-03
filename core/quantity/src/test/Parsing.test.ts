@@ -993,11 +993,28 @@ describe("Synchronous Parsing tests:", async () => {
     const testData = [
       "10..",
       "1.2,,3..4...7",
-      ",,3.."
-      ];
+      ",,3..",
+      "12..34",
+      "1.2.3",
+      "..10",
+      "1...2",
+      "1..",
+      "1..,",
+      "10,20,30..40",
+      "1..e2",
+      "1e..2",
+      "1e2..",
+      "1...2e3",
+      "1e2..,3",
+      // "1,,2", // the parsing skips , because it thinks its a thousands separator, returns 12
+      // "1.,2", // returns 1.2
+    ];
+
+    const unitMeter = await unitsProvider.findUnitByName("Units.FT");
+    const parserSpecExp = await ParserSpec.create(format, unitsProvider, unitMeter, unitsProvider);
 
     for (const testEntry of testData) {
-      const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
+      const parseResult = Parser.parseQuantityString(testEntry, parserSpecExp);
       if (Parser.isParseError(parseResult)){
         expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
       } else {
