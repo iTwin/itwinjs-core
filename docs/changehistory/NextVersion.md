@@ -139,7 +139,6 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 #### With pending/local changes
 
-
 The merging process in this method follows these steps:
 
 1. Initially, each incoming change is attempted to be applied using the *fastforward* method. If successful, the process is complete.
