@@ -488,7 +488,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 4,
     }, {
       description: "b2 push",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "b1 push",
@@ -828,7 +828,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "Upgraded profile",
-      changesType: 0,
+      changesType: 65,
       briefcaseId: 2,
     }, {
       description: "Upgraded domain schemas",
@@ -1172,7 +1172,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "Upgraded profile",
-      changesType: 0,
+      changesType: 65,
       briefcaseId: 2,
     }, {
       description: "Upgraded domain schemas",
