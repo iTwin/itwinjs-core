@@ -114,7 +114,11 @@ describe("Change merge method", () => {
     sinon.restore();
   });
 
-  it.skip("rebase events", async () => {
+  it("rebase events (noFastForward:true)", async () => {
+    /**
+     * Fastforward will not trigger rebase events as rebase was not required to merge changes.
+     * In this test we will test rebase events when noFastForward is set to true. Which mean rebase is required to merge changes.
+     */
     const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
@@ -158,8 +162,9 @@ describe("Change merge method", () => {
     b2.saveChanges(`inserted physical object [id=${e4}]`);
 
     events.set(b2.briefcaseId, []);
-    await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]` });
-    assert.equal(events.get(b2.briefcaseId)?.length, 0);
+    // fast-forward
+    await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]`, noFastForward: true });
+    assert.equal(events.get(b2.briefcaseId)?.length, 4);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.id, "0x100000000");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x40000000001]");
@@ -228,7 +233,7 @@ describe("Change merge method", () => {
     await updatePhysicalObject(b2, e6, Guid.createValue());
     b2.saveChanges(`update physical object [id=${e6}]`);
     events.set(b2.briefcaseId, []);
-    await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]` });
+    await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]`, noFastForward: true });
     assert.equal(events.get(b2.briefcaseId)?.length, 8);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.id, "0x100000000");
@@ -267,7 +272,124 @@ describe("Change merge method", () => {
     b1.close();
     b2.close();
   });
+  it("rebase events (noFastForward:false/default)", async () => {
+    /**
+     * Fastforward will not trigger rebase events as rebase was not required to merge changes.
+     * In this test we will test rebase events when noFastForward is set to false. Which mean rebase is not required to merge changes.
+     */
+    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
+    const b1 = await ctx.openB1();
+    events.set(b1.briefcaseId, []);
+    b1.txns.onRebaseTxnBegin.addListener((args) => {
+
+      events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
+    });
+    b1.txns.onRebaseTxnEnd.addListener((args) => {
+      events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
+    });
+
+    const b2 = await ctx.openB2();
+    events.set(b2.briefcaseId, []);
+    b2.txns.onRebaseTxnBegin.addListener((args) => {
+      events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
+    });
+    b2.txns.onRebaseTxnEnd.addListener((args) => {
+      events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnEnd" });
+    });
+
+
+    const e1 = await insertPhysicalObject(b1);
+    b1.saveChanges(`inserted physical object [id=${e1}]`);
+    events.set(b1.briefcaseId, []);
+    await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
+    assert.isDefined(b1.elements.getElement(e1));
+    assert.equal(events.get(b1.briefcaseId)?.length, 0);
+
+    const e2 = await insertPhysicalObject(b1);
+    b1.saveChanges();
+    events.set(b1.briefcaseId, []);
+    await b1.pushChanges({ description: `inserted physical object [id=${e2}]` });
+    assert.equal(events.get(b1.briefcaseId)?.length, 0);
+
+    assert.isDefined(b1.elements.getElement(e2));
+
+    const e3 = await insertPhysicalObject(b2);
+    b2.saveChanges(`inserted physical object [id=${e3}]`);
+    const e4 = await insertPhysicalObject(b2);
+    b2.saveChanges(`inserted physical object [id=${e4}]`);
+
+    events.set(b2.briefcaseId, []);
+    // fast-forward
+    await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]` });
+    assert.equal(events.get(b2.briefcaseId)?.length, 0);
+
+    assert.isDefined(b2.elements.getElement(e1));
+    assert.isDefined(b2.elements.getElement(e2));
+    assert.isDefined(b2.elements.getElement(e3));
+    assert.isDefined(b2.elements.getElement(e4));
+
+    const e5 = await insertPhysicalObject(b1);
+    b1.saveChanges(`inserted physical object [id=${e5}]`);
+    const e6 = await insertPhysicalObject(b1);
+    b1.saveChanges(`inserted physical object [id=${e6}]`);
+    events.set(b1.briefcaseId, []);
+    await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
+    assert.equal(events.get(b1.briefcaseId)?.length, 0);
+
+    assert.isDefined(b1.elements.getElement(e1));
+    assert.isDefined(b1.elements.getElement(e2));
+    assert.isDefined(b1.elements.getElement(e3)); // Not found
+    assert.isDefined(b1.elements.getElement(e4));
+    assert.isDefined(b1.elements.getElement(e5));
+    assert.isDefined(b1.elements.getElement(e6));
+
+    events.set(b2.briefcaseId, []);
+    await b2.pullChanges();
+    assert.equal(events.get(b2.briefcaseId)?.length, 0);
+    assert.isDefined(b2.elements.getElement(e1));
+    assert.isDefined(b2.elements.getElement(e2));
+    assert.isDefined(b2.elements.getElement(e3));
+    assert.isDefined(b2.elements.getElement(e4));
+    assert.isDefined(b2.elements.getElement(e5));
+    assert.isDefined(b2.elements.getElement(e6));
+
+    await updatePhysicalObject(b1, e3, Guid.createValue());
+    b1.saveChanges(`update physical object [id=${e3}]`);
+    await updatePhysicalObject(b1, e4, Guid.createValue());
+    b1.saveChanges(`update physical object [id=${e4}]`);
+    events.set(b1.briefcaseId, []);
+    await b1.pushChanges({ description: `update physical object [id=${e3},${e4}]` });
+    assert.equal(events.get(b1.briefcaseId)?.length, 0);
+
+    await updatePhysicalObject(b2, e1, Guid.createValue());
+    b2.saveChanges(`update physical object [id=${e1}]`);
+    await updatePhysicalObject(b2, e2, Guid.createValue());
+    b2.saveChanges(`update physical object [id=${e2}]`);
+    await updatePhysicalObject(b2, e5, Guid.createValue());
+    b2.saveChanges(`update physical object [id=${e5}]`);
+    await updatePhysicalObject(b2, e6, Guid.createValue());
+    b2.saveChanges(`update physical object [id=${e6}]`);
+    events.set(b2.briefcaseId, []);
+    await b2.pushChanges({ description: `update physical object [id=${e1},${e2},${e5}]` });
+
+    assert.isDefined(b1.elements.getElement(e1).federationGuid);
+    assert.isDefined(b1.elements.getElement(e2).federationGuid);
+    assert.isDefined(b1.elements.getElement(e3).federationGuid);
+    assert.isDefined(b1.elements.getElement(e4).federationGuid);
+    assert.isDefined(b1.elements.getElement(e5).federationGuid);
+    assert.isDefined(b1.elements.getElement(e6).federationGuid);
+
+    assert.isDefined(b2.elements.getElement(e1).federationGuid);
+    assert.isDefined(b2.elements.getElement(e2).federationGuid);
+    assert.isDefined(b2.elements.getElement(e3).federationGuid);
+    assert.isDefined(b2.elements.getElement(e4).federationGuid);
+    assert.isDefined(b2.elements.getElement(e5).federationGuid);
+    assert.isDefined(b2.elements.getElement(e6).federationGuid);
+
+    b1.close();
+    b2.close();
+  });
   it("rebase with be_props (insert conflict)", async () => {
     const b1 = await ctx.openB1();
     const b2 = await ctx.openB2();

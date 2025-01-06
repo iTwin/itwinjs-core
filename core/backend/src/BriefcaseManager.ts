@@ -55,6 +55,11 @@ export interface PushChangesArgs extends TokenArg {
   pushRetryCount?: number;
   /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
   pushRetryDelay?: BeDuration;
+  /**
+   *  For testing purpose
+   * @internal
+   */
+  noFastForward?: true;
 }
 
 /**
@@ -74,6 +79,11 @@ export type PullChangesArgs = ToChangesetArgs & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
+  /**
+   *  For testing purpose
+   * @internal
+   */
+  noFastForward?: true;
 };
 
 /** Arguments for [[BriefcaseManager.revertTimelineChanges]]
@@ -528,7 +538,7 @@ export class BriefcaseManager {
 
 
     let appliedChangesets = -1;
-    if (db[_nativeDb].hasPendingTxns() && !reverse) {
+    if (db[_nativeDb].hasPendingTxns() && !reverse && !arg.noFastForward) {
       // attempt to perform fast forward
       for (const changeset of changesets) {
         // do not waste time on schema changesets. They cannot be fastforwarded.
@@ -541,6 +551,7 @@ export class BriefcaseManager {
           await this.applySingleChangeset(db, changeset, true);
           Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
           appliedChangesets++;
+          db.saveChanges();
         } catch {
           db.abandonChanges();
           break;
