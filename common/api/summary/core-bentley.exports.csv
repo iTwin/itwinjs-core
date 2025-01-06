@@ -121,7 +121,7 @@ public;function;shallowClone
 public;class;SortedArray
 public;enum;SpanKind
 deprecated;enum;SpanKind
-internal;const;staticLoggerMetadata
+beta;interface;StaticLoggerMetaData
 alpha;class;StatusCategory
 alpha;type;StatusCategoryHandler
 public;class;StopWatch
