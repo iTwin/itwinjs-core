@@ -11,7 +11,7 @@
 
 * @iTwin/itwinjs-core-admins
 
-.github/workflows                                 @aruniverse @calebmshafer @wgoehrig @ColinKerr @ben-polinsky @DanRod1999
+.github/workflows                                 @aruniverse @ben-polinsky @DanRod1999
 .github/CODEOWNERS                                @iTwin/itwinjs-core-admins
 
 .gitattributes                                    @iTwin/itwinjs-core-admins
