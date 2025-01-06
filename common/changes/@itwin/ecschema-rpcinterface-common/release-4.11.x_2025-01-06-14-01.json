@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/ecschema-rpcinterface-common"
+    }
+  ],
+  "packageName": "@itwin/ecschema-rpcinterface-common",
+  "email": "38288322+imodeljs-admin@users.noreply.github.com"
+}
