@@ -51,7 +51,7 @@ jobs:
     workspace:
       clean: all
     pool:
-      name: iModelTechMacArm
+      name: iModelTechCI
       demands: Agent.Name -equals BuildMinion03A
     steps:
       - checkout: ${{ parameters.checkout }}
