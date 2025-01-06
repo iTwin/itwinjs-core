@@ -51,8 +51,7 @@ jobs:
     workspace:
       clean: all
     pool:
-      name: iModelTechMacArm
-      demands: Agent.OS -equals Darwin
+      vmImage: macOS-latest
     steps:
       - checkout: ${{ parameters.checkout }}
         path: itwinjs-core
@@ -66,6 +65,10 @@ jobs:
           git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: Setup git config
+
+      - template: templates/auth-azure-artifacts.yaml@build-pipeline-scripts
+        parameters:
+          artifactsToken: artifactsToken
 
       # Only install, audit, and build the docs if not using the core artifact
       - script: node common/scripts/install-run-rush.js install
@@ -95,7 +98,7 @@ jobs:
       - task: DownloadPipelineArtifact@2
         displayName: Download Core Generated Docs Artifact
         inputs:
-          source: 'specific'
+          source: "specific"
           project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
           pipeline: 7436 # iTwin.js Docs (docs-ci.yaml)
           artifact: Core Generated Docs
