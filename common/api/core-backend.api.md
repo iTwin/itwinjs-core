@@ -4647,6 +4647,7 @@ export namespace PropertyStore {
 // @public
 export type PullChangesArgs = ToChangesetArgs & {
     onProgress?: ProgressFunction;
+    noFastForward?: true;
 };
 
 // @public
@@ -4654,6 +4655,8 @@ export interface PushChangesArgs extends TokenArg {
     description: string;
     mergeRetryCount?: number;
     mergeRetryDelay?: BeDuration;
+    // @internal
+    noFastForward?: true;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
