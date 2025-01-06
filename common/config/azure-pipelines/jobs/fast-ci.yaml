@@ -113,17 +113,18 @@ jobs:
         "Windows_Node_22":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_22":
-          platform: Linux
-          name: $(linux_pool)
-        "MacOS_Node_22":
-          platform: Darwin
-          name: $(mac_pool)
+        # "Linux_Node_22":
+        #   platform: Linux
+        #   name: $(linux_pool)
+        # "MacOS_Node_22":
+        #   platform: Darwin
+        #   name: $(mac_pool)
 
     pool:
       name: $(name)
       demands:
         - Agent.OS -equals $(platform)
+        - Agent.Name -equals BuildMinion03A
 
     timeoutInMinutes: 60
 
