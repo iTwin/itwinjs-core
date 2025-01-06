@@ -18,7 +18,7 @@ trigger:
 
 variables:
   - group: Rush Build Cache SAS Token
-  - group: azure-artifacts
+  - group: Caleb - Azure Artifacts - Read-only
 
 pr:
   drafts: false
