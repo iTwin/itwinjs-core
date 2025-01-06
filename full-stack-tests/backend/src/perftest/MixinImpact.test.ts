@@ -13,7 +13,7 @@ import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
-describe("SchemaDesignPerf Impact of Mixins", () => {
+describe("SchemaDesignPerf1 Impact of Mixins", () => {
   console.log("*** here 1");
   const outDir: string = path.join(KnownTestLocations.outputDir, "MixinPerformance");
   let hierarchyCounts: number[];
@@ -138,10 +138,10 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       const seedName = path.join(outDir, `mixin_${hCount}.bim`);
       console.log("-> before if (!IModelJsFs.existsSync(seedName))");
       console.log(String(seedName))
+      console.log("-> before IModelHost.startup");
+      console.log(String(path.join(__dirname, ".cache")));
+      await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
       if (!IModelJsFs.existsSync(seedName)) {
-        console.log("-> before IModelHost.startup");
-        console.log(String(path.join(__dirname, ".cache")));
-        await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
         console.log("-> after IModelHost.startup");
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         console.log("-> after const seedIModel = SnapshotDb.createEmpty");
@@ -184,24 +184,25 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), ((2 * seedCount * hCount) + seedCount));
         seedIModel.close();
-        await IModelHost.shutdown();
+        // await IModelHost.shutdown();
         console.log("-> after await IModelHost.shutdown();");
       }
     }
     console.log('-> "Before" section finished');
   });
-  after(() => {
+  after(async () => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
-  });
-
-  beforeEach(async () => {
-    await IModelHost.startup();
-  });
-
-  afterEach(async () => {
     await IModelHost.shutdown();
   });
+
+  // beforeEach(async () => {
+  //   await IModelHost.startup();
+  // });
+
+  // afterEach(async () => {
+  //   await IModelHost.shutdown();
+  // });
 
   it("Read", async () => {
     for (const hCount of hierarchyCounts) {
