@@ -780,7 +780,7 @@ export class Parser {
 
   private static parseAzimuthFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
-    if(this.isParseError(parsedResult) || !parsedResult.ok) {
+    if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
 
