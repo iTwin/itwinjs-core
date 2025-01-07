@@ -1952,7 +1952,7 @@ export abstract class GltfReader {
       this._dracoMeshes.set(ext, mesh);
   }
 
-  private resolveUrl(uri: string): string | undefined {
+  protected resolveUrl(uri: string): string | undefined {
     try {
       const resolved = new URL(uri, this._baseUrl);
       resolved.search = this._baseUrl?.search ?? "";
@@ -2014,7 +2014,9 @@ export abstract class GltfReader {
       return;
     }
 
+    console.log(image);
     const url = undefined !== image.uri ? this.resolveUrl(image.uri) : undefined;
+    console.log(url);
     if (undefined !== url)
       image.resolvedImage = await tryImageElementFromUrl(url);
   }
@@ -2041,13 +2043,17 @@ export abstract class GltfReader {
   }
 
   private resolveTexture(textureId: string, isTransparent: boolean): RenderTexture | false {
+    console.log("resolveTexture", textureId, isTransparent);
     const texture = this._textures[textureId];
+    console.log(texture);
     if (!texture || undefined === texture.source)
       return false;
 
     const image = this._images[texture.source]?.resolvedImage;
-    if (!image)
+    if (!image) {
+      console.log("resolveTexture: no image");
       return false;
+    }
 
     const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
@@ -2059,7 +2065,7 @@ export abstract class GltfReader {
         transparency: isTransparent ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
-
+    console.log("renderTexture: ", renderTexture);
     return renderTexture ?? false;
   }
 

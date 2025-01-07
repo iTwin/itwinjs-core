@@ -31,6 +31,7 @@ import {
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { SpatialClassifiersState } from "../SpatialClassifiersState";
+import { RealityDataSourceTilesetUrlImpl } from "../RealityDataSourceTilesetUrlImpl";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -714,7 +715,7 @@ export namespace RealityModelTileTree {
       const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel), opts);
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
       //The full tileset url is needed so that it includes the url's search parameters if any are present
-      const baseUrl = RealityDataSource.getTilesetUrlFromTilesetUrlImpl(rdSource);
+      const baseUrl = rdSource instanceof RealityDataSourceTilesetUrlImpl ? rdSource.getTilesetUrl() : undefined;
       const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef, baseUrl);
       return new RealityModelTileTree(params);
     }

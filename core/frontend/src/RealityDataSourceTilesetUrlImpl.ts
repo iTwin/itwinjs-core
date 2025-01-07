@@ -66,7 +66,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return undefined;
   }
 
-  public get tilesetUrl(): string | undefined {
+  public getTilesetUrl(): string | undefined {
     return this._tilesetUrl;
   }
   // This is to set the root url from the provided root document path.

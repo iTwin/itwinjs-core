@@ -249,8 +249,12 @@ export abstract class RealityTileLoader {
 */
 export function createReaderPropsWithBaseUrl(streamBuffer: ByteStream, yAxisUp: boolean, baseUrl?: string): GltfReaderProps | undefined {
   let url: URL | undefined;
-  try {
-    url = new URL(baseUrl);
-  } catch (_) { }
-  
+  if (baseUrl) {
+    try {
+      url = new URL(baseUrl);
+    } catch {
+      url = undefined;
+    }
+  }
   return GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp, url);
+}

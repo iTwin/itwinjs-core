@@ -117,6 +117,11 @@ export interface RealityDataSource {
    * @alpha
    */
   getPublisherProductInfo(): Promise<PublisherProductInfo | undefined>;
+  /** Optional, gets the tileset url associated with the reality data source
+   * @returns tileset url
+   * @internal
+   */
+  getTilesetUrl?(): string | undefined;
 }
 /** Utility functions for RealityDataSource
  * @beta
@@ -208,13 +213,6 @@ export namespace RealityDataSource {
 
     return provider.createRealityDataSource(key, iTwinId);
   }
-
-  /** Returns the source's tileset url if the source is an instance of RealityDataSourceTilesetUrlImpl.
-   * @internal
-   */
-  export function getTilesetUrlFromTilesetUrlImpl(rdSource: RealityDataSource): string | undefined {
-    return (rdSource instanceof RealityDataSourceTilesetUrlImpl) ? rdSource.tilesetUrl : undefined;
-  };
 }
 
 /** A named supplier of [RealityDataSource]]s.
