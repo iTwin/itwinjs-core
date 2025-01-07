@@ -65,11 +65,9 @@ The above commands iterate and perform their action against each package in the 
 
 > If executing scripts from `package.json` files in any of the subdirectories, we recommend using [`rushx`](https://rushjs.io/pages/commands/rushx/) over `npm`.
 
-If using the command line on Windows, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
-Only use `rushchange.bat` if none of the changes require a changelog entry.
 > The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 6 through 11.
 
-Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.
+Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected. Changelogs are user facing, so less verbosity is encouraged, and should avoid unnecessary details.
 
 </details>
 
@@ -173,7 +171,7 @@ Thank you for taking the time to contribute to open source and making great proj
 
 ### Rush commands take too long, is there a way to speed up my contribution workflow?
 
-If your source code change only impacts the subdirectory you are working on, you can use a package manager to run local commands, without affecting other packages.
+If your source code change only impacts the subdirectory you are working on, you can use `rushx` to run local commands, without affecting other packages.
 
 Eg. I add a new method within `core/frontend`, also adding a relevant unit test in that folder's `src/test`. I can navigate to the root of that subdirectory, and run `rushx build`, followed by `rushx test` or `rushx cover`.
 
