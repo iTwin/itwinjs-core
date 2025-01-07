@@ -8,7 +8,7 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -17,7 +17,7 @@ import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
-import { RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
+import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
 
 /** A string that identifies a Txn.
  * @public
@@ -490,59 +490,26 @@ export class TxnManager {
   }
 
   /** @internal */
-  protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution {
-    const interpretConflictCause = (cause: DbConflictCause) => {
-      switch (cause) {
-        case DbConflictCause.Data:
-          return "data";
-        case DbConflictCause.NotFound:
-          return "notfound";
-        case DbConflictCause.Conflict:
-          return "conflict";
-        case DbConflictCause.Constraint:
-          return "constraint";
-        case DbConflictCause.ForeignKey:
-          return "foreignkey";
-      }
-    };
-
-    const primaryKeyValues = () => {
-      const pkv = [];
-
-      const stage = args.opcode === DbOpcode.Insert ? DbChangeStage.New : DbChangeStage.Old;
-      for (const pk of args.getPrimaryKeyColumns()) {
-        const type = args.getValueType(pk, stage);
-        if (type === DbValueType.IntegerVal)
-          pkv.push(args.getValueId(pk, stage));
-        else if (type === DbValueType.TextVal)
-          pkv.push(args.getValueText(pk, stage));
-        else if (type === DbValueType.FloatVal)
-          pkv.push(args.getValueDouble(pk, stage));
-        else if (type === DbValueType.BlobVal)
-          pkv.push(args.getValueBinary(pk, stage));
-        else
-          pkv.push(null);
-      }
-      return pkv;
-    };
+  protected _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
+    const args = new RebaseChangesetConflictArgs(internalArg, this._iModel);
 
     const getChangeMetaData = () => {
       return {
         parent: this._iModel.changeset,
         txn: args.txn,
         table: args.tableName,
-        op: args.opcode === DbOpcode.Delete ? "delete" : args.opcode === DbOpcode.Insert ? "insert" : "update",
-        cause: interpretConflictCause(args.cause),
+        op: args.opcode,
+        cause: args.cause,
         indirect: args.indirect,
-        primarykey: primaryKeyValues(),
-        fkConflictCount: args.cause === DbConflictCause.ForeignKey ? args.getForeignKeyConflicts() : 0,
+        primarykey: args.getPrimaryKeyValues(),
+        fkConflictCount: args.cause === "ForeignKey" ? args.getForeignKeyConflicts() : undefined,
       };
     }
 
     // Default conflict resolution for which custom handler is never called.
-    if (args.cause === DbConflictCause.Data && !args.indirect) {
+    if (args.cause === "Data" && !args.indirect) {
       if (args.tableName === "be_Prop") {
-        if (args.getValueText(0, DbChangeStage.Old) === "ec_Db" && args.getValueText(1, DbChangeStage.Old) === "localDbInfo") {
+        if (args.getValueText(0, "Old") === "ec_Db" && args.getValueText(1, "Old") === "localDbInfo") {
           return DbConflictResolution.Skip;
         }
       }
@@ -551,7 +518,7 @@ export class TxnManager {
       }
     }
 
-    if (args.cause === DbConflictCause.Conflict) {
+    if (args.cause === "Conflict") {
       if (args.tableName.startsWith("ec_")) {
         return DbConflictResolution.Skip;
       }
@@ -568,31 +535,31 @@ export class TxnManager {
       return DbConflictResolution.Abort;
     }
 
-    if (args.cause === DbConflictCause.Data && !args.indirect) {
+    if (args.cause === "Data" && !args.indirect) {
       Logger.logInfo(BackendLoggerCategory.IModelDb, "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered. Local change will replace existing.", getChangeMetaData());
       return DbConflictResolution.Replace;
     }
 
-    if (args.cause === DbConflictCause.Conflict) {
+    if (args.cause === "Conflict") {
       const msg = "PRIMARY KEY insert conflict. Aborting rebase.";
       Logger.logError(BackendLoggerCategory.IModelDb, msg, getChangeMetaData());
       args.setLastError(msg);
       return DbConflictResolution.Abort;
     }
 
-    if (args.cause === DbConflictCause.ForeignKey) {
+    if (args.cause === "ForeignKey") {
       const msg = `Foreign key conflicts in ChangeSet. Aborting rebase.`;
       Logger.logInfo(BackendLoggerCategory.IModelDb, msg, getChangeMetaData());
       args.setLastError(msg);
       return DbConflictResolution.Abort;
     }
 
-    if (args.cause === DbConflictCause.NotFound) {
+    if (args.cause === "NotFound") {
       Logger.logInfo(BackendLoggerCategory.IModelDb, "PRIMARY KEY not found. Skipping local change.", getChangeMetaData());
       return DbConflictResolution.Skip;
     }
 
-    if (args.cause === DbConflictCause.Constraint) {
+    if (args.cause === "Constraint") {
       Logger.logInfo(BackendLoggerCategory.IModelDb, "Constraint voilation detected. Generally caused by db constraints like UNIQUE index. Skipping local change.", getChangeMetaData());
       return DbConflictResolution.Skip;
     }
@@ -664,7 +631,7 @@ export class TxnManager {
    * if handler is set and it does not return undefiend then default handler will not be called
    * @internal
    * */
-  public appCustomConflictHandler?: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+  public appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
 
   /**
    * Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, Guid } from "@itwin/core-bentley";
+import { DbConflictResolution, Guid } from "@itwin/core-bentley";
 import {
   IModel,
   SubCategoryAppearance
@@ -415,14 +415,14 @@ describe("Change merge method", () => {
     // set handler to resolve conflict
     b2.txns.changeMergeManager.addConflictHandler({
       id: "my", handler: (args: RebaseChangesetConflictArgs) => {
-        if (args.cause === DbConflictCause.Conflict) {
+        if (args.cause === "Conflict") {
           if (args.tableName === "be_Prop") {
-            if (args.opcode === DbOpcode.Insert) {
+            if (args.opcode === "Inserted") {
               chai.expect(args.getColumnNames()).to.be.deep.equal(["Namespace", "Name", "Id", "SubId", "TxnMode", "StrData", "RawSize", "Data"]);
               chai.expect(args.txn.id).to.be.equal("0x100000000");
               chai.expect(args.txn.descr).to.be.equal("test2");
               chai.expect(args.txn.type).to.be.equal("Data");
-              const localChangedVal = args.getValueText(5, DbChangeStage.New);
+              const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
               b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
               return DbConflictResolution.Skip; // skip incomming value and continue
@@ -481,10 +481,10 @@ describe("Change merge method", () => {
     // set handler to resolve conflict
     b2.txns.changeMergeManager.addConflictHandler({
       id: "my", handler: (args: RebaseChangesetConflictArgs) => {
-        if (args.cause === DbConflictCause.Data) {
+        if (args.cause === "Data") {
           if (args.tableName === "be_Prop") {
-            if (args.opcode === DbOpcode.Update) {
-              const localChangedVal = args.getValueText(5, DbChangeStage.New);
+            if (args.opcode === "Updated") {
+              const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
               b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
               return DbConflictResolution.Skip; // skip incomming value and continue

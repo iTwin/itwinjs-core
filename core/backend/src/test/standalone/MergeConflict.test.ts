@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbChangeStage, DbConflictCause, DbOpcode, GuidString, Id64String } from "@itwin/core-bentley";
+import { DbConflictCause, DbOpcode, GuidString, Id64String } from "@itwin/core-bentley";
 import {
   ElementAspectProps,
   IModel,
@@ -20,9 +20,10 @@ import {
   DictionaryModel,
   ExternalSourceAspect,
   SpatialCategory,
+  SqliteChangeOp,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
+import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
@@ -146,9 +147,9 @@ describe("Merge conflict & locking", () => {
     b2.saveChanges();
 
     const conflicts: {
-      cause: DbConflictCause,
+      cause: SqliteConflictCause,
       tableName: string,
-      opcode: DbOpcode,
+      opcode?: SqliteChangeOp,
       id: Id64String,
     }[] = [];
 
@@ -159,7 +160,7 @@ describe("Merge conflict & locking", () => {
           cause: arg.cause,
           tableName: arg.tableName,
           opcode: arg.opcode,
-          id: arg.getValueId(0, arg.opcode === DbOpcode.Insert ? DbChangeStage.New : DbChangeStage.Old) as Id64String,
+          id: arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String,
         });
         return undefined;
       }
@@ -172,21 +173,21 @@ describe("Merge conflict & locking", () => {
     chai.expect(
       [
         {
-          "cause": DbConflictCause.Data,
+          "cause": "Data",
           "tableName": "bis_Element",
-          "opcode": DbOpcode.Update,
+          "opcode": "Updated",
           "id": "0x20000000004"
         },
         {
-          "cause": DbConflictCause.Data,
+          "cause": "Data",
           "tableName": "bis_ElementMultiAspect",
-          "opcode": DbOpcode.Update,
+          "opcode": "Updated",
           "id": "0x20000000001"
         },
         {
-          "cause": DbConflictCause.Data,
+          "cause": "Data",
           "tableName": "bis_Model",
-          "opcode": DbOpcode.Update,
+          "opcode": "Updated",
           "id": "0x20000000001"
         }
       ]).to.be.deep.equals(conflicts);
@@ -265,9 +266,9 @@ describe("Merge conflict & locking", () => {
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
 
     const conflicts: {
-      cause: DbConflictCause,
+      cause: SqliteConflictCause,
       tableName: string,
-      opcode: DbOpcode,
+      opcode?: SqliteChangeOp,
       id: Id64String | undefined,
     }[] = [];
 
@@ -275,8 +276,8 @@ describe("Merge conflict & locking", () => {
     b2.txns.changeMergeManager.addConflictHandler({
       id: "custom", handler: (arg: RebaseChangesetConflictArgs) => {
         let id;
-        if (arg.cause !== DbConflictCause.ForeignKey) {
-          id = arg.getValueId(0, arg.opcode === DbOpcode.Insert ? DbChangeStage.New : DbChangeStage.Old) as Id64String;
+        if (arg.cause !== "ForeignKey") {
+          id = arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String;
         }
         conflicts.push({
           cause: arg.cause,
@@ -296,30 +297,30 @@ describe("Merge conflict & locking", () => {
     expect(conflicts.length).to.be.equals(3);
     expect(conflicts).to.deep.equal([
       {
-        cause: DbConflictCause.NotFound,
+        cause: "NotFound",
         tableName: "bis_Element",
-        opcode: DbOpcode.Update,
+        opcode: "Updated",
         id: "0x20000000004"
       },
       {
-        cause: DbConflictCause.Data,
+        cause: "Data",
         tableName: "bis_Model",
-        opcode: DbOpcode.Update,
+        opcode: "Updated",
         id: "0x20000000001"
       },
       {
-        cause: DbConflictCause.ForeignKey,
+        cause: "ForeignKey",
         tableName: "",
-        opcode: 0,
+        opcode: undefined,
         id: undefined
       }
     ]);
 
     b2.txns.changeMergeManager.addConflictHandler({
       id: "delete_aspect_when_element_is_deleted", handler: (arg: RebaseChangesetConflictArgs) => {
-        if (arg.cause === DbConflictCause.NotFound && arg.tableName === "bis_Element") {
+        if (arg.cause === "NotFound" && arg.tableName === "bis_Element") {
           // if element does not exist any more let delete the aspects as well.
-          const elId = arg.getValueId(0, arg.opcode === DbOpcode.Insert ? DbChangeStage.New : DbChangeStage.Old) as Id64String;
+          const elId = arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String;
           b2.elements.getAspects(elId).forEach((aspect) => {
             b2.elements.deleteAspect(aspect.id);
           });
