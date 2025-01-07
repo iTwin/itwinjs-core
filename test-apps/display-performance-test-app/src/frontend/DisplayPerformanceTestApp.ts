@@ -170,8 +170,10 @@ async function main() {
     runner = new TestRunner(props);
     await runner.run();
   } catch (err: any) {
+    await DisplayPerfRpcInterface.getClient().consoleLog("test runner exception: " + err.toString());
     await DisplayPerfTestApp.logException(err);
   } finally {
+    await DisplayPerfRpcInterface.getClient().consoleLog("terminating DisplayPerformanceTestApp");
     await DisplayPerfRpcInterface.getClient().terminate();
   }
 
