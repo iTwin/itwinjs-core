@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Change core peer dependencies to strict version.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

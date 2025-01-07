@@ -26,10 +26,20 @@ This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that hol
 
 See [rush.json](./rush.json) for the complete list of packages and [Versioning.md](./Versioning.md) for package and API versioning policies.
 
+Each package has its own **node_modules** directory that contains symbolic links to _common_ dependencies managed by Rush.
+
+## Features
+
+- ✅ Create infrastructure digital twins of assets or projects
+- ✅ Aggregate Engineering Models, Reality Data, Geographic Information Systems, Internet of Things (IoT) Data, and other standard formats
+- ✅ Visualize data and engineering changes in 3D and 4D
+- ✅ Analyze data to gain insights and drive new business outcomes across multiple platforms
+
 ## Quick Start
 
 - This is a [sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/3d%20Viewer) of an iTwin viewer - a frontend application that displays infrastructure projects on browsers. It uses many of the APIs and libraries published from this repository.
 - You can also look at [other samples](https://developer.bentley.com/samples/) which showcases the capabilities of iTwin.js, and the iTwin Platform.
+
 ## Prerequisites
 
 - [Git](https://git-scm.com/)
@@ -40,7 +50,6 @@ See [rush.json](./rush.json) for the complete list of packages and [Versioning.m
 - [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
 > See [supported platforms](./docs/learning/SupportedPlatforms.md) for further information.
-
 
 ## Contribution
 

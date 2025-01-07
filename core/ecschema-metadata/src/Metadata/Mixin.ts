@@ -24,7 +24,7 @@ import { Schema } from "./Schema";
  * @beta
  */
 export class Mixin extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.Mixin;
+  public override readonly schemaItemType = SchemaItemType.Mixin;
   protected _appliesTo?: LazyLoadedEntityClass;
 
   public get appliesTo(): LazyLoadedEntityClass | undefined {
@@ -33,7 +33,6 @@ export class Mixin extends ECClass {
 
   constructor(schema: Schema, name: string) {
     super(schema, name, ECClassModifier.Abstract);
-    this.schemaItemType = SchemaItemType.Mixin;
   }
 
   /**

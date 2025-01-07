@@ -1909,12 +1909,12 @@ export interface CreateIModelProps extends IModelProps {
 }
 
 // @public
-export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
 }
 
 // @internal
-export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
 
@@ -1926,8 +1926,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2293760,
-    Major = 35,
+    Combined = 2359296,
+    Major = 36,
     Minor = 0
 }
 
@@ -3492,10 +3492,32 @@ export interface FlatBufferGeometryStream {
     format: "flatbuffer";
 }
 
+// @beta
+interface FontFace_2 {
+    familyName: string;
+    // (undocumented)
+    isBold: boolean;
+    // (undocumented)
+    isItalic: boolean;
+}
+export { FontFace_2 as FontFace }
+
+// @public
+export interface FontFamilyDescriptor {
+    name: string;
+    type: FontType;
+}
+
+// @beta
+export interface FontFamilySelector {
+    name: string;
+    type?: FontType;
+}
+
 // @public
 export type FontId = number;
 
-// @public
+// @public @deprecated
 export class FontMap {
     constructor(props?: FontMapProps);
     // (undocumented)
@@ -3507,26 +3529,21 @@ export class FontMap {
     toJSON(): FontMapProps;
 }
 
-// @public
+// @public @deprecated
 export interface FontMapProps {
     // (undocumented)
     fonts: FontProps[];
 }
 
 // @public
-export interface FontProps {
+export interface FontProps extends FontFamilyDescriptor {
     id: FontId;
-    name: string;
-    type: FontType;
 }
 
 // @public
 export enum FontType {
-    // (undocumented)
     Rsc = 2,
-    // (undocumented)
     Shx = 3,
-    // (undocumented)
     TrueType = 1
 }
 
@@ -5026,11 +5043,6 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @public @deprecated
-export interface IModelEncryptionProps {
-    readonly password?: string;
-}
-
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData);
@@ -6503,7 +6515,7 @@ export interface OpenBriefcaseOptions {
 }
 
 // @public
-export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
+export interface OpenBriefcaseProps extends OpenDbKey {
     readonly fileName: LocalFileName;
     readonly readonly?: boolean;
     readonly watchForChanges?: boolean;
@@ -8996,6 +9008,18 @@ export class RpcSessionInvocation extends RpcInvocation {
     get rejected(): boolean;
 }
 
+// @alpha
+export interface RscFontEncodingProps {
+    // (undocumented)
+    codePage?: number;
+    // (undocumented)
+    degree?: number;
+    // (undocumented)
+    diameter?: number;
+    // (undocumented)
+    plusMinus?: number;
+}
+
 // @beta (undocumented)
 export type Run = TextRun | FractionRun | LineBreakRun;
 
@@ -9389,7 +9413,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
+export interface SnapshotOpenOptions extends OpenDbKey {
     // @internal
     readonly tempFileBase?: string;
 }
