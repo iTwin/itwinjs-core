@@ -790,6 +790,7 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
+<<<<<<< HEAD
 | id  | parent | notused | detail            |
 | --- | ------ | ------- | ----------------- |
 | 2   | 0      | 0       | CO-ROUTINE cnt    |
@@ -798,6 +799,16 @@ PRAGMA explain_query (
 | 19  | 2      | 0       | RECURSIVE STEP    |
 | 20  | 19     | 0       | SCAN cnt          |
 | 31  | 0      | 0       | SCAN cnt          |
+=======
+| notused | detail            |
+| ------- | ----------------- |
+| 0       | CO-ROUTINE cnt    |
+| 0       | SETUP             |
+| 0       | SCAN CONSTANT ROW |
+| 0       | RECURSIVE STEP    |
+| 216     | SCAN cnt          |
+| 215     | SCAN cnt          |
+>>>>>>> 7bb7940058 (Added the feature to specify certain columns in expected Results table in the markdown testing framework (#7518))
 
 # Using Scalar values in select clause with + operator
 
@@ -914,3 +925,57 @@ LIMIT
 | --- | --------- | --------- |
 | 100 | undefined | undefined |
 | 101 | undefined | undefined |
+
+# Testing same name columns and checking both the columns of the results
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+SELECT 0,0
+```
+
+| className | accessString | generated | index | jsonName | name  | extendedType | typeName | type  |
+| --------- | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ----- |
+|           | "0"          | true      | 0     | "0"      | "0"   | undefined    | long     | Int64 |
+|           | "0_1"        | true      | 1     | "0_1"    | "0_1" | undefined    | long     | Int64 |
+
+| 0   | 0_1 |
+| --- | --- |
+| 0   | 0   |
+
+# Testing same name columns and checking first column of the results
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+SELECT 0,0
+```
+
+| className | accessString | generated | index | jsonName | name  | extendedType | typeName | type  |
+| --------- | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ----- |
+|           | "0"          | true      | 0     | "0"      | "0"   | undefined    | long     | Int64 |
+|           | "0_1"        | true      | 1     | "0_1"    | "0_1" | undefined    | long     | Int64 |
+
+| 0   |
+| --- |
+| 0   |
+
+# Testing same name columns and checking second column of the results
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+SELECT 0,0
+```
+
+| className | accessString | generated | index | jsonName | name  | extendedType | typeName | type  |
+| --------- | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ----- |
+|           | "0"          | true      | 0     | "0"      | "0"   | undefined    | long     | Int64 |
+|           | "0_1"        | true      | 1     | "0_1"    | "0_1" | undefined    | long     | Int64 |
+
+| 0_1 |
+| --- |
+| 0   |
