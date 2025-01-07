@@ -278,7 +278,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key)[_nativeDb].getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key)[_nativeDb].getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getRedoString();
   }
 
   public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {
