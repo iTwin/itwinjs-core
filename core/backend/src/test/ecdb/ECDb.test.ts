@@ -9,6 +9,7 @@ import { DbResult, Id64, Id64String, Logger, using } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { QueryOptionsBuilder } from "@itwin/core-common";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;
@@ -58,7 +59,58 @@ describe("ECDb", () => {
       assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.FileUpgrade));
     });
   });
+  it.only("attach/detach file", async () => {
+    const fileName1 = "source_file.ecdb";
+    const ecdbPath1: string = path.join(outDir, fileName1);
+    let id: Id64String;
+    using(ECDbTestHelper.createECDb(outDir, fileName1,
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+      </ECEntityClass>
+      </ECSchema>`), (testECDb: ECDb) => {
+      assert.isTrue(testECDb.isOpen);
+      id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        assert.isTrue(Id64.isValidId64(res.id!));
+        return res.id!;
+      });
+      testECDb.saveChanges();
+    });
+    using(ECDbTestHelper.createECDb(outDir, "file2.ecdb"), (testECDb: ECDb) => {
+      testECDb.attachDb(ecdbPath1, "source");
+      testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", (stmt: ECSqlStatement) => {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        const row = stmt.getRow();
+        assert.equal(row.name, "Mary");
+        assert.equal(row.age, 45);
+      });
+      testECDb.detachDb("source");
+      expect(() => testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => {})).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
+    });
+    using(ECDbTestHelper.createECDb(outDir, "file3.ecdb"), async (testECDb: ECDb) => {
+      testECDb.attachDb(ecdbPath1, "source");
+      const reader = testECDb.createQueryReader("SELECT Name, Age FROM source.test.Person", undefined, new QueryOptionsBuilder().setUsePrimaryConnection(true).getOptions());
+      assert.equal(await reader.step(), true);
+      assert.equal(reader.current.name, "Mary");
+      assert.equal(reader.current.age, 45);
+      testECDb.detachDb("source");
+    });
 
+    // Crash!!!
+    using(ECDbTestHelper.createECDb(outDir, "file4.ecdb"), async (testECDb: ECDb) => {
+      testECDb.attachDb(ecdbPath1, "source");
+      const reader = testECDb.createQueryReader("SELECT Name, Age FROM source.test.Person");
+      assert.equal(await reader.step(), true);
+      assert.equal(reader.current.name, "Mary");
+      assert.equal(reader.current.age, 45);
+      testECDb.detachDb("source");
+    });
+
+  });
   it("should be able to import a schema", () => {
     const fileName = "schemaimport.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
