@@ -19,6 +19,10 @@ export interface ECDbTestProps {
   abbreviateBlobs: boolean;
   convertClassIdsToClassNames: boolean;
   errorDuringPrepare?: boolean;
+  indexesToIncludeInResults?: number[];  // We now have the feature to check only certain columns of expected results
+  // but if the rowFormat is ECSqlIndexes then there is no way to uniquely identify the columns, in that case this flag is used to include certain property indexes
+  // for checking and ignore the rest, if this flag is not given while the rowFormat is ECSqlIndexes then the expected Results column
+  // will assume an incremental 0 based indexing by default. This flag serves as a mapping for the actual results while checking with the expected results.
 
   // TODO: implement, it's currently being parsed but not used
   stepStatus?: string;
@@ -280,6 +284,9 @@ export class ECDbMarkdownTestParser {
           case "convertclassidstoclassnames":
             currentTest.convertClassIdsToClassNames = value.toLowerCase() === "true";
             continue;
+          case "indexestoinclude":
+            currentTest.indexesToIncludeInResults = this.handleValidIndexList(value);
+            continue;
         }
       }
       const bindMatch = item.text.match(bindRegex);
@@ -322,6 +329,20 @@ export class ECDbMarkdownTestParser {
         logWarning(`Row Format value (${value}) is not recognized in file ${markdownFilePath} and test ${currentTest.title}. Skipping.`);
     }
   }
+
+private static handleValidIndexList(obj: string): number[] | undefined {
+  try{
+  const numsArr =  JSON.parse(obj);
+  if(Array.isArray(numsArr) && numsArr.every((val: any)=> typeof val === "number"))
+    return numsArr;
+  logWarning("The given value is not valid for the property indexestoinclude");
+  return undefined;
+  }
+  catch{
+    logWarning("The given value is not valid for the property indexestoinclude");
+    return undefined;
+  }
+}
 
   private static handleCodeToken(token: Tokens.Code, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
     if (currentTest === undefined) {
