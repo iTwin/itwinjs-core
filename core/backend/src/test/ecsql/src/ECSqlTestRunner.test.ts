@@ -203,7 +203,7 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
           logWarning("Abbreviate blobs is not supported for statement tests");
 
         const actualResult = stmt.getRow(rowArgs);
-        assert.deepEqual(actualResult, expectedResult, `Expected ${JSON.stringify(expectedResult)} but got ${JSON.stringify(actualResult)}`);
+        checkingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
       }
       resultCount++;
     }
@@ -366,7 +366,7 @@ async function runConcurrentQueryTest(test: ECDbTestProps, dataset: TestDataset)
       expectedResult = buildBinaryData(expectedResult);
 
       const actualResult = rows[resultCount] // TODO: should we test getValue() as well?
-      assert.deepEqual(actualResult, expectedResult, `Expected ${JSON.stringify(expectedResult)} but got ${JSON.stringify(actualResult)}`);
+      checkingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
     }
     resultCount++;
   }
@@ -381,6 +381,25 @@ async function runConcurrentQueryTest(test: ECDbTestProps, dataset: TestDataset)
   }
 }
 
+function checkingExpectedResults(rowFormat : ECDbTestRowFormat, actualResult: any, expectedResult: any,  indexesToInclude?: number[])
+{
+  if(rowFormat === ECDbTestRowFormat.ECSqlIndexes && indexesToInclude)
+  {
+    let i: any = 0;
+    for(const key of Object.keys(expectedResult))
+      {
+      assert.deepEqual(actualResult[indexesToInclude[i]], expectedResult[key], `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[indexesToInclude[i]])}`);
+      i++;
+      }
+  }
+  else
+  {
+    for(const key of Object.keys(expectedResult))
+      {
+      assert.deepEqual(actualResult[key], expectedResult[key], `Expected ${JSON.stringify(expectedResult[key])} but got ${JSON.stringify(actualResult[key])}`);
+      }
+  }
+}
 function logWarning(message: string) {
   // eslint-disable-next-line no-console
   console.log(`\x1b[33m${message}\x1b[0m`);
