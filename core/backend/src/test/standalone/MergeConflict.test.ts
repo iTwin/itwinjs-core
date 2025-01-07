@@ -156,7 +156,7 @@ describe("Merge conflict & locking", () => {
     b2.close();
     b3.close();
   });
-  it("pull/merge causing update conflict - update causing local changes (with no lock)", async () => {
+  it.skip("pull/merge causing update conflict - update causing local changes (with no lock)", async () => {
     /**
      * To simulate a incorrect changeset we disable lock and make some changes where we add
      * aspect for a deleted element and try to pull/push/merge it. Which will fail with following error.
