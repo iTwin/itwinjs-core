@@ -310,7 +310,7 @@ export enum RegionGroupOpType {
   Union = 0,
   Parity = 1,
   Intersection = 2,
-  NonBounding = -1,
+  NonBounding = -1, // e.g., bridge edges
 }
 /**
  * Each loop or parity region in a `RegionBooleanContext` is recorded as a `RegionGroupMember`, which carries
@@ -458,8 +458,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public addMembers(dataA: AnyRegion | AnyRegion[] | undefined, dataB: AnyRegion | AnyRegion[] | undefined) {
     this.groupA.addMember(dataA);
     this.groupB.addMember(dataB);
-    // const doConnectives = 1;
-    // if (doConnectives !== 0)
     this.addConnectives();
   }
 
@@ -471,7 +469,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * This method:
    * * finds the total range
    * * creates parallel rays from the extreme point of each loop and extending beyond the overall range
-   * * places those lines in the extraGeometry group
+   * * places those lines in the extraGeometry group to serve as bridge edges
    */
   public addConnectives() {
     const rangeA = this.groupA.range();
