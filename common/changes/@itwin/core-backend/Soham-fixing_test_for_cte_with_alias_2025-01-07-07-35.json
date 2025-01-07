@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Added and updated test cases for alias support in CTE subquery",
+      "comment": "",
       "type": "none"
     }
   ],
