@@ -5918,7 +5918,7 @@ export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
     // @internal
-    appCustomConflictHandler?: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+    appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
     // @internal (undocumented)
@@ -5977,7 +5977,7 @@ export class TxnManager {
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
-    protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution;
+    protected _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution;
     // @internal (undocumented)
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
     // @internal (undocumented)
