@@ -62,7 +62,6 @@ describe("ECDb", () => {
   it("attach/detach file", async () => {
     const fileName1 = "source_file.ecdb";
     const ecdbPath1: string = path.join(outDir, fileName1);
-    let id: Id64String;
     using(ECDbTestHelper.createECDb(outDir, fileName1,
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECEntityClass typeName="Person" modifier="Sealed">
@@ -71,7 +70,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`), (testECDb: ECDb) => {
       assert.isTrue(testECDb.isOpen);
-      id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+      testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -91,7 +90,7 @@ describe("ECDb", () => {
       testECDb.detachDb("source");
       expect(() => testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
     });
-    using(ECDbTestHelper.createECDb(outDir, "file3.ecdb"), async (testECDb: ECDb) => {
+    await using(ECDbTestHelper.createECDb(outDir, "file3.ecdb"), async (testECDb: ECDb) => {
       testECDb.attachDb(ecdbPath1, "source");
       const reader = testECDb.createQueryReader("SELECT Name, Age FROM source.test.Person", undefined, new QueryOptionsBuilder().setUsePrimaryConnection(true).getOptions());
       assert.equal(await reader.step(), true);
