@@ -59,7 +59,7 @@ describe("ECDb", () => {
       assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.FileUpgrade));
     });
   });
-  it.only("attach/detach file", async () => {
+  it("attach/detach file", async () => {
     const fileName1 = "source_file.ecdb";
     const ecdbPath1: string = path.join(outDir, fileName1);
     let id: Id64String;
@@ -89,7 +89,7 @@ describe("ECDb", () => {
         assert.equal(row.age, 45);
       });
       testECDb.detachDb("source");
-      expect(() => testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => {})).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
+      expect(() => testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
     });
     using(ECDbTestHelper.createECDb(outDir, "file3.ecdb"), async (testECDb: ECDb) => {
       testECDb.attachDb(ecdbPath1, "source");
@@ -101,13 +101,24 @@ describe("ECDb", () => {
     });
 
     // Crash!!!
-    using(ECDbTestHelper.createECDb(outDir, "file4.ecdb"), async (testECDb: ECDb) => {
+    await using(ECDbTestHelper.createECDb(outDir, "file4.ecdb"), async (testECDb: ECDb) => {
       testECDb.attachDb(ecdbPath1, "source");
       const reader = testECDb.createQueryReader("SELECT Name, Age FROM source.test.Person");
       assert.equal(await reader.step(), true);
       assert.equal(reader.current.name, "Mary");
       assert.equal(reader.current.age, 45);
       testECDb.detachDb("source");
+      const reader1 = testECDb.createQueryReader("SELECT Name, Age FROM source.test.Person");
+      let expectThrow = false;
+      try {
+        await reader1.step();
+      } catch (err) {
+        if (err instanceof Error) {
+          assert.equal(err.message, "ECClass 'source.test.Person' does not exist or could not be loaded.");
+          expectThrow = true;
+        }
+      }
+      assert.isTrue(expectThrow);
     });
 
   });
