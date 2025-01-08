@@ -127,17 +127,19 @@ The following APIs have been removed:
 
 #### @itwin/core-common
 
-| Removed               | Replacement                       |
-| --------------------- | --------------------------------- |
-| `BentleyStatus`       | import from `@itwin/core-bentley` |
-| `BentleyError`        | import from `@itwin/core-bentley` |
-| `IModelStatus`        | import from `@itwin/core-bentley` |
-| `BriefcaseStatus`     | import from `@itwin/core-bentley` |
-| `DbResult`            | import from `@itwin/core-bentley` |
-| `ChangeSetStatus`     | import from `@itwin/core-bentley` |
-| `GetMetaDataFunction` | import from `@itwin/core-bentley` |
-| `LogFunction`         | import from `@itwin/core-bentley` |
-| `LoggingMetaData`     | import from `@itwin/core-bentley` |
+The following APIs were re-exported from `@itwin/core-bentley` and have been removed. Please import from `@itwin/core-bentley` instead.
+
+| Removed               |
+| --------------------- |
+| `BentleyStatus`       |
+| `BentleyError`        |
+| `IModelStatus`        |
+| `BriefcaseStatus`     |
+| `DbResult`            |
+| `ChangeSetStatus`     |
+| `GetMetaDataFunction` |
+| `LogFunction`         |
+| `LoggingMetaData`     |
 
 ### Packages dropped
 
