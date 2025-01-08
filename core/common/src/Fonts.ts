@@ -6,17 +6,17 @@
  * @module Symbology
  */
 
+import { Static, Type } from "@sinclair/typebox";
+
 /** The type of a font.
  * @public
  * @extensions
  */
 export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
 
-/** An iModel-local identifier for a font.
- * @public
- * @extensions
- */
-export type FontId = number;
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const FontIdSchema = Type.Number({description: "An iModel-local identifier for a font"});
+export type FontId = Static<typeof FontIdSchema>;
 
 /** The properties of a Font.
  * @public

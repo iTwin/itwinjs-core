@@ -15,7 +15,7 @@ import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 import { BSplineSurface3d, BSplineSurface3dH, UVSelect, WeightStyle } from "../bspline/BSplineSurface";
-import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
+import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dPropsSchema } from "../bspline/InterpolationCurve3d";
 import { BSplineWrapMode } from "../bspline/KnotVector";
 import { Arc3d } from "../curve/Arc3d";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
@@ -31,7 +31,7 @@ import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { UnionRegion } from "../curve/UnionRegion";
-import { AngleProps, AngleSweepProps, AxisOrder, Geometry } from "../Geometry";
+import { AnglePropsSchema, AngleSweepPropsSchema, AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -41,9 +41,9 @@ import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
-import { XYProps, XYZProps } from "../geometry3d/XYZProps";
-import { YawPitchRollAngles, YawPitchRollProps } from "../geometry3d/YawPitchRollAngles";
-import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
+import { XYPropsSchema, XYZProps, XYZPropsSchema } from "../geometry3d/XYZProps";
+import { YawPitchRollAngles, YawPitchRollProps, YawPitchRollPropsSchema } from "../geometry3d/YawPitchRollAngles";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, AuxChannelDataTypeSchema, PolyfaceAuxData } from "../polyface/AuxData";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { Box } from "../solid/Box";
@@ -54,7 +54,9 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { SerializationHelpers } from "./SerializationHelpers";
+import { Static, Type } from "@sinclair/typebox";
 
+/* eslint-disable @typescript-eslint/naming-convention */
 // cspell:word bagof
 /**
  * `ImodelJson` namespace has classes for serializing and deserialization json objects
@@ -62,123 +64,59 @@ import { SerializationHelpers } from "./SerializationHelpers";
  */
 export namespace IModelJson {
   /**
-   * Property rules for json objects that can be deserialized to various Curve and Solid objects
-   * @public
-   */
-  export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps, CurveCollectionProps {
-    /** `{indexedMesh:...}` */
-    indexedMesh?: IndexedMeshProps;
-    /** `{point:...}` */
-    point?: XYZProps;
-    /** `{bsurf:...}` */
-    bsurf?: BSplineSurfaceProps;
-    /** `{pointString:...}` */
-    pointString?: XYZProps[];
-  }
-  /**
-   * Property rules for json objects that can be deserialized to various CurvePrimitives
-   * * Only one of these is allowed in each instance.
-   * @public
-   */
-  export interface CurvePrimitiveProps {
-    /** `{lineSegment:...}` */
-    lineSegment?: [XYZProps, XYZProps];
-    /** `{lineString:...}` */
-    lineString?: XYZProps[];
-    /** `{bcurve:...}` */
-    bcurve?: BcurveProps;
-    /** `{transitionSpiral:...}` */
-    transitionSpiral?: TransitionSpiralProps;
-    /** `{arc:...}` */
-    arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
-    /** `{interpolationCurve:...}~ */
-    interpolationCurve?: InterpolationCurve3dProps;
-  }
-
-  /**
-   * Property rules for json objects that can be deserialized to single point
-   * @public
-   */
-  export interface PointProps {
-    /** `{point:...}` */
-    point?: XYZProps;
-  }
-
-  /**
    * Property rules for json objects that can be deserialized to a BsplineSurface
    * See `BCurveProps` for discussion of knot and pole counts.
    * @public
    */
-  export interface BSplineSurfaceProps {
+  export const BSplineSurfacePropsSchema = Type.Object({
     /** polynomial order (one more than degree) in the u parameter direction */
-    orderU: number;
+    orderU: Type.Number({ description: 'Polynomial order (one more than degree) in the u parameter direction' }),
     /** polynomial order (one more than degree) in the v parameter direction */
-    orderV: number;
+    orderV: Type.Number({ description: 'Polynomial order (one more than degree) in the v parameter direction' }),
     /** Square grid of control points (aka poles) in row major order (row is along the u direction) */
-    points: [[[number]]];   // each inner array is xyz or xyzw for a single control point. each middle array is a row of control points.
+    points: Type.Array(Type.Array(Type.Array(Type.Number(), { description: 'Each inner array is xyz or xyzw for a single control point. Each middle array is a row of control points.' })), { description: 'Square grid of control points (aka poles) in row major order (row is along the u direction)' }),
     /** Array of knots for the u direction bspline */
-    uKnots: [number];
+    uKnots: Type.Array(Type.Number(), { description: 'Array of knots for the u direction bspline' }),
     /** Array of knots for the v direction bspline */
-    vKnots: [number];
+    vKnots: Type.Array(Type.Number(), { description: 'Array of knots for the v direction bspline' }),
     /** optional flag for periodic data in the u parameter direction */
-    closedU?: boolean;
+    closedU: Type.Optional(Type.Boolean({ description: 'Optional flag for periodic data in the u parameter direction' })),
     /** optional flag for periodic data in the v parameter direction */
-    closedV?: boolean;
-  }
+    closedV: Type.Optional(Type.Boolean({ description: 'Optional flag for periodic data in the v parameter direction' })),
+  }, { description: 'Property rules for json objects that can be deserialized to a BsplineSurface. See `BCurveProps` for discussion of knot and pole counts.' });
+  export type BSplineSurfaceProps = Static<typeof BSplineSurfacePropsSchema>;
+
 
   /**
-   * Interface for a collection of curves, eg. as used as a swept contour.
+   * Interface for bspline curve (aka bcurve)
    * @public
    */
-  export interface CurveCollectionProps extends PlanarRegionProps {
-    /** A sequence of curves joined head to tail: */
-    path?: [CurvePrimitiveProps];
-    /** A collection of curves with no required structure or connections: */
-    bagofCurves?: [CurveCollectionProps];
-  }
+  export const BcurvePropsSchema = Type.Object({
+  /** control points */
+  points: Type.Array(XYZPropsSchema, { description: 'Control points' }),
+  /** knots. */
+  knots: Type.Array(Type.Number(), { description: 'Knots' }),
+  /** order of polynomial
+   * * The order is the number of basis functions that are in effect at any knot value.
+   * * The order is the number of points that affect the curve at any knot value,
+   *     i.e. the size of the "local support" set
+   * * `order=2` is lines (degree 1)
+   * * `order=3` is quadratic (degree 2)
+   * * `order=4` is cubic (degree 3)
+   * * The number of knots follows the convention "poles+order= knots".
+   * * In this convention (for example), a clamped cubic with knots `[0,0,0,0, 1,2,3,4,4,4,4]`
+   * has:
+   * * * 4 (`order`) copies of the start and end knot (0 and 4) and
+   * * * 3 interior knots
+   * * Hence expect 7 poles.
+   */
+  order: Type.Number({ description: 'Order of polynomial' }),
+      /** optional flag for periodic data. */
+  closed: Type.Optional(Type.Boolean({ description: 'Optional flag for periodic data' })),
+  }, { description: 'Property rules for json objects that can be deserialized to a Bcurve' });
+  export type BcurveProps = Static<typeof BcurvePropsSchema>;
 
-  /**
-   * Interface for a collection of curves that bound a planar region
-   * @public
-   */
-  export interface PlanarRegionProps {
-    /** `{loop:...}`
-     * * A sequence of curves which connect head to tail, with the final connecting back to the first
-     */
-    loop?: [CurvePrimitiveProps];
-    /** `{parityRegion:...}`
-     * * A collection of loops, with composite inside/outside determined by parity rules.
-     * * (The single outer boundary with one or more holes is a parityRegion)
-     */
-    parityRegion?: [{ loop: [CurvePrimitiveProps] }];
-    /** `{unionRegion:...}`
-     * * A collection of loops and parityRegions
-     */
 
-    unionRegion?: [PlanarRegionProps];
-  }
-  /**
-   * Interface for solid primitives: box, sphere, cylinder, cone, torusPipe, linear sweep, rotational sweep, ruled sweep.
-   * @public
-   */
-  export interface SolidPrimitiveProps {
-    /** `{cylinder:...}` */
-    cylinder?: CylinderProps;
-    /** `{box:...}` */
-    box?: BoxProps;
-    /** `{sphere:............}` */
-    sphere?: SphereProps;
-    /** `{cone:............}` */
-    cone?: ConeProps;
-    /** `{torusPipe:............}` */
-    torusPipe?: TorusPipeProps;
-    /** `{linearSweep:.........}` */
-    linearSweep?: LinearSweepProps;
-    /** `{rotationalSweep:...}` */
-    rotationalSweep?: RotationalSweepProps;
-    /** `{ruledSweep:...}` */
-    ruledSweep?: RuledSweepProps;
-  }
   /**
    * * There are multiple ways to specify an orientation
    * * A "Best" among these is application specific.
@@ -193,128 +131,38 @@ export namespace IModelJson {
    * * * In most cases, users supply a normalized z and the actual normalized x vector.
    * @public
    */
-  export interface AxesProps {
+  export const AxesPropsSchema = Type.Object({
     /**
      * See YawPitchAngles class for further information about using 3 rotations to specify orientation.
      * @public
      */
-    yawPitchRollAngles?: YawPitchRollProps;
-    /**
-     * Cartesian coordinate directions defined by X direction then Y direction.
-     * * The right side contains two vectors in an array.
-     * * The first vector gives the x axis direction
-     * * * This is normalized to unit length.
-     * * The second vector gives the positive y direction in the xy plane.
-     * * * This vector is adjusted to be unit length and perpendicular to the x direction.
-     */
-    xyVectors?: [XYZProps, XYZProps];
-    /**
-     * Cartesian coordinate directions defined by Z direction then X direction.
-     * * The right side contains two vectors in an array.
-     * * The first vector gives the z axis direction
-     * * * This is normalized to unit length.
-     * * The second vector gives the positive x direction in the zx plane.
-     * * * This vector is adjusted to be unit length and perpendicular to the z direction.
-     */
-    zxVectors?: [XYZProps, XYZProps];
-  }
-
-  /**
-   * Interface for Arc3d value defined by center, vectorX, vectorY and sweepStartEnd.
-   * @public
-   */
-  export interface ArcByVectorProps {
-    /** Arc center point */
-    center: XYZProps;
-    /** Vector from center to 0-degree point (commonly called major axis vector) */
-    vectorX: XYZProps;
-    /** Vector from center to 90-degree point (common called minor axis vector) */
-    vectorY: XYZProps;
-    /** Start and end angles in parameterization `X=C+cos(theta) * vectorX + sin(theta) * vectorY` */
-    sweepStartEnd: AngleSweepProps;
-  }
-
-  /**
-   * Interface for Cone value defined by centers, radii, and (optional) vectors for circular section planes.
-   * * VectorX and vectorY are optional.
-   * * If either one is missing, both vectors are constructed perpendicular to the vector from start to end.
-   * @public
-   */
-  export interface ConeProps extends AxesProps {
-    /** Point on axis at start section. */
-    start: XYZProps;
-    /** Point on axis at end section  */
-    end: XYZProps;
-
-    /** radius at `start` section */
-    startRadius?: number;
-    /** radius at `end` section */
-    endRadius?: number;
-    /** single radius to be applied as both start and end */
-    radius?: number;
-    /** optional x vector in start section.  Omit for circular sections perpendicular to axis. */
-    vectorX?: XYZProps;
-    /** optional y vector in start section.  Omit for circular sections perpendicular to axis. */
-    vectorY?: XYZProps;
-    /** flag for circular end caps. */
-    capped?: boolean;
-  }
-
-  /**
-   * Interface for cylinder defined by a radius and axis start and end centers.
-   * @public
-   */
-  export interface CylinderProps {
-    /** axis point at start */
-    start: XYZProps;
-    /** axis point at end */
-    end: XYZProps;
-    /** cylinder radius */
-    radius: number;
-    /** flag for circular end caps. */
-    capped?: boolean;
-  }
-
-  /**
-   * Interface for a linear sweep of a base curve or region.
-   * @public
-   */
-  export interface LinearSweepProps {
-    /** The swept curve or region.  Any curve collection */
-    contour: CurveCollectionProps;
-    /** The sweep vector  */
-    vector: XYZProps;
-    /** flag for circular end caps. */
-    capped?: boolean;
-  }
-
-  /**
-   * Interface for a rotational sweep of a base curve or region around an axis.
-   * @public
-   */
-  export interface RotationalSweepProps {
-    /** The swept curve or region.  Any curve collection */
-    contour: CurveCollectionProps;
-    /** any point on the axis of rotation. */
-    center: XYZProps;
-    /** The axis of rotation  */
-    axis: XYZProps;
-    /** sweep angle */
-    sweepAngle: AngleProps;
-    /** flag for circular end caps. */
-    capped?: boolean;
-  }
-
-  /**
-   * Interface for a surface with ruled sweeps between corresponding curves on successive contours
-   * @public
-   */
-  export interface RuledSweepProps {
-    /** The swept curve or region.  An array of curve collections.  */
-    contour: [CurveCollectionProps];
-    /** flag for circular end caps. */
-    capped?: boolean;
-  }
+    yawPitchRollAngles: Type.Optional(YawPitchRollPropsSchema),
+    xyVectors: Type.Optional(Type.Tuple([
+      XYZPropsSchema,
+      XYZPropsSchema
+    ], {
+      description: [
+        'Cartesian coordinate directions defined by X direction then Y direction.',
+        'The right side contains two vectors in an array.',
+        'The first vector gives the x axis direction. This is normalized to unit length.',
+        'The second vector gives the positive y direction in the xy plane.',
+        'This vector is adjusted to be unit length and perpendicular to the x direction.'
+      ].join(' ')
+    })),
+    zxVectors: Type.Optional(Type.Tuple([
+      XYZPropsSchema,
+      XYZPropsSchema
+    ], {
+      description: [
+        'Cartesian coordinate directions defined by Z direction then X direction.',
+        'The right side contains two vectors in an array.',
+        'The first vector gives the z axis direction. This is normalized to unit length.',
+        'The second vector gives the positive x direction in the zx plane.',
+        'This vector is adjusted to be unit length and perpendicular to the z direction.'
+      ].join(' ')
+    })),
+  }, { description: 'AxesProps' });
+  export type AxesProps = Static<typeof AxesPropsSchema>;
 
   /**
    * Interface for spiral
@@ -324,59 +172,96 @@ export namespace IModelJson {
    * * Note that the inherited AxesProps allows multiple ways to specify orientation of the placement..
    * @public
    */
-  export interface TransitionSpiralProps extends AxesProps {
-
+  export const TransitionSpiralPropsSchema = Type.Intersect([AxesPropsSchema, Type.Object({
     /** origin of the coordinate system. */
-    origin: XYZProps;
+    origin: XYZPropsSchema,
     /** angle at departure from origin. */
-    startBearing?: AngleProps;
+    startBearing: Type.Optional(AnglePropsSchema),
     /** End bearing. */
-    endBearing?: AngleProps;
+    endBearing: Type.Optional(AnglePropsSchema),
     /** Radius at start  (0 for straight line) */
-    startRadius?: number;
+    startRadius: Type.Optional(Type.Number({ description: 'Radius at start (0 for straight line)' })),
     /** Radius at end  (0 for straight line) */
-    endRadius?: number;
-    /** length along curve.
-     */
-    length?: number;
+    endRadius: Type.Optional(Type.Number({ description: 'Radius at end (0 for straight line)' })),
+    /** length along curve. */
+    length: Type.Optional(Type.Number({ description: 'Length along curve.' })),
     /** Fractional part of active interval.
      * * There has been name confusion between native and typescript .... accept any variant ..
      * * native (July 2020) emits activeFractionInterval
      */
-    activeFractionInterval?: number[];
+    activeFractionInterval: Type.Optional(Type.Array(Type.Number(), { description: 'Fractional part of active interval. There has been name confusion between native and typescript .... accept any variant .. native (July 2020) emits activeFractionInterval' })),
     /** TransitionSpiral type.
      * * expected names are given in `IntegratedSpiralTypeName` and `DirectSpiralTypeName`
      */
-    type?: string;
-  }
+    type: Type.Optional(Type.String({ description: 'TransitionSpiral type. Expected names are given in `IntegratedSpiralTypeName` and `DirectSpiralTypeName`' })),
+  }, { description: 'Interface for spiral. Any 4 (but not 5) of the 5 values `[startBearing, endBearing, startRadius, endRadius, length]` may be defined. In radius data, zero radius indicates straight line (infinite radius). Note that the inherited AxesProps allows multiple ways to specify orientation of the placement.' })]);
+  export type TransitionSpiralProps = Static<typeof TransitionSpiralPropsSchema>;
 
   /**
-   * Interface for bspline curve (aka bcurve)
+   * Interface for Arc3d value defined by center, vectorX, vectorY and sweepStartEnd.
    * @public
    */
-  export interface BcurveProps {
-    /** control points */
-    points: [XYZProps];
-    /** knots. */
-    knots: [number];
-    /** order of polynomial
-     * * The order is the number of basis functions that are in effect at any knot value.
-     * * The order is the number of points that affect the curve at any knot value,
-     *     i.e. the size of the "local support" set
-     * * `order=2` is lines (degree 1)
-     * * `order=3` is quadratic (degree 2)
-     * * `order=4` is cubic (degree 3)
-     * * The number of knots follows the convention "poles+order= knots".
-     * * In this convention (for example), a clamped cubic with knots `[0,0,0,0, 1,2,3,4,4,4,4]`
-     * has:
-     * * * 4 (`order`) copies of the start and end knot (0 and 4) and
-     * * * 3 interior knots
-     * * Hence expect 7 poles.
-     */
-    order: number;
-    /** optional flag for periodic data. */
-    closed?: boolean;
-  }
+  export const ArcByVectorPropsSchema = Type.Object({
+    /** Arc center point */
+    center: XYZPropsSchema,
+    /** Vector from center to 0-degree point (commonly called major axis vector) */
+    vectorX: XYZPropsSchema,
+    /** Vector from center to 90-degree point (common called minor axis vector) */
+    vectorY: XYZPropsSchema,
+    /** Start and end angles in parameterization `X=C+cos(theta) * vectorX + sin(theta) * vectorY` */
+    sweepStartEnd: AngleSweepPropsSchema,
+  }, { description: 'Interface for Arc3d value defined by center, vectorX, vectorY and sweepStartEnd.' });
+  export type ArcByVectorProps = Static<typeof ArcByVectorPropsSchema>;
+
+  /**
+  * Property rules for json objects that can be deserialized to various CurvePrimitives
+  * * Only one of these is allowed in each instance.
+  * @public
+  */
+  export const CurvePrimitivePropsSchema = Type.Object({
+    /** `{lineSegment:...}` */
+    lineSegment: Type.Optional(Type.Array(XYZPropsSchema, { description: 'Start and end points of the line segment' })),
+    /** `{lineString:...}` */
+    lineString: Type.Optional(Type.Array(XYZPropsSchema, { description: 'Array of points for the line string' })),
+    /** `{bcurve:...}` */
+    bcurve: Type.Optional(BcurvePropsSchema),
+    /** `{transitionSpiral:...}` */
+    transitionSpiral: Type.Optional(TransitionSpiralPropsSchema),
+    /** `{arc:...}` */
+    arc: Type.Optional(Type.Union([ArcByVectorPropsSchema, Type.Array(XYZPropsSchema, { description: 'Center, vectorX, vectorY, and sweepStartEnd' })])),
+    /** `{interpolationCurve:...}~ */
+    interpolationCurve: Type.Optional(InterpolationCurve3dPropsSchema),
+  }, { description: 'Property rules for json objects that can be deserialized to various CurvePrimitives. Only one of these is allowed in each instance.' });
+  export type CurvePrimitiveProps = Static<typeof CurvePrimitivePropsSchema>;
+
+  /**
+   * Interface for a collection of curves, eg. as used as a swept contour.
+   * @public
+   */
+  export const CurveCollectionPropsSchema = Type.Recursive(Self => Type.Intersect([
+    PlanarRegionPropsSchema,
+    Type.Object({
+      /** A sequence of curves joined head to tail: */
+      path: Type.Optional(Type.Array(CurvePrimitivePropsSchema)),
+      /** A collection of curves with no required structure or connections: */
+      bagofCurves: Type.Optional(Type.Array(Self)),
+    })
+  ], { description: 'Interface for a collection of curves, eg. as used as a swept contour.' }));
+  export type CurveCollectionProps = Static<typeof CurveCollectionPropsSchema>;
+
+  /**
+   * Interface for cylinder defined by a radius and axis start and end centers.
+   * @public
+   */
+  export const CylinderPropsSchema = Type.Object({
+    /** axis point at start */
+    start: XYZPropsSchema,
+    /** axis point at end */
+    end: XYZPropsSchema,
+    radius: Type.Number({description: 'Cylinder radius'}),
+    capped: Type.Optional(Type.Boolean({description: 'Flag for circular end caps'})),
+  }, { description: 'Interface for cylinder defined by a radius and axis start and end centers.' });
+  export type CylinderProps = Static<typeof CylinderPropsSchema>;
 
   /**
    * Interface for Box (or frustum with all rectangular sections parallel to primary xy section).
@@ -387,67 +272,78 @@ export namespace IModelJson {
    * * If both `topOrigin` and `height` are omitted, `height` defaults to `baseX`, and `topOrigin` is computed as above.
    * @public
    */
-  export interface BoxProps extends AxesProps {
-    /** Origin of the box coordinate system  (required) */
-    origin: XYZProps;
-    /** A previous mismatch existed between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
-     * Now both native and TypeScript will output both and accept either, preferring "origin".
-     * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
-     * @internal
-     * @deprecated in 3.x. use origin
-     */
-    baseOrigin?: XYZProps;
-    /** base x size (required) */
-    baseX: number;
-    /** base y size.
-     * * if omitted, baseX is used.
-     */
-    baseY?: number;
-    /** top origin.
-     * * This is NOT required to be on the z axis.
-     * * If omitted, it is computed along the z axis at distance `height`.
-     */
-    topOrigin?: XYZProps;
-    /** optional height. This is only used if `topOrigin` is omitted.
-     * * If omitted, `baseX` is used.
-    */
-    height?: number;
-    /** x size on top section.
-     * * If omitted, `baseX` is used.
-     */
-    topX?: number;
-    /** y size on top section.
-     * * If omitted, `baseY` is used.
-     */
-    topY?: number;
-    /** optional capping flag. */
-    capped?: boolean;
-  }
+  export const BoxPropsSchema = Type.Intersect([
+    AxesPropsSchema,
+    Type.Object({
+      /** Origin of the box coordinate system  (required) */
+      origin: XYZPropsSchema,
+      /** A previous mismatch existed between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
+       * Now both native and TypeScript will output both and accept either, preferring "origin".
+       * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
+       * @internal
+       * @deprecated in 3.x. use origin
+       */
+      baseOrigin: Type.Optional(XYZPropsSchema),
+      baseX: Type.Number({ description: 'Base x size (required)' }),
+      baseY: Type.Optional(Type.Number({ description: 'Base y size. If omitted, baseX is used.' })),
+      /** top origin.
+       * * This is NOT required to be on the z axis.
+       * * If omitted, it is computed along the z axis at distance `height`.
+       */
+      topOrigin: Type.Optional(XYZPropsSchema),
+      height: Type.Optional(Type.Number({ description: 'Optional height. This is only used if `topOrigin` is omitted. If omitted, `baseX` is used.' })),
+      topX: Type.Optional(Type.Number({ description: 'X size on top section. If omitted, `baseX` is used.' })),
+      topY: Type.Optional(Type.Number({ description: 'Y size on top section. If omitted, `baseY` is used.' })),
+      capped: Type.Optional(Type.Boolean({ description: 'Optional capping flag.' })),
+    })
+  ], { description: 'Interface for Box (or frustum with all rectangular sections parallel to primary xy section). Orientation may be given in any `AxesProps` way (`yawPitchRollAngles`, `xyVectors`, `zxVectors`). If `topX` or `topY` are omitted, each defaults to its `baseX` or `baseY` peer. If `topOrigin` is given, `height` is unused. If `topOrigin` is omitted and `height` is given, `topOrigin` is computed along the z axis at distance `height`. If both `topOrigin` and `height` are omitted, `height` defaults to `baseX`, and `topOrigin` is computed as above.' });
+  export type BoxProps = Static<typeof BoxPropsSchema>;
 
   /**
    * Interface for Sphere (with optionally different radius to pole versus equator)
    * * Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors)
    * @public
    */
-  export interface SphereProps extends AxesProps {
-    /** Center of the sphere coordinate system */
-    center: XYZProps;
+  export const SpherePropsSchema = Type.Intersect([
+    AxesPropsSchema,
+    Type.Object({
+      /** Center of the sphere coordinate system */
+      center: XYZPropsSchema,
+      radius: Type.Optional(Type.Number({ description: 'Primary radius' })),
+      radiusX: Type.Optional(Type.Number({ description: 'Optional x radius' })),
+      radiusY: Type.Optional(Type.Number({ description: 'Optional y radius' })),
+      radiusZ: Type.Optional(Type.Number({ description: 'Optional radius at poles' })),
+      /** optional sweep range for latitude. Default latitude limits are [-90,90 ] degrees. */
+      latitudeStartEnd: Type.Optional(AngleSweepPropsSchema),
+      capped: Type.Optional(Type.Boolean({ description: 'Optional capping flag. If missing, implied false' })),
+    })
+  ], { description: 'Interface for Sphere (with optionally different radius to pole versus equator). Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors).' });
+  export type SphereProps = Static<typeof SpherePropsSchema>;
 
-    /** primary radius */
-    radius?: number;
-    /** optional x radius */
-    radiusX?: number;
-    /** optional y radius */
-    radiusY?: number;
-
-    /** optional radius at poles.  */
-    radiusZ?: number;
-
-    /** optional sweep range for latitude.  Default latitude limits are [-90,90 ] degrees. */
-    latitudeStartEnd?: AngleSweepProps;
-    /** optional capping flag. If missing, implied false */
-    capped?: boolean;
-  }
+  /**
+    * Interface for Cone value defined by centers, radii, and (optional) vectors for circular section planes.
+    * * VectorX and vectorY are optional.
+    * * If either one is missing, both vectors are constructed perpendicular to the vector from start to end.
+    * @public
+  */
+  export const ConePropsSchema = Type.Intersect([
+    AxesPropsSchema,
+    Type.Object({
+      /** Point on axis at start section. */
+      start: XYZPropsSchema,
+      /** Point on axis at end section  */
+      end: XYZPropsSchema,
+      startRadius: Type.Optional(Type.Number({ description: 'Radius at `start` section' })),
+      endRadius: Type.Optional(Type.Number({ description: 'Radius at `end` section' })),
+      radius: Type.Optional(Type.Number({ description: 'Single radius to be applied as both start and end' })),
+      /** optional x vector in start section.  Omit for circular sections perpendicular to axis. */
+      vectorX: Type.Optional(XYZPropsSchema),
+      /** optional y vector in start section.  Omit for circular sections perpendicular to axis. */
+      vectorY: Type.Optional(XYZPropsSchema),
+      capped: Type.Optional(Type.Boolean({ description: 'Flag for circular end caps.' })),
+    })
+  ], { description: 'Interface for Cone value defined by centers, radii, and (optional) vectors for circular section planes. VectorX and vectorY are optional. If either one is missing, both vectors are constructed perpendicular to the vector from start to end.' });
+  export type ConeProps = Static<typeof ConePropsSchema>;
 
   /**
    * Interface for TorusPipe data
@@ -460,86 +356,165 @@ export namespace IModelJson {
    * * z axis points through the hole.
    * @public
    */
-  export interface TorusPipeProps extends AxesProps {
-    /** Center of the full torus coordinate system. (donut hole center) */
-    center: XYZProps;
+  export const TorusPipePropsSchema = Type.Intersect([
+    AxesPropsSchema,
+    Type.Object({
+      /** Center of the full torus coordinate system. (donut hole center) */
+      center: XYZPropsSchema,
+      majorRadius: Type.Number({ description: 'Primary radius (elbow radius)' }),
+      minorRadius: Type.Number({ description: 'Pipe radius' }),
+      /** sweep angle.
+       * * if omitted, full 360 degree sweep.
+       */
+      sweepAngle: Type.Optional(AnglePropsSchema),
+      capped: Type.Optional(Type.Boolean({ description: 'Optional capping flag. If missing, implied false' })),
+    })
+  ], { description: 'Interface for TorusPipe data. Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors). Both radii are required. Axes are required. Axis definition is: xy plane contains the major circle, x axis points from donut hole center to flow center at start of pipe, z axis points through the hole.' });
+  export type TorusPipeProps = Static<typeof TorusPipePropsSchema>;
 
-    /** primary radius  (elbow radius) */
-    majorRadius: number;
-    /** pipe radius */
-    minorRadius: number;
-    /** sweep angle.
-     * * if omitted, full 360 degree sweep.
-     */
-    sweepAngle?: AngleProps;
-    /** optional capping flag. If missing, implied false */
-    capped?: boolean;
-  }
 
   /**
-   * Interface for a ruled sweep.
+   * Interface for a linear sweep of a base curve or region.
    * @public
    */
-  export interface RuledSweepProps {
-    /** Array of contours */
-    contour: [CurveCollectionProps];
-    /** optional capping flag. */
-    capped?: boolean;
-  }
+  export const LinearSweepPropsSchema = Type.Object({
+    /** The swept curve or region. Any curve collection */
+    contour: CurveCollectionPropsSchema,
+    /** The sweep vector */
+    vector: XYZPropsSchema,
+    capped: Type.Optional(Type.Boolean({ description: 'Flag for circular end caps.' })),
+  }, { description: 'Interface for a linear sweep of a base curve or region.' });
+  export type LinearSweepProps = Static<typeof LinearSweepPropsSchema>;
+
+  /**
+   * Interface for a rotational sweep of a base curve or region around an axis.
+   * @public
+   */
+  export const RotationalSweepPropsSchema = Type.Object({
+    /** The swept curve or region. Any curve collection */
+    contour: CurveCollectionPropsSchema,
+    /** Any point on the axis of rotation. */
+    center: XYZPropsSchema,
+    /** The axis of rotation */
+    axis: XYZPropsSchema,
+    /** Sweep angle */
+    sweepAngle: AnglePropsSchema,
+    capped: Type.Optional(Type.Boolean({ description: 'Flag for circular end caps.' })),
+  }, { description: 'Interface for a rotational sweep of a base curve or region around an axis.' });
+  export type RotationalSweepProps = Static<typeof RotationalSweepPropsSchema>;
+
+  /**
+   * Interface for a surface with ruled sweeps between corresponding curves on successive contours
+   * @public
+   */
+  export const RuledSweepPropsSchema = Type.Object({
+    /** The swept curve or region. An array of curve collections. */
+    contour: Type.Array(CurveCollectionPropsSchema, { description: 'The swept curve or region. An array of curve collections.' }),
+    /** Flag for circular end caps. */
+    capped: Type.Optional(Type.Boolean({ description: 'Flag for circular end caps.' })),
+  }, { description: 'Interface for a surface with ruled sweeps between corresponding curves on successive contours.' });
+  export type RuledSweepProps = Static<typeof RuledSweepPropsSchema>;
+
+  /**
+   * Interface for solid primitives: box, sphere, cylinder, cone, torusPipe, linear sweep, rotational sweep, ruled sweep.
+   * @public
+   */
+  export const SolidPrimitivePropsSchema = Type.Object({
+    /** `{cylinder:...}` */
+    cylinder: Type.Optional(CylinderPropsSchema),
+    /** `{box:...}` */
+    box: Type.Optional(BoxPropsSchema),
+    /** `{sphere:............}` */
+    sphere: Type.Optional(SpherePropsSchema),
+    /** `{cone:............}` */
+    cone: Type.Optional(ConePropsSchema),
+    /** `{torusPipe:............}` */
+    torusPipe: Type.Optional(TorusPipePropsSchema),
+    /** `{linearSweep:.........}` */
+    linearSweep: Type.Optional(LinearSweepPropsSchema),
+    /** `{rotationalSweep:...}` */
+    rotationalSweep: Type.Optional(RotationalSweepPropsSchema),
+    /** `{ruledSweep:...}` */
+    ruledSweep: Type.Optional(RuledSweepPropsSchema),
+  }, { description: 'Interface for solid primitives: box, sphere, cylinder, cone, torusPipe, linear sweep, rotational sweep, ruled sweep.' });
+  export type SolidPrimitiveProps = Static<typeof SolidPrimitivePropsSchema>;
 
   /**
    * Interface for the analytical data in a channel at a single input value.
    * See `AuxChannelData` for further information.
    * @public
    */
-  export interface AuxChannelDataProps {
-  /** The input value for this data. */
-  input: number;
-  /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
-  values: number[];
-  }
+  export const AuxChannelDataPropsSchema = Type.Object({
+    /** The input value for this data. */
+    input: Type.Number({ description: 'The input value for this data.' }),
+    /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
+    values: Type.Array(Type.Number(), { description: 'The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels.' }),
+  }, {
+    description: [
+      'Interface for the analytical data in a channel at a single input value.',
+      'See `AuxChannelData` for further information.'
+    ].join(' ')
+  });
+  export type AuxChannelDataProps = Static<typeof AuxChannelDataPropsSchema>;
+
   /**
    * Interface for a channel of analytical mesh data.
    * See `AuxChannel` for further information.
    * @public
    */
-  export interface AuxChannelProps {
-  /** An array of analytical data at one or more input values. */
-  data: AuxChannelDataProps[];
-  /** The type of data stored in this channel. */
-  dataType: AuxChannelDataType;
-  /** Optional channel name. */
-  name?: string;
-  /** Optional input name. */
-  inputName?: string;
-  }
+  export const AuxChannelPropsSchema = Type.Object({
+    data: Type.Array(AuxChannelDataPropsSchema, { description: 'An array of analytical data at one or more input values.' }),
+    /** The type of data stored in this channel. */
+    dataType: AuxChannelDataTypeSchema,
+    name: Type.Optional(Type.String({ description: 'Optional channel name.' })),
+    inputName: Type.Optional(Type.String({ description: 'Optional input name.' })),
+  }, {
+    description: [
+      'Interface for a channel of analytical mesh data.',
+      'See `AuxChannel` for further information.'
+    ].join(' ')
+  });
+  export type AuxChannelProps = Static<typeof AuxChannelPropsSchema>;
+
   /**
    * Interface for analytical mesh data.
    * See `PolyfaceAuxData` for further information.
    * @public
-  */
-  export interface AuxDataProps {
-  /** Array with one or more channels of auxiliary data. */
-  channels: AuxChannelProps[];
-  /** Indices mapping channel data to the mesh facets (must be parallel to mesh indices). */
-  indices: number[];
-  }
+   */
+  export const AuxDataPropsSchema = Type.Object({
+    channels: Type.Array(AuxChannelPropsSchema, { description: 'Array with one or more channels of auxiliary data.' }),
+    indices: Type.Array(Type.Number(), { description: 'Indices mapping channel data to the mesh facets (must be parallel to mesh indices).' }),
+  }, {
+    description: [
+      'Interface for analytical mesh data.',
+      'See `PolyfaceAuxData` for further information.'
+    ].join(' ')
+  });
+  export type AuxDataProps = Static<typeof AuxDataPropsSchema>;
+
   /**
    * Interface for extra data attached to an indexed mesh.
    * See `TaggedNumericData` for further information (e.g. value `tagA` and `tagB` values)
    * @public
    */
-  export interface TaggedNumericDataProps {
-    /** integer tag identifying the meaning of this tag.  */
-    tagA: number;
-    /** Second integer tag.  */
-    tagB: number;
+  export const TaggedNumericDataPropsSchema = Type.Object({
+    /** integer tag identifying the meaning of this tag. */
+    tagA: Type.Number({ description: 'Integer tag identifying the meaning of this tag.' }),
+    /** Second integer tag. */
+    tagB: Type.Number({ description: 'Second integer tag.' }),
     /** application specific integer data */
-    intData?: number[];
+    intData: Type.Optional(Type.Array(Type.Number(), { description: 'Application specific integer data' })),
     /** application specific doubles */
-    doubleData?: number[];
-  }
-  /**
+    doubleData: Type.Optional(Type.Array(Type.Number(), { description: 'Application specific doubles' })),
+  }, {
+    description: [
+      'Interface for extra data attached to an indexed mesh.',
+      'See `TaggedNumericData` for further information (e.g. value `tagA` and `tagB` values)'
+    ].join(' ')
+  });
+  export type TaggedNumericDataProps = Static<typeof TaggedNumericDataPropsSchema>;
+
+    /**
    * Interface for an indexed mesh.
    * * IMPORTANT: All indices are one-based.
    * * i.e. vertex index given as 11 appears at index 10 in the data array.
@@ -549,40 +524,101 @@ export namespace IModelJson {
    * * In all index arrays, a ZERO indicates "end of facet".
    * @public
    */
-  export interface IndexedMeshProps {
+  export const IndexedMeshPropsSchema = Type.Object({
     /** vertex coordinates */
-    point: [XYZProps];
+    point: Type.Array(XYZPropsSchema),
     /** surface normals */
-    normal?: [XYZProps];
+    normal: Type.Optional(Type.Array(XYZPropsSchema)),
     /** texture space (uv parameter) coordinates */
-    param?: [XYProps];
+    param: Type.Optional(Type.Array(XYPropsSchema)),
     /** 32 bit color values */
-    color?: [number];
-
+    color: Type.Optional(Type.Array(Type.Number())),
     /** SIGNED ONE BASED ZERO TERMINATED array of point indices. */
-    pointIndex: [number];
+    pointIndex: Type.Array(Type.Number()),
     /** ONE BASED ZERO TERMINATED array of param indices.  ZERO is terminator for single facet. */
-    paramIndex?: [number];
+    paramIndex: Type.Optional(Type.Array(Type.Number())),
     /** ONE BASED ZERO TERMINATED array of normal indices. ZERO is terminator for single facet. */
-    normalIndex?: [number];
+    normalIndex: Type.Optional(Type.Array(Type.Number())),
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
-    colorIndex?: [number];
-
-    /**
-     * Optional fixed block size for indices.
-     * If defined, each facet is represented by `numPerFace` 1-based indices, with appended zeroes if the facet has fewer edges.
-     * If undefined, mesh indices are 1-based, 0-terminated, variable-sized face loops.
-     */
-    numPerFace?: number;
-    /** Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2). */
-    expectedClosure?: number;
-    /** Optional flag indicating if mesh display must assume both sides are visible. */
-    twoSided?: boolean;
+    colorIndex: Type.Optional(Type.Array(Type.Number())),
+    numPerFace: Type.Optional(Type.Number({
+      description: [
+        'Optional fixed block size for indices.',
+        'If defined, each facet is represented by `numPerFace` 1-based indices, with appended zeroes if the facet has fewer edges.',
+        'If undefined, mesh indices are 1-based, 0-terminated, variable-sized face loops.'
+      ].join(' ')
+    })),
+    expectedClosure: Type.Optional(Type.Number({description: 'Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2)'})),
+    twoSided: Type.Optional(Type.Boolean({ description: 'Optional flag indicating if mesh display must assume both sides are visible.' })),
     /** Optional analytical data at the vertices of the mesh */
-    auxData?: AuxDataProps;
+    auxData: Type.Optional(AuxDataPropsSchema),
     /** Optional array of tagged geometry (such as to request subdivision surface) */
-    tags?: TaggedNumericDataProps;
+    tags: Type.Optional(TaggedNumericDataPropsSchema),
+  }, {
+    description: [
+      'Interface for an indexed mesh.',
+      'IMPORTANT: All indices are one-based.',
+      'i.e. vertex index given as 11 appears at index 10 in the data array.',
+      'This is to allow a negated index to mean "don\'t draw the following edge".',
+      'Although negative indices are not allowed for normalIndex, colorIndex, or paramIndex, the "one based" style is used for them so that all indices within the indexedMesh json object are handled similarly.',
+      'In all index arrays, a ZERO indicates "end of facet".'
+    ].join(' ')
+  });
+  export type IndexedMeshProps = Static<typeof IndexedMeshPropsSchema>;
+
+/**
+ * Property rules for json objects that can be deserialized to various Curve and Solid objects
+ * @public
+*/
+export const GeometryPropsSchema = Type.Intersect([
+  CurvePrimitivePropsSchema,
+  SolidPrimitivePropsSchema,
+  CurveCollectionPropsSchema,
+  Type.Object({
+    /** `{indexedMesh:...}` */
+    indexedMesh: Type.Optional(IndexedMeshPropsSchema),
+    /** `{point:...}` */
+    point: Type.Optional(XYZPropsSchema),
+    /** `{bsurf:...}` */
+    bsurf: Type.Optional(BSplineSurfacePropsSchema),
+    /** `{pointString:...}` */
+    pointString: Type.Optional(Type.Array(XYZPropsSchema)),
+  })
+], { description: 'Property rules for json objects that can be deserialized to various Curve and Solid objects' });
+export type GeometryProps = Static<typeof GeometryPropsSchema>;
+
+  /**
+   * Property rules for json objects that can be deserialized to single point
+   * @public
+   */
+  export interface PointProps {
+    /** `{point:...}` */
+    point?: XYZProps;
   }
+
+  /**
+   * Interface for a collection of curves that bound a planar region
+   * @public
+   */
+  export const PlanarRegionPropsSchema = Type.Recursive((Self) => Type.Object({
+    /** `{loop:...}`
+     * * A sequence of curves which connect head to tail, with the final connecting back to the first
+     */
+    loop: Type.Optional(Type.Array(CurvePrimitivePropsSchema)),
+    /** `{parityRegion:...}`
+     * * A collection of loops, with composite inside/outside determined by parity rules.
+     * * (The single outer boundary with one or more holes is a parityRegion)
+     */
+    parityRegion: Type.Optional(Type.Array(Type.Object({
+      loop: Type.Array(CurvePrimitivePropsSchema, { description: 'A sequence of curves which connect head to tail, with the final connecting back to the first' })
+    }))),
+    /** `{unionRegion:...}`
+     * * A collection of loops and parityRegions
+     */
+    unionRegion: Type.Optional(Type.Array(Self)),
+  }), { description: 'Interface for a collection of curves that bound a planar region' });
+  export type PlanarRegionProps = Static<typeof PlanarRegionPropsSchema>;
+
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
    * * 2: parse json fragment to strongly typed geometry: `const g = reader.parse (fragment)`

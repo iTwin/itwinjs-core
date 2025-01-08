@@ -6,31 +6,45 @@
  * @module Ids
  */
 
-/** A string containing a well-formed string representation of an [Id64]($core-bentley).
- * See [Working with Ids]($docs/learning/common/Id64.md).
- * @public
- */
-export type Id64String = string;
+// import { Type } from "@sinclair/typebox";
 
-/** A string containing a well-formed string representation of a [Guid]($core-bentley).
- * @public
- */
-export type GuidString = string;
+// /** A string containing a well-formed string representation of an [Id64]($core-bentley).
+//  * See [Working with Ids]($docs/learning/common/Id64.md).
+//  * @public
+//  */
+// export type Id64String = string;
+
+// /** A string containing a well-formed string representation of a [Guid]($core-bentley).
+//  * @public
+//  */
+// export type GuidString = string;
 
 /** A set of [[Id64String]]s.
  * @public
  */
 export type Id64Set = Set<Id64String>;
 
-/** An array of [[Id64String]]s.
- * @public
- */
-export type Id64Array = Id64String[];
-
 /** Used as an argument to a function that can accept one or more [[Id64String]]s.
  * @public
  */
 export type Id64Arg = Id64String | Id64Set | Id64Array;
+
+import { Static, Type } from '@sinclair/typebox';
+
+/* eslint-disable @typescript-eslint/naming-convention */
+export const Id64StringSchema = Type.String({
+  description: 'A string containing a well-formed string representation of an Id64. See [Working with Ids]($docs/learning/common/Id64.md).',
+});
+export type Id64String = Static<typeof Id64StringSchema>;
+
+export const Id64ArraySchema = Type.Array(Id64StringSchema, {description: "An array of Id64Strings."});
+export type Id64Array = Static<typeof Id64ArraySchema>;
+
+export const GuidStringSchema = Type.String({
+  description: 'A string containing a well-formed string representation of a Guid.',
+});
+export type GuidString = Static<typeof GuidStringSchema>;
+/* eslint-enable @typescript-eslint/naming-convention */
 
 function toHex(str: string): number {
   const v = parseInt(str, 16);

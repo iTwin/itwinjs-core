@@ -6,28 +6,41 @@
  * @module Geometry
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
+import { Id64String, Id64StringSchema } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform, XYZPropsSchema } from "@itwin/core-geometry";
+import { Static, Type } from "@sinclair/typebox";
 
-/** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
+/**
+ * JSON representation of the 4 corners of an [[ImageGraphicProps]].
+ * @see [[ImageGraphicCorners]].
  * @public
  * @extensions
  */
-export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const ImageGraphicCornersPropsSchema = Type.Tuple([
+  XYZPropsSchema,
+  XYZPropsSchema,
+  XYZPropsSchema,
+  XYZPropsSchema
+], { description: 'JSON representation of the 4 corners of an [[ImageGraphicProps]].' });
+export type ImageGraphicCornersProps = Static<typeof ImageGraphicCornersPropsSchema>;
 
-/** JSON representation of an [[ImageGraphic]].
+/**
+ * JSON representation of an [[ImageGraphic]].
  * @see [[GeometryStreamEntryProps]].
  * @public
  * @extensions
  */
-export interface ImageGraphicProps {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const ImageGraphicPropsSchema = Type.Object({
   /** The 4 corners of defining the quadrilateral on which the image is displayed. */
-  corners: ImageGraphicCornersProps;
+  corners: ImageGraphicCornersPropsSchema,
   /** The Id of the persistent [[Texture]] element defining the image to be displayed on the quadrilateral. */
-  textureId: Id64String;
+  textureId: Id64StringSchema,
   /** Whether or not to draw a border around the image. */
-  hasBorder: boolean;
-}
+  hasBorder: Type.Boolean({ description: 'Whether or not to draw a border around the image.' }),
+}, { description: 'JSON representation of an [[ImageGraphic]].' });
+export type ImageGraphicProps = Static<typeof ImageGraphicPropsSchema>;
 
 /** Defines the 4 corners of an [[ImageGraphic]]. The points are expected to lie in a single plane and define a (possibly-skewed) quadrilateral.
  * The points map to the corners of the image as follows:

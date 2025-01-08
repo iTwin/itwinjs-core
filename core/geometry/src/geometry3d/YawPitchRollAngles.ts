@@ -7,7 +7,8 @@
  * @module CartesianGeometry
  */
 
-import { AngleProps, Geometry } from "../Geometry";
+import { Static, Type } from "@sinclair/typebox";
+import { AnglePropsSchema, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
 import { Point3d } from "./Point3dVector3d";
@@ -15,18 +16,14 @@ import { Transform } from "./Transform";
 
 // cspell:word Tait
 
-/**
- * Angle properties of a `YawPitchRoll` orientation
- * @public
- */
-export interface YawPitchRollProps {
-  /** yaw field */
-  yaw?: AngleProps;
-  /** pitch field */
-  pitch?: AngleProps;
-  /** roll field */
-  roll?: AngleProps;
-}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const YawPitchRollPropsSchema = Type.Object({
+  yaw: Type.Optional(AnglePropsSchema),
+  pitch: Type.Optional(AnglePropsSchema),
+  roll: Type.Optional(AnglePropsSchema),
+}, {description: 'Angle properties of a `YawPitchRoll` orientation'});
+export type YawPitchRollProps = Static<typeof YawPitchRollPropsSchema>;
 
 /**
  * Three angles that determine the orientation of an object in space, sometimes referred to as [Tait–Bryan angles]

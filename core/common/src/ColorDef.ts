@@ -10,6 +10,7 @@ import { Geometry } from "@itwin/core-geometry";
 import { ColorByName } from "./ColorByName";
 import { HSLColor } from "./HSLColor";
 import { HSVColor, HSVConstants } from "./HSVColor";
+import { Static, Type } from "@sinclair/typebox";
 
 // cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrggbb hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish
 
@@ -18,11 +19,9 @@ import { HSVColor, HSVConstants } from "./HSVColor";
 const scratchBytes = new Uint8Array(4);
 const scratchUInt32 = new Uint32Array(scratchBytes.buffer);
 
-/** The JSON representation of a [[ColorDef]] - an unsigned 32-bit integer in 0xTTBBGGRR format.
- * @public
- * @extensions
- */
-export type ColorDefProps = number;
+/* eslint-disable @typescript-eslint/naming-convention */
+export const ColorDefPropsSchema = Type.Number({description: `The JSON representation of a [[ColorDef]] - an unsigned 32-bit integer in 0xTTBBGGRR format.`});
+export type ColorDefProps = Static<typeof ColorDefPropsSchema>;
 
 /** An immutable integer representation of a color.
  *

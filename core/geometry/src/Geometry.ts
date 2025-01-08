@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { AngleSweep } from "./geometry3d/AngleSweep";
+import { Static, Type } from "@sinclair/typebox";
 import { Point2d, Vector2d, XY } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
 import { XAndY } from "./geometry3d/XYZProps";
@@ -180,18 +180,22 @@ export interface BeJSONFunctions {
   /** Return a json object with this object's contents. */
   toJSON(): any;
 }
+
 /**
  * The properties for a JSON representation of an `Angle`.
  * * If AngleProps data is a number, it is in **degrees**.
  * * If AngleProps data is an object, it can have either degrees or radians.
  * @public
  */
-export type AngleProps =
-  { degrees: number } |
-  { radians: number } |
-  { _radians: number } |
-  { _degrees: number } |
-  number;
+export const AnglePropsSchema = Type.Union([
+  Type.Object({ degrees: Type.Number({ description: 'Angle in degrees' }) }, { description: 'Object with degrees property' }),
+  Type.Object({ radians: Type.Number({ description: 'Angle in radians' }) }, { description: 'Object with radians property' }),
+  Type.Object({ _radians: Type.Number({ description: 'Internal representation of angle in radians' }) }, { description: 'Object with _radians property' }),
+  Type.Object({ _degrees: Type.Number({ description: 'Internal representation of angle in degrees' }) }, { description: 'Object with _degrees property' }),
+  Type.Number({ description: 'Angle in degrees if represented as a number' }),
+], { description: 'The properties for a JSON representation of an `Angle`. If AngleProps data is a number, it is in **degrees**. If AngleProps data is an object, it can have either degrees or radians.' });
+export type AngleProps = Static<typeof AnglePropsSchema>;
+
 /**
  * The properties for a JSON representation of an `AngleSweep`.
  * * The json data is always *start* and *end* angles as a pair in an array.
@@ -202,11 +206,14 @@ export type AngleProps =
  * two numbers, the start and end angles in radians.
  * @public
  */
-export type AngleSweepProps =
-  AngleSweep |
-  { degrees: [number, number] } |
-  { radians: [number, number] } |
-  [number, number];
+export const AngleSweepPropsSchema = Type.Union([
+  Type.Any({description: "Represents an instance of AngleSweep class"}),
+  Type.Object({ degrees: Type.Tuple([Type.Number(), Type.Number()], { description: 'Array of two numbers representing start and end angles in degrees' }) }, { description: 'Object with degrees property' }),
+  Type.Object({ radians: Type.Tuple([Type.Number(), Type.Number()], { description: 'Array of two numbers representing start and end angles in radians' }) }, { description: 'Object with radians property' }),
+  Type.Tuple([Type.Number(), Type.Number()], { description: 'Array of two numbers representing start and end angles in degrees' }),
+], { description: 'The properties for a JSON representation of an `AngleSweep`. The json data is always *start* and *end* angles as a pair in an array. If AngleSweepProps data is an array of two numbers, those are both angles in `degrees`. If AngleSweepProps data is an object with key `degrees`, then the corresponding value must be an array of two numbers, the start and end angles in degrees. If the AngleSweepProps is an object with key `radians`, then the corresponding value must be an array of two numbers, the start and end angles in radians.' });
+export type AngleSweepProps = Static<typeof AngleSweepPropsSchema>;
+
 /**
 * Interface for method with a clone operation.
 * @public

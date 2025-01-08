@@ -14,6 +14,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
 // import { Geometry } from "./Geometry";
 import { Range1d, Range3d } from "../geometry3d/Range";
+import { Type } from "@sinclair/typebox";
 
 /** The types of data that can be represented by an [[AuxChannelData]]. Each type of data contributes differently to the
  * animation applied by an [AnalysisStyle]($common) and responds differently when the host [[PolyfaceAuxData]] is transformed.
@@ -37,6 +38,9 @@ export enum AuxChannelDataType {
    */
   Normal = 3,
 }
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const AuxChannelDataTypeSchema = Type.Enum(AuxChannelDataType, { description: "The types of data that can be represented by an AuxChannelData." });
 
 /**  Represents the [[AuxChannel]] data at a single input value.
  * @public

@@ -6,6 +6,7 @@
 /** @packageDocumentation
  * @module Numerics
  */
+import { Static, Type } from "@sinclair/typebox";
 import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Plane3d } from "../geometry3d/Plane3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -15,11 +16,10 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 
-/**
- * 4d point packed in an array of 4 numbers.
- * @public
- */
-export type Point4dProps = number[];
+/* eslint-disable @typescript-eslint/naming-convention */
+export const Point4DPropsSchema = Type.Array(Type.Number(), {description: "4D point packed in an array of 4 numbers."});
+export type Point4dProps = Static<typeof Point4DPropsSchema>;
+
 /**
  *
  * @param ddg numerator second derivative

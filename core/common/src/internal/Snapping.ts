@@ -6,58 +6,59 @@
  * @module Geometry
  */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { Matrix4dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
-import { GeometryStreamProps } from "../geometry/GeometryStream";
-import { GeometryClass } from "../GeometryParams";
-import { ViewFlagProps } from "../ViewFlags";
+import { Id64ArraySchema, Id64StringSchema } from "@itwin/core-bentley";
+import { Matrix4DPropsSchema, TransformPropsSchema, XYZPropsSchema } from "@itwin/core-geometry";
+import { GeometryClassSchema } from "../GeometryParams";
+import { ViewFlagPropsSchema } from "../ViewFlags";
+import { Static, Type } from "@sinclair/typebox";
+import { GeometryStreamPropsSchema } from "../geometry/GeometryStream";
 
-/** Information required to request a *snap* to a pickable decoration from the front end to the back end.
- * @internal RPC glue.
- */
-export interface DecorationGeometryProps {
-  readonly id: Id64String;
-  readonly geometryStream: GeometryStreamProps;
-}
+/* eslint-disable @typescript-eslint/naming-convention */
 
-/** Information required to request a *snap* to an element from the front end to the back end.
- * Includes the viewing parameters so that snap can be relative to the view direction, viewing mode, etc.
- * @internal RPC glue.
+const DecorationGeometryPropsSchema = Type.Object({
+  id: Id64StringSchema,
+  geometryStream: GeometryStreamPropsSchema,
+}, { description: "Information required to request a *snap* to a pickable decoration from the front end to the back end." });
+export type DecorationGeometryProps = Static<typeof DecorationGeometryPropsSchema>;
+
+/**
+ * Interface for snap request properties
+ * @public
  */
-export interface SnapRequestProps {
-  id: Id64String;
-  testPoint: XYZProps;
-  closePoint: XYZProps;
-  worldToView: Matrix4dProps;
-  viewFlags?: ViewFlagProps;
-  snapModes?: number[];
-  snapAperture?: number;
-  snapDivisor?: number;
-  subCategoryId?: Id64String;
-  geometryClass?: GeometryClass;
-  intersectCandidates?: Id64Array;
-  decorationGeometry?: DecorationGeometryProps[];
+export const SnapRequestPropsSchema = Type.Object({
+  id: Id64StringSchema,
+  testPoint: XYZPropsSchema,
+  closePoint: XYZPropsSchema,
+  worldToView: Matrix4DPropsSchema,
+  viewFlags: Type.Optional(ViewFlagPropsSchema),
+  snapModes: Type.Optional(Type.Array(Type.Number())),
+  snapAperture: Type.Optional(Type.Number()),
+  snapDivisor: Type.Optional(Type.Number()),
+  subCategoryId: Type.Optional(Id64StringSchema),
+  geometryClass: Type.Optional(GeometryClassSchema),
+  intersectCandidates: Type.Optional(Id64ArraySchema),
+  decorationGeometry: Type.Optional(Type.Array(DecorationGeometryPropsSchema)),
   /** A transform to be applied to the snap geometry.
    * testPoint, closePoint, and worldToView are in "world" coordinates (the coordinates of the viewport's iModel).
    * The snap geometry is in "model" coordinates (the coordinates of the iModel to which we're snapping).
    * In normal cases these are the same iModel. They may differ when people draw multiple iModels into the same viewport.
    */
-  modelToWorld?: TransformProps;
-}
+  modelToWorld: Type.Optional(TransformPropsSchema),
+}, { description: 'Interface for snap request properties' });
+export type SnapRequestProps = Static<typeof SnapRequestPropsSchema>;
 
-/** Information returned from the back end to the front end holding the result of a *snap* operation.
- * @internal RPC glue.
- */
-export interface SnapResponseProps {
-  status: number;
-  snapMode?: number;
-  heat?: number;
-  geomType?: number;
-  parentGeomType?: number;
-  hitPoint?: XYZProps;
-  snapPoint?: XYZProps;
-  normal?: XYZProps;
-  curve?: any;
-  intersectCurve?: any;
-  intersectId?: string;
-}
+export const SnapResponsePropsSchema = Type.Object({
+  status: Type.Number(),
+  snapMode: Type.Optional(Type.Number()),
+  heat: Type.Optional(Type.Number()),
+  geomType: Type.Optional(Type.Number()),
+  parentGeomType: Type.Optional(Type.Number()),
+  hitPoint: Type.Optional(XYZPropsSchema),
+  snapPoint: Type.Optional(XYZPropsSchema),
+  normal: Type.Optional(XYZPropsSchema),
+  curve: Type.Optional(Type.Any()),
+  intersectCurve: Type.Optional(Type.Any()),
+  intersectId: Type.Optional(Type.String()),
+}, { description: "Information returned from the back end to the front end holding the result of a *snap* operation." });
+export type SnapResponseProps = Static<typeof SnapResponsePropsSchema>;
+

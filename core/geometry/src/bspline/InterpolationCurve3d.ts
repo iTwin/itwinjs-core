@@ -16,35 +16,31 @@ import { BSplineCurve3d } from "./BSplineCurve";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { XYZProps } from "../geometry3d/XYZProps";
+import { XYZPropsSchema } from "../geometry3d/XYZProps";
+import { Static, Type } from "@sinclair/typebox";
 
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]
  * * This is a "json compatible" version of [[InterpolationCurve3dOptions]]
  * @public
  */
-export interface InterpolationCurve3dProps {
-  /** order of the computed bspline (one more than degree) */
-  order?: number;
-  /** true if the B-spline construction should be periodic */
-  closed?: boolean;
-  /** if closed and no knots, compute chord length knots (1) or uniform knots (0). Chord length knots give best fit. */
-  isChordLenKnots?: number;
-  /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear (1) or leave them be (0). */
-  isColinearTangents?: number;
-  /** if !closed and start/endTangent is given, set its magnitude to the first/last fit point chord length (1) or to the magnitude of the Bessel tangent (0). Bessel gives best fit. */
-  isChordLenTangents?: number;
-  /** if !closed and start/endTangent is absent, compute it using the natural end condition (1) or Bessel (0). Bessel gives best fit. */
-  isNaturalTangents?: number;
-  /** optional start tangent, pointing into curve. Magnitude is ignored. */
-  startTangent?: XYZProps;
-  /** optional end tangent, pointing into curve. Magnitude is ignored. */
-  endTangent?: XYZProps;
-  /** points that the curve must pass through */
-  fitPoints: XYZProps[];
-  /** parameters for curve fitting, one per fit point */
-  knots?: number[];
-}
+export const InterpolationCurve3dPropsSchema = Type.Object({
+  order: Type.Optional(Type.Number({ description: 'Order of the computed bspline (one more than degree)' })),
+  closed: Type.Optional(Type.Boolean({ description: 'True if the B-spline construction should be periodic' })),
+  isChordLenKnots: Type.Optional(Type.Number({ description: 'If closed and no knots, compute chord length knots (1) or uniform knots (0). Chord length knots give best fit.' })),
+  isColinearTangents: Type.Optional(Type.Number({ description: 'If !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear (1) or leave them be (0).' })),
+  isChordLenTangents: Type.Optional(Type.Number({ description: 'If !closed and start/endTangent is given, set its magnitude to the first/last fit point chord length (1) or to the magnitude of the Bessel tangent (0). Bessel gives best fit.' })),
+  isNaturalTangents: Type.Optional(Type.Number({ description: 'If !closed and start/endTangent is absent, compute it using the natural end condition (1) or Bessel (0). Bessel gives best fit.' })),
+  // Optional start tangent, pointing into curve. Magnitude is ignored.
+  startTangent: Type.Optional(XYZPropsSchema),
+  // Optional end tangent, pointing into curve. Magnitude is ignored.
+  endTangent: Type.Optional(XYZPropsSchema),
+  fitPoints: Type.Array(XYZPropsSchema, { description: 'Points that the curve must pass through' }),
+  knots: Type.Optional(Type.Array(Type.Number(), { description: 'Parameters for curve fitting, one per fit point' })),
+}, { description: 'Fit points and end condition data for InterpolationCurve3d. This is a "json compatible" version of InterpolationCurve3dOptions.' });
+
+export type InterpolationCurve3dProps = Static<typeof InterpolationCurve3dPropsSchema>;
 
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]

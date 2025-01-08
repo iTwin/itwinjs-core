@@ -9,6 +9,7 @@
 // cspell:ignore ovrs
 
 import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import { Static, Type } from "@sinclair/typebox";
 
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
@@ -42,77 +43,92 @@ export enum RenderMode {
   HiddenLine = 3,
 }
 
-/** JSON representation of [[ViewFlags]].
- * This is a persistence format with some unfortunate quirks that have been retained for backwards compatibility.
- * In particular, it supplies three separate flags intended to control lighting - [[noCameraLights]], [[noSourceLights]], and [[noSolarLight]] -
- * but there exists only a single [[ViewFlags.lighting]] flag. [[ViewFlags.lighting]] is set to true unless all three of the "no lighting" flags are true.
- * It also uses awkward negative ([[noConstruct]], [[noTransp]]) and/or abbreviated ([[clipVol]], [[visEdges]]) property names that differ from
- * those of the corresponding [[ViewFlags]] properties, making usage of this type in code error-prone.
- * Prefer to use [[ViewFlagsProperties]] unless you need to work directly with the persistence format.
- * @public
- * @extensions
- */
-export interface ViewFlagProps {
-  /** If true, don't display geometry of class [[GeometryClass.Construction]]. */
-  noConstruct?: boolean;
-  /** If true, don't display geometry of class [[GeometryClass.Dimension]]. */
-  noDim?: boolean;
-  /** If true, don't display geometry of class [[GeometryClass.Pattern]]. */
-  noPattern?: boolean;
-  /** If true, all lines are drawn with a width of 1 pixel. */
-  noWeight?: boolean;
-  /** If true, don't apply [[LinePixels]] styles. */
-  noStyle?: boolean;
-  /** If true, display transparency geometry as opaque. */
-  noTransp?: boolean;
-  /** If true, don't show filled planar regions, unless they use [[FillFlags.Always]]. */
-  noFill?: boolean;
-  /** If true, display a grid in the view. */
-  grid?: boolean;
-  /** If true, display graphics representing the [AuxCoordSystem]($backend). */
-  acs?: boolean;
-  /** If true, don't apply [[RenderTexture]]s to surfaces. */
-  noTexture?: boolean;
-  /** If true, don't apply [[RenderMaterial]]s to surfaces. */
-  noMaterial?: boolean;
-  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
-  noCameraLights?: boolean;
-  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
-  noSourceLights?: boolean;
-  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
-  noSolarLight?: boolean;
-  /** If true, display the edges of surfaces. */
-  visEdges?: boolean;
-  /** If true, display the edges of surfaces, even if they are behind other geometry. */
-  hidEdges?: boolean;
-  /** If true, display shadows. */
-  shadows?: boolean;
-  /** If true, apply the view's clipping volume. Has no effect on other types of clips like [[ModelClipGroups]]. */
-  clipVol?: boolean;
-  /** If true, apply the view's [[DisplayStyleSettings.monochromeColor]] and [[DisplayStyleSettings.monochromeMode]] to produce a monochrome image. */
-  monochrome?: boolean;
-  /** The basic rendering mode, which affects the behavior of other flags. */
-  renderMode?: RenderMode;
-  /** Display a background map. */
-  backgroundMap?: boolean;
-  /** If true, apply [[AmbientOcclusion]]. */
-  ambientOcclusion?: boolean;
-  /** If true, apply [[ThematicDisplay]]. */
-  thematicDisplay?: boolean;
-  /** If true, overlay surfaces with wiremesh to reveal their triangulation. */
-  wiremesh?: boolean;
-  /** Controls whether surface discard is always applied regardless of other ViewFlags.
-   * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
-   * non-planar surfaces always draw in front of those non-planar surfaces.
-   * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
-   * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
-   */
-  forceSurfaceDiscard?: boolean;
-  /** Disables the "white-on-white reversal" employed by some CAD applications.
-   * @see [[ViewFlags.whiteOnWhiteReversal]].
-   */
-  noWhiteOnWhiteReversal?: boolean;
-}
+/* eslint-disable @typescript-eslint/naming-convention */
+export const RenderModeSchema = Type.Enum(RenderMode, {
+  description: `Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
+    The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.`,
+  examples: [RenderMode.Wireframe, RenderMode.SmoothShade, RenderMode.SolidFill, RenderMode.HiddenLine],});
+export type RenderModeType = Static<typeof RenderModeSchema>;
+
+export const ViewFlagPropsSchema = Type.Object({
+  noConstruct: Type.Optional(
+    Type.Boolean({ description: "If true, don't display geometry of class [[GeometryClass.Construction]]." }),
+  ),
+  noDim: Type.Optional(
+    Type.Boolean({ description: "If true, don't display geometry of class [[GeometryClass.Dimension]]." }),
+  ),
+  noPattern: Type.Optional(
+    Type.Boolean({ description: "If true, don't display geometry of class [[GeometryClass.Pattern]]." }),
+  ),
+  noWeight: Type.Optional(Type.Boolean({ description: "If true, all lines are drawn with a width of 1 pixel." })),
+  noStyle: Type.Optional(Type.Boolean({ description: "If true, don't apply [[LinePixels]] styles." })),
+  noTransp: Type.Optional(Type.Boolean({ description: "If true, display transparency geometry as opaque." })),
+  noFill: Type.Optional(
+    Type.Boolean({ description: "If true, don't show filled planar regions, unless they use [[FillFlags.Always]]." }),
+  ),
+  grid: Type.Optional(Type.Boolean({ description: "If true, display a grid in the view." })),
+  acs: Type.Optional(
+    Type.Boolean({ description: "If true, display graphics representing the [AuxCoordSystem]($backend)." }),
+  ),
+  noTexture: Type.Optional(Type.Boolean({ description: "If true, don't apply [[RenderTexture]]s to surfaces." })),
+  noMaterial: Type.Optional(Type.Boolean({ description: "If true, don't apply [[RenderMaterial]]s to surfaces." })),
+  noCameraLights: Type.Optional(
+    Type.Boolean({ description: "See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]." }),
+  ),
+  noSourceLights: Type.Optional(
+    Type.Boolean({ description: "See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]." }),
+  ),
+  noSolarLight: Type.Optional(
+    Type.Boolean({ description: "See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]." }),
+  ),
+  visEdges: Type.Optional(Type.Boolean({ description: "If true, display the edges of surfaces." })),
+  hidEdges: Type.Optional(
+    Type.Boolean({ description: "If true, display the edges of surfaces, even if they are behind other geometry." }),
+  ),
+  shadows: Type.Optional(Type.Boolean({ description: "If true, display shadows." })),
+  clipVol: Type.Optional(
+    Type.Boolean({
+      description:
+        "If true, apply the view's clipping volume. Has no effect on other types of clips like [[ModelClipGroups]].",
+    }),
+  ),
+  monochrome: Type.Optional(
+    Type.Boolean({
+      description:
+        "If true, apply the view's [[DisplayStyleSettings.monochromeColor]] and [[DisplayStyleSettings.monochromeMode]] to produce a monochrome image.",
+    }),
+  ),
+  renderMode: Type.Optional(RenderModeSchema),
+  backgroundMap: Type.Optional(Type.Boolean({ description: "Display a background map." })),
+  ambientOcclusion: Type.Optional(Type.Boolean({ description: "If true, apply [[AmbientOcclusion]]." })),
+  thematicDisplay: Type.Optional(Type.Boolean({ description: "If true, apply [[ThematicDisplay]]." })),
+  wiremesh: Type.Optional(
+    Type.Boolean({ description: "If true, overlay surfaces with wiremesh to reveal their triangulation." }),
+  ),
+  forceSurfaceDiscard: Type.Optional(
+    Type.Boolean({
+      description: `Controls whether surface discard is always applied regardless of other ViewFlags.
+    Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
+    non-planar surfaces always draw in front of those non-planar surfaces.
+    When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
+    that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.`,
+    }),
+  ),
+  noWhiteOnWhiteReversal: Type.Optional(
+    Type.Boolean({
+      description: `Disables the "white-on-white reversal" employed by some CAD applications.
+    @see [[ViewFlags.whiteOnWhiteReversal]].`,
+    }),
+  ),
+}, { description: `JSON representation of [[ViewFlags]].
+      This is a persistence format with some unfortunate quirks that have been retained for backwards compatibility.
+      In particular, it supplies three separate flags intended to control lighting - [[noCameraLights]], [[noSourceLights]], and [[noSolarLight]] -
+      but there exists only a single [[ViewFlags.lighting]] flag. [[ViewFlags.lighting]] is set to true unless all three of the "no lighting" flags are true.
+      It also uses awkward negative ([[noConstruct]], [[noTransp]]) and/or abbreviated ([[clipVol]], [[visEdges]]) property names that differ from
+      those of the corresponding [[ViewFlags]] properties, making usage of this type in code error-prone.
+      Prefer to use [[ViewFlagsProperties]] unless you need to work directly with the persistence format.`});
+export type ViewFlagProps = Static<typeof ViewFlagPropsSchema>;
+
 
 function edgesRequired(renderMode: RenderMode, visibleEdges: boolean): boolean {
   return visibleEdges || RenderMode.SmoothShade !== renderMode;

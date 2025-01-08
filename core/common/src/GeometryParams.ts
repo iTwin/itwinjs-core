@@ -12,6 +12,7 @@ import { AreaPattern } from "./geometry/AreaPattern";
 import { LineStyle } from "./geometry/LineStyle";
 import { Gradient } from "./Gradient";
 import { IModel } from "./IModel";
+import { Type } from "@sinclair/typebox";
 
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
  * @public
@@ -28,6 +29,10 @@ export enum FillDisplay {
   Blanking = 3,
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const FillDisplaySchema = Type.Enum(FillDisplay,
+   {description: "Whether a closed region should be drawn for wireframe display with its internal area filled or not.",});
+
 /** Describes how a view's background color affects the interior area of a closed region.
  * @public
  * @extensions
@@ -40,6 +45,9 @@ export enum BackgroundFill {
   /** single color fill uses the view's background color and line color to draw an outline fill */
   Outline = 2,
 }
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const BackgroundFillSchema = Type.Enum(BackgroundFill, {description: "Describes how a view's background color affects the interior area of a closed region.",});
 
 /** Categorizes a piece of geometry within a GeometryStream. Visibility of classes of geometry can be toggled
  * within a view using [[ViewFlags]].
@@ -58,6 +66,12 @@ export enum GeometryClass {
   /** Used to classify geometry used to fill planar regions with a 2d pattern (e.g., hatch lines). */
   Pattern = 3,
 }
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const GeometryClassSchema = Type.Enum(GeometryClass, {
+  description: `Categorizes a piece of geometry within a GeometryStream. Visibility of classes of geometry can be toggled
+ within a view using [[ViewFlags]].`,
+ examples: [GeometryClass.Primary, GeometryClass.Construction, GeometryClass.Dimension, GeometryClass.Pattern],});
 
 /** Describes the display properties of graphics in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].
  * @see [[GeometryStreamProps]].

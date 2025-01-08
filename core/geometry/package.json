@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
+    "@sinclair/typebox": "^0.34.12",
     "flatbuffers": "~1.12.0"
   }
 }
