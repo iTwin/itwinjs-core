@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { ProcessDetector } from "@itwin/core-bentley";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
-import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
+import { BackendLoggerCategory, IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
+import { AuthorizationClient, CommonLoggerCategory, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
@@ -38,6 +38,21 @@ export async function initializeBackend() {
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;
   iModelHost.authorizationClient = await initializeAuthorizationClient();
+  iModelHost.crashReportingConfig = {
+    crashDir: path.join(__dirname, "..", "..", "crash"),
+    enableNodeReport: true
+  };
+
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Trace);
+  Logger.setLevel(CommonLoggerCategory.RpcInterfaceBackend, LogLevel.Error);
+  Logger.setLevel(BackendLoggerCategory.IModelTileRequestRpc, LogLevel.Error);
+  Logger.setLevel("ECDb", LogLevel.Error);
+  Logger.setLevel("CloudSqlite", LogLevel.Error);
+  Logger.setLevel("ECObjectsNative", LogLevel.Error);
+  Logger.setLevel("GeoCoord", LogLevel.Error);
+  Logger.setLevel("BeSQLite", LogLevel.Error);
+  Logger.setLevel("DgnCore", LogLevel.Error);
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface];
