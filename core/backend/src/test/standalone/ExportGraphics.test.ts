@@ -355,12 +355,12 @@ describe("exportGraphics", () => {
     testMesh(cube, cubeParams);
   });
 
-  it("export elements from local bim file", () => {
+  it.only("export elements from local bim file", () => {
     // edit these values to run
     const outBimFileName: string = "out.bim"; // will be written to core\backend\lib\cjs\test\output\ExportGraphics
     const outFBFileName: string = "";         // e.g., "c:\\tmp\\foo.fb"
-    const inBimFilePathName: string = "";     // e.g., "c:\\tmp\\foo.bim"
-    const elementIds: Id64Array = [];         // e.g., ["0x2000000000c", "0x2000000000a"]
+    const inBimFilePathName: string = "c:\\tmp\\LineStyleUserDataset.bim";     // e.g., "c:\\tmp\\foo.bim"
+    const elementIds: Id64Array = ["0x20000002360"];         // e.g., ["0x2000000000c", "0x2000000000a"]
 
     if (outBimFileName !== "" && inBimFilePathName !== "" && elementIds.length > 0) {
       const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
@@ -379,9 +379,11 @@ describe("exportGraphics", () => {
       }
 
       const infos: ExportGraphicsInfo[] = [];
+      const partInstanceArray: ExportPartInstanceInfo[] = [];
       const exportGraphicsOptions: ExportGraphicsOptions = {
         elementIdArray: elementIds,
         onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+        partInstanceArray,
       };
       if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
         // examine infos here
