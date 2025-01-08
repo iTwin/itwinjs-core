@@ -100,7 +100,6 @@ describe("ECDb", () => {
       testECDb.detachDb("source");
     });
 
-    // Crash!!!
     await using(ECDbTestHelper.createECDb(outDir, "file4.ecdb"), async (testECDb: ECDb) => {
       testECDb.attachDb(ecdbPath1, "source");
       const reader = testECDb.createQueryReader("SELECT Name, Age FROM source.test.Person");
