@@ -268,7 +268,8 @@ export class RegularizationContext {
       HalfEdge.pinch(nodeA1, nodeC);
       HalfEdge.pinch(nodeB1, nodeC.edgeMate);
       if (RegularizationContext.announceEdge)
-        RegularizationContext.announceEdge(this.graph, nodeA, nodeB, direction);
+        RegularizationContext.announceEdge(this.graph, nodeC, nodeC.edgeMate, direction);
+      // TODO: mask with REGULARIZED_EDGE so that downstream it can be made invisible, or ignored for superface traversal.
       return nodeC;
     }
     return undefined;

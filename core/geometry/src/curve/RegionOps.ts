@@ -315,12 +315,13 @@ export class RegionOps {
     );
 
     // START HERE:
-    // 1. in PlanarSubdivision.assembleHalfEdgeGraph, mask the HalfEdges from curves whose parent's parentGroup's groupOpType is NonBounding
-    // 2. instead of createLoopInFace, call new PlanarSubdivision.createLoopOrParityRegionInFace:
-    //    a. collect superface by visiting fSuccs, and vPreding past nodes with bridge mask
-    //        i. Push each bridge-masked node onto stack.
+    // 1. in PlanarSubdivision.assembleHalfEdgeGraph, mask the HalfEdges from curves whose parent's parentGroup's groupOpType is NonBounding (these are bridges)
+    // 2. instead of createLoopInFace above, call new PlanarSubdivision.createLoopOrParityRegionInFace:
+    //    a. collect superface by vPreding past nodes with bridge/regularized mask and following fSuccs of unmasked nodes
+    //        i. Push each bridge-masked node vPreded past onto stack.
     //        ii. For each complete superface, create Loop and push to Loop array. (The first Loop will be the outermost in a parity region)
-    //    b. pop bridge stack and if its fSucc is unvisited, start new superface search there
+    //    b. pop bridge stack:
+    //        i. Follow the bridge fSucc chain (vPreding around regularized masked edges) until reach an unvisited unmasked edge to start a new superface search
     //    c. when stack empty, create parity region from loop array
 
     // return an only child for wider compatibility (e.g., conversion to DGN)

@@ -64,12 +64,16 @@ export enum HalfEdgeMask {
    * BOUNDARY_EDGE nor EXTERIOR_EDGE.
    */
   PRIMARY_EDGE = 0x00000004,
-  /** Mask used for low level searches to identify previously-visited nodes. */
-  VISITED = 0x0000010,
+  /** Mask set on both sides of a bridge edge added by algorithms to join loops. */
+  BRIDGE_EDGE = 0x00000008,
+  /** Mask set on both sides of an edge added during graph regularization. */
+  REGULARIZED_EDGE = 0x00000010,
   /** Mask applied to triangles by earcut triangulator. */
   TRIANGULATED_FACE = 0x00000100,
   /** Mask applied in a face with 2 edges. */
   NULL_FACE = 0x00000200,
+  /** Mask used for low level searches to identify previously-visited nodes. */
+  VISITED = 0x00001000,
   /** No mask bits. */
   NULL_MASK = 0x00000000,
   /** The "upper 12" bits of 32 bit integer reserved for grab/drop. */
@@ -77,9 +81,9 @@ export enum HalfEdgeMask {
   /** All mask bits */
   ALL_MASK = 0xFFFFFFFF,
   // informal convention on preassigned mask bit numbers:
-  // byte0 (EXTERIOR, BOUNDARY_EDGE, PRIMARY_EDGE) -- edge properties
-  // byte1 (VISITED, VISIT_A, WORK_MASK0, WORK_MASK1) -- temp masks for algorithms.
+  // byte0-1 (EXTERIOR, BOUNDARY_EDGE, PRIMARY_EDGE, BRIDGE_EDGE, REGULARIZED_EDGE) -- edge properties.
   // byte2 (TRIANGULATED_FACE, NULL_FACE) -- face properties.
+  // byte3 (VISITED) -- temp masks for algorithms.
 }
 
 /**

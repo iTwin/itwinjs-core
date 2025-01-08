@@ -203,7 +203,7 @@ export class RegionOpsFaceToFaceSearch {
    *   * find crossings among the edges.
    *      * Edges are split as needed, but split preserves the edgeTag
    *   * sort edges around vertices
-   *   * add regularization edges so holes are connected to their parent.
+   *   * add regularization edges so holes are connected to their parent. TODO: Really?
    */
   public static doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
@@ -221,7 +221,7 @@ export class RegionOpsFaceToFaceSearch {
       HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
       if (graphCheckPoint)
         graphCheckPoint("After clusterAndMergeXYTheta", graph, "M");
-      // add edges to connect various components  (e.g. holes!!!)
+      // add edges to connect various components  (e.g. holes!!!) --- TODO: Is this true? Bridges are added by RegionBooleanContext.addConnectives, not by regularization.
       const context = new RegularizationContext(graph);
       context.regularizeGraph(true, true);
       if (graphCheckPoint)
