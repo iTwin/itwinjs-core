@@ -23,6 +23,8 @@ import { SchemaDifferenceVisitor } from "../Differencing/SchemaDifferenceVisitor
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
 import { SchemaMergeContext } from "./SchemaMerger";
 import { toItemKey } from "./Utils";
+import { addUnit, modifyUnit } from "./UnitMerger";
+import { addInvertedUnit, modifyInvertedUnit } from "./InvertedUnitMerger";
 
 /** Definition of schema items change type handler array. */
 interface ItemChangeTypeHandler<T extends AnySchemaDifference> {
@@ -171,8 +173,11 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * Visitor implementation for handling InvertedUnitDifference.
    * @internal
    */
-  public async visitInvertedUnitDifference(_entry: InvertedUnitDifference): Promise<void> {
-    // TODO: Add merger handler...
+  public async visitInvertedUnitDifference(entry: InvertedUnitDifference): Promise<void> {
+    return this.visitSchemaItemDifference(entry, {
+      add: addInvertedUnit,
+      modify: modifyInvertedUnit,
+    });
   }
 
   /**
@@ -311,8 +316,11 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * Visitor implementation for handling UnitDifference.
    * @internal
    */
-  public async visitUnitDifference(_entry: UnitDifference): Promise<void> {
-    // TODO: Add merger handler...
+  public async visitUnitDifference(entry: UnitDifference): Promise<void> {
+    return this.visitSchemaItemDifference(entry, {
+      add: addUnit,
+      modify: modifyUnit,
+    });
   }
 
   /**
