@@ -155,3 +155,5 @@ This method offers several advantages:
 2. Even after the pull/merge process, applications can still undo/redo their local transactions.
 3. The chances of pushing a corrupt changeset are minimal because the rebase process captures modified merge changesets without altering data outside the change tracking session.
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
+
+For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
