@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add simplifyElementGeometry and inlineGeometryParts to IModelDb.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
