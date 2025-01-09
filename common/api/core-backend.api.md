@@ -5977,15 +5977,9 @@ export class TxnManager {
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
-    protected _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution;
-    // @internal (undocumented)
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
     // @internal (undocumented)
-    protected _onRebaseTxnBegin(txn: TxnArgs): void;
-    // @internal (undocumented)
     readonly onRebaseTxnEnd: BeEvent<(txn: TxnArgs) => void>;
-    // @internal (undocumented)
-    protected _onRebaseTxnEnd(txn: TxnArgs): void;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
