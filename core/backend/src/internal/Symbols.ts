@@ -14,6 +14,9 @@ function sym(name: string): string {
 
 export const _close = Symbol.for(sym("close"));
 export const _elementWasCreated = Symbol.for(sym("elementWasCreated"));
+export const _faceProps = Symbol.for(sym("faceProps"));
+export const _getData = Symbol.for(sym("getData"));
+export const _key = Symbol.for(sym("key"));
 /** @internal */
 export const _nativeDb = Symbol.for(sym("nativeDb"));
 export const _releaseAllLocks = Symbol.for(sym("releaseAllLocks"));

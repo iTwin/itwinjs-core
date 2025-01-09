@@ -15,7 +15,6 @@ import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { OverrideFormat, OverrideFormatProps } from "./OverrideFormat";
-import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 
@@ -23,7 +22,7 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class KindOfQuantity extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.KindOfQuantity;
+  public override readonly schemaItemType = SchemaItemType.KindOfQuantity; // Needed to allow both run-time and compile-time check.
   protected _relativeError: number = 1.0;
   protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
@@ -35,14 +34,9 @@ export class KindOfQuantity extends SchemaItem {
   public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
-  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) {  this._persistenceUnit = value; }
+  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }
-
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.schemaItemType = SchemaItemType.KindOfQuantity; // Needed to allow both run-time and compile-time check.
-  }
 
   /**
    *
