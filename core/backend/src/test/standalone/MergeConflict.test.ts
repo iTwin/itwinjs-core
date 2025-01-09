@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbConflictCause, DbOpcode, GuidString, Id64String } from "@itwin/core-bentley";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 import {
   ElementAspectProps,
   IModel,

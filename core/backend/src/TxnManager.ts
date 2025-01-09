@@ -479,18 +479,16 @@ export class TxnManager {
     this.onAfterUndoRedo.raiseEvent(isUndo);
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
-  /** @internal */
-  protected _onRebaseTxnBegin(txn: TxnArgs) {
+
+  private _onRebaseTxnBegin(txn: TxnArgs) {
     this.onRebaseTxnBegin.raiseEvent(txn);
   }
 
-  /** @internal */
-  protected _onRebaseTxnEnd(txn: TxnArgs) {
+  private _onRebaseTxnEnd(txn: TxnArgs) {
     this.onRebaseTxnEnd.raiseEvent(txn);
   }
 
-  /** @internal */
-  protected _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
+  private _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
     const args = new RebaseChangesetConflictArgs(internalArg, this._iModel);
 
     const getChangeMetaData = () => {
