@@ -35,6 +35,11 @@ export class ECClasses extends SchemaItems{
   protected constructor(schemaItemType: ECClassSchemaItems, schemaEditor: SchemaContextEditor) {
     super(schemaItemType, schemaEditor);
     this.schemaItemType = schemaItemType;
+    this.properties = new Properties(this.schemaItemType, this.schemaEditor);
+    this.arrayProperties = new ArrayProperties(this.schemaItemType, this.schemaEditor);
+    this.primitiveProperties = new PrimitiveProperties(this.schemaItemType, this.schemaEditor);
+    this.enumerationProperties = new EnumerationProperties(this.schemaItemType, this.schemaEditor);
+    this.structProperties = new StructProperties(this.schemaItemType, this.schemaEditor);
   }
 
   protected override schemaItemType: ECClassSchemaItems;
@@ -42,23 +47,23 @@ export class ECClasses extends SchemaItems{
   /**
    * Allows access for editing of base Property attributes.
    */
-  public readonly properties = new Properties(this.schemaItemType, this.schemaEditor);
+  public readonly properties: Properties;
   /**
    * Allows access for editing of ArrayProperty attributes.
    */
-  public readonly arrayProperties = new ArrayProperties(this.schemaItemType, this.schemaEditor);
+  public readonly arrayProperties: ArrayProperties;
   /**
    * Allows access for editing of PrimitiveProperty attributes.
    */
-  public readonly primitiveProperties = new PrimitiveProperties(this.schemaItemType, this.schemaEditor);
+  public readonly primitiveProperties: PrimitiveProperties;
   /**
    * Allows access for editing of EnumerationProperty attributes.
    */
-  public readonly enumerationProperties = new EnumerationProperties(this.schemaItemType, this.schemaEditor);
+  public readonly enumerationProperties: EnumerationProperties;
   /**
    * Allows access for editing of StructProperty attributes.
    */
-  public readonly structProperties = new StructProperties(this.schemaItemType, this.schemaEditor);
+  public readonly structProperties: StructProperties;
 
   public async createClass<T extends ECClass>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, baseClassKey?: SchemaItemKey, ...args: any[]): Promise<T> {
     const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);

@@ -441,7 +441,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (undefined !== classProps.modifier) {
       const modifier = parseClassModifier(classProps.modifier);
       if (undefined === modifier) {
-        if (SchemaReadHelper.isECSpecVersionNewer({readVersion: classProps.originalECSpecMajorVersion, writeVersion: classProps.originalECSpecMinorVersion} as ECSpecVersion))
+        if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: classProps.originalECSpecMajorVersion, writeVersion: classProps.originalECSpecMinorVersion } as ECSpecVersion))
           this._modifier = ECClassModifier.None;
         else
           throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
@@ -779,12 +779,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.StructClass;
-
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.schemaItemType = SchemaItemType.StructClass;
-  }
+  public override readonly schemaItemType = SchemaItemType.StructClass;
 }
 
 /**
