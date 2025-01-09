@@ -284,11 +284,6 @@ export class ECDb implements IDisposable {
     return stmt;
   }
 
-  /** @internal
-   * @deprecated in 4.8. This internal API will be removed in 5.0. Use ECDb's public API instead.
-   */
-  public get nativeDb(): IModelJsNative.ECDb { return this[_nativeDb]; }
-
   /** @internal */
   public get [_nativeDb](): IModelJsNative.ECDb {
     assert(undefined !== this._nativeDb);

@@ -20,6 +20,7 @@ Table of contents:
     - [Electron](#electron)
     - [ECMAScript](#ecmascript)
   - [Deprecated API removals](#deprecated-api-removals)
+    - [@itwin/core-backend](#itwincore-backend-1)
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-electron](#itwincore-electron)
   - [Packages dropped](#packages-dropped)
@@ -93,6 +94,17 @@ iTwin.js now supports only the latest Electron release (Electron 33) and has dro
 ### Deprecated API removals
 
 The following previously-deprecated APIs have been removed:
+
+#### @itwin/core-backend
+
+| Removed                     | Replacement |
+| --------------------------- | ----------- |
+| `IModelDb.nativeDb`         | N/A         |
+| `ECDb.nativeDb`             | N/A         |
+| `SQLiteDb.nativeDb`         | N/A         |
+| `IModelHost.platform`       | N/A         |
+
+All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
 #### @itwin/appui-abstract
 
