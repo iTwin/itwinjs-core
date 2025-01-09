@@ -363,14 +363,14 @@ describe("RelationshipConstraint", () => {
       assert.strictEqual(children.length, 2);
 
       const customAttributes = getElementChildrenByTagName(serialized, "ECCustomAttributes");
-      assert.strictEqual(customAttributes.length, 2);
+      assert.strictEqual(customAttributes.length, 1);
       const customAttribute1 = getElementChildrenByTagName(customAttributes[0], "TestCAClassA");
       assert.strictEqual(customAttribute1.length, 1);
       const attribute1 = getElementChildrenByTagName(customAttribute1[0], "ShowClasses");
       assert.strictEqual(attribute1.length, 1);
       expect(attribute1[0].textContent).to.eql("True");
 
-      const customAttribute2 = getElementChildrenByTagName(customAttributes[0], "TestCAClassA");
+      const customAttribute2 = getElementChildrenByTagName(customAttributes[0], "TestCAClassB");
       assert.strictEqual(customAttribute2.length, 1);
       const attribute2 = getElementChildrenByTagName(customAttribute2[0], "ShowClasses");
       assert.strictEqual(attribute2.length, 1);
