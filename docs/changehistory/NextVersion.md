@@ -6,24 +6,26 @@ publish: false
 
 Table of contents:
 
-- [Selection set](#selection-set)
-- [Font APIs](#font-apis)
-- [API deprecations](#api-deprecations)
-  - [@itwin/core-common](#itwincore-common)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-- [Breaking Changes](#breaking-changes)
-  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-  - [Updated minimum requirements](#updated-minimum-requirements)
-    - [Node.js](#nodejs)
-    - [Electron](#electron)
-    - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/core-backend](#itwincore-backend-1)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-electron](#itwincore-electron)
-  - [Packages dropped](#packages-dropped)
+- [NextVersion](#nextversion)
+  - [Selection set](#selection-set)
+  - [Font APIs](#font-apis)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/ui-appui-abstract](#itwinui-appui-abstract)
+    - [@itwin/core-common](#itwincore-common)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+  - [Breaking Changes](#breaking-changes)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+    - [Updated minimum requirements](#updated-minimum-requirements)
+      - [Node.js](#nodejs)
+      - [Electron](#electron)
+      - [ECMAScript](#ecmascript)
+    - [Deprecated API removals](#deprecated-api-removals)
+      - [@itwin/core-backend](#itwincore-backend-1)
+      - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [@itwin/core-electron](#itwincore-electron)
+    - [Packages dropped](#packages-dropped)
 
 ## Selection set
 
@@ -39,12 +41,24 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 ## Font APIs
 
 [Fonts](../learning/backend/Fonts.md) control the appearance and layout of [TextAnnotation]($common)s. To apply a font to text stored in a [GeometryStream](../learning/common/GeometryStream.md), the font must first be embedded into the iModel. Two new APIs permit you to work with fonts:
+
 - [FontFile]($backend) represents a font obtained from a digital representation like a file on disk.
 - [IModelDb.fonts]($backend) permits you to read and write font-related information, including [FontFile]($backend)s, into an [IModelDb]($backend).
 
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
 
 ## API deprecations
+
+### @itwin/ui-appui-abstract
+
+The following APIs have been deprecated in `@appui-abstract`. Please use their equivalents in the `@itwin/appui-react` package:
+
+- `BaseUiItemsProvider`
+- `UiItemProviderRegisteredEventArgs`
+- `AllowedUiItemProviderOverrides`
+- `UiItemProviderOverrides`
+- `UiItemsManager`
+- `UiItemsProvider`
 
 ### @itwin/core-common
 
