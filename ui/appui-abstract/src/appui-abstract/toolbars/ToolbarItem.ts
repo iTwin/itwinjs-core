@@ -9,28 +9,12 @@
 import { BadgeType } from "../items/BadgeType";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { ProvidedItem } from "../items/ProvidedItem";
 
-/** Used to specify the usage of the toolbar which determine the toolbar position.
- * @deprecated in 3.6. Use [ToolbarUsage]($appui-react) instead.
- * @public
- */
-export enum ToolbarUsage {
-  /** Contains tools to Create Update and Delete content - in ninezone this is in top left of content area. */
-  ContentManipulation = 0,
-  /** Manipulate view/camera - in ninezone this is in top right of content area. */
-  ViewNavigation = 1,
-}
-
-/** Used to specify the orientation of the toolbar.
- * @deprecated in 3.6. Use [ToolbarOrientation]($appui-react) instead.
- * @public
- */
-export enum ToolbarOrientation {
-  /** Horizontal toolbar. */
-  Horizontal = 0,
-  /** Vertical toolbar. */
-  Vertical = 1,
+// The original ProvidedItem is deprecated, but we still need it for internal usage
+// TODO: Remove this when ToolbarItem no longer needs this
+interface ProvidedItem {
+  /** id of UiItemsProvider */
+  readonly providerId?: string;
 }
 
 /** Describes the data needed to insert a UI items into an existing set of UI items.
@@ -111,12 +95,6 @@ export interface CustomButtonDefinition extends ToolbarItem {
  * @public
  */
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
-
-/** Type for Toolbar Item Id
- * @deprecated in 3.6. Please use `ToolbarItem["id"]` from @itwin/appui-react.
- * @public
- */
-export type ToolbarItemId = CommonToolbarItem["id"];
 
 /** Helper class to create Abstract StatusBar Item definitions.
  * @public
