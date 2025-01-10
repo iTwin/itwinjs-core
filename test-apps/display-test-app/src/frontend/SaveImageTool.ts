@@ -40,9 +40,7 @@ export class SaveImageTool extends Tool {
       return true;
     }
 
-    // const url = imageBufferToPngDataUrl(buffer, false);
-    const canvas = vp.readImageToCanvas();
-const url = canvas.toDataURL();
+    const url = imageBufferToPngDataUrl(buffer, false);
     if (!url) {
       alert("Failed to produce PNG");
       return true;
