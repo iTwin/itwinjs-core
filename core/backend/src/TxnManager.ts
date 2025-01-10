@@ -582,5 +582,12 @@ export class TxnManager {
     }
     return this._nativeDb.getLocalChanges(args.includedClasses ?? [], args.includeUnsavedChanges ?? false);
   }
+
+  /** Query the number of bytes of memory currently allocated by SQLite to keep track of
+   * changes to the iModel, for debugging/diagnostic purposes, as reported by [sqlite3session_memory_used](https://www.sqlite.org/session/sqlite3session_memory_used.html).
+   */
+  public getChangeTrackingMemoryUsed(): number {
+    return this._iModel[_nativeDb].getChangeTrackingMemoryUsed();
+  }
 }
 

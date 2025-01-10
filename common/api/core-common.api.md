@@ -26,7 +26,6 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
-import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -38,7 +37,6 @@ import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
-import { LogFunction } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -672,10 +670,6 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 }
 
-export { BentleyError }
-
-export { BentleyStatus }
-
 // @public
 export enum BisCodeSpec {
     // @internal (undocumented)
@@ -873,8 +867,6 @@ export interface BriefcaseProps {
     readonly briefcaseId: BriefcaseId;
     readonly iModelId: GuidString;
 }
-
-export { BriefcaseStatus }
 
 // @public
 export function calculateSolarAngles(date: Date, location: Cartographic): {
@@ -1157,8 +1149,6 @@ export interface ChangesetRange {
     end?: ChangesetIndex;
     first: ChangesetIndex;
 }
-
-export { ChangeSetStatus }
 
 // @public
 export enum ChangesetType {
@@ -1909,12 +1899,12 @@ export interface CreateIModelProps extends IModelProps {
 }
 
 // @public
-export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
 }
 
 // @internal
-export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
 
@@ -2110,8 +2100,6 @@ export enum DbResponseStatus {
     // (undocumented)
     Timeout = 4
 }
-
-export { DbResult }
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
@@ -3492,10 +3480,32 @@ export interface FlatBufferGeometryStream {
     format: "flatbuffer";
 }
 
+// @beta
+interface FontFace_2 {
+    familyName: string;
+    // (undocumented)
+    isBold: boolean;
+    // (undocumented)
+    isItalic: boolean;
+}
+export { FontFace_2 as FontFace }
+
+// @public
+export interface FontFamilyDescriptor {
+    name: string;
+    type: FontType;
+}
+
+// @beta
+export interface FontFamilySelector {
+    name: string;
+    type?: FontType;
+}
+
 // @public
 export type FontId = number;
 
-// @public
+// @public @deprecated
 export class FontMap {
     constructor(props?: FontMapProps);
     // (undocumented)
@@ -3507,26 +3517,21 @@ export class FontMap {
     toJSON(): FontMapProps;
 }
 
-// @public
+// @public @deprecated
 export interface FontMapProps {
     // (undocumented)
     fonts: FontProps[];
 }
 
 // @public
-export interface FontProps {
+export interface FontProps extends FontFamilyDescriptor {
     id: FontId;
-    name: string;
-    type: FontType;
 }
 
 // @public
 export enum FontType {
-    // (undocumented)
     Rsc = 2,
-    // (undocumented)
     Shx = 3,
-    // (undocumented)
     TrueType = 1
 }
 
@@ -4156,8 +4161,6 @@ export enum GeometrySummaryVerbosity {
 
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
-
-export { GetMetaDataFunction }
 
 // @internal
 export const getPullChangesIpcChannel: (iModelId: string) => string;
@@ -5026,11 +5029,6 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @public @deprecated
-export interface IModelEncryptionProps {
-    readonly password?: string;
-}
-
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData);
@@ -5142,8 +5140,6 @@ export interface IModelRpcOpenProps {
 export interface IModelRpcProps extends IModelRpcOpenProps {
     readonly key: string;
 }
-
-export { IModelStatus }
 
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
@@ -5746,10 +5742,6 @@ export enum LockState {
     None = 0,
     Shared = 1
 }
-
-export { LogFunction }
-
-export { LoggingMetaData }
 
 // @public
 export interface MapImageryProps {
@@ -6503,7 +6495,7 @@ export interface OpenBriefcaseOptions {
 }
 
 // @public
-export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
+export interface OpenBriefcaseProps extends OpenDbKey {
     readonly fileName: LocalFileName;
     readonly readonly?: boolean;
     readonly watchForChanges?: boolean;
@@ -8996,6 +8988,18 @@ export class RpcSessionInvocation extends RpcInvocation {
     get rejected(): boolean;
 }
 
+// @alpha
+export interface RscFontEncodingProps {
+    // (undocumented)
+    codePage?: number;
+    // (undocumented)
+    degree?: number;
+    // (undocumented)
+    diameter?: number;
+    // (undocumented)
+    plusMinus?: number;
+}
+
 // @beta (undocumented)
 export type Run = TextRun | FractionRun | LineBreakRun;
 
@@ -9389,7 +9393,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
+export interface SnapshotOpenOptions extends OpenDbKey {
     // @internal
     readonly tempFileBase?: string;
 }
