@@ -384,7 +384,7 @@ describe("exportGraphics", () => {
         onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
       };
       if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
-        // examine infos here
+        // examine infos here, e.g.:
         // for (const info of infos)
         //  console.log(JSON.stringify(IModelJson.Writer.toIModelJson(ExportGraphics.convertToIndexedPolyface(info.mesh))));
       }
@@ -394,7 +394,7 @@ describe("exportGraphics", () => {
 
   it("verify export of 3d linestyle as parts", () => {
     const outBimFileName: string = "out.bim";
-    const inBimFilePathName = IModelTestUtils.resolveAssetFile("LineStyleUserDataset.bim");
+    const inBimFilePathName = IModelTestUtils.resolveAssetFile("3dLinestyle.bim");
     const elementIds: Id64Array = ["0x20000002360"];
     if (outBimFileName !== "" && inBimFilePathName !== "" && elementIds.length > 0) {
       const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
