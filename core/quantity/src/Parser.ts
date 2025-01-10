@@ -216,18 +216,7 @@ export class Parser {
     let uomSeparatorToIgnore = 0;
     let fractionDashCode = 0;
 
-    // strip off valid thousand separators
-    const tempStr = str.replace(
-      new RegExp(
-        `(?<=\\d)` + //ensure there's a digit before the separator
-        `(?:\\${format.thousandSeparator}\\d{3})` + //match the separator followed by 3 digits
-        `(?=\\b|\\${format.decimalSeparator}\\d*)`, //ends at word boundary or decimal seperator
-        'g'
-      ),
-      (match) => match.replace(new RegExp(`\\${format.thousandSeparator}`, 'g'), ''),
-    );
-
-    const skipCodes: number[] = [];
+    const skipCodes: number[] = [format.thousandSeparator.charCodeAt(0)];
 
     if (format.type === FormatType.Station && format.stationSeparator && format.stationSeparator.length === 1)
       skipCodes.push(format.stationSeparator.charCodeAt(0));
@@ -241,8 +230,8 @@ export class Parser {
       skipCodes.push(uomSeparatorToIgnore);
     }
 
-    for (let i = 0; i < tempStr.length; i++) {
-      const charCode = tempStr.charCodeAt(i);
+    for (let i = 0; i < str.length; i++) {
+      const charCode = str.charCodeAt(i);
       if (Parser.isDigitOrDecimalSeparator(charCode, format)) {
         if (!processingNumber) {
           if (wipToken.length > 0) {
@@ -252,12 +241,12 @@ export class Parser {
           processingNumber = true;
         }
         // Decimal separators must be replaced with '.' before converting to a number - parseFloat() only supports '.' as the decimal separator.
-        const charToAdd = charCode === format.decimalSeparator.charCodeAt(0) ? "." : tempStr[i];
+        const charToAdd = charCode === format.decimalSeparator.charCodeAt(0) ? "." : str[i];
         wipToken = wipToken.concat(charToAdd);
       } else {
         if (processingNumber) {
           if (charCode === QuantityConstants.CHAR_SLASH || charCode === QuantityConstants.CHAR_FRACTION_SLASH || charCode === QuantityConstants.CHAR_DIVISION_SLASH) {
-            const fractSymbol = Parser.checkForFractions(i + 1, tempStr, uomSeparatorToIgnore, wipToken);
+            const fractSymbol = Parser.checkForFractions(i + 1, str, uomSeparatorToIgnore, wipToken);
             let fraction = fractSymbol.fraction;
             i = fractSymbol.index;
             if (fractSymbol.fraction !== 0.0) {
@@ -276,7 +265,7 @@ export class Parser {
           } else {
             // a space may signify end of number or start of decimal
             if (charCode === QuantityConstants.CHAR_SPACE || charCode === fractionDashCode) {
-              const fractSymbol = Parser.checkForFractions(i + 1, tempStr, uomSeparatorToIgnore);
+              const fractSymbol = Parser.checkForFractions(i + 1, str, uomSeparatorToIgnore);
               let fraction = fractSymbol.fraction;
               if (fractSymbol.fraction !== 0.0) {
                 i = fractSymbol.index;
@@ -297,7 +286,7 @@ export class Parser {
             } else {
               // an "E" or "e" may signify scientific notation
               if (charCode === QuantityConstants.CHAR_UPPER_E || charCode === QuantityConstants.CHAR_LOWER_E) {
-                const exponentSymbol = Parser.checkForScientificNotation(i, tempStr, uomSeparatorToIgnore);
+                const exponentSymbol = Parser.checkForScientificNotation(i, str, uomSeparatorToIgnore);
                 i = exponentSymbol.index;
 
                 if (exponentSymbol.exponent && exponentSymbol.exponent.length > 0) {
@@ -326,10 +315,6 @@ export class Parser {
           } else if (skipCodes.findIndex((ref) => ref === charCode) !== -1){
             // ignore any codes in skipCodes
             continue;
-          } else if (charCode === format.thousandSeparator.charCodeAt(0)){
-            // invalid thousand separator
-            tokens.push(new ParseToken(NaN))
-            return tokens;
           }
 
           if (signToken.length > 0) {
@@ -339,7 +324,7 @@ export class Parser {
 
           tokens.push(new ParseToken(parseFloat(wipToken)));
 
-          wipToken = (i < tempStr.length) ? tempStr[i] : "";
+          wipToken = (i < str.length) ? str[i] : "";
           processingNumber = false;
 
           if(wipToken.length === 1 && isOperator(wipToken)){
@@ -355,7 +340,7 @@ export class Parser {
               wipToken = "";
             }
 
-            tokens.push(new ParseToken(tempStr[i])); // Push an Operator Token in the list.
+            tokens.push(new ParseToken(str[i])); // Push an Operator Token in the list.
             continue;
           }
 
@@ -364,7 +349,7 @@ export class Parser {
             continue;
           }
 
-          wipToken = wipToken.concat(tempStr[i]);
+          wipToken = wipToken.concat(str[i]);
         }
       }
     }
