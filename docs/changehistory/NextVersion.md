@@ -23,7 +23,9 @@ Table of contents:
     - [@itwin/core-backend](#itwincore-backend-1)
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-electron](#itwincore-electron)
+  - [API removals](#api-removals)
   - [Packages dropped](#packages-dropped)
+- [Change to pull/merge method](#change-to-pullmerge)
 
 ## Selection set
 
@@ -39,6 +41,7 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 ## Font APIs
 
 [Fonts](../learning/backend/Fonts.md) control the appearance and layout of [TextAnnotation]($common)s. To apply a font to text stored in a [GeometryStream](../learning/common/GeometryStream.md), the font must first be embedded into the iModel. Two new APIs permit you to work with fonts:
+
 - [FontFile]($backend) represents a font obtained from a digital representation like a file on disk.
 - [IModelDb.fonts]($backend) permits you to read and write font-related information, including [FontFile]($backend)s, into an [IModelDb]($backend).
 
@@ -97,12 +100,12 @@ The following previously-deprecated APIs have been removed:
 
 #### @itwin/core-backend
 
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `IModelDb.nativeDb`         | N/A         |
-| `ECDb.nativeDb`             | N/A         |
-| `SQLiteDb.nativeDb`         | N/A         |
-| `IModelHost.platform`       | N/A         |
+| Removed               | Replacement |
+| --------------------- | ----------- |
+| `IModelDb.nativeDb`   | N/A         |
+| `ECDb.nativeDb`       | N/A         |
+| `SQLiteDb.nativeDb`   | N/A         |
+| `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
@@ -119,11 +122,61 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
 
+### API removals
+
+The following APIs have been removed:
+
+#### @itwin/core-common
+
+The following APIs were re-exported from `@itwin/core-bentley` and have been removed. Please import from `@itwin/core-bentley` instead.
+
+| Removed               |
+| --------------------- |
+| `BentleyStatus`       |
+| `BentleyError`        |
+| `IModelStatus`        |
+| `BriefcaseStatus`     |
+| `DbResult`            |
+| `ChangeSetStatus`     |
+| `GetMetaDataFunction` |
+| `LogFunction`         |
+| `LoggingMetaData`     |
+
 ### Packages dropped
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                               |
-| ------------------------------ | --------------------------------------------------------- |
+| Removed                        | Replacement                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
 | `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
+
+### Change to pullMerge
+
+Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fastforward method for merging changes. This change is transparent to users and is enabled by default.
+
+#### No pending/local changes
+
+- Incomming changes are applied using "fast-forward" method.
+
+#### With pending/local changes
+
+The merging process in this method follows these steps:
+
+1. Initially, each incoming change is attempted to be applied using the *fastforward* method. If successful, the process is complete.
+2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
+3. The rebase process is executed as follows:
+   - All local transactions are reversed.
+   - All incoming changesets are applied using the fast-forward method.
+   - Local transactions are reinstated one by one, with any conflicts reported to the TxnManager.
+   - Once a local changeset is rebased, the local transaction is updated with the rebased changeset.
+
+This method offers several advantages:
+
+1. It allows applications to resolve conflicts effectively.
+2. Even after the pull/merge process, applications can still undo/redo their local transactions.
+3. The chances of pushing a corrupt changeset are minimal because the rebase process captures modified merge changesets without altering data outside the change tracking session.
+4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
+
+For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
+

@@ -62,7 +62,7 @@ import { Setting, SettingsContainer, SettingsDictionary, SettingsPriority } from
 import { Workspace, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbSettingsProps, WorkspaceSettingNames } from "./workspace/Workspace";
 import { constructWorkspace, OwnedWorkspace, throwWorkspaceDbLoadErrors } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
-import { ChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
+import { DbMergeChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { LockControl } from "./LockControl";
 import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
@@ -2925,7 +2925,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**  This is called by native code when applying a changeset */
-  private onChangesetConflict(args: ChangesetConflictArgs): DbConflictResolution | undefined {
+  private onChangesetConflict(args: DbMergeChangesetConflictArgs): DbConflictResolution | undefined {
     // returning undefined will result in native handler to resolve conflict
 
     const category = "DgnCore";
@@ -3216,6 +3216,9 @@ export class BriefcaseDb extends IModelDb {
   }
 
   public override close() {
+    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.changeMergeManager.inProgress()) {
+      this.abandonChanges();
+    }
     super.close();
     this.onClosed.raiseEvent();
   }

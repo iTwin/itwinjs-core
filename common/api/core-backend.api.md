@@ -51,6 +51,10 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DbChangeStage } from '@itwin/core-bentley';
+import { DbConflictCause } from '@itwin/core-bentley';
+import { DbConflictResolution } from '@itwin/core-bentley';
+import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
@@ -674,6 +678,24 @@ export interface ChangeInstanceKey {
     changeType: "inserted" | "updated" | "deleted";
     classFullName: string;
     id: Id64String;
+}
+
+// @internal
+export class ChangeMergeManager {
+    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    // (undocumented)
+    addConflictHandler(args: {
+        id: string;
+        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+    }): void;
+    // (undocumented)
+    inProgress(): boolean;
+    // (undocumented)
+    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
+    // (undocumented)
+    removeConflictHandler(id: string): void;
+    // (undocumented)
+    resume(): void;
 }
 
 // @beta
@@ -4629,6 +4651,7 @@ export namespace PropertyStore {
 // @public
 export type PullChangesArgs = ToChangesetArgs & {
     onProgress?: ProgressFunction;
+    noFastForward?: true;
 };
 
 // @public
@@ -4636,6 +4659,8 @@ export interface PushChangesArgs extends TokenArg {
     description: string;
     mergeRetryCount?: number;
     mergeRetryDelay?: BeDuration;
+    // @internal
+    noFastForward?: true;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
@@ -5416,6 +5441,9 @@ export class SqliteChangesetReader implements IDisposable {
         db: IModelDb;
         includeInMemoryChanges?: true;
     }): SqliteChangesetReader;
+    static openTxn(args: {
+        txnId: Id64String;
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
@@ -5893,8 +5921,12 @@ export type TxnIdString = string;
 export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
+    // @internal
+    appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
+    // @internal (undocumented)
+    readonly changeMergeManager: ChangeMergeManager;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
     getCurrentTxnId(): TxnIdString;
@@ -5948,6 +5980,10 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    // @internal (undocumented)
+    readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
+    // @internal (undocumented)
+    readonly onRebaseTxnEnd: BeEvent<(txn: TxnArgs) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
