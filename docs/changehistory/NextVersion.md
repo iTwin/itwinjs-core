@@ -6,25 +6,28 @@ publish: false
 
 Table of contents:
 
-- [Selection set](#selection-set)
-- [Font APIs](#font-apis)
-- [API deprecations](#api-deprecations)
-  - [@itwin/core-common](#itwincore-common)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-- [Breaking Changes](#breaking-changes)
-  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-  - [Updated minimum requirements](#updated-minimum-requirements)
-    - [Node.js](#nodejs)
-    - [Electron](#electron)
-    - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/core-backend](#itwincore-backend-1)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-electron](#itwincore-electron)
-  - [API removals](#api-removals)
-  - [Packages dropped](#packages-dropped)
+- [NextVersion](#nextversion)
+  - [Selection set](#selection-set)
+  - [Font APIs](#font-apis)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/ui-appui-abstract](#itwinui-appui-abstract)
+    - [@itwin/core-common](#itwincore-common)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+  - [Breaking Changes](#breaking-changes)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+    - [Updated minimum requirements](#updated-minimum-requirements)
+      - [Node.js](#nodejs)
+      - [Electron](#electron)
+      - [ECMAScript](#ecmascript)
+    - [Deprecated API removals](#deprecated-api-removals)
+      - [@itwin/core-backend](#itwincore-backend-1)
+      - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [@itwin/core-electron](#itwincore-electron)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-1)
+    - [Packages dropped](#packages-dropped)
 
 ## Selection set
 
@@ -47,6 +50,72 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
 
 ## API deprecations
+
+### @itwin/ui-appui-abstract
+
+The following APIs have been deprecated in `@appui-abstract`. Please use their equivalents in the `@itwin/appui-react` package:
+
+General APIs
+
+- `BaseUiItemsProvider`
+- `UiItemProviderRegisteredEventArgs`
+- `AllowedUiItemProviderOverrides`
+- `UiItemProviderOverrides`
+- `UiItemsManager`
+- `UiItemsProvider`
+
+Backstage APIs
+
+- `CommonBackstageItem`
+- `BackstageActionItem`
+- `BackstageStageLauncher`
+- `BackstageItem`
+- `isActionItem`: use `isBackstageActionItem` in `@itwin/appui-react` instead
+- `isStageLauncher`: use `isBackstageStageLauncher` in `@itwin/appui-react` instead
+- `BackstageItemUtilities`
+
+Items API
+
+- `ProvidedItem`
+- `StageUsage`
+
+StatusBar APIs
+
+- `StatusBarSection`
+- `StatusBarLabelSide`
+- `StatusBarItemId`: use `CommonStatusBarItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarItem`: use `CommonStatusBarItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarActionItem`: use `StatusBarActionItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarLabelItem`: use `StatusBarLabelItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarCustomItem`: use `StatusBarCustomItem` in `@itwin/appui-react` instead
+- `CommonStatusBarItem`: use `StatusBarItem` in `@itwin/appui-react` instead
+- `isAbstractStatusBarActionItem`: use `isStatusBarActionItem` in `@itwin/appui-react` instead
+- `isAbstractStatusBarLabelItem`: use `isStatusBarLabelItem` in `@itwin/appui-react` instead
+- `isAbstractStatusBarCustomItem`: use `isStatusBarCustomItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarItemUtilities`: use `StatusBarItemUtilities` in `@itwin/appui-react` instead
+
+Toolbar APIs
+
+- `ToolbarUsage`
+- `ToolbarOrientation`
+- `ToolbarItemId`: use `ToolbarItem["id"]` in `@itwin/appui-react` instead
+
+Widget APIs
+
+- `AbstractWidgetProps`: use `Widget` in `@itwin/appui-react` instead
+- `WidgetState`
+- `StagePanelLocation`
+- `StagePanelSection`
+
+Below is a list of deprecated APIs that will no longer be available:
+
+- `UiItemsApplicationAction`
+- `BackstageItemType`: use `Type Guard` instead.
+- `BackstageItemsChangedArgs`
+- `BackstageItemsManager`
+- `AbstractZoneLocation`
+- `createSvgIconSpec`: Please avoid using the Sprite loader and use IconSpecUtilities.createWebComponentIconSpec() instead.
+- `getSvgSource`: Please avoid using the Sprite loader and use IconSpecUtilities.getWebComponentSource() instead.
 
 ### @itwin/core-common
 
