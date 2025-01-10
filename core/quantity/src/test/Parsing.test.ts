@@ -1006,7 +1006,7 @@ describe("Synchronous Parsing tests:", async () => {
       "1e2..",
       "1...2e3",
       "1e2..,3",
-      // "1,,2", // the parsing skips , because it thinks its a thousands separator, returns 12
+      // "1,,2", // the parsing skips comas for loose checking, returns 12
       // "1.,2", // returns 1.2
     ];
 
