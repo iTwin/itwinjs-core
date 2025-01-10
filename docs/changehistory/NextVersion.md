@@ -112,6 +112,8 @@ Below is a list of deprecated APIs that will no longer be available:
 - `BackstageItemsChangedArgs`
 - `BackstageItemsManager`
 - `AbstractZoneLocation`
+- `createSvgIconSpec`: Please avoid using the Sprite loader and use IconSpecUtilities.createWebComponentIconSpec() instead.
+- `getSvgSource`: Please avoid using the Sprite loader and use IconSpecUtilities.getWebComponentSource() instead.
 
 ### @itwin/core-common
 
