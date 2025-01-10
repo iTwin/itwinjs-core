@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Removes re-exports from @itwin/core-bentley",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

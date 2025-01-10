@@ -6,12 +6,12 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
-  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, LightLocationProps, MapImageryProps, PhysicalElementProps,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
@@ -120,8 +120,33 @@ describe("iModel", () => {
     assert.equal(categoryClass!.className, "Category");
   });
 
+<<<<<<< HEAD
   it("FontMap", () => {
     const fonts1 = imodel1.fontMap;
+=======
+  it("Fonts", () => {
+    const dbFonts = imodel1.fonts;
+    expect(Array.from(dbFonts.queryMappedFamilies({ includeNonEmbedded: true })).length).to.equal(4);
+    expect(dbFonts.findDescriptor(1)).to.deep.equal({ name: "Arial", type: FontType.TrueType });
+    expect(dbFonts.findId({ name: "Arial" })).to.equal(1);
+    expect(dbFonts.findId({ name: "arial" })).to.equal(1);
+
+    expect(dbFonts.findDescriptor(2)).to.deep.equal({ name: "Font0", type: FontType.Rsc });
+    expect(dbFonts.findId({ name: "Font0" })).to.equal(2);
+    expect(dbFonts.findId({ name: "fOnt0" })).to.equal(2);
+
+    expect(dbFonts.findDescriptor(3)).to.deep.equal({ name: "ShxFont0", type: FontType.Shx });
+    expect(dbFonts.findId({ name: "ShxFont0" })).to.equal(3);
+    expect(dbFonts.findId({ name: "shxfont0" })).to.equal(3);
+
+    expect(dbFonts.findDescriptor(4)).to.deep.equal({ name: "Calibri", type: FontType.TrueType });
+    expect(dbFonts.findId({ name: "Calibri" })).to.equal(4);
+    expect(dbFonts.findId({ name: "cAlIbRi" })).to.equal(4);
+
+    expect(dbFonts.findId({ name: "notfound" })).to.be.undefined;
+
+    const fonts1 = imodel1.fontMap; // eslint-disable-line @typescript-eslint/no-deprecated
+>>>>>>> 3419be87e9 (Remove re-export of core-bentley apis in core-common  (#7531))
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");

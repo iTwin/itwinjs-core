@@ -5,9 +5,9 @@
 
 import { assert } from "chai";
 import * as fs from "fs";
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, DbResult, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
+  Code, ColorDef, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
   ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
