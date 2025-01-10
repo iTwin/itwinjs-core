@@ -23,6 +23,7 @@ Table of contents:
     - [@itwin/core-backend](#itwincore-backend-1)
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-electron](#itwincore-electron)
+  - [API removals](#api-removals)
   - [Packages dropped](#packages-dropped)
 - [Change to pull/merge method](#change-to-pullmerge)
 
@@ -40,6 +41,7 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 ## Font APIs
 
 [Fonts](../learning/backend/Fonts.md) control the appearance and layout of [TextAnnotation]($common)s. To apply a font to text stored in a [GeometryStream](../learning/common/GeometryStream.md), the font must first be embedded into the iModel. Two new APIs permit you to work with fonts:
+
 - [FontFile]($backend) represents a font obtained from a digital representation like a file on disk.
 - [IModelDb.fonts]($backend) permits you to read and write font-related information, including [FontFile]($backend)s, into an [IModelDb]($backend).
 
@@ -98,12 +100,12 @@ The following previously-deprecated APIs have been removed:
 
 #### @itwin/core-backend
 
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `IModelDb.nativeDb`         | N/A         |
-| `ECDb.nativeDb`             | N/A         |
-| `SQLiteDb.nativeDb`         | N/A         |
-| `IModelHost.platform`       | N/A         |
+| Removed               | Replacement |
+| --------------------- | ----------- |
+| `IModelDb.nativeDb`   | N/A         |
+| `ECDb.nativeDb`       | N/A         |
+| `SQLiteDb.nativeDb`   | N/A         |
+| `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
@@ -120,12 +122,32 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
 
+### API removals
+
+The following APIs have been removed:
+
+#### @itwin/core-common
+
+The following APIs were re-exported from `@itwin/core-bentley` and have been removed. Please import from `@itwin/core-bentley` instead.
+
+| Removed               |
+| --------------------- |
+| `BentleyStatus`       |
+| `BentleyError`        |
+| `IModelStatus`        |
+| `BriefcaseStatus`     |
+| `DbResult`            |
+| `ChangeSetStatus`     |
+| `GetMetaDataFunction` |
+| `LogFunction`         |
+| `LoggingMetaData`     |
+
 ### Packages dropped
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                               |
-| ------------------------------ | --------------------------------------------------------- |
+| Removed                        | Replacement                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
 | `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
 
@@ -157,3 +179,4 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
+
