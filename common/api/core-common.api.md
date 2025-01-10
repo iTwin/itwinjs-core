@@ -26,7 +26,6 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
-import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -38,7 +37,6 @@ import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
-import { LogFunction } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -672,10 +670,6 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 }
 
-export { BentleyError }
-
-export { BentleyStatus }
-
 // @public
 export enum BisCodeSpec {
     // @internal (undocumented)
@@ -873,8 +867,6 @@ export interface BriefcaseProps {
     readonly briefcaseId: BriefcaseId;
     readonly iModelId: GuidString;
 }
-
-export { BriefcaseStatus }
 
 // @public
 export function calculateSolarAngles(date: Date, location: Cartographic): {
@@ -1157,8 +1149,6 @@ export interface ChangesetRange {
     end?: ChangesetIndex;
     first: ChangesetIndex;
 }
-
-export { ChangeSetStatus }
 
 // @public
 export enum ChangesetType {
@@ -2110,8 +2100,6 @@ export enum DbResponseStatus {
     // (undocumented)
     Timeout = 4
 }
-
-export { DbResult }
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
@@ -4174,8 +4162,6 @@ export enum GeometrySummaryVerbosity {
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
-export { GetMetaDataFunction }
-
 // @internal
 export const getPullChangesIpcChannel: (iModelId: string) => string;
 
@@ -5155,8 +5141,6 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
     readonly key: string;
 }
 
-export { IModelStatus }
-
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal
@@ -5758,10 +5742,6 @@ export enum LockState {
     None = 0,
     Shared = 1
 }
-
-export { LogFunction }
-
-export { LoggingMetaData }
 
 // @public
 export interface MapImageryProps {
