@@ -7,7 +7,12 @@
  */
 
 import {
-  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams,
+  BasePropertyEditorParams,
+  ColorEditorParams,
+  ImageCheckBoxParams,
+  PropertyEditorParams,
+  PropertyEditorParamTypes,
+  RangeEditorParams,
   SuppressLabelEditorParams,
 } from "./EditorParams";
 import { StandardEditorNames } from "./StandardEditorNames";
@@ -92,6 +97,38 @@ export interface PropertyDescription {
   dataController?: string;
   /** Should property label for composite (struct & array) properties be rendered. */
   hideCompositePropertyLabel?: boolean;
+  /** Constraints for values of property */
+  constraints?: PropertyValueConstraints;
+}
+
+/** Constraints for values of property */
+export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
+
+/**
+ * Describes constraints for `string` type property values
+ * @public
+ */
+export interface StringPropertyValueConstraints {
+  minimumLength?: number;
+  maximumLength?: number;
+}
+
+/**
+ * Describes constraints for `int` | `double` | `float` type property values
+ * @public
+ */
+export interface NumericPropertyValueConstraints {
+  minimumValue?: number;
+  maximumValue?: number;
+}
+
+/**
+ * Describes constraints for `array` type property values
+ * @public
+ */
+export interface ArrayPropertyValueConstraints {
+  minOccurs?: number;
+  maxOccurs?: number;
 }
 
 /** Helper class that builds property descriptions for specific PropertyEditors and processes descriptions.

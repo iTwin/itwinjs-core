@@ -267,6 +267,38 @@ export interface PropertyInfo {
   extendedType?: string;
   /** Navigation property info if the field is navigation type */
   navigationPropertyInfo?: NavigationPropertyInfo;
+  /** Constraints for values of ECProperty */
+  constraints?: PropertyValueConstraints;
+}
+
+/** Constraints for values of ECProperty */
+export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
+
+/**
+ * Describes constraints for `string` type ECProperty values
+ * @public
+ */
+export interface StringPropertyValueConstraints {
+  minimumLength?: number;
+  maximumLength?: number;
+}
+
+/**
+ * Describes constraints for `int` | `double` | `float` type ECProperty values
+ * @public
+ */
+export interface NumericPropertyValueConstraints {
+  minimumValue?: number;
+  maximumValue?: number;
+}
+
+/**
+ * Describes constraints for `array` type ECProperty values
+ * @public
+ */
+export interface ArrayPropertyValueConstraints {
+  minOccurs?: number;
+  maxOccurs?: number;
 }
 
 /** @public */
