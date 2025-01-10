@@ -41,7 +41,11 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
+<<<<<<< HEAD
     implementation 'com.github.itwin:mobile-native-android:4.11.11'
+=======
+    implementation 'com.github.itwin:mobile-native-android:5.0.33'
+>>>>>>> 17d22a448a (Added and updated test cases for alias support in CTE subquery (#7522))
     implementation 'androidx.webkit:webkit:1.5.0'
 }
 

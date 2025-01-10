@@ -97,7 +97,11 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.11.11",
+=======
+    "@bentley/imodeljs-native": "5.0.33",
+>>>>>>> 17d22a448a (Added and updated test cases for alias support in CTE subquery (#7522))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.5",
