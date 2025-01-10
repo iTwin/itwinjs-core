@@ -271,7 +271,10 @@ export interface PropertyInfo {
   constraints?: PropertyValueConstraints;
 }
 
-/** Constraints for values of ECProperty */
+/**
+ * Constraints for values of ECProperty
+ * @public
+ */
 export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
 
 /**

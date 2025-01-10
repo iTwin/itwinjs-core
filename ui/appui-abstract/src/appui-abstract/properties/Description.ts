@@ -101,7 +101,10 @@ export interface PropertyDescription {
   constraints?: PropertyValueConstraints;
 }
 
-/** Constraints for values of property */
+/**
+ * Constraints for values of property
+ * @public
+ */
 export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
 
 /**
