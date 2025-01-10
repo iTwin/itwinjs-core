@@ -790,9 +790,9 @@ describe("Composite Formats tests:", () => {
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
 
-      // reset format
-      format.roundFactor = 0;
-      format.precision = 12 as DecimalPrecision;
+      // reset format back to default
+      format.roundFactor = 0.0;
+      format.precision = DecimalPrecision.Six;
     }
   })
 
