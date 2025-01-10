@@ -28,7 +28,8 @@ pr:
       - release/*
   paths:
     exclude:
-      - "**.md"
+      - "**/README.md"
+      - "**.api.md"
       - docs/**
       - .github/CODEOWNERS
       - common/changes/**/*.json
