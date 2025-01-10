@@ -25,6 +25,8 @@ Table of contents:
       - [@itwin/core-backend](#itwincore-backend-1)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-electron](#itwincore-electron)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-1)
     - [Packages dropped](#packages-dropped)
 
 ## Selection set
@@ -166,12 +168,12 @@ The following previously-deprecated APIs have been removed:
 
 #### @itwin/core-backend
 
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `IModelDb.nativeDb`         | N/A         |
-| `ECDb.nativeDb`             | N/A         |
-| `SQLiteDb.nativeDb`         | N/A         |
-| `IModelHost.platform`       | N/A         |
+| Removed               | Replacement |
+| --------------------- | ----------- |
+| `IModelDb.nativeDb`   | N/A         |
+| `ECDb.nativeDb`       | N/A         |
+| `SQLiteDb.nativeDb`   | N/A         |
+| `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
@@ -188,11 +190,31 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
 
+### API removals
+
+The following APIs have been removed:
+
+#### @itwin/core-common
+
+The following APIs were re-exported from `@itwin/core-bentley` and have been removed. Please import from `@itwin/core-bentley` instead.
+
+| Removed               |
+| --------------------- |
+| `BentleyStatus`       |
+| `BentleyError`        |
+| `IModelStatus`        |
+| `BriefcaseStatus`     |
+| `DbResult`            |
+| `ChangeSetStatus`     |
+| `GetMetaDataFunction` |
+| `LogFunction`         |
+| `LoggingMetaData`     |
+
 ### Packages dropped
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                               |
-| ------------------------------ | --------------------------------------------------------- |
+| Removed                        | Replacement                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
+| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
