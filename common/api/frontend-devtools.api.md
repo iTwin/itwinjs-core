@@ -2239,6 +2239,20 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
 }
 
 // @beta
+export class ToggleCanvasDecorationsTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...inArgs: string[]): Promise<boolean>;
+    // (undocumented)
+    run(showDecorations: boolean): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
     // (undocumented)
     execute(control: RenderSystemDebugControl): void;

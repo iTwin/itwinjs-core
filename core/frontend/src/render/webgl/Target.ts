@@ -1178,21 +1178,21 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(combineCanvas?: boolean): HTMLCanvasElement {
+  public copyImageToCanvas(): HTMLCanvasElement {
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
     const pixelRatio = this.devicePixelRatio;
     retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
 
-    if (combineCanvas) {
       const vp = IModelApp.viewManager.selectedView;
-      if (vp) {
+      // vp.rendersToScreen tells us if the view is being rendered directly to the webgl canvas on screen, which happens in the case of a single viewport.
+      // In that case, we need to combine the 2d canvas with the webgl canvas or we will lose canvas decorations in the copied image.
+      if (vp && vp.rendersToScreen) {
         const twoDCanvas = vp.canvas;
         const ctx = retCanvas.getContext("2d")!;
         ctx.drawImage(twoDCanvas, 0, 0);
       }
-    }
 
 
     return retCanvas;
@@ -1480,16 +1480,18 @@ export class OnScreenTarget extends Target {
       this._2dCanvas.needsClear = false;
     }
 
-    const canvasDecs = this.graphics.canvasDecorations;
-    if (canvasDecs) {
-      for (const overlay of canvasDecs) {
-        ctx.save();
-        if (overlay.position)
-          ctx.translate(overlay.position.x, overlay.position.y);
+    if (this.currentViewFlags.canvasDecorations) {
+      const canvasDecs = this.graphics.canvasDecorations;
+      if (canvasDecs) {
+        for (const overlay of canvasDecs) {
+          ctx.save();
+          if (overlay.position)
+            ctx.translate(overlay.position.x, overlay.position.y);
 
-        overlay.drawDecoration(ctx);
-        this._2dCanvas.needsClear = true;
-        ctx.restore();
+          overlay.drawDecoration(ctx);
+          this._2dCanvas.needsClear = true;
+          ctx.restore();
+        }
       }
     }
   }
@@ -1525,7 +1527,7 @@ export class OnScreenTarget extends Target {
   }
 
   public override readImageToCanvas(): HTMLCanvasElement {
-    return this._usingWebGLCanvas ? this.copyImageToCanvas(true) : this._2dCanvas.canvas;
+    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
   }
 }
 
