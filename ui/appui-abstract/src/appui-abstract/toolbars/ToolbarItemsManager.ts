@@ -13,6 +13,10 @@ import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemUtilities } fr
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
+// ToolbarItemId was deprecated in 5.0. This is a workaround for internal usage only
+// TODO: Remove this when ToolbarItemId is no longer needed
+type ToolbarItemId = CommonToolbarItem["id"];
+
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
 const isInstance = <T>(args: InstanceOrArray<T>): args is T => {
