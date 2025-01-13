@@ -2,32 +2,32 @@
 publish: false
 ---
 
-# NextVersion
+### NextVersion
+
 
 Table of contents:
 
-- [NextVersion](#nextversion)
-  - [Selection set](#selection-set)
-  - [Font APIs](#font-apis)
-  - [API deprecations](#api-deprecations)
-    - [@itwin/ui-appui-abstract](#itwinui-appui-abstract)
-    - [@itwin/core-common](#itwincore-common)
-    - [@itwin/core-backend](#itwincore-backend)
-    - [@itwin/core-frontend](#itwincore-frontend)
-    - [@itwin/presentation-common](#itwinpresentation-common)
-  - [Breaking Changes](#breaking-changes)
-    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-    - [Updated minimum requirements](#updated-minimum-requirements)
-      - [Node.js](#nodejs)
-      - [Electron](#electron)
-      - [ECMAScript](#ecmascript)
-    - [Deprecated API removals](#deprecated-api-removals)
-      - [@itwin/core-backend](#itwincore-backend-1)
-      - [@itwin/appui-abstract](#itwinappui-abstract)
-      - [@itwin/core-electron](#itwincore-electron)
-    - [API removals](#api-removals)
-      - [@itwin/core-common](#itwincore-common-1)
-    - [Packages dropped](#packages-dropped)
+- [Selection set](#selection-set)
+- [Font APIs](#font-apis)
+- [API deprecations](#api-deprecations)
+  - [@itwin/ui-appui-abstract](#itwinui-appui-abstract)
+  - [@itwin/core-common](#itwincore-common)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/presentation-common](#itwinpresentation-common)
+- [Breaking Changes](#breaking-changes)
+  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+  - [Updated minimum requirements](#updated-minimum-requirements)
+    - [Node.js](#nodejs)
+    - [Electron](#electron)
+    - [ECMAScript](#ecmascript)
+  - [Deprecated API removals](#deprecated-api-removals)
+    - [@itwin/core-backend](#itwincore-backend-1)
+    - [@itwin/appui-abstract](#itwinappui-abstract)
+    - [@itwin/core-electron](#itwincore-electron)
+  - [API removals](#api-removals)
+    - [@itwin/core-common](#itwincore-common-1)
+  - [Packages dropped](#packages-dropped)
 
 ## Selection set
 
@@ -107,16 +107,6 @@ Widget APIs
 - `StagePanelLocation`
 - `StagePanelSection`
 
-Below is a list of deprecated APIs that will no longer be available:
-
-- `UiItemsApplicationAction`
-- `BackstageItemType`: use `Type Guard` instead.
-- `BackstageItemsChangedArgs`
-- `BackstageItemsManager`
-- `AbstractZoneLocation`
-- `createSvgIconSpec`: Please avoid using the Sprite loader and use IconSpecUtilities.createWebComponentIconSpec() instead.
-- `getSvgSource`: Please avoid using the Sprite loader and use IconSpecUtilities.getWebComponentSource() instead.
-
 ### @itwin/core-common
 
 - [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
@@ -182,6 +172,13 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | Removed                     | Replacement |
 | --------------------------- | ----------- |
 | `EditorPosition.columnSpan` | N/A         |
+| `UiItemsApplicationAction`     | N/A (removed without replacement)                       |
+| `BackstageItemType`            | Use `Type Guard` instead.                               |
+| `BackstageItemsChangedArgs`    | N/A                                                     |
+| `BackstageItemsManager`        | N/A                                                     |
+| `AbstractZoneLocation`         | N/A                                                     |
+| `createSvgIconSpec`            | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
+| `getSvgSource`                 | Use `IconSpecUtilities.getWebComponentSource()` instead. |
 
 #### @itwin/core-electron
 
