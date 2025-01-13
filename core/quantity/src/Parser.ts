@@ -723,6 +723,17 @@ export class Parser {
   }
 
   private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
+    const specialDirections: Record<string, number> = {
+      n: 0,
+      ne: 45,
+      e: 90,
+      se: 135,
+      s: 180,
+      sw: 225,
+      w: 270,
+      nw: 315,
+    };
+
     // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
     enum DirectionLabel {
       North = "N",
@@ -734,21 +745,30 @@ export class Parser {
     let matchedSuffix: DirectionLabel | null = null;
 
     // check if input string begins with northLabel or southLabel and strip it off
-    if (inString.startsWith(DirectionLabel.North)) {
+    if (inString.toUpperCase().startsWith(DirectionLabel.North)) {
       inString = inString.substring(DirectionLabel.North.length);
       matchedPrefix = DirectionLabel.North;
-    } else if (inString.startsWith(DirectionLabel.South)) {
+    } else if (inString.toUpperCase().startsWith(DirectionLabel.South)) {
       inString = inString.substring(DirectionLabel.South.length);
       matchedPrefix = DirectionLabel.South;
     }
 
-    // check if input string ends with eastLabel or westLabel and strip it off
-    if (inString.endsWith(DirectionLabel.East)) {
+    // check if input string ends with eastLabel or westLabel (case-insensitive) and strip it off
+    if (inString.toUpperCase().endsWith(DirectionLabel.East)) {
       inString = inString.substring(0, inString.length - DirectionLabel.East.length);
       matchedSuffix = DirectionLabel.East;
-    } else if (inString.endsWith(DirectionLabel.West)) {
+    } else if (inString.toUpperCase().endsWith(DirectionLabel.West)) {
       inString = inString.substring(0, inString.length - DirectionLabel.West.length);
       matchedSuffix = DirectionLabel.West;
+    }
+
+    // check if the remaining string is a special direction
+    if (inString.trim() === "") {
+      const prefix = matchedPrefix?.toLowerCase() || "";
+      const suffix = matchedSuffix?.toLowerCase() || "";
+      const specialDirection = specialDirections[`${prefix}${suffix}`];
+      if (specialDirection !== undefined)
+        return { ok: true, value: specialDirection };
     }
 
     if (matchedPrefix === null || matchedSuffix === null) {
@@ -756,7 +776,7 @@ export class Parser {
     }
 
     const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
-    if(this.isParseError(parsedResult) || !parsedResult.ok) {
+    if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
 
@@ -782,7 +802,7 @@ export class Parser {
 
   private static parseAzimuthFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
-    if(this.isParseError(parsedResult) || !parsedResult.ok) {
+    if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
 
