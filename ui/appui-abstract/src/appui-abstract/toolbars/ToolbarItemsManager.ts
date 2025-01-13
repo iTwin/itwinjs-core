@@ -9,7 +9,7 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
+import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemUtilities } from "./ToolbarItem";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
