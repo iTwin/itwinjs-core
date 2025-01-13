@@ -196,6 +196,7 @@ alpha;interface;TextBoxProps
 beta;class;TileMemoryBreakdown
 beta;class;TileStatisticsTracker
 beta;class;Toggle3dManipulationsTool
+beta;class;ToggleCanvasDecorationsTool
 beta;class;ToggleDPIForLODTool
 beta;class;ToggleDrapeFrustumTool
 beta;class;ToggleDrawingGraphicsTool

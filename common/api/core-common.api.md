@@ -10965,6 +10965,7 @@ export interface ViewFlagProps {
     hidEdges?: boolean;
     monochrome?: boolean;
     noCameraLights?: boolean;
+    noCanvasDecorations?: boolean;
     noConstruct?: boolean;
     noDim?: boolean;
     noFill?: boolean;
@@ -10990,6 +10991,8 @@ export class ViewFlags {
     readonly acsTriad: boolean;
     readonly ambientOcclusion: boolean;
     readonly backgroundMap: boolean;
+    // (undocumented)
+    readonly canvasDecorations: boolean;
     readonly clipVolume: boolean;
     readonly constructions: boolean;
     copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags;
