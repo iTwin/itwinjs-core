@@ -27,6 +27,7 @@ beta;interface;ChangedECInstance
 internal;class;ChangedElementsDb
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstanceKey
+internal;class;ChangeMergeManager
 beta;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
