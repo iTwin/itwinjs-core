@@ -1,0 +1,38 @@
+name: check-gather-docs
+trigger: none
+
+resources:
+  pipelines:
+  - pipeline: 'itwinjs'
+    source: iTwin.js/iTwin.js
+    trigger:
+      enabled: true
+      branches:
+        include:
+          - release/*
+      tags:
+        - 'package-release'
+
+jobs:
+  - job: check-gather-docs
+    displayName: 'Check and update gather-docs.yaml branch'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    variables:
+      - group: imodel-native-secret-variables
+
+    steps:
+      - checkout: self
+        persistCredentials: true
+        clean: true
+
+      - script: |
+          node common/scripts/check_gather_docs.mjs
+          git add .
+          git commit -m "Update gather-docs.yaml"
+          git push --set-upstream https://$(GH_TOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName)
+        displayName: 'Check gather-docs.yaml branch'
+        env:
+          GITHUB_TOKEN: $(GH_TOKEN)
+          CURRENT_BRANCH: $(Build.SourceBranch)
