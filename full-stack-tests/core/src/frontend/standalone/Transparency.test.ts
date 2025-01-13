@@ -6,10 +6,11 @@ import { expect } from "chai";
 import {
   ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
-import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 interface GraphicOptions {
   color: ColorDef;
@@ -86,12 +87,12 @@ class TransparencyDecorator {
 }
 
 describe("Transparency", async () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
   let decorator: TransparencyDecorator;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

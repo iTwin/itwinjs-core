@@ -141,6 +141,10 @@ export class ViewManager implements Iterable<ScreenViewport> {
       clearTimeout(this._idleWorkTimer);
       this._idleWorkTimer = undefined;
     }
+    this._viewports.map((viewport) => {
+      if (!viewport.isDisposed)
+        this.dropViewport(viewport, true);
+    });
     this._viewports.length = 0;
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
@@ -333,10 +337,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return this._viewports[Symbol.iterator]();
   }
 
-  /** Force each registered [[Viewport]] to regenerate all of its cached [[Decorations]] on the next frame. If the decorator parameter is specified, only
-   * the specified decorator will have its cached decorations invalidated for all viewports.
-   * @see [[Viewport.invalidateCachedDecorations]] to manually remove a decorator's cached decorations from a viewport, forcing them to be regenerated.
-   * @beta
+  /** Instruct each registered [[Viewport]] that the cached [[Decorations]] for the specified `decorator` should be discarded and recreated on the next frame.
+   * @see [[Viewport.invalidateCachedDecorations]] to invalidate the cached decorations for a single viewport.
    */
   public invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void {
     if (decorator.useCachedDecorations)
@@ -442,9 +444,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     }
   }
 
-  /** Get the tooltip for a persistent element.
-   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
-   * @beta
+  /** Compute the tooltip for a persistent element.
+   * This method calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
   public async getElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const msg: string[] = await hit.iModel.getToolTipMessage(hit.sourceId); // wait for the locate message(s) from the backend

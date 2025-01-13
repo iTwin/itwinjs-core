@@ -8,7 +8,6 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
-import { EdgeTable, IndexedEdgeParams } from "../../common/render/primitives/EdgeParams";
 import { RenderMemory } from "../RenderMemory";
 import { TextureHandle } from "./Texture";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
@@ -22,6 +21,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { RenderOrder } from "./RenderFlags";
+import { EdgeTable, IndexedEdgeParams } from "../../common/internal/render/EdgeParams";
 
 /** @see [[EdgeTable]]
  * @internal

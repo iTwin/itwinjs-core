@@ -25,7 +25,9 @@ import { SelectionMethod } from "./SelectTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
-/** @alpha */
+/** Identifies the source of the elements in the agenda.
+ * @public
+ */
 export enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
   Unknown = 0,
@@ -37,7 +39,9 @@ export enum ModifyElementSource {
   DragSelect = 3,
 }
 
-/** @alpha */
+/** Identifies groups of elements added to agenda along with the source.
+ * @public
+ */
 export interface GroupMark {
   start: number;
   source: ModifyElementSource;
@@ -46,7 +50,7 @@ export interface GroupMark {
 /** The ElementAgenda class is used by [[ElementSetTool]] to hold the collection of elements it will operate on
  * and to manage their hilite state.
  * @see [[ElementSetTool]]
- * @alpha
+ * @public
 */
 export class ElementAgenda {
   /** The IDs of the elements in this agenda.
@@ -99,9 +103,9 @@ export class ElementAgenda {
     if (!this.manageHiliteState)
       return;
 
-    const ss = this.iModel.selectionSet.isActive ? this.iModel.selectionSet.elements : undefined;
+    const ss = this.iModel.selectionSet.elements.size > 0 ? this.iModel.selectionSet.elements : undefined;
     if (undefined === ss && 0 === groupEnd) {
-      this.iModel.hilited.setHilite(this.elements, onOff);
+      this.iModel.hilited[onOff ? "add" : "remove"]({ elements: this.elements });
       return;
     }
 
@@ -112,7 +116,7 @@ export class ElementAgenda {
     };
 
     const group = this.elements.filter((id, index) => shouldChangeHilite(id, index));
-    this.iModel.hilited.setHilite(group, onOff);
+    this.iModel.hilited[onOff ? "add" : "remove"]({ elements: group });
   }
 
   /** Removes the last group of elements added to this agenda. */
@@ -280,7 +284,7 @@ export class ElementAgenda {
  * - Immediately apply operation.
  * - Restart.
  * Sub-classes are required to opt-in to additional element sources, dynamics, AccuSnap, additional input, etc.
- * @alpha
+ * @public
  */
 export abstract class ElementSetTool extends PrimitiveTool {
   private _agenda?: ElementAgenda;
@@ -410,7 +414,17 @@ export abstract class ElementSetTool extends PrimitiveTool {
     this._useSelectionSet = false;
     if (!this.iModel.selectionSet.isActive)
       return;
-    if (this.allowSelectionSet && this.iModel.selectionSet.size >= this.requiredElementCount)
+
+    const isSelectionSetValid = (): boolean => {
+      if (0 === this.iModel.selectionSet.elements.size) {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, CoreTools.translate("ElementSet.Error.ActiveSSWithoutElems")));
+        return false;
+      }
+
+      return (this.iModel.selectionSet.elements.size >= this.requiredElementCount);
+    };
+
+    if (this.allowSelectionSet && isSelectionSetValid())
       this._useSelectionSet = true;
     else if (this.clearSelectionSet)
       this.iModel.selectionSet.emptyAll();
@@ -445,13 +459,15 @@ export abstract class ElementSetTool extends PrimitiveTool {
     return true;
   }
 
-  /** If the supplied element is a member of an assembly, return all member ids. */
+  /** If the supplied element is part of an assembly, return all member ids. */
   protected async getGroupIds(id: Id64String): Promise<Id64Arg> {
     const ids = new Set<Id64String>();
     ids.add(id);
 
     try {
-      const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE parent.Id != 0 AND ECInstanceId IN (${id}))`;
+      // When assembly parent is selected, pick all geometric elements with it as the parent.
+      // When assembly member is selected, pick the parent as well as all the other members.
+      const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE (parent.Id IS NOT NULL AND ECInstanceId IN (${id})) OR parent.Id IN (${id}))`;
       for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);

@@ -6,8 +6,8 @@ import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, MeshArgs, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
-  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
+  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
 import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
@@ -16,6 +16,7 @@ import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -133,7 +134,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 describe("Disposal of System", () => {
   before(async () => {
     await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
-    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel0 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -149,16 +150,16 @@ describe("Disposal of System", () => {
     assert.isDefined(imageBuff);
 
     // Texture from image buffer
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const textureParams0 = new RenderTexture.Params("-192837465");
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const texture0 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams0);
     assert.isDefined(texture0);
 
     // Texture from image source
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const textureParams1 = new RenderTexture.Params("-918273645");
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const texture1 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams1);
     assert.isDefined(texture1);
 
@@ -180,8 +181,8 @@ describe("Disposal of WebGL Resources", () => {
   before(async () => {
     await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
 
-    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel0 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel1 = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -198,12 +199,12 @@ describe("Disposal of WebGL Resources", () => {
     const colors = new ColorIndex();
     colors.initUniform(ColorByName.tan);
 
-    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10 ,0)];
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
     const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
       qpoints.add(point);
 
-    const args: MeshArgs = {
+    const args = {
       points: qpoints,
       vertIndices: [0, 1, 2],
       colors,
@@ -269,7 +270,7 @@ describe("Disposal of WebGL Resources", () => {
       fbo = target._fbo as FrameBuffer;
       expect(fbo).not.to.be.undefined;
       expect(fbo.isDisposed).to.be.false;
-      const tx = fbo.getColor(0)!;
+      const tx = fbo.getColor(0);
       expect(tx).not.to.be.undefined;
       expect(tx.isDisposed).to.be.false;
 
@@ -440,10 +441,10 @@ describe("Disposal of WebGL Resources", () => {
     const exposedTarget = new ExposedTarget(target);
 
     // Create a graphic and a texture
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const textureParams = new RenderTexture.Params("-192837465");
-    // eslint-disable-next-line deprecation/deprecation
-    let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
@@ -461,8 +462,8 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(texture));
     assert.isTrue(isDisposed(graphic));
 
-    // eslint-disable-next-line deprecation/deprecation
-    texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
     assert.isFalse(isDisposed(texture));
 
     // Get references to target members before they are modified due to disposing

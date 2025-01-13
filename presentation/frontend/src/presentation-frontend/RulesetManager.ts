@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -16,7 +16,6 @@ import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
 export interface RulesetManager {
   /**
    * An event invoked one a ruleset is modified using [[modify]] function.
-   * @beta
    */
   onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
 
@@ -32,7 +31,6 @@ export interface RulesetManager {
 
   /**
    * Modify the given pre-registered ruleset
-   * @beta
    */
   modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
 
@@ -49,7 +47,6 @@ export interface RulesetManager {
 
 /** @internal */
 export class RulesetManagerImpl implements RulesetManager {
-
   private _clientRulesets = new Map<string, RegisteredRuleset[]>();
   public onRulesetModified = new BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>();
 
@@ -62,8 +59,9 @@ export class RulesetManagerImpl implements RulesetManager {
    */
   public async get(id: string): Promise<RegisteredRuleset | undefined> {
     const m = this._clientRulesets.get(id);
-    if (!m)
+    if (!m) {
       return undefined;
+    }
     return m[0];
   }
 
@@ -72,8 +70,9 @@ export class RulesetManagerImpl implements RulesetManager {
    */
   public async add(ruleset: Ruleset): Promise<RegisteredRuleset> {
     const registered = new RegisteredRuleset(ruleset, Guid.createValue(), async (r: RegisteredRuleset) => this.remove(r));
-    if (!this._clientRulesets.has(ruleset.id))
+    if (!this._clientRulesets.has(ruleset.id)) {
       this._clientRulesets.set(ruleset.id, []);
+    }
     this._clientRulesets.get(ruleset.id)!.push(registered);
     return registered;
   }
@@ -102,8 +101,9 @@ export class RulesetManagerImpl implements RulesetManager {
     }
 
     const m = this._clientRulesets.get(rulesetId);
-    if (!m)
+    if (!m) {
       return false;
+    }
 
     let didRemove = false;
     for (let i = 0; i < m.length; ++i) {
@@ -121,10 +121,10 @@ export class RulesetManagerImpl implements RulesetManager {
    * Remove all rulesets registered in this session.
    */
   public async clear(): Promise<void> {
-    if (0 === this._clientRulesets.size)
+    if (0 === this._clientRulesets.size) {
       return;
+    }
 
     this._clientRulesets.clear();
   }
-
 }

@@ -22,7 +22,7 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class Constant extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Constant; // eslint-disable-line
+  public override readonly schemaItemType = SchemaItemType.Constant;
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _definition: string;
   protected _numerator?: number;
@@ -30,7 +30,6 @@ export class Constant extends SchemaItem {
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Constant;
     this._definition = "";
   }
 
@@ -46,7 +45,7 @@ export class Constant extends SchemaItem {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public override toJSON(standalone: boolean, includeSchemaVersion: boolean): ConstantProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): ConstantProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     if (this.phenomenon !== undefined)
       schemaJson.phenomenon = this.phenomenon.fullName;

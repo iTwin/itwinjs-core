@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -32,7 +32,11 @@ export interface PropertyEditorSpecification {
  * Parameters for [[PropertyEditorSpecification]]
  * @public
  */
-export declare type PropertyEditorParameters = PropertyEditorJsonParameters | PropertyEditorMultilineParameters | PropertyEditorRangeParameters | PropertyEditorSliderParameters;
+export declare type PropertyEditorParameters =
+  | PropertyEditorJsonParameters
+  | PropertyEditorMultilineParameters
+  | PropertyEditorRangeParameters
+  | PropertyEditorSliderParameters;
 
 /**
  * Used for serializing array of [[PropertyEditorParameters]] to JSON

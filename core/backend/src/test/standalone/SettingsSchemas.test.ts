@@ -4,23 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelHost } from "../../IModelHost";
 
 describe("SettingsSchemas", () => {
 
-  it("add groups", () => {
-    SettingsSchemas.reset();
+  // SettingsSchema tests change the state of the IModelHost object. They should always clear
+  // the current state before and after they run so they're not affected by, nor influence, other tests running in the same process.
+  const restartSession = async () => {
+    await IModelHost.shutdown();
+    await IModelHost.startup();
+  };
+  before(async () => {
+    await restartSession();
+  });
+  after(async () => {
+    await restartSession();
+  });
 
+  it("add groups", async () => {
+    const schemas = IModelHost.settingsSchemas;
     // can't add a group with no name
-    expect(() => SettingsSchemas.addGroup({} as any)).throws(`has no "groupName" member`);
-    // can't add a group with no properties
-    expect(() => SettingsSchemas.addGroup({ groupName: "app1" } as any)).throws("has no properties");
+    expect(() => schemas.addGroup({} as any)).throws(`has no "schemaPrefix" member`);
 
-    SettingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
-    expect(SettingsSchemas.allSchemas.get("app1/list/openMode")!.type).equals("string");
-    expect(SettingsSchemas.allSchemas.get("app1/list/openMode")!.default).equals("singleClick");
-    expect(SettingsSchemas.allSchemas.get("app1/tree/blah")!.default).equals(true);
+    schemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
+    expect(schemas.settingDefs.get("testApp/list/openMode")!.type).equals("string");
+    expect(schemas.settingDefs.get("testApp/list/openMode")!.default).equals("singleClick");
+    expect(schemas.settingDefs.get("testApp/tree/blah")!.default).equals(true);
   });
 
 });

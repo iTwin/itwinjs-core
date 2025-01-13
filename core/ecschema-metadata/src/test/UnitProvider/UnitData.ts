@@ -48,4 +48,8 @@ export const UNIT_EXTRA_DATA = [
   { name: "Units.CUB_US_SURVEY_FT", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", altDisplayLabels: ["cy"] },
   { name: "Units.CUB_M", altDisplayLabels: ["cm"] },
+  // slope, example for an inverted unit
+  { name: "Units.HORIZONTAL_PER_VERTICAL", altDisplayLabels: ["hpv"] },
+  // to test the same label with a different system/phenomenon
+  { name: "Units.FT_H2O", altDisplayLabels: ["hpv"] },
 ];

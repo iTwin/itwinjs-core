@@ -59,7 +59,7 @@ describe("CustomAttributeClass", () => {
       expect(testCAClass!.label).to.equal("Test CustomAttribute Class");
       expect(testCAClass!.description).to.equal("Used for testing");
       expect(testCAClass!.modifier).to.equal(ECClassModifier.Sealed);
-      expect(testCAClass!.containerType).to.equal(CustomAttributeContainerType.AnyClass);
+      expect(testCAClass!.appliesTo).to.equal(CustomAttributeContainerType.AnyClass);
     });
 
     it("should throw for NavigationProperty", async () => {

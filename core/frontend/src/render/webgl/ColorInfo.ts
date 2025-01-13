@@ -8,8 +8,8 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ColorDef, ColorIndex } from "@itwin/core-common";
-import { VertexTable } from "../../common/render/primitives/VertexTable";
 import { FloatRgba } from "./FloatRGBA";
+import { VertexTable } from "../../common/internal/render/VertexTable";
 
 /* Describes a primitive's basic color properties
  * @internal

@@ -52,7 +52,7 @@ export class CurveWireMomentsXYZ implements IStrokeHandler {
       const numGauss = this._gaussMapper.mapXAndW(fractionA, fractionB);
       for (let k = 0; k < numGauss; k++) {
         fraction = this._gaussMapper.gaussX[k];
-        const ray = cp.fractionToPointAndDerivative(fraction)!;
+        const ray = cp.fractionToPointAndDerivative(fraction);
         scaleFactor = this._gaussMapper.gaussW[k] * ray.direction.magnitude();
         this._activeMomentData.accumulateScaledOuterProduct(ray.origin, scaleFactor);
       }

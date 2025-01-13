@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { SchemaItemType, schemaItemTypeToString } from "../../ECObjects";
+import { SchemaItemType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
 import { UnitSystem } from "../../Metadata/UnitSystem";
 
@@ -17,7 +17,7 @@ describe("UnitSystem tests", () => {
     testUnitSystem = new UnitSystem(schema, "Test");
     it("should return correct item type and string", () => {
       expect(testUnitSystem.schemaItemType).to.equal(SchemaItemType.UnitSystem);
-      expect(schemaItemTypeToString(testUnitSystem.schemaItemType)).to.equal("UnitSystem");
+      expect(testUnitSystem.schemaItemType).to.equal("UnitSystem");
     });
   });
 

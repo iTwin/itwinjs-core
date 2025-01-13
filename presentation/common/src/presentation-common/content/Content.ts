@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Content
  */
@@ -46,19 +46,20 @@ export class Content {
 
   /** Deserialize [[Content]] from JSON */
   public static fromJSON(json: ContentJSON | string | undefined): Content | undefined {
-    if (!json)
+    if (!json) {
       return undefined;
+    }
 
-    if (typeof json === "string")
+    if (typeof json === "string") {
       return JSON.parse(json, (key, value) => Content.reviver(key, value));
+    }
 
     const descriptor = Descriptor.fromJSON(json.descriptor);
-    if (!descriptor)
+    if (!descriptor) {
       return undefined;
+    }
 
-    const contentSet = json.contentSet
-      .map((itemJson: ItemJSON) => Item.fromJSON(itemJson))
-      .filter<Item>((item): item is Item => (item !== undefined));
+    const contentSet = json.contentSet.map((itemJson: ItemJSON) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
     return new Content(descriptor, contentSet);
   }
 

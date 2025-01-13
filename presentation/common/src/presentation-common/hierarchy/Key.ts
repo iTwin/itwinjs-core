@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -26,12 +26,13 @@ export enum StandardNodeTypes {
  */
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 /** @public */
-export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclare
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export namespace NodeKey {
   /**
    * Serialize given [[NodeKey]] to JSON
    * @deprecated in 3.x. Use [[NodeKey]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(key: NodeKey): NodeKeyJSON {
     return { ...key };
   }
@@ -40,7 +41,7 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
    * Deserialize node key from JSON
    * @deprecated in 3.x. Use [[NodeKey]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: NodeKeyJSON): NodeKey {
     return { version: 1, ...json };
   }
@@ -48,9 +49,8 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   /** Checks if the supplied key is an [[ECInstancesNodeKey]] */
   export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
   /** Checks if the supplied key is an [[ECInstancesNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line deprecation/deprecation
   export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isInstancesNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.ECInstancesNode;
   }
@@ -58,9 +58,8 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
   export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line deprecation/deprecation
   export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isClassGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.ECClassGroupingNode;
   }
@@ -68,9 +67,8 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
   export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line deprecation/deprecation
   export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isPropertyGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.ECPropertyGroupingNode;
   }
@@ -78,9 +76,8 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
   export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line deprecation/deprecation
   export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isLabelGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
     return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
   }
@@ -88,11 +85,10 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
   /** Checks if the supplied key is a grouping node key */
   export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
   /** Checks if the supplied key is a grouping node key. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  // eslint-disable-next-line deprecation/deprecation
   export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function isGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
+    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /**
@@ -106,18 +102,21 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
    */
   export function equals(lhs: NodeKey, rhs: NodeKey): boolean {
     // types must always be equal
-    if (lhs.type !== rhs.type)
+    if (lhs.type !== rhs.type) {
       return false;
+    }
 
     // `pathFromRoot` lengths must always be equal
-    if (lhs.pathFromRoot.length !== rhs.pathFromRoot.length)
+    if (lhs.pathFromRoot.length !== rhs.pathFromRoot.length) {
       return false;
+    }
 
     // when versions are equal, compare using contents of `pathFromRoot` array
     if (lhs.version === rhs.version) {
       for (let i = 0; i < lhs.pathFromRoot.length; ++i) {
-        if (lhs.pathFromRoot[i] !== rhs.pathFromRoot[i])
+        if (lhs.pathFromRoot[i] !== rhs.pathFromRoot[i]) {
           return false;
+        }
       }
       return true;
     }
@@ -126,11 +125,13 @@ export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclar
     // of different key versions can't be compared
     if (isInstancesNodeKey(lhs)) {
       assert(isInstancesNodeKey(rhs));
-      if (lhs.instanceKeys.length !== rhs.instanceKeys.length)
+      if (lhs.instanceKeys.length !== rhs.instanceKeys.length) {
         return false;
+      }
       for (let i = 0; i < lhs.instanceKeys.length; ++i) {
-        if (0 !== InstanceKey.compare(lhs.instanceKeys[i], rhs.instanceKeys[i]))
+        if (0 !== InstanceKey.compare(lhs.instanceKeys[i], rhs.instanceKeys[i])) {
           return false;
+        }
       }
       return true;
     }
@@ -173,9 +174,7 @@ export interface BaseNodeKey {
   /** Node hash path from root to the node whose key this is */
   pathFromRoot: string[];
 
-  /** Query that returns all selected instance keys
-   * @alpha
-   */
+  /** Query that returns all selected instance keys */
   instanceKeysSelectQuery?: PresentationQuery;
 }
 /**
@@ -188,7 +187,6 @@ export interface BaseNodeKeyJSON {
   // TODO: make this required
   version?: number;
   pathFromRoot: string[];
-  /** @alpha */
   instanceKeysSelectQuery?: PresentationQuery;
 }
 
@@ -302,12 +300,12 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKey {
  * @public
  * @deprecated in 3.x. Use [[NodeKey]].
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
 
 /**
  * Data structure that describes a presentation query
- * @alpha
+ * @public
  */
 export interface PresentationQuery {
   /** ECSQL query */
@@ -316,33 +314,40 @@ export interface PresentationQuery {
   bindings?: PresentationQueryBinding[];
 }
 
-/** @alpha */
-export interface BasePresentationQueryBinding {
-  type: "Id" | "IdSet" | "ECValue" | "ValueSet";
-}
-
-/** @alpha */
-export interface IdBinding extends BasePresentationQueryBinding {
+/**
+ * Defines an [[Id64String]] value binding.
+ * @public
+ */
+export interface IdBinding {
   type: "Id";
   value: Id64String;
 }
 
-/** @alpha */
-export interface IdSetBinding extends BasePresentationQueryBinding {
+/**
+ * Defines an [[IdSet]] value binding for use with `InVirtualSet` ECSQL function.
+ * @public
+ */
+export interface IdSetBinding {
   type: "IdSet";
   value: Id64String[];
 }
 
-/** @alpha */
-export interface ECValueBinding extends BasePresentationQueryBinding {
+/**
+ * Defines an EC value binding.
+ * @public
+ */
+export interface ECValueBinding {
   type: "ECValue";
   valueType: string;
   valueTypeExtended?: string;
   value: any;
 }
 
-/** @alpha */
-export interface ECValueSetBinding extends BasePresentationQueryBinding {
+/**
+ * Defines a binding for a list of EC values for use with `InVirtualSet` ECSQL function.
+ * @public
+ */
+export interface ECValueSetBinding {
   type: "ValueSet";
   valueType: string;
   valueTypeExtended?: string;
@@ -350,7 +355,7 @@ export interface ECValueSetBinding extends BasePresentationQueryBinding {
 }
 
 /**
- * One of the presentation query binding types
- * @alpha
+ * One of the [[PresentationQuery]] binding types.
+ * @public
  */
 export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding | ECValueSetBinding;

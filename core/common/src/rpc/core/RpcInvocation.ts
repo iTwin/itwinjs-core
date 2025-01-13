@@ -20,7 +20,7 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** The properties of an RpcActivity.
  * @public
@@ -279,7 +279,7 @@ export class RpcInvocation {
       status: this.protocol.getCode(this.status),
       id: this.request.id,
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
-      allowCompression: this.operation?.policy.allowResponseCompression || false,
+      allowCompression: this.operation ? this.operation.policy.allowResponseCompression : true,
     };
 
     this.transformResponseStatus(fulfillment, rawResult);
@@ -289,7 +289,7 @@ export class RpcInvocation {
       if (impl[CURRENT_INVOCATION] === this) {
         impl[CURRENT_INVOCATION] = undefined;
       }
-    } catch (_err) { }
+    } catch { }
 
     return fulfillment;
   }
@@ -324,7 +324,7 @@ export class RpcInvocation {
       fulfillment.rawResult = status;
     }
 
-    if (rawResult instanceof BentleyError) {
+    if (rawResult instanceof Error) {
       fulfillment.status = StatusCategory.for(rawResult).code;
     }
   }

@@ -5,16 +5,16 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
-  ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGisGraphicsRenderer, ArcGISImageryProvider, ArcGISTileMap,
-  ArcGisUtilities, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
+  ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
+  FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
   MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
-import { Logger } from "@itwin/core-bentley";
+import { IModelStatus, Logger } from "@itwin/core-bentley";
 import { HitDetail } from "../../../HitDetail";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
@@ -226,7 +226,10 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
     const json = metadata.content;
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired
+      || json?.error?.code === ArcGisErrorCode.InvalidToken
+      || json?.error?.code === ArcGisErrorCode.MissingPermissions
+    ) {
       // Check again layer status, it might have change during await.
       if (this.status === MapLayerImageryProviderStatus.Valid) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
@@ -382,7 +385,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     const tolerancePixel = options?.tolerance ?? 7;
     const json = await this.getIdentifyData(quadId, carto, tolerancePixel, true, maxAllowableOffset);
     if (json && Array.isArray(json.results)) {
-      const renderer = new ArcGisGraphicsRenderer({viewport: hit.viewport});
+      const renderer = new FeatureGraphicsRenderer({viewport: hit.viewport, crs: "webMercator"});
 
       const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, subLayerInfos: [] };
 

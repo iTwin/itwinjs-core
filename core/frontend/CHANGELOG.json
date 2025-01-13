@@ -2,6 +2,660 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.10.4",
+      "tag": "@itwin/core-frontend_v4.10.4",
+      "date": "Mon, 13 Jan 2025 14:06:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.3",
+      "tag": "@itwin/core-frontend_v4.10.3",
+      "date": "Mon, 06 Jan 2025 14:00:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.2",
+      "tag": "@itwin/core-frontend_v4.10.2",
+      "date": "Thu, 21 Nov 2024 15:22:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix duplicate Bing map attributions."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.1",
+      "tag": "@itwin/core-frontend_v4.10.1",
+      "date": "Thu, 14 Nov 2024 18:11:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.0",
+      "tag": "@itwin/core-frontend_v4.10.0",
+      "date": "Wed, 13 Nov 2024 15:23:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate `SnapshotConnection.openRemote`"
+          },
+          {
+            "comment": "Fixed problem with zoom when background map is on and allow3dManipulations is on."
+          },
+          {
+            "comment": "Fixed reading of KHR compressed meshes in GLTF reader."
+          },
+          {
+            "comment": "When a inUseLocks error is thrown on the backend during an IPC call, it will also be thrown on the frontend."
+          },
+          {
+            "comment": "Promote some overridden methods/properties from internal to public."
+          },
+          {
+            "comment": "Fix WorkerReturnType for async implementations."
+          },
+          {
+            "comment": "Add support for instancing to GraphicBuilder, GraphicDescriptionBuilder, and glTF."
+          },
+          {
+            "comment": "Add support for snapping to secondary iModels within a viewport."
+          },
+          {
+            "comment": "Permit FeatureAppearance to independently override line color and transparency."
+          },
+          {
+            "comment": "Add option to temporarily hide specific elements for Viewport.readPixels."
+          },
+          {
+            "comment": "Support snapping within section drawing attachments."
+          },
+          {
+            "comment": "Allow context reality model visibility to be toggled on/off"
+          },
+          {
+            "comment": "Support ContourDisplay rendering."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.9.7",
+      "tag": "@itwin/core-frontend_v4.9.7",
+      "date": "Wed, 06 Nov 2024 19:23:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.6",
+      "tag": "@itwin/core-frontend_v4.9.6",
+      "date": "Tue, 05 Nov 2024 15:22:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.5",
+      "tag": "@itwin/core-frontend_v4.9.5",
+      "date": "Tue, 22 Oct 2024 20:01:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.4",
+      "tag": "@itwin/core-frontend_v4.9.4",
+      "date": "Wed, 09 Oct 2024 20:22:04 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix WorkerReturnType for async implementations."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.9.3",
+      "tag": "@itwin/core-frontend_v4.9.3",
+      "date": "Thu, 03 Oct 2024 19:15:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.2",
+      "tag": "@itwin/core-frontend_v4.9.2",
+      "date": "Wed, 02 Oct 2024 15:14:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.1",
+      "tag": "@itwin/core-frontend_v4.9.1",
+      "date": "Wed, 25 Sep 2024 20:10:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.0",
+      "tag": "@itwin/core-frontend_v4.9.0",
+      "date": "Mon, 23 Sep 2024 13:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix range problem for elements during edit which sometimes made the dissappear."
+          },
+          {
+            "comment": "Permit TiledGraphicsProviders to contribute to planar clip masks."
+          },
+          {
+            "comment": "Fix incorrect bounding box for RenderGraphic created from GraphicDescription."
+          },
+          {
+            "comment": "Change MapLayerImageryProvider.supportsMapFeatureInfo from alpha to public"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.8.7",
+      "tag": "@itwin/core-frontend_v4.8.7",
+      "date": "Fri, 13 Sep 2024 15:11:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.6",
+      "tag": "@itwin/core-frontend_v4.8.6",
+      "date": "Fri, 06 Sep 2024 05:06:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.5",
+      "tag": "@itwin/core-frontend_v4.8.5",
+      "date": "Wed, 28 Aug 2024 17:27:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.4",
+      "tag": "@itwin/core-frontend_v4.8.4",
+      "date": "Thu, 22 Aug 2024 17:37:06 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.3",
+      "tag": "@itwin/core-frontend_v4.8.3",
+      "date": "Fri, 16 Aug 2024 18:18:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.2",
+      "tag": "@itwin/core-frontend_v4.8.2",
+      "date": "Thu, 15 Aug 2024 15:33:49 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.1",
+      "tag": "@itwin/core-frontend_v4.8.1",
+      "date": "Mon, 12 Aug 2024 14:05:54 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.8.0",
+      "tag": "@itwin/core-frontend_v4.8.0",
+      "date": "Thu, 08 Aug 2024 16:15:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed planar masks when using new tiles"
+          },
+          {
+            "comment": "Improve resolution of planar clip masks"
+          },
+          {
+            "comment": "Fixed new tiles not updating planar clip mask immediately."
+          },
+          {
+            "comment": "Fixed performance problem for planar clip masks"
+          },
+          {
+            "comment": "Fix missing login dialog for some ArcGIS services"
+          },
+          {
+            "comment": "Fix error reading ArcGIS Map service capabilities when Kerberos authentication is used"
+          },
+          {
+            "comment": "fixed material issues with frontend schedule scripts"
+          },
+          {
+            "comment": "Check validity of OCP CRS before using it."
+          },
+          {
+            "comment": "Trigger additional `onMouseMotion` call for tools to react to the last AccuSnap."
+          },
+          {
+            "comment": "Allow elements in edit scope to be updated by schedule scripts."
+          },
+          {
+            "comment": "Add support for gLTF extention EXT_mesh_gpu_instancing, that allows assigning unique identifiers to individual instances of a mesh, which can be used to look up per-instance data in the structural metadata table. This version also contains a fix to support absolute tile URLs in 3D tiles tileset.json"
+          },
+          {
+            "comment": "Load up front all subcategories of used spatial categories and 3D elements when creating a default view."
+          },
+          {
+            "comment": "Update ThirdPartyNotices.md"
+          },
+          {
+            "comment": "Provide WorkerProxy to simplify use of Worker scripts, and enable creation of graphics on Workers using GraphicDescriptionBuilder."
+          },
+          {
+            "comment": "Fix Viewport's never-drawn elements overriding the display style's excluded elements."
+          },
+          {
+            "comment": "Promote ScreenViewport and OffScreenViewport constructors."
+          },
+          {
+            "comment": "Include the extents of all TiledGraphicsProviders when computing ViewingSpace extents."
+          },
+          {
+            "comment": "Add support for creating textures and materials in a Worker."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.8",
+      "tag": "@itwin/core-frontend_v4.7.8",
+      "date": "Wed, 31 Jul 2024 13:38:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.7",
+      "tag": "@itwin/core-frontend_v4.7.7",
+      "date": "Fri, 19 Jul 2024 14:52:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix Viewport's never-drawn elements overriding the display style's excluded elements."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.6",
+      "tag": "@itwin/core-frontend_v4.7.6",
+      "date": "Fri, 12 Jul 2024 14:42:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix missing login dialog for some ArcGIS services"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.5",
+      "tag": "@itwin/core-frontend_v4.7.5",
+      "date": "Thu, 11 Jul 2024 15:24:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve resolution of planar clip masks"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.4",
+      "tag": "@itwin/core-frontend_v4.7.4",
+      "date": "Mon, 01 Jul 2024 14:06:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.3",
+      "tag": "@itwin/core-frontend_v4.7.3",
+      "date": "Thu, 27 Jun 2024 21:09:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed new tiles not updating planar clip mask immediately."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.2",
+      "tag": "@itwin/core-frontend_v4.7.2",
+      "date": "Sat, 22 Jun 2024 01:09:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed planar masks when using new tiles"
+          },
+          {
+            "comment": "Include the extents of all TiledGraphicsProviders when computing ViewingSpace extents."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.7.1",
+      "tag": "@itwin/core-frontend_v4.7.1",
+      "date": "Thu, 13 Jun 2024 22:47:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.7.0",
+      "tag": "@itwin/core-frontend_v4.7.0",
+      "date": "Wed, 12 Jun 2024 18:02:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed various issues related to terrain tile collecting."
+          },
+          {
+            "comment": "Fix failed HTTP RPC request not being rejected if `X-Protocol-Version` is not available."
+          },
+          {
+            "comment": "Increase maximum number of categories passed into querySubCategories"
+          },
+          {
+            "comment": "Reduce coupling between project extents and tile cache, so that cached tiles can remain valid after adjusting the project extents by less than an order of magnitude."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.6.2",
+      "tag": "@itwin/core-frontend_v4.6.2",
+      "date": "Sat, 08 Jun 2024 00:50:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.6.1",
+      "tag": "@itwin/core-frontend_v4.6.1",
+      "date": "Wed, 29 May 2024 14:35:17 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.6.0",
+      "tag": "@itwin/core-frontend_v4.6.0",
+      "date": "Mon, 13 May 2024 20:32:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Increase default extent limits for drawing views and fix incorrect clipping of section drawing attachments."
+          },
+          {
+            "comment": "Fixed problem cases freeing tile memory under memory pressure"
+          },
+          {
+            "comment": "Fix map layer WMTS validation process to correctly return authentication error"
+          },
+          {
+            "comment": "Fixed various issues related to terrain tile collecting."
+          },
+          {
+            "comment": "Fix an issue preventing model map layer from being hidden"
+          },
+          {
+            "comment": "Added support for OGC Features map layers."
+          },
+          {
+            "comment": "Include BIS class metadata with transaction events."
+          },
+          {
+            "comment": "Fix dynamic element graphics being clipped to the project extents in 2d models."
+          },
+          {
+            "comment": "Add support for EXT_meshopt_compression glTF extension."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.5.2",
+      "tag": "@itwin/core-frontend_v4.5.2",
+      "date": "Tue, 16 Apr 2024 14:46:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix an issue preventing model map layer from being hidden"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.5.1",
+      "tag": "@itwin/core-frontend_v4.5.1",
+      "date": "Wed, 03 Apr 2024 18:26:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix map layer WMTS validation process to correctly return authentication error"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.5.0",
+      "tag": "@itwin/core-frontend_v4.5.0",
+      "date": "Tue, 02 Apr 2024 19:06:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change gpuMemoryLimit setting used when undefined"
+          },
+          {
+            "comment": "Disable tile preloading when under memory pressure"
+          },
+          {
+            "comment": "Add textures to reality mesh stats"
+          },
+          {
+            "comment": "Fix an issue where the background map would become blank after adding a new map-layer"
+          },
+          {
+            "comment": "added ability of batched tiles to generate cut plane graphics"
+          },
+          {
+            "comment": "Fix regression in GPU timings due a  change in chromium's behavior."
+          },
+          {
+            "comment": "Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak"
+          },
+          {
+            "comment": "make CheckpointConnection.openRemote work for IPC"
+          },
+          {
+            "comment": "Add TileTreeReference.createFromRenderGraphic. Permit TiledGraphicsProvider to supply a tooltip."
+          },
+          {
+            "comment": "Added an iterator over the entries in a BatchTableProperties."
+          },
+          {
+            "comment": "Add support for custom data sources in TerrainSettings, including Cesium ION assets."
+          },
+          {
+            "comment": "Add support for dynamic spatial classifiers."
+          },
+          {
+            "comment": "Fix incorrect transforms computed for instanced glTF meshes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.9",
+      "tag": "@itwin/core-frontend_v4.4.9",
+      "date": "Mon, 15 Apr 2024 20:29:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.8",
+      "tag": "@itwin/core-frontend_v4.4.8",
+      "date": "Mon, 25 Mar 2024 22:22:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.7",
+      "tag": "@itwin/core-frontend_v4.4.7",
+      "date": "Fri, 15 Mar 2024 19:15:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Disable tile preloading when under memory pressure"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.6",
+      "tag": "@itwin/core-frontend_v4.4.6",
+      "date": "Fri, 08 Mar 2024 15:57:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.5",
+      "tag": "@itwin/core-frontend_v4.4.5",
+      "date": "Tue, 05 Mar 2024 20:37:18 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added an iterator over the entries in a BatchTableProperties."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.4",
+      "tag": "@itwin/core-frontend_v4.4.4",
+      "date": "Fri, 01 Mar 2024 18:21:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change gpuMemoryLimit setting used when undefined"
+          },
+          {
+            "comment": "Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.4.3",
+      "tag": "@itwin/core-frontend_v4.4.3",
+      "date": "Fri, 23 Feb 2024 21:26:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.2",
+      "tag": "@itwin/core-frontend_v4.4.2",
+      "date": "Fri, 16 Feb 2024 14:22:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.1",
+      "tag": "@itwin/core-frontend_v4.4.1",
+      "date": "Fri, 16 Feb 2024 14:17:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.4.0",
+      "tag": "@itwin/core-frontend_v4.4.0",
+      "date": "Mon, 12 Feb 2024 18:15:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SQ_KM to UNIT_DATA"
+          },
+          {
+            "comment": "Add support to create an EcefLocation class directly from a transformation matrix"
+          },
+          {
+            "comment": "Added support for recoloring geometry intersecting a clip volume"
+          },
+          {
+            "comment": "Bump @itwin/object-storage-core"
+          },
+          {
+            "comment": "Add textures to reality mesh stats"
+          },
+          {
+            "comment": "Promote APIs required to implement a MapLayerFormat to beta"
+          },
+          {
+            "comment": "Fix status code when invalid credentials are provided for an ArcGIS service."
+          },
+          {
+            "comment": "Fixed an issue preventing tiles published by some specific ArcGIS MapServer to be correctly displayed in the view."
+          },
+          {
+            "comment": "Fix Map Feature Info for ArcGIS map services when reprojection is needed."
+          },
+          {
+            "comment": "Enable Kerberos authentication for map-layers"
+          },
+          {
+            "comment": "Custom query parameters can now be configured on map layers objects."
+          },
+          {
+            "comment": "Expose `ParticleCollectionBuilder` for extensions"
+          },
+          {
+            "comment": "Improved ArcGIS feature info coordinates reprojection outside project extent."
+          },
+          {
+            "comment": "Improved content type detection for 3D Tiles tilesets."
+          },
+          {
+            "comment": "Updated realitydata url to new reality-management API url. Added tests for new url."
+          },
+          {
+            "comment": "Add support for glTF 2.0 EXT_mesh_gpu_instancing and fix incorrectly computed glTF bounding boxes."
+          },
+          {
+            "comment": "Add support for transparent gradients in thematic display and analysis styles."
+          },
+          {
+            "comment": "Added Viewport.onSceneInvalidated event raised when Viewport.invalidateScene is called."
+          },
+          {
+            "comment": "Fix SpatialModelState.isRealityModel returning false for reality models that don't store a tileset URL."
+          },
+          {
+            "comment": "When assigning to SpatialViewState.modelSelector, notify tile tree references of the change."
+          },
+          {
+            "comment": "Enable display of all subcategories for non-scene decorations."
+          },
+          {
+            "comment": "Add RealityTileTree.batchTableProperties for accessing per-feature properties from 3D Tiles 1.0 tilesets."
+          },
+          {
+            "comment": "Add DisplayStyleState iterator over context reality models."
+          },
+          {
+            "comment": "Fix incorrect transparency for text rendered as raster glyphs."
+          },
+          {
+            "comment": "Remove maximum depth constraint for reality tile trees."
+          },
+          {
+            "comment": "Clone view attachments when cloning a sheet or drawing view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.3.5",
+      "tag": "@itwin/core-frontend_v4.3.5",
+      "date": "Mon, 25 Mar 2024 16:54:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.3.4",
+      "tag": "@itwin/core-frontend_v4.3.4",
+      "date": "Fri, 22 Mar 2024 13:30:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump @itwin/object-storage-core"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.3.3",
       "tag": "@itwin/core-frontend_v4.3.3",
       "date": "Wed, 03 Jan 2024 19:28:38 GMT",

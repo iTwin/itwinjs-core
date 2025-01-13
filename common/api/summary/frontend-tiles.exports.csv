@@ -1,12 +1,28 @@
 sep=;
-Release Tag;API Item
-beta;ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise
-beta;FrontendTilesOptions
-internal;frontendTilesOptions:
-beta;initializeFrontendTiles(options: FrontendTilesOptions): void
-beta;MeshExport
-internal;MeshExports
-beta;obtainMeshExportTilesetUrl(args: ObtainMeshExportTilesetUrlArgs): Promise
-beta;ObtainMeshExportTilesetUrlArgs
-beta;queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator
-beta;QueryMeshExportsArgs
+Release Tag;API Item Type;API Item Name
+alpha;function;attachGeoscienceTileset
+alpha;type;AttachGeoscienceTilesetArgs
+alpha;interface;BaseGeoscienceArgs
+beta;type;ComputeSpatialTilesetBaseUrl
+internal;function;createGraphicRepresentationsQueryUrl
+beta;interface;DataSource
+beta;interface;FrontendTilesOptions
+internal;const;frontendTilesOptions
+alpha;interface;GetGeoscienceTilesetArgs
+alpha;function;getGeoscienceTilesetUrl
+beta;type;GraphicRepresentation
+beta;type;GraphicRepresentationFormat
+beta;enum;GraphicRepresentationStatus
+beta;function;initializeFrontendTiles
+beta;interface;MeshExport
+internal;interface;MeshExports
+beta;function;obtainGraphicRepresentationUrl
+beta;interface;ObtainGraphicRepresentationUrlArgs
+beta;function;obtainIModelTilesetUrl
+beta;interface;ObtainIModelTilesetUrlArgs
+beta;function;obtainMeshExportTilesetUrl
+beta;type;ObtainMeshExportTilesetUrlArgs
+beta;function;queryGraphicRepresentations
+beta;interface;QueryGraphicRepresentationsArgs
+beta;function;queryMeshExports
+beta;interface;QueryMeshExportsArgs

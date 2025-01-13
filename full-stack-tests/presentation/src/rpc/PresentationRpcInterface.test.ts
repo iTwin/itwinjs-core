@@ -1,21 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { RpcManager } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("PresentationRpcInterface", () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openFile(testIModelName);
+    imodel = TestIModelConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 
@@ -25,7 +25,6 @@ describe("PresentationRpcInterface", () => {
   });
 
   describe("getElementProperties", () => {
-
     let rpcInterface: PresentationRpcInterface;
 
     beforeEach(() => {
@@ -33,12 +32,11 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("returns properties for requested element", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
         elementId: "0x1",
       });
       expect(result).to.matchSnapshot();
     });
-
   });
-
 });

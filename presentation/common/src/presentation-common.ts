@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /**
  * @module Core
  *
@@ -34,7 +34,6 @@ export * from "./presentation-common/KoqPropertyValueFormatter";
  */
 export * from "./presentation-common/PresentationRpcInterface";
 export * from "./presentation-common/RpcRequestsHandler";
-export * from "./presentation-common/ElementProperties";
 
 /**
  * @module UnifiedSelection
@@ -63,6 +62,7 @@ export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
 export * from "./presentation-common/content/ContentTraverser";
 export * from "./presentation-common/content/PropertyValueFormatter";
+export * from "./presentation-common/ElementProperties";
 
 /**
  * @module Hierarchies

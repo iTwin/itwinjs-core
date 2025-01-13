@@ -32,7 +32,7 @@ export enum UVSelect {
    */
   VDirection = 1,
   /** index of v direction */
-  vDirection = 1,
+  vDirection = 1,  // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 }
 /**
  * Enumeration of how weights are carried

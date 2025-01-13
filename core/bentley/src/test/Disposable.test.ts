@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, describe, it } from "vitest";
 import { DisposableList, IDisposable, using } from "../core-bentley";
 import { isIDisposable } from "../Disposable";
 
@@ -93,9 +93,9 @@ describe("Disposable", () => {
         disposed = true;
       });
       const result = using(disposable, async (_r) => {
-        return new Promise<void>((_resolve: () => void, reject: () => void) => {
+        return new Promise<void>((_resolve: () => void, reject: (e: Error) => void) => {
           setTimeout(() => {
-            reject();
+            reject(new Error());
             assert.isFalse(disposed);
           }, 0);
         });

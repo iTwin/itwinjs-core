@@ -126,13 +126,16 @@ export interface CreateIModelProps extends IModelProps {
 }
 
 /**
- * Encryption-related properties that can be supplied when creating or opening snapshot iModels.
+ * Sqlite options.
  * @public
- * @deprecated in 3.x. **NOTE**, encrypted iModels are no longer supported since they require licensed code.
  */
-export interface IModelEncryptionProps {
-  /** The password used to encrypt/decrypt the snapshot iModel. */
-  readonly password?: string;
+export interface OpenSqliteArgs {
+  /**
+   * Specify timeout after which SQLite stop retrying to acquire lock to database file and throw SQLITE_BUSY error.
+   * Timeout is specified in milliseconds.
+   * For more information https://www.sqlite.org/c3ref/busy_timeout.html.
+   * */
+  readonly busyTimeout?: number;
 }
 
 /**
@@ -155,7 +158,7 @@ export interface CloudContainerUri {
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
+export interface SnapshotOpenOptions extends OpenDbKey {
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
@@ -175,8 +178,7 @@ export type StandaloneOpenOptions = OpenDbKey;
 /** Options that can be supplied when creating snapshot iModels.
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
-export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+export interface CreateSnapshotIModelProps {
   /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
    * These database views can often be useful for interoperability workflows.
    */
@@ -192,8 +194,7 @@ export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotI
 /** Options that can be supplied when creating standalone iModels.
  * @internal
  */
-// eslint-disable-next-line deprecation/deprecation
-export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+export interface CreateStandaloneIModelProps {
   /** If present, file will allow local editing, but cannot be used to create changesets */
   readonly allowEdit?: string;
 }
@@ -298,9 +299,9 @@ export class EcefLocation implements EcefLocationProps {
   /** Construct ECEF Location from transform with optional position on the earth used to establish the ECEF origin and orientation. */
   public static createFromTransform(transform: Transform): EcefLocation {
     const ecefOrigin = transform.getOrigin();
-    const angleFromInput = YawPitchRollAngles.createDegrees(0,0,0);
+    const angleFromInput = YawPitchRollAngles.createDegrees(0, 0, 0);
     const locationOrientationFromInputT = YawPitchRollAngles.createFromMatrix3d(transform.getMatrix(), angleFromInput);
-    const transformProps =  transform.toJSON();
+    const transformProps = transform.toJSON();
 
     return new EcefLocation({ origin: ecefOrigin, orientation: locationOrientationFromInputT ?? angleFromInput, transform: transformProps });
   }
@@ -368,6 +369,7 @@ export abstract class IModel implements IModelProps {
   private _ecefLocation?: EcefLocation;
   private _geographicCoordinateSystem?: GeographicCRS;
   private _iModelId?: GuidString;
+  private _changeset: ChangesetIdWithIndex;
 
   /** The Id of the repository model. */
   public static readonly repositoryModelId: Id64String = "0x1";
@@ -388,6 +390,8 @@ export abstract class IModel implements IModelProps {
   public readonly onEcefLocationChanged = new BeEvent<(previousLocation: EcefLocation | undefined) => void>();
   /** Event raised after [[geographicCoordinateSystem]] changes. */
   public readonly onGeographicCoordinateSystemChanged = new BeEvent<(previousGCS: GeographicCRS | undefined) => void>();
+  /** Event raised after [[changeset]] changes. */
+  public readonly onChangesetChanged = new BeEvent<(previousChangeset: ChangesetIdWithIndex) => void>();
 
   /** Name of the iModel */
   public get name(): string {
@@ -544,7 +548,16 @@ export abstract class IModel implements IModelProps {
   public get iModelId(): GuidString | undefined { return this._iModelId; }
 
   /** @public */
-  public changeset: ChangesetIdWithIndex;
+  public get changeset(): ChangesetIdWithIndex {
+    return { ...this._changeset };
+  }
+  public set changeset(changeset: ChangesetIdWithIndex) {
+    const prev = this._changeset;
+    if (prev.id !== changeset.id || prev.index !== changeset.index) {
+      this._changeset = { id: changeset.id, index: changeset.index };
+      this.onChangesetChanged.raiseEvent(prev);
+    }
+  }
 
   protected _openMode = OpenMode.Readonly;
   /** The [[OpenMode]] used for this IModel. */
@@ -575,14 +588,12 @@ export abstract class IModel implements IModelProps {
 
   /** @internal */
   protected constructor(tokenProps?: IModelRpcProps) {
-    this.changeset = { id: "", index: 0 };
+    this._changeset = tokenProps?.changeset ?? { id: "", index: 0 };
     this._fileKey = "";
     if (tokenProps) {
       this._fileKey = tokenProps.key;
       this._iTwinId = tokenProps.iTwinId;
       this._iModelId = tokenProps.iModelId;
-      if (tokenProps.changeset)
-        this.changeset = tokenProps.changeset;
     }
   }
 
@@ -622,7 +633,7 @@ export abstract class IModel implements IModelProps {
    * @returns A Point3d in ECEF coordinates
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyPoint3d(spatial, result)!; }
+  public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyPoint3d(spatial, result); }
 
   /** Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates using its [[ecefLocation]].
    * @param ecef A point in ECEF coordinates

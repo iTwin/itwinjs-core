@@ -179,9 +179,9 @@ export * from "./numerics/ClusterableArray";
 export * from "./numerics/Complex";
 export * from "./numerics/ConvexPolygon2d";
 export * from "./numerics/PascalCoefficients";
-export * from "./numerics/Polynomials";
 export * from "./numerics/Quadrature";
 export * from "./numerics/Range1dArray";
+export * from "./numerics/SmallSystem";
 export * from "./numerics/TriDiagonalSystem";
 
 export * from "./curve/Arc3d";
@@ -256,4 +256,5 @@ export * from "./topology/SpaceTriangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
 export * from "./serialization/GeometrySamples";
+export * from "./serialization/SerializationHelpers";
 export { BentleyGeometryFlatBuffer } from "./serialization/BentleyGeometryFlatBuffer";

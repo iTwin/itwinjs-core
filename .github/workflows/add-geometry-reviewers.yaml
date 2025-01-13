@@ -1,0 +1,18 @@
+# This workflow adds geometry reviewers to PRs labled with "geometry"
+
+name: add-geometry-reviewers
+
+on:
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+  build:
+    if: ${{ github.event.label.name == 'geometry' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Add Reviewers to PR
+      uses: madrapps/add-reviewers@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        reviewers: dassaf4,saeeedtorabi

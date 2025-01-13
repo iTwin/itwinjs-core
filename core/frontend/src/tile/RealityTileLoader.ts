@@ -152,6 +152,7 @@ export abstract class RealityTileLoader {
             transform: tile.transformToRoot,
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
+            idMap: this.getBatchIdMap(),
           });
         }
 
@@ -185,7 +186,7 @@ export abstract class RealityTileLoader {
         content = await reader.read();
         if (content.containsPointCloud)
           this._containsPointClouds = true;
-      } catch (_err) {
+      } catch {
         // Failure to load should prevent us from trying to load children
         content.isLeaf = true;
       }

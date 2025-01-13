@@ -8,11 +8,10 @@
 
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
-import { Transform } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
-import { BatchOptions } from "../GraphicBuilder";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { ClipVolume } from "./ClipVolume";
@@ -27,6 +26,8 @@ import { Target } from "./Target";
 import { TextureDrape } from "./TextureDrape";
 import { ThematicSensors } from "./ThematicSensors";
 import { BranchState } from "./BranchState";
+import { BatchOptions } from "../../common/render/BatchOptions";
+import { Contours } from "./Contours";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -57,6 +58,10 @@ export class GraphicOwner extends Graphic {
     this.graphic.collectStatistics(stats);
   }
 
+  public override unionRange(range: Range3d) {
+    this.graphic.unionRange(range);
+  }
+
   public addCommands(commands: RenderCommands): void {
     this._graphic.addCommands(commands);
   }
@@ -77,13 +82,16 @@ export class GraphicOwner extends Graphic {
 export interface BatchContext {
   batchId: number;
   iModel?: IModelConnection;
+  transformFromIModel?: Transform;
   viewAttachmentId?: Id64String;
+  inSectionDrawingAttachment?: boolean;
 }
 
 /** @internal exported strictly for tests. */
 export class PerTargetBatchData {
   public readonly target: Target;
   protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
+  protected _contours?: Contours;
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
@@ -92,6 +100,7 @@ export class PerTargetBatchData {
 
   public dispose(): void {
     this._thematicSensors = dispose(this._thematicSensors);
+    this._contours = this._contours?.dispose();
     for (const value of this._featureOverrides.values())
       dispose(value);
 
@@ -122,12 +131,28 @@ export class PerTargetBatchData {
     return ovrs;
   }
 
+  public getContours(batch: Batch): Contours {
+    if (this._contours && !this._contours.matchesTargetAndFeatureCount(this.target, batch.featureTable))
+      this._contours = this._contours.dispose();
+
+    if (!this._contours) {
+      this._contours = Contours.createFromTarget(this.target, batch.options);
+      this._contours.initFromMap(batch.featureTable);
+    } else {
+      this._contours.update(batch.featureTable);
+    }
+    return this._contours;
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (this._thematicSensors)
       stats.addThematicTexture(this._thematicSensors.bytesUsed);
 
     for (const ovrs of this._featureOverrides.values())
       stats.addFeatureOverrides(ovrs.byteLength);
+
+    if (this._contours)
+      stats.addContours(this._contours.byteLength);
   }
 
   /** Exposed strictly for tests. */
@@ -190,6 +215,10 @@ export class PerTargetData {
     return this.getBatchData(target).getFeatureOverrides(this._batch);
   }
 
+  public getContours(target: Target): Contours {
+    return this.getBatchData(target).getContours(this._batch);
+  }
+
   private getBatchData(target: Target): PerTargetBatchData {
     let data = this._data.find((x) => x.target === target);
     if (!data) {
@@ -223,18 +252,24 @@ export class Batch extends Graphic {
   /** The following are valid only during a draw and reset afterward. */
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
+  public get transformFromBatchIModel() { return this._context.transformFromIModel; }
   public get viewAttachmentId() { return this._context.viewAttachmentId; }
+  public get inSectionDrawingAttachment() { return this._context.inSectionDrawingAttachment; }
 
   public setContext(batchId: number, branch: BranchState) {
     this._context.batchId = batchId;
     this._context.iModel = branch.iModel;
+    this._context.transformFromIModel = branch.transformFromIModel;
     this._context.viewAttachmentId = branch.viewAttachmentId;
+    this._context.inSectionDrawingAttachment = branch.inSectionDrawingAttachment;
   }
 
   public resetContext() {
     this._context.batchId = 0;
     this._context.iModel = undefined;
+    this._context.transformFromIModel = undefined;
     this._context.viewAttachmentId = undefined;
+    this._context.inSectionDrawingAttachment = undefined;
   }
 
   public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
@@ -264,6 +299,10 @@ export class Batch extends Graphic {
     this.perTargetData.collectStatistics(stats);
   }
 
+  public override unionRange(range: Range3d) {
+    range.extendRange(this.range);
+  }
+
   public addCommands(commands: RenderCommands): void {
     commands.addBatch(this);
   }
@@ -282,6 +321,10 @@ export class Batch extends Graphic {
 
   public getOverrides(target: Target): FeatureOverrides {
     return this.perTargetData.getFeatureOverrides(target);
+  }
+
+  public getContours(target: Target): Contours {
+    return this.perTargetData.getContours(target);
   }
 
   public onTargetDisposed(target: Target) {
@@ -303,6 +346,9 @@ export class Branch extends Graphic {
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
   public readonly viewAttachmentId?: Id64String;
+  public readonly inSectionDrawingAttachment?: boolean;
+  public disableClipStyle?: true;
+  public readonly transformFromExternalIModel?: Transform;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -320,6 +366,9 @@ export class Branch extends Graphic {
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
+    this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;
+    this.disableClipStyle = opts.disableClipStyle;
+    this.transformFromExternalIModel = opts.transformFromIModel;
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);
@@ -352,6 +401,15 @@ export class Branch extends Graphic {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    const thisRange = new Range3d();
+    for (const graphic of this.branch.entries)
+      graphic.unionRange(thisRange);
+
+    this.localToWorldTransform.multiplyRange(thisRange, thisRange);
+    range.extendRange(thisRange);
   }
 
   private shouldAddCommands(commands: RenderCommands): boolean {
@@ -400,6 +458,10 @@ export class AnimationTransformBranch extends Graphic {
 
   public override collectStatistics(stats: RenderMemory.Statistics) {
     this.graphic.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    this.graphic.unionRange(range);
   }
 
   public override addCommands(commands: RenderCommands) {
@@ -465,5 +527,10 @@ export class GraphicsArray extends Graphic {
   public collectStatistics(stats: RenderMemory.Statistics): void {
     for (const graphic of this.graphics)
       graphic.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    for (const graphic of this.graphics)
+      graphic.unionRange(range);
   }
 }

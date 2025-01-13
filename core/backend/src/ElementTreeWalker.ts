@@ -8,7 +8,7 @@
 import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
+import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 
@@ -50,6 +50,11 @@ enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subj
 
 function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
   const el = iModel.elements.getElement(elementId);
+  // DefinitionContainer is submodeled by a DefinitionModel and so it must be classified as PRUNING_CLASS_DefinitionPartition for tree-walking purposes.
+  // Since DefinitionContainer is-a DefinitionElement the (el instanceof DefinitionElement) case below would classify it as PRUNING_CLASS_Definition.
+  // That is why we special-case it here.
+  if (el instanceof DefinitionContainer)
+    return ElementPruningClassification.PRUNING_CLASS_DefinitionPartition;
   return (el instanceof Subject) ? ElementPruningClassification.PRUNING_CLASS_Subject :
     (el instanceof DefinitionElement) ? ElementPruningClassification.PRUNING_CLASS_Definition :
       (el instanceof DefinitionPartition) ? ElementPruningClassification.PRUNING_CLASS_DefinitionPartition :
@@ -442,20 +447,59 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
   }
 }
 
+/** Arguments supplied to [[deleteElementTree]].
+ * @beta
+ */
+export interface DeleteElementTreeArgs {
+  /** The iModel containing the elements to delete. */
+  iModel: IModelDb;
+  /** The Id of the root element of the tree to delete. */
+  topElement: Id64String;
+  /** The maximum number of passes to make when deleting definition elements.
+   * Default: 5
+   */
+  maxPasses?: number;
+}
+
 /** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
  * @param iModel The iModel
  * @param topElement The parent of the sub-tree
  * @beta
  */
-export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void {
-  const del = new ElementTreeDeleter(iModel);
-  del.deleteNormalElements(topElement);
-  del.deleteSpecialElements();
+export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void;
+/** Deletes an element tree starting with the specified top element. The top element is also deleted. Uses ElementTreeDeleter.
+ * @param args Specifies the iModel and top element.
+ * @beta
+ */
+export function deleteElementTree(args: DeleteElementTreeArgs): void;
+/** @internal */
+export function deleteElementTree(arg0: DeleteElementTreeArgs | IModelDb, arg1?: Id64String): void {
+  let maxPasses;
+  let iModel: IModelDb;
+  let topElement: Id64String;
+  if (arg0 instanceof IModelDb) {
+    assert(typeof arg1 === "string");
+    iModel = arg0;
+    topElement = arg1;
+  } else {
+    iModel = arg0.iModel;
+    topElement = arg0.topElement;
+    maxPasses = arg0.maxPasses;
+  }
+
+  maxPasses = maxPasses ?? 5;
+  let pass = 0;
+  do {
+    const del = new ElementTreeDeleter(iModel);
+    del.deleteNormalElements(topElement);
+    del.deleteSpecialElements();
+  } while ((iModel.elements.tryGetElement(topElement) !== undefined) && (++pass < maxPasses));
 }
 
 /** Deletes all element sub-trees that are selected by the supplied filter. Uses ElementSubTreeDeleter.
  * If the filter selects the top element itself, then the entire tree (including the top element) is deleted.
  * That has the same effect as calling [[deleteElementTree]] on the top element.
+ * @note The caller may have to call this function multiple times if there are multiple layers of dependencies among definition elements.
  * @param iModel The iModel
  * @param topElement Where to start the search.
  * @param filter Callback that selects sub-trees that should be deleted.

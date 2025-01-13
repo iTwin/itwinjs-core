@@ -7,13 +7,14 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { Base64EncodedString, Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
-import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
+import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
+import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -26,6 +27,15 @@ const doDebugToolTips = false;
 export enum MapLayerImageryProviderStatus {
   Valid,
   RequireAuth,
+}
+
+/** @internal */
+export interface WGS84Extent
+{
+  longitudeLeft: number;
+  longitudeRight: number;
+  latitudeTop: number;
+  latitudeBottom: number;
 }
 
 /** Abstract class for map layer imagery providers.
@@ -46,10 +56,23 @@ export abstract class MapLayerImageryProvider {
   private _status = MapLayerImageryProviderStatus.Valid;
 
   /** @internal */
+  protected _includeUserCredentials = false;
+
+  /** @internal */
+  protected readonly onFirstRequestCompleted = new BeEvent<() => void>();
+
+  /** @internal */
+  protected _firstRequestPromise: Promise<void>|undefined;
+
+  /** @internal */
   public get status() { return this._status; }
 
-  /** @alpha */
-  public get supportsMapFeatureInfo() { return false; }
+  /** Determine if this provider supports map feature info.
+   * For example, this can be used to show the map feature info tool only when a provider is registered to support it.
+   * @returns true if provider supports map feature info else return false.
+   * @public
+   */
+  public get supportsMapFeatureInfo(): boolean { return false; }
 
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
 
@@ -220,18 +243,73 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   protected setRequestAuthorization(headers: Headers) {
     if (this._settings.userName && this._settings.password) {
-      headers.set("Authorization", `Basic ${Base64EncodedString.encode(`${this._settings.userName}:${this._settings.password}`)}`);
+      setBasicAuthorization(headers, this._settings.userName, this._settings.password);
     }
   }
 
   /** @internal */
-  public async makeTileRequest(url: string) {
+  public async makeTileRequest(url: string, timeoutMs?: number): Promise<Response> {
+
+    // We want to complete the first request before letting other requests go;
+    // this done to avoid flooding server with requests missing credentials
+    if (!this._firstRequestPromise)
+      this._firstRequestPromise  = new Promise<void>((resolve: any) => this.onFirstRequestCompleted.addOnce(()=>resolve()));
+    else
+      await this._firstRequestPromise;
+
+    let response: Response|undefined;
+    try {
+      response = await this.makeRequest(url, timeoutMs);
+    } finally {
+      this.onFirstRequestCompleted.raiseEvent();
+    }
+
+    if (response === undefined)
+      throw new Error("fetch call failed");
+
+    return response;
+  }
+
+  /** @internal */
+  public async makeRequest(url: string, timeoutMs?: number) {
+
+    let response: Response|undefined;
+
     let headers: Headers | undefined;
+    let hasCreds = false;
     if (this._settings.userName && this._settings.password) {
+      hasCreds = true;
       headers = new Headers();
       this.setRequestAuthorization(headers);
     }
-    return fetch(url, { method: "GET", headers });
+    const opts: RequestInit = {
+      method: "GET",
+      headers,
+      credentials: this._includeUserCredentials ? "include" : undefined,
+    };
+
+    if (timeoutMs !== undefined)
+      setRequestTimeout(opts, timeoutMs);
+
+    response = await fetch(url, opts);
+
+    if (response.status === 401
+          && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
+          && !this._includeUserCredentials
+          && !hasCreds
+    ) {
+      // Removed the previous headers and make sure "include" credentials is set
+      opts.headers = undefined;
+      opts.credentials = "include";
+
+      // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
+      response = await fetch(url,  opts);
+      if (response.status === 200) {
+        this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
+      }
+    }
+
+    return response;
   }
 
   /** Returns a map layer tile at the specified settings. */
@@ -272,7 +350,11 @@ export abstract class MapLayerImageryProvider {
     this.setRequestAuthorization(headers);
 
     try {
-      const response = await fetch(url, { method: "GET", headers });
+      const response = await fetch(url, {
+        method: "GET",
+        headers,
+        credentials: this._includeUserCredentials ? "include" : undefined,
+      });
       const text = await response.text();
       if (undefined !== text) {
         strings.push(text);
@@ -342,7 +424,7 @@ export abstract class MapLayerImageryProvider {
    * @param zoomLevel Desired zoom level of the tile
    * @internal
    */
-  public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
+  public getEPSG4326Extent(row: number, column: number, zoomLevel: number): WGS84Extent {
     // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
     // so use Math.pow instead (I assume the performance lost to be minimal)
     const mapSize = this.tileSize * Math.pow(2, zoomLevel);
@@ -385,60 +467,31 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
+  public getEPSG4326TileExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
     const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
+    return this.getEPSG4326ExtentString(tileExtent, latLongAxisOrdering);
+
+  }
+
+  /** @internal */
+  public getEPSG4326ExtentString(tileExtent: WGS84Extent, latLongAxisOrdering: boolean) {
+
     if (latLongAxisOrdering) {
-      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},
-              ${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
+      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
     } else {
-      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},
-              ${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
+      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
     }
   }
 
   /** Append custom parameters for settings to provided URL object.
-   *  Make sure custom parameters do no override query parameters already part of the URL (lower case comparison)
    * @internal
    */
   protected appendCustomParams(url: string) {
     if (!this._settings.savedQueryParams && !this._settings.unsavedQueryParams)
       return url;
 
-    // create a lower-case array of keys
-    const currentParams: string[] = [];
-    const currentUrl = new URL(url);
-    currentUrl.searchParams.forEach((_value, key, _parent) => {
-      currentParams.push(key.toLowerCase());
-    });
-
-    const urlParamsFromIndexArray = (indexArray?: {[key: string]: string}, result?: URLSearchParams): URLSearchParams  => {
-      const urlParams = (result ? result : new URLSearchParams());
-      if (!indexArray)
-        return urlParams;
-      Object.keys(indexArray).forEach((key) => {
-        if (!currentParams.includes(key.toLowerCase()))
-          urlParams.append(key, indexArray[key]);
-      });
-      return urlParams;
-    };
-
-    const params = urlParamsFromIndexArray(this._settings.savedQueryParams);
-    urlParamsFromIndexArray(this._settings.unsavedQueryParams, params);
-
-    const getSeparator = (u: string) => {
-      let separator = "&";
-      if (u.includes("?")) {
-        if (u.endsWith("?"))
-          separator = "";
-      } else {
-        separator = "?";
-      }
-      return separator;
-    };
-    if ( params.size > 0) {
-      url = `${url}${getSeparator(url)}${params.toString()}`;
-    }
-
-    return url;
+    let tmpUrl = appendQueryParams(url, this._settings.savedQueryParams);
+    tmpUrl = appendQueryParams(tmpUrl, this._settings.unsavedQueryParams);
+    return tmpUrl;
   }
 }

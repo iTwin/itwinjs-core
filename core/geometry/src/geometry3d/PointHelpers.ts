@@ -6,8 +6,6 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
@@ -297,7 +295,7 @@ export class NumberArray {
    */
   public static linearCombinationOfColors(colors: number[], scales: number[]): number {
     const numTerms = Math.min(colors.length, scales.length);
-    const bytes = [0,0,0,0];
+    const bytes = [0, 0, 0, 0];
     // compute a convex combination of each byte
     for (let iByte = 0, shiftBits = 0; iByte < 4; ++iByte, shiftBits += 8) {
       for (let iTerm = 0; iTerm < numTerms; ++iTerm) {
@@ -511,9 +509,9 @@ export class Point4dArray {
           return false;
         for (let iPoint = 0; iPoint < points.length; ++iPoint) {
           if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[4 * iPoint]) ||
-              !Geometry.isSameCoordinate(points[iPoint].y, numbers[4 * iPoint + 1]) ||
-              !Geometry.isSameCoordinate(points[iPoint].z, numbers[4 * iPoint + 2]) ||
-              !Geometry.isSameCoordinate(points[iPoint].w, numbers[4 * iPoint + 3]))
+            !Geometry.isSameCoordinate(points[iPoint].y, numbers[4 * iPoint + 1]) ||
+            !Geometry.isSameCoordinate(points[iPoint].z, numbers[4 * iPoint + 2]) ||
+            !Geometry.isSameCoordinate(points[iPoint].w, numbers[4 * iPoint + 3]))
             return false;
         }
       }
@@ -556,6 +554,25 @@ export class Point3dArray {
     const numValues = 3 * data.length;
     if (!result || result.length < numValues)
       result = new Float64Array(numValues);
+    let i = 0;
+    for (const p of data) {
+      result[i++] = p.x;
+      result[i++] = p.y;
+      result[i++] = p.z;
+    }
+    return result;
+  }
+  /**
+   * Copy 3d points into a packed number array.
+   * @param data array of xyz
+   * @param result optional destination array.
+   * @return packed number array
+   */
+  public static packToNumberArray(data: Point3d[], result?: number[]): number[] {
+    const numValues = 3 * data.length;
+    if (!result)
+      result = Array<number>(numValues);
+    result.length = numValues;
     let i = 0;
     for (const p of data) {
       result[i++] = p.x;
@@ -746,7 +763,7 @@ export class Point3dArray {
   /** Test arrays for near equality of all corresponding numeric values, treated as coordinates. */
   public static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
-       if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
+      if (dataA instanceof Float64Array && dataB instanceof Float64Array) {
         if (dataA.length !== dataB.length)
           return false;
         for (let i = 0; i < dataA.length; i++)
@@ -765,8 +782,8 @@ export class Point3dArray {
           return false;
         for (let iPoint = 0; iPoint < points.length; ++iPoint) {
           if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[3 * iPoint]) ||
-              !Geometry.isSameCoordinate(points[iPoint].y, numbers[3 * iPoint + 1]) ||
-              !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2]))
+            !Geometry.isSameCoordinate(points[iPoint].y, numbers[3 * iPoint + 1]) ||
+            !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2]))
             return false;
         }
       }
@@ -1060,17 +1077,20 @@ export class Point3dArray {
     return h2 <= 0.0 ? 0.0 : Math.sqrt(h2);
   }
 
-  /** Computes the hull of the XY projection of points.
-   * @param points input points, z-coordinates ignored
-   * @param hullPoints (output) points on the convex hull (cloned from input points)
-   * @param insidePoints (output) points not on the convex hull (cloned from input points)
-   * @param addClosurePoint whether to append the first hull point to `hullPoints`
+  /**
+   * Computes the hull of the XY projection of points.
+   * @param points input points, z-coordinates ignored.
+   * @param hullPoints (output) points on the convex hull (cloned from input points).
+   * @param insidePoints (output) points not on the convex hull (cloned from input points).
+   * @param addClosurePoint whether to append the first hull point to `hullPoints`.
    */
-  public static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint: boolean = false) {
+  public static computeConvexHullXY(
+    points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint: boolean = false,
+  ): void {
     hullPoints.length = 0;
     insidePoints.length = 0;
     let n = points.length;
-    // Get deep copy
+    // get deep copy
     const xy1: Point3d[] = points.slice(0, n);
     xy1.sort((a, b) => Geometry.lexicalXYLessThan(a, b));
     if (n < 3) {
@@ -1080,10 +1100,10 @@ export class Point3dArray {
         hullPoints.push(xy1[0]);
       return;
     }
-    hullPoints.push(xy1[0]); // This is sure to stay
-    hullPoints.push(xy1[1]); // This one can be removed in loop.
+    hullPoints.push(xy1[0]); // this is sure to stay
+    hullPoints.push(xy1[1]); // this one can be removed in loop.
     let numInside = 0;
-    // First sweep creates upper hull
+    // first sweep creates upper hull
     for (let i = 2; i < n; i++) {
       const candidate = xy1[i];
       let top = hullPoints.length - 1;
@@ -1096,7 +1116,7 @@ export class Point3dArray {
     }
     const i0 = hullPoints.length - 1;
     xy1.length = numInside;
-    xy1.push(hullPoints[0]);    // force first point to be reconsidered as final hull point.
+    xy1.push(hullPoints[0]); // force first point to be reconsidered as final hull point.
     xy1.sort((a, b) => Geometry.lexicalXYLessThan(a, b));
     n = xy1.length;
     // xy1.back () is already on stack.
@@ -1109,7 +1129,7 @@ export class Point3dArray {
         top--;
         hullPoints.pop();
       }
-      if (i > 0)    // don't replicate start !!!
+      if (i > 0) // don't replicate start
         hullPoints.push(candidate);
     }
     if (addClosurePoint)

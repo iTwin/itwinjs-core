@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { GlobeMode } from "../BackgroundMapSettings";
@@ -122,7 +122,7 @@ describe("DisplayStyleSettings", () => {
         let count = 0;
         const iter = settings.planProjectionSettings;
         if (undefined !== iter)
-          for (const _entry of iter) // eslint-disable-line @typescript-eslint/naming-convention
+          for (const _entry of iter)
             ++count;
 
         return count;
@@ -357,6 +357,10 @@ describe("DisplayStyleSettings overrides", () => {
         ...Atmosphere.Settings.defaults.toJSON(),
         display: false,
       },
+    },
+    contours: {
+      displayContours: false,
+      groups: [ ],
     },
     hline: {
       transThreshold: 0x7f,

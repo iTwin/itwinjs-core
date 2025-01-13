@@ -11,7 +11,7 @@ import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/cor
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
 import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
 import { FlashMode } from "../../FlashSettings";
-import { TesselatedPolyline } from "../../common/render/primitives/PolylineParams";
+import { TesselatedPolyline } from "../../common/internal/render/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ColorInfo } from "./ColorInfo";
@@ -392,7 +392,7 @@ export class SkyBoxGeometryParams implements WebGLDisposable {
 }
 
 /** @internal */
-namespace SkyBoxQuads { // eslint-disable-line no-redeclare
+namespace SkyBoxQuads {
   let skyBoxQuads: SkyBoxQuads | undefined;
 
   export function getInstance(): SkyBoxQuads {
@@ -485,7 +485,7 @@ class ViewportQuad {
 }
 
 /** @internal */
-namespace ViewportQuad { // eslint-disable-line no-redeclare
+namespace ViewportQuad {
   let viewportQuad: ViewportQuad | undefined;
 
   export function getInstance(): ViewportQuad {

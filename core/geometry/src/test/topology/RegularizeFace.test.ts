@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -107,7 +107,7 @@ describe("Regularize", () => {
       data.validateCounts(ck, context);
 
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("RegularizeA", () => {
@@ -140,7 +140,7 @@ describe("Regularize", () => {
       outputX0 += outputStepX;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeA");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("RegularizeB", () => {
     const ck = new Checker();
@@ -174,7 +174,7 @@ describe("Regularize", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeB");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   /**
    * Lots of regularization tests ..
@@ -267,7 +267,7 @@ describe("Regularize", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeC");
     ck.testExactNumber(0, hardLoops.length, `See RegularizationC.HardLoops for ${hardLoops.length} regularization failure cases `);
     GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   /**
    * This test is used to do finer debugging of a single failing case from that fail RegularizeC.
@@ -302,7 +302,7 @@ describe("Regularize", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeD");
     // GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeD.HardLoops");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   /**
@@ -338,7 +338,7 @@ describe("Regularize", () => {
       dx += 10 * axMax;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeFractals");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -367,11 +367,11 @@ function testRegularize(
   const nonMonotoneFaces: HalfEdge[] = [];
   RegularizationContext.collectMappedFaceRepresentatives(graph, true, (_seed) => RegularizationContext.isMonotoneFace(_seed), monotoneFaces, nonMonotoneFaces);
   if (monotoneFaces.length !== 0) {
-    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(graph, monotoneFaces);
+    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(monotoneFaces);
     if (sweepUp && sweepDown) { // With both sweeps it SHOULD be a complete facet set ...
       const ex = 0.2 * range.xLength();
       const ey = 0.2 * range.yLength();
-      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey)!;
+      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(ls1), dx + ax, dy, 0.0);
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, mesh1, dx + ax, dy, 0.0);
@@ -379,7 +379,7 @@ function testRegularize(
   const r0 = -0.25;
   const r1 = 1.25;    // fractions for non-monotone face annotation line.
   if (nonMonotoneFaces.length !== 0) {
-    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(graph, nonMonotoneFaces);
+    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(nonMonotoneFaces);
 
     if (sweepUp && sweepDown) { // With both sweeps this should be empty ...
       let numBad = 0;
@@ -440,11 +440,11 @@ function testFullGraphRegularize(
       exteriorMonotone.push(face);
   }
   if (interiorMonotone.length !== 0) {
-    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(graph, interiorMonotone);
+    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(interiorMonotone);
     if (sweepUp && sweepDown) { // With both sweeps it SHOULD be a complete facet set ...
       const ex = 0.2 * range.xLength();
       const ey = 0.2 * range.yLength();
-      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey)!;
+      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey);
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(ls1), dx + ax, dy, 0.0);
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, mesh1.clone(), dx + ax, dy, 0.0);
@@ -452,7 +452,7 @@ function testFullGraphRegularize(
   const r0 = -0.25;
   const r1 = 1.25;    // fractions for non-monotone face annotation line.
   if (nonMonotoneFaces.length !== 0) {
-    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(graph, nonMonotoneFaces);
+    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(nonMonotoneFaces);
 
     if (sweepUp && sweepDown) { // With both sweeps this should be empty ...
       let numBad = 0;
@@ -479,7 +479,7 @@ function testFullGraphRegularize(
       for (const f of component)
         if (!f.isMaskSet(HalfEdgeMask.EXTERIOR))
           interiorFaces.push(f);
-      const mesh2 = PolyfaceBuilder.graphFacesToPolyface(graph, interiorFaces);
+      const mesh2 = PolyfaceBuilder.graphFacesToPolyface(interiorFaces);
 
       GeometryCoreTestIO.captureGeometry(allGeometry, mesh2, dx + 2.0 * ax, dy, 0.0);
     }
@@ -546,7 +546,7 @@ it("RegularizeSpiralBand", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeSpiralBand");
   ck.testExactNumber(0, hardLoops.length, `See RegularizationSpiralBand.HardLoops for ${hardLoops.length} regularization failure cases `);
   GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 /**
  *
@@ -594,7 +594,7 @@ function testStars(method: number, filename: string) {
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", filename);
   // GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeD.HardLoops");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 /**
@@ -676,7 +676,7 @@ it("SingleFaceTriangulation", () => {
     dy = 0.0;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "SingleFaceTriangulation");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 /**
@@ -826,5 +826,5 @@ it("SingleFaceTriangulation", () => {
     }
   */
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "HoleInLargeFacet");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { IModelHost, IModelJsFs, IModelJsNative } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, IModelJsNative, IModelNative } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
@@ -58,7 +58,7 @@ async function validateAllChangesetOperationsOnDisk(iModelDir: string) {
   Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
   HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
-  const nativeDb = new IModelHost.platform.DgnDb();
+  const nativeDb = new IModelNative.platform.DgnDb();
   nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
   const changesets = HubUtility.readChangesets(iModelDir);
 
@@ -96,7 +96,7 @@ function applyChangesetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: C
     ++count;
     Logger.logInfo(HubUtility.logCategory, `Started applying Changeset: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
     try {
-      nativeDb.applyChangeset(changeSet);
+      nativeDb.applyChangeset(changeSet, false);
       Logger.logInfo(HubUtility.logCategory, "Successfully applied Changeset", () => ({ ...changeSet, status }));
     } catch (err: any) {
       Logger.logError(HubUtility.logCategory, `Error applying Changeset ${err.errorNumber}`, () => ({ ...changeSet }));

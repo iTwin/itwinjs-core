@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix redo string for IPC apps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

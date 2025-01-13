@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { StandardNodeTypes } from "../../presentation-common/hierarchy/Key";
 import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
 
 describe("Node", () => {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const testNodeJson: NodeJSON = {
     key: { instanceKeys: [], pathFromRoot: [], version: 0, type: StandardNodeTypes.ECInstancesNode },
     labelDefinition: { displayValue: "TestNode", rawValue: "test_node", typeName: "string" },
@@ -22,7 +22,7 @@ describe("Node", () => {
 
   describe("toJSON", () => {
     it("serializes Node", () => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const json = Node.toJSON(testNode);
       expect(json).to.deep.equal(testNodeJson);
     });
@@ -37,13 +37,13 @@ describe("Node", () => {
 
   describe("fromJSON", () => {
     it("creates valid Node from JSON", () => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const node = Node.fromJSON(testNodeJson);
       expect(node).to.deep.equal(testNode);
     });
 
     it("creates valid Node from serialized JSON", () => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const node = Node.fromJSON(JSON.stringify(testNodeJson));
       expect(node).to.deep.equal(testNode);
     });

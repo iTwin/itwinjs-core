@@ -7,7 +7,7 @@
  */
 
 import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToString, schemaItemTypeToXmlString } from "../ECObjects";
+import { SchemaItemType, schemaItemTypeToXmlString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
@@ -51,7 +51,7 @@ export abstract class SchemaItem {
       if (includeSchemaVersion) // check flag to see if we should output version
         itemJson.schemaVersion = this.key.schemaKey.version.toString();
     }
-    itemJson.schemaItemType = schemaItemTypeToString(this.schemaItemType);
+    itemJson.schemaItemType = this.schemaItemType;
     if (undefined !== this.label)
       itemJson.label = this.label;
     if (undefined !== this.description)
@@ -146,6 +146,14 @@ export abstract class SchemaItem {
 
     return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
              && schemaItem.schemaItemType !== undefined;
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setName(name: string) {
+    this._key = new SchemaItemKey(name, this.schema.schemaKey);
   }
 
   /**

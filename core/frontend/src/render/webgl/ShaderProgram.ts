@@ -217,6 +217,32 @@ export class ShaderProgram implements WebGLDisposable {
       throw new Error(msg);
     }
 
+    // Debug output
+    const debugUniforms = false;
+    if (debugUniforms) {
+      const dbgLog = (x: string) => console.log(x); // eslint-disable-line no-console
+      const outSrc = false; // true for source out, false for just varying info
+      if (this._fragDescription) {
+        let tStr = "";
+        if (!outSrc) {
+          tStr = `${this._fragDescription}`;
+        }
+        const numUniforms = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.ActiveUniforms);
+        const tStr2 = `Active Uniforms: ${numUniforms}`;
+        if (tStr2) {
+          if (outSrc) {
+            dbgLog("//===============================================================================================================");
+            dbgLog(this.vertSource);
+            dbgLog("//========= Num Active Uniforms =========");
+            dbgLog(`${tStr2}\n`);
+            dbgLog(this.fragSource);
+          } else {
+            dbgLog(`\n${tStr2}  ${tStr}\n`);
+          }
+        }
+      }
+    }
+
     return true;
   }
 

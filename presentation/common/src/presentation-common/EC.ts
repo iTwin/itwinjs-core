@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -38,8 +38,9 @@ export namespace InstanceKey {
   /** Compare 2 instance keys */
   export function compare(lhs: InstanceKey, rhs: InstanceKey): number {
     const classNameCompare = lhs.className.localeCompare(rhs.className);
-    if (classNameCompare !== 0)
+    if (classNameCompare !== 0) {
       return classNameCompare;
+    }
     return lhs.id.localeCompare(rhs.id);
   }
 
@@ -48,7 +49,7 @@ export namespace InstanceKey {
    * @deprecated in 3.x. Use [[InstanceKey]].
    */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(key: InstanceKey): InstanceKeyJSON {
     return { ...key };
   }
@@ -58,7 +59,7 @@ export namespace InstanceKey {
    * @deprecated in 3.x. Use [[InstanceKey]].
    */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: InstanceKeyJSON) {
     return { ...json };
   }
@@ -92,9 +93,9 @@ export namespace ClassInfo {
   /**
    * Serialize [[ClassInfo]] to JSON
    * @deprecated in 3.x. Use [[ClassInfo]].
-  */
+   */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(info: ClassInfo): ClassInfoJSON {
     return { ...info };
   }
@@ -104,7 +105,7 @@ export namespace ClassInfo {
    * @deprecated in 3.x. Use [[ClassInfo]].
    */
   // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: ClassInfoJSON): ClassInfo {
     return { ...json };
   }
@@ -161,21 +162,15 @@ export interface KindOfQuantityInfo {
   name: string;
   /** Label of KindOfQuantity */
   label: string;
-  /**
-   * Persistence unit identifier.
-   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
-   */
+  /** Persistence unit full class name in format `SchemaName:UnitName`. */
   persistenceUnit: string;
-  /**
-   * Active format that was used to format property value.
-   * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
-   */
+  /** Active format that was used to format property value. */
   activeFormat?: FormatProps;
 }
 
 /**
  * A data structure for storing navigation property information.
- * @beta
+ * @public
  */
 export interface NavigationPropertyInfo {
   /** Information about ECProperty's relationship class */
@@ -190,20 +185,23 @@ export interface NavigationPropertyInfo {
 
 /**
  * Contains utilities for working with objects of [[NavigationPropertyInfo]] type.
- * @beta
+ * @public
  */
 export namespace NavigationPropertyInfo {
   /**
    * Serialize [[NavigationPropertyInfo]] to JSON
    * @deprecated in 3.x. Use [[toCompressedJSON]].
-  */
+   */
   // istanbul ignore next
   export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON {
     return { ...info };
   }
 
   /** Serialize [[NavigationPropertyInfo]] to compressed JSON */
-  export function toCompressedJSON(navigationPropertyInfo: NavigationPropertyInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfoJSON<string> {
+  export function toCompressedJSON(
+    navigationPropertyInfo: NavigationPropertyInfo,
+    classesMap: { [id: string]: CompressedClassInfoJSON },
+  ): NavigationPropertyInfoJSON<string> {
     const { id: relationshipId, ...relationshipLeftOverInfo } = navigationPropertyInfo.classInfo;
     const { id: targetId, ...targetLeftOverInfo } = navigationPropertyInfo.targetClassInfo;
     classesMap[relationshipId] = relationshipLeftOverInfo;
@@ -226,7 +224,10 @@ export namespace NavigationPropertyInfo {
   }
 
   /** Deserialize [[NavigationPropertyInfo]] from compressed JSON */
-  export function fromCompressedJSON(compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): NavigationPropertyInfo {
+  export function fromCompressedJSON(
+    compressedNavigationPropertyInfoJSON: NavigationPropertyInfoJSON<string>,
+    classesMap: { [id: string]: CompressedClassInfoJSON },
+  ): NavigationPropertyInfo {
     return {
       ...compressedNavigationPropertyInfoJSON,
       classInfo: { id: compressedNavigationPropertyInfoJSON.classInfo, ...classesMap[compressedNavigationPropertyInfoJSON.classInfo] },
@@ -237,9 +238,9 @@ export namespace NavigationPropertyInfo {
 
 /**
  * A serialized version of [[NavigationPropertyInfo]]
- * @beta
+ * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
@@ -264,10 +265,7 @@ export interface PropertyInfo {
   kindOfQuantity?: KindOfQuantityInfo;
   /** Extended type name of the ECProperty if it has one */
   extendedType?: string;
-  /**
-   * Navigation property info if the field is navigation type
-   * @beta
-  */
+  /** Navigation property info if the field is navigation type */
   navigationPropertyInfo?: NavigationPropertyInfo;
 }
 
@@ -276,7 +274,7 @@ export namespace PropertyInfo {
   /**
    * Serialize [[PropertyInfo]] to JSON
    * @deprecated in 3.x. Use [[PropertyInfo]].
-  */
+   */
   // istanbul ignore next
   export function toJSON(info: PropertyInfo): PropertyInfoJSON {
     return { ...info };
@@ -309,14 +307,13 @@ export namespace PropertyInfo {
  * A serialized version of [[PropertyInfo]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   name: string;
   type: string;
   enumerationInfo?: EnumerationInfo;
   kindOfQuantity?: KindOfQuantityInfo;
-  /** @beta */
   navigationPropertyInfo?: NavigationPropertyInfoJSON<TClassInfoJSON>;
 }
 
@@ -333,6 +330,9 @@ export interface RelatedClassInfo {
 
   /** Is target class handled polymorphically */
   isPolymorphicTargetClass?: boolean;
+
+  /** Optionally, IDs of specific target class instances. */
+  targetInstanceIds?: Id64String[];
 
   /** Information about the ECRelationship */
   relationshipInfo: ClassInfo;
@@ -395,10 +395,12 @@ export namespace RelatedClassInfo {
 
   /** Check two [[RelatedClassInfo]] or [[StrippedRelatedClassInfo]] for equality */
   export function equals(lhs: RelatedClassInfo | StrippedRelatedClassInfo, rhs: RelatedClassInfo | StrippedRelatedClassInfo): boolean {
-    return lhs.isForwardRelationship === rhs.isForwardRelationship
-      && getClassName(lhs, "source") === getClassName(rhs, "source")
-      && getClassName(lhs, "target") === getClassName(rhs, "target")
-      && getClassName(lhs, "relationship") === getClassName(rhs, "relationship");
+    return (
+      lhs.isForwardRelationship === rhs.isForwardRelationship &&
+      getClassName(lhs, "source") === getClassName(rhs, "source") &&
+      getClassName(lhs, "target") === getClassName(rhs, "target") &&
+      getClassName(lhs, "relationship") === getClassName(rhs, "relationship")
+    );
   }
 
   function isStripped(info: RelatedClassInfo | StrippedRelatedClassInfo): info is StrippedRelatedClassInfo {
@@ -408,9 +410,12 @@ export namespace RelatedClassInfo {
 
   function getClassName(info: RelatedClassInfo | StrippedRelatedClassInfo, whichClass: "relationship" | "source" | "target"): string {
     switch (whichClass) {
-      case "source": return isStripped(info) ? info.sourceClassName : info.sourceClassInfo.name;
-      case "target": return isStripped(info) ? info.targetClassName : info.targetClassInfo.name;
-      case "relationship": return isStripped(info) ? info.relationshipName : info.relationshipInfo.name;
+      case "source":
+        return isStripped(info) ? info.sourceClassName : info.sourceClassInfo.name;
+      case "target":
+        return isStripped(info) ? info.targetClassName : info.targetClassInfo.name;
+      case "relationship":
+        return isStripped(info) ? info.relationshipName : info.relationshipInfo.name;
     }
   }
 
@@ -429,11 +434,12 @@ export namespace RelatedClassInfo {
  * A serialized version of [[RelatedClassInfo]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   sourceClassInfo: TClassInfoJSON;
   targetClassInfo: TClassInfoJSON;
   isPolymorphicTargetClass?: boolean;
+  targetInstanceIds?: Id64String[];
   relationshipInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
   isPolymorphicRelationship?: boolean;
@@ -447,14 +453,19 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 /** @public */
-// eslint-disable-next-line deprecation/deprecation
-export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<RelatedClassInfoJSON<TClassInfoJSON>, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
+export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<
+  RelatedClassInfoJSON<TClassInfoJSON>,
+  "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship"
+>;
 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace RelatedClassInfoWithOptionalRelationship {
   /** Serialize [[RelatedClassInfoWithOptionalRelationship]] to compressed JSON */
-  export function toCompressedJSON(classInfo: RelatedClassInfoWithOptionalRelationship, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoWithOptionalRelationshipJSON<string> {
+  export function toCompressedJSON(
+    classInfo: RelatedClassInfoWithOptionalRelationship,
+    classesMap: { [id: string]: CompressedClassInfoJSON },
+  ): RelatedClassInfoWithOptionalRelationshipJSON<string> {
     const { sourceClassInfo, targetClassInfo, relationshipInfo, ...otherProps } = classInfo;
     const { id: sourceId, ...sourceLeftOverInfo } = sourceClassInfo;
     const { id: targetId, ...targetLeftOverInfo } = targetClassInfo;
@@ -476,12 +487,16 @@ export namespace RelatedClassInfoWithOptionalRelationship {
   }
 
   /** Deserialize [[RelatedClassInfoWithOptionalRelationship]] from compressed JSON */
-  export function fromCompressedJSON(json: RelatedClassInfoWithOptionalRelationshipJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoWithOptionalRelationship {
+  export function fromCompressedJSON(
+    json: RelatedClassInfoWithOptionalRelationshipJSON<string>,
+    classesMap: { [id: string]: CompressedClassInfoJSON },
+  ): RelatedClassInfoWithOptionalRelationship {
     const { sourceClassInfo, targetClassInfo, relationshipInfo, ...otherProps } = json;
     assert(classesMap.hasOwnProperty(sourceClassInfo));
     assert(classesMap.hasOwnProperty(targetClassInfo));
-    if (relationshipInfo)
+    if (relationshipInfo) {
       assert(classesMap.hasOwnProperty(relationshipInfo));
+    }
     return {
       ...otherProps,
       sourceClassInfo: { id: sourceClassInfo, ...classesMap[sourceClassInfo] },
@@ -501,11 +516,11 @@ export type RelationshipPath = RelatedClassInfo[];
  * Serialized [[RelationshipPath]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
 export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */
-export namespace RelationshipPath { // eslint-disable-line @typescript-eslint/no-redeclare
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export namespace RelationshipPath {
   /** Reverse direction of the given [[RelationshipPath]] */
   export function reverse(path: RelationshipPath): RelationshipPath {
     return [...path].reverse().map((step) => ({
@@ -518,8 +533,7 @@ export namespace RelationshipPath { // eslint-disable-line @typescript-eslint/no
 
   /** Check two [[RelationshipPath]] or [[StrippedRelationshipPath]] for equality */
   export function equals(lhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>, rhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>): boolean {
-    return lhs.length === rhs.length
-      && lhs.every((lhsPart, i) => RelatedClassInfo.equals(lhsPart, rhs[i]));
+    return lhs.length === rhs.length && lhs.every((lhsPart, i) => RelatedClassInfo.equals(lhsPart, rhs[i]));
   }
 
   /** Strip given [[RelationshipPath]] to [[StrippedRelationshipPath]] */

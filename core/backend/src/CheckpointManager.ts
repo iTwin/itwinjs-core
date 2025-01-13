@@ -10,9 +10,9 @@
 
 import * as path from "path";
 import { NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
+  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName, OpenCheckpointArgs,
 } from "@itwin/core-common";
 import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -21,6 +21,8 @@ import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
+import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -125,7 +127,7 @@ export class Downloads {
  * @internal
 */
 export class V2CheckpointManager {
-  public static readonly cloudCacheName = "v2Checkpoints";
+  public static readonly cloudCacheName = "Checkpoints";
   private static _cloudCache?: CloudSqlite.CloudCache;
   private static containers = new Map<string, CloudSqlite.CloudContainer>();
 
@@ -149,30 +151,14 @@ export class V2CheckpointManager {
     this.containers.clear();
   }
 
-  public static getFileName(checkpoint: CheckpointProps): LocalFileName {
-    const changesetId = checkpoint.changeset.id || "first";
-    return path.join(this.getFolder(), `${changesetId}.bim`);
-  }
-
   private static get cloudCache(): CloudSqlite.CloudCache {
     if (!this._cloudCache) {
-      let cacheDir = process.env.CHECKPOINT_CACHE_DIR;
-      if (!cacheDir) {
-        cacheDir = this.getFolder();
-        Logger.logWarning(loggerCategory, `No CHECKPOINT_CACHE_DIR found in process.env, using ${cacheDir} instead.`);
-      } else {
-        // Make sure the checkpoint_cache_dir has an iTwinDaemon specific file in it, otherwise fall back to other directory.
-        if (!(IModelJsFs.existsSync(path.join(cacheDir, "portnumber.bcv")))) {
-          cacheDir = this.getFolder();
-          Logger.logWarning(loggerCategory, `No evidence of the iTwinDaemon in provided CHECKPOINT_CACHE_DIR: ${process.env.CHECKPOINT_CACHE_DIR}, using ${cacheDir} instead.`);
-        }
-      }
+      let cacheDir: string | undefined = process.env.CHECKPOINT_CACHE_DIR ?? this.getFolder();
+      // See if there is a daemon running, otherwise use profile directory for cloudCache
+      if (!(IModelJsFs.existsSync(path.join(cacheDir, "portnumber.bcv"))))
+        cacheDir = undefined; // no daemon running, use profile directory
 
       this._cloudCache = CloudSqlite.CloudCaches.getCache({ cacheName: this.cloudCacheName, cacheDir, cacheSize: "50G" });
-
-      // Its fine if its not a daemon, but lets log an info message
-      if (!this._cloudCache.isDaemon)
-        Logger.logInfo(loggerCategory, "V2Checkpoint manager running with no iTwinDaemon.");
     }
     return this._cloudCache;
   }
@@ -182,11 +168,19 @@ export class V2CheckpointManager {
     return { ...from, baseUri: `https://${from.accountName}.blob.core.windows.net`, accessToken: from.sasToken, storageType: "azure" };
   }
 
-  private static getContainer(v2Props: V2CheckpointAccessProps) {
+  private static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps) {
     let container = this.containers.get(v2Props.containerId);
-    if (!container) {
-      // note checkpoint tokens can't be auto-refreshed because they rely on user credentials supplied through RPC. They're refreshed in SnapshotDb._refreshSas.
-      container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds: -1, logId: process.env.POD_NAME });
+    if (undefined === container) {
+      let tokenFn: ((args: CloudSqlite.RequestTokenArgs) => Promise<AccessToken>) | undefined;
+      let tokenRefreshSeconds: number | undefined = -1;
+      // from Rpc, the accessToken in the checkpoint request is from the current user. It is used to request the sasToken for the container and
+      // the sasToken is checked for refresh (before it expires) on every Rpc request using that user's accessToken. For Ipc, the
+      // accessToken in the checkpoint request is undefined, and the sasToken is requested by IModelHost.getAccessToken(). It is refreshed on a timer.
+      if (undefined === checkpoint.accessToken) {
+        tokenFn = async () => (await IModelHost.hubAccess.queryV2Checkpoint(checkpoint))?.sasToken ?? "";
+        tokenRefreshSeconds = undefined;
+      }
+      container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds, logId: process.env.POD_NAME, tokenFn });
       this.containers.set(v2Props.containerId, container);
     }
     return container;
@@ -203,7 +197,7 @@ export class V2CheckpointManager {
     }
 
     try {
-      const container = this.getContainer(v2props);
+      const container = this.getContainer(v2props, checkpoint);
       const dbName = v2props.dbName;
       if (!container.isConnected)
         container.connect(this.cloudCache);
@@ -282,18 +276,24 @@ export class V1CheckpointManager {
     return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
   }
 
+  public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
+    const snapshot = SnapshotDb.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
+    (snapshot as any)._iTwinId = checkpoint.iTwinId;
+    return snapshot;
+  }
+
   private static async downloadAndOpen(job: DownloadJob) {
     const db = CheckpointManager.tryOpenLocalFile(job.request);
     if (db)
       return db;
     await this.performDownload(job);
     await CheckpointManager.updateToRequestedVersion(job.request);
-    return SnapshotDb.openCheckpointV1(job.request.localFile, job.request.checkpoint);
+    return this.openCheckpointV1(job.request.localFile, job.request.checkpoint);
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
@@ -335,7 +335,7 @@ export class CheckpointManager {
       const prevLogLevel = Logger.getLevel(NativeLoggerCategory.SQLite) ?? LogLevel.Error; // Get log level before we set it to None.
       Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.None); // Ignores noisy error messages when applying changesets.
       const db = SnapshotDb.openForApplyChangesets(targetFile);
-      const nativeDb = db.nativeDb;
+      const nativeDb = db[_nativeDb];
       try {
 
         if (nativeDb.hasPendingTxns()) {
@@ -399,7 +399,7 @@ export class CheckpointManager {
   public static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb) {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
-    const nativeDb = snapshotDb.nativeDb;
+    const nativeDb = snapshotDb[_nativeDb];
     const dbChangeset = nativeDb.getCurrentChangeset();
     const iModelId = Guid.normalize(nativeDb.getIModelId());
     if (iModelId !== Guid.normalize(checkpoint.iModelId)) {
@@ -426,10 +426,10 @@ export class CheckpointManager {
     if (!IModelJsFs.existsSync(fileName))
       return false;
 
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.Readonly);
-    } catch (error) {
+    } catch {
       return false;
     }
 
@@ -445,17 +445,30 @@ export class CheckpointManager {
   public static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined {
     const checkpoint = request.checkpoint;
     if (this.verifyCheckpoint(checkpoint, request.localFile))
-      return SnapshotDb.openCheckpointV1(request.localFile, checkpoint);
+      return V1CheckpointManager.openCheckpointV1(request.localFile, checkpoint);
 
     // check a list of aliases for finding checkpoints downloaded to non-default locations (e.g. from older versions)
     if (request.aliasFiles) {
       for (const alias of request.aliasFiles) {
         if (this.verifyCheckpoint(checkpoint, alias)) {
           request.localFile = alias;
-          return SnapshotDb.openCheckpointV1(alias, checkpoint);
+          return V1CheckpointManager.openCheckpointV1(alias, checkpoint);
         }
       }
     }
     return undefined;
+  }
+
+  public static async toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps> {
+    const changeset = args.changeset ?? await IModelHost.hubAccess.getLatestChangeset({ ...args, accessToken: await IModelHost.getAccessToken() });
+
+    return {
+      iModelId: args.iModelId,
+      iTwinId: args.iTwinId,
+      changeset: {
+        index: changeset.index,
+        id: changeset.id ?? (await IModelHost.hubAccess.queryChangeset({ ...args, changeset, accessToken: await IModelHost.getAccessToken() })).id,
+      },
+    };
   }
 }

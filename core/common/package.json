@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "4.4.0-dev.25",
+  "version": "5.0.0-dev.39",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -9,15 +9,15 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-common && npm run extract-extension-api",
-    "extract-extension-api": "eslint -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha",
-    "cover": "nyc npm -s test"
+    "test": "vitest --run",
+    "cover": "vitest --run --coverage"
   },
   "repository": {
     "type": "git",
@@ -40,24 +40,24 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.25",
-    "@itwin/core-geometry": "workspace:^4.4.0-dev.25"
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
-    "@itwin/object-storage-core": "^2.2.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/object-storage-core": "^2.2.5",
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
-    "@types/mocha": "^10.0.6",
-    "chai": "^4.3.10",
-    "eslint": "^8.44.0",
-    "mocha": "^10.2.0",
+    "@types/node": "~20.9.5",
+    "@vitest/coverage-v8": "^2.1.0",
+    "eslint": "^9.13.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.0.2"
+    "typescript": "~5.6.2",
+    "vitest": "^2.1.0"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

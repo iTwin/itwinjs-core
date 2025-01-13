@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
@@ -94,7 +94,7 @@ describe("OffsetByClip", () => {
       }
       y00 += 60.0;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "LongLineString");
   });
 
@@ -148,7 +148,7 @@ describe("OffsetByClip", () => {
     const zClipper = ClipUtilities.createXYOffsetClipFromLineString([], 1, 1, -1, -1);
     ck.testExactNumber(1, zClipper.convexSets.length);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "LongLineStringB");
   });
 
@@ -159,11 +159,11 @@ describe("OffsetByClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const shape1 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/clipping/DiegoTrickyBuilding/case1.imjs", "utf8"))) as CurveCollection;
+      "./src/test/data/clipping/DiegoTrickyBuilding/case1.imjs", "utf8"))) as CurveCollection;
     const shape2 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/clipping/DiegoTrickyBuilding/case2.imjs", "utf8"))) as CurveCollection;
+      "./src/test/data/clipping/DiegoTrickyBuilding/case2.imjs", "utf8"))) as CurveCollection;
     //    const shape3 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    //       "./src/test/testInputs/clipping/DiegoTrickyBuilding/case3.imjs", "utf8"))) as CurveCollection;
+    //       "./src/test/data/clipping/DiegoTrickyBuilding/case3.imjs", "utf8"))) as CurveCollection;
     let x00 = 0;
     const y00 = 0;
     const z00 = 0;
@@ -191,7 +191,7 @@ describe("OffsetByClip", () => {
         x00 += range.xLength() * 2;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "DiegoProblemCases");
   });
   // cspell:word arnoldas
@@ -199,9 +199,9 @@ describe("OffsetByClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const fullRoadMesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/clipping/arnoldasLaneClipper/fullRoadMesh.imjs", "utf8")));
+      "./src/test/data/clipping/arnoldasLaneClipper/fullRoadMesh.imjs", "utf8")));
     // const largeClipRegion = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    //   "./src/test/testInputs/clipping/arnoldasLaneClipper/largeClipRegion.imjs", "utf8")));
+    //   "./src/test/data/clipping/arnoldasLaneClipper/largeClipRegion.imjs", "utf8")));
     if (fullRoadMesh instanceof IndexedPolyface) {
       const meshRangeA = fullRoadMesh.range();
       fullRoadMesh.tryTranslateInPlace(-meshRangeA.low.x, -meshRangeA.low.y, -meshRangeA.low.z);
@@ -249,8 +249,7 @@ describe("OffsetByClip", () => {
                 GeometryCoreTestIO.captureCloneGeometry(allGeometry, rangeRectangle, x0, y0 + dy);
               }
               const num0 = fullRoadMesh.facetCount;
-              if (ck.testDefined(clipA) && clipA
-                && ck.testDefined(clipB) && clipB) {
+              if (ck.testDefined(clipA) && ck.testDefined(clipB)) {
                 // hard to say what the output "should" be ... be test that counts are similar . .
                 // (The motivation for this problem was that there were many, many unnecessary interior edges)
                 const numA = clipA.facetCount;
@@ -276,7 +275,7 @@ describe("OffsetByClip", () => {
       }
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ArnoldasLaneClip");
   });
   it("ExcessEdgesAroundAnnulus", () => {
@@ -345,7 +344,7 @@ describe("OffsetByClip", () => {
         x0 += 30;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ExcessEdgesAroundAnnulus");
   });
 
@@ -390,7 +389,7 @@ describe("OffsetByClip", () => {
       }
       x0 += 10;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "NonXYClip");
   });
 
@@ -439,7 +438,7 @@ describe("OffsetByClip", () => {
         x0 += 25.0;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "InwardCornerClip");
   });
   it("IncompletePaste", () => {
@@ -498,7 +497,7 @@ describe("OffsetByClip", () => {
       x0 += 1;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "IncompletePaste");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("IncompletePasteWithDoublePoint", () => {
     const ck = new Checker();
@@ -565,7 +564,7 @@ describe("OffsetByClip", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "IncompletePasteWithDoublePoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

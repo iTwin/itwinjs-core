@@ -35,10 +35,23 @@ The iTwin.js API provides for a way to validate (check compatibility) and upgrad
 
 - Download a local copy of the iModel as a briefcase with [BriefcaseManager.downloadBriefcase]($backend)
 - Call [BriefcaseDb.validateSchemas]($backend) to validate the schemas in the iModel.
-- Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves the following steps first for the profile upgrade, and then for the domain schema upgrade:
-  - acquiring a schema lock to avoid concurrent schema changes by different users
-  - opening the local briefcase
-  - making the necessary schema changes to the briefcase
-  - capturing these schema changes (if any) as a Changeset and pushing it to iModel Hub
-  - releasing the schema lock
-  - closing the local briefcase
+- Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves the following steps:
+  - Open the local briefcase.
+  - Check if the profile/domain schema upgrade changes require a data transform.
+  - If a data transform is required, acquire a schema lock to avoid concurrent schema changes by different users.
+  - Make the necessary schema changes for a profile upgrade to the briefcase.
+  - Capture profile upgrade schema changes (if any) as a Changeset and push it to iModel Hub.
+  - Then, make the necessary schema changes for a domain schema upgrade to the briefcase.
+  - Capture domain schema upgrade changes (if any) as a Changeset and push it to iModel Hub.
+  - If schema lock was acquired earlier due to a data transform, release the schema lock.
+  - Close the briefcase.
+
+## Working with newer schemas having an unsupported ECXml version
+
+With the general evolution of schemas, there may come a time when a schema has been released with a newer ECXml version than the one supported by the ECDb runtime being used.
+A write-incompatable schema can be loaded, but it can be neither imported into an iModel, nor can it be serialized to a file or string.
+
+Such a schema is likely to contain elements that are unknown to the current ECDb runtime being used.
+To know more about how these unknown elements are handled, refer to [Handling Unknown Schema Elements](./HandlingUnknownSchemaElements.md)
+
+To be able to perform read and write operations on a schema with a newer ECXml version, it us recommended to upgrade the ECDb runtime to a version that supports the ECXml version.

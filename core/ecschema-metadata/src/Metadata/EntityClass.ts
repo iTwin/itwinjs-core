@@ -9,7 +9,7 @@
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
+import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
@@ -17,20 +17,14 @@ import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
-import { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of an ECEntityClass.
  * @beta
  */
 export class EntityClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.EntityClass; // eslint-disable-line
+  public override readonly schemaItemType = SchemaItemType.EntityClass;
   protected _mixins?: LazyLoadedMixin[];
-
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.schemaItemType = SchemaItemType.EntityClass;
-  }
 
   public get mixins(): LazyLoadedMixin[] {
     if (!this._mixins)
@@ -239,7 +233,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
+    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
@@ -248,7 +242,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }
 
@@ -264,7 +258,7 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);
+    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
@@ -273,6 +267,6 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }

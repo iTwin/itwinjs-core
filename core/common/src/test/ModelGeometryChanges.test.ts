@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges";

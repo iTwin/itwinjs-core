@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module iModels
+ * @module ExportGraphics
  */
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";

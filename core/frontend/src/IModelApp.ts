@@ -10,15 +10,12 @@
 // eslint-disable-next-line @itwin/import-within-package
 import packageJson from "../../package.json";
 /** @public */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ITWINJS_CORE_VERSION = packageJson.version as string;
-const COPYRIGHT_NOTICE = 'Copyright © 2017-2023 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import {
-  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
-} from "@itwin/core-common";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
@@ -136,7 +133,6 @@ export interface IModelAppOptions {
   realityDataAccess?: RealityDataAccess;
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
    * The path should always end with a trailing `/`.
-   * @beta
    */
   publicPath?: string;
 }
@@ -290,10 +286,12 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
-  /** The root URL for the assets 'public' folder.
-   * @beta
+
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
    */
   public static get publicPath() { return this._publicPath; }
+
   /** The [[TelemetryManager]] for this session
    * @internal
    */
@@ -551,7 +549,7 @@ export class IModelApp {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await this.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }
@@ -564,9 +562,9 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => { // eslint-disable-line deprecation/deprecation
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
-      const serialized: SerializedRpcActivity = { // eslint-disable-line deprecation/deprecation
+      const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,

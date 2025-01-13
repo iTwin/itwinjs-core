@@ -6,8 +6,8 @@
  * @module Geometry
  */
 import { flatbuffers } from "flatbuffers";
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
@@ -21,6 +21,7 @@ import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGra
 import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
+import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
@@ -64,7 +65,7 @@ export enum ElementGeometryOpcode {
   TextString = 22,
   /** Specifies line style overrides as a [[LineStyle.Modifier]] */
   LineStyleModifiers = 23,
-  /** Boundary represention solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
+  /** Boundary representation solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
   BRep = 25,
   /** Small single-tile raster image as an [[ImageGraphic]] */
   Image = 28,
@@ -128,25 +129,69 @@ export interface ElementGeometryRequest {
   minBRepFeatureSize?: number;
 }
 
-/** Parameters for building the geometry stream of a [[GeometricElement]] using ElementGeometry.Builder
- * Note: The geometry stream is always in local coordinates, that is, relative to the element's [[Placement]].
- * @beta
+/** Parameters for building the geometry stream of a [GeometricElement]($backend) using [[ElementGeometry.Builder]].
+ * You can assign an object of this type to [[GeometricElementProps.elementGeometryBuilderParams]] when inserting or updating a geometric element.
+ * @note The geometry stream is always in local coordinates - that is, relative to the element's [[Placement]].
+ * @public
  */
 export interface ElementGeometryBuilderParams {
   /** The geometry stream data. Calling update element with a zero length array will clear the geometry stream and invalidate the placement. */
   entryArray: ElementGeometryDataEntry[];
-  /** If true, create geometry that displays oriented to face the camera */
+  /** If true, create geometry that always displays oriented to face the camera */
   viewIndependent?: boolean;
 }
 
-/** Parameters for building the geometry stream of a [[GeometryPart]] using ElementGeometry.Builder.
- * @beta
+/** Parameters for building the geometry stream of a [GeometryPart]($backend) using [[ElementGeometry.Builder]].
+ * You can assign an object of this type to [[GeometryPartProps.elementGeometryBuilderParams]] when inserting or updating a part.
+ * @public
  */
 export interface ElementGeometryBuilderParamsForPart {
   /** The geometry stream data */
   entryArray: ElementGeometryDataEntry[];
   /** If true, create geometry part with 2d geometry */
   is2dPart?: boolean;
+}
+
+/** Request parameters for [IModelDb.updateElementGeometryCache]($core-backend)
+ * @beta
+ */
+export interface ElementGeometryCacheRequestProps {
+  /** Geometric element to populate geometry cache for. Clear cache for all elements when undefined. */
+  id?: Id64String;
+}
+
+/** Response parameters for [IModelDb.updateElementGeometryCache]($core-backend)
+ * @beta
+ */
+export interface ElementGeometryCacheResponseProps {
+  /** Cache creation status */
+  status: BentleyStatus;
+  /** Count of displayable entries in element's geometry stream */
+  numGeom?: number;
+  /** Count of part references in element's geometry stream */
+  numPart?: number;
+  /** Count of solid/volumetric geometry in element's geometry stream */
+  numSolid?: number;
+  /** Count of surface/region geometry in element's geometry stream */
+  numSurface?: number;
+  /** Count of curve/path geometry in element's geometry stream */
+  numCurve?: number;
+  /** Count of text/image/non-geometric displayable entries in element's geometry stream */
+  numOther?: number;
+}
+
+/** Request parameters for [IModelDb.elementGeometryCacheOperation]($core-backend)
+ * @beta
+ */
+export interface ElementGeometryCacheOperationRequestProps {
+  /** Target element id, tool element ids can be supplied by parameters... */
+  id: Id64String;
+  /** Requested operation */
+  op: number;
+  /** Parameters for operation */
+  params?: any;
+  /** Callback for result when element's geometry stream is requested in flatbuffer or graphic formats */
+  onGeometry?: ElementGeometryFunction;
 }
 
 /** Values for [[BRepGeometryCreate.operation]]
@@ -382,6 +427,32 @@ export namespace ElementGeometry {
       return true;
     }
 
+    /** Append a series of entries representing a [[TextBlock]] to the [[ElementGeometryDataEntry]] array.
+     * @beta
+     */
+    public appendTextBlock(block: TextBlockGeometryProps): boolean {
+      for (const entry of block.entries) {
+        let result: boolean;
+        if (entry.text) {
+          result = this.appendTextString(new TextString(entry.text));
+        } else if (entry.color) {
+          const params = new GeometryParams(Id64.invalid);
+          if (entry.color !== "subcategory") {
+            params.lineColor = ColorDef.fromJSON(entry.color);
+          }
+
+          result = this.appendGeometryParamsChange(params);
+        } else {
+          result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
+        }
+
+        if (!result) {
+          return false;
+        }
+      }
+
+      return true;
+    }
     /** Append a [[ImageGraphic]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendImageGraphic(image: ImageGraphic): boolean {
       const entry = ElementGeometry.fromImageGraphic(image.toJSON(), this._worldToLocal);
@@ -1236,7 +1307,7 @@ export namespace ElementGeometry {
 
     if (undefined !== localToWorld) {
       if (undefined !== transform)
-        transform.multiplyTransformTransform(localToWorld, transform);
+        localToWorld.multiplyTransformTransform(transform, transform);
       else
         transform = localToWorld;
     }
@@ -1272,7 +1343,7 @@ export namespace ElementGeometry {
   export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
     if (undefined !== worldToLocal) {
       const entityTrans = Transform.fromJSON(brep.transform);
-      const localTrans = entityTrans.multiplyTransformTransform(worldToLocal);
+      const localTrans = worldToLocal.multiplyTransformTransform(entityTrans);
       brep = {
         data: brep.data,
         type: brep.type,
@@ -1376,7 +1447,7 @@ export namespace ElementGeometry {
       transform = Transform.createRowValues(entityTransform.x00(), entityTransform.x01(), entityTransform.x02(), entityTransform.tx(), entityTransform.x10(), entityTransform.x11(), entityTransform.x12(), entityTransform.ty(), entityTransform.x20(), entityTransform.x21(), entityTransform.x22(), entityTransform.tz());
 
     if (undefined !== transform)
-      transform.multiplyTransformTransform(inputTransform, transform);
+      inputTransform.multiplyTransformTransform(transform, transform);
     else
       transform = inputTransform;
 

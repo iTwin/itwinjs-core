@@ -20,7 +20,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
@@ -86,7 +86,7 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 /** Resolves "not found" responses for RPC requests.
  * @internal
  */
-export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
+export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason?: any) => void) => void;
 
 class Cancellable<T> {
   public promise: Promise<T | undefined>;
@@ -94,7 +94,6 @@ class Cancellable<T> {
 
   public constructor(task: Promise<T>) {
     this.promise = new Promise((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.cancel = () => resolve(undefined);
       task.then(resolve, reject);
     });
@@ -221,7 +220,7 @@ export abstract class RpcRequest<TResponse = any> {
     for (const param of this.parameters) {
       if (typeof (param) === "object" && param !== null) {
         for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
-          if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
+          if (prop in param && typeof (param[prop]) === requiredProperties[prop]) {
             return param;
           }
         }
@@ -471,6 +470,9 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   private handleNotFound(status: RpcRequestStatus, value: RpcSerializedValue) {
+    if (RpcRequest.notFoundHandlers.numberOfListeners === 0)
+      this.handleRejected(value);
+
     const response = RpcMarshaling.deserialize(this.protocol, value);
     this.setStatus(status);
 
@@ -480,8 +482,8 @@ export abstract class RpcRequest<TResponse = any> {
         throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
 
       resubmitted = true;
-      this.submit(); // eslint-disable-line @typescript-eslint/no-floating-promises
-    }, (reason: any) => this.reject(reason));
+      void this.submit();
+    }, (reason: any) => reason ? this.reject(reason) : this.handleRejected(value));
     return;
   }
 

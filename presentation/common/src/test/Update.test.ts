@@ -1,15 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
 import {
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON, NodeInsertionInfo, NodeInsertionInfoJSON, NodeJSON,
-  NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, StandardNodeTypes,
+  HierarchyCompareInfo,
+  HierarchyCompareInfoJSON,
+  Node,
+  NodeDeletionInfo,
+  NodeDeletionInfoJSON,
+  NodeInsertionInfo,
+  NodeInsertionInfoJSON,
+  NodeJSON,
+  NodeUpdateInfo,
+  NodeUpdateInfoJSON,
+  PartialHierarchyModification,
+  StandardNodeTypes,
 } from "../presentation-common";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 const testNode: Node = {
   key: {

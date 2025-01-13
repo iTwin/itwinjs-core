@@ -11,8 +11,6 @@ import {
 import { ChangeType, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareDiagnostics } from "../../Validation/SchemaCompareDiagnostics";
 
-/* eslint-disable deprecation/deprecation */
-
 describe("SchemaChanges tests", () => {
   let schema: Schema;
   beforeEach(async () => {
@@ -73,8 +71,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const classChange = changes.classChanges.get(testClass.name);
+      expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+      const classChange = changes.entityClassChanges.get(testClass.name);
       expect(classChange!.schemaItemType).to.equal(SchemaItemType.EntityClass);
       const propChanges = classChange!.propertyValueChanges;
       expect(propChanges.length).to.equal(1);
@@ -95,8 +93,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const change = changes.classChanges.get(testClass.name);
+      expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+      const change = changes.entityClassChanges.get(testClass.name);
       expect(change!.ecTypeName).to.equal(testClass.name);
       expect(change!.baseClassDelta!.topLevelSchemaItem).to.equal(testClass);
       expect(change!.baseClassDelta!.diagnostic).to.equal(diag);
@@ -113,8 +111,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const change = changes.classChanges.get(testClass.name);
+      expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+      const change = changes.entityClassChanges.get(testClass.name);
       expect(change!.ecTypeName).to.equal(testClass.name);
       expect(change!.baseClassDelta!.topLevelSchemaItem).to.equal(testClass);
       expect(change!.baseClassDelta!.diagnostic).to.equal(diag);
@@ -131,8 +129,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const change = changes.classChanges.get(testClass.name);
+      expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+      const change = changes.entityClassChanges.get(testClass.name);
       expect(change!.ecTypeName).to.equal(testClass.name);
       expect(change!.baseClassDelta!.topLevelSchemaItem).to.equal(testClass);
       expect(change!.baseClassDelta!.diagnostic).to.equal(diag);
@@ -148,8 +146,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const classChange = changes.classChanges.get(testClass.name);
+      expect(changes.relationshipClassChanges.has(testClass.name)).to.be.true;
+      const classChange = changes.relationshipClassChanges.get(testClass.name);
       expect(classChange!.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
       const propChanges = classChange!.propertyValueChanges;
       expect(propChanges.length).to.equal(1);
@@ -188,8 +186,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const constraintChanges = changes.classChanges.get(testClass.name)!.sourceConstraintChanges.get(constraint.fullName);
+      expect(changes.relationshipClassChanges.has(testClass.name)).to.be.true;
+      const constraintChanges = changes.relationshipClassChanges.get(testClass.name)!.sourceConstraintChanges.get(constraint.fullName);
       expect(constraintChanges).to.not.be.undefined;
       const propChanges = constraintChanges!.propertyValueChanges;
       expect(propChanges.length).to.equal(1);
@@ -208,8 +206,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const constraintChanges = changes.classChanges.get(testClass.name)!.targetConstraintChanges.get(constraint.fullName);
+      expect(changes.relationshipClassChanges.has(testClass.name)).to.be.true;
+      const constraintChanges = changes.relationshipClassChanges.get(testClass.name)!.targetConstraintChanges.get(constraint.fullName);
       expect(constraintChanges).to.not.be.undefined;
       const propChanges = constraintChanges!.propertyValueChanges;
       expect(propChanges.length).to.equal(1);
@@ -229,8 +227,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const constraintChanges = changes.classChanges.get(testClass.name)!.sourceConstraintChanges.get(constraint.fullName);
+      expect(changes.relationshipClassChanges.has(testClass.name)).to.be.true;
+      const constraintChanges = changes.relationshipClassChanges.get(testClass.name)!.sourceConstraintChanges.get(constraint.fullName);
       expect(constraintChanges).to.not.be.undefined;
       expect(constraintChanges!.constraintClassChanges.length).to.equal(1);
       expect(constraintChanges!.constraintClassChanges[0].topLevelSchemaItem).to.equal(testClass);
@@ -249,8 +247,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const constraintChanges = changes.classChanges.get(testClass.name)!.targetConstraintChanges.get(constraint.fullName);
+      expect(changes.relationshipClassChanges.has(testClass.name)).to.be.true;
+      const constraintChanges = changes.relationshipClassChanges.get(testClass.name)!.targetConstraintChanges.get(constraint.fullName);
       expect(constraintChanges).to.not.be.undefined;
       expect(constraintChanges).to.not.be.undefined;
       expect(constraintChanges!.constraintClassChanges.length).to.equal(1);
@@ -289,8 +287,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const mixinChanges = changes.classChanges.get(testClass.name)!.entityMixinChanges.get(testMixin.fullName);
+      expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+      const mixinChanges = changes.entityClassChanges.get(testClass.name)!.entityMixinChanges.get(testMixin.fullName);
       expect(mixinChanges!.ecTypeName).to.equal(testMixin.fullName);
       expect(mixinChanges!.entityMixinChange[0].changeKey).to.equal(testMixin.fullName);
       expect(mixinChanges!.entityMixinChange[0].topLevelSchemaItem).to.equal(testClass);
@@ -309,8 +307,8 @@ describe("SchemaChanges tests", () => {
 
         changes.addDiagnostic(diag);
 
-        expect(changes.classChanges.has(testClass.name)).to.be.true;
-        const propChanges = changes.classChanges.get(testClass.name)!.propertyChanges.get(testProperty.name);
+        expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+        const propChanges = changes.entityClassChanges.get(testClass.name)!.propertyChanges.get(testProperty.name);
         expect(propChanges!.ecTypeName).to.equal(testProperty.name);
         expect(propChanges!.propertyValueChanges.length).to.equal(1);
         expect(propChanges!.propertyValueChanges[0].topLevelSchemaItem).to.equal(testClass);
@@ -328,8 +326,8 @@ describe("SchemaChanges tests", () => {
 
         changes.addDiagnostic(diag);
 
-        expect(changes.classChanges.has(testClass.name)).to.be.true;
-        const propChanges = changes.classChanges.get(testClass.name)!.propertyChanges.get(testProperty.name);
+        expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+        const propChanges = changes.entityClassChanges.get(testClass.name)!.propertyChanges.get(testProperty.name);
         expect(propChanges!.ecTypeName).to.equal(testProperty.name);
         expect(propChanges!.propertyMissing).to.not.be.undefined;
 
@@ -439,8 +437,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const caChanges = changes.classChanges.get(testClass.name)!.customAttributeChanges.get(ca.className);
+      expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+      const caChanges = changes.entityClassChanges.get(testClass.name)!.customAttributeChanges.get(ca.className);
       expect(caChanges).to.not.be.undefined;
       expect(caChanges!.customAttributeChanges.length).to.equal(1);
       expect(caChanges!.customAttributeChanges[0].changeKey).to.equal(ca.className);
@@ -460,8 +458,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(testClass.name)).to.be.true;
-      const propChanges = changes.classChanges.get(testClass.name)!.propertyChanges.get(testProperty.name);
+      expect(changes.entityClassChanges.has(testClass.name)).to.be.true;
+      const propChanges = changes.entityClassChanges.get(testClass.name)!.propertyChanges.get(testProperty.name);
       expect(propChanges).to.not.be.undefined;
       const caChanges = propChanges!.customAttributeChanges.get(ca.className);
       expect(caChanges).to.not.be.undefined;
@@ -483,8 +481,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(relationshipClass.name)).to.be.true;
-      const constraintChanges = changes.classChanges.get(relationshipClass.name)!.sourceConstraintChanges.get(constraint.fullName);
+      expect(changes.relationshipClassChanges.has(relationshipClass.name)).to.be.true;
+      const constraintChanges = changes.relationshipClassChanges.get(relationshipClass.name)!.sourceConstraintChanges.get(constraint.fullName);
       expect(constraintChanges).to.not.be.undefined;
       const caChanges = constraintChanges!.customAttributeChanges.get(ca.className);
       expect(caChanges).to.not.be.undefined;
@@ -506,8 +504,8 @@ describe("SchemaChanges tests", () => {
 
       changes.addDiagnostic(diag);
 
-      expect(changes.classChanges.has(relationshipClass.name)).to.be.true;
-      const constraintChanges = changes.classChanges.get(relationshipClass.name)!.targetConstraintChanges.get(constraint.fullName);
+      expect(changes.relationshipClassChanges.has(relationshipClass.name)).to.be.true;
+      const constraintChanges = changes.relationshipClassChanges.get(relationshipClass.name)!.targetConstraintChanges.get(constraint.fullName);
       expect(constraintChanges).to.not.be.undefined;
       const caChanges = constraintChanges!.customAttributeChanges.get(ca.className);
       expect(caChanges).to.not.be.undefined;

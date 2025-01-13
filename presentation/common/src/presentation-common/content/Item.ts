@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Content
  */
@@ -19,14 +19,14 @@ export interface ItemJSON {
   inputKeys?: InstanceKey[];
   primaryKeys: InstanceKey[];
   // TODO: rename to `label`
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   labelDefinition: LabelDefinitionJSON;
   /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   imageId: string;
   classInfo?: ClassInfo;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   values: ValuesDictionary<ValueJSON>;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   displayValues: ValuesDictionary<DisplayValueJSON>;
   mergedFieldNames: string[];
   extendedData?: { [key: string]: any };
@@ -73,16 +73,24 @@ export class Item {
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
    */
-  public constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined,
-    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: { [key: string]: any }) {
+  public constructor(
+    primaryKeys: InstanceKey[],
+    label: string | LabelDefinition,
+    imageId: string,
+    classInfo: ClassInfo | undefined,
+    values: ValuesDictionary<Value>,
+    displayValues: ValuesDictionary<DisplayValue>,
+    mergedFieldNames: string[],
+    extendedData?: { [key: string]: any },
+  ) {
     this.primaryKeys = primaryKeys;
-    this.imageId = imageId; // eslint-disable-line deprecation/deprecation
+    this.imageId = imageId; // eslint-disable-line @typescript-eslint/no-deprecated
     this.classInfo = classInfo;
     this.values = values;
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
     this.extendedData = extendedData;
-    this.label = (typeof label === "string") ? LabelDefinition.fromLabelString(label) : label;
+    this.label = typeof label === "string" ? LabelDefinition.fromLabelString(label) : label;
   }
 
   /**
@@ -97,29 +105,31 @@ export class Item {
     const { label, ...baseItem } = this;
     return {
       ...baseItem,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       values: Value.toJSON(this.values) as ValuesMapJSON,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       labelDefinition: LabelDefinition.toJSON(label),
     };
   }
 
   /** Deserialize [[Item]] from JSON */
   public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
-    if (!json)
+    if (!json) {
       return undefined;
-    if (typeof json === "string")
+    }
+    if (typeof json === "string") {
       return JSON.parse(json, (key, value) => Item.reviver(key, value));
+    }
     const item = Object.create(Item.prototype);
     const { labelDefinition, ...baseJson } = json;
     return Object.assign(item, baseJson, {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       values: Value.fromJSON(json.values),
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       displayValues: DisplayValue.fromJSON(json.displayValues),
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       label: LabelDefinition.fromJSON(labelDefinition),
     } as Partial<Item>);
   }

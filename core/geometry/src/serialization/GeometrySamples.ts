@@ -420,14 +420,18 @@ export class Sample {
     }
     return result;
   }
-  /** Create various orders of non-rational B-spline curves with helical poles */
-  public static createBsplineCurveHelices(radius: number, height: number, numTurns: number, numSamplesPerTurn: number): BSplineCurve3d[] {
+  /** Create various orders of non-rational B-spline curves with helical poles. */
+  public static createBsplineCurveHelices(
+    radius: number, height: number, numTurns: number, numSamplesPerTurn: number,
+  ): BSplineCurve3d[] {
     const pts: Point3d[] = [];
     const zDelta = (height / numTurns) / numSamplesPerTurn;
     const aDelta = 2 * Math.PI / numSamplesPerTurn;
     for (let iTurn = 0; iTurn < numTurns; ++iTurn) {
       for (let iSample = 0; iSample < numSamplesPerTurn; iSample++) {
-        pts.push(Point3d.create(radius * Math.cos(iSample * aDelta), radius * Math.sin(iSample * aDelta), pts.length * zDelta));
+        pts.push(
+          Point3d.create(radius * Math.cos(iSample * aDelta), radius * Math.sin(iSample * aDelta), pts.length * zDelta),
+        );
       }
     }
     const result: BSplineCurve3d[] = [];
@@ -1142,7 +1146,7 @@ export class Sample {
       ParityRegion.create(
         Loop.create(
           LineString3d.create(point0, pointA, pointB),
-          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
         ),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
       ),
@@ -1168,7 +1172,7 @@ export class Sample {
       ParityRegion.create(
         Loop.create(
           LineString3d.create(point0, pointA, pointB),
-          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
         ),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
         Loop.create(Arc3d.create(point4, Vector3d.create(-r2, 0), Vector3d.create(0, r2A))),
@@ -1191,7 +1195,7 @@ export class Sample {
                 pointB,
               ],
               3)!,
-            Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+            Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
           ),
         ),
       );
@@ -1549,11 +1553,11 @@ export class Sample {
     const base = Loop.create(LineString3d.createRectangleXY(Point3d.create(), 2, 3));
     const vectorZ = Vector3d.create(0, 0, 1.234);
     const vectorQ = Vector3d.create(0.1, 0.21, 1.234);
-    result.push(LinearSweep.create(base, vectorZ, false) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorZ, true) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorQ, false) as LinearSweep);
-    result.push(LinearSweep.create(base, vectorQ, true) as LinearSweep);
-    result.push(LinearSweep.create(Sample.createCappedArcLoop(5, -45, 90), vectorQ, true) as LinearSweep);
+    result.push(LinearSweep.create(base, vectorZ, false)!);
+    result.push(LinearSweep.create(base, vectorZ, true)!);
+    result.push(LinearSweep.create(base, vectorQ, false)!);
+    result.push(LinearSweep.create(base, vectorQ, true)!);
+    result.push(LinearSweep.create(Sample.createCappedArcLoop(5, -45, 90), vectorQ, true)!);
     for (const curve of Sample.createSmoothCurvePrimitives()) {
       const path = Path.create(curve);
       result.push(LinearSweep.create(path, vectorZ, false)!);
@@ -1613,8 +1617,8 @@ export class Sample {
       Ray3d.createXYZUVW(5, 0, 0, 0, 1, 0),
       Ray3d.createXYZUVW(-1, 0, 0, -1, 1, 0),
     ]) {
-      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false) as RotationalSweep);
-      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true) as RotationalSweep);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false)!);
+      result.push(RotationalSweep.create(base, axis, Angle.createDegrees(150.0), true)!);
     }
     return result;
   }
@@ -1789,10 +1793,10 @@ export class Sample {
     const contour2 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 4, 3.5, 4)));
     const contour3 = Loop.create(LineString3d.create(this.createRectangleXY(0, 0, 2, 1, 7)));
     const allContours = [contour0, contour1, contour2];
-    allSweeps.push(RuledSweep.create([contour0, contour1], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create([contour0, contour1, contour2], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create([contour0, contour1, contour2, contour3], true) as RuledSweep);
-    allSweeps.push(RuledSweep.create(allContours, false) as RuledSweep);
+    allSweeps.push(RuledSweep.create([contour0, contour1], true)!);
+    allSweeps.push(RuledSweep.create([contour0, contour1, contour2], true)!);
+    allSweeps.push(RuledSweep.create([contour0, contour1, contour2, contour3], true)!);
+    allSweeps.push(RuledSweep.create(allContours, false)!);
     const curves = Sample.createSmoothCurvePrimitives();
     for (const c of curves) {
       const frame = c.fractionToFrenetFrame(0.0);
@@ -2237,40 +2241,40 @@ export class Sample {
     result.push(
       CurveChainWithDistanceIndex.createCapture(
         Path.create(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 0, 0))),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
         Path.create(
           Arc3d.createCircularStartMiddleEnd(
             Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0),
-          )!,
+          ),
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
         Path.create(LineString3d.create(pointsA)),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
         Path.create(BSplineCurve3d.createUniformKnots(pointsA, 3)!),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
         Path.create(BSplineCurve3d.createUniformKnots(pointsA, 4)!),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
         Path.create(
           LineSegment3d.create(pointsA[0], pointsA[1]),
-          Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
+          Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3]),
           LineSegment3d.create(pointsA[3], pointsA[4]),
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
@@ -2279,7 +2283,7 @@ export class Sample {
           Arc3d.createXY(Point3d.create(15, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
           Arc3d.createXY(Point3d.create(25, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
@@ -2288,7 +2292,7 @@ export class Sample {
           Arc3d.createXY(Point3d.create(15, 0), 5, AngleSweep.createStartEndDegrees(180, 360)),
           Arc3d.createXY(Point3d.create(25, 0), 5, AngleSweep.createStartEndDegrees(180, 0)),
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
@@ -2299,7 +2303,7 @@ export class Sample {
             ),
           )!,
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
@@ -2310,7 +2314,7 @@ export class Sample {
             ),
           )!,
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
@@ -2321,7 +2325,7 @@ export class Sample {
             ),
           )!,
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
@@ -2336,7 +2340,7 @@ export class Sample {
             "bloss",
           )!,
         ),
-      )!,
+      ),
     );
     result.push(
       CurveChainWithDistanceIndex.createCapture(
@@ -2350,7 +2354,7 @@ export class Sample {
             Segment1d.create(0, 1),
           )!,
         ),
-      )!,
+      ),
     );
     return result;
   }
@@ -2477,7 +2481,7 @@ export class Sample {
     const result = [];
     result.push(Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 3, 2, 5), capped)!);
     result.push(Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 1.0, capped)!);
-    result.push(Sphere.createCenterRadius(Point3d.create(0, 0, 0), 1.0)!);
+    result.push(Sphere.createCenterRadius(Point3d.create(0, 0, 0), 1.0));
     result.push(TorusPipe.createInFrame(Transform.createIdentity(), 3.0, 1.0, Angle.create360(), capped)!);
     const arcA = Arc3d.createXY(Point3d.create(6, 1, 0), 1.0, AngleSweep.createStartEndDegrees(-90, 0));
     const point0 = arcA.fractionAndDistanceToPointOnTangent(0.0, -4);
@@ -2511,13 +2515,13 @@ export class Sample {
     result.push(LinearSweep.create(contourA, Vector3d.create(0, 0, 5), capped)!);
     result.push(LinearSweep.create(contourC1, Vector3d.create(0, 0, 5), capped)!);
     const axis = Ray3d.createXYZUVW(0, 8, 0, 1, 0, 0);
-    result.push(RotationalSweep.create(contourA.clone()!, axis.clone(), rotationAngle, capped)!);
+    result.push(RotationalSweep.create(contourA.clone(), axis.clone(), rotationAngle, capped)!);
     if (!capped)
-      result.push(RotationalSweep.create(contourZ.clone()!, axis.clone(), rotationAngle, false)!);
-    result.push(RuledSweep.create([contourA.clone()!, contourB.clone()!], capped)!);
+      result.push(RotationalSweep.create(contourZ.clone(), axis.clone(), rotationAngle, false)!);
+    result.push(RuledSweep.create([contourA.clone(), contourB.clone()], capped)!);
     const transformC = Transform.createScaleAboutPoint(Point3d.create(0, 0, 8), 0.5);
     const contourC = contourB.cloneTransformed(transformC)!;
-    result.push(RuledSweep.create([contourA.clone()!, contourB.clone()!, contourC.clone()!], capped)!);
+    result.push(RuledSweep.create([contourA.clone(), contourB.clone(), contourC.clone()], capped)!);
     return result;
   }
   /**
@@ -2692,7 +2696,7 @@ export class Sample {
     const pointABCDA = [pointA, pointB, pointC, pointD, pointA];
     result.push(LineSegment3d.create(pointA, pointB));
     result.push(CoordinateXYZ.create(pointA));
-    result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
+    result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC));
     result.push(PointString3d.create(pointA, pointB));
     result.push(
       IntegratedSpiral3d.createRadiusRadiusBearingBearing(
@@ -2724,16 +2728,21 @@ export class Sample {
     return result;
   }
   /**
-   * Create points on a sine wave
-   * Point i is origin + (i * xStep, a *sin(theta0 + i * dTheta), b * sin(beta0 + i * dBeta))
-   * * Default b is zero, so it is a simple sine wave
+   * Create points on a sine wave.
+   * * Point i is origin + (i * xStep, a *sin(theta0 + i * dTheta), b * sin(beta0 + i * dBeta)).
+   * * Default b is zero, so it is a simple sine wave.
    * * If the dTheta and dBeta are equal, it is a sine wave in a tilted plane.
-   * * If dTheta and dBeta are different it is a non-planar curve
+   * * If dTheta and dBeta are different it is a non-planar curve.
    */
-  public static createPointSineWave(origin: XYAndZ | undefined, numInterval: number = 24,
+  public static createPointSineWave(
+    origin: XYAndZ | undefined,
+    numInterval: number = 24,
     xStep: number = Math.PI / 12,
-    a: number = 1, thetaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
-    b: number = 0, betaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 180)): Point3d[] {
+    a: number = 1,
+    thetaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
+    b: number = 0,
+    betaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 180),
+  ): Point3d[] {
     return this.createPointsByIndexFunctions(
       numInterval, SteppedIndexFunctionFactory.createLinear(xStep, origin ? origin.x : 0),
       SteppedIndexFunctionFactory.createCosine(a, thetaSweep, origin ? origin.y : 0),

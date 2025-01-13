@@ -8,9 +8,10 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
-import { HitPriority, ViewAttachmentHitInfo } from "../HitDetail";
+import { HitPath, HitPriority } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
+import { Transform } from "@itwin/core-geometry";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
@@ -34,11 +35,17 @@ export namespace Pixel {
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
     /** @internal */
+    public readonly transformFromIModel?: Transform;
+    /** @internal */
     public readonly tileId?: string;
     /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
      * @beta
      */
     public readonly viewAttachmentId?: Id64String;
+    /** True if the pixel originated from a [[SpatialViewState]] attached via a [SectionDrawing]($backend).
+     * @beta
+     */
+    public readonly inSectionDrawingAttachment: boolean;
     /** @internal */
     public get isClassifier(): boolean {
       return undefined !== this.batchType && BatchType.Primary !== this.batchType;
@@ -54,6 +61,8 @@ export namespace Pixel {
       iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
+      inSectionDrawingAttachment?: boolean;
+      transformFromIModel?: Transform;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -65,6 +74,8 @@ export namespace Pixel {
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
       this.viewAttachmentId = args?.viewAttachmentId;
+      this.inSectionDrawingAttachment = true === args?.inSectionDrawingAttachment;
+      this.transformFromIModel = args?.transformFromIModel;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -102,11 +113,26 @@ export namespace Pixel {
      * @param viewport The viewport in which the hit originated.
      */
     public toHitProps(viewport: Viewport): Pixel.HitProps {
-      let viewAttachment: ViewAttachmentHitInfo | undefined;
+      let path: HitPath | undefined;
       if (this.viewAttachmentId) {
-        const attachmentViewport = viewport.view.getAttachmentViewport(this.viewAttachmentId);
-        if (attachmentViewport)
-          viewAttachment = { viewport: attachmentViewport, id: this.viewAttachmentId };
+        const attachmentViewport = viewport.view.getAttachmentViewport({ viewAttachmentId: this.viewAttachmentId });
+        if (attachmentViewport) {
+          path = {
+            viewAttachment: {
+              viewport: attachmentViewport,
+              id: this.viewAttachmentId,
+            },
+          };
+        }
+      }
+
+      if (this.inSectionDrawingAttachment) {
+        const checkVp = path?.viewAttachment?.viewport ?? viewport;
+        const attachVp = checkVp.view.getAttachmentViewport({ inSectionDrawingAttachment: true });
+        if (attachVp) {
+          path = path ?? { };
+          path.sectionDrawingAttachment = { viewport: attachVp };
+        }
       }
 
       return {
@@ -119,7 +145,8 @@ export namespace Pixel {
         tileId: this.tileId,
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
-        viewAttachment,
+        transformFromSourceIModel: this.transformFromIModel,
+        path,
       };
     }
   }
@@ -156,17 +183,18 @@ export namespace Pixel {
      * @internal
      */
     sourceIModel?: IModelConnection;
+    /** @internal */
+    transformFromSourceIModel?: Transform;
     /** @internal chiefly for debugging */
     tileId?: string;
     /** True if the hit originated from a reality model classifier.
      * @alpha
      */
     isClassifier?: boolean;
-    /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-     * @note Only [[SheetViewState]]s can have view attachments.
+    /** Path through which the hit was located.
      * @beta
      */
-    viewAttachment?: ViewAttachmentHitInfo;
+    path?: HitPath;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */

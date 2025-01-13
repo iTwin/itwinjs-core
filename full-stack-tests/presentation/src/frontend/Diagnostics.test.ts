@@ -1,22 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { ClientDiagnostics } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("Diagnostics", async () => {
-
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openFile(testIModelName);
+    imodel = TestIModelConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 
@@ -49,18 +49,15 @@ describe("Diagnostics", async () => {
     expect(handler).to.be.calledOnce;
     expect(handler.firstCall.args[0].backendVersion).to.match(/\d+\.\d+\.\d+/);
   });
-
 });
 
 describe("Learning Snippets", () => {
-
   describe("Diagnostics", async () => {
-
     let imodel: IModelConnection;
 
     before(async () => {
       await initialize();
-      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     });
 
     after(async () => {
@@ -86,11 +83,9 @@ describe("Learning Snippets", () => {
         },
       });
       // __PUBLISH_EXTRACT_END__
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const expectedBackendVersion = require("@itwin/presentation-backend/package.json").version;
       expect(log).to.be.calledOnceWith(`Backend version: ${expectedBackendVersion}`);
     });
-
   });
-
 });

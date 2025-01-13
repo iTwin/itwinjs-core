@@ -16,7 +16,7 @@ import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner,
+  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
 } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
@@ -74,8 +74,25 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     args.tree.draw(args);
   }
 
-  /** Optionally return a tooltip describing the hit. */
+  /** Return a tooltip describing the hit, or `undefined` if no tooltip can be supplied.
+   * If you override this method, make sure to check that `hit` represents an entity belonging to your tile tree, e.g., by checking `hit.modelId` and `hit.sourceId`.
+   * If you *don't* override this method, override [[canSupplyToolTip]] to return false.
+   * Callers who want to obtain a tooltip should prefer [[getToolTipPromise]].
+   */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
+
+  /** Return whether this TileTreeReference can supply a tooltip describing the entity represented by the specified hit.
+   * [[getToolTipPromise]] calls [[getToolTip]] if and only if `canSupplyToolTip` returns `true`.
+   * If your tile tree never supplies tooltips, override this to return `false`.
+   */
+  public canSupplyToolTip(_hit: HitDetail): boolean {
+    return true;
+  }
+
+  /** Obtain a tooltip describing the specified `hit`, or `undefined` if this tile tree reference cannot supply a tooltip for the hit. */
+  public getToolTipPromise(hit: HitDetail): Promise<HTMLElement | string | undefined> | undefined {
+    return this.canSupplyToolTip(hit) ? this.getToolTip(hit).catch(() => undefined) : undefined;
+  }
 
   /** Optionally return a MapLayerFeatureInfo object describing the hit.].
    * @alpha
@@ -149,8 +166,12 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       hiddenLineSettings: this.getHiddenLineSettings(tree),
       animationTransformNodeId: this.getAnimationTransformNodeId(tree),
       groupNodeId: this.getGroupNodeId(tree),
+      transformFromIModel: this.getTransformFromIModel(),
     });
   }
+
+  /** @beta */
+  public getTransformFromIModel(): Transform | undefined { return undefined; }
 
   /** @internal */
   protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
@@ -234,11 +255,11 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
   public get isGlobal(): boolean { return false; }
 
-  /**  Return the clip mask priority for this model - models will be clipped by any other viewed model with a higher proirity.
-   * BIM models have highest prioirty and are never clipped.
-   * @alpha
+  /** The [PlanarClipMaskPriority]($common) of this tile tree used to determine which tile trees contribute to a clip mask when
+   * using [PlanarClipMaskMode.Priority]($common).
+   * @beta
    */
-  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
+  public get planarClipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
@@ -246,19 +267,16 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
    * Return `undefined` if geometry collection is not supported.
    * @see [[createGeometryTreeReference]].
-   * @beta
    */
   protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     return undefined;
   }
 
   /** If defined, supplies the implementation of [[GeometryTileTreeReference.collectTileGeometry]].
-   * @beta
    */
   public collectTileGeometry?: (collector: TileGeometryCollector) => void;
 
   /** A function that can be assigned to [[collectTileGeometry]] to enable geometry collection for references to tile trees that support geometry collection.
-   * @beta
    */
   protected _collectTileGeometry(collector: TileGeometryCollector): void {
     const tree = this.treeOwner.load();
@@ -277,7 +295,6 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * undefined if geometry collection is not supported.
    * Currently, only terrain and reality model tiles support geometry collection.
    * @note Do not override this method - override [[_createGeometryTreeReference]] instead.
-   * @beta
    */
   public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     if (this.collectTileGeometry) {
@@ -286,5 +303,24 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
     }
 
     return this._createGeometryTreeReference();
+  }
+
+  /** Create a [[TileTreeReference]] that displays a pre-defined [[RenderGraphic]].
+   * The reference can be used to add dynamic content to a [[Viewport]]'s scene as a [[TiledGraphicsProvider]], as in the following example:
+   * ```ts
+   * [[include:TileTreeReference_createFromRenderGraphic]]
+   *```
+   * Or, it can be used as a [[DynamicSpatialClassifier]] to contextualize a reality model, like so:
+   * ```ts
+   * [[include:TileTreeReference_DynamicClassifier]]
+   * ```
+   * It can also be used to mask out portions of the background map or terrain via [PlanarClipMaskSettings]($common), as shown below:
+   * ```ts
+   * [[include:TileTreeReference_DynamicClipMask]]
+   * ```
+   * @beta
+   */
+  public static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
+    return tileTreeReferenceFromRenderGraphic(args);
   }
 }

@@ -8,7 +8,7 @@
  */
 import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
+import { CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -43,8 +43,7 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
 }
 
 /** @internal */
-export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
-
+export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{ token?: string, url?: string }> {
   if (undefined === requestKey) {
     requestKey = IModelApp.tileAdmin.cesiumIonKey;
     if (undefined === requestKey)
@@ -61,7 +60,7 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
       return {};
     }
     return { token: apiResponse.accessToken, url: apiResponse.url };
-  } catch (error) {
+  } catch {
     assert(false);
     return {};
   }
@@ -80,7 +79,7 @@ function notifyTerrainError(detailedDescription?: string): void {
 
 /** @internal */
 export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
-  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
+  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(opts.dataSource || CesiumTerrainAssetId.Default);
   if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
     notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
     return undefined;
@@ -91,7 +90,7 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
-  } catch (error) {
+  } catch {
     notifyTerrainError();
     return undefined;
   }
@@ -103,7 +102,13 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
 
   const tilingScheme = new GeographicTilingScheme();
   let tileAvailability;
-  if (undefined !== layers.available) {
+  // When collecting tiles, only the highest resolution tiles are downloaded.
+  // Because of that, the tile availability is often only populated by the
+  // "layer" metadata. (i.e. not from higher resolution tiles metadata).
+  // Unfortunately the "layer" metadata only cover the first 16 levels,
+  // preventing the geometry collector from accessing to higher resolution tiles.
+  // For now, the solution is to turn off tile availability check when collecting geometries.
+  if (undefined !== layers.available && !opts.produceGeometry) {
     const availableTiles = layers.available;
     tileAvailability = new TileAvailability(tilingScheme, availableTiles.length);
     for (let level = 0; level < layers.available.length; level++) {
@@ -161,6 +166,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   private readonly _tileAvailability?: TileAvailability;
   private readonly _metaDataAvailableLevel?: number;
   private readonly _exaggeration: number;
+  private readonly _assetId: string;
 
   private static _scratchQPoint2d = QPoint2d.fromScalars(0, 0);
   private static _scratchPoint2d = Point2d.createZero();
@@ -188,6 +194,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tilingScheme = tilingScheme;
     this._tileAvailability = tileAvailability;
     this._metaDataAvailableLevel = metaDataAvailableLevel;
+    this._assetId = opts.dataSource || CesiumTerrainAssetId.Default;
 
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
@@ -197,7 +204,11 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       return;
 
     cards.dataset.cesiumIonLogoCard = "true";
-    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    let notice = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
+    if (this._assetId === CesiumTerrainAssetId.Bathymetry)
+      notice = `${notice}\n${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumBathymetryAttribution")}`;
+
+    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
     cards.appendChild(card);
   }
 
@@ -225,7 +236,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     try {
       const response = await request(tileUrl, "arraybuffer", requestOptions);
       return new Uint8Array(response);
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -234,7 +245,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     // ###TODO why does he update the access token when reading the mesh instead of when requesting it?
     // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
-      const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
+      const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(this._assetId);
       if (!accessTokenAndEndpointUrl.token || args.isCanceled())
         return undefined;
 

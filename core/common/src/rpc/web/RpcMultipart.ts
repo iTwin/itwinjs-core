@@ -6,12 +6,13 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, IModelError } from "../../IModelError";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { IModelError } from "../../IModelError";
 import { BackendBuffer, BackendReadable } from "../../BackendTypes";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export interface FormDataCommon {

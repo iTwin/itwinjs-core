@@ -286,6 +286,9 @@ class ElementTile extends Tile {
 
   public update(range: Range3d): void {
     range.clone(this.range);
+    const center = this.range.low.interpolate(0.5, this.range.high);
+    const radius = 0.5 * this.range.low.distance(this.range.high);
+    this.boundingSphere.init(center, radius);
 
     // Discard out-dated graphics.
     assert(undefined !== this.children);
@@ -362,7 +365,7 @@ class GraphicsTile extends Tile {
       omitEdges: !this.tree.edgeOptions,
       edgeType: this.tree.edgeOptions && "non-indexed" !== this.tree.edgeOptions.type ? 2 : 1,
       smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
-      clipToProjectExtents: true,
+      clipToProjectExtents: this.tree.is3d,
       sectionCut: this.tree.stringifiedSectionClip,
     };
 
@@ -391,6 +394,7 @@ class GraphicsTile extends Tile {
       type: tree.batchType,
       loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },
+      timeline: tree.timeline,
     });
 
     let content: TileContent = { isLeaf: true };

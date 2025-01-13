@@ -7,8 +7,8 @@
  */
 
 import { Point2d, Range2d } from "@itwin/core-geometry";
-import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
-import { MapCartoRectangle, WmsUtilities } from "../internal"; // WmsUtilities needed for getBaseUrl
+import { RequestBasicCredentials } from "../../request/Request";
+import { MapCartoRectangle, WmsUtilities } from "../internal";
 
 enum OwsConstants {
   ABSTRACT_XMLTAG = "ows:Abstract",
@@ -65,20 +65,6 @@ enum XmlConstants {
 export enum WmtsConstants {
   GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178,
   GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
-}
-
-/**
- * fetch XML from HTTP request
- * @param url server URL to address the request
- * @internal
- */
-async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
-  const options: RequestOptions = {
-    timeout: 20000,
-    retryCount: 2,
-    auth: credentials,
-  };
-  return request(url, "text", options);
 }
 
 /**
@@ -568,7 +554,7 @@ export class WmtsCapabilities {
       });
     }
 
-    const xmlCapabilities = await getXml(tmpUrl.toString(), credentials);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
     if (!xmlCapabilities)
       return undefined;
 

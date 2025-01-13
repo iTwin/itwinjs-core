@@ -316,3 +316,38 @@ The composite format below we will provide a unit in meters and produce a format
 #### AlternateUnitLabelsProvider
 
 The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family/Phenomenon, as well as the label of units in a Composite format are used.
+
+### Mathematical operation parsing
+
+The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
+```Typescript
+// Operation containing many units (feet, inches, yards).
+const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
+
+// Asynchronous implementation
+const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
+quantityProps.magnitude // 7.5 (feet)
+
+// Synchronous implementation
+const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
+parseResult.value // 7.5 (feet)
+```
+
+#### Limitations
+Only plus(`+`) and minus(`-`) signs are supported for now.
+Other operators will end up returning a parsing error or an invalid input result.
+
+#### Usage
+The parsing of mathematical operations is disabled by default.
+To enable it, you can override the default QuantityFormatter. Ex :
+```Typescript
+  // App specific
+  const quantityType = QuantityType.LengthEngineering;
+
+  // Default props for the desired quantityType
+  const props = IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+
+  // Override the formatter and enable mathematical operations.
+  await IModelApp.quantityFormatter.setOverrideFormat(quantityType, { ...props, allowMathematicOperations: true });
+```
+

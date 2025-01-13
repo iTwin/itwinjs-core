@@ -2,12 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString } from "@itwin/core-bentley";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
-  WipRpcInterface,
+  DevToolsRpcInterface, IModelConnectionProps, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager,
+  SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+
+export interface AzuriteUsers {
+  admin: AccessToken;
+  readOnly: AccessToken;
+  readWrite: AccessToken;
+}
 
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
@@ -15,6 +21,12 @@ export abstract class TestRpcInterface extends RpcInterface {
 
   public static getClient(): TestRpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
+  }
+  public async openSnapshot(_filePath: string): Promise<IModelConnectionProps> {
+    return this.forward(arguments);
+  }
+  public async closeIModel(_iModelKey: string): Promise<void> {
+    return this.forward(arguments);
   }
   public async restartIModelHost(): Promise<void> {
     return this.forward(arguments);
@@ -34,7 +46,7 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async endOfflineScope(): Promise<void> {
     return this.forward(arguments);
   }
-  public async startViewStore(): Promise<void> {
+  public async startViewStore(): Promise<AzuriteUsers> {
     return this.forward(arguments);
   }
   public async stopViewStore(): Promise<void> {
@@ -57,9 +69,8 @@ export abstract class EventsTestRpcInterface extends RpcInterface {
 export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
-  SnapshotIModelRpcInterface,
+  SnapshotIModelRpcInterface, // eslint-disable-line @typescript-eslint/no-deprecated
   TestRpcInterface,
-  WipRpcInterface,
   DevToolsRpcInterface,
   EventsTestRpcInterface,
   ECSchemaRpcInterface,

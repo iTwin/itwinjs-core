@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Polyface, Range3d, Transform } from "@itwin/core-geometry";
+import { IndexedPolyface, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import {
   Tile, TileTreeReference, TileUser,
@@ -16,12 +16,12 @@ import {
  * - "accept": The tile's geometry should be collected.
  * - "reject": The tile's geometry (and that of all of its child tiles) should be omitted.
  * - "continue": The tile's geometry should be omitted, but that of its child tiles should be evaluated for collection.
- * @beta
+ * @public
  */
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
 /** Options for creating a [[TileGeometryCollector]].
- * @beta
+ * @public
  */
 export interface TileGeometryCollectorOptions {
   /** The chord tolerance in meters describing the minimum level of detail desired of the tile geometry. */
@@ -38,14 +38,14 @@ export interface TileGeometryCollectorOptions {
  * Subclasses can refine the collection criterion.
  * The tile geometry is obtained asynchronously, so successive collections over multiple frames may be required before all of the geometry
  * is collected.
- * @beta
+ * @public
  */
 export class TileGeometryCollector {
   /** The list of accumulated polyfaces, populated during [[GeometryTileTreeReference.collectTileGeometry]].
    * The polyfaces belong to the [[Tile]]s - they should not be modified.
    * If [[isAllGeometryLoaded]] is `false`, then this list is incomplete - another geometry collection should be performed with a new collector on a subsequent frame.
    */
-  public readonly polyfaces: Polyface[] = [];
+  public readonly polyfaces: IndexedPolyface[] = [];
   private readonly _missing = new Set<Tile>();
   private _loading = false;
   /** The options used to construct this collector. */
@@ -106,7 +106,7 @@ export class TileGeometryCollector {
 /** A [[TileTreeReference]] that can supply geometry in the form of [Polyface]($core-geometry)s from [[Tile]]s belonging to its [[TileTree]] and satisfying the criteria defined
  * by a [[TileGeometryCollector]].
  * Use [[TileTreeReference.createGeometryTreeReference]] to obtain a GeometryTileTreeReference from an existing TileTreeReference.
- * @beta
+ * @public
  */
 export interface GeometryTileTreeReference extends TileTreeReference {
   /** Populate [[TileGeometryCollector.polyfaces]] with geometry satisfying `collector`'s criteria.

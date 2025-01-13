@@ -7,7 +7,6 @@
  * @module Polyface
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { assert } from "@itwin/core-bentley";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
@@ -47,15 +46,7 @@ class ClipCandidate {
 }
 
 /**
- * A pair of PolyfaceBuilder objects, for use by clippers that emit inside and outside parts.
- * * There are nominally 4 builders:
- *   * builderA collects simple "inside" clip.
- *   * builderB collects simple "outside" clip.
- *   * builderA1 collects "side" clip for inside.
- *   * builderB1 collets "side" clip for outside.
- * * `static ClippedPolyfaceBuilders.create(keepInside, keepOutside)` initializes `builderA` and `builderB` (each optionally to undefined), with undefined `builderA1` and `builderB1`
- * * `builders.enableSideBuilders()` makes `builderA1` and `builderB1` match `builderA` and `builderB`.
- * * construction methods aim their facets at appropriate builders if defined.
+ * A pair of [[PolyfaceBuilder]] objects, for use by clippers that emit inside and outside parts.
  * * @public
  */
 export class ClippedPolyfaceBuilders {
@@ -70,11 +61,22 @@ export class ClippedPolyfaceBuilders {
     this.builderB = builderB;
     this.buildClosureFaces = buildClosureFaces;
   }
-  /** Simple create with default options on builder. */
+  /**
+   * Static constructor with default options for the builders.
+   * @param keepInside whether to collect clipped facets inside the clipper to `this.builderA` (default true)
+   * @param keepOutside whether to collect clipped facets outside the clipper to `this.builderB` (default false)
+   * @param buildSideFaces whether to add side facets to active builders (default false)
+   */
   public static create(keepInside: boolean = true, keepOutside: boolean = false, buildSideFaces: boolean = false) {
     return new ClippedPolyfaceBuilders(keepInside ? PolyfaceBuilder.create() : undefined, keepOutside ? PolyfaceBuilder.create() : undefined, buildSideFaces);
   }
 
+  /**
+   * Return the computed facets from the selected builder.
+   * @param selector the polyface to return: 0 - builderA (typically inside facets), 1 - builderB (typically outside facets)
+   * @param fixup whether to clean up the polyface
+   * @param tolerance compression tolerance (default [[Geometry.smallMetricDistance]]).
+   */
   public claimPolyface(selector: 0 | 1, fixup: boolean, tolerance: number = Geometry.smallMetricDistance): IndexedPolyface | undefined {
     const builder = selector === 0 ? this.builderA : this.builderB;
     if (builder) {
@@ -96,14 +98,14 @@ export class PolyfaceClip {
    * * Return all surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only" -- parameters, normals, etc are not interpolated
    */
-  public static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = true) {
+  public static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = true): IndexedPolyface {
     return this.clipPolyfaceClipPlane(polyface, clipper, insideClip, buildClosureFaces);
   }
   /** Clip each facet of polyface to the ClipPlane.
    * * Return all surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only" -- parameters, normals, etc are not interpolated
    */
-  public static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = false): Polyface {
+  public static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = false): IndexedPolyface {
     const builders = ClippedPolyfaceBuilders.create(insideClip, !insideClip, buildClosureFaces);
     this.clipPolyfaceInsideOutside(polyface, clipper, builders);
     return builders.claimPolyface(insideClip ? 0 : 1, true)!;
@@ -113,7 +115,7 @@ export class PolyfaceClip {
    * * Return surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only".
    */
-  public static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): Polyface {
+  public static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): IndexedPolyface {
     const visitor = polyface.createVisitor(0);
     const builder = PolyfaceBuilder.create();
     const work = new GrowableXYZArray(10);
@@ -212,7 +214,7 @@ export class PolyfaceClip {
         for (const child of region.children)
           this.addRegion(builder, child);
       } else {
-        assert(!"unexpected region encountered");
+        assert(false, "unexpected region encountered");
       }
     }
   }
@@ -224,10 +226,18 @@ export class PolyfaceClip {
         GrowableXYZArray.multiplyTransformInPlace(worldToLocal, shards);
       const outsidePieces = RegionOps.polygonBooleanXYToLoops(shards, RegionBinaryOpType.Union, []);
       if (outsidePieces && outsidePieces.children.length > 0) {
-        if (localToWorld)
-          outsidePieces.tryTransformInPlace(localToWorld);
         RegionOps.consolidateAdjacentPrimitives(outsidePieces); // source of the T-vertices removed in claimPolyface
-        this.addRegion(builder, outsidePieces);
+        const options = new StrokeOptions();
+        options.maximizeConvexFacets = true;
+        const localFacets = RegionOps.facetRegionXY(outsidePieces, options);
+        if (localFacets) {
+          // prefer to add non-convex facets
+          builder.addIndexedPolyface(localFacets, false, localToWorld);
+        } else {  // failsafe; we don't expect to get here
+          if (localToWorld)
+            outsidePieces.tryTransformInPlace(localToWorld);
+          this.addRegion(builder, outsidePieces); // possibly non-convex!
+        }
       }
     }
   }
@@ -390,9 +400,9 @@ export class PolyfaceClip {
             this.addClippedContour(contour, clipper, destination, cache);
           } else {
             if (destination.builderA)
-              contour.emitFacets(destination.builderA, true, clipper);
+              contour.emitFacets(destination.builderA, false);
             if (destination.builderB)
-              contour.emitFacets(destination.builderB, false, clipper);
+              contour.emitFacets(destination.builderB, true);
           }
         }
       }
@@ -404,9 +414,9 @@ export class PolyfaceClip {
           this.addClippedContour(contour, clipper, destination, cache);
         } else {
           if (destination.builderA)
-            contour.emitFacets(destination.builderA, true, clipper);
+            contour.emitFacets(destination.builderA, false);
           if (destination.builderB)
-            contour.emitFacets(destination.builderB, false, clipper);
+            contour.emitFacets(destination.builderB, true);
         }
       }
     }

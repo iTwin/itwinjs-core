@@ -87,7 +87,7 @@ export class XYZ implements XYAndZ {
     return defaultValue;
   }
   /**
-   * Look for (in order) an x coordinate present as:
+   * Look for (in order) a y coordinate present as:
    * * arg.y
    * * arg[1]
    */
@@ -99,7 +99,7 @@ export class XYZ implements XYAndZ {
     return defaultValue;
   }
   /**
-   * Look for (in order) an x coordinate present as:
+   * Look for (in order) a z coordinate present as:
    * * arg.z
    * * arg[2]
    */
@@ -324,7 +324,7 @@ export class XYZ implements XYAndZ {
     this.y += other.y;
     this.z += other.z;
   }
-  /** Add x,y,z from other in place. */
+  /** Subtract x,y,z from other in place. */
   public subtractInPlace(other: XYAndZ): void {
     this.x -= other.x;
     this.y -= other.y;
@@ -1091,8 +1091,8 @@ export class Vector3d extends XYZ {
    * the plane of this vector and the target vector.
    * @param target Second vector which defines the plane of rotation.
    * @param result optional preallocated vector for result.
-   * @returns rotated vector, or undefined if the cross product of this and
-   *          the the target cannot be normalized (i.e. if the target and this are colinear)
+   * @returns rotated vector, or undefined if the cross product of this and the target
+   * cannot be normalized (i.e. if the target and this are colinear).
    */
   public rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined {
     const normal = this.crossProduct(target).normalize();
@@ -1111,10 +1111,10 @@ export class Vector3d extends XYZ {
     return unitNormal ? unitNormal.crossProduct(this).plusScaled(unitNormal, unitNormal.dotProduct(this), result) : undefined;
   }
   /**
-   * Return a vector computed at fractional position between this vector and vectorB
-   * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
-   *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
-   * @param vectorB second vector
+   * Return a vector computed at fractional position between this vector and vectorB.
+   * @param fraction fractional position. 0 is at `this`. 1 is at `vectorB`. True fractions are "between",
+   * negatives are "before this", beyond 1 is "beyond vectorB".
+   * @param vectorB second vector.
    * @param result optional preallocated result.
    */
   public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
@@ -1223,9 +1223,10 @@ export class Vector3d extends XYZ {
     return result;
   }
   /**
-   * Return a (optionally new or reused) vector in the direction of `this` but with specified length.
+   * Return a vector in the direction of `this` but with specified length.
    * @param length desired length of vector
-   * @param result optional preallocated result
+   * @param result optional preallocated result to populate and return
+   * @returns scaled instance vector, or undefined if the instance magnitude is too small
    */
   public scaleToLength(length: number, result?: Vector3d): Vector3d | undefined {
     const mag = Geometry.correctSmallFraction(this.magnitude());
@@ -1242,8 +1243,8 @@ export class Vector3d extends XYZ {
     return this.crossProduct(vectorB, result).normalize(result);
   }
   /**
-   * Compute the cross product of this vector with `vectorB`.   Normalize it, using given xyz as
-   * default if length is zero.
+   * Compute the cross product of this vector with `vectorB` and normalize it.
+   * * If length is zero, return the vector given by x, y, z.
    * @param vectorB second vector of cross product
    * @param x x value for default result
    * @param y y value for default result
@@ -1488,10 +1489,10 @@ export class Vector3d extends XYZ {
     return Angle.createAtan2(this.crossProductXY(vectorB), this.dotProductXY(vectorB));
   }
   /**
-   * Return the angle in radians (not as strongly-typed Angle) from this vector to vectorB, measured
-   * in their containing plane whose normal lies in the same half-space as vectorW.
+   * Return the angle in radians (not as strongly-typed Angle) from `this` vector to `vectorB`, measured
+   * in their containing plane whose normal lies in the same half-space as `vectorW`.
    * * The returned angle is between `-Math.PI` and `Math.PI`.
-   * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
+   * * If the cross product of `this` vector and `vectorB` lies on the same side of the plane as `vectorW`,
    * this function returns `radiansTo(vectorB)`; otherwise, it returns `-radiansTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
    * * Use `planarRadiansTo` to measure the angle between vectors that are projected to another plane.
@@ -1499,6 +1500,7 @@ export class Vector3d extends XYZ {
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
   public signedRadiansTo(vectorB: Vector3d, vectorW: Vector3d): number {
+    // A.B = |A||B|cos(theta) and |AxB| = |A||B|sin(theta) so theta = arctan(|AxB|/A.B)
     const p = this.crossProduct(vectorB);
     const theta = Math.atan2(p.magnitude(), this.dotProduct(vectorB));
     if (vectorW.dotProduct(p) < 0.0)
@@ -1571,8 +1573,8 @@ export class Vector3d extends XYZ {
    * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
    * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison
-   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel
-   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel. Default false.
+   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value. Default false.
    * @param options optional radian and distance tolerances.
    */
   public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,

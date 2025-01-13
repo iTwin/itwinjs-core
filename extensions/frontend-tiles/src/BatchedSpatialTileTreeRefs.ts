@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@itwin/core-bentley";
+import { Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
   AnimationNodeId,
   AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
+  Viewport,
 } from "@itwin/core-frontend";
 import {  BatchedTileTreeReference, BatchedTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
 import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
@@ -17,6 +18,7 @@ import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
 import { BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { loggerCategory } from "./LoggerCategory";
 import { BatchedModelGroups } from "./BatchedModelGroups";
+import { Range3d } from "@itwin/core-geometry";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
@@ -139,6 +141,53 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
     }
   }
 
+  // Collects the TileTreeReferences for the models that need to be drawn to create the planar clip mask.
+  // For every model used by the mask (modelIds), extend the maskRange by that model's range.
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
+    for (const ref of this._refs) {
+      // For each ref, check to see whether one of the models that are needed are in its group's list of models.
+      const refModelIds = ref.groupModelIds;
+      if (refModelIds) {
+        let haveRefModel = false;
+        for (const modelId of modelIds) {
+          if (refModelIds.has(modelId)) {
+            if (!haveRefModel) {
+              maskTreeRefs.push(ref);
+              haveRefModel = true;
+            }
+            const modelRange = this._models.getModelExtents(modelId);
+            if (modelRange)
+              maskRange.extendRange(modelRange);
+          }
+        }
+      }
+    }
+    // Also need to collect refs from other tile trees which are not in the batched tile tree refs.
+    this._excludedRefs.collectMaskRefs(modelIds, maskTreeRefs, maskRange);
+  }
+
+  // Returns a list of the models that are NOT in the planar clip mask.
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
+    const modelsNotInMask: Id64String[] = [];
+    const includedModels = this._spec.models.keys();
+    if (useVisible) {
+      // All viewed models are in the mask, so get a list of all models which are not viewed.
+      for (const modelId of includedModels) {
+        if (!this._models.views(modelId))
+          modelsNotInMask.push(modelId);
+      }
+    } else {
+      // Get a list of all model which are NOT in the maskModels list.
+      const maskModelSet = new Set(maskModels);
+      for (const modelId of includedModels) {
+        if (!maskModelSet.has(modelId))
+          modelsNotInMask.push(modelId);
+      }
+    }
+    return modelsNotInMask.length > 0 ? modelsNotInMask : undefined;
+  }
+
+  // _view.models
   public setDeactivated(): void {
     // Used for debugging. Unimplemented here.
   }
@@ -181,16 +230,22 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
   // Retained if attachToViewport is called while we are still loading; and reset if detachFromViewport is called while loading.
   private _attachArgs?: AttachToViewportArgs;
 
-  public constructor(view: SpatialViewState, getSpec: Promise<BatchedTilesetSpec | null>) {
+  public constructor(view: SpatialViewState, getSpec: Promise<BatchedTilesetSpec | null>, nopFallback: boolean = false) {
     this._proxyRef = new ProxyTileTreeReference(view.iModel);
     getSpec.then((spec: BatchedTilesetSpec | null) => {
       if (spec) {
         this.setTreeRefs(new BatchedSpatialTileTreeReferences(spec, view));
-      } else {
+      } else if(nopFallback) {
+        this.setTreeRefs(new EmptySpatialTileTreeReferences());
+      }else {
         this.setTreeRefs(createSpatialTileTreeReferences(view));
       }
     }).catch(() => {
-      this.setTreeRefs(createSpatialTileTreeReferences(view));
+      if(nopFallback) {
+        this.setTreeRefs(new EmptySpatialTileTreeReferences());
+      }else {
+        this.setTreeRefs(createSpatialTileTreeReferences(view));
+      }
     });
   }
 
@@ -231,6 +286,17 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
       yield this._proxyRef;
     }
   }
+
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
+    this._impl?.collectMaskRefs(modelIds, maskTreeRefs, maskRange);
+  }
+
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
+    if (this._impl)
+      return this._impl.getModelsNotInMask(maskModels, useVisible);
+    else
+      return undefined;
+  }
 }
 
 const iModelToTilesetSpec = new Map<IModelConnection, BatchedTilesetSpec | null | Promise<BatchedTilesetSpec | null>>();
@@ -252,8 +318,26 @@ async function fetchTilesetSpec(iModel: IModelConnection, computeBaseUrl: Comput
   }
 }
 
+class EmptySpatialTileTreeReferences implements SpatialTileTreeReferences {
+  public update(): void {}
+
+  public setDeactivated(_modelIds: string | string[] | undefined, _deactivated: boolean | undefined, _refs: "all" | "animated" | "primary" | "section" | number[]): void {}
+
+  public attachToViewport(_args: Viewport): void {}
+
+  public detachFromViewport(): void {}
+
+  public collectMaskRefs(_modelIds: OrderedId64Iterable, _maskTreeRefs: TileTreeReference[]): void {};
+
+  public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): string[] | undefined {
+    return undefined;
+  }
+
+  public *[Symbol.iterator](): Iterator<TileTreeReference> {}
+}
+
 /** @internal */
-export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl): SpatialTileTreeReferences {
+export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl, nopFallback: boolean = false): SpatialTileTreeReferences {
   const iModel = view.iModel;
   let entry = iModelToTilesetSpec.get(iModel);
   if (undefined === entry) {
@@ -271,12 +355,17 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
   }
 
   if (null === entry) {
+    // No tileset could be obtained for this iModel - use empty tile tree if requested.
+    if (nopFallback) {
+      return new EmptySpatialTileTreeReferences();
+    }
+
     // No tileset could be obtained for this iModel - use default tile generation instead.
     return createSpatialTileTreeReferences(view);
   }
 
   if (entry instanceof Promise)
-    return new ProxySpatialTileTreeReferences(view, entry);
+    return new ProxySpatialTileTreeReferences(view, entry, nopFallback);
 
   return new BatchedSpatialTileTreeReferences(entry, view);
 }

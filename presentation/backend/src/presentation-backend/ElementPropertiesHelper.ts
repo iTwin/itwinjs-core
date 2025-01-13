@@ -6,54 +6,21 @@
  * @module Core
  */
 
-import { from, mergeAll, mergeMap, Observable, reduce } from "rxjs";
+import { bufferCount, defer, from, groupBy, map, mergeMap, Observable, ObservedValueOf, of, range, reduce } from "rxjs";
 import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
-import { assert, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { QueryRowProxy } from "@itwin/core-common";
 import {
-  CategoryDescription,
+  ContentDescriptorRequestOptions,
+  ContentRequestOptions,
   Descriptor,
-  ElementProperties,
-  ElementPropertiesItem,
-  ElementPropertiesPrimitiveArrayPropertyItem,
-  ElementPropertiesPropertyItem,
-  ElementPropertiesStructArrayPropertyItem,
-  IContentVisitor,
   Item,
+  KeySet,
   PresentationError,
   PresentationStatus,
-  ProcessFieldHierarchiesProps,
-  ProcessMergedValueProps,
-  ProcessPrimitiveValueProps,
-  PropertyValueFormat,
-  StartArrayProps,
-  StartCategoryProps,
-  StartContentProps,
-  StartFieldProps,
-  StartItemProps,
-  StartStructProps,
-  traverseContentItem,
+  Ruleset,
+  RulesetVariable,
 } from "@itwin/presentation-common";
-
-/** @internal */
-export const buildElementProperties = (descriptor: Descriptor, item: Item): ElementProperties => {
-  const builder = new ElementPropertiesBuilder();
-  traverseContentItem(builder, descriptor, item);
-  return builder.items[0];
-};
-
-/** @internal */
-export function getElementsCount(db: IModelDb, classNames?: string[]) {
-  const filter = createElementsFilter("e", classNames);
-  const query = `
-    SELECT COUNT(e.ECInstanceId)
-    FROM bis.Element e
-    ${filter ? `WHERE ${filter}` : ""}
-  `;
-
-  return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
-  });
-}
 
 /** @internal */
 export function parseFullClassName(fullClassName: string): [string, string] {
@@ -67,258 +34,273 @@ function getECSqlName(fullClassName: string) {
 }
 
 /** @internal */
-export function getClassesWithInstances(imodel: IModelDb, fullClassNames: string[]): Observable<string> {
-  return from(fullClassNames).pipe(
-    mergeMap((fullClassName) => {
-      const reader = imodel.createQueryReader(`
-        SELECT s.Name, c.Name
-        FROM ${getECSqlName(fullClassName)} e
-        JOIN meta.ECClassDef c ON c.ECInstanceId = e.ECClassId
-        JOIN meta.ECSchemaDef s on s.ECInstanceId = c.Schema.Id
-        GROUP BY c.ECInstanceId
-      `);
-      return from(reader.toArray() as Promise<[string, string][]>);
+export function getContentItemsObservableFromElementIds(
+  imodel: IModelDb,
+  contentDescriptorGetter: (
+    partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">,
+  ) => Promise<Descriptor | undefined>,
+  contentSetGetter: (
+    partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
+  ) => Promise<Item[]>,
+  elementIds: Id64String[],
+  classParallelism: number,
+  batchesParallelism: number,
+  batchSize: number,
+): { itemBatches: Observable<{ descriptor: Descriptor; items: Item[] }>; count: Observable<number> } {
+  return {
+    itemBatches: getElementClassesFromIds(imodel, elementIds).pipe(
+      mergeMap(
+        ({ classFullName, ids }) =>
+          getBatchedClassContentItems(
+            classFullName,
+            contentDescriptorGetter,
+            contentSetGetter,
+            () => createIdBatches(OrderedId64Iterable.sortArray(ids), batchSize),
+            batchesParallelism,
+          ),
+        classParallelism,
+      ),
+    ),
+    count: of(elementIds.length),
+  };
+}
+
+/** @internal */
+export function getContentItemsObservableFromClassNames(
+  imodel: IModelDb,
+  contentDescriptorGetter: (
+    partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">,
+  ) => Promise<Descriptor | undefined>,
+  contentSetGetter: (
+    partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
+  ) => Promise<Item[]>,
+  elementClasses: string[],
+  classParallelism: number,
+  batchesParallelism: number,
+  batchSize: number,
+): { itemBatches: Observable<{ descriptor: Descriptor; items: Item[] }>; count: Observable<number> } {
+  return {
+    itemBatches: getClassesWithInstances(imodel, elementClasses).pipe(
+      mergeMap(
+        (classFullName) =>
+          getBatchedClassContentItems(
+            classFullName,
+            contentDescriptorGetter,
+            contentSetGetter,
+            () => getBatchedClassElementIds(imodel, classFullName, batchSize),
+            batchesParallelism,
+          ),
+        classParallelism,
+      ),
+    ),
+    count: of(getElementsCount(imodel, elementClasses)),
+  };
+}
+
+function getBatchedClassContentItems(
+  classFullName: string,
+  contentDescriptorGetter: (
+    partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">,
+  ) => Promise<Descriptor | undefined>,
+  contentSetGetter: (
+    partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
+  ) => Promise<Item[]>,
+  batcher: () => Observable<Array<{ from: Id64String; to: Id64String }>>,
+  batchesParallelism: number,
+): Observable<{ descriptor: Descriptor; items: Item[] }> {
+  return defer(async () => {
+    const ruleset = createClassContentRuleset(classFullName);
+    const keys = new KeySet();
+    const descriptor = await contentDescriptorGetter({ rulesetOrId: ruleset, keys });
+    if (!descriptor) {
+      throw new PresentationError(PresentationStatus.Error, `Failed to get descriptor for class ${classFullName}`);
+    }
+    return { descriptor, keys, ruleset };
+  }).pipe(
+    // create elements' id batches
+    mergeMap((x) => batcher().pipe(map((batch) => ({ ...x, batch })))),
+    // request content for each batch, filter by IDs for performance
+    mergeMap(
+      ({ descriptor, keys, ruleset, batch }) =>
+        defer(async () => {
+          const filteringDescriptor = new Descriptor(descriptor);
+          filteringDescriptor.instanceFilter = {
+            selectClassName: classFullName,
+            expression: createElementIdsECExpressionFilter(batch),
+          };
+          return contentSetGetter({
+            rulesetOrId: ruleset,
+            keys,
+            descriptor: filteringDescriptor,
+          });
+        }).pipe(map((items) => ({ descriptor, items }))),
+      batchesParallelism,
+    ),
+  );
+}
+
+function createElementIdsECExpressionFilter(batch: Array<{ from: Id64String; to: Id64String }>): string {
+  let filter = "";
+  function appendCondition(cond: string) {
+    if (filter.length > 0) {
+      filter += " OR ";
+    }
+    filter += cond;
+  }
+  for (const item of batch) {
+    if (item.from === item.to) {
+      appendCondition(`this.ECInstanceId = ${item.from}`);
+    } else {
+      appendCondition(`this.ECInstanceId >= ${item.from} AND this.ECInstanceId <= ${item.to}`);
+    }
+  }
+  return filter;
+}
+
+function createClassContentRuleset(fullClassName: string): Ruleset {
+  const [schemaName, className] = parseFullClassName(fullClassName);
+  return {
+    id: `content/class-descriptor/${fullClassName}`,
+    rules: [
+      {
+        ruleType: "Content",
+        specifications: [
+          {
+            specType: "ContentInstancesOfSpecificClasses",
+            classes: {
+              schemaName,
+              classNames: [className],
+              arePolymorphic: false,
+            },
+            handlePropertiesPolymorphically: true,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+/** Given a list of element ids, group them by class name. */
+function getElementClassesFromIds(imodel: IModelDb, elementIds: string[]): Observable<{ classFullName: string; ids: Id64Array }> {
+  const elementIdsBatchSize = 5000;
+  return range(0, elementIds.length / elementIdsBatchSize).pipe(
+    mergeMap((batchIndex) => {
+      const idsFrom = batchIndex * elementIdsBatchSize;
+      const idsTo = Math.min(idsFrom + elementIdsBatchSize, elementIds.length);
+      return from(
+        imodel.createQueryReader(
+          `
+            SELECT ec_classname(e.ECClassId) className, GROUP_CONCAT(IdToHex(e.ECInstanceId)) ids
+            FROM bis.Element e
+            WHERE e.ECInstanceId IN (${elementIds.slice(idsFrom, idsTo).join(",")})
+            GROUP BY e.ECClassId
+          `,
+        ),
+      );
     }),
-    mergeAll(),
-    reduce<[string, string], Set<string>>((set, [schemaName, className]) => {
-      set.add(`${schemaName}.${className}`);
-      return set;
-    }, new Set()),
-    mergeMap((set) => [...set]),
+    map((row: QueryRowProxy): { className: string; ids: Id64Array } => ({ className: row.className, ids: row.ids.split(",") })),
+    groupBy(({ className }) => className),
+    mergeMap((groups) =>
+      groups.pipe(
+        reduce<ObservedValueOf<typeof groups>, { classFullName: string; ids: Id64Array }>(
+          (acc, g) => {
+            g.ids.forEach((id) => acc.ids.push(id));
+            return {
+              classFullName: g.className,
+              ids: acc.ids,
+            };
+          },
+          { classFullName: "", ids: [] },
+        ),
+      ),
+    ),
+  );
+}
+
+/** Given a list of full class names, get a stream of actual class names that have instances. */
+function getClassesWithInstances(imodel: IModelDb, fullClassNames: string[]): Observable<string> {
+  return from(fullClassNames).pipe(
+    mergeMap((fullClassName) =>
+      from(
+        imodel.createQueryReader(
+          `
+            SELECT ec_classname(e.ECClassId, 's.c') className
+            FROM ${getECSqlName(fullClassName)} e
+            GROUP BY e.ECClassId
+          `,
+        ),
+      ),
+    ),
+    map((row: QueryRowProxy): string => row.className),
+  );
+}
+
+/**
+ * Given a sorted list of ECInstanceIds and a batch size, create a stream of batches. Because the IDs won't necessarily
+ * be sequential, a batch is defined a list of from-to pairs.
+ * @internal
+ */
+export function createIdBatches(sortedIds: Id64String[], batchSize: number): Observable<Array<{ from: Id64String; to: Id64String }>> {
+  return range(0, sortedIds.length / batchSize).pipe(
+    map((batchIndex) => {
+      const sequences = new Array<{ from: Id64String; to: Id64String }>();
+      const startIndex = batchIndex * batchSize;
+      const endIndex = Math.min((batchIndex + 1) * batchSize, sortedIds.length) - 1;
+      let fromId = sortedIds[startIndex];
+      let to = {
+        id: sortedIds[startIndex],
+        localId: Id64.getLocalId(sortedIds[startIndex]),
+      };
+      for (let i = startIndex + 1; i <= endIndex; ++i) {
+        const currLocalId = Id64.getLocalId(sortedIds[i]);
+        if (currLocalId !== to.localId + 1) {
+          sequences.push({ from: fromId, to: sortedIds[i - 1] });
+          fromId = sortedIds[i];
+        }
+        to = { id: sortedIds[i], localId: currLocalId };
+      }
+      sequences.push({ from: fromId, to: sortedIds[endIndex] });
+      return sequences;
+    }),
+  );
+}
+
+/**
+ * Query all ECInstanceIds from given class and stream from-to pairs that batch the items into batches of `batchSize` size.
+ * @internal
+ */
+export function getBatchedClassElementIds(imodel: IModelDb, fullClassName: string, batchSize: number): Observable<Array<{ from: Id64String; to: Id64String }>> {
+  return from(imodel.createQueryReader(`SELECT IdToHex(ECInstanceId) id FROM ${getECSqlName(fullClassName)} ORDER BY ECInstanceId`)).pipe(
+    map((row): Id64String => row.id),
+    bufferCount(batchSize),
+    map((batch) => [{ from: batch[0], to: batch[batch.length - 1] }]),
   );
 }
 
 /** @internal */
-export async function getBatchedClassElementIds(
-  imodel: IModelDb,
-  fullClassName: string,
-  batchSize: number,
-): Promise<Array<{ from: Id64String, to: Id64String }>> {
-  const batches = [];
-  const reader = imodel.createQueryReader(`SELECT ECInstanceId id FROM ${getECSqlName(fullClassName)} ORDER BY ECInstanceId`);
-  let currId: Id64String | undefined;
-  let fromId: Id64String | undefined;
-  let count = 0;
-  while (await reader.step()) {
-    currId = reader.current.toRow().id as Id64String;
-    if (!fromId) {
-      fromId = currId;
+export function getElementsCount(db: IModelDb, classNames: string[]) {
+  const whereClause = (() => {
+    if (classNames === undefined || classNames.length === 0) {
+      return undefined;
     }
-    if (++count >= batchSize) {
-      batches.push({ from: fromId, to: currId });
-      fromId = undefined;
-      count = 0;
+    // check if list contains only valid class names
+    const classNameRegExp = new RegExp(/^[\w]+[.:][\w]+$/);
+    const invalidName = classNames.find((name) => !name.match(classNameRegExp));
+    if (invalidName) {
+      throw new PresentationError(
+        PresentationStatus.InvalidArgument,
+        `Encountered invalid class name - ${invalidName}.
+        Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`,
+      );
     }
-  }
-  if (fromId && currId) {
-    batches.push({ from: fromId, to: currId });
-  }
-  return batches;
-}
-
-function createElementsFilter(elementAlias: string, classNames?: string[]) {
-  if (classNames === undefined || classNames.length === 0) {
-    return undefined;
-  }
-
-  // check if list contains only valid class names
-  const classNameRegExp = new RegExp(/^[\w]+[.:][\w]+$/);
-  const invalidName = classNames.find((name) => !name.match(classNameRegExp));
-  if (invalidName) {
-    throw new PresentationError(
-      PresentationStatus.InvalidArgument,
-      `Encountered invalid class name - ${invalidName}.
-      Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`,
-    );
-  }
-
-  return `${elementAlias}.ECClassId IS (${classNames.join(",")})`;
-}
-
-interface IPropertiesAppender {
-  append(label: string, item: ElementPropertiesItem): void;
-  finish(): void;
-}
-
-class ElementPropertiesAppender implements IPropertiesAppender {
-  private _propertyItems: { [label: string]: ElementPropertiesItem } = {};
-  private _categoryItemAppenders: { [categoryName: string]: IPropertiesAppender } = {};
-  constructor(private _item: Item, private _onItemFinished: (item: ElementProperties) => void) {}
-
-  public append(label: string, item: ElementPropertiesItem): void {
-    this._propertyItems[label] = item;
-  }
-
-  public finish(): void {
-    // eslint-disable-next-line guard-for-in
-    for (const categoryName in this._categoryItemAppenders) {
-      const appender = this._categoryItemAppenders[categoryName];
-      appender.finish();
-    }
-
-    this._onItemFinished({
-      class: this._item.classInfo?.label ?? "",
-      id: this._item.primaryKeys[0]?.id ?? Id64.invalid,
-      label: this._item.label.displayValue,
-      items: this._propertyItems,
-    });
-  }
-
-  public getCategoryAppender(parentAppender: IPropertiesAppender, category: CategoryDescription): IPropertiesAppender {
-    let appender = this._categoryItemAppenders[category.name];
-    if (!appender) {
-      appender = new CategoryItemAppender(parentAppender, category);
-      this._categoryItemAppenders[category.name] = appender;
-    }
-    return appender;
-  }
-}
-
-class CategoryItemAppender implements IPropertiesAppender {
-  private _items: { [label: string]: ElementPropertiesItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _category: CategoryDescription) {}
-  public append(label: string, item: ElementPropertiesItem): void {
-    this._items[label] = item;
-  }
-  public finish(): void {
-    if (Object.keys(this._items).length === 0) {
-      return;
-    }
-
-    this._parentAppender.append(this._category.label, {
-      type: "category",
-      items: this._items,
-    });
-  }
-}
-
-class ArrayItemAppender implements IPropertiesAppender {
-  private _items: ElementPropertiesPropertyItem[] = [];
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartArrayProps) {}
-  public append(_label: string, item: ElementPropertiesItem): void {
-    assert(item.type !== "category");
-    this._items.push(item);
-  }
-  public finish(): void {
-    assert(this._props.valueType.valueFormat === PropertyValueFormat.Array);
-    if (this._props.valueType.memberType.valueFormat === PropertyValueFormat.Primitive) {
-      this._parentAppender.append(this._props.hierarchy.field.label, this.createPrimitivesArray());
-    } else {
-      this._parentAppender.append(this._props.hierarchy.field.label, this.createStructsArray());
-    }
-  }
-  private createPrimitivesArray(): ElementPropertiesPrimitiveArrayPropertyItem {
-    return {
-      type: "array",
-      valueType: "primitive",
-      values: this._items.map((item) => {
-        assert(item.type === "primitive");
-        return item.value;
-      }),
-    };
-  }
-  private createStructsArray(): ElementPropertiesStructArrayPropertyItem {
-    return {
-      type: "array",
-      valueType: "struct",
-      values: this._items.map((item) => {
-        assert(item.type === "struct");
-        return item.members;
-      }),
-    };
-  }
-}
-
-class StructItemAppender implements IPropertiesAppender {
-  private _members: { [label: string]: ElementPropertiesPropertyItem } = {};
-  constructor(private _parentAppender: IPropertiesAppender, private _props: StartStructProps) {}
-  public append(label: string, item: ElementPropertiesItem): void {
-    assert(item.type !== "category");
-    this._members[label] = item;
-  }
-  public finish(): void {
-    assert(this._props.valueType.valueFormat === PropertyValueFormat.Struct);
-    this._parentAppender.append(this._props.hierarchy.field.label, {
-      type: "struct",
-      members: this._members,
-    });
-  }
-}
-
-class ElementPropertiesBuilder implements IContentVisitor {
-  private _appendersStack: IPropertiesAppender[] = [];
-  private _items: ElementProperties[] = [];
-  private _elementPropertiesAppender: ElementPropertiesAppender | undefined;
-
-  public get items(): ElementProperties[] {
-    return this._items;
-  }
-
-  private get _currentAppender(): IPropertiesAppender {
-    const appender = this._appendersStack[this._appendersStack.length - 1];
-    assert(appender !== undefined);
-    return appender;
-  }
-
-  public startContent(_props: StartContentProps): boolean {
-    return true;
-  }
-  public finishContent(): void {}
-
-  public processFieldHierarchies(_props: ProcessFieldHierarchiesProps): void {}
-
-  public startItem(props: StartItemProps): boolean {
-    this._elementPropertiesAppender = new ElementPropertiesAppender(props.item, (item) => this._items.push(item));
-    this._appendersStack.push(this._elementPropertiesAppender);
-    return true;
-  }
-  public finishItem(): void {
-    this._appendersStack.pop();
-    assert(this._elementPropertiesAppender !== undefined);
-    this._elementPropertiesAppender.finish();
-    this._elementPropertiesAppender = undefined;
-  }
-
-  public startCategory(props: StartCategoryProps): boolean {
-    assert(this._elementPropertiesAppender !== undefined);
-    this._appendersStack.push(this._elementPropertiesAppender.getCategoryAppender(this._currentAppender, props.category));
-    return true;
-  }
-  public finishCategory(): void {
-    this._appendersStack.pop();
-  }
-
-  public startField(_props: StartFieldProps): boolean {
-    return true;
-  }
-  public finishField(): void {}
-
-  public startStruct(props: StartStructProps): boolean {
-    this._appendersStack.push(new StructItemAppender(this._currentAppender, props));
-    return true;
-  }
-  public finishStruct(): void {
-    this._appendersStack.pop()!.finish();
-  }
-
-  public startArray(props: StartArrayProps): boolean {
-    this._appendersStack.push(new ArrayItemAppender(this._currentAppender, props));
-    return true;
-  }
-  public finishArray(): void {
-    this._appendersStack.pop()!.finish();
-  }
-
-  public processMergedValue(props: ProcessMergedValueProps): void {
-    this._currentAppender.append(props.mergedField.label, {
-      type: "primitive",
-      value: "",
-    });
-  }
-  public processPrimitiveValue(props: ProcessPrimitiveValueProps): void {
-    this._currentAppender.append(props.field.label, {
-      type: "primitive",
-      value: props.displayValue?.toString() ?? "",
-    });
-  }
+    return `e.ECClassId IS (${classNames.join(",")})`;
+  })();
+  const query = `
+    SELECT COUNT(e.ECInstanceId)
+    FROM bis.Element e
+    ${whereClause ? `WHERE ${whereClause}` : ""}
+  `;
+  return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
+    return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
+  });
 }

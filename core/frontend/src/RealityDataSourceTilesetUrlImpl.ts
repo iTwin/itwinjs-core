@@ -25,6 +25,8 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   private _tilesetUrl: string | undefined;
   /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
   private _baseUrl: string = "";
+  /** Need to be passed down to child tile requests when requesting from blob storage, e.g. a Cesium export from the Mesh Export Service*/
+  private _searchParams: string = "";
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
@@ -69,8 +71,11 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   // otherwise the full path to root document is given.
   // The base URL contains the base URL from which tile relative path are constructed.
   // The tile's path root will need to be reinserted for child tiles to return a 200
+  // If the original url includes search paramaters, they are stored in _searchParams to be reinserted into child tile requests.
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
+    const newUrl = new URL(url);
+    this._searchParams = newUrl.search;
     urlParts.pop();
     if (urlParts.length === 0)
       this._baseUrl = "";
@@ -96,22 +101,39 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return request(url, "json");
   }
 
+  private isValidURL(url: string){
+    try {
+      new URL(url);
+    } catch {
+      return false;
+    }
+    return true;
+  }
+
+  /** Returns the tile URL.
+   * If the tile path is a relative URL, the base URL is prepended to it.
+   * For both absolute and relative tile path URLs, the search parameters are checked. If the search params are empty, the base URL's search params are appended to the tile path.
+   */
+  private getTileUrl(tilePath: string){
+    if (this.isValidURL(tilePath)) {
+      const url = new URL(tilePath);
+      return url.search === "" ? `${tilePath}${this._searchParams}` : tilePath;
+    }
+    return tilePath.includes("?") ? `${this._baseUrl}${tilePath}` : `${this._baseUrl}${tilePath}${this._searchParams}`;
+  }
+
   /**
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
-    const tileUrl = this._baseUrl + name;
-
-    return request(tileUrl, "arraybuffer");
+    return request(this.getTileUrl(name), "arraybuffer");
   }
 
   /**
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(name: string): Promise<any> {
-    const tileUrl = this._baseUrl + name;
-
-    return request(tileUrl, "json");
+    return request(this.getTileUrl(name), "json");
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {

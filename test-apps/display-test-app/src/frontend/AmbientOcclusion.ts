@@ -28,7 +28,7 @@ export class AmbientOcclusionEditor {
 
     const div = document.createElement("div");
 
-    const slidersDiv = document.createElement("div")!;
+    const slidersDiv = document.createElement("div");
 
     const showHideDropDowns = (show: boolean) => {
       const display = show ? "block" : "none";

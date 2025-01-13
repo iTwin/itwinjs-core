@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -89,10 +89,10 @@ export class SelectionHandler implements IDisposable {
    * Called when the selection changes. Handles this callback by first checking whether
    * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected onSelectionChanged = (evt: SelectionChangeEventArgs, provider: ISelectionProvider): void => {
-    if (!this.onSelect || !this.shouldHandle(evt))
+    if (!this.onSelect || !this.shouldHandle(evt)) {
       return;
+    }
 
     this._inSelect = true;
     this.onSelect(evt, provider);
@@ -101,8 +101,9 @@ export class SelectionHandler implements IDisposable {
 
   /** Called to check whether the event should be handled by this handler */
   protected shouldHandle(evt: SelectionChangeEventArgs): boolean {
-    if (this.name === evt.source)
+    if (this.name === evt.source) {
       return false;
+    }
     return true;
   }
 
@@ -125,8 +126,9 @@ export class SelectionHandler implements IDisposable {
    * @param level Level of the selection.
    */
   public addToSelection(keys: Keys, level: number = 0): void {
-    if (this._inSelect)
+    if (this._inSelect) {
       return;
+    }
 
     return this.manager.addToSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
@@ -137,8 +139,9 @@ export class SelectionHandler implements IDisposable {
    * @param level Level of the selection.
    */
   public removeFromSelection(keys: Keys, level: number = 0): void {
-    if (this._inSelect)
+    if (this._inSelect) {
       return;
+    }
 
     return this.manager.removeFromSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
@@ -149,8 +152,9 @@ export class SelectionHandler implements IDisposable {
    * @param level Level of the selection.
    */
   public replaceSelection(keys: Keys, level: number = 0): void {
-    if (this._inSelect)
+    if (this._inSelect) {
       return;
+    }
 
     return this.manager.replaceSelection(this.name, this.imodel, keys, level, this.rulesetId);
   }
@@ -160,8 +164,9 @@ export class SelectionHandler implements IDisposable {
    * @param level Level of the selection.
    */
   public clearSelection(level: number = 0): void {
-    if (this._inSelect)
+    if (this._inSelect) {
       return;
+    }
 
     return this.manager.clearSelection(this.name, this.imodel, level, this.rulesetId);
   }

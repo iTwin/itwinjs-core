@@ -9,7 +9,7 @@
 import { RpcOperation } from "../core/RpcOperation";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** An OpenAPI 3.0 root document object.
  * @internal
@@ -22,7 +22,7 @@ export interface OpenAPIDocument {
 
 /** An OpenAPI 3.0 info object.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in version 5.0.
+ * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export interface OpenAPIInfo {
   title: string;

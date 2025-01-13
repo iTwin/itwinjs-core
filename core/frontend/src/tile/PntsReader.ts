@@ -11,7 +11,7 @@ import { Point3d, Range3d } from "@itwin/core-geometry";
 import { BatchType, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelConnection } from "../IModelConnection";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTile } from "./internal";
@@ -54,7 +54,7 @@ interface CommonPntsProps {
   RGB565?: BinaryBodyReference; // eslint-disable-line @typescript-eslint/naming-convention
 
   extensions?: {
-    "3DTILES_draco_point_compression"?: DracoPointCloud; // eslint-disable-line @typescript-eslint/naming-convention
+    "3DTILES_draco_point_compression"?: DracoPointCloud;
   };
 
   // The following are currently ignored.
@@ -225,7 +225,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     try {
       const buf = new Uint8Array(stream.arrayBuffer, dataOffset + draco.byteOffset, draco.byteLength);
       props = await decodeDracoPointCloud(buf);
-    } catch (_) {
+    } catch {
       //
     }
   } else {
@@ -287,8 +287,8 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     features: features.toFeatureIndex(),
     voxelSize,
     colorFormat: "rgb",
-  }, iModel);
+  }, iModel) as RenderGraphic;
 
-  graphic = system.createBatch(graphic!, PackedFeatureTable.pack(featureTable), batchRange);
+  graphic = system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange);
   return { graphic, rtcCenter };
 }

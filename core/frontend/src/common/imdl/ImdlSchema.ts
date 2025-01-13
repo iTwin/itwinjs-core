@@ -10,12 +10,10 @@ import { ClipVectorProps, Range3dProps, TransformProps, XYProps, XYZProps } from
 import {
   ColorDefProps, FeatureIndexType, FillFlags, Gradient, ImageSourceFormat, LinePixels, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
-import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
-import { SurfaceType } from "../render/primitives/SurfaceParams";
-
-/* eslint-disable no-restricted-syntax */
+import { AuxChannelTableProps } from "../internal/render/AuxChannelTable";
+import { DisplayParams } from "../internal/render/DisplayParams";
+import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
+import { SurfaceType } from "../internal/render/SurfaceParams";
 
 /** Describes a [ColorDef]($common) as [r, g, b] with each component in [0..1].
  * @internal
@@ -135,6 +133,8 @@ export interface ImdlVertexTable {
   readonly width: number;
   /** The height of the lookup texture. */
   readonly height: number;
+  /** The size of the compressed data, only set if data is compressed. */
+  readonly compressedSize?: number;
   /** True if [[uniformColor]] has transparency or the embedded color table contains transparent colors. */
   readonly hasTranslucency: boolean;
   /** Describes the number (0, 1, or more than 1) of features contained in the vertex table. */
@@ -327,6 +327,8 @@ export interface ImdlSurface {
   readonly type: SurfaceType;
   /** The 24-bit indices into the [[ImdlVertexTable]] of each triangle's vertex. */
   readonly indices: string;
+  /** The number of indices, only set if data is compressed. */
+  readonly compressedIndexCount?: number;
   /** If true, the [[ImdlTextureMapping]] is applied regardless of [ViewFlags.textures]($common). */
   readonly alwaysDisplayTexture?: boolean;
   /** The quantization range for the UV coordinates. @see [QParams2d]($common). */

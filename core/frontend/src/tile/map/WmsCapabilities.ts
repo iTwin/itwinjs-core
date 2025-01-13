@@ -7,23 +7,10 @@
  */
 
 import { MapSubLayerProps } from "@itwin/core-common";
-import { request, RequestBasicCredentials, RequestOptions } from "../../request/Request";
+import { RequestBasicCredentials } from "../../request/Request";
 import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
 
-/**
- * fetch XML from HTTP request
- * @param url server URL to address the request
- * @internal
- */
-async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
-  const options: RequestOptions = {
-    timeout: 20000,
-    retryCount: 2,
-    auth: credentials,
-  };
-  return request(url, "text", options);
-}
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
   return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
 }
@@ -229,7 +216,7 @@ export class WmsCapabilities {
           tmpUrl.searchParams.append(paramKey, queryParams[paramKey]);
       });
     }
-    const xmlCapabilities = await getXml(tmpUrl.toString(), credentials);
+    const xmlCapabilities = await WmsUtilities.fetchXml(tmpUrl.toString(), credentials);
 
     if (!xmlCapabilities)
       return undefined;

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64Set } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ViewFlagOverrides,
@@ -12,7 +12,7 @@ import {
   formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedModels } from "./BatchedModels";
-import { ModelGroupInfo } from "./ModelGroup";
+import { ModelGroup, ModelGroupInfo } from "./ModelGroup";
 
 export interface BatchedTileTreeReferenceArgs {
   readonly models: BatchedModels;
@@ -38,6 +38,10 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     }
   }
 
+  public get groupModelIds(): Id64Set | undefined {
+    return (this._groupInfo as ModelGroup).modelIds;
+  }
+
   private get _groupInfo(): ModelGroupInfo {
     assert(this._groupIndex < this._args.groups.length);
     return this._args.groups[this._groupIndex];
@@ -53,6 +57,10 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
 
   protected override getClipVolume(): RenderClipVolume | undefined {
     return this._groupInfo.clip;
+  }
+
+  public override canSupplyToolTip() {
+    return false;
   }
 
   public getFeatureAppearance(

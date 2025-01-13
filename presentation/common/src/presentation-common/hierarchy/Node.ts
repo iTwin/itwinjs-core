@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -66,7 +66,6 @@ export interface Node {
   /**
    * Identifies whether the hierarchy level below this node supports filtering. If not, requesting either a hierarchy level descriptor or
    * a hierarchy level with [[HierarchyRequestOptions.instanceFilter]] will throw an error with [[PresentationStatus.InvalidArgument]] status.
-   * @beta
    */
   supportsFiltering?: boolean;
   /** Extended data injected into this node */
@@ -81,10 +80,10 @@ export interface Node {
  * @deprecated in 3.x. Use [[Node]].
  */
 export interface NodeJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   key: NodeKeyJSON;
   // TODO: rename to `label`
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   labelDefinition: LabelDefinitionJSON;
   description?: string;
   /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
@@ -105,7 +104,6 @@ export interface NodeJSON {
   isChecked?: boolean;
   /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   isCheckboxEnabled?: boolean;
-  /** @beta */
   supportsFiltering?: boolean;
   extendedData?: {
     [key: string]: any;
@@ -123,7 +121,6 @@ export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
  * @public
  * @deprecated in 3.x. Use [[PartialNode]].
  */
-// eslint-disable-next-line deprecation/deprecation
 export type PartialNodeJSON = AllOrNone<Partial<NodeJSON>, "key" | "labelDefinition">;
 
 type AllOrNone<T, P extends keyof T> = Omit<T, P> & ({ [K in P]?: never } | Required<Pick<T, P>>);
@@ -134,7 +131,7 @@ export namespace Node {
    * Serialize given [[Node]] to JSON
    * @deprecated in 3.x. Use [[Node]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(node: Node): NodeJSON {
     const { label, ...baseNode } = node;
     return {
@@ -144,7 +141,7 @@ export namespace Node {
   }
 
   /** @internal */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toPartialJSON(node: PartialNode): PartialNodeJSON {
     if (node.key === undefined) {
       return node;
@@ -161,21 +158,22 @@ export namespace Node {
    * Deserialize [[Node]] from JSON
    * @deprecated in 3.x. Use [[Node]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: NodeJSON | string): Node {
-    if (typeof json === "string")
+    if (typeof json === "string") {
       return JSON.parse(json, reviver);
+    }
     const { labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       key: NodeKey.fromJSON(json.key),
       label: labelDefinition,
     };
   }
 
   /** @internal */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromPartialJSON(json: PartialNodeJSON): PartialNode {
     if (json.key === undefined) {
       return json;
@@ -184,7 +182,7 @@ export namespace Node {
     const { key, labelDefinition, ...baseJson } = json;
     return {
       ...baseJson,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       key: NodeKey.fromJSON(key),
       label: labelDefinition,
     };
@@ -196,7 +194,7 @@ export namespace Node {
    * @internal
    */
   export function reviver(key: string, value: any): any {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return key === "" ? fromJSON(value) : value;
   }
 
@@ -206,11 +204,12 @@ export namespace Node {
    * @returns Deserialized nodes list
    * @internal
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function listFromJSON(json: NodeJSON[] | string): Node[] {
-    if (typeof json === "string")
+    if (typeof json === "string") {
       return JSON.parse(json, listReviver);
-    // eslint-disable-next-line deprecation/deprecation
+    }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return json.map((m) => fromJSON(m));
   }
 

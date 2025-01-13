@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, it } from "vitest";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
 import { IndexedPolyface } from "../../polyface/Polyface";
-import { IndexedPolyfaceWalker } from "../../polyface/PolyfaceWalker";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { IndexedPolyfaceWalker } from "../../polyface/PolyfaceWalker";
+import { Checker } from "../Checker";
 
-function verifyMonotoneArraySearch(ck: Checker, data: number[], name: String) {
+function verifyMonotoneArraySearch(ck: Checker, data: number[], name: string) {
   for (let i0 = 0; i0 + 1 < data.length; i0++) {
     for (let k = data[i0]; k < data[i0 + 1]; k++) {
       const i = IndexedPolyface.searchMonotoneNumbers(data, k);
@@ -41,7 +41,7 @@ function verifyEdgeMates(ck: Checker, polyface: IndexedPolyface) {
   }
   ck.testExactNumber(numFacets, facetIndex, "confirm facet count");
 }
-function checkWalkerPair(ck: Checker, action: String, walker0: IndexedPolyfaceWalker, walker1: IndexedPolyfaceWalker, walker1MayBeUndefined: boolean, walker2: IndexedPolyfaceWalker) {
+function checkWalkerPair(ck: Checker, action: string, walker0: IndexedPolyfaceWalker, walker1: IndexedPolyfaceWalker, walker1MayBeUndefined: boolean, walker2: IndexedPolyfaceWalker) {
   if (walker0.isValid) {
     if (!walker1.isValid) {
       if (!walker1MayBeUndefined)
@@ -93,7 +93,7 @@ it("edgeMatesI", () => {
   verifyEdgeMates(ck, polyface);
   let numMatched = 0;
   for (let k = 0; k < polyface.data.pointIndex.length; k++) {
-    const walker = IndexedPolyfaceWalker.createAtEdgeIndex(polyface, k)!;
+    const walker = IndexedPolyfaceWalker.createAtEdgeIndex(polyface, k);
     const walker1 = walker.edgeMate();
     checkWalkerPair(ck, "edgeMate", walker, walker1, true, walker1.edgeMate());
     if (walker1.isValid)

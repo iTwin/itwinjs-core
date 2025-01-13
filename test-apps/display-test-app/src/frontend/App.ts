@@ -11,7 +11,7 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
@@ -29,8 +29,9 @@ import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransfor
 import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
-import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
+import { DisplayTestAppAccuDraw, DrawingAidTestTool } from "./DrawingAidTestTool";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
+import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
@@ -41,12 +42,14 @@ import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { GltfDecorationTool } from "./GltfDecoration";
+import { TextDecorationTool } from "./TextDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
+import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
@@ -55,13 +58,15 @@ import { MacroTool } from "./MacroTools";
 import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
+import { ToggleSecondaryIModelTool } from "./TiledGraphics";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
+import { AddSeequentRealityModel } from "./RealityDataModel";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -237,6 +242,7 @@ export class DisplayTestApp {
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
+        accuDraw: new DisplayTestAppAccuDraw(),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
@@ -248,7 +254,6 @@ export class DisplayTestApp {
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
@@ -295,8 +300,8 @@ export class DisplayTestApp {
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line deprecation/deprecation
-        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
+      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line @typescript-eslint/no-deprecated
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
       await LocalhostIpcApp.startup(opts);
     }
 
@@ -315,6 +320,7 @@ export class DisplayTestApp {
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
+      CreateSectionDrawingTool,
       CreateWindowTool,
       DisableModelTransformsTool,
       DockWindowTool,
@@ -334,13 +340,17 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
+      MoveElementTool,
       OpenIModelTool,
       OpenRealityModelSettingsTool,
       OutputShadersTool,
       PlaceLineStringTool,
+      DynamicClassifierTool,
+      DynamicClipMaskTool,
       PullChangesTool,
       PushChangesTool,
       PurgeTileTreesTool,
+      AddSeequentRealityModel,
       RecordFpsTool,
       RecordTileSizesTool,
       RefreshTilesTool,
@@ -355,7 +365,9 @@ export class DisplayTestApp {
       SyncViewportFrustaTool,
       SyncViewportsTool,
       TerrainDrapeTool,
+      TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,
+      ToggleSecondaryIModelTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       ViewClipByElementGeometryTool,
@@ -374,6 +386,8 @@ export class DisplayTestApp {
     await HyperModeling.initialize();
     await EditTools.initialize();
     await MapLayersFormats.initialize();
+
+    EditTools.registerProjectLocationTools();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

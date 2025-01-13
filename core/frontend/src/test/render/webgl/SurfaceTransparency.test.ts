@@ -2,11 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
-import {
-  ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
-} from "@itwin/core-common";
+import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
@@ -18,9 +16,9 @@ import { Primitive } from "../../../render/webgl/Primitive";
 import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic } from "../../../render/webgl/Mesh";
 import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { createBlankConnection } from "../../createBlankConnection";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { MeshArgs } from "../../../render/MeshArgs";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const colors = new ColorIndex();
@@ -51,7 +49,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
   if (texture)
     args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
 
-  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
   return IModelApp.renderSystem.createMesh(params)!;
 }
 
@@ -67,7 +65,7 @@ describe("Surface transparency", () => {
   viewDiv.style.width = viewDiv.style.height = "100px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
 
     imodel = createBlankConnection();
@@ -77,14 +75,14 @@ describe("Surface transparency", () => {
       ownership: { iModel: imodel, key: imodel.transientIds.getNext() },
       image: { source: opaqueImage, transparency: TextureTransparency.Opaque },
     })!;
-    expect(opaqueTexture).not.to.be.undefined;
+    expect(opaqueTexture).toBeDefined();
 
     const translucentImage = ImageBuffer.create(new Uint8Array([255, 255, 255, 127]), ImageBufferFormat.Rgba, 1);
     translucentTexture = IModelApp.renderSystem.createTexture({
       ownership: { iModel: imodel, key: imodel.transientIds.getNext() },
       image: { source: translucentImage, transparency: TextureTransparency.Translucent },
     })!;
-    expect(translucentTexture).not.to.be.undefined;
+    expect(translucentTexture).toBeDefined();
 
     opaqueMaterial = createMaterial(1);
     translucentMaterial = createMaterial(0.5);
@@ -100,7 +98,7 @@ describe("Surface transparency", () => {
     viewport.dispose();
   });
 
-  after(async () => {
+  afterAll(async () => {
     if (imodel)
       await imodel.close();
 
@@ -108,15 +106,15 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const params = new RenderMaterial.Params();
     params.alpha = alpha;
     if (texture)
       params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const material = IModelApp.renderSystem.createMaterial(params, imodel);
-    expect(material).not.to.be.undefined;
+    expect(material).toBeDefined();
     return material!;
   }
 
@@ -126,17 +124,17 @@ describe("Surface transparency", () => {
     const graphic = setup(viewport.view as SpatialViewState);
 
     const mesh = graphic as MeshGraphic;
-    expect(mesh).instanceof(MeshGraphic);
+	  expect(mesh).instanceof(MeshGraphic);
     const primitive = (mesh as any)._primitives[0] as Primitive;
-    expect(primitive).instanceof(Primitive);
-    expect(primitive.cachedGeometry).instanceof(SurfaceGeometry);
+	  expect(primitive).instanceof(Primitive);
+	  expect(primitive.cachedGeometry).instanceof(SurfaceGeometry);
 
     const plan = createRenderPlanFromViewport(viewport);
     viewport.target.changeRenderPlan(plan);
 
     const primPass = primitive.getPass(viewport.target as Target);
-    expect(Pass.rendersOpaqueAndTranslucent(primPass)).to.be.false;
-    expect(Pass.toRenderPass(primPass as SinglePass)).to.equal(pass);
+	  expect(Pass.rendersOpaqueAndTranslucent(primPass)).toBe(false);
+	  expect(Pass.toRenderPass(primPass as SinglePass)).toEqual(pass);
   }
 
   function expectOpaque(setup: SetupFunc): void {
@@ -269,7 +267,7 @@ describe("Surface transparency", () => {
       ownership: { iModel: imodel, key: imodel.transientIds.getNext() },
       image: { source: img, transparency: TextureTransparency.Translucent },
     });
-    expect(tx).not.to.be.undefined;
+	  expect(tx).toBeDefined();
 
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));

@@ -84,6 +84,16 @@ export async function deleteElements(imodel: BriefcaseConnection, ids: string[])
   return basicManipulationIpc.deleteElements(compressIds(ids));
 }
 
+export async function addAllowedChannel(imodel: BriefcaseConnection, channelKey: string) {
+  await startCommand(imodel);
+  return basicManipulationIpc.addAllowedChannel(channelKey);
+}
+
+export async function removeAllowedChannel(imodel: BriefcaseConnection, channelKey: string) {
+  await startCommand(imodel);
+  return basicManipulationIpc.removeAllowedChannel(channelKey);
+}
+
 export async function initializeEditTools(): Promise<void> {
   return EditTools.initialize();
 }

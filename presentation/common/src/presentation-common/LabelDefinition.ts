@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -31,7 +31,7 @@ export namespace LabelCompositeValue {
    * Serialize given [[LabelCompositeValue]] to JSON
    * @deprecated in 3.x. Use [[LabelCompositeValue]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON {
     return { ...compositeValue };
   }
@@ -40,7 +40,7 @@ export namespace LabelCompositeValue {
    * Deserialize [[LabelCompositeValue]] from JSON
    * @deprecated in 3.x. Use [[LabelCompositeValue]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue {
     return { ...json };
   }
@@ -89,7 +89,7 @@ export namespace LabelDefinition {
    * Serialize given [[LabelDefinition]] to JSON
    * @deprecated in 3.x. Use [[LabelDefinition]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON {
     return { ...labelDefinition };
   }
@@ -98,10 +98,11 @@ export namespace LabelDefinition {
    * Deserialize [[LabelDefinition]] from JSON
    * @deprecated in 3.x. Use [[LabelDefinition]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition {
-    if (typeof json === "string")
+    if (typeof json === "string") {
       return JSON.parse(json);
+    }
     return { ...json };
   }
 

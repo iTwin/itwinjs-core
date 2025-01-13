@@ -28,7 +28,6 @@ const validTags = [
 
   // Following flags are added for Extension tooling (public-extension-api)
   "extensions",
-  "preview"
 ];
 
 function validateTags(path) {

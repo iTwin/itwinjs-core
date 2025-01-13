@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import * as ec from "../../presentation-common/EC";
 
 /**
@@ -51,8 +51,9 @@ export const createTestRelatedClassInfoWithOptionalRelationship = (props?: Parti
  */
 export const createTestRelationshipPath = (length: number = 2) => {
   const path = new Array<ec.RelatedClassInfo>();
-  while (length--)
+  while (length--) {
     path.push(createTestRelatedClassInfo());
+  }
   return path;
 };
 

@@ -15,13 +15,11 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
-import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ImdlModel } from "../common/imdl/ImdlModel";
 import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
-
-/* eslint-disable no-restricted-syntax */
+import { BatchOptions } from "../common/render/BatchOptions";
 
 /** @internal */
 export interface ImdlReaderResult extends IModelTileContent {
@@ -101,7 +99,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     modelGroups: args.modelGroups,
   };
 
-  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : parseImdlDocument({ ...parseOpts, timeline: args.timeline });
+  const document = args.parseDocument ? (await args.parseDocument(parseOpts)) : await parseImdlDocument({ ...parseOpts, timeline: args.timeline });
   if (isCanceled())
     return { isLeaf: true, readStatus: TileReadStatus.Canceled };
   else if (typeof document === "number")

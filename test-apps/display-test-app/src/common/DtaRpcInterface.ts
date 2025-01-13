@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager } from "@itwin/core-common";
+import { IModelRpcProps, RpcInterface, RpcManager, TextAnnotationProps, TextBlockGeometryProps } from "@itwin/core-common";
 import * as http from "http";
 import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
 
 /** Display Test App RPC interface. */
-export class DtaRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export class DtaRpcInterface extends RpcInterface {
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SVTRpcInterface";
 
@@ -31,4 +31,5 @@ export class DtaRpcInterface extends RpcInterface { // eslint-disable-line depre
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
+  public async produceTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotation: TextAnnotationProps, _debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> { return this.forward(arguments); }
 }

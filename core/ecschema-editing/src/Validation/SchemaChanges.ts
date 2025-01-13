@@ -7,8 +7,8 @@
  */
 
 import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
-  EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipConstraint,
-  Schema, SchemaItem, SchemaItemType, schemaItemTypeToString,
+  EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipClass, RelationshipConstraint,
+  Schema, SchemaItem, SchemaItemType,
 } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
@@ -268,6 +268,8 @@ export class SchemaChanges extends BaseSchemaChanges {
   private _schemaReferenceDeltas: SchemaReferenceDelta[] = [];
   private _customAttributeChanges: Map<string, CustomAttributeContainerChanges> = new Map();
   private _classChanges: Map<string, ClassChanges> = new Map();
+  private _entityClassChanges: Map<string, EntityClassChanges> = new Map();
+  private _relationshipClassChanges: Map<string, RelationshipClassChanges> = new Map();
   private _schemaItemChanges: Map<string, SchemaItemChanges> = new Map();
   private _enumerationChanges: Map<string, EnumerationChanges> = new Map();
   private _kindOfQuantityChanges: Map<string, KindOfQuantityChanges> = new Map();
@@ -292,6 +294,12 @@ export class SchemaChanges extends BaseSchemaChanges {
 
   /** Gets the ClassChanges Map. */
   public get classChanges(): Map<string, ClassChanges> { return this._classChanges; }
+
+  /** Gets the EntityClassChanges Map. */
+  public get entityClassChanges(): Map<string, EntityClassChanges> { return this._entityClassChanges; }
+
+  /** Gets the RelationshipClassChanges Map. */
+  public get relationshipClassChanges(): Map<string, RelationshipClassChanges> { return this._relationshipClassChanges; }
 
   /** Gets the SchemaItemChanges Map. */
   public get schemaItemChanges(): Map<string, SchemaItemChanges> { return this._schemaItemChanges; }
@@ -360,12 +368,16 @@ export class SchemaChanges extends BaseSchemaChanges {
     const schemaItemType = (schemaItem as SchemaItem).schemaItemType;
 
     switch (schemaItemType) {
-      case SchemaItemType.EntityClass:
       case SchemaItemType.Mixin:
-      case SchemaItemType.RelationshipClass:
       case SchemaItemType.StructClass:
       case SchemaItemType.CustomAttributeClass:
         this.addChangeToClassMap(change, schemaItem as AnyClass);
+        return;
+      case SchemaItemType.EntityClass:
+        this.addChangeToEntityClassMap(change, schemaItem as EntityClass);
+        return;
+      case SchemaItemType.RelationshipClass:
+        this.addChangeToRelationshipClassMap(change, schemaItem as RelationshipClass);
         return;
       case SchemaItemType.PropertyCategory:
       case SchemaItemType.Unit:
@@ -466,6 +478,28 @@ export class SchemaChanges extends BaseSchemaChanges {
     }
   }
 
+  private addChangeToEntityClassMap(change: ISchemaChange, ecClass: EntityClass) {
+    if (this.entityClassChanges.has(ecClass.name)) {
+      const existingChanges = this.entityClassChanges.get(ecClass.name);
+      existingChanges!.addChange(change);
+    } else {
+      const newChanges = new EntityClassChanges(this.schema, ecClass.name, ecClass.schemaItemType);
+      newChanges.addChange(change);
+      this.entityClassChanges.set(ecClass.name, newChanges);
+    }
+  }
+
+  private addChangeToRelationshipClassMap(change: ISchemaChange, ecClass: RelationshipClass) {
+    if (this.relationshipClassChanges.has(ecClass.name)) {
+      const existingChanges = this.relationshipClassChanges.get(ecClass.name);
+      existingChanges!.addChange(change);
+    } else {
+      const newChanges = new RelationshipClassChanges(this.schema, ecClass.name, ecClass.schemaItemType);
+      newChanges.addChange(change);
+      this.relationshipClassChanges.set(ecClass.name, newChanges);
+    }
+  }
+
   private addChangeToEnumerationMap(change: ISchemaChange, enumeration: Enumeration) {
     if (this.enumerationChanges.has(enumeration.name)) {
       const existingChanges = this.enumerationChanges.get(enumeration.name);
@@ -507,7 +541,6 @@ export class SchemaChanges extends BaseSchemaChanges {
 export class SchemaItemChanges extends BaseSchemaChanges {
   private _schemaItemType: SchemaItemType;
   private _schemaItemMissing?: SchemaItemMissing;
-  private _customAttributeChanges: Map<string, CustomAttributeContainerChanges> = new Map();
 
   /**
    * Initializes a new SchemaItemChanges instance.
@@ -530,11 +563,6 @@ export class SchemaItemChanges extends BaseSchemaChanges {
     return this._schemaItemMissing;
   }
 
-  /** Gets the Map of CustomAttributeContainerChanges. */
-  public get customAttributeChanges(): Map<string, CustomAttributeContainerChanges> {
-    return this._customAttributeChanges;
-  }
-
   /**
    * Adds the change to the appropriate change collection at this level or adds the change
    * to a Map of child changes will which propagate the change to lower levels.
@@ -554,9 +582,6 @@ export class SchemaItemChanges extends BaseSchemaChanges {
       this.propertyValueChanges.push(change as PropertyValueChange);
       return;
     }
-
-    if (this.isCAContainerChangeForThis(change.diagnostic, name))
-      this.addChangeToMap(this.customAttributeChanges, CustomAttributeContainerChanges, change, (change as CustomAttributeContainerChange).changeKey);
   }
 
   protected getSchemaItemNameFromChange(change: ISchemaChange): string | undefined {
@@ -572,9 +597,7 @@ export class SchemaItemChanges extends BaseSchemaChanges {
 export class ClassChanges extends SchemaItemChanges {
   private _baseClassDelta?: BaseClassDelta;
   private _propertyChanges: Map<string, PropertyChanges> = new Map();
-  private _entityMixinChanges: Map<string, EntityMixinChanges> = new Map();
-  private _sourceConstraintChanges: Map<string, RelationshipConstraintChanges> = new Map();
-  private _targetConstraintChanges: Map<string, RelationshipConstraintChanges> = new Map();
+  private _customAttributeChanges: Map<string, CustomAttributeContainerChanges> = new Map();
 
   /** Gets the BaseClassDelta change. Maybe undefined. */
   public get baseClassDelta(): BaseClassDelta | undefined {
@@ -586,10 +609,70 @@ export class ClassChanges extends SchemaItemChanges {
     return this._propertyChanges;
   }
 
+  /** Gets the Map of CustomAttributeContainerChanges. */
+  public get customAttributeChanges(): Map<string, CustomAttributeContainerChanges> {
+    return this._customAttributeChanges;
+  }
+
+  /**
+   * Adds the change to the appropriate change collection at this level or adds the change
+   * to a Map of child changes will which propagate the change to lower levels.
+   * @param change The ISchemaChange to add.
+   */
+  public override addChange(change: ISchemaChange): void {
+    super.addChange(change);
+
+    if (change.diagnostic.code === SchemaCompareCodes.BaseClassDelta) {
+      this._baseClassDelta = change as BaseClassDelta;
+      return;
+    }
+
+    if (Property.isProperty(change.diagnostic.ecDefinition)) {
+      this.addChangeToMap(this.propertyChanges, PropertyChanges, change, change.diagnostic.ecDefinition.name);
+      return;
+    }
+
+    if (this.isCAContainerChangeForThis(change.diagnostic, this.getSchemaItemNameFromChange(change))) {
+      this.addChangeToMap(this.customAttributeChanges, CustomAttributeContainerChanges, change, (change as CustomAttributeContainerChange).changeKey);
+      return;
+    }
+  }
+}
+
+/**
+ * An ISchemaChanges implementation for managing schema comparison diagnostics at the Class level.
+ * @alpha
+ */
+export class EntityClassChanges extends ClassChanges {
+  private _entityMixinChanges: Map<string, EntityMixinChanges> = new Map();
+
   /** Gets the EntityMixinChanges Map. */
   public get entityMixinChanges(): Map<string, EntityMixinChanges> {
     return this._entityMixinChanges;
   }
+
+  /**
+   * Adds the change to the appropriate change collection at this level or adds the change
+   * to a Map of child changes will which propagate the change to lower levels.
+   * @param change The ISchemaChange to add.
+   */
+  public override addChange(change: ISchemaChange): void {
+    super.addChange(change);
+
+    if (change.diagnostic.code === SchemaCompareCodes.EntityMixinMissing) {
+      this.addChangeToMap(this.entityMixinChanges, EntityMixinChanges, change, (change as EntityMixinChange).changeKey);
+      return;
+    }
+  }
+}
+
+/**
+ * An ISchemaChanges implementation for managing schema comparison diagnostics for RelationshipClasses.
+ * @alpha
+ */
+export class RelationshipClassChanges extends ClassChanges {
+  private _sourceConstraintChanges: Map<string, RelationshipConstraintChanges> = new Map();
+  private _targetConstraintChanges: Map<string, RelationshipConstraintChanges> = new Map();
 
   /** Gets the source RelationshipConstraintChanges Map. */
   public get sourceConstraintChanges(): Map<string, RelationshipConstraintChanges> {
@@ -608,21 +691,6 @@ export class ClassChanges extends SchemaItemChanges {
    */
   public override addChange(change: ISchemaChange): void {
     super.addChange(change);
-
-    if (change.diagnostic.code === SchemaCompareCodes.BaseClassDelta) {
-      this._baseClassDelta = change as BaseClassDelta;
-      return;
-    }
-
-    if (change.diagnostic.code === SchemaCompareCodes.EntityMixinMissing) {
-      this.addChangeToMap(this.entityMixinChanges, EntityMixinChanges, change, (change as EntityMixinChange).changeKey);
-      return;
-    }
-
-    if (Property.isProperty(change.diagnostic.ecDefinition)) {
-      this.addChangeToMap(this.propertyChanges, PropertyChanges, change, change.diagnostic.ecDefinition.name);
-      return;
-    }
 
     if (RelationshipConstraint.isRelationshipConstraint(change.diagnostic.ecDefinition)) {
       if (change.diagnostic.ecDefinition.isSource)
@@ -1007,7 +1075,7 @@ export class SchemaItemMissing extends SchemaItemChange {
   /** Gets a string representation of the change. */
   public toString(): string {
     const item = this.diagnostic.ecDefinition as SchemaItem;
-    const typeName = ECClass.isECClass(item) ? "Class" : schemaItemTypeToString(item.schemaItemType);
+    const typeName = ECClass.isECClass(item) ? "Class" : item.schemaItemType;
     return `${typeName}(${item.name})`;
   }
 }

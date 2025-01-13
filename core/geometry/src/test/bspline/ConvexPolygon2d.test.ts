@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -85,7 +85,7 @@ describe("ConvexPolygon2d", () => {
       Point2d.create(0, 10),
     ];
 
-    const hull = ConvexPolygon2d.createHull(points)!;
+    const hull = ConvexPolygon2d.createHull(points);
     checkHullRaysFromCentroid(hull, ck);
 
     const rayA = Ray2d.createOriginAndDirection(Point2d.create(0, 5), Vector2d.create(2, 0));
@@ -156,7 +156,7 @@ describe("ConvexPolygon2d", () => {
     }
 
     ck.checkpoint("ConvexHullQueries");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ describe("ConvexPolygon2d", () => {
       Point2d.create(13, 5),
     ];
     const insideBase = 5;
-    const hull = ConvexPolygon2d.createHull(points)!;
+    const hull = ConvexPolygon2d.createHull(points);
 
     for (let i = insideBase; i < points.length; i++) {
       ck.testTrue(hull.containsPoint(points[i]), "Point inside hull");
@@ -188,7 +188,7 @@ describe("ConvexPolygon2d", () => {
     checkHullChords(hull, 2, ck);
 
     ck.checkpoint("ConvexHullQueriesConstruction");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ describe("ConvexPolygon2d", () => {
       points.push(Sample.createRosePoint2d(theta * theta, a));
     }
 
-    const hull = ConvexPolygon2d.createHull(points)!;
+    const hull = ConvexPolygon2d.createHull(points);
 
     for (const i of points) {
       ck.testTrue(hull.containsPoint(i), "Point inside hull");
@@ -212,9 +212,9 @@ describe("ConvexPolygon2d", () => {
     // CheckHullChords (hull, hull.Points().size () / 3);   // This has nasty tolerance problems -- short edges, near-zero cross products
     checkHullRaysFromCentroid(hull, ck);
     const offsetDistance = 1.0;
-    const hull1 = ConvexPolygon2d.createHullIsValidCheck(hull.points)!;
+    const hull1 = ConvexPolygon2d.createHullIsValidCheck(hull.points);
     hull1.offsetInPlace(offsetDistance);
-    const hull2 = ConvexPolygon2d.createHullIsValidCheck(hull1.points)!;
+    const hull2 = ConvexPolygon2d.createHullIsValidCheck(hull1.points);
     hull2.offsetInPlace(0.01 * offsetDistance);
     const n = hull.points.length;
     ck.testExactNumber(n, countPointsInHull(hull1, hull.points));
@@ -251,7 +251,7 @@ describe("ConvexPolygon2d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [GrowableXYZArray.create(hull.points), GrowableXYZArray.create(hull1.points), GrowableXYZArray.create(hull2.points)]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConvexPolygon2d", "OffsetInPlace");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Ray2d", () => {
@@ -303,7 +303,7 @@ describe("ConvexPolygon2d", () => {
     ray3 = ray0.cwPerpendicularRay(ray1);
     checkResultArgIsUsed("cwPerpendicularRay", ray1, ray3, ray0.origin, Vector2d.create(4, -1));
     ck.checkpoint("Ray2d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ConvexPolygon2dEmptyCases", () => {
@@ -321,6 +321,6 @@ describe("ConvexPolygon2d", () => {
       const rayRange = hull1.clipRay(highRay);
       ck.testTrue(rayRange.isNull);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

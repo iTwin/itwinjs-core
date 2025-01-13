@@ -184,6 +184,13 @@ export class AttachModelMapLayerTool extends Tool {
 }
 
 // @beta
+export class AttachOgcApiFeaturesMapLayerTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AttachRealityModelTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -2276,6 +2283,14 @@ export class ToggleFrustumSnapshotTool extends Tool {
 }
 
 // @beta
+export class ToggleMaskFrustumTool extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleNormalMaps extends RenderTargetDebugControlToggleTool {
     // (undocumented)
     get aspect(): DebugControlBoolean;
@@ -2594,6 +2609,9 @@ export class UnsharpenEffect extends ConvolutionEffect {
     // (undocumented)
     static toolId: string;
 }
+
+// @alpha (undocumented)
+export function updateSliderValue(sliderCtrl: Slider, value: string): void;
 
 // @beta
 export class ViewportAddRealityModel extends Tool {

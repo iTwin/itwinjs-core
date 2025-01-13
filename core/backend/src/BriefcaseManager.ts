@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, StopWatch,
+  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -22,6 +22,9 @@ import { CheckpointManager, CheckpointProps, ProgressFunction } from "./Checkpoi
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { SchemaSync } from "./SchemaSync";
+import { _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { IModelNative } from "./internal/NativePlatform";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -52,6 +55,11 @@ export interface PushChangesArgs extends TokenArg {
   pushRetryCount?: number;
   /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
   pushRetryDelay?: BeDuration;
+  /**
+   *  For testing purpose
+   * @internal
+   */
+  noFastForward?: true;
 }
 
 /**
@@ -71,6 +79,25 @@ export type PullChangesArgs = ToChangesetArgs & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
+  /**
+   *  For testing purpose
+   * @internal
+   */
+  noFastForward?: true;
+};
+
+/** Arguments for [[BriefcaseManager.revertTimelineChanges]]
+ * @public
+ */
+export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
+  /** If present, a function called periodically during the download to indicate progress.
+   * @note return non-zero from this function to abort the download.
+   */
+  onProgress?: ProgressFunction;
+  /** The index of the changeset to revert to */
+  toIndex: ChangesetIndex;
+  /** If present, schema changes are skipped during the revert operation. */
+  skipSchemaChanges?: true;
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
@@ -142,7 +169,7 @@ export class BriefcaseManager {
       try {
         if (!IModelJsFs.lstatSync(bcPath)?.isDirectory)
           continue;
-      } catch (err) {
+      } catch {
         continue;
       }
 
@@ -155,8 +182,7 @@ export class BriefcaseManager {
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
             briefcaseList.push({ fileName, iTwinId: db.getITwinId(), iModelId: db.getIModelId(), briefcaseId: db.getBriefcaseId(), changeset: db.getCurrentChangeset(), fileSize });
             db.closeFile();
-          } catch (_err) {
-          }
+          } catch { }
         }
       }
     }
@@ -216,9 +242,23 @@ export class BriefcaseManager {
     try {
       await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
     } catch (error: unknown) {
-      if (arg.accessToken && arg.briefcaseId === undefined)
+      const errorMessage = `Failed to download briefcase to ${fileName}, errorMessage: ${(error as Error).message}`;
+      if (arg.accessToken && arg.briefcaseId === undefined) {
+        Logger.logInfo(loggerCategory, `${errorMessage}, releasing the briefcaseId...`);
         await this.releaseBriefcase(arg.accessToken, { briefcaseId, iModelId: arg.iModelId });
-
+      }
+      if (IModelJsFs.existsSync(fileName)) {
+        if (arg.accessToken && arg.briefcaseId === undefined)
+          Logger.logTrace(loggerCategory, `Deleting the file: ${fileName}...`);
+        else
+          Logger.logInfo(loggerCategory, `${errorMessage}, deleting the file...`);
+        try {
+          IModelJsFs.unlinkSync(fileName);
+          Logger.logInfo(loggerCategory, `Deleted ${fileName}`);
+        } catch (deleteError: unknown) {
+          Logger.logWarning(loggerCategory, `Failed to delete ${fileName}. errorMessage: ${(deleteError as Error).message}`);
+        }
+      }
       throw error;
     }
 
@@ -233,7 +273,7 @@ export class BriefcaseManager {
     };
 
     // now open the downloaded checkpoint and reset its BriefcaseId
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.ReadWrite);
     } catch (err: any) {
@@ -289,8 +329,7 @@ export class BriefcaseManager {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
         }
       }
-    } catch (error) {
-    }
+    } catch { }
 
     // first try to delete the briefcase file
     try {
@@ -309,8 +348,7 @@ export class BriefcaseManager {
         if (file.startsWith(fileName))
           this.deleteFile(path.join(dirName, file)); // don't throw on error
       }
-    } catch (err) {
-    }
+    } catch { }
   }
 
   /** Deletes a file
@@ -338,7 +376,7 @@ export class BriefcaseManager {
         return false;
 
       IModelJsFs.rmdirSync(folderPathname);
-    } catch (error) {
+    } catch {
       Logger.logError(loggerCategory, `Cannot delete folder: ${folderPathname}`);
       return false;
     }
@@ -404,20 +442,73 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps) {
-    if (changesetFile.changesType === ChangesetType.Schema)
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
+    if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db.nativeDb.applyChangeset(changesetFile);
-    db.changeset = db.nativeDb.getCurrentChangeset();
+    db[_nativeDb].applyChangeset(changesetFile, fastForward);
+    db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
     IModelJsFs.removeSync(changesetFile.pathname);
   }
 
   /** @internal */
+  public static async revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void> {
+    if (!db.isOpen || db[_nativeDb].isReadonly())
+      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to revert timeline changes");
+
+    let currentIndex = db.changeset.index;
+    if (currentIndex === undefined)
+      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+
+    if (!arg.toIndex) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be specified to revert changesets");
+    }
+    if (arg.toIndex > currentIndex) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be less than or equal to the current index");
+    }
+    if (!db.holdsSchemaLock) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot revert timeline changesets without holding a schema lock");
+    }
+
+    // Download change sets
+    const changesets = await IModelHost.hubAccess.downloadChangesets({
+      accessToken: arg.accessToken,
+      iModelId: db.iModelId,
+      range: { first: arg.toIndex, end: currentIndex },
+      targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
+      progressCallback: arg.onProgress,
+    });
+
+    if (changesets.length === 0)
+      return;
+
+    changesets.reverse();
+    db.clearCaches();
+
+    const stopwatch = new StopWatch(`Reverting changes`, true);
+    Logger.logInfo(loggerCategory, `Starting reverting timeline changes from ${arg.toIndex} to ${currentIndex}`);
+
+    /**
+     * Revert timeline changes from the current index to the specified index.
+     * It does not change parent of the current changeset.
+     * All changes during revert operation are stored in a new changeset.
+     * Revert operation require schema lock as we do not acquire individual locks for each element.
+     * Optionally schema changes can be skipped (required for schema sync case).
+     */
+    db[_nativeDb].revertTimelineChanges(changesets, arg.skipSchemaChanges ?? false);
+    Logger.logInfo(loggerCategory, `Reverted timeline changes from ${arg.toIndex} to ${currentIndex} (${stopwatch.elapsedSeconds} seconds)`);
+
+    changesets.forEach((changeset) => {
+      IModelJsFs.removeSync(changeset.pathname);
+    });
+    db.notifyChangesetApplied();
+  }
+
+  /** @internal */
   public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
-    if (!db.isOpen || db.nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
+    if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
     let currentIndex = db.changeset.index;
@@ -425,6 +516,10 @@ export class BriefcaseManager {
       currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
+
+    if (db[_nativeDb].hasPendingTxns() && reverse) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changesets when there are pending changes");
+    }
 
     // Download change sets
     const changesets = await IModelHost.hubAccess.downloadChangesets({
@@ -441,19 +536,58 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
-    for (const changeset of changesets) {
-      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-      Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-      await this.applySingleChangeset(db, changeset);
-      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+
+    let appliedChangesets = -1;
+    if (db[_nativeDb].hasPendingTxns() && !reverse && !arg.noFastForward) {
+      // attempt to perform fast forward
+      for (const changeset of changesets) {
+        // do not waste time on schema changesets. They cannot be fastforwarded.
+        if (changeset.changesType === ChangesetType.Schema || changeset.changesType === ChangesetType.SchemaSync)
+          break;
+
+        try {
+          const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+          Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description} using fast forward method`);
+          await this.applySingleChangeset(db, changeset, true);
+          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+          appliedChangesets++;
+          db.saveChanges();
+        } catch {
+          db.abandonChanges();
+          break;
+        }
+      }
     }
+
+    if (appliedChangesets < changesets.length - 1) {
+      db[_nativeDb].pullMergeBegin();
+      for (const changeset of changesets.filter((_, index) => index > appliedChangesets)) {
+        const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+        Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
+        try {
+          await this.applySingleChangeset(db, changeset, false);
+          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+        } catch (err: any) {
+          if (err instanceof Error) {
+            Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
+          }
+          db.abandonChanges();
+          db[_nativeDb].pullMergeEnd();
+          throw err;
+        }
+      }
+      db[_nativeDb].pullMergeEnd();
+      if (!db.isReadonly) {
+        db.saveChanges("Merge.");
+      }
+    }
+
     // notify listeners
     db.notifyChangesetApplied();
   }
-
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
-    const changesetProps = db.nativeDb.startCreateChangeset() as ChangesetFileProps;
+    const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;
     const fileSize = IModelJsFs.lstatSync(changesetProps.pathname)?.size;
@@ -467,10 +601,10 @@ export class BriefcaseManager {
       try {
         const accessToken = await IModelHost.getAccessToken();
         const index = await IModelHost.hubAccess.pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
-        db.nativeDb.completeCreateChangeset({ index });
-        db.changeset = db.nativeDb.getCurrentChangeset();
+        db[_nativeDb].completeCreateChangeset({ index });
+        db.changeset = db[_nativeDb].getCurrentChangeset();
         if (!arg.retainLocks)
-          await db.locks.releaseAllLocks();
+          await db.locks[_releaseAllLocks]();
 
         return;
       } catch (err: any) {
@@ -487,7 +621,7 @@ export class BriefcaseManager {
         };
 
         if (!shouldRetry()) {
-          db.nativeDb.abandonCreateChangeset();
+          db[_nativeDb].abandonCreateChangeset();
           throw err;
         }
       } finally {
@@ -504,6 +638,8 @@ export class BriefcaseManager {
     while (true) {
       try {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
+        if (!db.skipSyncSchemasOnPullAndPush)
+          await SchemaSync.pull(db);
         return await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)

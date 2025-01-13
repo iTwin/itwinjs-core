@@ -7,22 +7,29 @@ import { Id64 } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
 import { Drawing, SectionDrawing } from "../../Element";
-import { DocumentListModel, DrawingModel } from "../../Model";
+import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SectionDrawing", () => {
-  it("should round-trip through JSON", () => {
+  let imodel: SnapshotDb;
+  let documentListModelId: string;
+  before(() => {
     const iModelPath = IModelTestUtils.prepareOutputFile("SectionDrawing", "SectionDrawing.bim");
-    const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
+    imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
+    documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
+  });
 
+  after(() => {
+    imodel.close();
+  });
+
+  it("should round-trip through JSON", () => {
     // Insert a SectionDrawing
-    const documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
-
     const drawingId = imodel.elements.insertElement({
       classFullName: SectionDrawing.classFullName,
       model: documentListModelId,
-      code: Drawing.createCode(imodel, documentListModelId, "SectionDrawing"),
+      code: Drawing.createCode(imodel, documentListModelId, "SectionDrawingRoundTrip"),
     });
     expect(Id64.isValidId64(drawingId)).to.be.true;
 
@@ -74,7 +81,20 @@ describe("SectionDrawing", () => {
     // Expect persistent values
     expectProps(drawing);
     expectProps(drawing.toJSON());
+  });
 
-    imodel.close();
+  it("should create a SectionDrawing and SectionDrawingModel on insert", () => {
+    const sectionDrawingId = SectionDrawing.insert(imodel, documentListModelId, "SectionDrawingInsert");
+
+    expect(Id64.isValidId64(sectionDrawingId)).to.be.true;
+
+    const insertedSectionDrawing = imodel.elements.getElement(sectionDrawingId);
+
+    expect(insertedSectionDrawing instanceof SectionDrawing).to.be.true;
+
+    const insertedSectionDrawingModel = imodel.models.getModel(sectionDrawingId);
+
+    expect(insertedSectionDrawingModel.className).to.equal("SectionDrawingModel");
+    expect(insertedSectionDrawingModel instanceof SectionDrawingModel).to.be.true;
   });
 });

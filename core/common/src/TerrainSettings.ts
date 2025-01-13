@@ -16,6 +16,19 @@ import { BackgroundMapProps } from "./BackgroundMapSettings";
  */
 export type TerrainProviderName = string;
 
+/** Ids of [Cesium ION assets](https://cesium.com/platform/cesium-ion/content/) providing global terrain data.
+ * These values are appropriate to use with [[TerrainSettings.dataSource]] when [[TerrainSettings.providerName]] is set to "CesiumWorldTerrain".
+ * You may alternatively use the Id of any ION asset to which you have access.
+ * @see [[TerrainSettings.fromCesiumIonAsset]] to create TerrainSettings that obtain terrain from a specified ION asset.
+ * @public
+ */
+export enum CesiumTerrainAssetId {
+  /** Default [global 3d terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/). */
+  Default = "1",
+  /** Global 3d terrain that includes [bathymetry](https://cesium.com/platform/cesium-ion/content/cesium-world-bathymetry/) (seafloor) terrain. */
+  Bathymetry = "2426648",
+}
+
 /**  JSON representation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
  * @see [[BackgroundMapProps]]
@@ -27,6 +40,12 @@ export interface TerrainProps {
    * If omitted, it defaults to "CesiumWorldTerrain".
    */
   providerName?: string;
+  /** Identifies the specific terrain data source to be supplied by the [TerrainProvider]($frontend) identified by [[providerName]],
+   * for those providers that support multiple data sources.
+   * For example, the "CesiumWorldTerrain" provider uses this field to store a [[CesiumTerrainAssetId]].
+   * Default value: an empty string.
+   */
+  dataSource?: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration. Default value: 1.0 */
   exaggeration?: number;
   /**  Applying lighting can help to visualize subtle terrain variation.  Default value: true */
@@ -64,6 +83,12 @@ export class TerrainSettings {
    * Defaults to "CesiumWorldTerrain".
    */
   public readonly providerName: string;
+  /** Identifies the specific terrain data source to be supplied by the [TerrainProvider]($frontend) identified by [[providerName]],
+   * for those providers that support multiple data sources.
+   * For example, the "CesiumWorldTerrain" provider uses this field to store a [[CesiumTerrainAssetId]].
+   * Default value: an empty string.
+   */
+  public readonly dataSource: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled. 1.0 indicates no exaggeration. Default value: 1.0 */
   public readonly exaggeration: number;
   /**  Applying lighting can help to visualize subtle terrain variations. Default value: false */
@@ -80,11 +105,31 @@ export class TerrainSettings {
     return this._nonLocatable;
   }
 
-  constructor(providerName: string = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
-    this.providerName = providerName;
-    this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
-    this.applyLighting = applyLighting;
-    this.heightOrigin = heightOrigin;
+  /** @deprecated in 4.5.x. Use the overload that takes [[TerrainProps]]. */
+  constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+
+  constructor(props?: TerrainProps);
+
+  /** @internal */
+  constructor(providerNameOrProps: string | TerrainProps | undefined, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode) {
+    let providerName;
+    let dataSource;
+    let nonLocatable;
+    if (typeof providerNameOrProps === "string") {
+      providerName = providerNameOrProps;
+    } else if (providerNameOrProps) {
+      ({ providerName, dataSource, exaggeration, applyLighting, heightOrigin, heightOriginMode, nonLocatable } = providerNameOrProps);
+    }
+
+    this.providerName = providerName ?? "CesiumWorldTerrain";
+    this.dataSource = dataSource ?? "";
+    this.exaggeration = Math.min(100, Math.max(0.1, exaggeration ?? 1.0));
+    this.applyLighting = applyLighting ?? false;
+    this.heightOrigin = heightOrigin ?? 0.0;
+
+    if (true === nonLocatable)
+      this._nonLocatable = true;
+
     switch (heightOriginMode) {
       case TerrainHeightOriginMode.Ground:
       case TerrainHeightOriginMode.Geoid:
@@ -97,21 +142,26 @@ export class TerrainSettings {
   }
 
   public static fromJSON(json?: TerrainProps) {
-    if (undefined === json)
-      return new TerrainSettings();
+    return new TerrainSettings(json);
+  }
 
-    const providerName = json?.providerName ?? "CesiumWorldTerrain";
-    const settings = new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
-    if (true === json.nonLocatable)
-      settings._nonLocatable = true;
-
-    return settings;
+  /** Create settings that obtain terrain from a [Cesium ION asset](https://cesium.com/platform/cesium-ion/content/) such as
+   * one of those defined by [[CesiumTerrainAssetId]].
+   * @note You must ensure your Cesium ION account has access to the specified asset.
+   */
+  public static fromCesiumIonAsset(assetId: string = CesiumTerrainAssetId.Default, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings {
+    return TerrainSettings.fromJSON({
+      ...options,
+      dataSource: assetId,
+    });
   }
 
   public toJSON(): TerrainProps {
     const props: TerrainProps = { heightOriginMode: this.heightOriginMode };
     if ("CesiumWorldTerrain" !== this.providerName)
       props.providerName = this.providerName;
+    if (this.dataSource)
+      props.dataSource = this.dataSource;
     if (1 !== this.exaggeration)
       props.exaggeration = this.exaggeration;
     if (this.nonLocatable)
@@ -125,7 +175,7 @@ export class TerrainSettings {
   }
 
   public equals(other: TerrainSettings): boolean {
-    return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting
+    return this.providerName === other.providerName && this.dataSource === other.dataSource && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting
       && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.nonLocatable === other.nonLocatable;
   }
 
@@ -144,6 +194,7 @@ export class TerrainSettings {
 
     const props = {
       providerName: changedProps.providerName ?? this.providerName,
+      dataSource: changedProps.dataSource ?? this.dataSource,
       exaggeration: changedProps.exaggeration ?? this.exaggeration,
       nonLocatable: changedProps.nonLocatable ?? this.nonLocatable,
       applyLighting: changedProps.applyLighting ?? this.applyLighting,

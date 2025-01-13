@@ -18,6 +18,9 @@
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
     },
+    "ToggleMaskFrustum": {
+      "keyin": "fdt toggle maskfrustum"
+    },
     "ToggleNormalMaps": {
       "keyin": "fdt toggle normalmaps"
     },
@@ -213,6 +216,9 @@
     },
     "AttachArcGISFeatureMapLayerTool": {
       "keyin": "fdt attach arcgisfeature maplayer"
+    },
+    "AttachOgcApiFeaturesMapLayerTool": {
+      "keyin": "fdt attach ogcApiFeatures maplayer"
     },
     "AttachTileURLMapLayerTool": {
       "keyin": "fdt attach tileurl maplayer"

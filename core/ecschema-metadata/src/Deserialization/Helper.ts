@@ -31,6 +31,15 @@ type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
 
 /**
+ * Specifies the version specification for the schema
+ * @internal
+ */
+export interface ECSpecVersion {
+  readVersion: number;
+  writeVersion: number;
+}
+
+/**
  * This class properly handles the order the deserialization of ECSchemas and SchemaItems from serialized formats.
  * For example, when deserializing an ECClass most times all base class should be de-serialized before the given class.
  * @internal
@@ -154,7 +163,8 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     // Need to add this schema to the context to be able to locate schemaItems within the context.
-    this._context.addSchemaSync(schema);
+    if (!this._context.schemaExists(schema.schemaKey))
+      this._context.addSchemaSync(schema);
 
     // Load schema references first
     // Need to figure out if other schemas are present.
@@ -869,9 +879,13 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadPropertyTypes(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): Promise<void> {
 
-    const loadTypeName = async (typeName: string) => {
-      if (undefined === parsePrimitiveType(typeName))
+    const loadTypeName = async (typeName: string): Promise<ECObjectsStatus> => {
+      if (undefined === parsePrimitiveType(typeName)) {
+        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion))
+          return ECObjectsStatus.NewerECSpecVersion;
         await this.findSchemaItem(typeName);
+      }
+      return ECObjectsStatus.Success;
     };
 
     const lowerCasePropType = propType.toLowerCase();
@@ -879,7 +893,8 @@ export class SchemaReadHelper<T = unknown> {
     switch (lowerCasePropType) {
       case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
-        await loadTypeName(primPropertyProps.typeName);
+        if (await loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
+          (primPropertyProps as any).typeName = "string";
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
         return this.loadProperty(primProp, primPropertyProps, rawProperty);
 
@@ -891,7 +906,8 @@ export class SchemaReadHelper<T = unknown> {
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
-        await loadTypeName(primArrPropertyProps.typeName);
+        if (await loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
+          (primArrPropertyProps as any).typeName = "string";
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
         return this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
 
@@ -920,9 +936,13 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawProperty The serialized property data.
    */
   private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): void {
-    const loadTypeName = (typeName: string) => {
-      if (undefined === parsePrimitiveType(typeName))
+    const loadTypeName = (typeName: string): ECObjectsStatus => {
+      if (undefined === parsePrimitiveType(typeName)) {
+        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion))
+          return ECObjectsStatus.NewerECSpecVersion;
         this.findSchemaItemSync(typeName);
+      }
+      return ECObjectsStatus.Success;
     };
 
     const lowerCasePropType = propType.toLowerCase();
@@ -930,7 +950,8 @@ export class SchemaReadHelper<T = unknown> {
     switch (lowerCasePropType) {
       case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
-        loadTypeName(primPropertyProps.typeName);
+        if (loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
+          (primPropertyProps as any).typeName = "string";
         const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, primPropertyProps.typeName);
         return this.loadPropertySync(primProp, primPropertyProps, rawProperty);
 
@@ -942,7 +963,8 @@ export class SchemaReadHelper<T = unknown> {
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
-        loadTypeName(primArrPropertyProps.typeName);
+        if (loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
+          (primArrPropertyProps as any).typeName = "string";
         const primArrProp = (classObj as MutableClass).createPrimitiveArrayPropertySync(propName, primArrPropertyProps.typeName);
         return this.loadPropertySync(primArrProp, primArrPropertyProps, rawProperty);
 
@@ -1010,11 +1032,18 @@ export class SchemaReadHelper<T = unknown> {
   private async loadCustomAttributes(container: AnyCAContainer, caProviders: Iterable<CAProviderTuple>): Promise<void> {
     for (const providerTuple of caProviders) {
       // First tuple entry is the CA class name.
-      const caClass = await this.findSchemaItem(providerTuple[0]) as CustomAttributeClass;
+      const caClass = await this.findSchemaItem(providerTuple[0]);
+
+      // If custom attribute exist within the context and is referenced, validate the reference is defined in the container's schema
+      if (caClass && caClass.key.schemaName !== container.schema.name &&
+        !container.schema.getReferenceSync(caClass.key.schemaName)) {
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to load custom attribute ${caClass.fullName} from container ${container.fullName}, ${caClass.key.schemaName} reference not defined`);
+      }
 
       // Second tuple entry ia a function that provides the CA instance.
       const provider = providerTuple[1];
-      const customAttribute = provider(caClass);
+      const customAttribute = provider(caClass as CustomAttributeClass);
+
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
   }
@@ -1034,5 +1063,12 @@ export class SchemaReadHelper<T = unknown> {
       const customAttribute = provider(caClass);
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
+  }
+
+  public static isECSpecVersionNewer(ecSpecVersion?: ECSpecVersion): boolean {
+    if (ecSpecVersion === undefined || ecSpecVersion.readVersion === undefined || ecSpecVersion.writeVersion === undefined)
+      return false;
+
+    return ((ecSpecVersion.readVersion > Schema.currentECSpecMajorVersion) || (ecSpecVersion.readVersion === Schema.currentECSpecMajorVersion && ecSpecVersion.writeVersion > Schema.currentECSpecMinorVersion));
   }
 }

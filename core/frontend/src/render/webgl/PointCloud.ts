@@ -9,7 +9,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { FeatureIndexType } from "@itwin/core-common";
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { PointCloudArgs } from "../../common/internal/render/PointCloudPrimitive";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry } from "./CachedGeometry";
@@ -20,9 +20,13 @@ import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
-export class PointCloudGeometry extends CachedGeometry {
+export class PointCloudGeometry extends CachedGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "point-cloud" = "point-cloud" as const;
+  public readonly isInstanceable = false;
+  public noDispose = false;
   public readonly buffers: BuffersContainer;
   private readonly _vertices: QBufferHandle3d;
   private readonly _vertexCount: number;
@@ -38,8 +42,10 @@ export class PointCloudGeometry extends CachedGeometry {
   public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 
   public dispose() {
-    dispose(this.buffers);
-    dispose(this._vertices);
+    if (!this.noDispose) {
+      dispose(this.buffers);
+      dispose(this._vertices);
+    }
   }
 
   constructor(pointCloud: PointCloudArgs) {

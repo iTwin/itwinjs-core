@@ -55,18 +55,29 @@ export interface FormatsMap {
   [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
 }
 
-/** @alpha */
+/**
+ * Options for finding a formatter spec to use in [[KoqPropertyValueFormatter]].
+ * @public
+ */
 export interface FormatOptions {
+  /** Full name of the `KindOfQuantity`, e.g. `SchemaName:KoqName`. */
   koqName: string;
+  /** Unit system to use for formatting. */
   unitSystem?: UnitSystemKey;
 }
 
-/** @alpha */
+/**
+ * An utility for formatting property values based on `KindOfQuantity` and unit system.
+ * @public
+ */
 export class KoqPropertyValueFormatter {
   private _unitsProvider: UnitsProvider;
   private _defaultFormats?: FormatsMap;
 
-  constructor(private _schemaContext: SchemaContext, defaultFormats?: FormatsMap) {
+  constructor(
+    private _schemaContext: SchemaContext,
+    defaultFormats?: FormatsMap,
+  ) {
     this._unitsProvider = new SchemaUnitProvider(_schemaContext);
     this._defaultFormats = defaultFormats
       ? Object.entries(defaultFormats).reduce((acc, [phenomenon, unitSystemFormats]) => ({ ...acc, [phenomenon.toUpperCase()]: unitSystemFormats }), {})

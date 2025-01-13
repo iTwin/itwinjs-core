@@ -14,7 +14,7 @@ matchChildUrls:
 - [Common](./common/index.md)
 - [Geometry](./geometry/index.md)
 - [Presentation](../presentation/index.md)
-- [UI](./ui/index.md)
+- [UI](../ui/index.md)
 
 ### [Base Infrastructure Schemas (BIS)](../bis/index.md)
 

@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbOpcode, DbResult, IDisposable } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb } from "./internal/Symbols";
 
 /** Changed value type
  * @beta
@@ -56,14 +56,13 @@ export type AnyDb = IModelDb | ECDb;
  * @beta
 */
 export interface SqliteChangesetReaderArgs {
-  /** db from which schema will be read. It should be close to changeset.*/
-  readonly db?: AnyDb;
+  /** db from which schema will be read. It should be at or ahead of the latest changeset being opened.*/
+  readonly db: AnyDb;
   /** invert the changeset operations */
   readonly invert?: true;
   /** do not check if column of change match db schema instead ignore addition columns */
   readonly disableSchemaCheck?: true;
 }
-
 /**
  * Represent sqlite change.
  * @beta
@@ -78,7 +77,6 @@ export interface SqliteChange {
   /** columns in change */
   [key: string]: any;
 }
-
 /**
  * Read raw sqlite changeset from disk and enumerate changes.
  * It also optionally let you format change with schema from
@@ -86,13 +84,13 @@ export interface SqliteChange {
  * @beta
  */
 export class SqliteChangesetReader implements IDisposable {
-  private readonly _nativeReader = new IModelHost.platform.ChangesetReader();
+  private readonly _nativeReader = new IModelNative.platform.ChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
   protected constructor(
     /** db from where sql schema will be read */
-    public readonly db?: AnyDb,
+    public readonly db: AnyDb,
   ) { }
 
   /**
@@ -106,16 +104,55 @@ export class SqliteChangesetReader implements IDisposable {
     reader._nativeReader.openFile(args.fileName, args.invert ?? false);
     return reader;
   }
-
   /**
-   * Open local changes in iModel.
+   * Group changeset file into single changeset and open that changeset.
+   * @param args - The arguments for opening the changeset group. Requires an open db.
+   * @returns The SqliteChangesetReader instance.
+   */
+  public static openGroup(args: { readonly changesetFiles: string[] } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    if (args.changesetFiles.length === 0) {
+      throw new Error("changesetFiles must contain at least one file.");
+    }
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openGroup(args.changesetFiles, args.db[_nativeDb], args.invert ?? false);
+    return reader;
+  }
+  /**
+   * Open txn change in iModel.
    * @param args iModel and other options.
    * @returns SqliteChangesetReader instance
    */
-  public static openLocalChanges(args: { iModel: IModelJsNative.DgnDb, includeInMemoryChanges?: true } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+  public static openTxn(args: { txnId: Id64String } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    if (args.db instanceof ECDb) {
+      throw new Error("ECDb does not support openTxn");
+    }
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.openLocalChanges(args.iModel, args.includeInMemoryChanges ?? false, args.invert ?? false);
+    reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false);
+    return reader;
+  }
+  /**
+   * Writes the changeset to a file.
+   * @note can be use with openGroup() or openLocalChanges() to persist changeset.
+   * @param args - The arguments for writing to the file.
+   * @param args.fileName - The name of the file to write to.
+   * @param args.containsSchemaChanges - Indicates whether the changeset contains schema changes.
+   * @param args.overwriteFile - Indicates whether to override the file if it already exists. Default is false.
+   */
+  public writeToFile(args: { fileName: string, containsSchemaChanges: boolean, overwriteFile?: boolean }): void {
+    this._nativeReader.writeToFile(args.fileName, args.containsSchemaChanges, args.overwriteFile ?? false);
+  }
+  /**
+   * Open local changes in iModel.
+   * @param args iModel and other options.
+   * @param args.db must be of type IModelDb
+   * @returns SqliteChangesetReader instance
+   */
+  public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
     return reader;
   }
   /** check if schema check is disabled or not */
@@ -172,16 +209,11 @@ export class SqliteChangesetReader implements IDisposable {
    * @beta
    */
   public getPrimaryKeyColumnNames(): string[] {
-    const pks = [];
     const cols = this.getColumnNames(this.tableName);
     if (!this._disableSchemaCheck && cols.length !== this.columnCount)
       throw new Error(`changeset table ${this.tableName} columns count does not match db declared table. ${this.columnCount} <> ${cols.length}`);
 
-    for (let i = 0; i < this.columnCount; ++i)
-      if (this._nativeReader.isPrimaryKeyColumn(i))
-        pks.push(cols[i]);
-
-    return pks;
+    return this._nativeReader.getPrimaryKeyColumnIndexes().map((i) => cols[i]);
   }
   /** Get current change table.
    * @beta
@@ -190,6 +222,94 @@ export class SqliteChangesetReader implements IDisposable {
     return this._nativeReader.getTableName();
   }
   /**
+   * Get changed binary value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType;
+  }
+
+  /**
+   * Get changed binary value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined {
+    return this._nativeReader.getColumnValueBinary(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed double value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined {
+    return this._nativeReader.getColumnValueDouble(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed Id value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueId(columnIndex: number, stage: SqliteValueStage): Id64String | null | undefined {
+    return this._nativeReader.getColumnValueId(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed integer value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueInteger(columnIndex: number, stage: SqliteValueStage): number | null | undefined {
+    return this._nativeReader.getColumnValueInteger(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
+  }
+
+  /**
+   * Get changed text value for a column
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns value for changed column
+   * @beta
+   */
+  public getChangeValueText(columnIndex: number, stage: SqliteValueStage): string | null | undefined {
+    return this._nativeReader.getColumnValueText(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
+  }
+
+  /**
+   * Check if change value is null
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns true if value is null
+   * @beta
+   */
+  public isColumnValueNull(columnIndex: number, stage: SqliteValueStage): boolean | undefined {
+    return this._nativeReader.isColumnValueNull(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
+  }
+
+  /**
+   * Get change value type
+   * @param columnIndex index of column in current change
+   * @param stage old or new value for change.
+   * @returns change value type
+   * @beta
+   */
+  public getColumnValueType(columnIndex: number, stage: SqliteValueStage): DbValueType | undefined {
+    return this._nativeReader.getColumnValueType(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old) as DbValueType | undefined;
+  }
+
+  /**
    * Get changed value for a column
    * @param columnIndex index of column in current change
    * @param stage old or new value for change.
@@ -197,7 +317,7 @@ export class SqliteChangesetReader implements IDisposable {
    * @beta
    */
   public getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue {
-    return this._nativeReader.getColumnValue(columnIndex, stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+    return this._nativeReader.getColumnValue(columnIndex, stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   /**
    * Get all changed value in current change as array
@@ -206,7 +326,7 @@ export class SqliteChangesetReader implements IDisposable {
    * @beta
    */
   public getChangeValuesArray(stage: SqliteValueStage): SqliteValueArray | undefined {
-    return this._nativeReader.getRow(stage === "New" ? IModelJsNative.DbChangeStage.New : IModelJsNative.DbChangeStage.Old);
+    return this._nativeReader.getRow(stage === "New" ? DbChangeStage.New : DbChangeStage.Old);
   }
   /**
    * Get change as object and format its content.
@@ -267,9 +387,6 @@ export class SqliteChangesetReader implements IDisposable {
     const columns = this._schemaCache.get(tableName);
     if (columns)
       return columns;
-
-    if (!this.db)
-      throw new Error("getColumns() require db context to be provided.");
 
     return this.db.withPreparedSqliteStatement("SELECT [name] FROM PRAGMA_TABLE_INFO(?) ORDER BY [cid]", (stmt) => {
       stmt.bindString(1, tableName);

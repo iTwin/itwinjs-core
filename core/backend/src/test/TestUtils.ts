@@ -8,6 +8,7 @@ import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostOptions } from "../IModelHost";
+import { IModelNative } from "../internal/NativePlatform";
 
 /** Class for simple test timing */
 export class Timer {
@@ -36,7 +37,7 @@ export class DisableNativeAssertions implements IDisposable {
   private _native: IModelJsNative.DisableNativeAssertions | undefined;
 
   constructor() {
-    this._native = new IModelHost.platform.DisableNativeAssertions();
+    this._native = new IModelNative.platform.DisableNativeAssertions();
   }
 
   public dispose(): void {
@@ -60,12 +61,13 @@ export class TestUtils {
    * The provided config is used and will override any of the default values used in this method.
    *
    * The default includes:
-   * - concurrentQuery.current === 4
-   * - cacheDir === path.join(__dirname, ".cache")
+   * - cacheDir = path.join(__dirname, ".cache")
+   * - allowSharedChannel = false;
    */
   public static async startBackend(config?: IModelHostOptions): Promise<void> {
     const cfg = config ?? {};
     cfg.cacheDir = TestUtils.getCacheDir(cfg.cacheDir);
+    cfg.allowSharedChannel ??= false; // Override default to test shared channel enforcement. Remove in version 5.0.
     await IModelHost.startup(cfg);
   }
 

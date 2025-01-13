@@ -6,44 +6,43 @@
  * @module Editing
  */
 
-import { ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { Constant, ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor } from "./Editor";
 import { MutableConstant } from "./Mutable/MutableConstant";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type Constant.
  */
-export class Constants {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
+export class Constants extends SchemaItems {
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Constant, schemaEditor);
+  }
 
-  public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemKey> {
+    try {
+      const newConstant = await this.createSchemaItem<Constant>(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), name) as MutableConstant;
 
-    const newConstant = (await schema.createConstant(name)) as MutableConstant;
-    if (newConstant === undefined) {
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+      const newPhenomenon = (await this.getSchemaItem<Phenomenon>(phenomenon, SchemaItemType.Phenomenon));
+      newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
+
+      newConstant.setDefinition(definition);
+
+      if (numerator)
+        newConstant.setNumerator(numerator);
+
+      if (denominator)
+        newConstant.setDenominator(denominator);
+
+      if (displayLabel)
+        newConstant.setDisplayLabel(displayLabel);
+
+      return newConstant.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
     }
-
-    const newPhenomenon = (await this._schemaEditor.schemaContext.getSchemaItem<Phenomenon>(phenomenon));
-    if (newPhenomenon === undefined || newPhenomenon.schemaItemType !== SchemaItemType.Phenomenon) {
-      return { errorMessage: `Unable to locate phenomenon ${phenomenon.name}` };
-    }
-    newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
-    newConstant.setDefinition(definition);
-
-    if (numerator)
-      newConstant.setNumerator(numerator);
-
-    if (denominator)
-      newConstant.setDenominator(denominator);
-
-    if (displayLabel)
-      newConstant.setDisplayLabel(displayLabel);
-
-    return { itemKey: newConstant.key };
   }
 
   /**
@@ -51,19 +50,12 @@ export class Constants {
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
-  public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
-    if (constantProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
-
-    const newConstant = (await schema.createConstant(constantProps.name));
-    if (newConstant === undefined)
-      return { errorMessage: `Failed to create class ${constantProps.name} in schema ${schemaKey.toString(true)}.` };
-
-    await newConstant.fromJSON(constantProps);
-    return { itemKey: newConstant.key };
+  public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemKey> {
+    try {
+      const newConstant = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), constantProps);
+      return newConstant.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, constantProps.name!, schemaKey), e);
+    }
   }
 }

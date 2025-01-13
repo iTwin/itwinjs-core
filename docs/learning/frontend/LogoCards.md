@@ -24,12 +24,12 @@ Applications can customize the appearance of Logo Cards in .css files.
 
 Logo Cards use the following css classes for the `HTMLElement`s it uses:
 
-class | usage
----|---
-`logo-cards` | Div to position the logo dialog in the center of the screen
-`logo-card h2` | The style for the heading on each card
-`logo-card-message p` | The style for the notice on each card
-`logo-card-logo` | The style for the logo image on each card
+| class                 | usage                                                       |
+| --------------------- | ----------------------------------------------------------- |
+| `logo-cards`          | Div to position the logo dialog in the center of the screen |
+| `logo-card h2`        | The style for the heading on each card                      |
+| `logo-card-message p` | The style for the notice on each card                       |
+| `logo-card-logo`      | The style for the logo image on each card                   |
 
 ## Customizing the iTwin.js icon in Viewports
 

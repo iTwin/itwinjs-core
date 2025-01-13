@@ -7,20 +7,19 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
-import { RenderAreaPattern } from "../RenderSystem";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
-import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
+import { InstanceBuffers, InstancedGeometry, PatternBuffers } from "./InstancedGeometry";
 import { RenderCommands } from "./RenderCommands";
 import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { Range3d } from "@itwin/core-geometry";
 
 /** @internal */
 export class Primitive extends Graphic {
@@ -32,7 +31,7 @@ export class Primitive extends Graphic {
     this.cachedGeometry = cachedGeom;
   }
 
-  public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
+  public static create(geom: CachedGeometry | undefined, instances?: InstanceBuffers | PatternBuffers): Primitive | undefined {
     if (!geom)
       return undefined;
 
@@ -41,13 +40,7 @@ export class Primitive extends Graphic {
       if (instances instanceof PatternBuffers) {
         geom = InstancedGeometry.createPattern(geom, true, instances);
       } else {
-        assert(isInstancedGraphicParams(instances));
-        const range = InstanceBuffers.computeRange(geom.computeRange(), instances.transforms, instances.transformCenter);
-        const instanceBuffers = InstanceBuffers.create(instances, range);
-        if (!instanceBuffers)
-          return undefined;
-
-        geom = InstancedGeometry.create(geom, true, instanceBuffers);
+        geom = InstancedGeometry.create(geom, true, instances);
       }
     }
 
@@ -78,6 +71,10 @@ export class Primitive extends Graphic {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.cachedGeometry.collectStatistics(stats);
+  }
+
+  public override unionRange(range: Range3d) {
+    range.extendRange(this.cachedGeometry.computeRange());
   }
 
   public getPass(target: Target): Pass {

@@ -15,7 +15,7 @@ import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   ModelDisplayTransform,
   ModelDisplayTransformProvider,
-  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -27,10 +27,12 @@ import {
 } from "./TestConfig";
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
 import { Transform } from "@itwin/core-geometry";
+import { TestSnapshotConnection } from "./TestSnapshotConnection";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
   tests: TestConfigProps[];
+  reuseContext: boolean;
 }
 
 /** JSON representation of TestRunner. The tests inherit the base configuration options. */
@@ -45,6 +47,7 @@ export interface TestSetsProps extends TestConfigProps {
 interface TestContext {
   readonly iModel: IModelConnection;
   readonly externalSavedViews: ViewStateSpec[];
+  readonly iModelKey: string;
 }
 
 /** The view against which a specific TestCase is to be run. */
@@ -62,6 +65,8 @@ interface TestResult {
   numSelectedTiles: number;
   /** Approximate time in milliseconds before all tiles were ready for display. */
   tileLoadingTime: number;
+  /** The total number of milliseconds spent decoding content. */
+  tileDecodingTime: number;
   /** Amount of memory requested from the GPU for the graphics of the tiles selected for display. */
   selectedTileGpuBytes: number;
   /** Amount of memory requested from the GPU for the graphics of all tiles in the tile trees viewed by this test.
@@ -255,6 +260,9 @@ export class TestRunner {
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
       baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
+
+    let context: TestContext | undefined;
+
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
     for (const testProps of set.tests) {
@@ -262,6 +270,7 @@ export class TestRunner {
 
       // Ensure IModelApp is initialized with options required by this test.
       if (IModelApp.initialized && this.curConfig.requiresRestart(this.lastRestartConfig)) {
+        context = undefined;
         await IModelApp.shutdown();
       }
       if (!IModelApp.initialized) {
@@ -281,29 +290,41 @@ export class TestRunner {
       // Run test against all iModels matching the test config.
       const iModelNames = await this.getIModelNames();
       const originalViewName = this.curConfig.viewName;
+
       for (const iModelName of iModelNames) {
         this.curConfig.iModelName = iModelName;
         this.curConfig.viewName = originalViewName;
+        const iModelKey = this.curConfig.iModelId ? this.curConfig.iModelId : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
 
-        let context: TestContext;
         try {
-          context = await this.openIModel();
+          const reuseContext = context && set.reuseContext && context.iModelKey === iModelKey;
+          if (!reuseContext) {
+            if (context) {
+              await context?.iModel.close();
+            }
+            context = await this.openIModel();
+          } else {
+            context?.iModel.selectionSet.emptyAll();
+          }
         } catch (e: any) {
           await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
           continue;
         }
 
         try {
-          await this.runTests(context);
+          if (context) {
+            await this.runTests(context);
+          } else {
+            await this.logError(`Invalid test context on iModel ${iModelName}`);
+          }
         } catch {
           await this.logError(`Failed to run tests on iModel ${iModelName}`);
-        } finally {
-          await context.iModel.close();
         }
       }
       this._config.pop();
     }
 
+    await context?.iModel.close();
     this._config.pop();
   }
 
@@ -562,8 +583,12 @@ export class TestRunner {
     await viewport.waitForSceneCompletion();
     timer.stop();
 
+    const decodingTime = IModelApp.tileAdmin.statistics.decoding.total;
+    IModelApp.tileAdmin.resetStatistics();
+
     const selectedTiles = getSelectedTileStats(viewport);
     return {
+      tileDecodingTime: decodingTime,
       tileLoadingTime: timer.current.milliseconds,
       selectedTileIds: selectedTiles.ids,
       numSelectedTiles: selectedTiles.count,
@@ -686,11 +711,11 @@ export class TestRunner {
         throw new Error("Missing iTwinId for remote iModel");
       const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
       const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());
-      return { iModel, externalSavedViews };
+      return { iModel, externalSavedViews, iModelKey: this.curConfig.iModelId };
     } else {
       // Load local iModel and its saved views
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
-      const iModel = await SnapshotConnection.openFile(filepath);
+      const iModel = await TestSnapshotConnection.openFile(filepath);
 
       const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
       let externalSavedViews: ViewStateSpec[] = [];
@@ -706,7 +731,7 @@ export class TestRunner {
           };
         });
       }
-      return { iModel, externalSavedViews };
+      return { iModel, externalSavedViews, iModelKey: filepath };
     }
   }
 
@@ -883,6 +908,7 @@ export class TestRunner {
     rowData.set("Test Name", this.getTestName(test));
     rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
     if (!this._minimizeOutput) {
+      rowData.set("Tile Decoding Time", test.tileDecodingTime);
       rowData.set("Tile Loading Time", test.tileLoadingTime);
       rowData.set("Num Selected Tiles", test.numSelectedTiles);
       rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));

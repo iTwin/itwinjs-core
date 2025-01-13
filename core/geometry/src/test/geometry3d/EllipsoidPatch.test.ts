@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -70,7 +70,7 @@ describe("Ellipsoid", () => {
               const patch = EllipsoidPatch.createCapture(
                 ellipsoid.clone(),
                 AngleSweep.createStartEndRadians(theta0Radians, theta1Radians),
-                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians))!;
+                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians));
               const builder = PolyfaceBuilder.create();
               const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
               const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
@@ -100,7 +100,7 @@ describe("Ellipsoid", () => {
       x0 += 10.0 * xStep;  // extra gap per ellipsoid
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "PatchRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("IntersectRay", () => {
     const ck = new Checker();
@@ -168,7 +168,7 @@ describe("Ellipsoid", () => {
               const patch = EllipsoidPatch.createCapture(
                 ellipsoid.clone(),
                 AngleSweep.createStartEndRadians(theta0Radians, theta1Radians),
-                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians))!;
+                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians));
               const builder = PolyfaceBuilder.create();
               const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
               const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
@@ -207,7 +207,7 @@ describe("Ellipsoid", () => {
       x0 += 10.0 * xStep;  // extra gap per ellipsoid
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "IntersectRay");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("NoIntersections", () => {
     const ck = new Checker();
@@ -260,7 +260,7 @@ describe("Ellipsoid", () => {
       y0 += 50.0 * referenceSize;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "NoIntersections");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IntersectRayOutsidePatch", () => {
@@ -322,7 +322,7 @@ describe("Ellipsoid", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "IntersectRayOutsidePatch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Singular", () => {
@@ -357,7 +357,7 @@ describe("Ellipsoid", () => {
     ck.testUndefined(ellipsoidB.constantLongitudeArc(southPole, emptyInterval), "null arc C");
     ck.testUndefined(ellipsoidB.constantLatitudeArc(realInterval, northPole), "null arc D");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("EarthLikeExample", () => {
@@ -392,7 +392,7 @@ describe("Ellipsoid", () => {
         Sphere.createCenterRadius(hit.surfaceDetail.point, 0.03));
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthLikeExample");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NormalInversion", () => {
@@ -431,7 +431,7 @@ describe("Ellipsoid", () => {
           }
         }
       }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FrenetFrame", () => {
     const ck = new Checker();
@@ -474,7 +474,7 @@ describe("Ellipsoid", () => {
           }
         }
       }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ProjectSpacePoint", () => {
     const ck = new Checker();
@@ -525,7 +525,7 @@ describe("Ellipsoid", () => {
               const anglesA = patch.uvFractionToAngles(thetaFraction, phiFraction, distanceFromSurface);
               const rayA = patch.anglesToUnitNormalRay(anglesA)!;
               const anglesB = patch.projectPointToSurface(rayA.origin);
-              if (ck.testDefined(anglesB) && anglesB) {
+              if (ck.testDefined(anglesB)) {
                 const planeB = patch.ellipsoid.radiansToPointAndDerivatives(anglesB.longitudeRadians, anglesB.latitudeRadians, false);
                 GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(rayA.origin, planeB.origin), x0);
                 const vectorAB = Vector3d.createStartEnd(planeB.origin, rayA.origin);
@@ -542,18 +542,18 @@ describe("Ellipsoid", () => {
         }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "ProjectSpacePoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LocalToWorld", () => {
     const ck = new Checker();
     const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(undefined, tippedEarthEllipsoidMatrix()));
     for (const angles of [LongitudeLatitudeNumber.createDegrees(0, 0), LongitudeLatitudeNumber.createDegrees(20, 10)]) {
-      const xyz0 = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians)!;
+      const xyz0 = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians);
       const uvw0 = ellipsoid.worldToLocal(xyz0)!;
       const xyz1 = ellipsoid.localToWorld(uvw0);
       ck.testPoint3d(xyz0, xyz1, "world to local round trip", angles, xyz0, uvw0, xyz1);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SectionPlanes", () => {
@@ -593,12 +593,12 @@ describe("Ellipsoid", () => {
             const disk = Loop.create(arc);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, disk, x0, y0 + xShift);
           }
-          if (ck.testDefined(arc, "Expect good section arc", prettyPrint(plane), prettyPrint(ellipsoid)) && arc) {
+          if (ck.testDefined(arc, "Expect good section arc", prettyPrint(plane), prettyPrint(ellipsoid))) {
             for (const fraction of [0, 0.25, 0.6, 0.8, 0.95]) {
               const pointOnArc = arc.fractionToPoint(fraction);
               ck.testTrue(plane.isPointInPlane(pointOnArc));
               const angles = ellipsoid.projectPointToSurface(pointOnArc);
-              if (ck.testDefined(angles) && angles) {
+              if (ck.testDefined(angles)) {
                 const pointOnEllipsoid = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians);
                 ck.testPoint3d(pointOnArc, pointOnEllipsoid, "section point is on the ellipsoid");
               }
@@ -609,7 +609,7 @@ describe("Ellipsoid", () => {
       x0 += xShift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "PlaneSections");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("GreatArc", () => {
     const ck = new Checker();
@@ -692,7 +692,7 @@ describe("Ellipsoid", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "GreatArcsSmallEllipsoids");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DegenerateGreatArc", () => {
     const ck = new Checker();
@@ -704,7 +704,7 @@ describe("Ellipsoid", () => {
     ck.testUndefined(section, "confirm great arc failure for identical points");
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "DegenerateGreatArc");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PathsOnEllipsoid", () => {
     const ck = new Checker();
@@ -760,7 +760,7 @@ describe("Ellipsoid", () => {
       x0 += 10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "PathOptions");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Silhouette", () => {
     const ck = new Checker();
@@ -782,7 +782,7 @@ describe("Ellipsoid", () => {
           for (const arcFraction of [0, 0.25, 0.4, 0.8]) {
             const q = arc.fractionToPoint(arcFraction);
             const angles = ellipsoid.projectPointToSurface(q);
-            if (ck.testDefined(angles) && angles) {
+            if (ck.testDefined(angles)) {
               ck.testCoordinate(0.0, angles.altitude, "silhouette arc points are on ellipsoid");
               const surfaceNormal = ellipsoid.radiansToUnitNormalRay(angles.longitudeRadians, angles.latitudeRadians)!;
               const vectorToEye = eyePoint.crossWeightedMinusPoint3d(q);
@@ -796,7 +796,7 @@ describe("Ellipsoid", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "Silhouette");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SilhouetteA", () => {
@@ -817,7 +817,7 @@ describe("Ellipsoid", () => {
     // expect failure for interior point ..
     const silhouetteInside = ellipsoid.silhouetteArc(Point4d.create(100, 100, 200, 1));
     ck.testUndefined(silhouetteInside);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "SilhouetteA");
   });
 
@@ -835,7 +835,7 @@ describe("Ellipsoid", () => {
     const pointA = ellipsoid.localToWorld({ x: 0.2, y: 0.5, z: 0.6 });    // definitely inside !
     const pointB = ellipsoid.localToWorld({ x: 1.2, y: 0.5, z: 0.6 });    // definitely outside !
     GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     ck.testTrue(ellipsoid.isPointOnOrInside(pointA));
     ck.testFalse(ellipsoid.isPointOnOrInside(pointB));
 
@@ -901,7 +901,7 @@ describe("Ellipsoid", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "ArcClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("EarthClip", () => {
@@ -910,14 +910,14 @@ describe("Ellipsoid", () => {
     const x0 = 0;
     const y0 = 0;
     const z0 = 0;
-    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix())!;
+    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix());
     GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0, z0);
     const z1 = ellipsoid.transformRef.multiplyComponentXYZ(2, 0, 0, 1.5);
 
     const point0 = ellipsoid.transformRef.multiplyXYZ(2, 0, 0);
     const point1 = ellipsoid.transformRef.multiplyXYZ(0, -0.2, 1);
     const point2 = ellipsoid.transformRef.multiplyXYZ(-1, -1, 1);
-    const arc012 = Arc3d.createCircularStartMiddleEnd(point0, point1, point2)!;
+    const arc012 = Arc3d.createCircularStartMiddleEnd(point0, point1, point2);
     const segment01 = LineSegment3d.create(point0, point1);
     const segment12 = LineSegment3d.create(point0, point2);
     for (const curve of [segment01, segment12, arc012]) {
@@ -932,12 +932,12 @@ describe("Ellipsoid", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("EarthPatchOffsetRange", () => {
     const ck = new Checker();
-    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix())!;
+    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix());
     // this shares the ellipsoid ... should work fine ...
     for (const patch of [
       EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
@@ -954,7 +954,7 @@ describe("Ellipsoid", () => {
       ck.testTrue(range.zLength() < a * range20.zLength(), "z range");
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthPatchOffsetRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SphereOffsetPatchRange", () => {
@@ -992,7 +992,7 @@ describe("Ellipsoid", () => {
       GeometryCoreTestIO.consoleLog({ offset: offsetDistance, finalMaxDiffs: [maxDiff4, maxDiff10] });
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthPatchOffsetRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1025,7 +1025,7 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       angleB.longitudeRadians, angleB.latitudeRadians);
     GeometryCoreTestIO.captureGeometry(allGeometry,
       LineString3d.create(center.interpolate(1.4, startPoint), center, center.interpolate(1.4, endPoint)), x0, y0);
-    if (ck.testDefined(arc) && arc) {
+    if (ck.testDefined(arc)) {
       const arc1 = arc.clone();
       arc1.scaleAboutCenterInPlace(1.4);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, x0, y0);
@@ -1041,8 +1041,8 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       GeometryCoreTestIO.captureMesh(allGeometry, EllipsoidPatch.createCapture(ellipsoid1, fullCircle, tropic), 32, 4, x0, y1);
       const arcLength = arc.curveLength();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y1);
-      const arcA = ellipsoid.sectionArcWithIntermediateNormal(angleA, 0.0, angleB)!;
-      const arcB = ellipsoid.sectionArcWithIntermediateNormal(angleA, 1.0, angleB)!;
+      const arcA = ellipsoid.sectionArcWithIntermediateNormal(angleA, 0.0, angleB);
+      const arcB = ellipsoid.sectionArcWithIntermediateNormal(angleA, 1.0, angleB);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB], x0, y1);
 
       for (const angle of [/* Angle.createDegrees(10), Angle.createDegrees(5), */ Angle.createDegrees(2)]) {

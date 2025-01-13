@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -43,7 +43,6 @@ export interface Ruleset {
    * Defaults to `0.0.0`.
    *
    * @pattern ^[\d]+\.[\d]+\.[\d]+$
-   * @beta
    */
   version?: string;
 

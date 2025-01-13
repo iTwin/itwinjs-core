@@ -95,6 +95,10 @@ class ViewController: ObservableObject {
         let main = URL(fileURLWithPath: mainPath)
         log("(ios): Running tests.")
         host.loadBackend(main, withAuthClient: nil, withInspect: true) { [self] (numFailed: UInt32) in
+#if targetEnvironment(simulator)
+            log("[Mocha_Result_XML_File]: \(testResultsUrl.path)")
+#else
+            log("(ios): Starting Mocha Result XML dump...")
             do {
                 let text = try String(contentsOf: testResultsUrl, encoding: .utf8)
                 for line in text.components(separatedBy: .newlines) {
@@ -103,6 +107,8 @@ class ViewController: ObservableObject {
             } catch {
                 log("(ios): Failed to read mocha test results.")
             }
+            log("(ios): Mocha Result XML dump complete.")
+#endif
 
             // Indicate via UI that the tests have finished.
             self.testStatus = "Tests finished."

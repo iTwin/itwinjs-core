@@ -604,6 +604,7 @@ interface MapTreeId {
   tileUserId: number;
   applyTerrain: boolean;
   terrainProviderName: string;
+  terrainDataSource: string;
   terrainHeightOrigin: number;
   terrainHeightOriginMode: number;
   terrainExaggeration: number;
@@ -671,13 +672,16 @@ class MapTreeSupplier implements TileTreeSupplier {
                           // Terrain-only settings.
                           cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
                           if (0 === cmp) {
-                            cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
+                            cmp = compareStringsOrUndefined(lhs.terrainDataSource, rhs.terrainDataSource);
                             if (0 === cmp) {
-                              cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                              cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
                               if (0 === cmp) {
-                                cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
-                                if (0 === cmp)
-                                  cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
+                                cmp = compareNumbers(lhs.terrainHeightOriginMode, rhs.terrainHeightOriginMode);
+                                if (0 === cmp) {
+                                  cmp = compareNumbers(lhs.terrainExaggeration, rhs.terrainExaggeration);
+                                  if (0 === cmp)
+                                    cmp = compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry);
+                                }
                               }
                             }
                           }
@@ -720,11 +724,12 @@ class MapTreeSupplier implements TileTreeSupplier {
     let applyTerrain = id.applyTerrain;
     const modelId = iModel.transientIds.getNext();
     const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
-
     const terrainOpts: TerrainMeshProviderOptions = {
       wantSkirts: id.wantSkirts,
       exaggeration: id.terrainExaggeration,
       wantNormals: id.wantNormals,
+      dataSource: id.terrainDataSource,
+      produceGeometry: id.produceGeometry,
     };
 
     if (id.applyTerrain) {
@@ -825,7 +830,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public override get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
-  public override get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
+  public override get planarClipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     if (!this._settings.applyTerrain || this._isDrape)
@@ -922,6 +927,7 @@ export class MapTileTreeReference extends TileTreeReference {
       tileUserId: this._tileUserId,
       applyTerrain: this.settings.applyTerrain && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
+      terrainDataSource: this.settings.terrainSettings.dataSource,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,
       terrainHeightOriginMode: this.settings.terrainSettings.heightOriginMode,
       terrainExaggeration: this.settings.terrainSettings.exaggeration,
@@ -974,13 +980,16 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   public initializeLayers(context: SceneContext): boolean {
+    let hasLoadedTileTree = false;
     const tree = this.treeOwner.load() as MapTileTree;
-    if (undefined === tree)
-      return false;     // Not loaded yet.
+    if (undefined === tree) {
+      return hasLoadedTileTree;     // Not loaded yet.
+    }
 
     tree.layerImageryTrees.length = 0;
-    if (0 === this._layerTrees.length)
+    if (0 === this._layerTrees.length) {
       return !this.isOverlay;
+    }
 
     let treeIndex = this._layerTrees.length - 1;
     // Start displaying at the highest completely opaque layer...
@@ -992,14 +1001,23 @@ export class MapTileTreeReference extends TileTreeReference {
 
     for (; treeIndex < this._layerTrees.length; treeIndex++) {
       const layerTreeRef = this._layerTrees[treeIndex];
+      const hasValidTileTree = layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus;
+      const isImageryMapLayer = layerTreeRef instanceof ImageryMapLayerTreeReference;
+      const isLayerVisible = (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef?.layerSettings.visible));
       // Load tile tree for each configured layer.
-      // Note: Non-visible layer are also added to allow proper tile tree scale range visibility reporting.
-      if (layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus
+      // Note: Non-visible imagery layer are always added to allow proper tile tree scale range visibility reporting.
+      if (hasValidTileTree
+        && isLayerVisible
         && !layerTreeRef.layerSettings.allSubLayersInvisible) {
         const layerTree = layerTreeRef.treeOwner.load();
-        if (undefined === layerTree)
-          return false; // Not loaded yet.
+        if (layerTree !== undefined) {
+          hasLoadedTileTree = true;
+        } else {
+          // Let's continue, there might be loaded tile tree in the list
+          continue;
+        }
 
+        // Add loaded TileTree
         const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex === 0);
         if (layerTree instanceof ImageryMapTileTree) {
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
@@ -1008,7 +1026,7 @@ export class MapTileTreeReference extends TileTreeReference {
       }
     }
 
-    return true;
+    return hasLoadedTileTree;
   }
 
   /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
@@ -1086,8 +1104,9 @@ export class MapTileTreeReference extends TileTreeReference {
       const isBaseLayer = (this._baseImageryLayerIncluded && tree.layerIndex === 0);
       return {
         isBaseLayer,
-        index: isBaseLayer ? undefined : {isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex -1 : tree.layerIndex},
-        settings: tree.layerSettings, provider: tree.imageryProvider};
+        index: isBaseLayer ? undefined : { isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex - 1 : tree.layerIndex },
+        settings: tree.layerSettings, provider: tree.imageryProvider,
+      };
     });
   }
 
@@ -1143,9 +1162,14 @@ export class MapTileTreeReference extends TileTreeReference {
     }
   }
 
+  public override canSupplyToolTip(hit: HitDetail): boolean {
+    const tree = this.treeOwner.tileTree;
+    return undefined !== tree && tree.modelId === hit.modelId;
+  }
+
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
-    const tree = this.treeOwner.tileTree as MapTileTree;
-    if (tree.modelId !== hit.modelId)
+    const tree = this.treeOwner.tileTree as MapTileTree | undefined;
+    if (undefined === tree || tree.modelId !== hit.modelId)
       return undefined;
 
     let carto: Cartographic | undefined;
@@ -1153,7 +1177,7 @@ export class MapTileTreeReference extends TileTreeReference {
     const strings: string[] = [];
 
     const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
-      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${imageryTreeRef.layerSettings.name}`);
       carto = cartoGraphic;
       await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);
     };
@@ -1164,11 +1188,11 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     if (carto) {
-      strings.push(`Latitude: ${carto.latitudeDegrees.toFixed(4)}`);
-      strings.push(`Longitude: ${carto.longitudeDegrees.toFixed(4)}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Latitude")}: ${carto.latitudeDegrees.toFixed(4)}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Longitude")}: ${carto.longitudeDegrees.toFixed(4)}`);
       if (this.settings.applyTerrain && tree.terrainExaggeration !== 0.0) {
         const geodeticHeight = (carto.height - tree.bimElevationBias) / tree.terrainExaggeration;
-        strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
+        strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Height")}: ${geodeticHeight.toFixed(1)} ${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.SeaLevel")}: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
       }
     }
 

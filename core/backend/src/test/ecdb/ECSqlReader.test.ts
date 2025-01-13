@@ -68,7 +68,6 @@ describe("ECSqlReader", (() => {
 
         reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
         assert.isTrue(await reader.step());
-        // eslint-disable-next-line no-console
         assert.equal(reader.current.id, "0x1");
         assert.equal(reader.current.ecinstanceid, "0x1");
         assert.equal(reader.current.n, 20);
@@ -289,6 +288,81 @@ describe("ECSqlReader", (() => {
       });
     });
 
+    describe("Get duplicate property names", () => {
+
+      it("Get duplicate property names using iterable iterator with unspecified rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 } })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get duplicate property names using iterable iterator with UseJsPropertyNames rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().id, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get duplicate property names using iterable iterator with UseECSqlPropertyNames rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyNames })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+
+      it("Get duplicate property names using iterable iterator with UseECSqlPropertyIndexes rowFormat", async () => {
+        const expectedIds = ["0x1", "0xe", "0x10", "0x11", "0x12"];
+        let counter = 1;
+        for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element c JOIN bis.Element p ON p.ECInstanceId = c.ECInstanceId", undefined, { limit: { count: 5 }, rowFormat: QueryRowFormat.UseECSqlPropertyIndexes })) {
+          const currentExpectedId = expectedIds[counter - 1];
+          assert.equal(row[0], currentExpectedId);
+          assert.equal(row.id, currentExpectedId);
+          assert.equal(row.ecinstanceid, currentExpectedId);
+          assert.equal(row.ECINSTANCEID, currentExpectedId);
+          assert.equal(row.ECInstanceId, currentExpectedId);
+          assert.equal(row.toArray()[0], currentExpectedId);
+          assert.equal(row.toRow().ECInstanceId, currentExpectedId);
+          counter++;
+          actualRowCount++;
+        }
+        assert.equal(actualRowCount, 5);
+      });
+    });
+
     describe("Get specific values", () => {
 
       it("Get only ECInstanceId with unspecified rowFormat", async () => {
@@ -474,6 +548,64 @@ describe("ECSqlReader", (() => {
           actualRowCount = row.toRow().numResults;
         }
         assert.equal(actualRowCount, expectedRowCount);
+      });
+
+    });
+
+    describe("Tests for extendedType and extendType property behaviour of QueryPropertyMetaData", () => {
+
+      it("Id type column with alias", async () => {
+        reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("Id", metaData[0].extendedType);
+        assert.equal("Id", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Id type column without alias", async () => {
+        reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("Id", metaData[0].extendedType);
+        assert.equal("Id", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("ClassId type column", async () => {
+        reader = iModel.createQueryReader("SELECT ECClassId FROM bis.Element ORDER BY ECClassId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("ClassId", metaData[0].extendedType);
+        assert.equal("ClassId", metaData[0].extendType);    // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Column without extended type", async () => {
+        reader = iModel.createQueryReader("SELECT s.Name FROM meta.ECSchemaDef s ORDER BY s.Name ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal(undefined, metaData[0].extendedType);
+        assert.equal("", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Column without extended type with alias", async () => {
+        reader = iModel.createQueryReader("SELECT s.Name a FROM meta.ECSchemaDef s ORDER BY a ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal(undefined, metaData[0].extendedType);
+        assert.equal("", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Geometric type column with alias", async () => {
+        reader = iModel.createQueryReader("select GeometryStream A from bis.GeometricElement3d LIMIT 1");
+        const metaData = await reader.getMetaData();
+        assert.equal("GeometryStream", metaData[0].extendedType);
+        assert.equal("GeometryStream", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Geometric type column without alias", async () => {
+        reader = iModel.createQueryReader("select GeometryStream from bis.GeometricElement3d LIMIT 1");
+        const metaData = await reader.getMetaData();
+        assert.equal("GeometryStream", metaData[0].extendedType);
+        assert.equal("GeometryStream", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
       });
 
     });

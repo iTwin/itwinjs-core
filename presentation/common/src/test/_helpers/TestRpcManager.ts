@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 
 /**
@@ -13,13 +13,14 @@ export class TestRpcManager {
       public override interfaces: any = () => interfaces;
     };
 
-    for (const def of interfaces)
+    for (const def of interfaces) {
       RpcConfiguration.assign(def, () => config);
+    }
 
     const instance = RpcConfiguration.obtain(config);
     try {
       RpcConfiguration.initializeInterfaces(instance);
-    } catch (_e) {
+    } catch {
       // this may fail with "Error: RPC interface "xxx" is already initialized." because
       // multiple different tests want to set up rpc interfaces
     }

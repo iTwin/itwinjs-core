@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -10,7 +10,7 @@ import { Node, NodeJSON } from "./Node";
 
 /**
  * Defines a hierarchy level that consists of an array of nodes and possibly other information.
- * @beta
+ * @public
  */
 export interface HierarchyLevel {
   /** A list of nodes in a hierarchy level. */
@@ -28,25 +28,26 @@ export interface HierarchyLevel {
  * @deprecated in 3.x. Use [[HierarchyLevel]]
  */
 export interface HierarchyLevelJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   nodes: NodeJSON[];
   supportsFiltering?: boolean;
 }
 
 /**
  * Contains helper functions for working with objects of [[HierarchyLevel]] type.
- * @beta
+ * @public
  */
 export namespace HierarchyLevel {
   /**
    * Deserialize [[HierarchyLevel]] from JSON
+   * @beta
    * @deprecated in 3.x. Use [[HierarchyLevel]].
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel {
     return {
       ...json,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       nodes: json.nodes.map(Node.fromJSON),
     };
   }

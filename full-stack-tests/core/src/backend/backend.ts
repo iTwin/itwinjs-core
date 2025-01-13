@@ -12,12 +12,12 @@ import {
   BriefcaseDb, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, InUseLock, InUseLocksError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
@@ -33,8 +33,8 @@ function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error)
     throw envResult.error;
@@ -75,6 +75,10 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);
+  }
+
+  public async throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metaData?: LoggingMetaData): Promise<void> {
+    InUseLocksError.throwInUseLocksError(inUseLocks, message, metaData);
   }
 }
 
@@ -126,13 +130,13 @@ async function init() {
 
   ECSchemaRpcImpl.register();
 
-  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
+  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver(); // eslint-disable-line @typescript-eslint/no-deprecated
   Logger.initializeToConsole();
   return shutdown;
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
-class BackendTestAssetResolver extends FileNameResolver {
+class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line @typescript-eslint/no-deprecated
   /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {

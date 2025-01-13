@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
 import { Keys, KeySet } from "../../presentation-common";
 
-const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
+const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 /**
  * @internal Used for testing only.
@@ -22,7 +22,7 @@ export const configureForPromiseResult = <T>(mock: moq.IMock<T>): void => {
  */
 export const isKeySet = (expectedKeys: Keys) => {
   const expected = new KeySet(expectedKeys);
-  return moq.It.is<KeySet>((actual: KeySet) => (actual.size === expected.size && actual.hasAll(expected)));
+  return moq.It.is<KeySet>((actual: KeySet) => actual.size === expected.size && actual.hasAll(expected));
 };
 
 /**

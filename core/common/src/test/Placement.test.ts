@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, describe, it } from "vitest";
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Placement2d, Placement3d } from "../core-common";
 

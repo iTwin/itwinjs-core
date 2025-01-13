@@ -66,7 +66,7 @@ export * from "./appui-abstract/widget/WidgetState";
 
 /** @docs-package-description
  * The appui-abstract package contains abstractions for UI controls, such as toolbars, buttons and menus.
- * For more information, see [learning about appui-abstract]($docs/learning/ui/abstract/index.md).
+ * For more information, see [UI]($docs/ui/index.md).
  */
 /**
  * @docs-group-description Backstage

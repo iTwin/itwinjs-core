@@ -30,7 +30,6 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _allLayersRange?: MapCartoRectangle;
   private _subLayerRanges = new Map<string, MapCartoRectangle>();
   private _baseUrl: string;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _crsSupport: WmsCrsSupport|undefined;
 
   constructor(settings: ImageMapLayerSettings) {
@@ -166,7 +165,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       // For instance, for EPSG:4326 the axis ordering is latitude/longitude, or north/east.
       // WMS 1.1.0 always requires the axis ordering to be longitude/latitude. *sigh*
       if (this._capabilities !== undefined) {
-        bboxString = this.getEPSG4326ExtentString(row, column, zoomLevel, this._capabilities?.isVersion13); // lat/long ordering
+        bboxString = this.getEPSG4326TileExtentString(row, column, zoomLevel, this._capabilities?.isVersion13); // lat/long ordering
         crsString= "EPSG%3A4326";
       }
 
@@ -188,7 +187,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const infoFormats = this._capabilities?.featureInfoFormats;
     if (!doToolTips || undefined === infoFormats)
       return;
-    let formatString = infoFormats.find((format) => format === "text/html");
+    let formatString: string | undefined = infoFormats.find((format) => format === "text/html");
     if (!formatString)
       formatString = infoFormats[0];
 

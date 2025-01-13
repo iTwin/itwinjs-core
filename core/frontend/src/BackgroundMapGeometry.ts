@@ -178,7 +178,7 @@ export class BackgroundMapGeometry {
         return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, p.height);
       });
     } else {
-      db = cartographic.map((p) => this._ecefToDb.multiplyPoint3d(p.toEcef())!);
+      db = cartographic.map((p) => this._ecefToDb.multiplyPoint3d(p.toEcef()));
     }
 
     if (this._iModel.noGcsDefined)
@@ -200,7 +200,7 @@ export class BackgroundMapGeometry {
         return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, p.height);
       });
     } else {
-      db = cartographic.map((p) => this._ecefToDb.multiplyPoint3d(p.toEcef())!);
+      db = cartographic.map((p) => this._ecefToDb.multiplyPoint3d(p.toEcef()));
     }
 
     if (this._iModel.noGcsDefined)
@@ -227,7 +227,7 @@ export class BackgroundMapGeometry {
       this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
       return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
     } else {
-      return this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
+      return this._ecefToDb.multiplyPoint3d(cartographic.toEcef());
     }
   }
 
@@ -486,9 +486,9 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
   const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
-  const ecefOrigin = Cartographic.fromDegrees({ longitude: geoOrigin.x, latitude: geoOrigin.y, height: geoOrigin.z }).toEcef()!;
-  const ecefNorth = Cartographic.fromDegrees({ longitude: geoNorth.x, latitude: geoNorth.y, height: geoNorth.z }).toEcef()!;
-  const ecefEast = Cartographic.fromDegrees({ longitude: geoEast.x, latitude: geoEast.y, height: geoEast.z }).toEcef()!;
+  const ecefOrigin = Cartographic.fromDegrees({ longitude: geoOrigin.x, latitude: geoOrigin.y, height: geoOrigin.z }).toEcef();
+  const ecefNorth = Cartographic.fromDegrees({ longitude: geoNorth.x, latitude: geoNorth.y, height: geoNorth.z }).toEcef();
+  const ecefEast = Cartographic.fromDegrees({ longitude: geoEast.x, latitude: geoEast.y, height: geoEast.z }).toEcef();
 
   const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);

@@ -74,6 +74,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt drawing graphics` - When enabled, 2d graphics in any drawing view will not be displayed. Useful for inspecting 3d graphics of attached section view, if any.
 * `fdt sectiondrawing spatial view` - When enabled, 3d graphics for a section drawing will be displayed in the drawing view, even if they otherwise wouldn't be.
 * `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
+* `fdt toggle maskfrustum` - Toggles display of frustum that is used for planar masks.
 * `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
 * `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
@@ -153,11 +154,12 @@ Several keyins enable attaching map layers of a particular format. Each takes th
 
 These keyins take the form `fdt attach <format> maplayer <arguments>` where `format` is one of the following:
 
-* `wms` - a very common OGC standard Web Map Service that produces images on demand.
-* `wmts` - a Web Map Tile Service that produces cached tiles.
-* `arcgis` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
-* `arcgisfeature` - obtains vector data from the ArcGIS REST API and converts it to tiles.
-* `tileurl` - obtains tailes directly from a file server using a supplied URL template.
+* `WMS` - a very common OGC standard Web Map Service that produces images on demand.
+* `WMTS` - a Web Map Tile Service that produces cached tiles.
+* `ArcGIS` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
+* `ArcGISFeature` - obtains vector data from the ArcGIS REST API and converts it to tiles. (Requires `@itwin/map-layers-formats)
+* `TileURL` - obtains tailes directly from a file server using a supplied URL template.
+* `OgcApiFeatures` - obtains vector data from a OGC API - Feature server converts it to tiles (Requires `@itwin/map-layers-formats)
 
 ### Reality model key-ins
 
@@ -287,7 +289,10 @@ These keysins control the planar masking of reality models.
 * `fdt clear emphasized` - Undo the effects of `fdt emphasize selection` or `fdt emphasize visible`.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
-* `fdt test clip style ON|OFF` - Toggles a ClipStyle for the active viewport with hard-coded symbology overrides.
+* `fdt test clip style ON|OFF` - Toggles a ClipStyle for the active viewport with hard-coded symbology overrides
+  * if using ON, can also optionally specify a CutStyleProps to use instead of the hard-coded default
+  * for example, to produce cut plane geometry which is unlit solid orange you can specify the following command:
+    * `fdt test clip style ON {"viewflags":{"renderMode":6,"lighting":false},"appearance":{"rgb":{"r":255,"g":128,"b":0}}}`
 * `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume", unless tile bounds are already displayed, in which it toggles them back off.
   * "none": Don't display bounding volumes.
   * "volume": Bounding box representing the full range of each tile.

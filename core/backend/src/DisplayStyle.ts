@@ -9,7 +9,7 @@
 import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSubCategoryProps, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -21,7 +21,6 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export abstract class DisplayStyle extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
 
@@ -53,7 +52,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     } else {
       const script = this.loadScheduleScript();
       if (script)
-        script.script.discloseIds(referenceIds); // eslint-disable-line deprecation/deprecation
+        script.script.discloseIds(referenceIds);
     }
   }
 
@@ -66,30 +65,29 @@ export abstract class DisplayStyle extends DefinitionElement {
 
     const settings = targetElementProps.jsonProperties.styles;
     if (settings.subCategoryOvr) {
-      for (let i = 0; i < settings.subCategoryOvr.length; /* */) {
-        const ovr = settings.subCategoryOvr[i];
-        ovr.subCategory = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
-        if (Id64.invalid === ovr.subCategory)
-          settings.subCategoryOvr.splice(i, 1);
-        else
-          i++;
+      const targetOverrides: DisplayStyleSubCategoryProps[] = [];
+      for (const ovr of settings.subCategoryOvr) {
+        ovr.subCategory;
+        const targetSubCategoryId = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
+        if (Id64.isValid(targetSubCategoryId))
+          targetOverrides.push({...ovr, subCategory: targetSubCategoryId});
       }
+      settings.subCategoryOvr = targetOverrides;
     }
 
     if (settings.excludedElements) {
       const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
-      for (let i = 0; i < excluded.length; /* */) {
-        const remapped = context.findTargetElementId(excluded[i]);
-        if (Id64.invalid === remapped)
-          excluded.splice(i, 1);
-        else
-          excluded[i++] = remapped;
+      const excludedTargetElements: Id64Array = [];
+      for (const excludedElement of excluded) {
+        const remapped = context.findTargetElementId(excludedElement);
+        if (Id64.isValid(remapped))
+          excludedTargetElements.push(remapped);
       }
 
-      if (0 === excluded.length)
+      if (0 === excludedTargetElements.length)
         delete settings.excludedElements;
       else
-        settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
+        settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excludedTargetElements));
     }
 
     if (settings.renderTimeline) {
@@ -129,7 +127,6 @@ export abstract class DisplayStyle extends DefinitionElement {
  * @public
  */
 export class DisplayStyle2d extends DisplayStyle {
-  /** @internal */
   public static override get className(): string { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -196,7 +193,6 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
  * @public
  */
 export class DisplayStyle3d extends DisplayStyle {
-  /** @internal */
   public static override get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
 
@@ -215,6 +211,14 @@ export class DisplayStyle3d extends DisplayStyle {
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
         referenceIds.addElement(planProjectionSetting[0]);
+
+    const groups = this.settings.contours.groups;
+    for (const group of groups) {
+      const subCategories = group.subCategories;
+      for (const subCategoryId of subCategories) {
+        referenceIds.addElement(subCategoryId);
+      }
+    }
   }
 
   /** @alpha */
@@ -245,6 +249,23 @@ export class DisplayStyle3d extends DisplayStyle {
           }
         }
         targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
+      }
+
+      const groups = targetElementProps?.jsonProperties?.styles?.contours?.groups;
+      if (groups) {
+        for (const group of groups) {
+          if (group.subCategories) {
+            const subCategories = CompressedId64Set.decompressArray(group.subCategories);
+            const remappedSubCategories: Id64String[] = [];
+            for (const subCategoryId of subCategories) {
+              const remappedSubCategoryId: Id64String = context.findTargetElementId(subCategoryId);
+              if (Id64.isValidId64(remappedSubCategoryId)) {
+                remappedSubCategories.push(remappedSubCategoryId);
+              }
+            }
+            group.subCategories = CompressedId64Set.sortAndCompress(remappedSubCategories);
+          }
+        }
       }
     }
   }

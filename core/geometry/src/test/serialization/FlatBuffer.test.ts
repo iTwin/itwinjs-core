@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, it } from "vitest";
 import { flatbuffers } from "flatbuffers";
+import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -60,7 +61,7 @@ it("HelloWorld", () => {
   ck.testExactNumber(5, oSegmentA!.point1Y());
   ck.testExactNumber(6, oSegmentA!.point1Z());
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloVariantGeometry", () => {
@@ -74,7 +75,7 @@ it("HelloVariantGeometry", () => {
   for (const curve of [...bCurves, ...hCurves]) {
     testGeometryQueryRoundTrip(ck, curve);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloCurveVector", () => {
@@ -85,7 +86,21 @@ it("HelloCurveVector", () => {
   for (const cv of cvs) {
     testGeometryQueryRoundTrip(ck, cv);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+it("HelloAkimaCurve", () => {
+  const ck = new Checker();
+  const circlePoints8 = Sample.createUnitCircle(8);
+  const circlePoints4 = Sample.createUnitCircle(4);
+  const circlePoints6 = Sample.createUnitCircle(6);
+  const curve: AkimaCurve3d[] = [
+    AkimaCurve3d.create({ fitPoints: circlePoints8 })!,
+    AkimaCurve3d.create({ fitPoints: circlePoints4 })!,
+    AkimaCurve3d.create({ fitPoints: circlePoints6 })!,
+  ];
+  testGeometryQueryRoundTrip(ck, curve);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloMesh", () => {
@@ -94,7 +109,7 @@ it("HelloMesh", () => {
   for (const mesh of meshes) {
     testGeometryQueryRoundTrip(ck, mesh);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloSubdivisionSurface", () => {
@@ -112,7 +127,7 @@ it("HelloSubdivisionSurface", () => {
   tg1.doubleData = [0.5];
   testGeometryQueryRoundTrip(ck, mesh);
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 it("HelloSpirals", () => {
   const ck = new Checker();
@@ -123,7 +138,7 @@ it("HelloSpirals", () => {
     Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(-10))),
     "bloss");
   testGeometryQueryRoundTrip(ck, clothoid);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function compareFlatBuffers(a1: Uint8Array, a2: Uint8Array): boolean {
@@ -152,7 +167,7 @@ function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQu
     if (ck.testType(justTheBytes, Uint8Array, "to FB")) {
       const g1 = BentleyGeometryFlatBuffer.bytesToGeometry(justTheBytes);
       if (ck.testFalse(Array.isArray(g1), "Unexpected array from FB") && !Array.isArray(g1)) {
-        if (ck.testDefined(g1, "FB back to geometry") && g1) {
+        if (ck.testDefined(g1, "FB back to geometry")) {
           if (ck.testTrue(g.isAlmostEqual(g1), "GeometryQuery round-tripped through FB without signature")) {
             const justTheBytes2 = BentleyGeometryFlatBuffer.geometryToBytes(g1);
             if (ck.testType(justTheBytes2, Uint8Array)) {
@@ -179,7 +194,7 @@ function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQu
     const json = IModelJson.Writer.toIModelJson(g);
     if (ck.testDefined(json, "to json")) {
       const g2 = IModelJson.Reader.parse(json);
-      if (ck.testDefined(g2, "json back to geometry") && ck.testTrue(g2 instanceof GeometryQuery) && g2 instanceof GeometryQuery) {
+      if (ck.testType(g2, GeometryQuery, "json back to geometry")) {
         if (ck.testTrue(g.isAlmostEqual(g2), "GeometryQuery round-tripped through json", g)) {
           const json2 = IModelJson.Writer.toIModelJson(g2);
           if (ck.testDefined(json2)) {
@@ -223,7 +238,7 @@ it("HelloSolidPrimitive", () => {
     s.tryTransformInPlace(transform);
     testGeometryQueryRoundTrip(ck, s);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("HelloBSplineSurface", () => {
@@ -237,7 +252,7 @@ it("HelloBSplineSurface", () => {
     // s.tryTransformInPlace(transform);
     // testGeometryQueryRoundTrip(ck, s);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 const arcBytes = new Uint8Array([
   98, 103, 48, 48, 48, 49, 102, 98, 8, 0, 0, 0, 0, 0, 0, 0, 234, 254, 255, 255, 0, 0, 0, 15, 12, 0, 0, 0, 0, 0, 6, 0, 8, 0, 4, 0, 6, 0, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 1,
@@ -281,7 +296,7 @@ it("HelloNativeBytes", () => {
     const g0 = BentleyGeometryFlatBuffer.bytesToGeometry(nativeBytes, true);
     if (Checker.noisy.flatBuffer)
       GeometryCoreTestIO.consoleLog("nativeBytes=>g types", geometryTypes(g0));
-    if (ck.testDefined(g0, "native bytes to geometry") && g0) {
+    if (ck.testDefined(g0, "native bytes to geometry")) {
       testGeometryQueryRoundTrip(ck, g0);
       const jsBytes = BentleyGeometryFlatBuffer.geometryToBytes(g0, true);
       if (Checker.noisy.flatBuffer) {
@@ -290,7 +305,7 @@ it("HelloNativeBytes", () => {
       }
       if (ck.testDefined(jsBytes, "geometry to bytes") && jsBytes) {
         const g1 = BentleyGeometryFlatBuffer.bytesToGeometry(jsBytes, true);
-        if (ck.testDefined(g1, "jsBytes to geometry") && g1)
+        if (ck.testDefined(g1, "jsBytes to geometry"))
           GeometryCoreTestIO.consoleLog("nativeBytes=>g=>jsBytes=>g types", geometryTypes(g1));
         testGeometryQueryRoundTrip(ck, g1);
         if (isGeometry(g1) && isGeometry(g0)) {
@@ -303,7 +318,7 @@ it("HelloNativeBytes", () => {
 
     }
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function geometryTypes(g: GeometryQuery | GeometryQuery[] | undefined): any {
@@ -335,5 +350,5 @@ it("PolyfaceAuxData", () => {
     );
     testGeometryQueryRoundTrip(ck, p);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

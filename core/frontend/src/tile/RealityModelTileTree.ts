@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
-  RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, SpatialClassifiers, ViewFlagOverrides,
+  RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -30,6 +30,7 @@ import {
   getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
+import { SpatialClassifiersState } from "../SpatialClassifiersState";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -538,7 +539,7 @@ export class RealityModelTileTree extends RealityTileTree {
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
-      /* eslint-disable-next-line deprecation/deprecation */
+      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
       this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
@@ -546,7 +547,6 @@ export class RealityModelTileTree extends RealityTileTree {
 }
 
 /** @internal */
-// eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
   export interface ReferenceBaseProps {
     iModel: IModelConnection;
@@ -555,7 +555,7 @@ export namespace RealityModelTileTree {
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
     name?: string;
-    classifiers?: SpatialClassifiers;
+    classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
   }
@@ -583,7 +583,7 @@ export namespace RealityModelTileTree {
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
 
-    public get planarClipMaskPriority(): number {
+    public override get planarClipMaskPriority(): number {
       if (this._planarClipMask?.settings.priority !== undefined)
         return this._planarClipMask.settings.priority;
 
@@ -705,7 +705,7 @@ export namespace RealityModelTileTree {
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdSource) {
       // Serialize the reality data source key into a string to uniquely identify this tile tree
-      const tileTreeId = rdSource.key.toString();
+      const tileTreeId = RealityDataSourceKey.convertToString(rdSource.key);
       if (tileTreeId === undefined)
         return undefined;
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
@@ -874,13 +874,36 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     super.addToScene(context);
   }
 
-  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+  public override canSupplyToolTip(hit: HitDetail): boolean {
+    const classifier = this._classifier?.activeClassifier?.tileTreeReference;
+    if (classifier && classifier.canSupplyToolTip(hit)) {
+      return true;
+    }
+
     const tree = this.treeOwner.tileTree;
-    if (undefined === tree || hit.iModel !== tree.iModel)
+    return tree instanceof RealityTileTree && hit.iModel === tree.iModel && undefined !== tree.batchTableProperties?.getFeatureProperties(hit.sourceId);
+  }
+
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+    const tooltip = this._getToolTip(hit);
+    if (tooltip) {
+      return tooltip;
+    }
+
+    const classifierTree = this._classifier?.activeClassifier?.tileTreeReference;
+    if (classifierTree) {
+      return classifierTree.getToolTip(hit);
+    }
+
+    return undefined;
+  }
+
+  private _getToolTip(hit: HitDetail): HTMLElement | string | undefined {
+    const tree = this.treeOwner.tileTree;
+    if (!(tree instanceof RealityTileTree) || hit.iModel !== tree.iModel)
       return undefined;
 
-    const map = (tree as RealityTileTree).loader.getBatchIdMap();
-    const batch = undefined !== map ? map.getBatchProperties(hit.sourceId) : undefined;
+    const batch = tree.batchTableProperties?.getFeatureProperties(hit.sourceId);
     if (undefined === batch && tree.modelId !== hit.sourceId)
       return undefined;
 
@@ -915,7 +938,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     if (batch !== undefined)
       for (const key of Object.keys(batch))
         if (-1 === key.indexOf("#"))     // Avoid internal cesium
-          strings.push(`${key}: ${batch[key]}`);
+          strings.push(`${key}: ${JSON.stringify(batch[key])}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

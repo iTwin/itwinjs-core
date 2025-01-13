@@ -36,6 +36,7 @@ import {
   LiteralExpr,
   LiteralValueType,
   MemberFuncCallExpr,
+  NavValueCreationFuncExpr,
   NotExpr,
   OrderByClauseExpr,
   OrderBySpecExpr,
@@ -172,6 +173,7 @@ describe("ECSql AST", () => {
     assert.equal(ExprType.UpdateStatement, UpdateStatementExpr.type);
     assert.equal(ExprType.UsingRelationshipJoin, UsingRelationshipJoinExpr.type);
     assert.equal(ExprType.WhereClause, WhereClauseExp.type);
+    assert.equal(ExprType.NavValueCreationFunc, NavValueCreationFuncExpr.type);
   });
   it("test ClassNameExpr.fromECSql()", async () => {
     assert.equal(ClassNameExpr.fromECSql("+all Bis.Element").toECSql(), "+ALL [Bis].[Element]");

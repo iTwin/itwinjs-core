@@ -164,6 +164,14 @@ export class AttachArcGISFeatureMapLayerByUrlTool extends AttachMapLayerByURLBas
   constructor() { super("ArcGISFeature"); }
 }
 
+/** This tool attaches an ArcGIS map layer from a given URL.
+ * @beta
+ */
+export class AttachOgcApiFeaturesMapLayerTool extends AttachMapLayerByURLBaseTool {
+  public static override toolId = "AttachOgcApiFeaturesMapLayerTool";
+  constructor() { super("OgcApiFeatures"); }
+}
+
 /** This tool attaches a map layer from a given tile URL.
  * @beta
  */

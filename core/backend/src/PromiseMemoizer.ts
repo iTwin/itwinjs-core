@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Utils
- */
-
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
@@ -89,7 +85,7 @@ export class PromiseMemoizer<T> implements IDisposable {
     };
 
     const p = this._memoizeFn(...args).then(removeCachedPromise, (e) => {
-      throw removeCachedPromise(e);
+      throw removeCachedPromise(e); // eslint-disable-line @typescript-eslint/only-throw-error
     });
 
     qp = new QueryablePromise<T>(p);

@@ -44,7 +44,7 @@ export class ChromeTestRunner {
     webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
 
     // Don't continue until the webserver is started and listening.
-    const webserverExited = new Promise<never>((_resolve, reject) => webserverProcess.once("exit", () => reject("Webserver exited!")));
+    const webserverExited = new Promise<never>((_resolve, reject) => webserverProcess.once("exit", () => reject(new Error("Webserver exited!"))));
     const webserverStarted = new Promise<number>((resolve) => webserverProcess.once("message", resolve));
     const actualPort = await Promise.race([webserverExited, webserverStarted]);
     if (actualPort !== config.ports.frontend)
@@ -117,7 +117,7 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
         });
       });
     } catch (error) {
-      reject(error);
+      reject(error); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
     }
   });
 }

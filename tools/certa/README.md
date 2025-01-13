@@ -195,12 +195,12 @@ Here's an example webpack config that you can use to bundle your tests:
 
 ```JavaScript
 const path = require("path");
-const glob = require("glob");
+const { globSync } = require("glob");
 
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
-    entry: glob.sync(path.resolve(__dirname, "lib/**/*.test.js")),
+    entry: globSync(path.resolve(__dirname, "lib/**/*.test.js"), { windowsPathsNoEscape: true }),
     output: {
       path: path.resolve(__dirname, "lib/dist"),
       filename: "bundled-tests.js",

@@ -21,6 +21,7 @@ import {
 } from "./Property";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -409,9 +410,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     if (undefined !== classProps.modifier) {
       const modifier = parseClassModifier(classProps.modifier);
-      if (undefined === modifier)
-        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
-      this._modifier = modifier;
+      if (undefined === modifier) {
+        if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: classProps.originalECSpecMajorVersion, writeVersion: classProps.originalECSpecMinorVersion } as ECSpecVersion))
+          this._modifier = ECClassModifier.None;
+        else
+          throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
+      } else {
+        this._modifier = modifier;
+      }
     }
 
     if (undefined !== classProps.baseClass) {
@@ -582,9 +588,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return false;
 
       for (const [className, customAttribute] of ecClass.customAttributes) {
-        if (customAttributes!.has(className))
+        if (customAttributes.has(className))
           continue;
-        customAttributes!.set(className, customAttribute);
+        customAttributes.set(className, customAttribute);
       }
 
       return false;
@@ -683,15 +689,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
   }
-
-  /**
-   * @alpha
-   * A setter method for the ECClass name, used specifically for schema editing.
-   * @param modifier
-   */
-  protected setName(name: string) {
-    this._key = new SchemaItemKey(name, this.schema.schemaKey);
-  }
 }
 
 /**
@@ -699,12 +696,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.StructClass; // eslint-disable-line
-
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.schemaItemType = SchemaItemType.StructClass;
-  }
+  public override readonly schemaItemType = SchemaItemType.StructClass;
 }
 
 /**

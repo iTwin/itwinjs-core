@@ -311,7 +311,7 @@ function populateAnimationNodeIds(table: RenderFeatureTable, computeNodeId: Comp
  * @internal
  */
 export class PackedFeatureTable implements RenderFeatureTable {
-  private readonly _data: Uint32Array;
+  public readonly data: Uint32Array;
   public readonly batchModelId: Id64String;
   public readonly batchModelIdPair: Id64.Uint32Pair;
   public readonly numFeatures: number;
@@ -319,14 +319,14 @@ export class PackedFeatureTable implements RenderFeatureTable {
   public readonly type: BatchType;
   public animationNodeIds?: UintArray;
 
-  public get byteLength(): number { return this._data.byteLength; }
+  public get byteLength(): number { return this.data.byteLength; }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
    * @internal
    */
   public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, type: BatchType, animationNodeIds?: UintArray) {
-    this._data = data;
+    this.data = data;
     this.batchModelId = modelId;
     this.batchModelIdPair = Id64.getUint32Pair(modelId);
     this.numFeatures = numFeatures;
@@ -345,7 +345,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
         break;
     }
 
-    assert(this._data.length >= this._subCategoriesOffset);
+    assert(this.data.length >= this._subCategoriesOffset);
     assert(undefined === this.animationNodeIds || this.animationNodeIds.length === this.numFeatures);
   }
 
@@ -405,18 +405,18 @@ export class PackedFeatureTable implements RenderFeatureTable {
     out = out ?? { lower: 0, upper: 0 };
     assert(featureIndex < this.numFeatures);
     const offset = 3 * featureIndex;
-    out.lower = this._data[offset];
-    out.upper = this._data[offset + 1];
+    out.lower = this.data[offset];
+    out.upper = this.data[offset + 1];
     return out;
   }
 
   /** @internal */
   public getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair {
     const index = 3 * featureIndex;
-    let subCatIndex = this._data[index + 2];
+    let subCatIndex = this.data[index + 2];
     subCatIndex = (subCatIndex & 0x00ffffff) >>> 0;
     subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
-    return { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
+    return { lower: this.data[subCatIndex], upper: this.data[subCatIndex + 1] };
   }
 
   /** @internal */
@@ -429,16 +429,16 @@ export class PackedFeatureTable implements RenderFeatureTable {
     assert(featureIndex < this.numFeatures);
 
     const index32 = 3 * featureIndex;
-    result.elementId.lower = this._data[index32];
-    result.elementId.upper = this._data[index32 + 1];
+    result.elementId.lower = this.data[index32];
+    result.elementId.upper = this.data[index32 + 1];
 
-    const subCatIndexAndClass = this._data[index32 + 2];
+    const subCatIndexAndClass = this.data[index32 + 2];
     result.geometryClass = (subCatIndexAndClass >>> 24) & 0xff;
 
     let subCatIndex = (subCatIndexAndClass & 0x00ffffff) >>> 0;
     subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
-    result.subCategoryId.lower = this._data[subCatIndex];
-    result.subCategoryId.upper = this._data[subCatIndex + 1];
+    result.subCategoryId.lower = this.data[subCatIndex];
+    result.subCategoryId.upper = this.data[subCatIndex + 1];
 
     result.animationNodeId = this.getAnimationNodeId(featureIndex);
     result.modelId.lower = this.batchModelIdPair.lower;
@@ -507,7 +507,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
   private get _subCategoriesOffset(): number { return this.numFeatures * 3; }
 
   private readId(offset32: number): Id64String {
-    return Id64.fromUint32Pair(this._data[offset32], this._data[offset32 + 1]);
+    return Id64.fromUint32Pair(this.data[offset32], this.data[offset32 + 1]);
   }
 }
 

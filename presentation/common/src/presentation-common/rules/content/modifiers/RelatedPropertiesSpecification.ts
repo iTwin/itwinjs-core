@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -82,7 +82,6 @@ export interface RelatedPropertiesSpecification {
 
   /**
    * Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.
-   * @beta
    */
   skipIfDuplicate?: boolean;
 

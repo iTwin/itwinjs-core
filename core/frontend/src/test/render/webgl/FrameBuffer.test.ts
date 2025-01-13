@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
 import { Debug } from "../../../render/webgl/Diagnostics";
 import { FrameBuffer } from "../../../render/webgl/FrameBuffer";
@@ -13,29 +13,27 @@ import { TextureHandle } from "../../../render/webgl/Texture";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameBuffer tests", () => {
-  // eslint-disable-next-line @typescript-eslint/return-await
-  before(async () => await IModelApp.startup({ localization: new EmptyLocalization() }));
-  // eslint-disable-next-line @typescript-eslint/return-await
-  after(async () => await IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   it("should produce and bind a valid framebuffer with single color attachment", () => {
     if (!IModelApp.hasRenderSystem)
       return;
 
     const texture: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
-    assert(undefined !== texture);
+    expect(texture).toBeDefined();
     if (undefined === texture) {
       return;
     }
 
     const fb = FrameBuffer.create([texture]);
-    assert(undefined !== fb);
+    expect(fb).toBeDefined();
     if (undefined === fb) {
       return;
     }
 
-    expect(fb.bind()).to.be.true;
-    expect(Debug.isValidFrameBuffer).to.be.true;
+    expect(fb.bind()).toBe(true);
+    expect(Debug.isValidFrameBuffer).toBe(true);
     fb.unbind();
   });
 
@@ -44,25 +42,25 @@ describe("FrameBuffer tests", () => {
       return;
 
     const texture0: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
-    assert(undefined !== texture0);
+    expect(texture0).toBeDefined();
     if (undefined === texture0) {
       return;
     }
 
     const texture1: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
-    assert(undefined !== texture1);
+    expect(texture1).toBeDefined();
     if (undefined === texture1) {
       return;
     }
 
     const fb = FrameBuffer.create([texture0, texture1]);
-    assert(undefined !== fb);
+    expect(fb).toBeDefined();
     if (undefined === fb) {
       return;
     }
 
-    expect(fb.bind()).to.be.true;
-    expect(Debug.isValidFrameBuffer).to.be.true;
+    expect(fb.bind()).toBe(true);
+    expect(Debug.isValidFrameBuffer).toBe(true);
     fb.unbind();
   });
 
@@ -71,31 +69,31 @@ describe("FrameBuffer tests", () => {
       return;
 
     const texture0: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
-    assert(undefined !== texture0);
+    expect(texture0).toBeDefined();
     if (undefined === texture0) {
       return;
     }
 
     const texture1: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
-    assert(undefined !== texture1);
+    expect(texture1).toBeDefined();
     if (undefined === texture1) {
       return;
     }
 
     const depthRB: RenderBuffer | undefined = RenderBuffer.create(1, 1, GL.RenderBuffer.Format.DepthComponent16);
-    assert(undefined !== depthRB);
+    expect(depthRB).toBeDefined();
     if (undefined === depthRB) {
       return;
     }
 
     const fb = FrameBuffer.create([texture0, texture1], depthRB);
-    assert(undefined !== fb);
+    expect(fb).toBeDefined();
     if (undefined === fb) {
       return;
     }
 
-    expect(fb.bind()).to.be.true;
-    expect(Debug.isValidFrameBuffer).to.be.true;
+    expect(fb.bind()).toBe(true);
+    expect(Debug.isValidFrameBuffer).toBe(true);
     fb.unbind();
   });
 });

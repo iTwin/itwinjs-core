@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { OnScreenTarget } from "../core-frontend";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -14,12 +14,12 @@ import { ColorDef, EmptyLocalization } from "@itwin/core-common";
 describe("ViewManager", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeEach(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("view-manager-test");
   });
 
-  after(async () => {
+  afterEach(async () => {
     await imodel.close();
     await IModelApp.shutdown();
   });
@@ -31,7 +31,7 @@ describe("ViewManager", () => {
     vp.vpDiv.style.width = vp.vpDiv.style.height = "3px";
     IModelApp.viewManager.dropViewport(vp, false);
     vp.renderFrame();
-    expect((vp.target as OnScreenTarget).checkFboDimensions()).to.be.true;
+    expect((vp.target as OnScreenTarget).checkFboDimensions()).toBe(true);
     vp.dispose();
   });
 
@@ -58,5 +58,13 @@ describe("ViewManager", () => {
     vp.renderFrame();
     expectColors(vp, [ColorDef.red]);
     vp.dispose();
+  });
+
+  it("should dispose of viewport when onShutdown is called", async () => {
+    const vp = openBlankViewport({ width: 30, height: 30 });
+    IModelApp.viewManager.addViewport(vp);
+    await IModelApp.shutdown();
+
+    expect(vp.isDisposed).toBe(true);
   });
 });

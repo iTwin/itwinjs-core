@@ -58,7 +58,7 @@ export interface PullChangesOptions {
    * Function called regularly to report progress of changes download.
    * @deprecated in 3.6. Use [[downloadProgressCallback]] instead.
    */
-  progressCallback?: ProgressCallback; // eslint-disable-line deprecation/deprecation
+  progressCallback?: ProgressCallback; // eslint-disable-line @typescript-eslint/no-deprecated
   /** Function called regularly to report progress of changes download. */
   downloadProgressCallback?: OnDownloadProgress;
   /** Interval for calling progress callback (in milliseconds). */
@@ -263,7 +263,6 @@ export class BriefcaseConnection extends IModelConnection {
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
-  /** @internal */
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the iTwin that owns this iModel. */
@@ -277,6 +276,8 @@ export class BriefcaseConnection extends IModelConnection {
     this._openMode = openMode;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
+    if (OpenMode.ReadWrite === this._openMode)
+      this.txns.onAfterUndoRedo.addListener(async () => { await IModelApp.toolAdmin.restartPrimitiveTool(); });
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
@@ -341,12 +342,12 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     const removeListeners: VoidFunction[] = [];
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const shouldReportProgress = !!options?.progressCallback || !!options?.downloadProgressCallback;
 
     if (shouldReportProgress) {
       const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         options?.progressCallback?.(data);
         options?.downloadProgressCallback?.(data);
       };

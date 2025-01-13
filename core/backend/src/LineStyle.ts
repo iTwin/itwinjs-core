@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Symbology
+ * @module ElementGeometry
  */
 
 import { Id64String, IModelStatus } from "@itwin/core-bentley";

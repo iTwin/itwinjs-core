@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
 import { Content, ContentJSON } from "../../presentation-common/content/Content";
@@ -10,9 +10,7 @@ import { createTestContentDescriptor } from "../_helpers/Content";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
 
 describe("Content", () => {
-
   describe("constructor", () => {
-
     it("creates a new instance", () => {
       const descriptor = createTestContentDescriptor({ fields: [] });
       const contentSet = new Array<Item>();
@@ -20,11 +18,9 @@ describe("Content", () => {
       expect(content.descriptor).to.eq(descriptor);
       expect(content.contentSet).to.eq(contentSet);
     });
-
   });
 
   describe("fromJSON", () => {
-
     let testContentJSON!: ContentJSON;
     beforeEach(() => {
       testContentJSON = {
@@ -39,19 +35,21 @@ describe("Content", () => {
           fields: [],
           classesMap: {},
         },
-        contentSet: [{
-          classInfo: createRandomECClassInfo(),
-          primaryKeys: [createRandomECInstanceKey()],
-          labelDefinition: createRandomLabelDefinition(),
-          imageId: faker.random.uuid(),
-          mergedFieldNames: [],
-          values: {
-            test: faker.random.number(),
+        contentSet: [
+          {
+            classInfo: createRandomECClassInfo(),
+            primaryKeys: [createRandomECInstanceKey()],
+            labelDefinition: createRandomLabelDefinition(),
+            imageId: faker.random.uuid(),
+            mergedFieldNames: [],
+            values: {
+              test: faker.random.number(),
+            },
+            displayValues: {
+              test: faker.random.words(),
+            },
           },
-          displayValues: {
-            test: faker.random.words(),
-          },
-        }],
+        ],
       };
     });
 
@@ -81,7 +79,5 @@ describe("Content", () => {
       const content = Content.fromJSON(json);
       expect(content!.contentSet.length).to.eq(1);
     });
-
   });
-
 });

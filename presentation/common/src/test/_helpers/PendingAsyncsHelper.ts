@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { BeDuration } from "@itwin/core-bentley";
 
 const recursiveWait = async (pred: () => boolean, repeater: () => Promise<void>) => {
@@ -15,7 +15,7 @@ const recursiveWait = async (pred: () => boolean, repeater: () => Promise<void>)
  * @internal Used for testing only.
  */
 export const waitForAllAsyncs = async (handlers: Array<{ pendingAsyncs: Set<string> }>) => {
-  const pred = () => handlers.some((h) => (h.pendingAsyncs.size > 0));
+  const pred = () => handlers.some((h) => h.pendingAsyncs.size > 0);
   await recursiveWait(pred, async () => waitForAllAsyncs(handlers));
 };
 

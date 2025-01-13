@@ -32,6 +32,7 @@ import { PromiseMemoizer } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { ViewStateHydrator } from "../ViewStateHydrator";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
+import { _nativeDb } from "../internal/Symbols";
 
 interface ViewStateRequestProps {
   accessToken: AccessToken;
@@ -74,7 +75,7 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
     await BeDuration.race(this._timeoutMs, memo.promise).catch(() => undefined);
 
     if (memo.isPending)
-      throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+      throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
 
     this.deleteMemoized(props);
 
@@ -84,7 +85,7 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
     }
 
     assert(memo.isRejected);
-    throw memo.error; // eslint-disable-line no-throw-literal
+    throw memo.error;
   }
 }
 
@@ -99,7 +100,7 @@ async function getIModelForRpc(tokenProps: IModelRpcProps): Promise<IModelDb> {
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
  */
-export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface { // eslint-disable-line deprecation/deprecation
+export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface {
 
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
@@ -118,6 +119,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return viewHydrater.getHydrateResponseProps(options);
   }
 
+  public async queryAllUsedSpatialSubCategories(tokenProps: IModelRpcProps): Promise<SubCategoryResultRow[]> {
+    const iModelDb = await getIModelForRpc(tokenProps);
+    return iModelDb.queryAllUsedSpatialSubCategories();
+  }
+
   public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
     const iModelDb = await getIModelForRpc(tokenProps);
     const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);
@@ -130,7 +136,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
       request.usePrimaryConn = false;
     }
-    return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
+    return ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
   }
 
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
@@ -139,7 +145,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
       request.usePrimaryConn = false;
     }
-    return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
+    return ConcurrentQuery.executeBlobRequest(iModelDb[_nativeDb], request);
   }
 
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIds: Id64String[]): Promise<Range3dProps[]> {
@@ -252,9 +258,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.views.getViewStateProps(viewDefinitionId, options);
   }
 
-  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
+  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> { // eslint-disable-line @typescript-eslint/no-deprecated
     const iModelDb = await getIModelForRpc(tokenProps);
-    return iModelDb.nativeDb.readFontMap();
+    return iModelDb[_nativeDb].readFontMap();
   }
 
   public async requestSnap(tokenProps: IModelRpcProps, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
@@ -324,7 +330,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
    */
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    // eslint-disable-next-line deprecation/deprecation
     const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();
@@ -368,7 +373,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async generateElementMeshes(tokenProps: IModelRpcProps, props: ElementMeshRequestProps): Promise<Uint8Array> {
     const db = await getIModelForRpc(tokenProps);
-    return db.nativeDb.generateElementMeshes(props);
+    return db[_nativeDb].generateElementMeshes(props);
   }
 
   /** @internal */
@@ -377,8 +382,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       throw new Error("ViewStoreRpc version mismatch");
 
     const db = await getIModelForRpc(tokenProps);
-    const viewStore = await db.views.accessViewStore({ accessLevel: forWrite ? "write" : "read", userToken: RpcTrace.currentActivity?.accessToken });
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const viewStore = await db.views.accessViewStore({ accessLevel: forWrite ? "write" : "read" });
     const access = viewStore[forWrite ? "writeLocker" : "reader"] as any;
 
     const func = access[methodName];

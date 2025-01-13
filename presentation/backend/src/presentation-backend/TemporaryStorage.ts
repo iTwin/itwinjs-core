@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Core
  */
@@ -65,7 +65,6 @@ interface TemporaryValue<T> {
  * @internal
  */
 export class TemporaryStorage<T> implements IDisposable {
-
   private _timer?: NodeJS.Timeout;
   protected _values: Map<string, TemporaryValue<T>>;
   public readonly props: TemporaryStorageProps<T>;
@@ -76,8 +75,9 @@ export class TemporaryStorage<T> implements IDisposable {
   constructor(props: TemporaryStorageProps<T>) {
     this.props = props;
     this._values = new Map<string, TemporaryValue<T>>();
-    if (this.props.cleanupInterval)
+    if (this.props.cleanupInterval) {
       this._timer = setInterval(this.disposeOutdatedValues, this.props.cleanupInterval);
+    }
   }
 
   /**
@@ -85,8 +85,9 @@ export class TemporaryStorage<T> implements IDisposable {
    * and other resources
    */
   public dispose() {
-    if (this._timer)
+    if (this._timer) {
       clearInterval(this._timer);
+    }
 
     if (this.props.cleanupHandler) {
       this._values.forEach((v, id) => {
@@ -102,24 +103,25 @@ export class TemporaryStorage<T> implements IDisposable {
    * on their max and unused value lifetimes specified through [[Props]]).
    */
   public disposeOutdatedValues = () => {
-    const now = (new Date()).getTime();
+    const now = new Date().getTime();
     const valuesToDispose: string[] = [];
     for (const [key, entry] of this._values.entries()) {
       if (this.props.maxValueLifetime !== undefined) {
-        if (this.props.maxValueLifetime === 0 || (now - entry.created.getTime()) > this.props.maxValueLifetime) {
+        if (this.props.maxValueLifetime === 0 || now - entry.created.getTime() > this.props.maxValueLifetime) {
           valuesToDispose.push(key);
           continue;
         }
       }
       if (this.props.unusedValueLifetime !== undefined) {
-        if (this.props.unusedValueLifetime === 0 || (now - entry.lastUsed.getTime()) > this.props.unusedValueLifetime) {
+        if (this.props.unusedValueLifetime === 0 || now - entry.lastUsed.getTime() > this.props.unusedValueLifetime) {
           valuesToDispose.push(key);
           continue;
         }
       }
     }
-    for (const id of valuesToDispose)
+    for (const id of valuesToDispose) {
       this.deleteExistingEntry(id, true);
+    }
   };
 
   private deleteExistingEntry(id: string, isTimeout: boolean) {
@@ -146,8 +148,9 @@ export class TemporaryStorage<T> implements IDisposable {
   public notifyValueUsed(id: string) {
     const entry = this._values.get(id);
     // istanbul ignore else
-    if (entry)
+    if (entry) {
       entry.lastUsed = new Date();
+    }
   }
 
   /**
@@ -155,16 +158,18 @@ export class TemporaryStorage<T> implements IDisposable {
    * @throws An error when trying to add a value with ID that's already stored in the storage.
    */
   public addValue(id: string, value: T) {
-    if (this._values.has(id))
+    if (this._values.has(id)) {
       throw new PresentationError(PresentationStatus.InvalidArgument, `A value with given ID "${id}" already exists in this storage.`);
+    }
     this._values.set(id, { value, created: new Date(), lastUsed: new Date() });
   }
 
   /** Deletes a value with given id. */
   public deleteValue(id: string) {
     // istanbul ignore else
-    if (this._values.has(id))
+    if (this._values.has(id)) {
       this.deleteExistingEntry(id, false);
+    }
   }
 
   /**
@@ -175,11 +180,11 @@ export class TemporaryStorage<T> implements IDisposable {
    */
   public get values(): T[] {
     const values = new Array<T>();
-    for (const v of this._values.values())
+    for (const v of this._values.values()) {
       values.push(v.value);
+    }
     return values;
   }
-
 }
 
 /**
@@ -198,7 +203,6 @@ export interface FactoryBasedTemporaryStorageProps<T> extends TemporaryStoragePr
  * @internal
  */
 export class FactoryBasedTemporaryStorage<T> extends TemporaryStorage<T> {
-
   public override readonly props: FactoryBasedTemporaryStorageProps<T>;
 
   /**
@@ -217,8 +221,9 @@ export class FactoryBasedTemporaryStorage<T> extends TemporaryStorage<T> {
    */
   public override getValue(id: string): T {
     const existingValue = super.getValue(id);
-    if (existingValue)
+    if (existingValue) {
       return existingValue;
+    }
 
     const value = this.props.factory(id, () => this.notifyValueUsed(id));
     this.addValue(id, value);

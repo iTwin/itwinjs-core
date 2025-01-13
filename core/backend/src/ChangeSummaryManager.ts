@@ -16,6 +16,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { _nativeDb } from "./internal/Symbols";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -83,7 +84,7 @@ export class ChangeSummaryManager {
     if (!iModel || !iModel.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
-    return iModel.nativeDb.isChangeCacheAttached();
+    return iModel[_nativeDb].isChangeCacheAttached();
   }
 
   /** Attaches the *Change Cache file* to the specified iModel if it hasn't been attached yet.
@@ -106,7 +107,7 @@ export class ChangeSummaryManager {
     }
 
     assert(IModelJsFs.existsSync(changesCacheFilePath));
-    const res: DbResult = iModel.nativeDb.attachChangeCache(changesCacheFilePath);
+    const res: DbResult = iModel[_nativeDb].attachChangeCache(changesCacheFilePath);
     if (res !== DbResult.BE_SQLITE_OK)
       throw new IModelError(res, `Failed to attach Change Cache file to ${iModel.pathName}.`);
   }
@@ -121,7 +122,7 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
     iModel.clearCaches();
-    const res: DbResult = iModel.nativeDb.detachChangeCache();
+    const res: DbResult = iModel[_nativeDb].detachChangeCache();
     if (res !== DbResult.BE_SQLITE_OK)
       throw new IModelError(res, `Failed to detach Change Cache file from ${iModel.pathName}.`);
   }
@@ -153,7 +154,7 @@ export class ChangeSummaryManager {
     if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadArg, "Invalid iModel object. iModel must be open.");
 
-    const stat: DbResult = iModel.nativeDb.createChangeCache(changesFile.nativeDb, changeCacheFilePath);
+    const stat: DbResult = iModel[_nativeDb].createChangeCache(changesFile[_nativeDb], changeCacheFilePath);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, `Failed to create Change Cache file at "${changeCacheFilePath}".`);
 
@@ -374,7 +375,7 @@ export class ChangeSummaryManager {
 
     const iModelId = iModel.iModelId;
     const changesetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    const changeset = await IModelHost.hubAccess.downloadChangeset({ accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
+    const changeset = await IModelHost.hubAccess.downloadChangeset({ accessToken: IModelHost.authorizationClient ? undefined : accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
 
     if (!IModelJsFs.existsSync(changeset.pathname))
       throw new IModelError(IModelStatus.FileNotFound, `Failed to download change set: ${changeset.pathname}`);
@@ -382,7 +383,7 @@ export class ChangeSummaryManager {
     let changesFile: ECDb | undefined;
     try {
       changesFile = ChangeSummaryManager.openOrCreateChangesFile(iModel);
-      assert(changesFile.nativeDb !== undefined, "Invalid changesFile - should've caused an exception");
+      assert(changesFile[_nativeDb] !== undefined, "Invalid changesFile - should've caused an exception");
 
       let changeSummaryId = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, changesetId);
       if (changeSummaryId !== undefined) {
@@ -390,7 +391,7 @@ export class ChangeSummaryManager {
         return changeSummaryId;
       }
 
-      const stat = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeset.pathname);
+      const stat = iModel[_nativeDb].extractChangeSummary(changesFile[_nativeDb], changeset.pathname);
       if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
         throw new IModelError(stat.error.status, stat.error.message);
 
@@ -413,7 +414,8 @@ export class ChangeSummaryManager {
    * @param args Arguments including the range of versions for which Change Summaries are to be created, and other necessary input for creation
    */
   public static async createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]> {
-    const accessToken = args.accessToken ?? await IModelHost.getAccessToken() ?? "";
+    // if we pass undefined to hubAccess methods they will use our authorizationClient to refresh the token as needed.
+    const accessToken = IModelHost.authorizationClient ? undefined : args.accessToken ?? "";
     const { iModelId, iTwinId, range } = args;
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
@@ -442,7 +444,7 @@ export class ChangeSummaryManager {
           await iModel.pullChanges({ accessToken, toIndex: changesets[index].index });
 
         // Create a change summary for the last change set that was applied
-        const summaryId = await this.createChangeSummary(accessToken, iModel);
+        const summaryId = await this.createChangeSummary(accessToken ?? await IModelHost.authorizationClient?.getAccessToken() ?? "", iModel);
         summaryIds.push(summaryId);
       }
       return summaryIds;

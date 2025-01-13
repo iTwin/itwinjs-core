@@ -1,7 +1,14 @@
 {
   "tools": {
     "MapFeatureInfoTool": {
-      "keyin": "mlt map feature info"
+      "keyin": "mlt map feature info",
+      "description": "Identify map layer features",
+      "flyover": "Map Layer Info",
+      "Prompts": {
+        "EnterPoint": "Identify map layer features",
+        "clickToIdentify": "Click to identify features",
+        "clickToClear": "Click to clear highlighted features"
+      }
     }
   },
   "Messages": {

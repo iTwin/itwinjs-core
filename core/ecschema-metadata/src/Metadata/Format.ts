@@ -11,8 +11,8 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import {
-  BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
+  BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
+  ScientificType, ShowSignOption,
 } from "@itwin/core-quantity";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
@@ -23,14 +23,12 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class Format extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Format; // eslint-disable-line
+  public override readonly schemaItemType = SchemaItemType.Format;
   protected _base: BaseFormat;
   protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Format;
-
     this._base = new BaseFormat(name);
   }
 
@@ -134,7 +132,7 @@ export class Format extends SchemaItem {
    */
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): SchemaItemFormatProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    schemaJson.type = formatTypeToString(this.type);
+    schemaJson.type = this.type;
     schemaJson.precision = this.precision;
 
     // this._spacer = " ";
@@ -144,7 +142,7 @@ export class Format extends SchemaItem {
     if (0.0 !== this.roundFactor)
       schemaJson.roundFactor = this.roundFactor;
     if (ShowSignOption.OnlyNegative !== this.showSignOption)
-      schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
+      schemaJson.showSignOption = this.showSignOption;
     if (FormatTraits.Uninitialized !== this.formatTraits)
       schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
     if ("." !== this.decimalSeparator)
@@ -158,7 +156,7 @@ export class Format extends SchemaItem {
       schemaJson.minWidth = this.minWidth;
 
     if (FormatType.Scientific === this.type && undefined !== this.scientificType)
-      schemaJson.scientificType = scientificTypeToString(this.scientificType);
+      schemaJson.scientificType = this.scientificType;
 
     if (FormatType.Station === this.type) {
       if (undefined !== this.stationOffsetSize)
@@ -192,10 +190,10 @@ export class Format extends SchemaItem {
   /** @internal */
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    itemElement.setAttribute("type", formatTypeToString(this.type).toLowerCase());
+    itemElement.setAttribute("type", this.type.toLowerCase());
     itemElement.setAttribute("precision", this.precision.toString());
     itemElement.setAttribute("roundFactor", this.roundFactor.toString());
-    itemElement.setAttribute("showSignOption", showSignOptionToString(this.showSignOption));
+    itemElement.setAttribute("showSignOption", this.showSignOption);
     itemElement.setAttribute("decimalSeparator", this.decimalSeparator);
     itemElement.setAttribute("thousandSeparator", this.thousandSeparator);
     itemElement.setAttribute("uomSeparator", this.uomSeparator);
@@ -204,7 +202,7 @@ export class Format extends SchemaItem {
     if (undefined !== this.minWidth)
       itemElement.setAttribute("minWidth", this.minWidth.toString());
     if (undefined !== this.scientificType)
-      itemElement.setAttribute("scientificType", scientificTypeToString(this.scientificType));
+      itemElement.setAttribute("scientificType", this.scientificType);
     if (undefined !== this.stationOffsetSize)
       itemElement.setAttribute("stationOffsetSize", this.stationOffsetSize.toString());
 

@@ -58,13 +58,13 @@
       "cwd": "${workspaceFolder}/core/bentley/",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/bentley/lib/**/*.js"
-      ]
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
     },
     {
       "name": "OrbitGT Tests",
@@ -92,13 +92,13 @@
       "cwd": "${workspaceFolder}/core/common/",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ]
+      "runtimeExecutable": "pnpm",
+      "autoAttachChildProcesses": true,
+      "console": "integratedTerminal",
+      "smartStep": true
     },
     {
       "name": "EC Tests",
@@ -287,13 +287,13 @@
       "cwd": "${workspaceFolder}/core/geometry",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
       "env": {
         "NODE_ENV": "development" // needed for asserts to fire
       }
@@ -685,31 +685,16 @@
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
         "listDb",
-        "allEarth",
-        "--prefetch",
-        "--logging",
-        "--config=s:/realAzure.json"
+        "base",
+        "--config=o:/queryDbs.json"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
         "${workspaceFolder}/core/*/lib/**/*.js",
       ],
       "env": {
-        "WORKSPACE_EDITOR_LOGGING": "true",
+        "WORKSPACE_EDITOR_LOGGING": "false",
       }
-    },
-    {
-      "name": "Webpack Plugin Tests",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/tools/webpack-core",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ]
     },
     // TEST APPS
     { /* PARTIAL */
@@ -1095,6 +1080,28 @@
       ],
       "autoAttachChildProcesses": true
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/core/frontend",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "test",
+        "--inspect",
+        "--no-file-parallelism"
+      ],
+    },
+    {
+      "type": "chrome",
+      "request": "attach",
+      "name": "Attach to Vitest Browser",
+      "url": "http://localhost:5173",
+      "timeout": 30000,
+      "port": 9229
+    }
   ],
   "compounds": [
     {
@@ -1103,10 +1110,8 @@
         "group": "0_CoreTests",
         "order": 2
       },
-      "configurations": [
-        "[BROWSER] Frontend Tests",
-        "[NODE] Certa Test Runner for Frontend Tests"
-      ]
+      "configurations": ["Attach to Vitest Browser", "Run Vitest Browser"],
+      "stopAll": true
     },
     {
       "name": "Electron Frontend Tests",

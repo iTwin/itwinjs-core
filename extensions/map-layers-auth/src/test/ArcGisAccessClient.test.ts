@@ -7,13 +7,7 @@ import { expect } from "chai";
 
 import * as sinon from "sinon";
 import { ArcGisAccessClient, ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth";
-
-global.fetch = async (_input, _init) => {
-
-  return Promise.resolve((({
-    status: 400,
-  } as unknown) as Response));
-};
+import fetchMock from "fetch-mock";
 
 describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();
@@ -32,10 +26,17 @@ describe("ArcGisUtilities tests", () => {
       },
     });
 
+    fetchMock.mock("*",  {
+      status: 400,
+      headers: {"Content-Type": "application/json"},
+      body: {},
+    });
+
   });
 
   afterEach(async () => {
     sandbox.restore();
+    fetchMock.restore();
     fakeAccessClient = undefined;
   });
 
@@ -93,11 +94,14 @@ describe("ArcGisUtilities tests", () => {
       return Promise.resolve(new URL(sampleOnPremiseMapServerRestUrl));
     });
 
+    const validateOAuth2EndpointSpy = sandbox.spy(ArcGisAccessClient, "validateOAuth2Endpoint");
     const onPremiseEndpoint = await fakeAccessClient?.getTokenServiceEndPoint(sampleOnPremiseMapServer);
     let acOnPremiseEndpoint;
     if (onPremiseEndpoint instanceof ArcGisOAuth2Endpoint)
       acOnPremiseEndpoint = onPremiseEndpoint;
 
+    expect(validateOAuth2EndpointSpy.called).to.be.true;
+    expect(validateOAuth2EndpointSpy.args[0][0]).to.be.equals(sampleOnPremiseMapServerAuthorizeUrl);
     expect(acOnPremiseEndpoint).to.not.undefined;
     expect(acOnPremiseEndpoint?.isArcgisOnline).to.false;
     expect(acOnPremiseEndpoint?.getUrl()).to.equals(sampleOnPremiseMapServerAuthorizeUrl);

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Logging
  */
@@ -51,6 +51,7 @@ export enum PresentationBackendNativeLoggerCategory {
   ECPresentation_ECExpressions = "ECPresentation.ECExpressions",
   ECPresentation_Serialization = "ECPresentation.Serialization",
 
+  /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
   /** @deprecated in 4.0. The logging namespace is not used anymore. */
   ECPresentation_Localization = "ECPresentation.Localization",
   /** @deprecated in 4.0. Use [[ECPresentation]] */

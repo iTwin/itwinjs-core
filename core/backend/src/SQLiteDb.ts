@@ -13,9 +13,10 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 import { IModelJsFs } from "./IModelJsFs";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
+import { _nativeDb } from "./internal/Symbols";
 
 // cspell:ignore savepoint julianday rowid
 
@@ -27,12 +28,12 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
  */
 export class SQLiteDb {
   /** @internal */
-  public readonly nativeDb = new IModelHost.platform.SQLiteDb();
+  public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
   /** @internal */
   public static createBlobIO(): SQLiteDb.BlobIO {
-    return new IModelHost.platform.BlobIO();
+    return new IModelNative.platform.BlobIO();
   }
 
   /** alias for closeDb.
@@ -49,7 +50,7 @@ export class SQLiteDb {
   /** @beta */
   public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
   public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
-    this.nativeDb.createDb(dbName, container, params);
+    this[_nativeDb].createDb(dbName, container, params);
   }
 
   /** Open a SQLiteDb.
@@ -62,7 +63,7 @@ export class SQLiteDb {
    */
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void {
-    this.nativeDb.openDb(dbName, openMode, container);
+    this[_nativeDb].openDb(dbName, openMode, container);
   }
 
   /** Close SQLiteDb.
@@ -72,14 +73,14 @@ export class SQLiteDb {
     if (saveChanges && this.isOpen)
       this.saveChanges();
     this._sqliteStatementCache.clear();
-    this.nativeDb.closeDb();
+    this[_nativeDb].closeDb();
   }
 
   /** Returns true if this SQLiteDb is open */
-  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
+  public get isOpen(): boolean { return this[_nativeDb].isOpen(); }
 
   /** Returns true if this SQLiteDb is open readonly */
-  public get isReadonly(): boolean { return this.nativeDb.isReadonly(); }
+  public get isReadonly(): boolean { return this[_nativeDb].isReadonly(); }
 
   /** Create a new table in this database. */
   protected createTable(args: {
@@ -138,6 +139,18 @@ export class SQLiteDb {
     }
   }
 
+  /** The cloud container backing this SQLite database, if any.
+   * @beta
+   */
+  public get cloudContainer(): CloudSqlite.CloudContainer | undefined {
+    return this[_nativeDb].cloudContainer;
+  }
+
+  /** Returns the Id of the most-recently-inserted row in this database, per [sqlite3_last_insert_rowid](https://www.sqlite.org/c3ref/last_insert_rowid.html). */
+  public getLastInsertRowId(): number {
+    return this[_nativeDb].getLastInsertRowId();
+  }
+
   /**
    * Perform an operation on a database in a CloudContainer with the write lock held.
    *
@@ -159,17 +172,17 @@ export class SQLiteDb {
    * @see https://www.sqlite.org/lang_vacuum.html
    */
   public vacuum(args?: SQLiteDb.VacuumDbArgs) {
-    this.nativeDb.vacuum(args);
+    this[_nativeDb].vacuum(args);
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the default transaction. */
   public saveChanges(): void {
-    this.nativeDb.saveChanges();
+    this[_nativeDb].saveChanges();
   }
 
   /** Abandon (cancel) the outermost transaction, discarding all changes since last save. Then, restart the default transaction. */
   public abandonChanges(): void {
-    this.nativeDb.abandonChanges();
+    this[_nativeDb].abandonChanges();
   }
 
   /**
@@ -242,7 +255,7 @@ export class SQLiteDb {
      */
   public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb, logErrors);
+    stmt.prepare(this[_nativeDb], logErrors);
     return stmt;
   }
 
@@ -290,17 +303,17 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
    */
   public setRequiredVersions(versions: SQLiteDb.RequiredVersionRanges) {
     // NOTE: It might look tempting to just stringify the supplied `versions` object, but we only include required members - there may be others.
-    this.nativeDb.saveFileProperty(VersionedSqliteDb._versionProps, JSON.stringify({ readVersion: versions.readVersion, writeVersion: versions.writeVersion }));
+    this[_nativeDb].saveFileProperty(VersionedSqliteDb._versionProps, JSON.stringify({ readVersion: versions.readVersion, writeVersion: versions.writeVersion }));
   }
 
   /** Get the required version ranges necessary to open this VersionedSqliteDb. */
   public getRequiredVersions() {
     const checkIsString = (value: any) => {
       if (typeof value !== "string")
-        throw new Error(`CloudDb ${this.nativeDb.getFilePath()} has invalid "versions" property`);
+        throw new Error(`CloudDb ${this[_nativeDb].getFilePath()} has invalid "versions" property`);
       return value;
     };
-    const versionJson = checkIsString(this.nativeDb.queryFileProperty(VersionedSqliteDb._versionProps, true));
+    const versionJson = checkIsString(this[_nativeDb].queryFileProperty(VersionedSqliteDb._versionProps, true));
     const versionRanges = JSON.parse(versionJson) as SQLiteDb.RequiredVersionRanges;
     checkIsString(versionRanges.readVersion);
     checkIsString(versionRanges.writeVersion);
@@ -310,21 +323,20 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
   /**
    * Implement this method to create all tables for this subclass of `VersionedSqliteDb` when a new database file is created. Called from [[createNewDb]].
    */
-  protected abstract createDDL(): void;
+  protected abstract createDDL(args: any): void;
 
   /**
    * Create a new database file for the subclass of VersionedSqliteDb.
-   * @param fileName the name of a local
    * @note The required versions are saved as [[myVersion]] or newer for both read and write.
    */
-  public static createNewDb(fileName: LocalFileName) {
+  public static createNewDb(fileName: LocalFileName, setupArgs?: any) {
     const db = new (this as any)() as VersionedSqliteDb; // "as any" necessary because VersionedSqliteDb is abstract
     IModelJsFs.recursiveMkDirSync(dirname(fileName));
     if (fs.existsSync(fileName))
       fs.unlinkSync(fileName);
 
     db.createDb(fileName);
-    db.createDDL();
+    db.createDDL(setupArgs);
     const minVer = `^${db.myVersion}`;
     db.setRequiredVersions({ readVersion: minVer, writeVersion: minVer });
     db.closeDb(true);
@@ -343,7 +355,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
 
     this.closeDb();
     const tooNew = semver.gtr(this.myVersion, range);
-    throw new Error(`${this.nativeDb.getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`);
+    throw new Error(`${this[_nativeDb].getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`);
 
   }
 

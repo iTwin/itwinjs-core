@@ -14,12 +14,11 @@ import { SchemaItem } from "./SchemaItem";
 
 /** @beta */
 export class Phenomenon extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Phenomenon; // eslint-disable-line
+  public override readonly schemaItemType = SchemaItemType.Phenomenon;
   protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Phenomenon;
     this._definition = "";
   }
 

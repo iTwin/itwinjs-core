@@ -1,0 +1,14 @@
+# Ignore artifacts
+build
+lib
+config
+*.log
+
+# Ignore auto-generated files
+CHANGELOG.md
+CHANGELOG.json
+Ruleset.schema.json
+
+# Ignore configs
+.nycrc
+tsconfig.*

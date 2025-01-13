@@ -7,7 +7,7 @@ import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
 } from "@itwin/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
@@ -491,7 +491,7 @@ export class ViewAttributes {
 
     const div = document.createElement("div");
 
-    const backgroundSettingsDiv = document.createElement("div")!;
+    const backgroundSettingsDiv = document.createElement("div");
 
     const showOrHideSettings = (show: boolean) => {
       const display = show ? "block" : "none";
@@ -554,7 +554,7 @@ export class ViewAttributes {
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
     const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
-    backgroundSettingsDiv.appendChild(document.createElement("hr")!);
+    backgroundSettingsDiv.appendChild(document.createElement("hr"));
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
 
@@ -633,7 +633,7 @@ export class ViewAttributes {
     const getTerrainSettings = (view: ViewState) => view.displayStyle.settings.backgroundMap.terrainSettings;
     const updateTerrainSettings = (props: TerrainProps) => this._vp.changeBackgroundMapProps({ terrainSettings: props });
 
-    const settingsDiv = document.createElement("div")!;
+    const settingsDiv = document.createElement("div");
     const heightOriginMode: HTMLSelectElement = createComboBox({
       name: "Height Origin Mode: ",
       id: "viewAttr_TerrainHeightOrigin",
@@ -683,6 +683,11 @@ export class ViewAttributes {
       settingsDiv,
     ).checkbox;
 
+    const bathyCheckbox = this.addCheckbox("Bathymetry",
+      (enabled: boolean) => updateTerrainSettings({ dataSource: enabled ? CesiumTerrainAssetId.Bathymetry : CesiumTerrainAssetId.Default }),
+      settingsDiv,
+    ).checkbox;
+
     this._updates.push((view) => {
       const map = view.displayStyle.settings.backgroundMap;
       const terrainSettings = map.terrainSettings;
@@ -690,6 +695,7 @@ export class ViewAttributes {
       heightOrigin.value = terrainSettings.heightOrigin.toString();
       exaggeration.value = terrainSettings.exaggeration.toString();
       bingCheckbox.checked = "DtaBingTerrain" === terrainSettings.providerName;
+      bathyCheckbox.checked = CesiumTerrainAssetId.Bathymetry === terrainSettings.dataSource;
     });
 
     return settingsDiv;

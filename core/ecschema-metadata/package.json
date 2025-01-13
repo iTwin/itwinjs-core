@@ -1,24 +1,26 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.4.0-dev.25",
+  "version": "5.0.0-dev.39",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
   "typings": "lib/cjs/ecschema-metadata",
+  "module": "lib/esm/ecschema-metadata.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core.git",
     "directory": "core/ecschema-metadata"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
     "cover": "nyc npm -s test",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
@@ -34,36 +36,32 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/units-schema": "^1.0.7",
+    "@bentley/units-schema": "^1.0.8",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "4.0.0-dev.44",
-    "@types/almost-equal": "1.1.0",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.9.5",
     "@types/sinon": "^17.0.2",
     "@xmldom/xmldom": "~0.8.5",
     "benchmark": "^2.1.4",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
-    "eslint": "^8.44.0",
+    "eslint": "^9.13.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.1",
-    "typescript": "~5.0.2"
+    "sinon": "^17.0.2",
+    "typescript": "~5.6.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.4.0-dev.25",
-    "@itwin/core-quantity": "workspace:^4.4.0-dev.25"
-  },
-  "dependencies": {
-    "almost-equal": "^1.1.0"
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-quantity": "workspace:*"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

@@ -90,11 +90,23 @@ export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
  * @public
  */
 export type LowAndHighXY = Readonly<WritableLowAndHighXY>;
+
+/** JSON representation of [[LowAndHighXY]].
+ * @public
+ */
+export interface LowAndHighXYProps { low: XYProps, high: XYProps }
+
 /**
  * Interface for type with readable `low` and `high` members which have `x`, `y`, and `z` number members.
  * @public
  */
 export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
+
+/** JSON representation of [[LowAndHighXYZ]].
+ * @public
+ */
+export interface LowAndHighXYZProps { low: XYZProps, high: XYZProps }
+
 /**
  * Interface for variant json (one of)
  * * (individually optional) `x`, `y`, `z`
@@ -141,20 +153,14 @@ export type TransformProps = number[][] | number[] | {
  * * array of `XYZProps`
  * @public
  */
-export type Range3dProps = {
-  low: XYZProps;
-  high: XYZProps;
-} | XYZProps[];
+export type Range3dProps = LowAndHighXYZProps | XYZProps[];
 /**
  *  Interface for variant json representing a Range2d
  * * pair of `XYProps` named `low` and `high`
  * * array of `XYProps`
  * @public
  */
-export type Range2dProps = {
-  low: XYProps;
-  high: XYProps;
-} | XYProps[];
+export type Range2dProps = LowAndHighXYProps | XYProps[];
 /**
  *  Interface for variant json representing a Range1d
  * * pair of `number` named `low` and `high`

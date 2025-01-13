@@ -1,10 +1,17 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import {
-  BaseNodeKey, ECClassGroupingNodeKey, ECInstancesNodeKey, ECPropertyGroupingNodeKey, GroupingNodeKey, LabelGroupingNodeKey, Node, NodePathElement,
+  BaseNodeKey,
+  ECClassGroupingNodeKey,
+  ECInstancesNodeKey,
+  ECPropertyGroupingNodeKey,
+  GroupingNodeKey,
+  LabelGroupingNodeKey,
+  Node,
+  NodePathElement,
   StandardNodeTypes,
 } from "../../../presentation-common";
 import { InstanceKey } from "../../../presentation-common/EC";
@@ -83,9 +90,12 @@ export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): Gro
     StandardNodeTypes.ECPropertyGroupingNode,
   ]);
   switch (type) {
-    case StandardNodeTypes.DisplayLabelGroupingNode: return createRandomLabelGroupingNodeKey(groupedInstancesCount);
-    case StandardNodeTypes.ECClassGroupingNode: return createRandomECClassGroupingNodeKey(groupedInstancesCount);
-    case StandardNodeTypes.ECPropertyGroupingNode: return createRandomECPropertyGroupingNodeKey(groupedInstancesCount);
+    case StandardNodeTypes.DisplayLabelGroupingNode:
+      return createRandomLabelGroupingNodeKey(groupedInstancesCount);
+    case StandardNodeTypes.ECClassGroupingNode:
+      return createRandomECClassGroupingNodeKey(groupedInstancesCount);
+    case StandardNodeTypes.ECPropertyGroupingNode:
+      return createRandomECPropertyGroupingNodeKey(groupedInstancesCount);
   }
   throw Error();
 };
@@ -115,7 +125,7 @@ export const createRandomECInstancesNode = (props?: Partial<Node>): Node => {
 /**
  * @internal Used for testing only.
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export const createRandomECInstancesNodeJSON = (): NodeJSON => {
   return {
     key: createRandomECInstancesNodeKey(),
@@ -153,8 +163,9 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
-    while (childrenCount--)
+    while (childrenCount--) {
       el.children.push(createRandomNodePathElement(depth - 1));
+    }
   }
   return el;
 };
@@ -162,9 +173,9 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
 /**
  * @internal Used for testing only.
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElementJSON => {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const el: NodePathElementJSON = {
     node: createRandomECInstancesNodeJSON(),
     index: faker.random.number(999),
@@ -181,8 +192,9 @@ export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElem
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
-    while (childrenCount--)
+    while (childrenCount--) {
       el.children.push(createRandomNodePathElementJSON(depth - 1));
+    }
   }
   return el;
 };
