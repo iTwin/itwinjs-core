@@ -155,6 +155,14 @@ export enum AlternateDateFormats {
 }
 
 // @public
+export interface ArrayPropertyValueConstraints {
+    // (undocumented)
+    maxOccurs?: number;
+    // (undocumented)
+    minOccurs?: number;
+}
+
+// @public
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)
     items: PropertyRecord[];
@@ -803,6 +811,14 @@ export interface MultilineTextEditorParams extends BasePropertyEditorParams {
 }
 
 // @public
+export interface NumericPropertyValueConstraints {
+    // (undocumented)
+    maximumValue?: number;
+    // (undocumented)
+    minimumValue?: number;
+}
+
+// @public
 export type OnCancelFunc = () => void;
 
 // @public
@@ -910,6 +926,7 @@ export interface PropertyConverterInfo {
 
 // @public
 export interface PropertyDescription {
+    constraints?: PropertyValueConstraints;
     converter?: PropertyConverterInfo;
     dataController?: string;
     displayLabel: string;
@@ -1001,6 +1018,9 @@ export interface PropertyRendererInfo {
 
 // @public
 export type PropertyValue = PrimitiveValue | StructValue | ArrayValue;
+
+// @public
+export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
 
 // @public
 export enum PropertyValueFormat {
@@ -1308,6 +1328,14 @@ export enum StatusBarSection {
 
 // @public
 export type StringGetter = () => string;
+
+// @public
+export interface StringPropertyValueConstraints {
+    // (undocumented)
+    maximumLength?: number;
+    // (undocumented)
+    minimumLength?: number;
+}
 
 // @public
 export interface StructValue extends BasePropertyValue {

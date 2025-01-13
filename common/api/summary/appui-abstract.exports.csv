@@ -21,6 +21,7 @@ public;interface;ActionButton
 public;interface;AllowedUiItemProviderOverrides
 deprecated;interface;AllowedUiItemProviderOverrides
 public;enum;AlternateDateFormats
+public;interface;ArrayPropertyValueConstraints
 public;interface;ArrayValue
 public;interface;BackstageActionItem
 deprecated;interface;BackstageActionItem
@@ -122,6 +123,7 @@ deprecated;function;matchesWords
 public;interface;MessagePresenter
 public;enum;MessageSeverity
 public;interface;MultilineTextEditorParams
+public;interface;NumericPropertyValueConstraints
 public;type;OnCancelFunc
 public;type;OnItemExecutedFunc
 public;type;OnNumberCommitFunc
@@ -142,6 +144,7 @@ public;enum;PropertyEditorParamTypes
 public;class;PropertyRecord
 public;interface;PropertyRendererInfo
 public;type;PropertyValue
+public;type;PropertyValueConstraints
 public;enum;PropertyValueFormat
 public;interface;ProvidedItem
 deprecated;interface;ProvidedItem
@@ -169,6 +172,7 @@ deprecated;enum;StatusBarLabelSide
 public;enum;StatusBarSection
 deprecated;enum;StatusBarSection
 public;type;StringGetter
+public;interface;StringPropertyValueConstraints
 public;interface;StructValue
 public;interface;SuppressLabelEditorParams
 public;class;SyncPropertiesChangeEvent

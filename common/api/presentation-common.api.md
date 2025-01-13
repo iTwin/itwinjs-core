@@ -49,6 +49,14 @@ export interface ArrayPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends Pr
 }
 
 // @public
+export interface ArrayPropertyValueConstraints {
+    // (undocumented)
+    maxOccurs?: number;
+    // (undocumented)
+    minOccurs?: number;
+}
+
+// @public
 export interface ArrayTypeDescription extends BaseTypeDescription {
     memberType: TypeDescription;
     valueFormat: PropertyValueFormat.Array;
@@ -2123,6 +2131,14 @@ export interface NodeUpdateInfoJSON {
 }
 
 // @public
+export interface NumericPropertyValueConstraints {
+    // (undocumented)
+    maximumValue?: number;
+    // (undocumented)
+    minimumValue?: number;
+}
+
+// @public
 type Omit_2<T, K> = Pick<T, Exclude<keyof T, K>>;
 export { Omit_2 as Omit }
 
@@ -2464,6 +2480,7 @@ export enum PropertyGroupingValue {
 // @public
 export interface PropertyInfo {
     classInfo: ClassInfo;
+    constraints?: PropertyValueConstraints;
     enumerationInfo?: EnumerationInfo;
     extendedType?: string;
     kindOfQuantity?: KindOfQuantityInfo;
@@ -2537,6 +2554,9 @@ export interface PropertySortingRule extends SortingRuleBase {
 export interface PropertySpecification extends PropertyOverrides {
     name: string;
 }
+
+// @public
+export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
 
 // @public
 export enum PropertyValueFormat {
@@ -3109,6 +3129,14 @@ export interface StartStructProps {
     parentFieldName?: string;
     rawValues: ValuesMap;
     valueType: TypeDescription;
+}
+
+// @public
+export interface StringPropertyValueConstraints {
+    // (undocumented)
+    maximumLength?: number;
+    // (undocumented)
+    minimumLength?: number;
 }
 
 // @public
