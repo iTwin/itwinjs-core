@@ -363,7 +363,22 @@ export abstract class IModelDb extends IModel {
       });
     }
   }
-
+  /**
+   * Attach a iModel file to this connection and load and register its schemas.
+   * @param fileName IModel file name
+   * @param alias identifier for the attached file. This identifer is used a tablespace executing ECSQL queries.
+   */
+  public attachDb(fileName: string, alias: string): void {
+    this[_nativeDb].attachDb(fileName, alias);
+  }
+  /**
+   * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
+   * @param alias identifer that was used to attach the file
+   */
+  public detachDb(alias: string): void {
+    this.clearCaches();
+    this[_nativeDb].detachDb(alias);
+  }
   /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
   public close(): void {
     if (!this.isOpen)
