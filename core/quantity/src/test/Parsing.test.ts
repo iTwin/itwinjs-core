@@ -595,6 +595,45 @@ describe("Parsing tests:", () => {
     }
   });
 
+  it("should return parseError when parsing only special characters", async () => {
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+      composite: {
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+      allowMathematicOperations: true,
+    };
+
+    const testData = [
+      ".",
+      ",",
+      ",,",
+      "..",
+      ",,,",
+      "...",
+      ".,",
+      ",.",
+      "!@#$%^&*()_", // special characters
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    for (const testEntry of testData) {
+      const parseResult = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
+      expect(parseResult.isValid).to.eql(false);
+    }
+  });
+
 });
 
 describe("Synchronous Parsing tests:", async () => {
@@ -926,5 +965,62 @@ describe("Synchronous Parsing tests:", async () => {
       }
     }
   });
+
+  it("should return parseError when parsing only special characters", async () => {
+    const testData = [
+      ".",
+      ",",
+      ",,",
+      "..",
+      ",,,",
+      "...",
+      ".,",
+      ",.",
+      "!@#$%^&*()_",
+    ];
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
+      if (Parser.isParseError(parseResult)){
+        expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
+      } else {
+        assert.fail(`Expected a ParseError with input: ${testEntry}`);
+      }
+    }
+  });
+
+  it("should return parseError when parsing a string with invalid special characters mixed into numbers", async () => {
+    const testData = [
+      "10..",
+      "1.2,,3..4...7",
+      ",,3..",
+      "12..34",
+      "1.2.3",
+      "..10",
+      "1...2",
+      "1..",
+      "1..,",
+      "10,20,30..40",
+      "1..e2",
+      "1e..2",
+      "1e2..",
+      "1...2e3",
+      "1e2..,3",
+      // "1,,2", // the parsing skips comas for loose checking, returns 12
+      // "1.,2", // returns 1.2
+    ];
+
+    const unitMeter = await unitsProvider.findUnitByName("Units.FT");
+    const parserSpecExp = await ParserSpec.create(format, unitsProvider, unitMeter, unitsProvider);
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, parserSpecExp);
+      if (Parser.isParseError(parseResult)){
+        expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
+      } else {
+        assert.fail(`Expected a ParseError with input: ${testEntry}`);
+      }
+    }
+    });
 
 });
