@@ -18,6 +18,7 @@ import {
   SelectionStorage,
   StorageSelectionChangeEventArgs,
   StorageSelectionChangeType,
+  TRANSIENT_ELEMENT_CLASSNAME,
 } from "@itwin/unified-selection";
 import { Presentation } from "../Presentation";
 import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
@@ -370,10 +371,10 @@ export class SelectionManager implements ISelectionProvider {
     return this._selectionChanges
       .pipe(
         mergeMap((args) => {
-          const currentSelectables = this._selectionStorage.getSelection({ iModelKey: args.iModelKey, level: args.level });
-          return this._currentSelection.computeSelection(args.iModelKey, args.level, currentSelectables, args.selectables).pipe(
+          const currentSelectables = this._selectionStorage.getSelection({ iModelKey: args.imodelKey, level: args.level });
+          return this._currentSelection.computeSelection(args.imodelKey, args.level, currentSelectables, args.selectables).pipe(
             mergeMap(({ level, changedSelection }): Observable<SelectionChangeEventArgs> => {
-              const imodel = this._knownIModels.get(args.iModelKey);
+              const imodel = this._knownIModels.get(args.imodelKey);
               // istanbul ignore if
               if (!imodel) {
                 return EMPTY;
@@ -397,9 +398,6 @@ export class SelectionManager implements ISelectionProvider {
       });
   }
 }
-
-/** @internal */
-export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 /** @internal */
 export class ToolSelectionSyncHandler implements IDisposable {

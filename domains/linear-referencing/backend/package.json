@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "4.10.0-dev.38",
+  "version": "4.10.4",
   "main": "lib/cjs/linear-referencing-backend.js",
   "typings": "lib/cjs/linear-referencing-backend",
   "license": "MIT",
@@ -12,7 +12,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "cover": "nyc npm -s test",
-    "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-backend/file.json --tsIndexFile=./linear-referencing-backend.ts --onlyJson",
+    "docs": "betools docs --json=../../../generated-docs/domains/linear-referencing-backend/file.json --tsIndexFile=./linear-referencing-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha"
@@ -32,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.10.0-dev.38",
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.38",
-    "@itwin/core-common": "workspace:^4.10.0-dev.38",
-    "@itwin/linear-referencing-common": "workspace:^4.10.0-dev.38"
+    "@itwin/core-backend": "workspace:^4.10.4",
+    "@itwin/core-bentley": "workspace:^4.10.4",
+    "@itwin/core-common": "workspace:^4.10.4",
+    "@itwin/linear-referencing-common": "workspace:^4.10.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
