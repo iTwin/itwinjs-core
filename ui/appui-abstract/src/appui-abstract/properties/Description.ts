@@ -7,12 +7,7 @@
  */
 
 import {
-  BasePropertyEditorParams,
-  ColorEditorParams,
-  ImageCheckBoxParams,
-  PropertyEditorParams,
-  PropertyEditorParamTypes,
-  RangeEditorParams,
+  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams,
   SuppressLabelEditorParams,
 } from "./EditorParams";
 import { StandardEditorNames } from "./StandardEditorNames";
