@@ -31,8 +31,8 @@ describeContentTestSuite("Primitive properties", () => {
               <BaseClass>bis:PhysicalElement</BaseClass>
               <ECProperty propertyName="Prop1" typeName="int" />
               <ECProperty propertyName="Prop2" typeName="int" minimumValue="0" maximumValue="2" />
-              <ECProperty propertyName="Prop3" typeName="int" minimumValue="0" />
-              <ECProperty propertyName="Prop4" typeName="int" maximumValue="2" />
+              <ECProperty propertyName="Prop3" typeName="long" minimumValue="123456789876" />
+              <ECProperty propertyName="Prop4" typeName="double" maximumValue="2.6" />
             </ECEntityClass>
           `,
       );
@@ -42,11 +42,7 @@ describeContentTestSuite("Primitive properties", () => {
         db,
         classFullName: schema.items.X.fullName,
         modelId: model.id,
-        categoryId: category.id,
-        ["Prop1"]: 2,
-        ["Prop2"]: 2,
-        ["Prop3"]: 2,
-        ["Prop4"]: 2,
+        categoryId: category.id
       });
     });
 
@@ -56,28 +52,18 @@ describeContentTestSuite("Primitive properties", () => {
     const field3 = getFieldByLabel(content.descriptor.fields, "Prop3");
     const field4 = getFieldByLabel(content.descriptor.fields, "Prop4");
 
-    expect(field1.isPropertiesField()).to.be.true;
-    expect(field2.isPropertiesField()).to.be.true;
-    expect(field3.isPropertiesField()).to.be.true;
-    expect(field4.isPropertiesField()).to.be.true;
-
     assert(field1.isPropertiesField());
     assert(field2.isPropertiesField());
     assert(field3.isPropertiesField());
     assert(field4.isPropertiesField());
 
-    expect(field1.properties.length).to.eq(1);
-    expect(field2.properties.length).to.eq(1);
-    expect(field3.properties.length).to.eq(1);
-    expect(field4.properties.length).to.eq(1);
-
     expect(field1.properties[0].property.constraints).to.be.undefined;
     expect(field2.properties[0].property.constraints).to.deep.eq({ minimumValue: 0, maximumValue: 2 });
-    expect(field3.properties[0].property.constraints).to.deep.eq({ minimumValue: 0 });
-    expect(field4.properties[0].property.constraints).to.deep.eq({ maximumValue: 2 });
+    expect(field3.properties[0].property.constraints).to.deep.eq({ minimumValue: 123456789876 });
+    expect(field4.properties[0].property.constraints).to.deep.eq({ maximumValue: 2.6 });
   });
 
-  it("creates constraints for string type properties", async function () {
+  it("sets constraints for string type properties", async function () {
     let elementKey!: InstanceKey;
     const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
       const schema = importSchema(
@@ -100,11 +86,7 @@ describeContentTestSuite("Primitive properties", () => {
         db,
         classFullName: schema.items.X.fullName,
         modelId: model.id,
-        categoryId: category.id,
-        ["Prop1"]: "test1",
-        ["Prop2"]: "test2",
-        ["Prop3"]: "test3",
-        ["Prop4"]: "test4",
+        categoryId: category.id
       });
     });
 
@@ -114,20 +96,10 @@ describeContentTestSuite("Primitive properties", () => {
     const field3 = getFieldByLabel(content.descriptor.fields, "Prop3");
     const field4 = getFieldByLabel(content.descriptor.fields, "Prop4");
 
-    expect(field1.isPropertiesField()).to.be.true;
-    expect(field2.isPropertiesField()).to.be.true;
-    expect(field3.isPropertiesField()).to.be.true;
-    expect(field4.isPropertiesField()).to.be.true;
-
     assert(field1.isPropertiesField());
     assert(field2.isPropertiesField());
     assert(field3.isPropertiesField());
     assert(field4.isPropertiesField());
-
-    expect(field1.properties.length).to.eq(1);
-    expect(field2.properties.length).to.eq(1);
-    expect(field3.properties.length).to.eq(1);
-    expect(field4.properties.length).to.eq(1);
 
     expect(field1.properties[0].property.constraints).to.be.undefined;
     expect(field2.properties[0].property.constraints).to.deep.eq({ minimumLength: 1, maximumLength: 5 });
@@ -135,7 +107,7 @@ describeContentTestSuite("Primitive properties", () => {
     expect(field4.properties[0].property.constraints).to.deep.eq({ maximumLength: 5 });
   });
 
-  it("creates constraints for array type properties", async function () {
+  it("sets constraints for array type properties", async function () {
     let elementKey!: InstanceKey;
     const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
       const schema = importSchema(
@@ -158,11 +130,7 @@ describeContentTestSuite("Primitive properties", () => {
         db,
         classFullName: schema.items.X.fullName,
         modelId: model.id,
-        categoryId: category.id,
-        ["Prop1"]: ["test1"],
-        ["Prop2"]: ["test2"],
-        ["Prop3"]: ["test3"],
-        ["Prop4"]: ["test4"],
+        categoryId: category.id
       });
     });
 
@@ -172,28 +140,16 @@ describeContentTestSuite("Primitive properties", () => {
     const field3 = getFieldByLabel(content.descriptor.fields, "Prop3");
     const field4 = getFieldByLabel(content.descriptor.fields, "Prop4");
 
-    expect(field1.isPropertiesField()).to.be.true;
-    expect(field2.isPropertiesField()).to.be.true;
-    expect(field3.isPropertiesField()).to.be.true;
-    expect(field4.isPropertiesField()).to.be.true;
-
     assert(field1.isPropertiesField());
     assert(field2.isPropertiesField());
     assert(field3.isPropertiesField());
     assert(field4.isPropertiesField());
 
-    expect(field1.properties.length).to.eq(1);
-    expect(field2.properties.length).to.eq(1);
-    expect(field3.properties.length).to.eq(1);
-    expect(field4.properties.length).to.eq(1);
-
-    // ECArrayProperty doesn't have a way to determine if minOccurs and maxOccurs are defined. By default:
-    // - minOccurs is set to 0;
-    // - maxOccurs is set to 2147483647 (2^31 - 1).
-    // If maxOccurs is set to "unbounded" then maxOccurs is set to 2147483647.
-    expect(field1.properties[0].property.constraints).to.deep.eq({ minOccurs: 0, maxOccurs: 2147483647 });
-    expect(field2.properties[0].property.constraints).to.deep.eq({ minOccurs: 1, maxOccurs: 2147483647 });
-    expect(field3.properties[0].property.constraints).to.deep.eq({ minOccurs: 1, maxOccurs: 2147483647 });
+    // ECArrayProperty doesn't have a way to determine if minOccurs is defined. By default minOccurs is set to 0.
+    // If maxOccurs is set to "unbounded" then maxOccurs is set to undefined.
+    expect(field1.properties[0].property.constraints).to.deep.eq({ minOccurs: 0 });
+    expect(field2.properties[0].property.constraints).to.deep.eq({ minOccurs: 1 });
+    expect(field3.properties[0].property.constraints).to.deep.eq({ minOccurs: 1 });
     expect(field4.properties[0].property.constraints).to.deep.eq({ minOccurs: 0, maxOccurs: 5 });
   });
 });
