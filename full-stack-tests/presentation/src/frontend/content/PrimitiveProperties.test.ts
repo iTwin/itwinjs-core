@@ -26,15 +26,15 @@ describeContentTestSuite("Primitive properties", () => {
         this,
         db,
         `
-            <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
-            <ECEntityClass typeName="X">
-              <BaseClass>bis:PhysicalElement</BaseClass>
-              <ECProperty propertyName="Prop1" typeName="int" />
-              <ECProperty propertyName="Prop2" typeName="int" minimumValue="0" maximumValue="2" />
-              <ECProperty propertyName="Prop3" typeName="long" minimumValue="123456789876" />
-              <ECProperty propertyName="Prop4" typeName="double" maximumValue="2.6" />
-            </ECEntityClass>
-          `,
+          <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+          <ECEntityClass typeName="X">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="Prop1" typeName="int" />
+            <ECProperty propertyName="Prop2" typeName="int" minimumValue="0" maximumValue="2" />
+            <ECProperty propertyName="Prop3" typeName="long" minimumValue="123456789876" />
+            <ECProperty propertyName="Prop4" typeName="double" maximumValue="2.6" />
+          </ECEntityClass>
+        `,
       );
       const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
       const category = insertSpatialCategory({ db, codeValue: "category" });
@@ -42,7 +42,7 @@ describeContentTestSuite("Primitive properties", () => {
         db,
         classFullName: schema.items.X.fullName,
         modelId: model.id,
-        categoryId: category.id
+        categoryId: category.id,
       });
     });
 
@@ -86,7 +86,7 @@ describeContentTestSuite("Primitive properties", () => {
         db,
         classFullName: schema.items.X.fullName,
         modelId: model.id,
-        categoryId: category.id
+        categoryId: category.id,
       });
     });
 
@@ -114,15 +114,15 @@ describeContentTestSuite("Primitive properties", () => {
         this,
         db,
         `
-        <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
-        <ECEntityClass typeName="X">
-          <BaseClass>bis:PhysicalElement</BaseClass>
-          <ECArrayProperty propertyName="Prop1" typeName="string" />
-          <ECArrayProperty propertyName="Prop2" typeName="string" minOccurs="1" maxOccurs="unbounded"  />
-          <ECArrayProperty propertyName="Prop3" typeName="string" minOccurs="1" />
-          <ECArrayProperty propertyName="Prop4" typeName="string" maxOccurs="5"  />
-        </ECEntityClass>
-      `,
+          <ECSchemaReference name="BisCore" version="01.00.16" alias="bis" />
+          <ECEntityClass typeName="X">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECArrayProperty propertyName="Prop1" typeName="string" />
+            <ECArrayProperty propertyName="Prop2" typeName="string" minOccurs="1" maxOccurs="unbounded"  />
+            <ECArrayProperty propertyName="Prop3" typeName="string" minOccurs="1" />
+            <ECArrayProperty propertyName="Prop4" typeName="string" maxOccurs="5"  />
+          </ECEntityClass>
+        `,
       );
       const model = insertPhysicalModelWithPartition({ db, codeValue: "model" });
       const category = insertSpatialCategory({ db, codeValue: "category" });
@@ -130,7 +130,7 @@ describeContentTestSuite("Primitive properties", () => {
         db,
         classFullName: schema.items.X.fullName,
         modelId: model.id,
-        categoryId: category.id
+        categoryId: category.id,
       });
     });
 
