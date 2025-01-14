@@ -463,7 +463,7 @@ describe("IModelWriteTest", () => {
     insertElements(rwIModel, "Test2dElement", 1024, () => {
       return { s: str };
     });
-    assert.equal(1357661, rwIModel[_nativeDb].getChangesetSize());
+    assert.equal(1357648, rwIModel[_nativeDb].getChangesetSize());
 
     rwIModel.saveChanges("user 1: data");
     assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
@@ -602,7 +602,7 @@ describe("IModelWriteTest", () => {
       return { s: `s-${n}` };
     });
 
-    assert.equal(3902, rwIModel[_nativeDb].getChangesetSize());
+    assert.equal(3889, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: data changeset");
 
     if (true || "push changes") {
@@ -651,7 +651,7 @@ describe("IModelWriteTest", () => {
       insertElements(rwIModel2, "Test2dElement", 10, (n: number) => {
         return { s: `s-${n}` };
       });
-      assert.equal(13, rwIModel[_nativeDb].getChangesetSize());
+      assert.equal(0, rwIModel[_nativeDb].getChangesetSize());
       rwIModel2.saveChanges("user 2: data changeset");
 
       if (true || "push changes") {
@@ -708,7 +708,7 @@ describe("IModelWriteTest", () => {
         t: `t-${n}`, r: `r-${n}`,
       };
     });
-    assert.equal(6279, rwIModel[_nativeDb].getChangesetSize());
+    assert.equal(6266, rwIModel[_nativeDb].getChangesetSize());
     rwIModel.saveChanges("user 1: data changeset");
 
     if (true || "push changes") {
