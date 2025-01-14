@@ -28,7 +28,7 @@ import { getFieldByLabel } from "../Utils";
 describe("PresentationManager", () => {
   let imodel: IModelDb;
   before(async () => {
-    await initialize({ localization: testLocalization });
+    await initialize({ imodelAppProps: { localization: testLocalization } });
     imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });

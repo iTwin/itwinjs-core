@@ -119,7 +119,7 @@ export class Constant extends SchemaItem {
     // (undocumented)
     protected _phenomenon?: LazyLoadedPhenomenon;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Constant;
+    readonly schemaItemType = SchemaItemType.Constant;
     // @alpha
     protected setDefinition(definition: string): void;
     // @alpha
@@ -158,7 +158,6 @@ export interface CustomAttribute {
 
 // @beta
 export class CustomAttributeClass extends ECClass {
-    constructor(schema: Schema, name: string, modifier?: ECClassModifier);
     // (undocumented)
     get appliesTo(): CustomAttributeContainerType;
     // (undocumented)
@@ -170,7 +169,7 @@ export class CustomAttributeClass extends ECClass {
     // (undocumented)
     fromJSONSync(customAttributeProps: CustomAttributeClassProps): void;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.CustomAttributeClass;
+    readonly schemaItemType = SchemaItemType.CustomAttributeClass;
     // @alpha
     protected setAppliesTo(containerType: CustomAttributeContainerType): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): CustomAttributeClassProps;
@@ -257,9 +256,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
     protected addProperty<T extends Property>(prop: T): T;
-    // (undocumented)
     get baseClass(): LazyLoadedECClass | undefined;
-    set baseClass(baseClass: LazyLoadedECClass | undefined);
     // (undocumented)
     protected _baseClass?: LazyLoadedECClass;
     // (undocumented)
@@ -293,6 +290,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // @alpha
     protected deletePropertySync(name: string): void;
     // (undocumented)
+    protected _derivedClasses?: Map<string, LazyLoadedECClass>;
+    // (undocumented)
     fromJSON(classProps: ClassProps): Promise<void>;
     // (undocumented)
     fromJSONSync(classProps: ClassProps): void;
@@ -303,6 +302,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     getBaseClassSync(): ECClass | undefined;
     getCustomAttributes(): Promise<CustomAttributeSet>;
     getCustomAttributesSync(): CustomAttributeSet;
+    getDerivedClasses(): Promise<ECClass[] | undefined>;
     getInheritedProperty(name: string): Promise<Property | undefined>;
     getInheritedPropertySync(name: string): Property | undefined;
     getProperties(resetCache?: boolean): Promise<Property[]>;
@@ -333,6 +333,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     get properties(): IterableIterator<Property> | undefined;
     // (undocumented)
     protected _properties?: Map<string, Property>;
+    protected setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
@@ -500,7 +501,6 @@ export class ECVersion {
 
 // @beta
 export class EntityClass extends ECClass {
-    constructor(schema: Schema, name: string, modifier?: ECClassModifier);
     // (undocumented)
     protected addMixin(mixin: Mixin): void;
     // (undocumented)
@@ -524,7 +524,7 @@ export class EntityClass extends ECClass {
     // (undocumented)
     protected _mixins?: LazyLoadedMixin[];
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.EntityClass;
+    readonly schemaItemType = SchemaItemType.EntityClass;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): EntityClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -562,7 +562,7 @@ export class Enumeration extends SchemaItem {
     // (undocumented)
     get isString(): boolean;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Enumeration;
+    readonly schemaItemType = SchemaItemType.Enumeration;
     // @alpha
     protected setIsStrict(isStrict: boolean): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): EnumerationProps;
@@ -660,7 +660,7 @@ export class Format extends SchemaItem {
     // (undocumented)
     get roundFactor(): number;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Format;
+    readonly schemaItemType = SchemaItemType.Format;
     // (undocumented)
     get scientificType(): ScientificType | undefined;
     // @alpha
@@ -707,7 +707,6 @@ export function getFormatProps(format: Format | OverrideFormat): FormatProps;
 
 // @beta
 export class InvertedUnit extends SchemaItem {
-    constructor(schema: Schema, name: string);
     // (undocumented)
     fromJSON(invertedUnitProps: InvertedUnitProps): Promise<void>;
     // (undocumented)
@@ -719,7 +718,7 @@ export class InvertedUnit extends SchemaItem {
     // @alpha (undocumented)
     static isInvertedUnit(object: any): object is InvertedUnit;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.InvertedUnit;
+    readonly schemaItemType = SchemaItemType.InvertedUnit;
     // @alpha
     protected setInvertsUnit(invertsUnit: LazyLoadedUnit): void;
     // @alpha
@@ -802,7 +801,6 @@ export interface ISchemaPartVisitor {
 
 // @beta
 export class KindOfQuantity extends SchemaItem {
-    constructor(schema: Schema, name: string);
     // (undocumented)
     protected addPresentationFormat(format: Format | OverrideFormat, isDefault?: boolean): void;
     protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
@@ -824,7 +822,7 @@ export class KindOfQuantity extends SchemaItem {
     // (undocumented)
     protected _relativeError: number;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.KindOfQuantity;
+    readonly schemaItemType = SchemaItemType.KindOfQuantity;
     // @alpha
     protected setRelativeError(relativeError: number): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): KindOfQuantityProps;
@@ -914,7 +912,7 @@ export class Mixin extends ECClass {
     // (undocumented)
     fromJSONSync(mixinProps: MixinProps): void;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Mixin;
+    readonly schemaItemType = SchemaItemType.Mixin;
     // @alpha
     protected setAppliesTo(appliesTo: LazyLoadedEntityClass): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): MixinProps;
@@ -1057,7 +1055,7 @@ export class Phenomenon extends SchemaItem {
     // (undocumented)
     fromJSONSync(phenomenonProps: PhenomenonProps): void;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Phenomenon;
+    readonly schemaItemType = SchemaItemType.Phenomenon;
     // (undocumented)
     protected setDefinition(definition: string): Promise<void>;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): PhenomenonProps;
@@ -1286,7 +1284,7 @@ export class PropertyCategory extends SchemaItem {
     // (undocumented)
     protected _priority: number;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.PropertyCategory;
+    readonly schemaItemType = SchemaItemType.PropertyCategory;
     // @alpha
     protected setPriority(priority: number): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): PropertyCategoryProps;
@@ -1421,7 +1419,7 @@ export class RelationshipClass extends ECClass {
     // (undocumented)
     readonly schema: Schema;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.RelationshipClass;
+    readonly schemaItemType = SchemaItemType.RelationshipClass;
     // @alpha
     protected setSourceConstraint(source: RelationshipConstraint): void;
     // @alpha
@@ -1527,6 +1525,10 @@ export interface RelationshipConstraintProps {
     readonly abstractConstraint?: string;
     // (undocumented)
     readonly constraintClasses: string[];
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
     // (undocumented)
     readonly multiplicity: string;
     // (undocumented)
@@ -1731,7 +1733,7 @@ export class SchemaCache implements ISchemaLocater {
 // @beta
 export class SchemaContext implements ISchemaItemLocater {
     constructor();
-    // (undocumented)
+    addFallbackLocater(locater: ISchemaLocater): void;
     addLocater(locater: ISchemaLocater): void;
     addSchema(schema: Schema): Promise<void>;
     // @deprecated
@@ -1749,6 +1751,8 @@ export class SchemaContext implements ISchemaItemLocater {
     getSchemaItems(): IterableIterator<SchemaItem>;
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
+    // (undocumented)
+    get locaters(): ISchemaLocater[];
     schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
 }
 
@@ -2099,9 +2103,8 @@ export interface StructArrayPropertyProps extends ArrayPropertyProps {
 
 // @beta
 export class StructClass extends ECClass {
-    constructor(schema: Schema, name: string, modifier?: ECClassModifier);
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.StructClass;
+    readonly schemaItemType = SchemaItemType.StructClass;
 }
 
 // @beta (undocumented)
@@ -2167,7 +2170,7 @@ export class Unit extends SchemaItem {
     // (undocumented)
     protected _phenomenon?: LazyLoadedPhenomenon;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Unit;
+    readonly schemaItemType = SchemaItemType.Unit;
     // @alpha
     protected setDefinition(definition: string): Promise<void>;
     // @alpha
@@ -2208,9 +2211,8 @@ export class UnitConverter {
 
 // @beta (undocumented)
 export class UnitSystem extends SchemaItem {
-    constructor(schema: Schema, name: string);
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.UnitSystem;
+    readonly schemaItemType = SchemaItemType.UnitSystem;
 }
 
 // @beta (undocumented)

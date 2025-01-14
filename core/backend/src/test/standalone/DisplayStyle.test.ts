@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { CompressedId64Set, Guid } from "@itwin/core-bentley";
 import { DisplayStyle3dSettingsProps, DisplayStyleSettingsProps, IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
-import { DisplayStyle3d, IModelElementCloneContext, StandaloneDb } from "../../core-backend";
+import { DisplayStyle3d, IModelElementCloneContext, SpatialCategory, StandaloneDb, SubCategory } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("DisplayStyle", () => {
@@ -121,16 +121,21 @@ describe("DisplayStyle", () => {
 
     it("remaps subCategory overrides when cloning", () => {
       const cloneContext = new IModelElementCloneContext(db, db2);
+      const categoryId = SpatialCategory.insert(db, IModel.dictionaryId, "testCat", {});
+      const subCategoryId1 = SubCategory.insert(db, categoryId, "subC1", {});
+      const subCategoryId2 = SubCategory.insert(db, categoryId, "subC2", {});
+      const subCategoryId3 = SubCategory.insert(db, categoryId, "subC3", {});
+      const subCategoryId4 = SubCategory.insert(db, categoryId, "subC4", {});
       const displayStyleJsonProps: DisplayStyleSettingsProps = {subCategoryOvr: [
-        {subCategory: "0x1", weight: 5},
-        {subCategory: "0x2", weight: 3},
-        {subCategory: "0x3", invisible: false},
-        {subCategory: "0x4", invisible: true},
+        {subCategory: subCategoryId1, weight: 5},
+        {subCategory: subCategoryId2, weight: 3},
+        {subCategory: subCategoryId3, invisible: false},
+        {subCategory: subCategoryId4, invisible: true},
       ]};
       const displayStyleId = DisplayStyle3d.insert(db, IModel.dictionaryId, "TestStyle", displayStyleJsonProps);
 
-      cloneContext.remapElement("0x1", "0xa");
-      cloneContext.remapElement("0x4", "0xd");
+      cloneContext.remapElement(subCategoryId1, "0xa");
+      cloneContext.remapElement(subCategoryId4, "0xd");
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
       const displayStyleClone = cloneContext.cloneElement(displayStyle);
 

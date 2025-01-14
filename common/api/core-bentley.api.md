@@ -1226,6 +1226,8 @@ export class Logger {
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
+    // @beta
+    static get staticMetaData(): StaticLoggerMetaData;
     static stringifyMetaData(metaData?: LoggingMetaData): string;
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
@@ -1601,8 +1603,11 @@ export enum SpanKind {
     SERVER = 1
 }
 
-// @internal
-export const staticLoggerMetadata: Map<string, LoggingMetaData>;
+// @beta
+export interface StaticLoggerMetaData {
+    delete(key: string): void;
+    set(key: string, metadata: LoggingMetaData): void;
+}
 
 // @alpha
 export abstract class StatusCategory {

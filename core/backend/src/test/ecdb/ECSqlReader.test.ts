@@ -592,16 +592,16 @@ describe("ECSqlReader", (() => {
       it("Geometric type column with alias", async () => {
         reader = iModel.createQueryReader("select GeometryStream A from bis.GeometricElement3d LIMIT 1");
         const metaData = await reader.getMetaData();
-        assert.equal("Json", metaData[0].extendedType);
-        assert.equal("Json", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal("GeometryStream", metaData[0].extendedType);
+        assert.equal("GeometryStream", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
         assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
       });
 
       it("Geometric type column without alias", async () => {
         reader = iModel.createQueryReader("select GeometryStream from bis.GeometricElement3d LIMIT 1");
         const metaData = await reader.getMetaData();
-        assert.equal("Json", metaData[0].extendedType);
-        assert.equal("Json", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal("GeometryStream", metaData[0].extendedType);
+        assert.equal("GeometryStream", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
         assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
       });
 

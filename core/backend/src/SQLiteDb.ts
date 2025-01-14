@@ -27,11 +27,6 @@ import { _nativeDb } from "./internal/Symbols";
  * @public
  */
 export class SQLiteDb {
-  /** @internal
-   * @deprecated in 4.8. This internal API will be removed in 5.0. Use SQLiteDb's public API instead.
-   */
-  public get nativeDb(): IModelJsNative.SQLiteDb { return this[_nativeDb]; }
-
   /** @internal */
   public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -142,6 +137,18 @@ export class SQLiteDb {
       abandon();
       throw e;
     }
+  }
+
+  /** The cloud container backing this SQLite database, if any.
+   * @beta
+   */
+  public get cloudContainer(): CloudSqlite.CloudContainer | undefined {
+    return this[_nativeDb].cloudContainer;
+  }
+
+  /** Returns the Id of the most-recently-inserted row in this database, per [sqlite3_last_insert_rowid](https://www.sqlite.org/c3ref/last_insert_rowid.html). */
+  public getLastInsertRowId(): number {
+    return this[_nativeDb].getLastInsertRowId();
   }
 
   /**
