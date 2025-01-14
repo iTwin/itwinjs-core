@@ -12,54 +12,51 @@ import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface } from "./Polyface";
 
 /**
- * The `IndexedPolyfaceWalker` class supports navigation "around facets", "across edges", and "around  vertices" in an indexed polyface.
- *
- * * A one-time call to `IndexedPolyfaceWalker.buildEdgeMateIndices(polyface)` creates the `edgeMateIndex` array in the
- *   referenced `IndexedPolyface` object and its `polyface.data` arrays.
- *
- * * After that setup, caller code can create `IndexedPolyfaceWalker` objects via
- *   * `walker = IndexedPolyfaceWalker.createAtFacet (polyface, facetIndex, offsetWithinFacet)`
+ * The `IndexedPolyfaceWalker` class supports navigation around facets, across edges, and around vertices in an
+ * [[IndexedPolyface]].
+ * * Compare to the [[IndexedPolyfaceVisitor]] class, which supports the iteration of facets in an `IndexedPolyface`.
+ * * A one-time call to [[buildEdgeMateIndices]] creates and populates the `data.edgeMateIndex` array on the input.
+ *   * This array essentially completes the topology of the `IndexedPolyface` by storing facet adjacency.
+ * * After this setup, caller code can create `IndexedPolyfaceWalker` objects via:
+ *   * `walker = IndexedPolyfaceWalker.createAtFacetIndex(polyface, facetIndex, offsetWithinFacet)`
  *   * `walker = IndexedPolyfaceWalker.createAtEdgeIndex(polyface, edgeIndex)`
  *   * `walker = IndexedPolyfaceWalker.createAtVisitor(visitor, offsetWithinFacet)`
- * * If `walker` is siting at corner A of the upper left facet below, then
- *   * walker.nextAroundFacet ()         is at B
- *   * walker.previousAroundFacet ()     is at C
- *   * walker.edgeMate ()                is at F
- *   * walker.nextAroundVertex ()        is at E
- *   * walker.previousAroundVertex ()    is at D
- * * See the method buildEdgeMateIndices for further description of the relations.
- * * When facets are viewed so that the order stored in the pointIndex array is counterClockwise around the facet,
- *   * an edge "from A to B" has facet area to the left and the edge to the right.  Likewise, the edges "out of" B, C, E, F, D are directed as below.
- * * If the facet indexing follows the usual convention that facet indices are "counterClockwise around the facet",
- *    * The "nextAroundFacet" step is counterClockwise around the facet.
- *    * The "previousAroundFacet" step is clockwise around the facet.
- *    * The "nextAroundVertex" step is counterClockwise around the vertex.
- *    * The "previousAroundFacet" step is clockwise around the facet.
- *    * The `nextAroundFacet` directions for a walker and its `edgeMate` are in opposite direction along the shared edge.
- *    * That is
- *       * "next" is always counterClockwise
- *       * "previous" is always clockwise
- *
- * * An `IndexedPolyfaceWalker` object can have an undefined position.
- *   * Steps that cross a boundary edge (with no facet on the other side) return a walker with undefined position.
- *   * In the diagram, the `edgeMate` of B is undefined
- *
+ * * Once you have a walker object, you can traverse the face, edge, and vertex loops it references. For
+ * example, if `walker.edgeIndex === A`, referring to the right edge of the upper left facet pictured below, then
+ * the following are true:
+ *   * `walker.nextAroundFacet().edgeIndex === B`
+ *   * `walker.previousAroundFacet().edgeIndex === C`
+ *   * `walker.edgeMate().edgeIndex === F`
+ *   * `walker.nextAroundVertex().edgeIndex === E`
+ *   * `walker.previousAroundVertex().edgeIndex === D`
+ * * When facets are viewed so that the face loops stored in the [[PolyfaceData]] `pointIndex` array have
+ * counterclockwise ordering, an edge "from A to B" has facet area to the left and the edge to the right. Likewise,
+ * the edges "out of" locations B, C, E, F, D are directed as depicted below.
+ * * With this conventional counterclockwise ordering of face loops, "next" is counterclockwise, and "previous" is
+ * clockwise:
+ *    * The [[nextAroundFacet]] step is counterclockwise around the facet.
+ *    * The [[previousAroundFacet]] step is clockwise around the facet.
+ *    * The [[nextAroundVertex]] step is counterclockwise around the vertex.
+ *    * The [[previousAroundFacet]] step is clockwise around the facet.
+ * * The `nextAroundFacet` steps for a walker and its [[edgeMate]] are in opposite directions along their shared edge,
+ * when that edge is interior. Thus the `edgeMate` step can be seen to iterate an "edge loop" of two locations for an
+ * interior edges. Exterior edges have exactly one adjacent facet; for these edges the `edgeMate` step returns a walker
+ * with undefined position, for which [[isUndefined]] returns true. In the diagram below, the `edgeMate` of B is
+ * undefined.
+ * * See [[buildEdgeMateIndices]] for further description of the topological relations.
  * ```
- *      # -------------------------- # -------------------------- #
- *      |              <<<<<<<<<  B  | F                          |
- *      |                         ^  | v                          |
- *      |  v                      ^  | v                          |
- *      |  v                      ^  | v                          |
- *      |  v                      ^  | v                          |
- *      |  C >>>>>>>>>>>>>>>>>>>  A  | D >>>>>>>>>>>              |
- *      # -------------------------- # -------------------------- #
- *      |              <<<<<<<<<  E  |                            |
- *      |                         ^  |                            |
- *      |                         ^  |                            |
- *      |                         ^  |                            |
- *      |                         ^  |                            |
- *      |                            |                            |
- *      # -------------------------- # -------------------------- #
+ *      # --------- # --------- #
+ *      |   < < < B | F         |
+ *      |         ^ | v         |
+ *      |         ^ | v         |
+ *      |         ^ | v         |
+ *      | C > > > A | D > > >   |
+ *      # --------- # --------- #
+ *      |   < < < E |           |
+ *      |           |           |
+ *      |           |           |
+ *      |           |           |
+ *      # --------- # --------- #
  * ```
  * @public
  */
@@ -68,6 +65,7 @@ export class IndexedPolyfaceWalker {
   private _polyface: IndexedPolyface;
   /** The current edgeIndex into that polyface. */
   private _edgeIndex: number | undefined;
+  /** Constructor */
   private constructor(polyface: IndexedPolyface, edgeIndex: number | undefined) {
     this._polyface = polyface;
     this._edgeIndex = edgeIndex;
@@ -79,10 +77,13 @@ export class IndexedPolyfaceWalker {
   public get polyface(): IndexedPolyface | undefined { return this._polyface; }
   /**
    * Return true if the walker has a defined edgeIndex.
+   * * This method is the opposite of [[isUndefined]].
    */
   public get isValid(): boolean { return this._edgeIndex !== undefined; }
   /**
    * Return true if the walker has an undefined edgeIndex.
+   * * This can happen during a walk when the walker `w` reaches an exterior edge, for then `w.edgeMate(w).isUndefined === true`.
+   * * This can also happen when methods that return a walker are given an invalid input.
    */
   public get isUndefined(): boolean { return this._edgeIndex === undefined; }
   /**
@@ -90,7 +91,7 @@ export class IndexedPolyfaceWalker {
    * * Create a walker which references the given IndexedPolyface.
    * * A reference to the the polyface is stored (captured) in the walker.
    * @param polyface reference to the client polyface.
-   * @param initialEdgeIndex optional indication of where to start the walker within the mesh.
+   * @param edgeIndex optional indication of where to start the walker within the mesh.
    *   * If the initialPosition is a valid edgeIndex for the same IndexedPolyface, the new walker is started there.
    *   * If the initialPosition is undefined or an invalid numeric index, the walker starts with `undefined edgeIndex`
    */
@@ -119,7 +120,7 @@ export class IndexedPolyfaceWalker {
    * @param visitor visitor whose currentReadIndex identifies the facet.
    * @param offsetWithinFacet 0-based offset within the face loop of the facet.
    */
-  public static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet = 0): IndexedPolyfaceWalker {
+  public static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet: number = 0): IndexedPolyfaceWalker {
     const facetIndex = visitor.currentReadIndex();
     return IndexedPolyfaceWalker.createAtFacetIndex(visitor.clientPolyface(), facetIndex, offsetWithinFacet);
   }
