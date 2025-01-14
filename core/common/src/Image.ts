@@ -62,16 +62,19 @@ export class ImageBuffer {
     return new ImageBuffer(data, format, width);
   }
 
-  private static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
+  /** @internal */
+  protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
     const height = this.computeHeight(data, format, width);
     return width > 0 && height > 0 && Math.floor(width) === width && Math.floor(height) === height;
   }
 
-  private static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
+  /** @internal */
+  protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
     return data.length / (width * this.getNumBytesPerPixel(format));
   }
 
-  private constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
+  /** @internal */
+  protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
     this.data = data;
     this.format = format;
     this.width = width;
@@ -113,10 +116,8 @@ export enum ImageSourceFormat {
   Svg = 3,
 }
 
-/** Returns true if the numeric `format` value is a valid member of the [[ImageSourceFormat]] enumeration.
- * @public
- */
-export function isValidImageSourceFormat(format: number): format is ImageSourceFormat {
+/** @internal */
+export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
   switch (format) {
     case ImageSourceFormat.Jpeg:
     case ImageSourceFormat.Png:
