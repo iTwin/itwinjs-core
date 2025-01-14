@@ -17,7 +17,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
-import { Range3d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { FacetFaceData } from "./FacetFaceData";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
@@ -168,29 +168,21 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       return undefined;
     return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
   }
-
-  // TODO: merge the following into one method: edgeIndexToEdgeIndexRangeOfFacet(k: number | undefined): Range1d | undefined
-
   /**
-   * Given an edgeIndex (index into `data.pointIndex`), return the first edgeIndex for the containing facet.
-   * * The face loop of the facet containing edgeIndex k has consecutive edgeIndices k1 that satisfy:
-   * `this.edgeIndexToFirstEdgeIndexInFacet(k) <= k1 < this.edgeIndexToFirstEdgeIndexInNextFacet(k)`
-*/
-  public edgeIndexToFirstEdgeIndexInFacet(k: number | undefined): number | undefined {
-      const q = this.edgeIndexToFacetIndex(k);
-      if (q !== undefined)
-        return this._facetStart[q];
-      return undefined;
-    }
-  /** Given an edgeIndex (index into `data.pointIndex`), return one past the last edgeIndex for the containing facet.
-   * * The returned edgeIndex is also the first edgeIndex of the next facet (if the containing facet is not the last).
-   * * The face loop of the facet containing edgeIndex k has consecutive edgeIndices k1 that satisfy:
-   * `this.edgeIndexToFirstEdgeIndexInFacet(k) <= k1 < this.edgeIndexToFirstEdgeIndexInNextFacet(k)`
+   * Given an edgeIndex (index into `data.pointIndex`), return the range of the edge indices of the containing facet.
+   * * The face loop of facet `f` is a contiguous block of edgeIndices in `data.pointIndex` representing `f`.
+   * * The returned range `r` can be used to iterate this face loop, e.g.:
+   * ````
+   * for (let k1 = r.low; k1 < r.high; k1++) {
+   *   const edgeIndex = myPolyface.data.pointIndex[k1];
+   *   // process this edge
+   * }
+   * ````
    */
-  public edgeIndexToFirstEdgeIndexInNextFacet(k: number | undefined): number | undefined {
+  public edgeIndexToFaceLoop(k: number | undefined): Range1d | undefined {
     const q = this.edgeIndexToFacetIndex(k);
     if (q !== undefined)
-      return this._facetStart[q + 1];
+      return Range1d.createXX(this._facetStart[q], this._facetStart[q + 1]);
     return undefined;
   }
 

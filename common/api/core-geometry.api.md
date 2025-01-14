@@ -2813,9 +2813,8 @@ export class IndexedPolyface extends Polyface {
     static create(needNormals?: boolean, needParams?: boolean, needColors?: boolean, twoSided?: boolean): IndexedPolyface;
     createVisitor(numWrap?: number): IndexedPolyfaceVisitor;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
+    edgeIndexToFaceLoop(k: number | undefined): Range1d | undefined;
     edgeIndexToFacetIndex(k: number | undefined): number | undefined;
-    edgeIndexToFirstEdgeIndexInFacet(k: number | undefined): number | undefined;
-    edgeIndexToFirstEdgeIndexInNextFacet(k: number | undefined): number | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     get faceCount(): number;
     get facetCount(): number;
