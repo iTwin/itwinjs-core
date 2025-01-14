@@ -98,7 +98,7 @@ export * from "./BackendTypes";
 export * from "./QPoint";
 export * from "./RealityDataAccessProps";
 export * from "./RealityModelDisplaySettings";
-export * from "./Render";
+export * from "./RenderPolyline";
 export * from "./RenderMaterial";
 export * from "./RenderSchedule";
 export * from "./RenderTexture";
