@@ -168,6 +168,9 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       return undefined;
     return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
   }
+
+  // TODO: merge the following into one method: edgeIndexToEdgeIndexRangeOfFacet(k: number | undefined): Range1d | undefined
+
   /**
    * Given an edgeIndex (index into `data.pointIndex`), return the first edgeIndex for the containing facet.
    * * The face loop of the facet containing edgeIndex k has consecutive edgeIndices k1 that satisfy:
