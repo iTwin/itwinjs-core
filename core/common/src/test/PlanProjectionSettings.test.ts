@@ -47,13 +47,7 @@ describe("PlanProjectionSettings", () => {
 
   it("clones", () => {
     const clone = (input: PlanProjectionSettingsProps, changed: PlanProjectionSettingsProps | undefined, expected: PlanProjectionSettingsProps) => {
-      const settings = PlanProjectionSettings.fromJSON(input);
-      if (!settings) {
-        expect(input).to.deep.equal({});
-        return;
-      }
-
-      expect(input).not.to.deep.equal({});
+      const settings = new PlanProjectionSettings(input);
       const output = settings.clone(changed);
       expect(output.elevation).to.equal(expected.elevation);
       expect(output.transparency).to.equal(expected.transparency);
