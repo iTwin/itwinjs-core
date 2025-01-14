@@ -34,12 +34,9 @@ export * from "./appui-abstract/properties/StandardTypeNames";
 export * from "./appui-abstract/properties/Value";
 
 export * from "./appui-abstract/quantity/BaseQuantityDescription";
-export * from "./appui-abstract/statusbar/StatusBarItemsManager";
 
 export * from "./appui-abstract/toolbars/ToolbarItem";
 export * from "./appui-abstract/toolbars/ToolbarItemsManager";
-
-export * from "./appui-abstract/statusbar/StatusBarItemsManager";
 
 export * from "./appui-abstract/utils/callbacks";
 export * from "./appui-abstract/utils/misc";
@@ -73,10 +70,6 @@ export * from "./appui-abstract/utils/filter/filters";
 /**
  * @docs-group-description Properties
  * Properties system for data input and formatting.
- */
-/**
- * @docs-group-description StatusBar
- * Classes for creating and managing items in the status bar.
  */
 /**
  * @docs-group-description Toolbar

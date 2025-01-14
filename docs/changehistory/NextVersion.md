@@ -166,19 +166,19 @@ The following previously-deprecated APIs have been removed:
 | `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
-
 #### @itwin/appui-abstract
 
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `EditorPosition.columnSpan` | N/A         |
-| `UiItemsApplicationAction`     | N/A (removed without replacement)                       |
-| `BackstageItemType`            | Use `Type Guard` instead.                               |
-| `BackstageItemsChangedArgs`    | N/A                                                     |
-| `BackstageItemsManager`        | N/A                                                     |
-| `AbstractZoneLocation`         | N/A                                                     |
-| `createSvgIconSpec`            | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
-| `getSvgSource`                 | Use `IconSpecUtilities.getWebComponentSource()` instead. |
+| Removed                     | Replacement                                                   |
+| --------------------------- | ------------------------------------------------------------- |
+| `EditorPosition.columnSpan` | N/A                                                           |
+| `UiItemsApplicationAction`  | N/A (removed without replacement)                             |
+| `BackstageItemType`         | Use `Type Guard` instead.                                     |
+| `BackstageItemsChangedArgs` | N/A                                                           |
+| `BackstageItemsManager`     | N/A                                                           |
+| `AbstractZoneLocation`      | N/A                                                           |
+| `createSvgIconSpec`         | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
+| `getSvgSource`              | Use `IconSpecUtilities.getWebComponentSource()` instead.      |
+| `statusBarItemsManager`     | N/A (this is an internal API and not intended for external use) |
 
 #### @itwin/core-electron
 
