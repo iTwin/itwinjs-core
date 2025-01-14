@@ -444,9 +444,7 @@ export interface OverrideFeatureAppearanceOptions {
 export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
   /** The Id of the model whose appearance is to be overridden. */
   modelId: Id64String;
-  /** @internal */
   elementId?: never;
-  /** @internal */
   subCategoryId?: never;
 }
 
@@ -456,9 +454,7 @@ export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanc
 export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
   /** The Id of the element whose appearance is to be overridden. */
   elementId: Id64String;
-  /** @internal */
   modelId?: never;
-  /** @internal */
   subCategoryId?: never;
 }
 
@@ -468,9 +464,7 @@ export interface OverrideElementAppearanceOptions extends OverrideFeatureAppeara
 export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
   /** The Id of the subcategory whose appearance is to be overridden. */
   subCategoryId: Id64String;
-  /** @internal */
   modelId?: never;
-  /** @internal */
   elementId?: never;
 }
 
@@ -545,7 +539,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public alwaysDrawnIgnoresSubCategory = true;
   /** If true, all subcategories are considered visible. This is used for drawing sheets via section callouts in the absence of an actual sheet view.
-   * @internal
    */
   public ignoreSubCategory = false;
 
@@ -577,9 +570,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   protected readonly _modelSubCategoryOverrides = new Id64.Uint32Map<Id64.Uint32Set>();
 
-  /** Ids of animation nodes that should never be drawn.
-   * @internal
-   */
+  /** Ids of animation nodes that should never be drawn. */
   public readonly neverDrawnAnimationNodes = new Set<number>();
   /** Mapping of animation node Ids to overrides applied to the corresponding animation nodes.
    * @internal
@@ -613,18 +604,19 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public get alwaysDrawn() { return this._alwaysDrawn; }
 
-  /** @internal */
   protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
     if (this._neverDrawn.has(elemIdLo, elemIdHi))
       return true;
     else
       return this.neverDrawnAnimationNodes.has(animationNodeId);
   }
-  /** @internal */
+
   protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
-  /** Returns true if the [SubCategory]($backend) specified by Id is in the set of visible subcategories. @internal */
+
+  /** Returns true if the [SubCategory]($backend) specified by Id is in the set of visible subcategories. */
   public isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
-  /** @internal */
+
+  /** Returns true if the [SubCategory]($backend) specified by Id is in the set of visible subcategories in the context of the specified model. */
   public isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean {
     if (this.ignoreSubCategory)
       return true;
@@ -637,7 +629,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return vis;
   }
 
-  /** @internal */
   protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined {
     return this._modelOverrides.get(idLo, idHi);
   }
@@ -659,7 +650,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return this._ignoreAnimationOverrides.some((ignore) => ignore(args)) ? undefined : app;
   }
 
-  /** @internal */
   protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
     const elemApp = this._elementOverrides.get(idLo, idHi);
     const nodeApp = this.getElementAnimationOverrides(idLo, idHi, animationNodeId);
@@ -669,7 +659,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return nodeApp;
   }
 
-  /** @internal */
   protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
 
   /** Add a [SubCategory]($backend) to the set of visible subcategories. */
@@ -752,9 +741,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return visible ? app : undefined;
   }
 
-  /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent.
-   * @internal
-   */
+  /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent. */
   protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined {
     let app = FeatureAppearance.defaults;
     const modelApp = this.getModelOverrides(modelLo, modelHi);
@@ -885,16 +872,12 @@ export class FeatureOverrides implements FeatureAppearanceSource {
       this._defaultOverrides = appearance;
   }
 
-  /** Get the display priority of a subcategory. This is only relevant when using [[PlanProjectionSettings]].
-   * @internal
-   */
+  /** Get the display priority of a subcategory. This is only relevant when using [[PlanProjectionSettings]]. */
   public getSubCategoryPriority(idLo: number, idHi: number): number {
     return this._subCategoryPriorities.get(idLo, idHi) ?? 0;
   }
 
-  /** Adds all fully transparent elements to the _neverDrawn set.  This is used for BatchedModels planar masks.
-   * @internal
-   */
+  /** Adds all fully transparent elements to the _neverDrawn set.  This is used for BatchedModels planar masks. */
   public addInvisibleElementOverridesToNeverDrawn(): void {
     this._elementOverrides.forEach((lo, hi) => {
       const app = this.getElementOverrides(lo, hi, 0);
