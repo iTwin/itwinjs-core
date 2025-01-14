@@ -59,7 +59,118 @@ describe("ECDb", () => {
       assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.FileUpgrade));
     });
   });
-  it("attach/detach file", async () => {
+  it("attach/detach newer profile version", async () => {
+    const fileName1 = "source_file.ecdb";
+    const ecdbPath1: string = path.join(outDir, fileName1);
+    using(ECDbTestHelper.createECDb(outDir, fileName1,
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+      </ECEntityClass>
+      </ECSchema>`), (testECDb: ECDb) => {
+      assert.isTrue(testECDb.isOpen);
+      testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        assert.isTrue(Id64.isValidId64(res.id!));
+        return res.id!;
+      });
+
+      // override profile version to 55.0.0 which is currently not supported
+      testECDb.withSqliteStatement(`
+        UPDATE be_Prop SET
+          StrData = '{"major":55,"minor":0,"sub1":0,"sub2":0}'
+        WHERE Namespace = 'ec_Db' AND Name = 'SchemaVersion'`,
+        (stmt: SqliteStatement) => { stmt.step(); });
+      testECDb.saveChanges();
+    });
+    const runDbListPragmaUsingStatement = (ecdb: ECDb) => {
+      return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
+        const result: { alias: string, filename: string, profile: string }[] = [];
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          result.push(stmt.getRow());
+        }
+        return result;
+      });
+    }
+    const runDbListPragmaCCQ = async (ecdb: ECDb) => {
+      const reader = ecdb.createQueryReader("PRAGMA db_list");
+      const result: { alias: string, filename: string, profile: string }[] = [];
+      while (await reader.step()) {
+        result.push(reader.current.toRow());
+      }
+      return result;
+    }
+    using(ECDbTestHelper.createECDb(outDir, "file2.ecdb"), (testECDb: ECDb) => {
+      // following call will not fail but unknow ECDb profile will cause it to be attach as SQLite.
+      testECDb.attachDb(ecdbPath1, "source");
+      expect(() => testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
+      expect(runDbListPragmaUsingStatement(testECDb)).deep.equals([
+        {
+          sno: 0,
+          alias: "main",
+          fileName: path.join(outDir, "file2.ecdb"),
+          profile: "ECDb"
+        },
+        {
+          sno: 1,
+          alias: "source",
+          fileName: path.join(outDir, "source_file.ecdb"),
+          profile: "SQLite"
+        }
+      ]);
+      testECDb.detachDb("source");
+      expect(runDbListPragmaUsingStatement(testECDb)).deep.equals([
+        {
+          sno: 0,
+          alias: "main",
+          fileName: path.join(outDir, "file2.ecdb"),
+          profile: "ECDb"
+        },
+      ]);
+      expect(() => testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
+    });
+    await using(ECDbTestHelper.createECDb(outDir, "file4.ecdb"), async (testECDb: ECDb) => {
+      testECDb.attachDb(ecdbPath1, "source");
+      const reader1 = testECDb.createQueryReader("SELECT Name, Age FROM source.test.Person");
+      let expectThrow = false;
+      try {
+        await reader1.step();
+      } catch (err) {
+        if (err instanceof Error) {
+          assert.equal(err.message, "ECClass 'source.test.Person' does not exist or could not be loaded.");
+          expectThrow = true;
+        }
+      }
+      assert.isTrue(expectThrow);
+      expect(await runDbListPragmaCCQ(testECDb)).deep.equals([
+        {
+          sno: 0,
+          alias: "main",
+          fileName: path.join(outDir, "file4.ecdb"),
+          profile: "ECDb"
+        },
+        {
+          sno: 1,
+          alias: "source",
+          fileName: path.join(outDir, "source_file.ecdb"),
+          profile: "SQLite"
+        }
+      ]);
+      testECDb.detachDb("source");
+      expect(await runDbListPragmaCCQ(testECDb)).deep.equals([
+        {
+          sno: 0,
+          alias: "main",
+          fileName: path.join(outDir, "file4.ecdb"),
+          profile: "ECDb"
+        },
+      ]);
+    });
+  });
+  it("attach/detach file & db_list pragma", async () => {
     const fileName1 = "source_file.ecdb";
     const ecdbPath1: string = path.join(outDir, fileName1);
     using(ECDbTestHelper.createECDb(outDir, fileName1,
@@ -79,6 +190,15 @@ describe("ECDb", () => {
       });
       testECDb.saveChanges();
     });
+    const runDbListPragma = (ecdb: ECDb) => {
+      return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
+        const result: { alias: string, filename: string, profile: string }[] = [];
+        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+          result.push(stmt.getRow());
+        }
+        return result;
+      });
+    }
     using(ECDbTestHelper.createECDb(outDir, "file2.ecdb"), (testECDb: ECDb) => {
       testECDb.attachDb(ecdbPath1, "source");
       testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", (stmt: ECSqlStatement) => {
@@ -87,7 +207,29 @@ describe("ECDb", () => {
         assert.equal(row.name, "Mary");
         assert.equal(row.age, 45);
       });
+      expect(runDbListPragma(testECDb)).deep.equals([
+        {
+          sno: 0,
+          alias: "main",
+          fileName: path.join(outDir, "file2.ecdb"),
+          profile: "ECDb"
+        },
+        {
+          sno: 1,
+          alias: "source",
+          fileName: path.join(outDir, "source_file.ecdb"),
+          profile: "ECDb"
+        }
+      ]);
       testECDb.detachDb("source");
+      expect(runDbListPragma(testECDb)).deep.equals([
+        {
+          sno: 0,
+          alias: "main",
+          fileName: path.join(outDir, "file2.ecdb"),
+          profile: "ECDb"
+        },
+      ]);
       expect(() => testECDb.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
     });
     await using(ECDbTestHelper.createECDb(outDir, "file3.ecdb"), async (testECDb: ECDb) => {
