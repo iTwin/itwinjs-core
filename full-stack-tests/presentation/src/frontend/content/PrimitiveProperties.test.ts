@@ -18,7 +18,7 @@ import {
 import { collect, getFieldByLabel } from "../../Utils";
 import { describeContentTestSuite } from "./Utils";
 
-describeContentTestSuite("Primitive Properties", () => {
+describeContentTestSuite("Primitive properties", () => {
   it("creates constraints for numeric type properties", async function () {
     let elementKey!: InstanceKey;
     const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
