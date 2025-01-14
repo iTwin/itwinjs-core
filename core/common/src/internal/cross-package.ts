@@ -7,6 +7,4 @@ export type { DecorationGeometryProps, SnapRequestProps, SnapResponseProps } fro
 export {
   EdgeArgs, MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, PolylineEdgeArgs, SilhouetteEdgeArgs
 } from "./RenderMesh";
-export {
-  MultiModelPackedFeatureTable, PackedFeatureModelTable, PackedFeatureTable
-} from "./PackedFeatureTable";
+
