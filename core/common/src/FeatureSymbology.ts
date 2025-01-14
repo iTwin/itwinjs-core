@@ -525,11 +525,11 @@ const scratchIgnoreAnimationOverridesArgs = {
  */
 export class FeatureOverrides implements FeatureAppearanceSource {
   /** @internal */
-  protected readonly _ignoreAnimationOverrides: IgnoreAnimationOverrides[] = [];
+  private readonly _ignoreAnimationOverrides: IgnoreAnimationOverrides[] = [];
   /** Ids of elements that should never be drawn. This takes precedence over [[alwaysDrawn]]. @internal */
-  protected readonly _neverDrawn = new Id64.Uint32Set();
+  private readonly _neverDrawn = new Id64.Uint32Set();
   /** Ids of elements that should always be drawn. [[neverDrawn]] takes precedence over this set. @internal */
-  protected readonly _alwaysDrawn = new Id64.Uint32Set();
+  private readonly _alwaysDrawn = new Id64.Uint32Set();
   /** If true, no elements *except* those defined in the "always drawn" set will be drawn.
    * @see [[setAlwaysDrawn]]
    */
@@ -543,30 +543,29 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   public ignoreSubCategory = false;
 
   /** Overrides applied to any feature not explicitly overridden. @internal */
-  protected _defaultOverrides = FeatureAppearance.defaults;
-  /** Whether construction geometry should be drawn. @internal */
+  private _defaultOverrides = FeatureAppearance.defaults;
+  /** Whether construction geometry should be drawn. */
   protected _constructions = false;
-  /** Whether dimensions should be drawn. @internal */
+  /** Whether dimensions should be drawn. */
   protected _dimensions = false;
-  /** Whether area patterns should be drawn. @internal */
+  /** Whether area patterns should be drawn. */
   protected _patterns = false;
-  /** Whether line weights should be applied. If false, all lines are rendered 1-pixel wide. @internal */
+  /** Whether line weights should be applied. If false, all lines are rendered 1-pixel wide. */
   protected _lineWeights = true;
 
   /** Overrides applied to all elements belonging to each model. @internal */
-  protected readonly _modelOverrides = new Id64.Uint32Map<FeatureAppearance>();
-  /** Overrides applied to specific elements. @internal */
+  private readonly _modelOverrides = new Id64.Uint32Map<FeatureAppearance>();
+  /** Overrides applied to specific elements. */
   protected readonly _elementOverrides = new Id64.Uint32Map<FeatureAppearance>();
-  /** Overrides applied to geometry belonging to each subcategory. @internal */
+  /** Overrides applied to geometry belonging to each subcategory. */
   protected readonly _subCategoryOverrides = new Id64.Uint32Map<FeatureAppearance>();
-  /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @internal */
+  /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. */
   protected readonly _visibleSubCategories = new Id64.Uint32Set();
-  /** Display priorities assigned to subcategories, possibly overridden by display style. Only applicable for plan projection models. @internal */
+  /** Display priorities assigned to subcategories, possibly overridden by display style. Only applicable for plan projection models. */
   protected readonly _subCategoryPriorities = new Id64.Uint32Map<number>();
 
   /** Per-model, a set of subcategories whose visibility should be inverted for elements within that model.
    * Populated by Viewport.
-   * @internal
    */
   protected readonly _modelSubCategoryOverrides = new Id64.Uint32Map<Id64.Uint32Set>();
 
@@ -604,14 +603,14 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public get alwaysDrawn() { return this._alwaysDrawn; }
 
-  protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
+  private isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
     if (this._neverDrawn.has(elemIdLo, elemIdHi))
       return true;
     else
       return this.neverDrawnAnimationNodes.has(animationNodeId);
   }
 
-  protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
+  private isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
 
   /** Returns true if the [SubCategory]($backend) specified by Id is in the set of visible subcategories. */
   public isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
@@ -629,7 +628,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return vis;
   }
 
-  protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined {
+  private getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined {
     return this._modelOverrides.get(idLo, idHi);
   }
 
@@ -650,7 +649,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return this._ignoreAnimationOverrides.some((ignore) => ignore(args)) ? undefined : app;
   }
 
-  protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
+  private getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
     const elemApp = this._elementOverrides.get(idLo, idHi);
     const nodeApp = this.getElementAnimationOverrides(idLo, idHi, animationNodeId);
     if (elemApp)
@@ -659,7 +658,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return nodeApp;
   }
 
-  protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
+  private getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
 
   /** Add a [SubCategory]($backend) to the set of visible subcategories. */
   public setVisibleSubCategory(id: Id64String): void { this._visibleSubCategories.addId(id); }
@@ -742,7 +741,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent. */
-  protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined {
+  private getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined {
     let app = FeatureAppearance.defaults;
     const modelApp = this.getModelOverrides(modelLo, modelHi);
     if (undefined !== modelApp)
