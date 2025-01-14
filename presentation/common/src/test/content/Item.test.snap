@@ -8,6 +8,7 @@ Object {
   },
   "extendedData": undefined,
   "imageId": "70c6cab5-86c7-4d22-b010-6c0cf48d9662",
+  "inputKeys": undefined,
   "labelDefinition": Object {
     "displayValue": "pink",
     "rawValue": "pink",
@@ -29,6 +30,7 @@ Object {
   },
   "extendedData": undefined,
   "imageId": "0ea0e226-a243-44c2-83b1-e941fb2d30c8",
+  "inputKeys": undefined,
   "labelDefinition": Object {
     "displayValue": "Oregon",
     "rawValue": "Toys",
@@ -177,6 +179,7 @@ Array [
     },
     "extendedData": undefined,
     "imageId": "",
+    "inputKeys": undefined,
     "labelDefinition": Object {
       "displayValue": "",
       "rawValue": "",
@@ -200,6 +203,7 @@ Array [
     },
     "extendedData": undefined,
     "imageId": "",
+    "inputKeys": undefined,
     "labelDefinition": Object {
       "displayValue": "",
       "rawValue": "",
