@@ -10,6 +10,7 @@ import {
   assert, Id64, Id64String, UintArray,
 } from "@itwin/core-bentley";
 import { BatchType, ComputeNodeId, Feature, FeatureTable, ModelFeature, PackedFeature, PackedFeatureWithIndex, RenderFeatureTable } from "../FeatureTable";
+import { GeometryClass } from "../GeometryParams";
 
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
@@ -395,7 +396,18 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
   }
 }
 
-const scratchPackedFeature = PackedFeature.create();
+export function createPackedFeature(): PackedFeature {
+  const pair = { upper: 0, lower: 0 };
+  return {
+    modelId: { ...pair },
+    elementId: { ...pair },
+    subCategoryId: { ...pair },
+    geometryClass: GeometryClass.Primary,
+    animationNodeId: 0,
+  };
+}
+
+const scratchPackedFeature = createPackedFeature();
 
 function populateAnimationNodeIds(table: RenderFeatureTable, computeNodeId: ComputeNodeId, maxNodeId: number): UintArray | undefined {
   assert(maxNodeId > 0);
