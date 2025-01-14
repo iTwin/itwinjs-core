@@ -50,7 +50,7 @@ describe("ECClass", () => {
 
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
       expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
       expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
@@ -59,13 +59,13 @@ describe("ECClass", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
-    it("inherited properties from base class synchronously", () => {
+    it("inherited properties from base class synchronously", async () => {
       const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
       const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
 
       const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
       (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
       expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
       expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
@@ -88,7 +88,7 @@ describe("ECClass", () => {
       const primProp = await (baseClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
       const entityClass = new EntityClass(schema, "TestClass");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
       expect(await entityClass.getProperty("TESTPROP", true)).equal(primProp);
       expect(await entityClass.getProperty("testprop", true)).equal(primProp);
@@ -528,6 +528,10 @@ describe("ECClass", () => {
       const baseClass = await schema.getItem<EntityClass>("testBaseClass");
       assert.isDefined(baseClass);
       assert.isTrue(baseClass === await testClass!.baseClass);
+      const derivedClasses = await baseClass?.getDerivedClasses();
+      assert.isDefined(derivedClasses);
+      assert.isTrue(derivedClasses?.length === 1);
+      assert.isTrue(derivedClasses![0] === testClass);
     });
 
     it("class with base class in reference schema", async () => {
@@ -562,6 +566,10 @@ describe("ECClass", () => {
       assert.isDefined(testClass);
       assert.isDefined(await testClass!.baseClass);
       assert.isTrue(await testClass!.baseClass === refBaseClass);
+      const derivedClasses = await refBaseClass?.getDerivedClasses();
+      assert.isDefined(derivedClasses);
+      assert.isTrue(derivedClasses?.length === 1);
+      assert.isTrue(derivedClasses![0] === testClass);
     });
 
     it("should throw for missing base class", async () => {
@@ -771,7 +779,7 @@ describe("ECClass", () => {
   });
 
   describe("deserialization sync", () => {
-    it("class with base class", () => {
+    it("Multiple classes with same base class, derived classes set properly", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
@@ -781,6 +789,10 @@ describe("ECClass", () => {
             schemaItemType: "EntityClass",
           },
           testClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.testBaseClass",
+          },
+          testClass2: {
             schemaItemType: "EntityClass",
             baseClass: "TestSchema.testBaseClass",
           },
@@ -794,12 +806,21 @@ describe("ECClass", () => {
       assert.isDefined(testClass);
       assert.isDefined(testClass!.getBaseClassSync());
 
+      const testClass2 = schema.getItemSync<EntityClass>("testClass2");
+      assert.isDefined(testClass2);
+      assert.isDefined(testClass2!.getBaseClassSync());
+
       const baseClass = schema.getItemSync<EntityClass>("testBaseClass");
       assert.isDefined(baseClass);
       assert.isTrue(baseClass === testClass!.getBaseClassSync());
+      const derivedClasses = await baseClass?.getDerivedClasses();
+      assert.isDefined(derivedClasses);
+      assert.isTrue(derivedClasses?.length === 2);
+      assert.isTrue(derivedClasses![0] === testClass);
+      assert.isTrue(derivedClasses![1] === testClass2);
     });
 
-    it("class with base class in reference schema", () => {
+    it("class with base class in reference schema", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
@@ -831,6 +852,10 @@ describe("ECClass", () => {
       assert.isDefined(testClass);
       assert.isDefined(testClass!.getBaseClassSync());
       assert.isTrue(testClass!.getBaseClassSync() === refBaseClass);
+      const derivedClasses = await refBaseClass?.getDerivedClasses();
+      assert.isDefined(derivedClasses);
+      assert.isTrue(derivedClasses?.length === 1);
+      assert.isTrue(derivedClasses![0] === testClass);
     });
     // Used to test that all property types are deserialized correctly. For failure and other tests look at the property
     // specific test files.
@@ -1226,7 +1251,7 @@ describe("ECClass", () => {
 
       const testSchema = new Schema(context, "ChildSchema", "child", 1, 0, 5);
       const childClass = new EntityClass(testSchema, "TestClass");
-      childClass.baseClass = new DelayedPromiseWithProps(testClass.key, async () => testClass);
+      await (childClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(testClass.key, async () => testClass));
       (testSchema as MutableSchema).addItem(testClass);
 
       const serialized = await childClass.toXml(newDom);

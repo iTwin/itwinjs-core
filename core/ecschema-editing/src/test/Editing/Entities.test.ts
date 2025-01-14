@@ -60,8 +60,13 @@ describe("Entities tests", () => {
     const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", testEntityBaseRes);
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
-    expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes));
+    const baseEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(testEntityBaseRes);
+    expect(await testEntity?.baseClass).to.eql(baseEntity);
     expect(testEntity?.label).to.eql("testLabel");
+    const derivedClasses = await baseEntity?.getDerivedClasses();
+    expect(derivedClasses).to.not.be.undefined;
+    expect(derivedClasses![0]).to.eql(testEntity);
+    expect(derivedClasses?.length).to.eql(1);
   });
 
   it("should create a new entity class with a base class from different schema", async () => {
@@ -85,8 +90,13 @@ describe("Entities tests", () => {
     const result = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None, "testLabel", baseClassKey);
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
+    const baseEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(baseClassKey);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassKey));
     expect(testEntity?.label).to.eql("testLabel");
+    const derivedClasses = await baseEntity?.getDerivedClasses();
+    expect(derivedClasses).to.not.be.undefined;
+    expect(derivedClasses![0]).to.eql(testEntity);
+    expect(derivedClasses?.length).to.eql(1);
   });
 
   it("try creating a new entity class with base class from unknown schema, returns error", async () => {
@@ -157,7 +167,12 @@ describe("Entities tests", () => {
     await testEditor.entities.setBaseClass(result, testEntityBaseRes);
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
+    const baseEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(testEntityBaseRes);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(testEntityBaseRes));
+    const derivedClasses = await baseEntity?.getDerivedClasses();
+    expect(derivedClasses).to.not.be.undefined;
+    expect(derivedClasses![0]).to.eql(testEntity);
+    expect(derivedClasses?.length).to.eql(1);
   });
 
   it("should add base class to existing entity class where base class is from a different schema", async () => {
@@ -182,7 +197,12 @@ describe("Entities tests", () => {
     await testEditor.entities.setBaseClass(result, baseClassKey);
 
     const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result);
+    const baseEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(baseClassKey);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassKey));
+    const derivedClasses = await baseEntity?.getDerivedClasses();
+    expect(derivedClasses).to.not.be.undefined;
+    expect(derivedClasses![0]).to.eql(testEntity);
+    expect(derivedClasses?.length).to.eql(1);
   });
 
   it("should change base class of existing entity class with different base class.", async () => {
@@ -215,8 +235,13 @@ describe("Entities tests", () => {
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(firstBaseClassKey));
 
     const secondBaseClassKey = new SchemaItemKey("testEntityBase2", refSchema.schemaKey);
+    const secondBaseClass = await testEditor.schemaContext.getSchemaItem<EntityClass>(secondBaseClassKey);
     await testEditor.entities.setBaseClass(testEntityResult, secondBaseClassKey);
     expect(await testEntity?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(secondBaseClassKey));
+    const derivedClasses = await secondBaseClass?.getDerivedClasses();
+    expect(derivedClasses).to.not.be.undefined;
+    expect(derivedClasses![0]).to.eql(testEntity);
+    expect(derivedClasses?.length).to.eql(1);
   });
 
   it("should remove base class from existing entity class.", async () => {
@@ -228,6 +253,9 @@ describe("Entities tests", () => {
 
     await testEditor.entities.setBaseClass(result, undefined);
     expect(await testEntity?.baseClass).to.eql(undefined);
+    const baseEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(testEntityBaseRes);
+    const derivedClasses = await baseEntity?.getDerivedClasses();
+    expect(derivedClasses).to.be.undefined;
   });
 
   it("try adding base class with unknown schema to existing entity class, returns error", async () => {
