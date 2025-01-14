@@ -7,10 +7,10 @@
  * @module Polyface
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface } from "./Polyface";
+
 /**
  * The `IndexedPolyfaceWalker` class supports navigation "around facets", "across edges", and "around  vertices" in an indexed polyface.
  *
@@ -21,7 +21,7 @@ import { IndexedPolyface } from "./Polyface";
  *   * `walker = IndexedPolyfaceWalker.createAtFacet (polyface, facetIndex, offsetWithinFacet)`
  *   * `walker = IndexedPolyfaceWalker.createAtEdgeIndex(polyface, edgeIndex)`
  *   * `walker = IndexedPolyfaceWalker.createAtVisitor(visitor, offsetWithinFacet)`
- * * If `walker` is siting at corner A of the upper right facet below, then
+ * * If `walker` is siting at corner A of the upper left facet below, then
  *   * walker.nextAroundFacet ()         is at B
  *   * walker.previousAroundFacet ()     is at C
  *   * walker.edgeMate ()                is at F
@@ -100,7 +100,10 @@ export class IndexedPolyfaceWalker {
     return new IndexedPolyfaceWalker(polyface, edgeIndex);
   }
   /** Create a walker at specified offset within a particular facet.
-   * * If the `facetIndex` or `offsetWithinFacet` is invalid, the walker is initialized with undefined `edgeIndex`
+   * * If `facetIndex` or `offsetWithinFacet` is invalid, the returned walker is invalid (cf. [[isUndefined]]).
+   * @param polyface the polyface to reference
+   * @param facetIndex index of the facet to reference
+   * @param offsetWithinFacet 0-based offset within the face loop of the facet.
    */
   public static createAtFacetIndex(polyface: IndexedPolyface, facetIndex: number, offsetWithinFacet: number = 0): IndexedPolyfaceWalker {
     if (polyface.isValidFacetIndex(facetIndex)) {
@@ -114,18 +117,18 @@ export class IndexedPolyfaceWalker {
   /**
    * Create a walker in the current facet held by an IndexedPolyfaceVisitor.
    * @param visitor visitor whose currentReadIndex identifies the facet.
-   * @param offsetWithinFacet 0-based offset within the facet.
-   * @returns
+   * @param offsetWithinFacet 0-based offset within the face loop of the facet.
    */
   public static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet = 0): IndexedPolyfaceWalker {
     const facetIndex = visitor.currentReadIndex();
     return IndexedPolyfaceWalker.createAtFacetIndex(visitor.clientPolyface(), facetIndex, offsetWithinFacet);
   }
-  /** Create a new IndexedPolyfaceWalker which
-   * * references the same polyface as this instance
-   * * if the edgeIndex parameter is undefined, use the edgeIndex from the calling instance
-   * * if the edgeIndex parameter is valid for the polyface, starts at that edgeIndex
-   * * if the edgeIndex parameter is not valid for the polyface, return undefined.
+  /**
+   * Create a new IndexedPolyfaceWalker from the instance.
+   * * The returned walker refers to the same polyface.
+   * * If `edgeIndex` is undefined, the returned walker refers to the same edge as the instance.
+   * * If `edgeIndex` is defined and valid, the returned walker refers to this edge.
+   * * If `edgeIndex` is defined but invalid, return undefined.
    */
   public clone(edgeIndex?: number): IndexedPolyfaceWalker | undefined {
     if (edgeIndex === undefined)
@@ -135,46 +138,35 @@ export class IndexedPolyfaceWalker {
     return undefined;
   }
   /**
-   * load the walker's facet into the given visitor.
+   * Load the walker's facet into the given visitor.
    * @returns true if the walker has a valid edge index.
    */
   public loadVisitor(visitor: IndexedPolyfaceVisitor): boolean {
     const facetIndex = this._polyface.edgeIndexToFacetIndex(this._edgeIndex);
-    if (facetIndex !== undefined) {
-      return visitor.moveToReadIndex(facetIndex);
-    }
-    return false;
+    return (facetIndex !== undefined) ? visitor.moveToReadIndex(facetIndex) : false;
   }
   /**
-   * test if two walkers are at different edges in the same polyface.
+   * Test if two walkers are at different edges in the same polyface.
    * * If either has undefined edge, return false.
    * * If they are in different polyfaces, return false.
    * * If they are the same edge in the same polyface, return false.
-   * * otherwise return true.
+   * * Otherwise return true.
    */
   public isDifferentEdgeInSamePolyface(walker2: IndexedPolyfaceWalker): boolean {
     if (this.isUndefined || walker2.isUndefined)
       return false;
-    return this._polyface === walker2._polyface
-      && this._edgeIndex !== walker2.edgeIndex
-      && this._edgeIndex !== undefined
-      && walker2._edgeIndex !== undefined;
+    return this._polyface === walker2._polyface && this._edgeIndex !== walker2.edgeIndex;
   }
   /**
-   * test if walker `other` is in the same polyface but at a different edge.
+   * Test if two walkers are in the same polyface at the same edge.
    * * If either has undefined edge, return false.
    * * If they are in different polyfaces, return false.
-   * * If they are the same edge in the same polyface, return true
+   * * If they are the same edge in the same polyface, return true.
    */
   public isSameEdge(walker2: IndexedPolyfaceWalker): boolean {
-    return this._polyface === walker2._polyface
-      && this._edgeIndex !== undefined
-      && this._edgeIndex === walker2._edgeIndex;
-    // equality test after testing this._edgeIndex !== undefined assures walker2._edgeIndex is defined.
+    return this._polyface === walker2._polyface && this.isValid && this._edgeIndex === walker2._edgeIndex;
   }
 
-  //=========================================================================
-  // "functional" moves returning new (or reused) walker.
   /**
    * Return a walker (new or reused) at the "next" place around the facet.
    * * "next" is in the order of indices in the PolyfaceData containing this facet.
