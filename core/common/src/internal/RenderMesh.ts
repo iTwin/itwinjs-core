@@ -9,6 +9,7 @@
 import { OctEncodedNormalPair } from "../OctEncodedNormal";
 import { PolylineIndices } from "../RenderPolyline";
 
+/** @internal */
 export class MeshPolyline {
   public readonly indices: PolylineIndices;
 
@@ -25,8 +26,10 @@ export class MeshPolyline {
   public clear() { this.indices.length = 0; }
 }
 
+/** @internal */
 export type MeshPolylineList = MeshPolyline[];
 
+/** @internal */
 export class MeshEdge {
   public indices = [0, 0];
 
@@ -51,6 +54,7 @@ export class MeshEdge {
   }
 }
 
+/** @internal */
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
@@ -59,6 +63,7 @@ export class MeshEdges {
   public constructor() { }
 }
 
+/** @internal */
 export class EdgeArgs {
   public edges?: MeshEdge[];
 
@@ -75,6 +80,7 @@ export class EdgeArgs {
   public get numEdges() { return undefined !== this.edges ? this.edges.length : 0; }
 }
 
+/** @internal */
 export class SilhouetteEdgeArgs extends EdgeArgs {
   public normals?: OctEncodedNormalPair[];
 
@@ -94,6 +100,7 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
   }
 }
 
+/** @internal */
 export class PolylineEdgeArgs {
   public lines?: PolylineIndices[];
 
