@@ -232,7 +232,6 @@ export namespace AzuriteTest {
       if (metadata?.itwinid === undefined)
         throw new Error("invalid container");
 
-      const azContUrl = new URL(azCont.url);
       return {
         scope: {
           iTwinId: metadata.itwinid,
