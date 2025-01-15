@@ -4,13 +4,11 @@ publish: false
 
 # NextVersion
 
-
 Table of contents:
 
 - [Selection set](#selection-set)
 - [Font APIs](#font-apis)
 - [API deprecations](#api-deprecations)
-  - [@itwin/ui-appui-abstract](#itwinui-appui-abstract)
   - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -22,8 +20,14 @@ Table of contents:
     - [Electron](#electron)
     - [ECMAScript](#ecmascript)
   - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/core-backend](#itwincore-backend-1)
     - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [General APIs](#general-apis)
+      - [Backstage APIs](#backstage-apis)
+      - [Items API](#items-api)
+      - [StatusBar APIs](#statusbar-apis)
+      - [Toolbar APIs](#toolbar-apis)
+      - [Widget APIs](#widget-apis)
+    - [@itwin/core-backend](#itwincore-backend-1)
     - [@itwin/core-electron](#itwincore-electron)
   - [API removals](#api-removals)
     - [@itwin/core-common](#itwincore-common-1)
@@ -53,62 +57,6 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
 
 ## API deprecations
-
-### @itwin/ui-appui-abstract
-
-The following APIs have been deprecated in `@appui-abstract`. Please use their equivalents in the `@itwin/appui-react` package:
-
-General APIs
-
-- `BaseUiItemsProvider`
-- `UiItemProviderRegisteredEventArgs`
-- `AllowedUiItemProviderOverrides`
-- `UiItemProviderOverrides`
-- `UiItemsManager`
-- `UiItemsProvider`
-
-Backstage APIs
-
-- `CommonBackstageItem`
-- `BackstageActionItem`
-- `BackstageStageLauncher`
-- `BackstageItem`
-- `isActionItem`: use `isBackstageActionItem` in `@itwin/appui-react` instead
-- `isStageLauncher`: use `isBackstageStageLauncher` in `@itwin/appui-react` instead
-- `BackstageItemUtilities`
-
-Items API
-
-- `ProvidedItem`
-- `StageUsage`
-
-StatusBar APIs
-
-- `StatusBarSection`
-- `StatusBarLabelSide`
-- `StatusBarItemId`: use `CommonStatusBarItem` in `@itwin/appui-react` instead
-- `AbstractStatusBarItem`: use `CommonStatusBarItem` in `@itwin/appui-react` instead
-- `AbstractStatusBarActionItem`: use `StatusBarActionItem` in `@itwin/appui-react` instead
-- `AbstractStatusBarLabelItem`: use `StatusBarLabelItem` in `@itwin/appui-react` instead
-- `AbstractStatusBarCustomItem`: use `StatusBarCustomItem` in `@itwin/appui-react` instead
-- `CommonStatusBarItem`: use `StatusBarItem` in `@itwin/appui-react` instead
-- `isAbstractStatusBarActionItem`: use `isStatusBarActionItem` in `@itwin/appui-react` instead
-- `isAbstractStatusBarLabelItem`: use `isStatusBarLabelItem` in `@itwin/appui-react` instead
-- `isAbstractStatusBarCustomItem`: use `isStatusBarCustomItem` in `@itwin/appui-react` instead
-- `AbstractStatusBarItemUtilities`: use `StatusBarItemUtilities` in `@itwin/appui-react` instead
-
-Toolbar APIs
-
-- `ToolbarUsage`
-- `ToolbarOrientation`
-- `ToolbarItemId`: use `ToolbarItem["id"]` in `@itwin/appui-react` instead
-
-Widget APIs
-
-- `AbstractWidgetProps`: use `Widget` in `@itwin/appui-react` instead
-- `WidgetState`
-- `StagePanelLocation`
-- `StagePanelSection`
 
 ### @itwin/core-common
 
@@ -159,6 +107,84 @@ iTwin.js now supports only the latest Electron release (Electron 33) and has dro
 
 The following previously-deprecated APIs have been removed:
 
+#### @itwin/appui-abstract
+
+The following APIs have been removed in `@itwin/appui-abstract`.
+For all the APIs that had __(*)__ in `Replacement` section, please use their equivalents in the `@itwin/appui-react` package __(the API name will be the same)__:
+
+##### General APIs
+
+| Removed                     | Replacement                                                   |
+| --------------------------- | ------------------------------------------------------------- |
+| `AbstractZoneLocation`      | N/A                                                           |
+| `AllowedUiItemProviderOverrides` | *                                                       |
+| `BackstageItemType`         | Use `Type Guard` instead.                                     |
+| `BackstageItemsChangedArgs` | N/A                                                           |
+| `BackstageItemsManager`     | N/A                                                           |
+| `BaseUiItemsProvider`       | *                                                             |
+| `EditorPosition.columnSpan` | N/A                                                           |
+| `UiItemProviderRegisteredEventArgs` | *                                                       |
+| `UiItemProviderOverrides`   | *                                                             |
+| `UiItemsApplicationAction`  | N/A                                                           |
+| `UiItemsManager`            | *                                                             |
+| `UiItemsProvider`           | *                                                             |
+| `createSvgIconSpec`         | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
+| `getSvgSource`              | Use `IconSpecUtilities.getWebComponentSource()` instead.      |
+| `statusBarItemsManager`     | N/A (this is an internal API and not intended for external use) |
+
+##### Backstage APIs
+
+| Removed                 | Replacement                                                   |
+|-------------------------|---------------------------------------------------------------|
+| `BackstageActionItem`   | *                                                             |
+| `BackstageItem`         | *                                                             |
+| `BackstageItemUtilities`| *                                                             |
+| `BackstageStageLauncher`| *                                                             |
+| `CommonBackstageItem`   | *                                                             |
+| `isActionItem`          | Use `isBackstageActionItem` in `@itwin/appui-react` instead    |
+| `isStageLauncher`       | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead |
+
+##### Items API
+
+| Removed         | Replacement |
+|-----------------|-------------|
+| `ProvidedItem`  | *           |
+| `StageUsage`    | *           |
+
+##### StatusBar APIs
+
+| Removed                         | Replacement                                                   |
+|---------------------------------|---------------------------------------------------------------|
+| `AbstractStatusBarActionItem`   | Use `StatusBarActionItem` in `@itwin/appui-react` instead      |
+| `AbstractStatusBarCustomItem`   | Use `StatusBarCustomItem` in `@itwin/appui-react` instead      |
+| `AbstractStatusBarItem`         | Use `CommonStatusBarItem` in `@itwin/appui-react` instead      |
+| `AbstractStatusBarItemUtilities`| Use `StatusBarItemUtilities` in `@itwin/appui-react` instead   |
+| `AbstractStatusBarLabelItem`    | Use `StatusBarLabelItem` in `@itwin/appui-react` instead       |
+| `CommonStatusBarItem`           | Use `StatusBarItem` in `@itwin/appui-react` instead            |
+| `isAbstractStatusBarActionItem` | Use `isStatusBarActionItem` in `@itwin/appui-react` instead    |
+| `isAbstractStatusBarCustomItem` | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead    |
+| `isAbstractStatusBarLabelItem`  | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead     |
+| `StatusBarItemId`               | Use `CommonStatusBarItem` in `@itwin/appui-react` instead      |
+| `StatusBarLabelSide`            | *                                                             |
+| `StatusBarSection`              | *                                                             |
+
+##### Toolbar APIs
+
+| Removed             | Replacement                            |
+|---------------------|----------------------------------------|
+| `ToolbarItemId`     | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead |
+| `ToolbarOrientation`| *                                      |
+| `ToolbarUsage`      | *                                      |
+
+##### Widget APIs
+
+| Removed                 | Replacement                              |
+|-------------------------|------------------------------------------|
+| `AbstractWidgetProps`   | Use `Widget` in `@itwin/appui-react` instead |
+| `StagePanelLocation`    | *                                        |
+| `StagePanelSection`     | *                                        |
+| `WidgetState`           | *                                        |
+
 #### @itwin/core-backend
 
 | Removed               | Replacement |
@@ -169,19 +195,6 @@ The following previously-deprecated APIs have been removed:
 | `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
-#### @itwin/appui-abstract
-
-| Removed                     | Replacement                                                   |
-| --------------------------- | ------------------------------------------------------------- |
-| `EditorPosition.columnSpan` | N/A                                                           |
-| `UiItemsApplicationAction`  | N/A (removed without replacement)                             |
-| `BackstageItemType`         | Use `Type Guard` instead.                                     |
-| `BackstageItemsChangedArgs` | N/A                                                           |
-| `BackstageItemsManager`     | N/A                                                           |
-| `AbstractZoneLocation`      | N/A                                                           |
-| `createSvgIconSpec`         | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
-| `getSvgSource`              | Use `IconSpecUtilities.getWebComponentSource()` instead.      |
-| `statusBarItemsManager`     | N/A (this is an internal API and not intended for external use) |
 
 #### @itwin/core-electron
 
