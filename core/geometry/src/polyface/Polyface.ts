@@ -678,8 +678,8 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
  * A PolyfaceVisitor manages data while walking through facets.
  * * The polyface visitor holds data for one facet at a time.
  * * The caller can request the position in the addressed polyfaceData as a "readIndex".
- * * The readIndex values (as numbers) are not promised to be sequential (i.e., it might be a simple facet count
- * or might have "gaps" at the whim of the particular PolyfaceVisitor implementation).
+ * * The readIndex values (as numbers) are not assumed to be sequential (i.e., they might be contiguous facet indices
+ * or the indexing scheme might have gaps at the whim of the particular PolyfaceVisitor implementation).
  * @public
  */
 export interface PolyfaceVisitor extends PolyfaceData {
