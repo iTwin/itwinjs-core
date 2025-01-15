@@ -34,10 +34,10 @@ import { IndexedPolyface } from "./Polyface";
  * the edges "out of" locations B, C, E, F, D are directed as depicted below.
  * * With this conventional counterclockwise ordering of face loops, "next" is counterclockwise, and "previous" is
  * clockwise:
- *    * The [[nextAroundFacet]] step is counterclockwise around the facet.
- *    * The [[previousAroundFacet]] step is clockwise around the facet.
- *    * The [[nextAroundVertex]] step is counterclockwise around the vertex.
- *    * The [[previousAroundFacet]] step is clockwise around the facet.
+ *   * The [[nextAroundFacet]] step is counterclockwise around the facet.
+ *   * The [[previousAroundFacet]] step is clockwise around the facet.
+ *   * The [[nextAroundVertex]] step is counterclockwise around the vertex.
+ *   * The [[previousAroundFacet]] step is clockwise around the facet.
  * * The `nextAroundFacet` steps for a walker and its [[edgeMate]] are in opposite directions along their shared edge,
  * when that edge is interior. Thus the `edgeMate` step can be seen to iterate an "edge loop" of two locations for an
  * interior edges. Exterior edges have exactly one adjacent facet; for these edges the `edgeMate` step returns a walker

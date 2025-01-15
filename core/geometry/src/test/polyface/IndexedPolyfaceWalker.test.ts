@@ -6,7 +6,7 @@ import { expect, it } from "vitest";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { IndexedPolyfaceWalker } from "../../polyface/PolyfaceWalker";
+import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
 import { Checker } from "../Checker";
 
 function verifyMonotoneArraySearch(ck: Checker, data: number[], name: string) {
