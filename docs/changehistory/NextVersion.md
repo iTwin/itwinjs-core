@@ -2,13 +2,15 @@
 publish: false
 ---
 
-# NextVersion
+### NextVersion
+
 
 Table of contents:
 
 - [Selection set](#selection-set)
 - [Font APIs](#font-apis)
 - [API deprecations](#api-deprecations)
+  - [@itwin/ui-appui-abstract](#itwinui-appui-abstract)
   - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-frontend](#itwincore-frontend)
@@ -24,6 +26,7 @@ Table of contents:
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-electron](#itwincore-electron)
   - [API removals](#api-removals)
+    - [@itwin/core-common](#itwincore-common-1)
   - [Packages dropped](#packages-dropped)
 - [Change to pull/merge method](#change-to-pullmerge)
 
@@ -48,6 +51,62 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
 
 ## API deprecations
+
+### @itwin/ui-appui-abstract
+
+The following APIs have been deprecated in `@appui-abstract`. Please use their equivalents in the `@itwin/appui-react` package:
+
+General APIs
+
+- `BaseUiItemsProvider`
+- `UiItemProviderRegisteredEventArgs`
+- `AllowedUiItemProviderOverrides`
+- `UiItemProviderOverrides`
+- `UiItemsManager`
+- `UiItemsProvider`
+
+Backstage APIs
+
+- `CommonBackstageItem`
+- `BackstageActionItem`
+- `BackstageStageLauncher`
+- `BackstageItem`
+- `isActionItem`: use `isBackstageActionItem` in `@itwin/appui-react` instead
+- `isStageLauncher`: use `isBackstageStageLauncher` in `@itwin/appui-react` instead
+- `BackstageItemUtilities`
+
+Items API
+
+- `ProvidedItem`
+- `StageUsage`
+
+StatusBar APIs
+
+- `StatusBarSection`
+- `StatusBarLabelSide`
+- `StatusBarItemId`: use `CommonStatusBarItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarItem`: use `CommonStatusBarItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarActionItem`: use `StatusBarActionItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarLabelItem`: use `StatusBarLabelItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarCustomItem`: use `StatusBarCustomItem` in `@itwin/appui-react` instead
+- `CommonStatusBarItem`: use `StatusBarItem` in `@itwin/appui-react` instead
+- `isAbstractStatusBarActionItem`: use `isStatusBarActionItem` in `@itwin/appui-react` instead
+- `isAbstractStatusBarLabelItem`: use `isStatusBarLabelItem` in `@itwin/appui-react` instead
+- `isAbstractStatusBarCustomItem`: use `isStatusBarCustomItem` in `@itwin/appui-react` instead
+- `AbstractStatusBarItemUtilities`: use `StatusBarItemUtilities` in `@itwin/appui-react` instead
+
+Toolbar APIs
+
+- `ToolbarUsage`
+- `ToolbarOrientation`
+- `ToolbarItemId`: use `ToolbarItem["id"]` in `@itwin/appui-react` instead
+
+Widget APIs
+
+- `AbstractWidgetProps`: use `Widget` in `@itwin/appui-react` instead
+- `WidgetState`
+- `StagePanelLocation`
+- `StagePanelSection`
 
 ### @itwin/core-common
 
@@ -108,12 +167,19 @@ The following previously-deprecated APIs have been removed:
 | `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
-
 #### @itwin/appui-abstract
 
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `EditorPosition.columnSpan` | N/A         |
+| Removed                     | Replacement                                                   |
+| --------------------------- | ------------------------------------------------------------- |
+| `EditorPosition.columnSpan` | N/A                                                           |
+| `UiItemsApplicationAction`  | N/A (removed without replacement)                             |
+| `BackstageItemType`         | Use `Type Guard` instead.                                     |
+| `BackstageItemsChangedArgs` | N/A                                                           |
+| `BackstageItemsManager`     | N/A                                                           |
+| `AbstractZoneLocation`      | N/A                                                           |
+| `createSvgIconSpec`         | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
+| `getSvgSource`              | Use `IconSpecUtilities.getWebComponentSource()` instead.      |
+| `statusBarItemsManager`     | N/A (this is an internal API and not intended for external use) |
 
 #### @itwin/core-electron
 
@@ -179,4 +245,3 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
-

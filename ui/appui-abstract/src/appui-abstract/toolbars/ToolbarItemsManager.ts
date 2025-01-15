@@ -9,9 +9,13 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";
+import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemUtilities } from "./ToolbarItem";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
+
+// ToolbarItemId was deprecated in 5.0. This is a workaround for internal usage only
+// TODO: Remove this when ToolbarItemId is no longer needed
+type ToolbarItemId = CommonToolbarItem["id"];
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
