@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
+  CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, LazyLoadedECClass, PrimitiveArrayProperty,
   PrimitiveProperty, PrimitiveType, Property, StructArrayProperty, StructClass, StructProperty,
 } from "@itwin/ecschema-metadata";
 
@@ -20,6 +20,7 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
+  public abstract override setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
   public abstract override setName(name: string): void;

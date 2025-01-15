@@ -91,13 +91,9 @@ export interface BasicPlanarClipMaskArgs {
 export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
   /** See [[PlanarClipMaskSettings.modelIds]]. */
   modelIds?: Iterable<Id64String>;
-  /** @internal */
   exclude?: never;
-  /** @internal */
   elementIds?: never;
-  /** @internal */
   subCategoryIds?: never;
-  /** @internal */
   priority?: never;
 }
 
@@ -111,9 +107,7 @@ export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
   elementIds: Iterable<Id64String>;
   /** If true, creates a mask of [[PlanarClipMaskMode.ExcludeElements]]; otherwise, [[PlanarClipMaskMode.IncludeElements]]. */
   exclude?: boolean;
-  /** @internal */
   subCategoryIds?: never;
-  /** @internal */
   priority?: never;
 }
 
@@ -125,11 +119,8 @@ export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
   modelIds?: Iterable<Id64String>;
   /** The subcategories used by the mask. @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
   subCategoryIds: Iterable<Id64String>;
-  /** @internal */
   exclude?: never;
-  /** @internal */
   elementIds?: never;
-  /** @internal */
   priority?: never;
 }
 
@@ -139,11 +130,8 @@ export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
 export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
   /** See [[PlanarClipMaskSettings.priority]]. */
   priority: number;
-  /** @internal */
   exclude?: never;
-  /** @internal */
   elementIds?: never;
-  /** @internal */
   modelIds?: never;
 }
 

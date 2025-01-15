@@ -6,44 +6,8 @@
  * @module Rendering
  */
 
-import { OctEncodedNormalPair } from "./OctEncodedNormal";
-
-// cSpell:ignore vals
-
-/** Describes the semantics of a [PolylineArgs]($frontend).
- * @public
- */
-export enum PolylineTypeFlags {
-  /** Just an ordinary polyline with no special semantics. */
-  Normal = 0,
-  /** A polyline used to define the edges of a planar region. */
-  Edge = 1 << 0,
-  /** Like [[Edge]], but the edges are only displayed in [[RenderMode.Wireframe]] when the surface's fill is not displayed.
-   * [[FillFlags]] controls whether the fill is displayed.
-   */
-  Outline = 1 << 1,
-}
-
-/** Flags describing a [PolylineArgs]($frontend).
- * @public
- */
-export interface PolylineFlags {
-  /** If `true`, the polylines are to be drawn as individual disconnected point strings instead of as connected line strings. */
-  isDisjoint?: boolean;
-  /** If `true`, the polylines' positions are all coplanar. */
-  isPlanar?: boolean;
-  /** If `true`, the polylines' positions all have the same z coordinate. */
-  is2d?: boolean;
-  /** Default: Normal. */
-  type?: PolylineTypeFlags;
-}
-
-/** Describes the vertex indices of a single line within a [PolylineArgs]($frontend).
- * The indices represent either a line string as a connected series of points, or a point string as a set of disconnected points, depending
- * on the [[PolylineFlags.isDisjoint]] value of [PolylineArgs.flags]($frontend).
- * @public
- */
-export type PolylineIndices = number[];
+import { OctEncodedNormalPair } from "../OctEncodedNormal";
+import { PolylineIndices } from "../RenderPolyline";
 
 /** @internal */
 export class MeshPolyline {
@@ -63,11 +27,7 @@ export class MeshPolyline {
 }
 
 /** @internal */
-export class MeshPolylineList extends Array<MeshPolyline> {
-  constructor(...args: MeshPolyline[]) {
-    super(...args);
-  }
-}
+export type MeshPolylineList = MeshPolyline[];
 
 /** @internal */
 export class MeshEdge {
@@ -98,7 +58,7 @@ export class MeshEdge {
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
-  public polylines: MeshPolylineList = new MeshPolylineList();
+  public polylines: MeshPolylineList = [];
   public silhouetteNormals: OctEncodedNormalPair[] = [];
   public constructor() { }
 }
