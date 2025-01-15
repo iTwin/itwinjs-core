@@ -28,7 +28,9 @@ Table of contents:
   - [API removals](#api-removals)
     - [@itwin/core-common](#itwincore-common-1)
   - [Packages dropped](#packages-dropped)
-- [Change to pull/merge method](#change-to-pullmerge)
+  - [Change to pullMerge](#change-to-pullmerge)
+    - [No pending/local changes](#no-pendinglocal-changes)
+    - [With pending/local changes](#with-pendinglocal-changes)
 
 ## Selection set
 

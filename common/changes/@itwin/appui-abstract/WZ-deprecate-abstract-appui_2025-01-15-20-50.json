@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Removed appui-abstract APIs that are deprecated in 3.x",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}
