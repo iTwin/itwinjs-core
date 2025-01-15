@@ -87,19 +87,27 @@ export class PolyfaceData {
 
   /**
    * Optional index array for moving "across an edge" to an adjacent facet.
-   * * If edgeMateIndex[k] is defined (call it k1):
+   * * This array is:
+   *   * the same length as the other index arrays.
+   *   * populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
+   *   * completes the topology of the polyface.
+   *   * invalid if the polyface is subsequently edited.
+   *   * persistent.
+   * * Let k1 = edgeMateIndex[k] be defined. Then:
    *   * k1 is an index into the instance index arrays.
-   *   * pointIndex[k1] is the point in the adjacent facet at the opposite end of the edge starting at pointIndex[k].
-   * * If edgeMateIndex[k] is undefined, there is no adjacent facet across the edge starting at pointIndex[k].
+   *   * k and k1 refer to the two oppositely oriented sides of an interior edge in the polyface.
+   *   * pointIndex[k1] is the point at the opposite end of the edge that starts at pointIndex[k].
+   * * If k1 is undefined, then there is no adjacent facet across the edge that starts at pointIndex[k],
+   * i.e. k refers to a boundary edge.
    */
   public edgeMateIndex?: Array<number | undefined>;
   /**
    * Dereference the edgeMateIndex array.
-   * * This can be undefined if:
+   * * This method returns undefined if:
    *   * k is undefined
-   *   * this.edgeMateIndex is undefined
-   *   * k is out of bounds for the edgeMateIndex array
-   *   * edgeMateIndex[k] is undefined.
+   *   * `this.edgeMateIndex` is undefined
+   *   * k is out of bounds for `this.edgeMateIndex`
+   *   * `this.edgeMateIndex[k]` is undefined
    */
   public edgeIndexToEdgeMateIndex(k: number | undefined): number | undefined {
     if (k !== undefined
@@ -108,7 +116,7 @@ export class PolyfaceData {
       return this.edgeMateIndex[k];
     return undefined;
   }
-  /** Test if `value` is a valid index into the pointIndex array. */
+  /** Test if `value` is a valid index into the `pointIndex` array. */
   public isValidEdgeIndex(value: number | undefined): boolean {
     return value !== undefined && value >= 0 && value < this.pointIndex.length;
   }

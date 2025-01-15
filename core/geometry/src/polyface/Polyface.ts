@@ -169,9 +169,11 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
   }
   /**
-   * Given an edgeIndex (index into `data.pointIndex`), return the range of the edge indices of the containing facet.
-   * * The face loop of facet `f` is a contiguous block of edgeIndices in `data.pointIndex` representing `f`.
-   * * The returned range `r` can be used to iterate this face loop, e.g.:
+   * Given an edgeIndex (index into `data.pointIndex`), return the range of the edgeIndices of the containing facet.
+   * * A "face loop" is a contiguous block of edgeIndices in the polyface index arrays representing a facet.
+   * * If an edge with edgeIndex `k` is found in the facet with facetIndex `f`, then the returned range `r` satisfies
+   * `r.low = this.facetIndex0(f) <= k < this.facetIndex1(f) = r.high` and can be used to iterate the facet's face
+   * loop, e.g.:
    * ````
    * for (let k1 = r.low; k1 < r.high; k1++) {
    *   const edgeIndex = myPolyface.data.pointIndex[k1];
@@ -182,7 +184,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public edgeIndexToFaceLoop(k: number | undefined): Range1d | undefined {
     const q = this.edgeIndexToFacetIndex(k);
     if (q !== undefined)
-      return Range1d.createXX(this._facetStart[q], this._facetStart[q + 1]);
+      return Range1d.createXX(this.facetIndex0(q), this.facetIndex1(q));
     return undefined;
   }
 

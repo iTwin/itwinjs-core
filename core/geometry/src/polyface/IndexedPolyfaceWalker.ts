@@ -63,48 +63,55 @@ import { IndexedPolyface } from "./Polyface";
 export class IndexedPolyfaceWalker {
   /** The polyface being traversed. */
   private _polyface: IndexedPolyface;
-  /** The current edgeIndex into that polyface. */
+  /** The current edgeIndex into the polyface. */
   private _edgeIndex: number | undefined;
   /** Constructor */
   private constructor(polyface: IndexedPolyface, edgeIndex: number | undefined) {
     this._polyface = polyface;
     this._edgeIndex = edgeIndex;
   }
-  /** Return the numeric (or undefined) edge index of this walker */
+  /**
+   * Return the edge index of this walker.
+   * * This is an index into the polyface's `data.pointIndex` array.
+   * * Can be undefined.
+   */
   public get edgeIndex(): number | undefined { return this._edgeIndex; }
 
-  /** Return the polyface of this walker */
+  /** Return the polyface of this walker. */
   public get polyface(): IndexedPolyface | undefined { return this._polyface; }
   /**
-   * Return true if the walker has a defined edgeIndex.
+   * Return true if the walker's edgeIndex is defined.
    * * This method is the opposite of [[isUndefined]].
    */
   public get isValid(): boolean { return this._edgeIndex !== undefined; }
   /**
-   * Return true if the walker has an undefined edgeIndex.
-   * * This can happen during a walk when the walker `w` reaches an exterior edge, for then `w.edgeMate(w).isUndefined === true`.
-   * * This can also happen when methods that return a walker are given an invalid input.
+   * Return true if the walker's edgeIndex is undefined.
+   * * This method is the opposite of [[isValid]].
+   * * This can happen during a walk when the walker `w` reaches an exterior edge, for then
+   * `w.edgeMate(w).isUndefined === true`.
+   * * This can also happen when methods that return a walker receive invalid input.
    */
   public get isUndefined(): boolean { return this._edgeIndex === undefined; }
   /**
-   * Create a walker for given polyface
-   * * Create a walker which references the given IndexedPolyface.
-   * * A reference to the the polyface is stored (captured) in the walker.
-   * @param polyface reference to the client polyface.
+   * Create a walker for a given polyface at an optional edge.
+   * @param polyface reference to the client polyface. This reference is captured (the polyface is not copied).
    * @param edgeIndex optional indication of where to start the walker within the mesh.
-   *   * If the initialPosition is a valid edgeIndex for the same IndexedPolyface, the new walker is started there.
-   *   * If the initialPosition is undefined or an invalid numeric index, the walker starts with `undefined edgeIndex`
+   * * If the edgeIndex is valid for the input polyface, the new walker is started there.
+   * * If the edgeIndex is undefined or invalid for the input polyface, the walker returns true for [[isUndefined]].
    */
   public static createAtEdgeIndex(polyface: IndexedPolyface, edgeIndex?: number): IndexedPolyfaceWalker {
     if (!polyface.data.isValidEdgeIndex(edgeIndex))
       edgeIndex = undefined;
     return new IndexedPolyfaceWalker(polyface, edgeIndex);
   }
-  /** Create a walker at specified offset within a particular facet.
-   * * If `facetIndex` or `offsetWithinFacet` is invalid, the returned walker is invalid (cf. [[isUndefined]]).
+  /**
+   * Create a walker for a given polyface at a specified facet.
+   * * If `facetIndex` or `offsetWithinFacet` is invalid for the input polyface, the walker returns true for
+   * [[isUndefined]].
    * @param polyface the polyface to reference
    * @param facetIndex index of the facet to reference
-   * @param offsetWithinFacet 0-based offset within the face loop of the facet.
+   * @param offsetWithinFacet optional 0-based offset within the face loop of the facet (default 0). This allows
+   * the caller to start the walker at a particular edge of the facet.
    */
   public static createAtFacetIndex(polyface: IndexedPolyface, facetIndex: number, offsetWithinFacet: number = 0): IndexedPolyfaceWalker {
     if (polyface.isValidFacetIndex(facetIndex)) {
@@ -116,9 +123,10 @@ export class IndexedPolyfaceWalker {
     return new IndexedPolyfaceWalker(polyface, undefined);
   }
   /**
-   * Create a walker in the current facet held by an IndexedPolyfaceVisitor.
+   * Create a walker at the facet specified by a visitor.
    * @param visitor visitor whose currentReadIndex identifies the facet.
-   * @param offsetWithinFacet 0-based offset within the face loop of the facet.
+   * @param offsetWithinFacet optional 0-based offset within the face loop of the facet (default 0). This allows
+   * the caller to start the walker at a particular edge of the facet.
    */
   public static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet: number = 0): IndexedPolyfaceWalker {
     const facetIndex = visitor.currentReadIndex();
@@ -140,9 +148,11 @@ export class IndexedPolyfaceWalker {
   }
   /**
    * Load the walker's facet into the given visitor.
-   * @returns true if the walker has a valid edge index.
+   * @returns true if the visitor and walker reference the same polyface and the walker has a valid edge index.
    */
   public loadVisitor(visitor: IndexedPolyfaceVisitor): boolean {
+    if (visitor.clientPolyface() !== this._polyface)
+      return false;
     const facetIndex = this._polyface.edgeIndexToFacetIndex(this._edgeIndex);
     return (facetIndex !== undefined) ? visitor.moveToReadIndex(facetIndex) : false;
   }
@@ -153,10 +163,10 @@ export class IndexedPolyfaceWalker {
    * * If they are the same edge in the same polyface, return false.
    * * Otherwise return true.
    */
-  public isDifferentEdgeInSamePolyface(walker2: IndexedPolyfaceWalker): boolean {
-    if (this.isUndefined || walker2.isUndefined)
+  public isDifferentEdgeInSamePolyface(other: IndexedPolyfaceWalker): boolean {
+    if (this.isUndefined || other.isUndefined)
       return false;
-    return this._polyface === walker2._polyface && this._edgeIndex !== walker2.edgeIndex;
+    return this._polyface === other._polyface && this._edgeIndex !== other.edgeIndex;
   }
   /**
    * Test if two walkers are in the same polyface at the same edge.
@@ -164,16 +174,28 @@ export class IndexedPolyfaceWalker {
    * * If they are in different polyfaces, return false.
    * * If they are the same edge in the same polyface, return true.
    */
-  public isSameEdge(walker2: IndexedPolyfaceWalker): boolean {
-    return this._polyface === walker2._polyface && this.isValid && this._edgeIndex === walker2._edgeIndex;
+  public isSameEdge(other: IndexedPolyfaceWalker): boolean {
+    return this._polyface === other._polyface && this.isValid && this._edgeIndex === other._edgeIndex;
   }
 
   /**
-   * Return a walker (new or reused) at the "next" place around the facet.
-   * * "next" is in the order of indices in the PolyfaceData containing this facet.
-   * * The calling walker may be used as the optional result, thus moving it to the new location.
-   * * If the calling walker has undefined edgeIndex, the result also has undefined edgeIndex
-   * @param result optional receiver for result.
+   * Return a walker with given edgeIndex and polyface from the calling instance.
+   * * If `result` is supplied, that walker is filled and returned.
+   * * If `result` is not supplied, a new walker is created.
+   */
+  private createResult(result: undefined | IndexedPolyfaceWalker, edgeIndex: undefined | number): IndexedPolyfaceWalker {
+    if (result === undefined)
+      return new IndexedPolyfaceWalker(this._polyface, edgeIndex);
+    result._polyface = this._polyface;
+    result._edgeIndex = edgeIndex;
+    return result;
+  }
+  /**
+   * Return a walker (new or reused) at the next edge around the facet.
+   * * "Next" is in the order of indices in the face loop of this facet.
+   * * If the instance has undefined edgeIndex, the result also has undefined edgeIndex.
+   * @param result optional receiver to modify and return. May be the same as `this` to move the instance walker
+   * to the new location and return it.
    */
   public nextAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker {
     const k = this._edgeIndex;
@@ -189,11 +211,11 @@ export class IndexedPolyfaceWalker {
     return this.createResult(result, this._polyface.facetIndex0(facetIndex));
   }
   /**
-   * Return a walker (new or reused) at the "previous" place around the facet.
-   * * "next" is in the reverse order of indices in the PolyfaceData containing this facet.
-   * * The calling walker may be used as the optional result, thus moving it to the new location.
-   * * If the calling walker has undefined edgeIndex, the result also has undefined edgeIndex
-   * @param result optional receiver for result.
+   * Return a walker (new or reused) at the previous edge around the facet.
+   * * "Previous" is in the reverse order of indices in the face loop of this facet.
+   * * If the instance has undefined edgeIndex, the result also has undefined edgeIndex.
+   * @param result optional receiver to modify and return. May be the same as `this` to move the instance walker
+   * to the new location and return it.
    */
   public previousAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker {
     let k = this._edgeIndex;
@@ -209,90 +231,79 @@ export class IndexedPolyfaceWalker {
       k--;
     return this.createResult(result, k);
   }
-  /** Return a walker (new or reused) for the edgeMate of this walker.
-   * * This can have an undefined edgeIndex if
-   *   * the calling walker is "on the boundary" (i.e. there is no facet on the other side of the edge.
-   *   * the calling walker has undefined edgeIndex, the result also has undefined edgeIndex
+  /**
+   * Return a walker (new or reused) at the edge mate of this walker's edge.
+   * * The returned walker has undefined edgeIndex if:
+   *   * the instance is at a boundary edge, i.e., there is no facet on the other side, or
+   *   * the instance has undefined edgeIndex.
+   * @param result optional receiver to modify and return. May be the same as `this` to move the instance walker
+   * to the new location and return it.
    */
   public edgeMate(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker {
     return this.createResult(result, this._polyface.data.edgeIndexToEdgeMateIndex(this._edgeIndex));
   }
-
-  /** Return a walker (new or reused) the "next" outbound edge around the vertex at the base of this walker's edge.
-   * * If the facet is viewed so that its "nextAroundFacet" direction appears counter clockwise,
-   *    this "nextAroundVertex" step is to the next outbound edge counter clockwise around the base vertex.
-   * * The direction to previous is defined as the end of two steps:
-   *   * first step to the previous edge around this walker's facet
-   *   * then step to the edgeMate
-   * * This can have an undefined edgeIndex if
-   *   * the previous edge in the calling walker is "on the boundary" (i.e. there is no facet on the other side of the previous edge.)
-   *   * the calling walker has undefined edgeIndex, the result also has undefined edgeIndex
+  /**
+   * Return a walker (new or reused) at the next outbound edge around the vertex at the base of this walker's edge.
+   * * If the facet is viewed so that its "nextAroundFacet" direction appears counterclockwise, then the "next"
+   * outbound edge is counterclockwise around the base vertex.
+   * * The returned walker has undefined edgeIndex if:
+   *   * the previous edge around the facet is a boundary edge, i.e., there is no facet on the other side, or
+   *   * the instance has undefined edgeIndex.
+   * @param result optional receiver to modify and return. May be the same as `this` to move the instance walker
+   * to the new location and return it.
    */
   public nextAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker {
     const result1 = this.previousAroundFacet(result);
     return result1.edgeMate(result1);
   }
-
-  /** Return a walker (new or reused) the "previous" outbound edge around the vertex at the base of this walker's edge.
-   * * If the facet is viewed so that its "nextAroundFacet" direction appears counter clockwise,
-   *    this "previousAroundVertex" step is to the next outbound edge clockwise around the base vertex.
-   * * The forward direction is defined as the end of two steps:
-   *   * step to the edgeMate of the calling walker
-   *   * then step to edgeMate's "nextAroundFacet"
-   * * This can have an undefined edgeIndex if
-   *   * the calling walker is "on the boundary" (i.e. there is no facet on the other side of the edge.)
-   *   * the calling walker has undefined edgeIndex, the result also has undefined edgeIndex
+  /**
+   * Return a walker (new or reused) at the previous outbound edge around the vertex at the base of this walker's edge.
+   * * If the facet is viewed so that its "nextAroundFacet" direction appears counterclockwise, then the "previous"
+   * outbound edge is clockwise around the base vertex.
+   * * The returned walker has undefined edgeIndex if:
+   *   * the instance edge is a boundary edge, i.e., there is no facet on the other side, or
+   *   * the instance has undefined edgeIndex.
+   * @param result optional receiver to modify and return. May be the same as `this` to move the instance walker
+   * to the new location and return it.
    */
   public previousAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker {
-    // (undefined this._edgeIndex or subsequent edgeMate gets handled quietly at each step)
     const result1 = this.edgeMate(result);
     return result1.nextAroundFacet(result1);
   }
+
   /**
-   * * Return a walker with
-   *   * edgeIndex from the parameter
-   *   * the same polyface as the calling instance
-   * * If the `result` parameter is supplied, that walker is filled and returned
-   * * If the `result` parameter is not supplied, a new walker is created.
-   */
-  private createResult(result: undefined | IndexedPolyfaceWalker, edgeIndex: undefined | number): IndexedPolyfaceWalker {
-    if (result === undefined)
-      return new IndexedPolyfaceWalker(this._polyface, edgeIndex);
-    else {
-      result._polyface = this._polyface;
-      result._edgeIndex = edgeIndex;
-      return result;
-    }
-  }
-  /**
-   * In the PolyfaceData object, build the edgeMate data array.
+   * Build the edgeMate index array into the polyface's [[PolyfaceData]].
    * After this method:
-   * * The array data.edgeMateIndex be present with the same length as the other index arrays.
-   * * For each facet edge with a unique "edge mate", the query polyface.edgeIndexToEdgeMate will navigate to the edge mate on the an adjacent facet.
+   * * The array `polyface.data.edgeMateIndex` is defined with the same length as the other PolyfaceData index arrays.
+   * * For each interior edge, `polyface.data.edgeIndexToEdgeMateIndex` returns the edgeIndex on the other side of the
+   * edge in the adjacent facet.
    * * The conditions for edgeMate matching are:
-   *    * let k0 and k1 be the limit indices for a facet; that is for `k` in the range `k0 <=k< k1`
-   *        the point indices around the facet are pointIndex[k].
-   *    * Let kA be in that range and kB be its "successor" with cyclic wrap.  That is, `kB===kA+1` unless kA+1 is k1, in which case kB===k0.
-   *    * Then `pointIndex[kA]` and `pointIndex[kB]` are the point indices at the beginning and end of an edge of that facet.
-   *    * We call kA the _edgeIndex_ for that edge, and kB the _edgeIndex_ for the "next" edge around the facet.
-   *    * If this is an interior edge in a "2-manifold" mesh with properly oriented facets, there is neighboring facet in which similarly "consecutive" edgeIndex values kC, kEnd
-   *      reference the same two point indices in reverse order, i.e.
-   *       * pointIndex[kA] = pointIndex[kD]
-   *       * pointIndex[kB] = pointIndex[kC]
-   *    * with this relationship, we say that edgeIndex values `kA` and `kC` are _edge mates_.
-   *    * edges "on the boundary" have no edge mate.
-   * * All pointIndex values that do not have this matching property are undefined.  This includes
-   *    * "boundary" edges that have no mates at all
-   *    * "non manifold" edges that have more than one mate, or a single mate that is in the wrong direction.
-   * * These conditions are "just" the usual convention that each edge in a mesh has at most one partner with opposite orientation.
-   * * Following the call to this method, the caller code can construct IndexedPolyfaceWalker objects to "walk" "across edges", "around faces", and "around vertices".
-   * * Let walkerA be walker with edgeIndex value kA.
-   *   * walkerC = walkerA.edgeMate () is a move "across the edge and to the other end" to edgeIndex kC.
-   *   * walkerB = walkerA.nextAroundFacet() moves "around the facet" to edgeIndex kB.
-   *   * walkerB.previousAroundFacet() moves from kB back to kA
-   *   * walkerD = walkerA.previousAroundVertex() moves to kD.
-   *   * walkerD1 = walkerC.nextAroundFacet () also moves to kD
-   *   * walkerD.nextAroundVertex() moves from kD back to kA.
+   *   * Given facetIndex f, let `k0 = polyface.facetIndex0(f)` and `k1 = polyface.facetIndex1(f)`.
+   *   * Every edgeIndex k in the face loop of facet f satisfies `k0 <= k < k1`.
+   *   * The edge with edgeIndex k starts at the point with index `polyface.data.pointIndex[k]`.
+   *   * Let kA be an edgeIndex in this range [k0,k1), and let kB be its in-range successor with cyclic wrap, i.e.,
+   * `kB === (kA + 1 === k1) ? k0 : kA + 1`.
+   *   * Then `polyface.data.pointIndex[kA]` and `polyface.data.pointIndex[kB]` are the indices of the points at the
+   * start and end of an edge of that facet.
+   *   * We call kA the _edgeIndex_ for that edge, and kB the _edgeIndex_ for the next edge around the facet.
+   *   * If kA is an interior edge in a 2-manifold mesh with properly oriented facets, then there is an adjacent facet
+   * whose face loop contains edgeIndices kC and kD referencing the same edge vertices in reverse order, i.e.,
+   *     * `polyface.data.pointIndex[kA] === polyface.data.pointIndex[kD]`
+   *     * `polyface.data.pointIndex[kB] === polyface.data.pointIndex[kC]`
+   *   * Given this relationship, we say that edgeIndices kA and kC are _edge mates_.
+   *   * A non-interior edge either lies on the boundary of the mesh or is non-manifold (having more than two adjacent
+   * facets, or one with the wrong orientation). These edges have no edge mate.
+   * * These conditions define a conventional manifold mesh where each edge of a facet has at most one partner edge with
+   * opposite orientation in an adjacent facet.
+   * * After calling this method, the caller can construct `IndexedPolyfaceWalker` objects to traverse the mesh by
+   * walking across edges, around faces, and around vertices. Let walkerA have edgeIndex value kA. Then with the
+   * aforementioned edgeIndices:
+   *   * `walkerC = walkerA.edgeMate()` moves across the edge to its other end, at kC.
+   *   * `walkerB = walkerA.nextAroundFacet()` moves around the facet to the next edge, at kB.
+   *   * `walkerB.previousAroundFacet()` moves from kB back to kA.
+   *   * `walkerD = walkerA.previousAroundVertex()` moves around the vertex to the next edge kD.
+   *   * `walkerD1 = walkerC.nextAroundFacet()` also moves to kD.
+   *   * `walkerD.nextAroundVertex()` moves from kD back to kA.
    */
   public static buildEdgeMateIndices(polyface: IndexedPolyface) {
     const matcher = new IndexedEdgeMatcher();
@@ -301,9 +312,9 @@ export class IndexedPolyfaceWalker {
       const kStart = polyface.facetIndex0(facetIndex);
       const kEnd = polyface.facetIndex1(facetIndex);
       let k0 = kEnd - 1;
-      for (let k1 = kStart; k1 < kEnd; k0 = k1, k1++) {
+      // sneaky: addEdge 3rd arg is edgeIndex k0 instead of facetIndex; it gets carried around during matching
+      for (let k1 = kStart; k1 < kEnd; k0 = k1, k1++)
         matcher.addEdge(polyface.data.pointIndex[k0], polyface.data.pointIndex[k1], k0);
-      }
     }
     const matchedPairs: SortableEdgeCluster[] = [];
     const singletons: SortableEdgeCluster[] = [];
@@ -312,7 +323,7 @@ export class IndexedPolyfaceWalker {
     matcher.sortAndCollectClusters(matchedPairs, singletons, nullEdges, allOtherClusters);
 
     const numIndex = polyface.data.pointIndex.length;
-    polyface.data.edgeMateIndex = new Array<number>(numIndex);
+    polyface.data.edgeMateIndex = new Array<number | undefined>(numIndex);
     for (let i = 0; i < numIndex; i++)
       polyface.data.edgeMateIndex[i] = undefined;
     for (const pair of matchedPairs) {

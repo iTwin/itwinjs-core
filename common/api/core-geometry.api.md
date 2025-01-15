@@ -2889,8 +2889,8 @@ export class IndexedPolyfaceWalker {
     static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet?: number): IndexedPolyfaceWalker;
     get edgeIndex(): number | undefined;
     edgeMate(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
-    isDifferentEdgeInSamePolyface(walker2: IndexedPolyfaceWalker): boolean;
-    isSameEdge(walker2: IndexedPolyfaceWalker): boolean;
+    isDifferentEdgeInSamePolyface(other: IndexedPolyfaceWalker): boolean;
+    isSameEdge(other: IndexedPolyfaceWalker): boolean;
     get isUndefined(): boolean;
     get isValid(): boolean;
     loadVisitor(visitor: IndexedPolyfaceVisitor): boolean;
