@@ -9,6 +9,7 @@
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BandedSystem } from "../numerics/BandedSystem";
@@ -151,31 +152,24 @@ export namespace BSplineCurveOps {
     private static removeDuplicateFitPoints(options: InterpolationCurve3dOptions): boolean {
       if (undefined !== options.knots && options.knots.length !== options.fitPoints.length)
         options.knots = undefined;
-
-      // get indices of duplicate points to be removed
-      const newPts = GrowableXYZArray.create(options.fitPoints);
-      const indices = newPts.findOrderedDuplicates();
-      newPts.clear();
-
-      // remove duplicate fit points
-      for (let iRead = 0, iIndex = 0; iRead < options.fitPoints.length; ++iRead) {
-        if (iRead === indices[iIndex])
-          ++iIndex; // skip the duplicate
-        else
-          newPts.push(options.fitPoints[iRead].clone());
-      }
-      options.fitPoints = newPts.getPoint3dArray();
-
-      // remove params corresponding to removed fit points
-      if (undefined !== options.knots) {
-        const newKnots: number[] = [];
-        for (let iRead = 0, iIndex = 0; iRead < options.knots.length; ++iRead) {
-          if (iRead === indices[iIndex])
-            ++iIndex; // skip
-          else
-            newKnots.push(options.knots[iRead]);
+      const carrier = new Point3dArrayCarrier(options.fitPoints);
+      const indices = carrier.findOrderedDuplicates(undefined, true); // use default tolerance
+      if (indices.length > 0) {
+        // remove duplicate fit points, and their corresponding params
+        let iWrite = 0;
+        for (let iRead = 0, iIndex = 0; iRead < options.fitPoints.length; ++iRead) {
+          if (iIndex < indices.length && iRead === indices[iIndex])
+            ++iIndex; // skip the duplicate
+          else {
+            options.fitPoints[iWrite] = options.fitPoints[iRead];
+            if (options.knots)
+              options.knots[iWrite] = options.knots[iRead];
+            ++iWrite;
+          }
         }
-        options.knots = newKnots.slice();
+        options.fitPoints.splice(iWrite);
+        if (options.knots)
+          options.knots.splice(iWrite);
       }
       return true;
     }

@@ -153,7 +153,7 @@ import { IModelConnectionProps } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelRpcProps } from '@itwin/core-common';
-import { IModelStatus } from '@itwin/core-common';
+import { IModelStatus } from '@itwin/core-bentley';
 import { IModelTileTreeId } from '@itwin/core-common';
 import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
@@ -372,33 +372,29 @@ export class AccuDraw {
     activate(): void;
     // @internal (undocumented)
     adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean;
-    // (undocumented)
     alwaysShowCompass: boolean;
     // @internal (undocumented)
     angleLock(): void;
     // @internal (undocumented)
     protected _animationFrames: number;
-    // (undocumented)
     autoFocusFields: boolean;
-    // (undocumented)
     autoPointPlacement: boolean;
     // @internal (undocumented)
     readonly axes: ThreeAxes;
-    // (undocumented)
     axisIndexing: boolean;
     // @internal (undocumented)
     readonly baseAxes: ThreeAxes;
+    get bearingFixedToPlane2d(): boolean;
+    set bearingFixedToPlane2d(enable: boolean);
     // @internal (undocumented)
     changeBaseRotationMode(mode: RotationMode): void;
     // @internal (undocumented)
     changeCompassMode(animate?: boolean): void;
     // @internal (undocumented)
     clearTentative(): boolean;
-    // (undocumented)
     compassMode: CompassMode;
     // @internal (undocumented)
     protected _compassSizeInches: number;
-    // (undocumented)
     contextSensitive: boolean;
     get currentState(): CurrentState;
     set currentState(state: CurrentState);
@@ -408,11 +404,10 @@ export class AccuDraw {
     deactivate(): void;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
+    defaultFocusItem(): ItemField;
     // @internal (undocumented)
     readonly delta: Vector3d;
-    // @internal (undocumented)
     disableForSession(): void;
-    // (undocumented)
     distanceIndexing: boolean;
     // @internal (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
@@ -423,7 +418,6 @@ export class AccuDraw {
     dontMoveFocus: boolean;
     // @internal (undocumented)
     downgradeInactiveState(): boolean;
-    // @internal (undocumented)
     enableForSession(): void;
     // @internal (undocumented)
     protected readonly _fillColor: ColorDef;
@@ -435,20 +429,22 @@ export class AccuDraw {
     fixPointRectangular(vp: Viewport): void;
     // @internal (undocumented)
     readonly flags: Flags;
-    // (undocumented)
     floatingOrigin: boolean;
     // @internal (undocumented)
     protected readonly _frameColor: ColorDef;
     // @internal (undocumented)
     protected readonly _frameColorNoFocus: ColorDef;
+    getAngleFormatter(): FormatterSpec | undefined;
     getAngleParser(): ParserSpec | undefined;
     // @internal (undocumented)
     static getCurrentOrientation(vp: Viewport, checkAccuDraw: boolean, checkACS: boolean, rMatrix?: Matrix3d): Matrix3d | undefined;
     // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getFieldLock(index: ItemField): boolean;
+    getFormattedValueByIndex(index: ItemField): string;
     // @internal (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
+    getLengthFormatter(): FormatterSpec | undefined;
     getLengthParser(): ParserSpec | undefined;
     // @internal (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
@@ -467,14 +463,10 @@ export class AccuDraw {
     indexed: LockedStates;
     // @internal (undocumented)
     protected _indexToleranceInches: number;
-    // (undocumented)
     get isActive(): boolean;
     get isBearingMode(): boolean;
-    // (undocumented)
     get isDeactivated(): boolean;
-    // (undocumented)
     get isEnabled(): boolean;
-    // (undocumented)
     get isInactive(): boolean;
     // @internal (undocumented)
     isZLocked(vp: Viewport): boolean;
@@ -524,13 +516,13 @@ export class AccuDraw {
     processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void>;
     // @internal (undocumented)
     processHints(): void;
+    processMotion(): void;
     // @internal (undocumented)
     readonly published: AccudrawData;
     // @internal (undocumented)
     refreshDecorationsAndDynamics(): void;
     // @internal (undocumented)
     restoreState(stateBuffer: SavedState): void;
-    // (undocumented)
     rotationMode: RotationMode;
     // @internal (undocumented)
     saveCoordinate(index: ItemField, value: number): void;
@@ -554,11 +546,9 @@ export class AccuDraw {
     setLastPoint(pt: Point3d): void;
     setRotationMode(mode: RotationMode): void;
     setValueByIndex(index: ItemField, value: number): void;
-    // (undocumented)
     smartKeyin: boolean;
     // @internal (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
-    // (undocumented)
     stickyZLock: boolean;
     // @internal (undocumented)
     testDecorationHit(id: string): boolean;
@@ -669,6 +659,7 @@ export class AccuDrawHintBuilder {
     static getSnapRotation(snap: SnapDetail, matrix?: Matrix3d): Matrix3d | undefined;
     static get isActive(): boolean;
     static get isEnabled(): boolean;
+    static processHintsImmediate(): void;
     static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
     sendHints(activate?: boolean): boolean;
@@ -877,6 +868,8 @@ export class AccuDrawShortcuts {
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
+    // (undocumented)
+    static itemFieldCompletedInput(index: ItemField): void;
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
     // (undocumented)
@@ -1855,7 +1848,7 @@ export class BriefcaseConnection extends IModelConnection {
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
     get iModelId(): GuidString;
-    // @internal (undocumented)
+    // (undocumented)
     isBriefcaseConnection(): this is BriefcaseConnection;
     get isClosed(): boolean;
     // (undocumented)
@@ -2925,7 +2918,7 @@ export class DrawingViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
     // @internal
     static alwaysDisplaySpatialView: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // @internal
     get attachment(): object | undefined;
@@ -2934,7 +2927,7 @@ export class DrawingViewState extends ViewState2d {
         spatialView: Id64String | ViewState3d;
     };
     attachToViewport(args: AttachToViewportArgs): void;
-    // @internal (undocumented)
+    // (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // (undocumented)
     static get className(): string;
@@ -2957,7 +2950,7 @@ export class DrawingViewState extends ViewState2d {
     getViewedExtents(): AxisAlignedBox3d;
     // @internal
     static hideDrawingGraphics: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     isDrawingView(): this is DrawingViewState;
     // @internal (undocumented)
     protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
@@ -3907,13 +3900,13 @@ export class GeographicTilingScheme extends MapTilingScheme {
 // @public
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
     constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState);
-    // @internal (undocumented)
+    // (undocumented)
     get asGeometricModel2d(): GeometricModel2dState;
     // (undocumented)
     static get className(): string;
     // @internal (undocumented)
     readonly globalOrigin: Point2d;
-    // @internal (undocumented)
+    // (undocumented)
     get is3d(): boolean;
     // (undocumented)
     toJSON(): GeometricModel2dProps;
@@ -3922,23 +3915,23 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 // @public
 export class GeometricModel3dState extends GeometricModelState {
     constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState);
-    // @internal (undocumented)
+    // (undocumented)
     get asGeometricModel3d(): GeometricModel3dState;
     // (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // (undocumented)
     get is3d(): boolean;
     readonly isNotSpatiallyLocated: boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     toJSON(): GeometricModel3dProps;
 }
 
 // @public
 export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
     constructor(props: GeometricModelProps, iModel: IModelConnection, state?: GeometricModelState);
-    // @internal (undocumented)
+    // (undocumented)
     get asGeometricModel(): GeometricModelState;
     // (undocumented)
     static get className(): string;
@@ -3948,7 +3941,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     geometryGuid?: string;
     get is2d(): boolean;
     abstract get is3d(): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     get isGeometricModel(): boolean;
     queryModelRange(): Promise<Range3d>;
     // @internal (undocumented)
@@ -4012,6 +4005,9 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
+
+// @internal (undocumented)
+export function getMeshoptDecoder(): Promise<MeshoptDecoder | undefined>;
 
 // @public
 export interface GetPixelDataWorldPointArgs {
@@ -4156,9 +4152,15 @@ export class GltfGraphicsReader extends GltfReader {
     // (undocumented)
     readonly binaryData?: Uint8Array;
     // (undocumented)
+    get meshElementIdToFeatureIndex(): Map<string, number>;
+    // (undocumented)
+    meshes?: GltfMeshData;
+    // (undocumented)
     get nodes(): GltfDictionary<GltfNode>;
     // (undocumented)
     read(): Promise<GltfReaderResult>;
+    // (undocumented)
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
     // (undocumented)
     readTemplate(): Promise<GltfTemplateResult>;
     // (undocumented)
@@ -4267,7 +4269,11 @@ export abstract class GltfReader {
     // (undocumented)
     protected get _materials(): GltfDictionary<GltfMaterial>;
     // (undocumented)
+    protected _meshElementIdToFeatureIndex: Map<string, number>;
+    // (undocumented)
     protected get _meshes(): GltfDictionary<GltfMesh>;
+    // (undocumented)
+    protected _meshFeatures: Feature[];
     // (undocumented)
     protected get _nodes(): GltfDictionary<GltfNode>;
     abstract read(): Promise<GltfReaderResult>;
@@ -4324,7 +4330,7 @@ export abstract class GltfReader {
         [k: string]: any;
     }, accessorName: string, disjoint: boolean): boolean;
     // (undocumented)
-    protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined;
+    protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined;
     // (undocumented)
     protected resolveResources(): Promise<void>;
     // (undocumented)
@@ -4867,8 +4873,9 @@ export interface Hilites {
 // @public
 export class HiliteSet {
     constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
+    add(additions: SelectableIds): void;
     clear(): void;
-    get elements(): Id64.Uint32Set;
+    readonly elements: Id64.Uint32Set;
     // (undocumented)
     iModel: IModelConnection;
     get isEmpty(): boolean;
@@ -4876,6 +4883,9 @@ export class HiliteSet {
     get modelSubCategoryMode(): ModelSubCategoryHiliteMode;
     set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode);
     readonly onModelSubCategoryModeChanged: BeEvent<(newMode: ModelSubCategoryHiliteMode) => void>;
+    remove(removals: SelectableIds): void;
+    replace(ids: SelectableIds): void;
+    // @deprecated
     setHilite(arg: Id64Arg, onOff: boolean): void;
     readonly subcategories: Id64.Uint32Set;
     get wantSyncWithSelectionSet(): boolean;
@@ -5471,6 +5481,7 @@ export abstract class IModelConnection extends IModel {
     // @deprecated
     expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
+    // @deprecated
     fontMap?: FontMap;
     // @internal
     protected _gcsDisabled: boolean;
@@ -5498,6 +5509,7 @@ export abstract class IModelConnection extends IModel {
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
+    // @deprecated
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal
@@ -7595,6 +7607,18 @@ export interface MeshArgs {
         uvParams: Point2d[];
     };
     vertIndices: number[];
+}
+
+// @internal (undocumented)
+export interface MeshoptDecoder {
+    // (undocumented)
+    decodeGltfBuffer(target: Uint8Array, count: number, size: number, source: Uint8Array, mode: string, filter?: string): void;
+    // (undocumented)
+    decodeIndexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+    // (undocumented)
+    decodeIndexSequence: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+    // (undocumented)
+    decodeVertexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, filter?: string) => void;
 }
 
 // @public
@@ -10645,8 +10669,20 @@ export class SectionDrawingModelState extends DrawingModelState {
 }
 
 // @public
+export interface SelectableIds {
+    // (undocumented)
+    elements?: Id64Arg;
+    // (undocumented)
+    models?: Id64Arg;
+    // (undocumented)
+    subcategories?: Id64Arg;
+}
+
+// @public
 export interface SelectAddEvent {
+    // @deprecated
     added: Id64Arg;
+    additions: SelectableIds;
     set: SelectionSet;
     // (undocumented)
     type: SelectionSetEventType.Add;
@@ -10693,20 +10729,27 @@ export enum SelectionProcessing {
 // @public
 export class SelectionSet {
     constructor(iModel: IModelConnection);
-    add(elem: Id64Arg): boolean;
-    addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean;
-    get elements(): Set<string>;
+    get active(): {
+        [P in keyof SelectableIds]-?: Set<Id64String>;
+    };
+    add(adds: Id64Arg | SelectableIds): boolean;
+    addAndRemove(adds: Id64Arg | SelectableIds, removes: Id64Arg | SelectableIds): boolean;
+    get elements(): Set<Id64String>;
     emptyAll(): void;
+    // @deprecated
     has(elemId?: string): boolean;
     // (undocumented)
     iModel: IModelConnection;
-    invert(elem: Id64Arg): boolean;
+    invert(ids: Id64Arg | SelectableIds): boolean;
     get isActive(): boolean;
+    // @deprecated
     isSelected(elemId?: Id64String): boolean;
+    get models(): Set<Id64String>;
     readonly onChanged: BeEvent<(ev: SelectionSetEvent) => void>;
-    remove(elem: Id64Arg): boolean;
-    replace(elem: Id64Arg): void;
+    remove(removes: Id64Arg | SelectableIds): boolean;
+    replace(ids: Id64Arg | SelectableIds): boolean;
     get size(): number;
+    get subcategories(): Set<Id64String>;
 }
 
 // @public
@@ -10826,6 +10869,8 @@ export enum SelectParent {
 
 // @public
 export interface SelectRemoveEvent {
+    removals: SelectableIds;
+    // @deprecated
     removed: Id64Arg;
     set: SelectionSet;
     type: SelectionSetEventType.Remove | SelectionSetEventType.Clear;
@@ -10833,7 +10878,11 @@ export interface SelectRemoveEvent {
 
 // @public
 export interface SelectReplaceEvent {
+    // @deprecated
     added: Id64Arg;
+    additions: SelectableIds;
+    removals: SelectableIds;
+    // @deprecated
     removed: Id64Arg;
     set: SelectionSet;
     // (undocumented)
@@ -10978,14 +11027,14 @@ export class SheetModelState extends GeometricModel2dState {
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
-    // @internal (undocumented)
+    // (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
     get attachmentIds(): Id64Array;
     // @internal
     get attachments(): object[] | undefined;
     attachToViewport(args: AttachToViewportArgs): void;
-    // @internal (undocumented)
+    // (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // (undocumented)
     static get className(): string;
@@ -11001,7 +11050,7 @@ export class SheetViewState extends ViewState2d {
     createScene(context: SceneContext): void;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // @internal (undocumented)
+    // (undocumented)
     get defaultExtentLimits(): {
         min: number;
         max: number;
@@ -11014,11 +11063,11 @@ export class SheetViewState extends ViewState2d {
     getExtents(): Vector3d;
     // (undocumented)
     getOrigin(): Point3d;
-    // @internal (undocumented)
+    // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal (undocumented)
+    // (undocumented)
     isDrawingView(): this is DrawingViewState;
-    // @internal (undocumented)
+    // (undocumented)
     isSheetView(): this is SheetViewState;
     // @internal (undocumented)
     protected postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void>;
@@ -11171,7 +11220,7 @@ export class SpatialLocationModelState extends SpatialModelState {
 // @public
 export class SpatialModelState extends GeometricModel3dState {
     constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState);
-    // @internal (undocumented)
+    // (undocumented)
     get asSpatialModel(): SpatialModelState;
     readonly classifiers?: SpatialClassifiersState;
     // (undocumented)
@@ -11233,7 +11282,7 @@ export class SpatialViewState extends ViewState3d {
     getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal (undocumented)
+    // (undocumented)
     isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     markModelSelectorChanged(): void;

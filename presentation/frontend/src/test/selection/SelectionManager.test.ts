@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { assert, BeDuration, Id64, Id64Arg, Id64String, StopWatch, using } from "@itwin/core-bentley";
+import { assert, BeDuration, Id64, Id64String, StopWatch, using } from "@itwin/core-bentley";
+import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
 import {
@@ -17,12 +18,12 @@ import {
   ResolvablePromise,
   waitForPendingAsyncs,
 } from "@itwin/presentation-common/lib/cjs/test";
-import { createStorage, CustomSelectable, SelectionStorage } from "@itwin/unified-selection";
+import { createStorage, CustomSelectable, SelectionStorage, TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { Presentation } from "../../presentation-frontend/Presentation";
 import { PresentationManager } from "../../presentation-frontend/PresentationManager";
 import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
 import { SelectionChangeEventArgs, SelectionChangesListener } from "../../presentation-frontend/selection/SelectionChangeEvent";
-import { SelectionManager, ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
+import { SelectionManager, ToolSelectionSyncHandler } from "../../presentation-frontend/selection/SelectionManager";
 import { SelectionScopesManager } from "../../presentation-frontend/selection/SelectionScopesManager";
 
 const generateSelection = (): InstanceKey[] => {
@@ -34,20 +35,15 @@ describe("SelectionManager", () => {
   let baseSelection: InstanceKey[];
 
   let ss: SelectionSet;
-  const imodel = {
-    key: "imodel-key",
-  } as IModelConnection;
+  let imodel: IModelConnection;
 
   const scopesManager = {
+    activeScope: undefined as undefined | string | SelectionScope,
     getSelectionScopes: sinon.stub<Parameters<SelectionScopesManager["getSelectionScopes"]>, ReturnType<SelectionScopesManager["getSelectionScopes"]>>(),
     computeSelection: sinon.stub<Parameters<SelectionScopesManager["computeSelection"]>, ReturnType<SelectionScopesManager["computeSelection"]>>(),
   };
 
   const source: string = "test";
-
-  function setActiveScope(scope: SelectionScope | string) {
-    Object.assign(scopesManager, { activeScope: scope });
-  }
 
   async function waitForSelection(size: number, targetImodel: IModelConnection, level?: number) {
     return waitFor(() => {
@@ -58,12 +54,16 @@ describe("SelectionManager", () => {
   }
 
   beforeEach(() => {
-    ss = new SelectionSet(imodel);
-    Object.assign(imodel, { selectionSet: ss });
+    imodel = {} as IModelConnection;
+    Object.assign(imodel, {
+      key: "imodel-key",
+      selectionSet: (ss = new SelectionSet(imodel)),
+    });
 
+    scopesManager.activeScope = undefined;
     scopesManager.computeSelection.reset();
     scopesManager.getSelectionScopes.reset();
-    Object.assign(scopesManager, { activeScope: undefined });
+
     baseSelection = generateSelection();
   });
 
@@ -434,33 +434,32 @@ describe("SelectionManager", () => {
       });
 
       it("fires `selectionChange` event after `addToSelection`, `replaceSelection`, `clearSelection`, `removeFromSelection` with `BlankConnection", async () => {
-        // creating blank connection does not raise `IModelConnection.onOpen` event.
-        const blankImodel = { key: "blank", name: "blankConnection" } as BlankConnection;
-        const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
-        selectionManager.addToSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(1));
-        selectionManager.removeFromSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(2));
-        selectionManager.replaceSelection(source, blankImodel, baseSelection);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(3));
-        selectionManager.clearSelection(source, blankImodel);
-        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4));
-
-        // simulate connection closing
-        IModelConnection.onClose.raiseEvent(blankImodel);
+        const blankImodel = BlankConnection.create({ name: "blankConnection", extents: { low: {}, high: {} }, location: Cartographic.createZero() });
+        try {
+          const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
+          selectionManager.addToSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(1));
+          selectionManager.removeFromSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(2));
+          selectionManager.replaceSelection(source, blankImodel, baseSelection);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(3));
+          selectionManager.clearSelection(source, blankImodel);
+          await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4));
+        } finally {
+          await blankImodel.close();
+        }
       });
     });
 
     describe("setSyncWithIModelToolSelection", () => {
       beforeEach(() => {
-        // hacks to avoid instantiating the whole core..
-        (IModelApp as any)._viewManager = {
+        sinon.stub(IModelApp, "viewManager").get(() => ({
           onSelectionSetChanged: sinon.stub(),
-        };
+        }));
       });
 
       afterEach(() => {
-        (IModelApp as any)._viewManager = undefined;
+        sinon.restore();
       });
 
       it("registers tool selection change listener once per imodel", () => {
@@ -498,28 +497,18 @@ describe("SelectionManager", () => {
             return value instanceof KeySet && value.size === keys.size && value.hasAll(keys);
           });
 
-        const equalId64Arg = (lhs: Id64Arg, rhs: Id64Arg) => {
-          if (Id64.sizeOf(lhs) !== Id64.sizeOf(rhs)) {
-            return false;
-          }
-
-          for (const lhsId of Id64.iterable(lhs)) {
-            if (!Id64.has(rhs, lhsId)) {
-              return false;
-            }
-          }
-
-          return true;
-        };
-
         beforeEach(() => {
           syncer = new ToolSelectionSyncHandler(imodel, selectionManager);
+        });
+
+        afterEach(() => {
+          syncer.dispose();
         });
 
         describe("choosing scope", () => {
           it('uses "element" scope when `activeScope = undefined`', async () => {
             scopesManager.computeSelection.resolves(new KeySet([createTestECInstanceKey()]));
-            ss.add(createRandomId());
+            ss.add({ elements: createRandomId() });
             await waitForPendingAsyncs(syncer);
             await waitForSelection(1, imodel);
             expect(scopesManager.computeSelection).to.be.calledWith(
@@ -530,9 +519,9 @@ describe("SelectionManager", () => {
           });
 
           it('uses "element" scope when `activeScope = "element"`', async () => {
-            setActiveScope("element");
+            scopesManager.activeScope = "element";
             scopesManager.computeSelection.resolves(new KeySet([createTestECInstanceKey()]));
-            ss.add(createRandomId());
+            ss.add({ elements: createRandomId() });
             await waitForPendingAsyncs(syncer);
             await waitForSelection(1, imodel);
             expect(scopesManager.computeSelection).to.be.calledWith(
@@ -547,7 +536,11 @@ describe("SelectionManager", () => {
           let transientElementId: Id64String;
           let transientElementKey: InstanceKey;
           let persistentElementId: Id64String;
-          let scopedKey: InstanceKey;
+          let persistentElementKey: InstanceKey;
+          let modelId: Id64String;
+          let modelKey: InstanceKey;
+          let subcategoryId: Id64String;
+          let subcategoryKey: InstanceKey;
           const logicalSelectionChangesListener = sinon.stub();
 
           beforeEach(() => {
@@ -557,18 +550,33 @@ describe("SelectionManager", () => {
             };
             transientElementId = createRandomTransientId();
             transientElementKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: transientElementId };
-            persistentElementId = createRandomId();
-            scopedKey = createTestECInstanceKey();
+            persistentElementId = "0x123";
+            persistentElementKey = createTestECInstanceKey({ id: "0x123" });
+            modelId = "0x456";
+            modelKey = { className: "BisCore.Model", id: "0x456" };
+            subcategoryId = "0x789";
+            subcategoryKey = { className: "BisCore.SubCategory", id: "0x789" };
 
             logicalSelectionChangesListener.reset();
             selectionManager.selectionChange.addListener(logicalSelectionChangesListener);
 
-            setActiveScope(scope);
+            scopesManager.activeScope = scope;
             scopesManager.computeSelection.callsFake(async (_, ids) => {
-              if (equalId64Arg(ids, [persistentElementId])) {
-                return new KeySet([scopedKey]);
+              const keys = new KeySet();
+              for (const id of Id64.iterable(ids)) {
+                switch (id) {
+                  case persistentElementId:
+                    keys.add(persistentElementKey);
+                    break;
+                  case modelId:
+                    keys.add(modelKey);
+                    break;
+                  case subcategoryId:
+                    keys.add(subcategoryKey);
+                    break;
+                }
               }
-              return new KeySet();
+              return keys;
             });
           });
 
@@ -577,29 +585,55 @@ describe("SelectionManager", () => {
             const imodel2 = { key: "imodel-key-2" } as IModelConnection;
             const ss2 = new SelectionSet(imodel2);
             Object.assign(imodel2, { selectionSet: ss2 });
-            ss.onChanged.raiseEvent({ type: SelectionSetEventType.Add, set: ss2, added: createRandomId() });
+            ss.onChanged.raiseEvent({ type: SelectionSetEventType.Add, set: ss2, added: ["0x1"], additions: { elements: ["0x1"] } });
             await waitForPendingAsyncs(syncer);
             await waitForSelection(0, imodel);
             expect(spy).to.not.be.called;
           });
 
-          it("adds persistent elements to logical selection when tool selection changes", async () => {
+          it("adds models to logical selection when tool selection changes", async () => {
             const spy = sinon.spy(selectionManager, "addToSelection");
 
-            ss.add(persistentElementId);
+            ss.add({ models: [modelId] });
             await waitForPendingAsyncs(syncer);
 
             const selection = await waitForSelection(1, imodel);
-            expect(selection.has(scopedKey)).to.be.true;
+            expect(selection.has(modelKey)).to.be.true;
 
-            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([scopedKey])), 0);
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([modelKey])), 0);
+            expect(logicalSelectionChangesListener).to.be.calledOnce;
+          });
+
+          it("adds subcategories to logical selection when tool selection changes", async () => {
+            const spy = sinon.spy(selectionManager, "addToSelection");
+
+            ss.add({ subcategories: [subcategoryId] });
+            await waitForPendingAsyncs(syncer);
+
+            const selection = await waitForSelection(1, imodel);
+            expect(selection.has(subcategoryKey)).to.be.true;
+
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([subcategoryKey])), 0);
+            expect(logicalSelectionChangesListener).to.be.calledOnce;
+          });
+
+          it("adds persistent elements to logical selection when tool selection changes", async () => {
+            const spy = sinon.spy(selectionManager, "addToSelection");
+
+            ss.add({ elements: [persistentElementId] });
+            await waitForPendingAsyncs(syncer);
+
+            const selection = await waitForSelection(1, imodel);
+            expect(selection.has(persistentElementKey)).to.be.true;
+
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([persistentElementKey])), 0);
             expect(logicalSelectionChangesListener).to.be.calledOnce;
           });
 
           it("adds transient elements to logical selection when tool selection changes", async () => {
             const spy = sinon.spy(selectionManager, "addToSelection");
 
-            ss.add(transientElementId);
+            ss.add({ elements: [transientElementId] });
             await waitForPendingAsyncs(syncer);
             const selection = await waitForSelection(1, imodel);
             expect(selection.has(transientElementKey)).to.be.true;
@@ -611,14 +645,14 @@ describe("SelectionManager", () => {
           it("adds mixed elements to logical selection when tool selection changes", async () => {
             const spy = sinon.spy(selectionManager, "addToSelection");
 
-            ss.add([transientElementId, persistentElementId]);
+            ss.add({ elements: [transientElementId, persistentElementId] });
             await waitForPendingAsyncs(syncer);
 
             const selection = await waitForSelection(2, imodel);
-            expect(selection.has(scopedKey)).to.be.true;
+            expect(selection.has(persistentElementKey)).to.be.true;
             expect(selection.has(transientElementKey)).to.be.true;
 
-            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([scopedKey, transientElementKey])), 0);
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([persistentElementKey, transientElementKey])), 0);
             expect(logicalSelectionChangesListener).to.be.calledOnce;
           });
 
@@ -629,13 +663,13 @@ describe("SelectionManager", () => {
 
             const spy = sinon.spy(selectionManager, "replaceSelection");
 
-            ss.replace(persistentElementId);
+            ss.replace({ elements: [persistentElementId] });
             await waitForPendingAsyncs(syncer);
 
             const selection = await waitForSelection(1, imodel);
-            expect(selection.has(scopedKey)).to.be.true;
+            expect(selection.has(persistentElementKey)).to.be.true;
 
-            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([scopedKey])), 0);
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([persistentElementKey])), 0);
             expect(logicalSelectionChangesListener).to.be.calledOnce;
           });
 
@@ -646,7 +680,7 @@ describe("SelectionManager", () => {
 
             const spy = sinon.spy(selectionManager, "replaceSelection");
 
-            ss.replace(transientElementId);
+            ss.replace({ elements: [transientElementId] });
             await waitForPendingAsyncs(syncer);
 
             const selection = await waitForSelection(1, imodel);
@@ -663,20 +697,19 @@ describe("SelectionManager", () => {
 
             const spy = sinon.spy(selectionManager, "replaceSelection");
 
-            ss.replace([persistentElementId, transientElementId]);
+            ss.replace({ elements: [persistentElementId, transientElementId] });
             await waitForPendingAsyncs(syncer);
 
             const selection = await waitForSelection(2, imodel);
-            expect(selection.has(scopedKey)).to.be.true;
+            expect(selection.has(persistentElementKey)).to.be.true;
             expect(selection.has(transientElementKey)).to.be.true;
 
-            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([scopedKey, transientElementKey])), 0);
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([persistentElementKey, transientElementKey])), 0);
             expect(logicalSelectionChangesListener).to.be.calledOnce;
           });
 
           it("removes persistent elements from logical selection when tool selection changes", async () => {
-            (ss as any)._add([persistentElementId, transientElementId], false);
-            selectionManager.addToSelection("", imodel, [scopedKey, transientElementKey]);
+            ss.add({ elements: [persistentElementId, transientElementId] });
             await waitForSelection(2, imodel);
             logicalSelectionChangesListener.reset();
 
@@ -688,13 +721,12 @@ describe("SelectionManager", () => {
             const selection = await waitForSelection(1, imodel);
             expect(selection.has(transientElementKey)).to.be.true;
 
-            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([scopedKey])), 0);
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([persistentElementKey])), 0);
             expect(logicalSelectionChangesListener).to.be.calledOnce;
           });
 
           it("removes transient elements from logical selection when tool selection changes", async () => {
-            (ss as any)._add([persistentElementId, transientElementId], false);
-            selectionManager.addToSelection("", imodel, [scopedKey, transientElementKey]);
+            ss.add({ elements: [persistentElementId, transientElementId] });
             await waitForSelection(2, imodel);
             logicalSelectionChangesListener.reset();
 
@@ -704,15 +736,14 @@ describe("SelectionManager", () => {
             await waitForPendingAsyncs(syncer);
 
             const selection = await waitForSelection(1, imodel);
-            expect(selection.has(scopedKey)).to.be.true;
+            expect(selection.has(persistentElementKey)).to.be.true;
 
             expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([transientElementKey])), 0);
             expect(logicalSelectionChangesListener).to.be.calledOnce;
           });
 
           it("removes mixed elements from logical selection when tool selection changes", async () => {
-            (ss as any)._add([persistentElementId, transientElementId], false);
-            selectionManager.addToSelection("", imodel, [scopedKey, transientElementKey]);
+            ss.add({ elements: [persistentElementId, transientElementId] });
             await waitForSelection(2, imodel);
             logicalSelectionChangesListener.reset();
 
@@ -723,13 +754,12 @@ describe("SelectionManager", () => {
 
             await waitForSelection(0, imodel);
 
-            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([scopedKey, transientElementKey])), 0);
+            expect(spy).to.be.calledOnceWith("Tool", imodel, matchKeyset(new KeySet([persistentElementKey, transientElementKey])), 0);
             expect(logicalSelectionChangesListener).to.be.calledOnce;
           });
 
           it("clears elements from logical selection when tool selection is cleared", async () => {
-            (ss as any)._add(createRandomId(), false);
-            selectionManager.addToSelection("", imodel, [scopedKey, transientElementKey]);
+            ss.add({ elements: [persistentElementId, transientElementId] });
             await waitForSelection(2, imodel);
             logicalSelectionChangesListener.reset();
 
@@ -757,11 +787,11 @@ describe("SelectionManager", () => {
       it("suspends selection synchronization", () => {
         const spy = sinon.spy(selectionManager, "clearSelection");
         using(selectionManager.suspendIModelToolSelectionSync(imodel), (_) => {
-          ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+          ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
         });
         expect(spy).to.not.be.called;
 
-        ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+        ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
         expect(spy).to.be.called;
       });
 
@@ -769,7 +799,7 @@ describe("SelectionManager", () => {
         const spy = sinon.spy(selectionManager, "clearSelection");
         selectionManager.setSyncWithIModelToolSelection(imodel, false);
         using(selectionManager.suspendIModelToolSelectionSync(imodel), (_) => {
-          ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+          ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
         });
         expect(spy).to.not.be.called;
       });
@@ -782,7 +812,7 @@ describe("SelectionManager", () => {
 
         const spy = sinon.spy(selectionManager, "clearSelection");
         using(selectionManager.suspendIModelToolSelectionSync(imodel2), (_) => {
-          ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+          ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
         });
         expect(spy).to.be.called;
       });
@@ -897,7 +927,7 @@ describe("SelectionManager", () => {
     }
 
     async function collectInstanceKeys(seletableId: string) {
-      const selectables = storage.getSelection({ iModelKey: imodel.key });
+      const selectables = storage.getSelection({ imodelKey: imodel.key });
       const selectable = selectables.custom.get(seletableId);
       assert(selectable !== undefined);
       const loadedKeys = [];
@@ -950,7 +980,7 @@ describe("SelectionManager", () => {
     describe("creates selection set from", () => {
       it("instance key selectable", async () => {
         const instanceKey = createTestECInstanceKey({ id: "0x1" });
-        storage.addToSelection({ iModelKey: imodel.key, source, selectables: [instanceKey], level: 0 });
+        storage.addToSelection({ imodelKey: imodel.key, source, selectables: [instanceKey], level: 0 });
         const selectionSet = await waitForSelection(1, imodel);
         expect(selectionSet.has(instanceKey)).to.be.true;
       });
@@ -958,7 +988,7 @@ describe("SelectionManager", () => {
       it("custom selectable", async () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })];
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom", loadInstanceKeys: () => createAsyncGenerator(instanceKeys), data: {} }],
           level: 0,
@@ -975,7 +1005,7 @@ describe("SelectionManager", () => {
           createAsyncGenerator(instanceKeys),
         );
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom", loadInstanceKeys, data: {} }],
           level: 0,
@@ -1002,13 +1032,13 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 0,
         });
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 0,
@@ -1033,13 +1063,13 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 0,
         });
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 0,
@@ -1065,13 +1095,13 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 0,
         });
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 1,
@@ -1101,14 +1131,14 @@ describe("SelectionManager", () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom1", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(0, 1), firstDelay), data: {} }],
           level: 1,
         });
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [{ identifier: "custom2", loadInstanceKeys: () => createAsyncGenerator(instanceKeys.slice(1), secondDelay), data: {} }],
           level: 0,
@@ -1132,12 +1162,53 @@ describe("SelectionManager", () => {
       const selectable1instanceKeys = [createTestECInstanceKey({ id: "0x3" }), createTestECInstanceKey({ id: "0x4" })];
       const selectable2instanceKeys = [createTestECInstanceKey({ id: "0x5" }), createTestECInstanceKey({ id: "0x6" })];
 
+      it("ignores selection changes to unknown imodels", async () => {
+        storage.addToSelection({
+          imodelKey: "unknown-imodel",
+          source,
+          selectables: [{ className: "BisCore:Element", id: "0x1" }],
+        });
+        await waitFor(() => {
+          expect(changeListener).not.to.be.called;
+        });
+
+        // just confirm that adding to a known imodel does raise the event
+        storage.addToSelection({
+          imodelKey: imodel.key,
+          source,
+          selectables: [{ className: "BisCore:Element", id: "0x2" }],
+        });
+        await waitFor(() => {
+          expect(changeListener).to.be.calledOnce;
+        });
+      });
+
+      it("handles blank connection events", async () => {
+        const blank = BlankConnection.create({
+          name: "blank",
+          extents: { low: {}, high: {} },
+          location: Cartographic.createZero(),
+        });
+        storage.addToSelection({
+          imodelKey: blank.name,
+          source,
+          selectables: instanceKeys,
+        });
+        await waitFor(() => {
+          expect(changeListener).to.be.calledOnceWith(
+            sinon.match((args: SelectionChangeEventArgs) => {
+              return args.imodel === blank && args.keys.size === instanceKeys.length && args.keys.hasAll(instanceKeys);
+            }),
+          );
+        });
+      });
+
       it("converts add event selectables", async () => {
         const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
         const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
 
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], selectable1],
         });
@@ -1155,7 +1226,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[1], selectable2],
         });
@@ -1177,7 +1248,7 @@ describe("SelectionManager", () => {
         const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], selectable1],
         });
@@ -1195,7 +1266,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.replaceSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[1], selectable2],
         });
@@ -1217,7 +1288,7 @@ describe("SelectionManager", () => {
         const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
 
         storage.addToSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], instanceKeys[1], selectable1, selectable2],
         });
@@ -1227,7 +1298,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.removeFromSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[0], selectable1],
         });
@@ -1245,7 +1316,7 @@ describe("SelectionManager", () => {
         changeListener.resetHistory();
 
         storage.removeFromSelection({
-          iModelKey: imodel.key,
+          imodelKey: imodel.key,
           source,
           selectables: [instanceKeys[1], selectable2],
         });

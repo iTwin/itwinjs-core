@@ -62,8 +62,8 @@ import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.

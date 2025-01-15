@@ -554,12 +554,14 @@ export class SelectionManager implements ISelectionProvider {
     replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     readonly scopes: SelectionScopesManager;
     readonly selectionChange: SelectionChangeEvent;
+    readonly selectionStorage: SelectionStorage;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
     suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable;
 }
 
 // @public
 export interface SelectionManagerProps {
+    imodelKeyFactory?: (imodel: IModelConnection) => string;
     scopes: SelectionScopesManager;
     selectionStorage?: SelectionStorage;
 }
@@ -589,9 +591,6 @@ export class ToolSelectionSyncHandler implements IDisposable {
     isSuspended?: boolean;
     get pendingAsyncs(): Set<string>;
 }
-
-// @internal (undocumented)
-export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 // (No @packageDocumentation comment for this package)
 

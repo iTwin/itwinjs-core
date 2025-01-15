@@ -5,10 +5,8 @@
 import { Id64String } from "@itwin/core-bentley";
 import {
   IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperation, RpcOperationsProfile,
-  RpcPushChannel, RpcResponseCacheControl, RpcRoutingToken, WipRpcInterface,
+  RpcPushChannel, RpcResponseCacheControl, RpcRoutingToken,
 } from "@itwin/core-common";
-
-/* eslint-disable @typescript-eslint/no-deprecated */
 
 export const testChannel = RpcPushChannel.create<number>("test");
 
@@ -303,7 +301,6 @@ export const rpcInterfaces: RpcInterfaceDefinition[] = [
   TestRpcInterface2,
   TestRpcInterface3,
   RpcTransportTest,
-  WipRpcInterface,
   ZeroMajorRpcInterface,
   MultipleClientsInterface,
   WebRoutingInterface,

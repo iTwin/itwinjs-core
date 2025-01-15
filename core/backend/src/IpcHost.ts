@@ -9,9 +9,10 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  ITwinError,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
@@ -173,15 +174,34 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
-        const ret: IpcInvokeReturn = {
-          error: {
-            name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-            message: err.message ?? BentleyError.getErrorMessage(err),
-            errorNumber: err.errorNumber ?? 0,
-          },
-        };
-        if (!IpcHost.noStack)
-          ret.error.stack = BentleyError.getErrorStack(err);
+        let ret: IpcInvokeReturn;
+        if (ITwinError.isITwinError(err)) {
+          // TODO: Should metadata be left out? It is left out in the original error implementation..
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { namespace, errorKey, message, stack, metadata, ...rest } = err;
+          ret = {
+            iTwinError:
+            {
+              namespace,
+              errorKey,
+              message,
+              ...rest,
+            },
+          };
+          if (!IpcHost.noStack)
+            ret.iTwinError.stack = stack;
+        } else {
+          ret = {
+            error:
+            {
+              name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
+              message: err.message ?? BentleyError.getErrorMessage(err),
+              errorNumber: err.errorNumber ?? 0,
+            },
+          };
+          if (!IpcHost.noStack)
+            ret.error.stack = BentleyError.getErrorStack(err);
+        }
         return ret;
       }
     });
@@ -229,6 +249,15 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
+  public async openSnapshot(filePath: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
+    let resolvedFileName: string | undefined = filePath;
+    if (IModelHost.snapshotFileNameResolver) { // eslint-disable-line @typescript-eslint/no-deprecated
+      resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath); // eslint-disable-line @typescript-eslint/no-deprecated
+      if (!resolvedFileName)
+        throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
+    }
+    return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
+  }
   public async closeIModel(key: string): Promise<void> {
     IModelDb.findByKey(key).close();
   }
@@ -249,7 +278,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key)[_nativeDb].getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key)[_nativeDb].getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getRedoString();
   }
 
   public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {

@@ -28,10 +28,10 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
-    "@itwin/oidc-signin-tool": "^4.3.5",
+    "@itwin/oidc-signin-tool": "^4.4.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.9.5",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "eslint": "^9.13.0",

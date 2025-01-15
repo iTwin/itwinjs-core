@@ -1719,11 +1719,23 @@ export interface LocalizationHelperProps {
 }
 
 // @public
-export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
+export interface MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
     batchSize?: number;
     contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
+}
+
+// @public
+export interface MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent = ElementProperties> extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
     elementClasses?: string[];
 }
+
+// @public
+export interface MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent = ElementProperties> extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
+    elementIds?: Id64String[];
+}
+
+// @public
+export type MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> = MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent> | MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent>;
 
 // @public
 export interface MultiSchemaClassesSpecification {
@@ -2195,45 +2207,45 @@ export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding
 export class PresentationRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
-    // (undocumented)
+    // @deprecated (undocumented)
     computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{
         total: number;
         items: KeySetJSON;
     }>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinition>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getNodesDescriptor(_token: IModelRpcProps, _options: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getPagedContent(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<{
         descriptor: DescriptorJSON;
         contentSet: PagedResponse<ItemJSON>;
     } | undefined>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getPagedDisplayLabelDefinitions(_token: IModelRpcProps, _options: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinition>>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
     static interfaceVersion: string;

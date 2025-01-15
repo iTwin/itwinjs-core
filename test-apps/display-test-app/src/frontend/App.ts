@@ -11,7 +11,7 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
@@ -29,7 +29,7 @@ import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransfor
 import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
-import { DrawingAidTestTool } from "./DrawingAidTestTool";
+import { DisplayTestAppAccuDraw, DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -242,6 +242,7 @@ export class DisplayTestApp {
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
+        accuDraw: new DisplayTestAppAccuDraw(),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
@@ -253,7 +254,6 @@ export class DisplayTestApp {
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
