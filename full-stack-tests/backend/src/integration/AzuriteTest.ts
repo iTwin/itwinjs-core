@@ -232,6 +232,7 @@ export namespace AzuriteTest {
       if (metadata?.itwinid === undefined)
         throw new Error("invalid container");
 
+      const azContUrl = new URL(azCont.url);
       return {
         scope: {
           iTwinId: metadata.itwinid,
@@ -241,7 +242,7 @@ export namespace AzuriteTest {
         token: sasUrl.split("?")[1],
         provider: "azure",
         expiration: expiresOn,
-        baseUri: azCont.url,
+        baseUri: `${azContUrl.protocol}//${azContUrl.host}`, // remove container and optional params from URL to isolate the baseURI
       };
     },
   };
