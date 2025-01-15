@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/appui-abstract",
-      "comment": "Removed appui-abstract APIs that are deprecated in 3.x",
+      "comment": "Removed appui-astract APIs that were deprecated in 3.x",
       "type": "none"
     }
   ],
