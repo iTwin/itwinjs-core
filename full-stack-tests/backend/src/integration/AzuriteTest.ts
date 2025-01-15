@@ -242,7 +242,7 @@ export namespace AzuriteTest {
         token: sasUrl.split("?")[1],
         provider: "azure",
         expiration: expiresOn,
-        baseUri: `${azContUrl.protocol}//${azContUrl.host}`, // remove container and optional params from URL to isolate the baseURI
+        baseUri
       };
     },
   };
