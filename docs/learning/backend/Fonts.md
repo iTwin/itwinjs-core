@@ -1,6 +1,6 @@
 # Fonts in iModels
 
-Fonts define the appearance and layout of text in a model or on a drawing. Some fonts are in the public domain, but others are licensed works of third parties governed by a license agreement. Some fonts are delivered with an operating system, but others are purchased externally. Authors of iModels must choose a strategy for the picking the set of fonts they wish to use so that:
+Fonts define the appearance and layout of text in a model or on a drawing. Some fonts are in the public domain, but others are licensed works of third parties governed by a license agreement. Some fonts are delivered with an operating system, but others are purchased externally. Authors of iModels must choose a strategy for picking the set of fonts they wish to use so that:
 
  1. fonts are always available whenever the iModel is accessed
  2. the license agreements of the fonts are respected
