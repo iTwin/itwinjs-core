@@ -79,3 +79,83 @@ Locks and Channels are orthogonal concepts. To edit an element, its channel must
 Each is possible without the other:
   - If another user holds the lock on an element, editing is denied even though it is an allowed channel.
   - An element may have been edited in a previous session or by another application in the same session. In that case the lock may be held, but further edits are denied if its channel is not allowed.
+
+## Semantic Versioning of Channels
+
+Data organization in a channel reflects the layout of information that a particular version of an editing application expects. Such data organization may change in future versions of the same editing application. Applications can use the `ChannelRootAspect.Version` property in order to apply _semantic versioning_ to a Channel.
+
+_Semantic versioning_ uses the pattern [read-compatibility].[write-compatibility].[minor-increment] in order to communicate whether changes introduced in a version are backwards compatible for reading, writing or both.
+
+Consider the following examples:
+
+Version 1 of an Editing application organizes its elements into two Subjects, one leading to its Physical Elements, and a second one leading to its Definition Elements.
+
+RootSubject
+- Channel Subject
+  - Subject1
+    - PhysicalPartition
+      - PhysicalModel
+        - Physical Elements ...
+  - Subject2
+    - DefinitionPartition
+      - DefinitionModel
+        - Definition Elements ...
+
+The initial version of this channel is set to 1.0.0.
+
+Version 2 of the same Editing application adds a new Subject in order to capture Documents.
+
+RootSubject
+- Channel Subject
+  - Subject1
+    - PhysicalPartition
+      - PhysicalModel
+        - Physical Elements ...
+  - Subject2
+    - DefinitionPartition
+      - DefinitionModel
+        - Definition Elements ...
+  - <span style="color:green;font-weight:bold">Subject3</span>
+    - <span style="color:green">DocumentPartition</span>
+      - <span style="color:green">DocumentListModel</span>
+        - <span style="color:green">Document Elements ...</span>
+
+This kind of change is read and write backwards-compatible since Version 1 of the Editing Application would still able to find the data it is aware of (under Subject1 and Subject2) and modify it in such a channel. Therefore, only the _minor-increment_ number of the version of the channel needs to be modified: 1.0.1.
+
+Now, let's assume Version 2 of the Editing Application introduced a different organization under Subject2, introducing some new logic to store a certain kind of Definition Elements that used to be stored in Subject2, now in the new Subject21. Thefore, Definition Elements are now stored under two different Subjects as opposed to one in the previous version.
+
+RootSubject
+- Channel Subject
+  - Subject1
+    - PhysicalPartition
+      - PhysicalModel
+        - Physical Elements ...
+  - Subject2
+    - DefinitionPartition
+      - DefinitionModel
+        - Definition Elements ...
+    - <span style="color:green;font-weight:bold">Subject21</span>
+      - <span style="color:green">DefinitionPartition</span>
+        - <span style="color:green">DefinitionModel</span>
+          - <span style="color:green">Definition Elements ...</span>
+
+Since version 1 of the Editing application is unaware of this new organization of Definition Elements, it would not be able to find them correctly. Thus, this is a read-incompatible change that needs to be communicated by incrementing the _read-compatible_ number of the version of the channel: 2.0.0.
+
+Finally, let's assume Version 2 of the Editing application introduced a new Subject3 that leads to Physical elements that are generated and kept in-sync based on data in Subject1 and Subject2.
+
+RootSubject
+- Channel Subject
+  - Subject1
+    - PhysicalPartition
+      - PhysicalModel
+        - Physical Elements ...
+  - Subject2
+    - DefinitionPartition
+      - DefinitionModel
+        - Definition Elements ...
+  - <span style="color:green;font-weight:bold">Subject3</span>
+    - <span style="color:green">PhysicalPartition</span>
+      - <span style="color:green">PhysicalModel</span>
+        - <span style="color:green">Physical Elements ...</span>
+
+Version 1 of the Editing application would be able to find all the data it is aware of, but it wouldn't be able to safely modify it since this new data organization has the expectation of certain elements to be generated or kept in-sync according to data in the other Subjects. Thus, this is an example of a read-compatible but write-incompatible change, communicated by incrementing the _write-compatible_ number of the version of the channel: 1.1.0.
