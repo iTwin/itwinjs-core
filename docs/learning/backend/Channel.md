@@ -86,6 +86,8 @@ Data organization in a channel reflects the layout of information that a particu
 
 _Semantic versioning_ uses the pattern [read-compatibility].[write-compatibility].[minor-increment] in order to communicate whether changes introduced in a version are backwards compatible for reading, writing or both.
 
+The _semantic version_ of a channel shall be set by an Editing Application when it either creates a channel, or when it upgrades its data organization from an older version.
+
 Consider the following examples:
 
 Version 1 of an Editing application organizes its elements into two Subjects, one leading to its Physical Elements, and a second one leading to its Definition Elements.
@@ -103,7 +105,9 @@ RootSubject
 
 The initial version of this channel is set to 1.0.0.
 
-Version 2 of the same Editing application adds a new Subject in order to capture Documents.
+### Minor increments
+
+Let's assume that Version 2 of the same Editing application adds a new Subject in order to capture Documents.
 
 RootSubject
 - Channel Subject
@@ -122,7 +126,11 @@ RootSubject
 
 This kind of change is read and write backwards-compatible since Version 1 of the Editing Application would still able to find the data it is aware of (under Subject1 and Subject2) and modify it in such a channel. Therefore, only the _minor-increment_ number of the version of the channel needs to be modified: 1.0.1.
 
-Now, let's assume Version 2 of the Editing Application introduced a different organization under Subject2, introducing some new logic to store a certain kind of Definition Elements that used to be stored in Subject2, now in the new Subject21. Thefore, Definition Elements are now stored under two different Subjects as opposed to one in the previous version.
+Note that an instance of Version 1 of the Editing Application to access the channel should not update its version since it indicates it has newer addition to what it is aware of.
+
+### Read-compatibility
+
+Let's assume Version 2 of the Editing Application introduced a different organization under Subject2, introducing some new logic to store a certain kind of Definition Elements that used to be stored in Subject2, now in the new Subject21. Thefore, Definition Elements are now stored under two different Subjects as opposed to one in the previous version.
 
 RootSubject
 - Channel Subject
@@ -140,6 +148,10 @@ RootSubject
           - <span style="color:green">Definition Elements ...</span>
 
 Since version 1 of the Editing application is unaware of this new organization of Definition Elements, it would not be able to find them correctly. Thus, this is a read-incompatible change that needs to be communicated by incrementing the _read-compatible_ number of the version of the channel: 2.0.0.
+
+An instance of Version 1 of the Editing Application shall fail early and not attempt to read or write data in the channel.
+
+### Write-compatibility
 
 Finally, let's assume Version 2 of the Editing application introduced a new Subject3 that leads to Physical elements that are generated and kept in-sync based on data in Subject1 and Subject2.
 
@@ -159,3 +171,5 @@ RootSubject
         - <span style="color:green">Physical Elements ...</span>
 
 Version 1 of the Editing application would be able to find all the data it is aware of, but it wouldn't be able to safely modify it since this new data organization has the expectation of certain elements to be generated or kept in-sync according to data in the other Subjects. Thus, this is an example of a read-compatible but write-incompatible change, communicated by incrementing the _write-compatible_ number of the version of the channel: 1.1.0.
+
+In this case, an instance of Version 1 of the Editing Application shall only access the channel for read-only purposes.
