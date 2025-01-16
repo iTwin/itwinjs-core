@@ -32,8 +32,7 @@ export class ByteStream {
    * ArrayBuffer. If `bytes` represents only a **sub-range** of the underlying buffer's data, the results will be unexpected unless the optional `subView`
    * argument is supplied, with correct offset and length.
    *
-   * For both of the above reasons, prefer to use [[fromUint8Array]].
-   * @deprecated in 3.x. Use [[fromUint8Array]] or [[fromArrayBuffer]].
+   * For both of the above reasons, this constructor is private, and [[fromUint8Array]] or [[fromArrayBuffer]] should be used to create a ByteStream.
    */
   private constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }) {
     if (undefined !== subView) {
@@ -51,7 +50,7 @@ export class ByteStream {
    */
   public static fromUint8Array(bytes: Uint8Array): ByteStream {
     const { byteOffset, byteLength } = bytes;
-    return new ByteStream(bytes.buffer, { byteOffset, byteLength }); // eslint-disable-line @typescript-eslint/no-deprecated
+    return new ByteStream(bytes.buffer, { byteOffset, byteLength });  
   }
 
   /** Construct a new ByteStream with the read position set to the beginning.
@@ -59,7 +58,7 @@ export class ByteStream {
    * @param subView If defined, specifies the subset of the underlying buffer's data to use.
    */
   public static fromArrayBuffer(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }): ByteStream {
-    return new ByteStream(buffer, subView); // eslint-disable-line @typescript-eslint/no-deprecated
+    return new ByteStream(buffer, subView);  
   }
 
   /** The number of bytes in this stream */
