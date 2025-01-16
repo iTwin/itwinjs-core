@@ -10,8 +10,7 @@ import { BadgeType } from "../items/BadgeType";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 
-// The original ProvidedItem is removed, but we still need it for internal usage
-// TODO: Remove this when ToolbarItem no longer needs this
+/** Properties for an item provided by UiItemsProvider */
 interface ProvidedItem {
   /** id of UiItemsProvider */
   readonly providerId?: string;
