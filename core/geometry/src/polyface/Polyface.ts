@@ -616,9 +616,9 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       return this._facetStart[facetIndex + 1] - this._facetStart[facetIndex];
     return 0;
   }
-  /** ASSUME valid facet index . .. return its start index in index arrays. */
+  /** Given a valid facet index, return the index at which its face loop starts in the index arrays. */
   public facetIndex0(facetIndex: number): number { return this._facetStart[facetIndex]; }
-  /** ASSUME valid facet index . .. return its end index in index arrays. */
+  /** Given a valid facet index, return one past the index at which its face loop ends in the index arrays. */
   public facetIndex1(facetIndex: number): number { return this._facetStart[facetIndex + 1]; }
   /** create a visitor for this polyface */
   public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor { return IndexedPolyfaceVisitor.create(this, numWrap); }
