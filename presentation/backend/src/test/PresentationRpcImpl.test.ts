@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { BeEvent, Guid, using } from "@itwin/core-bentley";
-import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
+import { IModelRpcProps } from "@itwin/core-common";
 import {
   ComputeSelectionRequestOptions,
   ComputeSelectionRpcRequestOptions,
@@ -98,6 +98,7 @@ describe("PresentationRpcImpl", () => {
   });
 
   afterEach(() => {
+    sinon.reset();
     sinon.restore();
     Presentation.terminate();
   });
@@ -222,6 +223,39 @@ describe("PresentationRpcImpl", () => {
     });
   });
 
+  it("returns error response when `PresentationError` is thrown", async () => {
+    const imodelToken = createIModelRpcProps();
+    sinon.stub(Presentation, "getManager").throws(new PresentationError(PresentationStatus.Error, "test error"));
+    sinon
+      .stub(IModelDb, "findByKey")
+      .withArgs(imodelToken.key)
+      .returns({
+        refreshContainerForRpc: sinon.stub(),
+      } as unknown as IModelDb);
+    await using(new PresentationRpcImpl(), async (impl) => {
+      expect(await impl.getSelectionScopes(imodelToken, {})).to.deep.eq({
+        statusCode: PresentationStatus.Error,
+        errorMessage: "test error",
+        result: undefined,
+        diagnostics: undefined,
+      });
+    });
+  });
+
+  it("re-throws generic errors", async () => {
+    const imodelToken = createIModelRpcProps();
+    sinon.stub(Presentation, "getManager").throws(new Error("test error"));
+    sinon
+      .stub(IModelDb, "findByKey")
+      .withArgs(imodelToken.key)
+      .returns({
+        refreshContainerForRpc: sinon.stub(),
+      } as unknown as IModelDb);
+    await using(new PresentationRpcImpl(), async (impl) => {
+      await expect(impl.getSelectionScopes(imodelToken, {})).to.eventually.be.rejectedWith("test error");
+    });
+  });
+
   describe("calls forwarding", () => {
     let testData: any;
     let defaultRpcParams: { clientId: string };
@@ -255,18 +289,6 @@ describe("PresentationRpcImpl", () => {
 
     afterEach(() => {
       impl.dispose();
-    });
-
-    it("returns invalid argument status code when using invalid imodel token", async () => {
-      stub_IModelDb_findByKey.resetBehavior();
-      stub_IModelDb_findByKey.throws(IModelNotFoundResponse);
-      const options: Paged<HierarchyRpcRequestOptions> = {
-        ...defaultRpcParams,
-        rulesetOrId: testData.rulesetOrId,
-      };
-
-      const response = await impl.getNodesCount(testData.imodelToken, options);
-      expect(response.statusCode).to.equal(PresentationStatus.InvalidArgument);
     });
 
     describe("makeRequest", () => {
@@ -555,9 +577,7 @@ describe("PresentationRpcImpl", () => {
 
     describe("getPagedNodes", () => {
       it("calls manager for root nodes", async () => {
-
         const getRootNodesResult: HierarchyLevelJSON = {
-
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -595,9 +615,7 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("calls manager for child nodes", async () => {
-
         const getChildNodesResult: HierarchyLevelJSON = {
-
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -653,13 +671,9 @@ describe("PresentationRpcImpl", () => {
         };
 
         const presentationManagerDetailStub = {
-          getNodes: sinon.spy(async () => getRootNodesResult),
+          getNodes: sinon.spy(async () => JSON.stringify(getRootNodesResult)),
         };
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock
-          .setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => JSON.stringify(getRootNodesResult))
-          .verifiable();
         presentationManagerMock
           .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
@@ -684,13 +698,9 @@ describe("PresentationRpcImpl", () => {
           cancelEvent: new BeEvent<() => void>(),
         };
         const presentationManagerDetailStub = {
-          getNodes: sinon.spy(async () => getRootNodesResult),
+          getNodes: sinon.spy(async () => JSON.stringify(getRootNodesResult)),
         };
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock
-          .setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => JSON.stringify(getRootNodesResult))
-          .verifiable();
         presentationManagerMock
           .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
@@ -715,13 +725,9 @@ describe("PresentationRpcImpl", () => {
         };
 
         const presentationManagerDetailStub = {
-          getNodes: sinon.spy(async () => getRootNodesResult),
+          getNodes: sinon.spy(async () => JSON.stringify(getRootNodesResult)),
         };
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock
-          .setup(async (x) => x.getDetail().getNodes(managerOptions))
-          .returns(async () => JSON.stringify(getRootNodesResult))
-          .verifiable();
         presentationManagerMock
           .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => getRootNodesCountResult)
