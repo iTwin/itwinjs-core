@@ -5,7 +5,7 @@
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
+import { GraphicRepresentationFormat, obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
 import { loggerCategory } from "../LoggerCategory";
 
 /** Arguments supplied  to [[obtainIModelTilesetUrl]].
@@ -57,7 +57,7 @@ export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs):
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: "IMDL",
+    format: "IMODEL" as GraphicRepresentationFormat,
     urlPrefix: args.urlPrefix,
     requireExactVersion: args.requireExactChangeset,
     enableCDN: args.enableCDN,

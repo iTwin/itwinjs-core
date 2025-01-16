@@ -88,18 +88,18 @@ export type GraphicRepresentation = {
 });
 
 // @beta
-export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
+export type GraphicRepresentationFormat = "IMODEL" | "3DTiles" | "CESIUM";
 
 // @beta
 export enum GraphicRepresentationStatus {
     // (undocumented)
     Complete = "Complete",
     // (undocumented)
-    Failed = "Failed",
+    InProgress = "InProgress",
     // (undocumented)
-    InProgress = "In progress",
+    Invalid = "Invalid",
     // (undocumented)
-    NotStarted = "Not started"
+    NotStarted = "NotStarted"
 }
 
 // @beta

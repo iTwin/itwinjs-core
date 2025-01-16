@@ -10,14 +10,12 @@ import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
 /** The expected format of the Graphic Representation
  * @beta
  */
-/* eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents */
-export type GraphicRepresentationFormat = "IMODEL" | "3DTiles" | "CESIUM" | string;
+export type GraphicRepresentationFormat = "IMODEL" | "3DTiles" | "CESIUM";
 
 /** Graphic representations are generated from Data Sources.
  * The status of a Graphic Representation indicates the progress of that generation process.
  * @beta
  */
-// ###TODO this needs to be expanded to include more statuses, and/or "failed" needs to be replaced with "invalid".
 export enum GraphicRepresentationStatus {
   InProgress = "InProgress",
   Complete = "Complete",
