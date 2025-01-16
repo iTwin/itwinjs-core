@@ -47,6 +47,7 @@ export class ByteStream {
 
   /** Construct a new ByteStream for the range of bytes represented by `bytes`, which may be a subset of the range of bytes
    * represented by the underlying ArrayBuffer. The read position will be set to the beginning of the range of bytes.
+   * @param bytes The Uint8Array from which data is to be extracted.
    */
   public static fromUint8Array(bytes: Uint8Array): ByteStream {
     const { byteOffset, byteLength } = bytes;
@@ -126,23 +127,6 @@ export class ByteStream {
   public readId64(): Id64String { return Id64.fromUint32Pair(this.readUint32(), this.readUint32()); }
   /** Read an unsigned 24-bit integer from the current read position and advance by 3 bytes. */
   public readUint24(): number { return this.readUint8() | (this.readUint8() << 8) | (this.readUint8() << 16); }
-
-  /** @deprecated in 3.x. use [[readUint8]]. */
-  public get nextUint8(): number { return this.readUint8(); }
-  /** @deprecated in 3.x. use [[readUint16]]. */
-  public get nextUint16(): number { return this.readUint16(); }
-  /** @deprecated in 3.x. use [[readUint32]]. */
-  public get nextUint32(): number { return this.readUint32(); }
-  /** @deprecated in 3.x. use [[readInt32]]. */
-  public get nextInt32(): number { return this.readInt32(); }
-  /** @deprecated in 3.x. use [[readFloat32]]. */
-  public get nextFloat32(): number { return this.readFloat32(); }
-  /** @deprecated in 3.x. use [[readFloat64]]. */
-  public get nextFloat64(): number { return this.readFloat64(); }
-  /** @deprecated in 3.x. use [[readId64]]. */
-  public get nextId64(): Id64String { return this.readId64(); }
-  /** @deprecated in 3.x. use [[readUint32]]. */
-  public get nextUint24(): number { return this.readUint24(); }
 
   /** Read the specified number of bytes beginning at the current read position into a Uint8Array and advance by the specified number of byte.
    * @param numBytes The number of bytes to read.
