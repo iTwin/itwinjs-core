@@ -31,7 +31,7 @@ Table of contents:
     - [@itwin/core-electron](#itwincore-electron)
   - [API removals](#api-removals)
   - [Packages dropped](#packages-dropped)
-  - [Change to pull/merge method](#change-to-pullmerge)
+- [Change to pull/merge method](#change-to-pullmerge)
 
 ## Selection set
 
