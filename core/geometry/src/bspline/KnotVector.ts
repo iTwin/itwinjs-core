@@ -303,9 +303,9 @@ export class KnotVector {
     return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
   /**
-   * Evaluate basis functions f[] at knot value u.
-   * @param knotIndex0 index of the left knot of the containing span: knot[knotIndex0] <= u < knot[knotIndex0+1].
-   * @param u knot value for evaluation
+   * Evaluate basis functions f[] at a parameter u in a knot span.
+   * @param knotIndex0 index of the left knot of the span.
+   * @param u value in the knot span: knot[knotIndex0] <= u <= knot[knotIndex0 + 1].
    * @param f preallocated output array of order basis function values
    * @returns true if and only if output array is sufficiently sized
    */
@@ -341,9 +341,10 @@ export class KnotVector {
   }
 
   /**
-   * Evaluate basis functions f[], derivatives df[], and optional second derivatives ddf[] at knot value u.
-   *
-   * @param u knot value for evaluation
+   * Evaluate basis functions f[], derivatives df[], and optional second derivatives ddf[] at a parameter u
+   * in a knot span.
+   * @param knotIndex0 index of the left knot of the span.
+   * @param u value in the knot span: knot[knotIndex0] <= u <= knot[knotIndex0 + 1].
    * @param f preallocated output array of order basis function values
    * @param df preallocated output array of order basis derivative values
    * @param ddf optional preallocated output array of order basis second derivative values
