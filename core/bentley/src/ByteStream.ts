@@ -35,7 +35,7 @@ export class ByteStream {
    * For both of the above reasons, prefer to use [[fromUint8Array]].
    * @deprecated in 3.x. Use [[fromUint8Array]] or [[fromArrayBuffer]].
    */
-  public constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }) {
+  private constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }) {
     if (undefined !== subView) {
       this._view = new DataView(buffer, subView.byteOffset, subView.byteLength);
       this._byteOffset = subView.byteOffset;
