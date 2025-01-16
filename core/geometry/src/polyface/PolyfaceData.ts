@@ -87,15 +87,17 @@ export class PolyfaceData {
 
   /**
    * Optional index array for moving "across an edge" to an adjacent facet.
-   * * This array is:
-   *   * the same length as the other index arrays.
-   *   * populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
+   * * This array:
    *   * completes the topology of the polyface.
-   *   * invalid if the polyface is subsequently edited.
+   *   * has the same length as the other PolyfaceData index arrays.
+   *   * is populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
+   *   * is used by [[IndexedPolyfaceWalker]] to traverse the polyface.
+   *   * is invalid if the polyface topology is subsequently changed.
    * * Let k1 = edgeMateIndex[k] be defined. Then:
-   *   * k1 is an index into the instance index arrays.
+   *   * k1 is an index (an "edge index") into the PolyfaceData index arrays. (The same for k.)
    *   * k and k1 refer to the two oppositely oriented sides of an interior edge in the polyface.
    *   * pointIndex[k1] is the point at the opposite end of the edge that starts at pointIndex[k].
+   *   * edgeMateIndex[k1] === k.
    * * If k1 is undefined, then there is no adjacent facet across the edge that starts at pointIndex[k],
    * i.e. k refers to a boundary edge.
    */
