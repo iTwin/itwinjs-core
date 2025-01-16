@@ -10,19 +10,14 @@ import { BadgeType } from "../items/BadgeType";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 
-// The original ProvidedItem is removed, but we still need it for internal usage
-// TODO: Remove this when ToolbarItem no longer needs this
-interface ProvidedItem {
-  /** id of UiItemsProvider */
-  readonly providerId?: string;
-}
-
 /** Describes the data needed to insert a UI items into an existing set of UI items.
  * @public
  */
-export interface ToolbarItem extends ProvidedItem { // eslint-disable-line @typescript-eslint/no-deprecated
+export interface ToolbarItem { // eslint-disable-line @typescript-eslint/no-deprecated
   /** can be used by application to store miscellaneous data. */
   readonly applicationData?: any;
+  /** id of UiItemsProvider */
+  readonly providerId?: string;
   /** Describes badge. Renders no badge if not specified. */
   readonly badgeType?: BadgeType;
   /** Optional description */
