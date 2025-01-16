@@ -6,12 +6,12 @@
  * @module iModels
  */
 
-import { DbResult, FontFamilyDescriptor, FontFamilySelector, FontId, FontProps, FontType } from "@itwin/core-common";
+import { FontFamilyDescriptor, FontFamilySelector, FontId, FontProps, FontType } from "@itwin/core-common";
 import { _faceProps, _getData, _implementationProhibited, _key, _nativeDb } from "./Symbols";
 import { IModelDb } from "../IModelDb";
 import { EmbedFontFileArgs, IModelDbFonts, QueryMappedFamiliesArgs } from "../IModelDbFonts";
 import { EmbeddedFontFile } from "./FontFileImpl";
-import { assert, Logger } from "@itwin/core-bentley";
+import { assert, DbResult, Logger } from "@itwin/core-bentley";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { FontFile } from "../FontFile";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -86,7 +86,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
       const sql = `SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`;
       id = this.#db.withSqliteStatement(sql, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
     }
-    
+
     assert(id > 0);
     const data = file[_getData]();
     this.#db[_nativeDb].embedFontFile(id, file[_faceProps], data, true);
@@ -109,7 +109,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
       if (undefined !== selector.type) {
         stmt.bindInteger(2, selector.type);
       }
-      
+
       if (DbResult.BE_SQLITE_ROW === stmt.step()) {
         id = stmt.getValueInteger(0);
       }
@@ -155,7 +155,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
         // No CodeService configured. We must obtain the schema lock and use the next available Id.
         await this.#db.acquireSchemaLock();
       }
-      
+
       id = this.#db.withSqliteStatement(`SELECT MAX(Id) FROM dgn_Font`, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
     }
 
@@ -170,7 +170,7 @@ class IModelDbFontsImpl implements IModelDbFonts {
     });
 
     this.#db.clearFontMap();
-  
+
     return id;
   }
 
