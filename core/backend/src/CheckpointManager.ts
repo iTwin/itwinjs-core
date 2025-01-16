@@ -253,51 +253,6 @@ export class V2CheckpointManager {
   }
 }
 
-/** Utility class to deal with downloading V1 checkpoints from iModelHub.
- * @internal
- */
-export class V1CheckpointManager {
-  public static getFolder(iModelId: GuidString): LocalDirName {
-    return path.join(BriefcaseManager.getIModelPath(iModelId), "checkpoints");
-  }
-
-  public static getFileName(checkpoint: CheckpointProps): LocalFileName {
-    const changesetId = checkpoint.changeset.id || "first";
-    return path.join(this.getFolder(checkpoint.iModelId), `${changesetId}.bim`);
-  }
-
-  public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
-    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
-    return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
-  }
-
-  /** Download a V1 checkpoint */
-  public static async downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId> {
-    return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
-  }
-
-  public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
-    const snapshot = SnapshotDb.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
-    (snapshot as any)._iTwinId = checkpoint.iTwinId;
-    return snapshot;
-  }
-
-  private static async downloadAndOpen(job: DownloadJob) {
-    const db = CheckpointManager.tryOpenLocalFile(job.request);
-    if (db)
-      return db;
-    await this.performDownload(job);
-    await CheckpointManager.updateToRequestedVersion(job.request);
-    return this.openCheckpointV1(job.request.localFile, job.request.checkpoint);
-  }
-
-  private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
-    CheckpointManager.onDownloadV1.raiseEvent(job);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
-  }
-}
-
 /** @internal  */
 export class CheckpointManager {
   public static readonly onDownloadV1 = new BeEvent<(job: DownloadJob) => void>();
@@ -317,11 +272,6 @@ export class CheckpointManager {
         Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint.`, { iModelId: request.checkpoint.iModelId, changesetId: request.checkpoint.changeset.id, iTwinId: request.checkpoint.iTwinId });
       return changesetId;
     } catch (error: any) {
-      if (error.errorNumber === IModelStatus.NotFound) { // No V2 checkpoint available, try a v1 checkpoint
-        const changeset = await V1CheckpointManager.downloadCheckpoint(request);
-        Logger.logWarning(loggerCategory, `Got an error downloading v2 checkpoint, but downloaded v1 checkpoint successfully!`, { error, iModelId: request.checkpoint.iModelId, iTwinId: request.checkpoint.iTwinId, requestedChangesetId: request.checkpoint.changeset.id, changesetId: changeset });
-        return changeset;
-      }
       throw error; // most likely, was aborted
     }
   }
@@ -439,24 +389,6 @@ export class CheckpointManager {
       IModelJsFs.removeSync(fileName);
 
     return isValid;
-  }
-
-  /** try to open an existing local file to satisfy a download request */
-  public static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined {
-    const checkpoint = request.checkpoint;
-    if (this.verifyCheckpoint(checkpoint, request.localFile))
-      return V1CheckpointManager.openCheckpointV1(request.localFile, checkpoint);
-
-    // check a list of aliases for finding checkpoints downloaded to non-default locations (e.g. from older versions)
-    if (request.aliasFiles) {
-      for (const alias of request.aliasFiles) {
-        if (this.verifyCheckpoint(checkpoint, alias)) {
-          request.localFile = alias;
-          return V1CheckpointManager.openCheckpointV1(alias, checkpoint);
-        }
-      }
-    }
-    return undefined;
   }
 
   public static async toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps> {

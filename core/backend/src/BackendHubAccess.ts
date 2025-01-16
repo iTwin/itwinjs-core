@@ -12,7 +12,7 @@ import {
   LockState as CommonLockState, IModelError, IModelVersion,
   LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
+import { CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import type { TokenArg } from "./IModelDb";
 
 /** Exception thrown if lock cannot be acquired.
@@ -167,11 +167,6 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
   targetDir: LocalDirName;
 }
 
-/**
- * @deprecated in 3.x. Use [[DownloadRequest]].
- * @internal
- */
-export type CheckpointArg = DownloadRequest;
 
 /**
  * Arguments to create a new iModel in iModelHub
@@ -188,7 +183,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
  * Generally direct access to these methods should not be required, since higher-level apis are provided.
  * @note This interface is implemented in another repository. Any changes made to this interface must be validated against
  * the implementation found here: https://github.com/iTwin/imodels-clients/blob/main/itwin-platform-access/imodels-access-backend/src/BackendIModelsAccess.ts
- * @internal
+ * @public
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
@@ -218,35 +213,25 @@ export interface BackendHubAccess {
   /** get an array of the briefcases assigned to a user. */
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
 
-  /**
-   * Download a v1 checkpoint
-   * @deprecated in 3.x. V1 checkpoints are deprecated. Download V2 checkpoint using [[V2CheckpointManager.downloadCheckpoint]].
-   * @internal
-   */
-  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
-   * @internal
    */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired
-   * @internal
    * @throws ConflictingLocksError if one or more requested locks are held by other briefcases.
    */
   acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 
   /**
    * Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests.
-   * @internal
    */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /**
    * Release all currently held locks
-   * @internal
    */
   releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
 
