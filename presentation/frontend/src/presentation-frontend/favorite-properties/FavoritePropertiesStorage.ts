@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { AccessToken, compareStrings, Dictionary, Guid, isDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { AccessToken, compareStrings, Dictionary, Guid, isDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
@@ -201,12 +201,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
   }
 
   public [Symbol.dispose]() {
-    // istanbul ignore else
-    if (isDisposable(this._connectivityInfo)) {
-      this._connectivityInfo[Symbol.dispose]();
-    } else if (isIDisposable(this._connectivityInfo)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
-      this._connectivityInfo.dispose();
-    }
+    isDisposable(this._connectivityInfo) && this._connectivityInfo[Symbol.dispose]();
   }
 
   public get impl() {
