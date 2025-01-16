@@ -92,7 +92,6 @@ export class PolyfaceData {
    *   * populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
    *   * completes the topology of the polyface.
    *   * invalid if the polyface is subsequently edited.
-   *   * persistent.
    * * Let k1 = edgeMateIndex[k] be defined. Then:
    *   * k1 is an index into the instance index arrays.
    *   * k and k1 refer to the two oppositely oriented sides of an interior edge in the polyface.

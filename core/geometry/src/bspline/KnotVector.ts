@@ -304,7 +304,7 @@ export class KnotVector {
   }
   /**
    * Evaluate basis functions f[] at knot value u.
-   *
+   * @param knotIndex0 index of the left knot of the containing span: knot[knotIndex0] <= u < knot[knotIndex0+1].
    * @param u knot value for evaluation
    * @param f preallocated output array of order basis function values
    * @returns true if and only if output array is sufficiently sized
