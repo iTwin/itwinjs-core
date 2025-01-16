@@ -37,12 +37,23 @@ import { IndexedPolyface } from "./Polyface";
  *   * The [[nextAroundFacet]] step is counterclockwise around the facet.
  *   * The [[previousAroundFacet]] step is clockwise around the facet.
  *   * The [[nextAroundVertex]] step is counterclockwise around the vertex.
- *   * The [[previousAroundFacet]] step is clockwise around the facet.
+ *   * The [[previousAroundVertex]] step is clockwise around the vertex.
  * * The `nextAroundFacet` steps for a walker and its [[edgeMate]] are in opposite directions along their shared edge,
  * when that edge is interior. Thus the `edgeMate` step can be seen to iterate an "edge loop" of two locations for an
- * interior edges. Exterior edges have exactly one adjacent facet; for these edges the `edgeMate` step returns a walker
- * with undefined position, for which [[isUndefined]] returns true. In the diagram below, the `edgeMate` of B is
- * undefined.
+ * interior edges.
+ * * Invalid Walkers:
+ *   * An invalid walker has undefined [[edgeIndex]]. For these walkers, [[isUndefined]] returns true, and [[isValid]]
+ * returns false. Traversal operations on an invalid walker return an invalid walker.
+ *   * Invalid walkers are expected during traversals of a mesh with boundary edges, so calling code must be prepared.
+ * Boundary edges have exactly one adjacent facet, so for these edges the `edgeMate` step returns an invalid walker.
+ * In the diagram below, the `edgeMate` of boundary edge B is undefined.
+ *   * Invalid walkers can occur while traversing boundary vertices as well. If an edge lacks an `edgeMate`, then the
+ * `previousAroundVertex` step yields an invalid walker, because `previousAroundVertex` is implemented as `edgeMate`
+ * followed by `nextAroundFacet`. In the diagram below, the `previousAroundVertex` step at boundary edge B yields
+ * undefined walker. Similarly, the `nextAroundVertex` step at edge F yields undefined walker.
+ *   * Invalid walkers can also occur while traversing a non-manifold mesh. Such meshes feature edge(s) with more than
+ * two adjacent facets, or with two adjacent facets that have opposite orientations. These meshes are uncommon, and
+ * usually indicate a construction problem.
  * * See [[buildEdgeMateIndices]] for further description of the topological relations.
  * ```
  *      # --------- # --------- #

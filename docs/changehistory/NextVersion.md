@@ -55,13 +55,13 @@ Consult the [learning article](../learning/backend/Fonts.md) for details and exa
 
 Conventional [IndexedPolyface]($core-geometry) data defines each facet by a sequence of point indices around the facet, however these indices do not indicate which facet is adjacent across an edge, nor do they indicate which facets are adjacent at a vertex. The topology of the mesh is incomplete.
 
-The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete the topology of an `IndexedPolyface` and to navigate these adjacencies. A one-time call to [IndexedPolyfaceWalker.buildEdgeMateIndices]($core-geometry) constructs a new index array `PolyfaceData.edgeMateIndex` on a given `IndexedPolyface`. This array stores the cross-edge relationship, and is valid as long as the mesh topology is unchanged. In particular, `j = myPolyface.data.edgeMateIndex[i]` is the index (into the polyface index arrays) of the matched edge in the adjacent facet, or is undefined if there is no adjacent facet.
-
-Following this construction, the following queries support navigation around each facet of the `IndexedPolyface`, around each of its vertices, and across each edge. Given an `IndexedPolyfaceWalker` object that refers to a particular edge of a facet:
+The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete the topology of an `IndexedPolyface` and to navigate these adjacencies. A one-time call to [IndexedPolyfaceWalker.buildEdgeMateIndices]($core-geometry) populates a new optional index array of the [PolyfaceData]($core-geometry). This array stores the cross-edge relationship, and is valid as long as the mesh topology is unchanged. After this step, the following queries support navigation around a facet, around a vertex, and across an edge. Given an `IndexedPolyfaceWalker` object that refers to a particular edge:
 
 - [IndexedPolyfaceWalker.nextAroundFacet]($core-geometry) and [IndexedPolyfaceWalker.previousAroundFacet]($core-geometry) return a walker referring to the next/previous edge around the facet.
-- [IndexedPolyfaceWalker.nextAroundVertex]($core-geometry) and [IndexedPolyfaceWalker.previousAroundVertex]($core-geometry) return a walker `w` referring to the next/previous outbound edge around the instance edge's start vertex. If this vertex lies on the mesh boundary, `w.isValid` can return false, indicating the traversal step would fall outside the mesh.
-- [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker `w` referring to the edge with opposite orientation in the adjacent facet. If this edge lies on the mesh boundary, `w.isValid` returns false, indicating the traversal step would fall outside the mesh.
+- [IndexedPolyfaceWalker.nextAroundVertex]($core-geometry) and [IndexedPolyfaceWalker.previousAroundVertex]($core-geometry) return a walker referring to the next/previous edge around the edges' start vertex.
+- [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
+
+If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
 
 ## API deprecations
 
