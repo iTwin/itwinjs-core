@@ -8,6 +8,8 @@ Table of contents:
 
 - [Selection set](#selection-set)
 - [Font APIs](#font-apis)
+- [Geometry](#geometry)
+  - [Polyface Traversal](#polyface-traversal)
 - [API deprecations](#api-deprecations)
   - [@itwin/core-common](#itwincore-common)
   - [@itwin/core-backend](#itwincore-backend)
@@ -46,6 +48,20 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 - [IModelDb.fonts]($backend) permits you to read and write font-related information, including [FontFile]($backend)s, into an [IModelDb]($backend).
 
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
+
+## Geometry
+
+### Polyface Traversal
+
+Conventional [IndexedPolyface]($core-geometry) data defines each facet by a sequence of point indices around the facet, however these indices do not indicate which facet is adjacent across each edge, nor do they indicate which facets are adjacent at each point. The topology of the mesh is incomplete.
+
+The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete the topology of an `IndexedPolyface` and to navigate these adjacencies. A one-time call to [IndexedPolyfaceWalker.buildEdgeMateIndices]($core-geometry) constructs an additional index array on a given `IndexedPolyface`. These indices store the cross-edge relationship, and are valid as long as the mesh is unchanged.
+
+Following this construction, the following queries support navigation around each facet of the `IndexedPolyface`, around each of its points, and across each edge. Given an `IndexedPolyfaceWalker` object that refers to a particular edge of a facet:
+
+- [IndexedPolyfaceWalker.nextAroundFacet]($core-geometry) and [IndexedPolyfaceWalker.previousAroundFacet]($core-geometry) return a walker referring to the next/previous edge around the facet.
+- [IndexedPolyfaceWalker.nextAroundVertex]($core-geometry) and [IndexedPolyfaceWalker.previousAroundVertex]($core-geometry) return a walker `w` referring to the next/previous outbound edge around the instance edge's start point. If this point lies on the mesh boundary, `w.isValid` can return false, indicating the traversal step would fall outside the mesh.
+- [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker `w` referring to the edge with opposite orientation in the adjacent facet. If this edge lies on the mesh boundary, `w.isValid` returns false, indicating the traversal step would fall outside the mesh.
 
 ## API deprecations
 
