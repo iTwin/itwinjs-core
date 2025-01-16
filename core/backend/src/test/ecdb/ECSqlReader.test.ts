@@ -67,6 +67,25 @@ describe("ECSqlReader", (() => {
       });
     });
 
+    it("bindIdSet not working with integer Ids", async () => {
+      await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
+        `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="Foo" modifier="Sealed">
+            <ECProperty propertyName="n" typeName="int"/>
+          </ECEntityClass>
+        </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        ecdb.saveChanges();
+        const params = new QueryBinder();
+        params.bindIdSet(1, ["50"]);
+        const optionBuilder = new QueryOptionsBuilder();
+        optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
+        const rows = await reader.toArray();
+        assert.equal(rows.length, 0);
+      });
+    });
+
     it("ecsql reader simple using query reader", async () => {
       await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
         `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Added test cases for IdSet Virtual table",
+      "comment": "",
       "type": "none"
     }
   ],
