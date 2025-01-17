@@ -303,7 +303,8 @@ export class KnotVector {
     return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
   /**
-   * Evaluate basis functions f[] at a parameter u in a knot span.
+   * Evaluate the B-spline basis functions f[] at a parameter u in a knot span.
+   * * This method implements the Mansfield-Cox-de Boor recurrence relation.
    * @param knotIndex0 index of the left knot of the span.
    * @param u value in the knot span: knot[knotIndex0] <= u <= knot[knotIndex0 + 1].
    * @param f preallocated output array of order basis function values
@@ -322,6 +323,8 @@ export class KnotVector {
     f[0] = 1.0 - f[1];
     if (this.degree < 2)
       return true;
+    // Each iteration of the outer loop evaluates the basis functions of degree depth+1 using
+    // one or two values of the basis functions of one less degree from the preceding iteration.
     for (let depth = 1; depth < this.degree; depth++) {
       let kLeft = knotIndex0 - depth;
       let kRight = kLeft + depth + 1;
@@ -336,6 +339,8 @@ export class KnotVector {
         gCarry = g1;
       }
       f[depth + 1] = gCarry;
+      // at this point, the head of f[] contains the depth+2 values at u
+      // of the basis functions of degree depth+1 with support over [u0,u1)
     }
     return true;
   }
