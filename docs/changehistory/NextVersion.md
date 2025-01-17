@@ -114,6 +114,7 @@ The following APIs have been removed in `@itwin/appui-abstract`.
 | `AllowedUiItemProviderOverrides` | `AllowedUiItemProviderOverrides` in `@itwin/appui-react` |
 | `BaseUiItemsProvider`            | `BaseUiItemsProvider` in `@itwin/appui-react`     |
 | `createSvgIconSpec`              | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
+| `EditorPosition.columnSpan` | N/A         |
 | `getSvgSource`                   | Use `IconSpecUtilities.getWebComponentSource()` instead.      |
 | `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react` |
 | `UiItemProviderOverrides`        | `UiItemProviderOverrides` in `@itwin/appui-react` |
