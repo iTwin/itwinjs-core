@@ -108,15 +108,16 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 
 #### @itwin/core-common
 
-| Removed                                        | Replacement                       |
-| ---------------------------------------------- | --------------------------------- |
-| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`               |
-| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`       |
-| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`       |
-| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`       |
-| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString` |
-| `TerrainProviderName`                          | N/A                               |
-| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`        |
+| Removed                                        | Replacement                                          |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`                                  |
+| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`                          |
+| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString`                    |
+| `TerrainProviderName`                          | N/A                                                  |
+| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
+| `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
 
 #### @itwin/core-bentley
 
