@@ -93,3 +93,177 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
 
 | i   |
 | --- |
+
+# Testing IdSet following cte subquery
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  b
+FROM
+  (
+    WITH
+      cte (a, b) AS (
+        SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
+  ),
+  ECVLib.IdSet (?)
+WHERE
+  id = a
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | b            | true      | 0     | b        | b    | undefined    | int      | Int  |
+
+| b   |
+| --- |
+| 101 |
+| 104 |
+| 105 |
+
+# Testing cte subquery following IdSet
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  b
+FROM
+ECVLib.IdSet (?),
+  (
+    WITH
+      cte (a, b) AS (
+        SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
+  )
+WHERE
+  id = a
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | b            | true      | 0     | b        | b    | undefined    | int      | Int  |
+
+| b   |
+| --- |
+| 101 |
+| 104 |
+| 105 |
+
+# Testing nested CTE subquery following IdSet
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  b
+FROM
+ECVLib.IdSet (?),
+( select * from (
+    WITH
+      cte (a, b) AS (
+        SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
+  ))
+WHERE
+  id = a
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | b            | true      | 0     | b        | b    | undefined    | int      | Int  |
+
+| b   |
+| --- |
+| 101 |
+| 104 |
+| 105 |
+
+# Testing IdSet following nested CTE subquery
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  b
+FROM
+( select * from (
+    WITH
+      cte (a, b) AS (
+        SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
+  )),
+ECVLib.IdSet (?)
+WHERE
+  id = a
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | b            | true      | 0     | b        | b    | undefined    | int      | Int  |
+
+| b   |
+| --- |
+| 101 |
+| 104 |
+| 105 |
+
+# Testing IdSet following nested CTE without sub columns subquery
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  i
+FROM
+( select * from (
+    WITH
+      cte AS (
+        SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
+  )),
+ECVLib.IdSet (?)
+WHERE
+  id = ECInstanceId
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      |
+
+| i   |
+| --- |
+| 101 |
+| 104 |
+| 105 |
+
+# Testing CTE without sub columns subquery following IdSet
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  i
+FROM
+ECVLib.IdSet (?),
+(
+    WITH
+      cte AS (
+        SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
+  )
+WHERE
+  id = ECInstanceId
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      |
+
+| i   |
+| --- |
+| 101 |
+| 104 |
+| 105 |
