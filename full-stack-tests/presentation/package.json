@@ -9,10 +9,9 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run -s copy:locale && tsc 1>&2",
+    "build": "tsc 1>&2",
     "build:watch": "npm run build -- -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:locale": "cpx \"./public/**/*\" ./lib/public",
     "docs": "npm run -s extract",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
