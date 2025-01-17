@@ -33,8 +33,8 @@ describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
     const realRace = Promise.race;
     // mock `Promise.race` to always reject
     const raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      (values as Array<Promise<any>>).splice(0, 0, Promise.reject(new Error()));
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/prefer-promise-reject-errors
+      (values as Array<Promise<any>>).splice(0, 0, Promise.reject("timeout"));
       return realRace.call(Promise, values);
     });
     try {
