@@ -123,7 +123,7 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ByteStream.nextFloat64` | `ByteStream.readFloat64`                                    |
 | `ByteStream.nextId64`    | `ByteStream.readId64`                                       |
 | `ByteStream.nextUint24`  | `ByteStream.readUint32`                                     |
-| `Id.next`                | `Id.getNext`                                                |
+| `TransientIdSequence.next`                | `TransientIdSequence.getNext`                                                |
 
 #### @itwin/appui-abstract
 
