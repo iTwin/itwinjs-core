@@ -1,6 +1,6 @@
 # IdSet Virtual Table
 
-`IdSet` is an ECSQl built in virtual table which takes in a valid JSON array string of hex or decimal ids and stores the ids as a virtual table. It can be used as an alternative to `InVirtualSet`.
+`IdSet` is an ECSQl built in virtual table which takes in a valid JSON array string of hex or decimal ids and stores the ids as a virtual table. It can be used as an alternative to `InVirtualSet`. The column retuned by `IdSet` virtual table will always be named `id` by default but can be aliased as per choice.
 
 ## Syntax
 

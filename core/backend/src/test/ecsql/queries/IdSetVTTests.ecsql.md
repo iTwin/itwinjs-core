@@ -1,5 +1,45 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
+# Testing returned values of IdSet virtual table
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id from ECVLib.IdSet(?)
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | id           | false     | 0     | id       | id   | Id           | long     | Id   | id                 |
+
+| id   |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
+# Testing returned values of IdSet virtual table with alias
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT id a from ECVLib.IdSet(?)
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | a            | true      | 0     | a        | a    | Id           | long     | Id   | id                 |
+
+| a    |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
 # Testing with hard coded json string with hex ids
 
 - dataset: AllProperties.bim
