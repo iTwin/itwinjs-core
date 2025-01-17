@@ -80,7 +80,6 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstan
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [0x15, 0x18, 0x19]
-- only: true
 
 ```sql
 SELECT e.i FROM aps.TestElement e INNER JOIN ECVLib.IdSet(?) v ON e.ECInstanceId = v.id
@@ -100,7 +99,6 @@ SELECT e.i FROM aps.TestElement e INNER JOIN ECVLib.IdSet(?) v ON e.ECInstanceId
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [0x15, 0x18, 0x19]
-- only: true
 
 ```sql
 SELECT
