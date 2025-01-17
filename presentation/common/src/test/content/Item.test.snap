@@ -6,7 +6,6 @@ Object {
     "key": "Kina",
   },
   "imageId": "70c6cab5-86c7-4d22-b010-6c0cf48d9662",
-  "inputKeys": undefined,
   "labelDefinition": Object {
     "displayValue": "pink",
     "rawValue": "pink",
@@ -26,7 +25,6 @@ Object {
     "key": "Keyboard",
   },
   "imageId": "0ea0e226-a243-44c2-83b1-e941fb2d30c8",
-  "inputKeys": undefined,
   "labelDefinition": Object {
     "displayValue": "Oregon",
     "rawValue": "Toys",
@@ -173,7 +171,6 @@ Array [
       "a": "B",
     },
     "imageId": "",
-    "inputKeys": undefined,
     "labelDefinition": Object {
       "displayValue": "",
       "rawValue": "",
@@ -195,7 +192,6 @@ Array [
       "c": "D",
     },
     "imageId": "",
-    "inputKeys": undefined,
     "labelDefinition": Object {
       "displayValue": "",
       "rawValue": "",
