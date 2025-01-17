@@ -6,26 +6,32 @@ publish: false
 
 Table of contents:
 
-- [Selection set](#selection-set)
-- [Font APIs](#font-apis)
-- [API deprecations](#api-deprecations)
-  - [@itwin/core-common](#itwincore-common)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-- [Breaking Changes](#breaking-changes)
-  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-  - [Updated minimum requirements](#updated-minimum-requirements)
-    - [Node.js](#nodejs)
-    - [Electron](#electron)
-    - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-backend](#itwincore-backend-1)
-    - [@itwin/core-electron](#itwincore-electron)
-  - [API removals](#api-removals)
-  - [Packages dropped](#packages-dropped)
-- [Change to pull/merge method](#change-to-pullmerge)
+- [NextVersion](#nextversion)
+  - [Selection set](#selection-set)
+  - [Font APIs](#font-apis)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/core-common](#itwincore-common)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+  - [Breaking Changes](#breaking-changes)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+    - [Updated minimum requirements](#updated-minimum-requirements)
+      - [Node.js](#nodejs)
+      - [Electron](#electron)
+      - [ECMAScript](#ecmascript)
+    - [Deprecated API removals](#deprecated-api-removals)
+      - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [@itwin/core-backend](#itwincore-backend-1)
+      - [@itwin/core-bentley](#itwincore-bentley)
+      - [@itwin/appui-abstract](#itwinappui-abstract-1)
+      - [@itwin/core-electron](#itwincore-electron)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-1)
+    - [Packages dropped](#packages-dropped)
+    - [Change to pullMerge](#change-to-pullmerge)
+      - [No pending/local changes](#no-pendinglocal-changes)
+      - [With pending/local changes](#with-pendinglocal-changes)
 
 ## Selection set
 
@@ -145,7 +151,7 @@ The following APIs have been removed in `@itwin/appui-abstract`.
 | `UiItemsApplicationAction`       | N/A                                                       |
 | `UiItemsManager`                 | `UiItemsManager` in `@itwin/appui-react`.                 |
 | `UiItemsProvider`                | `UiItemsProvider` in `@itwin/appui-react`.                |
-| `WidgetState`                    | `WidgetState` in `@itwin/appui-react`.     
+| `WidgetState`                    | `WidgetState` in `@itwin/appui-react`.
 
 #### @itwin/core-backend
 
@@ -157,6 +163,27 @@ The following APIs have been removed in `@itwin/appui-abstract`.
 | `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
+
+#### @itwin/core-bentley
+
+| Removed                    | Replacement                                                 |
+| -------------------------- | ----------------------------------------------------------- |
+| `ByteStream constructor`   | `ByteStream.fromUint8Array` or `ByteStream.fromArrayBuffer` |
+| `ByteStream.nextUint8`     | `ByteStream.readUint8`                                      |
+| `ByteStream.nextUint16`    | `ByteStream.readUint16`                                     |
+| `ByteStream.nextUint32`    | `ByteStream.readUint32`                                     |
+| `ByteStream.nextInt32`     | `ByteStream.readInt32`                                      |
+| `ByteStream.nextFloat32`   | `ByteStream.readFloat32`                                    |
+| `ByteStream.nextFloat64`   | `ByteStream.readFloat64`                                    |
+| `ByteStream.nextId64`      | `ByteStream.readId64`                                       |
+| `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
+| `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
+
+#### @itwin/appui-abstract
+
+| Removed                     | Replacement |
+| --------------------------- | ----------- |
+| `EditorPosition.columnSpan` | N/A         |
 
 #### @itwin/core-electron
 
@@ -192,7 +219,7 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | Removed                        | Replacement                                                                                                            |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
+| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
 
 ### Change to pullMerge
 
@@ -206,7 +233,7 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the *fastforward* method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
