@@ -4,7 +4,6 @@
 
 ```ts
 
-import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
@@ -1039,7 +1038,7 @@ export enum TimeDisplay {
 }
 
 // @public
-export interface ToolbarItem extends ProvidedItem {
+export interface ToolbarItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
     readonly description?: string | ConditionalStringValue;
@@ -1052,34 +1051,7 @@ export interface ToolbarItem extends ProvidedItem {
     readonly isPressed?: boolean;
     readonly itemPriority: number;
     readonly parentToolGroupId?: string;
-}
-
-// @internal
-export interface ToolbarItemsChangedArgs {
-    // (undocumented)
-    readonly items: ReadonlyArray<CommonToolbarItem>;
-}
-
-// @internal
-export class ToolbarItemsManager {
-    constructor(items?: ReadonlyArray<CommonToolbarItem>);
-    // (undocumented)
-    add(itemOrItems: CommonToolbarItem | ReadonlyArray<CommonToolbarItem>): void;
-    // (undocumented)
-    static getSyncIdsOfInterest(items: readonly CommonToolbarItem[]): string[];
-    get items(): ReadonlyArray<CommonToolbarItem>;
-    set items(items: ReadonlyArray<CommonToolbarItem>);
-    // (undocumented)
-    protected _items: ReadonlyArray<CommonToolbarItem>;
-    loadItems(items: ReadonlyArray<CommonToolbarItem>): void;
-    readonly onItemsChanged: BeEvent<(args: ToolbarItemsChangedArgs) => void>;
-    // (undocumented)
-    refreshAffectedItems(eventIds: Set<string>): void;
-    remove(itemIdOrItemIds: ToolbarItemId | ReadonlyArray<ToolbarItemId>): void;
-    // (undocumented)
-    removeAll(): void;
-    // (undocumented)
-    setActiveToolId(toolId: string): void;
+    readonly providerId?: string;
 }
 
 // @public

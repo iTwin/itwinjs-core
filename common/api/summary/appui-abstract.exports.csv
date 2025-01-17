@@ -113,8 +113,6 @@ public;class;SyncPropertiesChangeEvent
 public;interface;SyncPropertiesChangeEventArgs
 public;enum;TimeDisplay
 public;interface;ToolbarItem
-internal;interface;ToolbarItemsChangedArgs
-internal;class;ToolbarItemsManager
 public;class;ToolbarItemUtilities
 public;class;UiAdmin
 public;class;UiDataProvider
