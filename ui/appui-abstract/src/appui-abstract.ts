@@ -36,7 +36,6 @@ export * from "./appui-abstract/properties/Value";
 export * from "./appui-abstract/quantity/BaseQuantityDescription";
 
 export * from "./appui-abstract/toolbars/ToolbarItem";
-export * from "./appui-abstract/toolbars/ToolbarItemsManager";
 
 export * from "./appui-abstract/utils/callbacks";
 export * from "./appui-abstract/utils/misc";

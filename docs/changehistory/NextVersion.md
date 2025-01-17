@@ -107,80 +107,76 @@ The following previously-deprecated APIs have been removed:
 #### @itwin/appui-abstract
 
 The following APIs have been removed in `@itwin/appui-abstract`.
-For all the APIs that had __(*)__ in `Replacement` section, please use their equivalents in the `@itwin/appui-react` package __(the API name will be the same)__:
 
 ##### General APIs
-
-| Removed                     | Replacement                                                   |
-| --------------------------- | ------------------------------------------------------------- |
-| `AbstractZoneLocation`      | N/A                                                           |
-| `AllowedUiItemProviderOverrides` | *                                                       |
-| `BackstageItemType`         | Use `Type Guard` instead.                                     |
-| `BackstageItemsChangedArgs` | N/A                                                           |
-| `BackstageItemsManager`     | N/A                                                           |
-| `BaseUiItemsProvider`       | *                                                             |
-| `EditorPosition.columnSpan` | N/A                                                           |
-| `UiItemProviderRegisteredEventArgs` | *                                                       |
-| `UiItemProviderOverrides`   | *                                                             |
-| `UiItemsApplicationAction`  | N/A                                                           |
-| `UiItemsManager`            | *                                                             |
-| `UiItemsProvider`           | *                                                             |
-| `createSvgIconSpec`         | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
-| `getSvgSource`              | Use `IconSpecUtilities.getWebComponentSource()` instead.      |
-| `statusBarItemsManager`     | N/A (this is an internal API and not intended for external use) |
+| **Removed**                     | **Replacement**                                    |
+|----------------------------------|--------------------------------------------------|
+| `AllowedUiItemProviderOverrides` | `AllowedUiItemProviderOverrides` in `@itwin/appui-react` |
+| `BaseUiItemsProvider`            | `BaseUiItemsProvider` in `@itwin/appui-react`     |
+| `createSvgIconSpec`              | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
+| `getSvgSource`                   | Use `IconSpecUtilities.getWebComponentSource()` instead.      |
+| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react` |
+| `UiItemProviderOverrides`        | `UiItemProviderOverrides` in `@itwin/appui-react` |
+| `UiItemsApplicationAction`       | N/A                                              |
+| `UiItemsManager`                 | `UiItemsManager` in `@itwin/appui-react`         |
+| `UiItemsProvider`                | `UiItemsProvider` in `@itwin/appui-react`        |
 
 ##### Backstage APIs
 
-| Removed                 | Replacement                                                   |
-|-------------------------|---------------------------------------------------------------|
-| `BackstageActionItem`   | *                                                             |
-| `BackstageItem`         | *                                                             |
-| `BackstageItemUtilities`| *                                                             |
-| `BackstageStageLauncher`| *                                                             |
-| `CommonBackstageItem`   | *                                                             |
-| `isActionItem`          | Use `isBackstageActionItem` in `@itwin/appui-react` instead    |
-| `isStageLauncher`       | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead |
+| **Removed**                  | **Replacement**                                          |
+|-------------------------------|----------------------------------------------------------|
+| `BackstageActionItem`         | `BackstageActionItem` in `@itwin/appui-react`            |
+| `BackstageItem`               | `BackstageItem` in `@itwin/appui-react`                 |
+| `BackstageItemType`           | Use Type Guard instead.                                  |
+| `BackstageItemsChangedArgs`   | N/A                                                      |
+| `BackstageItemsManager`       | N/A                                                      |
+| `BackstageItemUtilities`      | `BackstageItemUtilities` in `@itwin/appui-react`         |
+| `BackstageStageLauncher`      | `BackstageStageLauncher` in `@itwin/appui-react`         |
+| `CommonBackstageItem`         | `CommonBackstageItem` in `@itwin/appui-react`            |
+| `isActionItem`                | Use `isBackstageActionItem` in `@itwin/appui-react` instead. |
+| `isStageLauncher`             | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead. |
 
 ##### Items API
 
-| Removed         | Replacement |
-|-----------------|-------------|
-| `ProvidedItem`  | *           |
-| `StageUsage`    | *           |
+| **Removed**     | **Replacement**                            |
+|-----------------|--------------------------------------------|
+| `ProvidedItem`  | `ProvidedItem` in `@itwin/appui-react`     |
+| `StageUsage`    | `StageUsage` in `@itwin/appui-react`       |
 
 ##### StatusBar APIs
 
-| Removed                         | Replacement                                                   |
-|---------------------------------|---------------------------------------------------------------|
-| `AbstractStatusBarActionItem`   | Use `StatusBarActionItem` in `@itwin/appui-react` instead      |
-| `AbstractStatusBarCustomItem`   | Use `StatusBarCustomItem` in `@itwin/appui-react` instead      |
-| `AbstractStatusBarItem`         | Use `CommonStatusBarItem` in `@itwin/appui-react` instead      |
-| `AbstractStatusBarItemUtilities`| Use `StatusBarItemUtilities` in `@itwin/appui-react` instead   |
-| `AbstractStatusBarLabelItem`    | Use `StatusBarLabelItem` in `@itwin/appui-react` instead       |
-| `CommonStatusBarItem`           | Use `StatusBarItem` in `@itwin/appui-react` instead            |
-| `isAbstractStatusBarActionItem` | Use `isStatusBarActionItem` in `@itwin/appui-react` instead    |
-| `isAbstractStatusBarCustomItem` | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead    |
-| `isAbstractStatusBarLabelItem`  | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead     |
-| `StatusBarItemId`               | Use `CommonStatusBarItem` in `@itwin/appui-react` instead      |
-| `StatusBarLabelSide`            | *                                                             |
-| `StatusBarSection`              | *                                                             |
+| **Removed**                         | **Replacement**                                           |
+|-------------------------------------|-----------------------------------------------------------|
+| `AbstractStatusBarActionItem`       | Use `StatusBarActionItem` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarCustomItem`       | Use `StatusBarCustomItem` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarItem`             | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarItemUtilities`    | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarLabelItem`        | Use `StatusBarLabelItem` in `@itwin/appui-react` instead. |
+| `CommonStatusBarItem`               | Use `StatusBarItem` in `@itwin/appui-react` instead.      |
+| `isAbstractStatusBarActionItem`     | Use `isStatusBarActionItem` in `@itwin/appui-react` instead. |
+| `isAbstractStatusBarCustomItem`     | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead. |
+| `isAbstractStatusBarLabelItem`      | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead. |
+| `StatusBarItemId`                   | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
+| `StatusBarLabelSide`                | `StatusBarLabelSide` in `@itwin/appui-react`              |
+| `StatusBarSection`                  | `StatusBarSection` in `@itwin/appui-react`               |
 
 ##### Toolbar APIs
 
-| Removed             | Replacement                            |
-|---------------------|----------------------------------------|
+| **Removed**         | **Replacement**                                  |
+|---------------------|--------------------------------------------------|
 | `ToolbarItemId`     | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead |
-| `ToolbarOrientation`| *                                      |
-| `ToolbarUsage`      | *                                      |
+| `ToolbarOrientation`| `ToolbarOrientation` in `@itwin/appui-react`    |
+| `ToolbarUsage`      | `ToolbarUsage` in `@itwin/appui-react`          |
+| `ToolbarManager`      | For replacement, check [here](https://www.itwinjs.org/ui/appui/provide-ui-items/#provide-toolbar-items)          |
 
 ##### Widget APIs
 
-| Removed                 | Replacement                              |
+| **Removed**                 | Replacement                              |
 |-------------------------|------------------------------------------|
 | `AbstractWidgetProps`   | Use `Widget` in `@itwin/appui-react` instead |
-| `StagePanelLocation`    | *                                        |
-| `StagePanelSection`     | *                                        |
-| `WidgetState`           | *                                        |
+| `StagePanelLocation`    | `StagePanelLocation` in `@itwin/appui-react` |
+| `StagePanelSection`     | `StagePanelSection` in `@itwin/appui-react`  |
+| `WidgetState`           | `WidgetState` in `@itwin/appui-react`        |
 
 #### @itwin/core-backend
 
