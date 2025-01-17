@@ -76,6 +76,52 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstan
 | 104 |
 | 105 |
 
+# Testing JOINS with IdSet
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- only: true
+
+```sql
+SELECT e.i FROM aps.TestElement e INNER JOIN ECVLib.IdSet(?) v ON e.ECInstanceId = v.id
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int  | i                  |
+
+| i   |
+| --- |
+| 101 |
+| 104 |
+| 105 |
+
+# Testing JOINS with IdSet and also select VirtualProp
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- only: true
+
+```sql
+SELECT
+  e.i,
+  v.id
+FROM
+  aps.TestElement e
+  INNER JOIN ECVLib.IdSet (?) v ON v.id = e.ECInstanceId
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int  | i                  |
+|                          | id           | false     | 1     | id       | id   | Id           | long     | Id   | id                 |
+
+| i   | id   |
+| --- | ---- |
+| 101 | 0x15 |
+| 104 | 0x18 |
+| 105 | 0x19 |
+
 # Testing by binding with hex ids
 
 - dataset: AllProperties.bim
