@@ -112,9 +112,14 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 
 #### @itwin/core-common
 
-| Removed                        | Replacement         |
-| ------------------------------ | ------------------- |
-| `CodeSpec.isManagedWithIModel` | `CodeSpec.scopeReq` |
+| Removed                                        | Replacement                       |
+| ---------------------------------------------- | --------------------------------- |
+| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`               |
+| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`       |
+| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`       |
+| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`       |
+| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString` |
+| `TerrainProviderName`                          | N/A                               |
 
 #### @itwin/appui-abstract
 
