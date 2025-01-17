@@ -145,13 +145,10 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * to `value`.
    * * Get an initial estimate by proportions of `value` and the first and last entries.
    * * Linear search from there for final value.
-   * * For regularly spaced numbers (e.g. data is the _facetStart indices for a triangulated mesh) the proportional
-   * estimate will be immediately correct.
+   * * For regularly spaced numbers (e.g., `data` is the `_facetStart` indices for a triangulated mesh or a quad mesh),
+   * the proportional estimate will be immediately correct.
    */
-  public static searchMonotoneNumbers(data: number[], value: number): number | undefined {
-    // _facetStart is monotone increasing.
-    // It is commonly entirely steps of 3, 4, or 3 and 4.
-    // Hence jump to a start by simple proportion, and move incrementally
+  public static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined {
     const lastQ = data.length - 1;
     if (lastQ <= 0 || value < 0 || value >= data[lastQ])
       return undefined;
@@ -166,7 +163,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public edgeIndexToFacetIndex(k: number | undefined): number | undefined {
     if (k === undefined)
       return undefined;
-    return IndexedPolyface.searchMonotoneNumbers(this._facetStart, k);
+    return IndexedPolyface.searchStrictlyIncreasingNumbers(this._facetStart, k);
   }
   /**
    * Given an edgeIndex (index into `data.pointIndex`), return the range of the edgeIndices of the containing facet.
@@ -617,11 +614,17 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return 0;
   }
   /** Given a valid facet index, return the index at which its face loop starts in the index arrays. */
-  public facetIndex0(facetIndex: number): number { return this._facetStart[facetIndex]; }
+  public facetIndex0(facetIndex: number): number {
+    return this._facetStart[facetIndex];
+  }
   /** Given a valid facet index, return one past the index at which its face loop ends in the index arrays. */
-  public facetIndex1(facetIndex: number): number { return this._facetStart[facetIndex + 1]; }
+  public facetIndex1(facetIndex: number): number {
+    return this._facetStart[facetIndex + 1];
+  }
   /** create a visitor for this polyface */
-  public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor { return IndexedPolyfaceVisitor.create(this, numWrap); }
+  public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor {
+    return IndexedPolyfaceVisitor.create(this, numWrap);
+  }
   /** Return the range of (optionally transformed) points in this mesh. */
   public override range(transform?: Transform, result?: Range3d): Range3d {
     return this.data.range(result, transform);

@@ -12,7 +12,7 @@
  * * Fixed entry positions are:
  *   * [0] is start vertex index (in CCW order around its facet)
  *   * [1] is end vertex index (in CCW order around its facet)
- *   * [2] is "facet index".
+ *   * [2] is facet index (or another number to associate with this edge).
  */
 export class SortableEdge extends Float64Array {
   /** Return the vertex index that appears first in the order stored.  */

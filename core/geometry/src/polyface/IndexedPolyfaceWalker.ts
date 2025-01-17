@@ -21,7 +21,7 @@ import { IndexedPolyface } from "./Polyface";
  *   * `walker = IndexedPolyfaceWalker.createAtFacetIndex(polyface, facetIndex, offsetWithinFacet)`
  *   * `walker = IndexedPolyfaceWalker.createAtEdgeIndex(polyface, edgeIndex)`
  *   * `walker = IndexedPolyfaceWalker.createAtVisitor(visitor, offsetWithinFacet)`
- * * Once you have a walker object, you can traverse the face, edge, and vertex loops it references. For
+ * * Once you have a walker object, you can traverse the facet, edge, and vertex loops it references. For
  * example, if `walker.edgeIndex === A`, referring to the right edge of the upper left facet pictured below, then
  * the following are true:
  *   * `walker.nextAroundFacet().edgeIndex === B`
@@ -29,9 +29,23 @@ import { IndexedPolyface } from "./Polyface";
  *   * `walker.edgeMate().edgeIndex === F`
  *   * `walker.nextAroundVertex().edgeIndex === E`
  *   * `walker.previousAroundVertex().edgeIndex === D`
- * * When facets are viewed so that the face loops stored in the [[PolyfaceData]] `pointIndex` array have
+* ```
+ *      # --------- # --------- #
+ *      |   < < < B | F         |
+ *      |         ^ | v         |
+ *      |         ^ | v         |
+ *      |         ^ | v         |
+ *      | C > > > A | D > > >   |
+ *      # --------- # --------- #
+ *      |   < < < E |           |
+ *      |           |           |
+ *      |           |           |
+ *      |           |           |
+ *      # --------- # --------- #
+ * ```
+* * When facets are viewed so that the face loops stored in the [[PolyfaceData]] `pointIndex` array have
  * counterclockwise ordering, an edge "from A to B" has facet area to the left and the edge to the right. Likewise,
- * the edges "out of" locations B, C, E, F, D are directed as depicted below.
+ * the edges "out of" locations B, C, E, F, D are directed as depicted above.
  * * With this conventional counterclockwise ordering of face loops, "next" is counterclockwise, and "previous" is
  * clockwise:
  *   * The [[nextAroundFacet]] step is counterclockwise around the facet.
@@ -46,29 +60,15 @@ import { IndexedPolyface } from "./Polyface";
  * returns false. Traversal operations on an invalid walker return an invalid walker.
  *   * Invalid walkers are expected during traversals of a mesh with boundary edges, so calling code must be prepared.
  * Boundary edges have exactly one adjacent facet, so for these edges the `edgeMate` step returns an invalid walker.
- * In the diagram below, the `edgeMate` of boundary edge B is undefined.
+ * In the diagram above, the `edgeMate` of boundary edge B is undefined.
  *   * Invalid walkers can occur while traversing boundary vertices as well. If an edge lacks an `edgeMate`, then the
  * `previousAroundVertex` step yields an invalid walker, because `previousAroundVertex` is implemented as `edgeMate`
- * followed by `nextAroundFacet`. In the diagram below, the `previousAroundVertex` step at boundary edge B yields
+ * followed by `nextAroundFacet`. In the diagram above, the `previousAroundVertex` step at boundary edge B yields
  * undefined walker. Similarly, the `nextAroundVertex` step at edge F yields undefined walker.
  *   * Invalid walkers can also occur while traversing a non-manifold mesh. Such meshes feature edge(s) with more than
  * two adjacent facets, or with two adjacent facets that have opposite orientations. These meshes are uncommon, and
  * usually indicate a construction problem.
  * * See [[buildEdgeMateIndices]] for further description of the topological relations.
- * ```
- *      # --------- # --------- #
- *      |   < < < B | F         |
- *      |         ^ | v         |
- *      |         ^ | v         |
- *      |         ^ | v         |
- *      | C > > > A | D > > >   |
- *      # --------- # --------- #
- *      |   < < < E |           |
- *      |           |           |
- *      |           |           |
- *      |           |           |
- *      # --------- # --------- #
- * ```
  * @public
  */
 export class IndexedPolyfaceWalker {
@@ -86,15 +86,21 @@ export class IndexedPolyfaceWalker {
    * * This is an index into the polyface's `data.pointIndex` array.
    * * Can be undefined.
    */
-  public get edgeIndex(): number | undefined { return this._edgeIndex; }
+  public get edgeIndex(): number | undefined {
+    return this._edgeIndex;
+  }
 
   /** Return the polyface of this walker. */
-  public get polyface(): IndexedPolyface | undefined { return this._polyface; }
+  public get polyface(): IndexedPolyface | undefined {
+    return this._polyface;
+  }
   /**
    * Return true if the walker's edgeIndex is defined.
    * * This method is the opposite of [[isUndefined]].
    */
-  public get isValid(): boolean { return this._edgeIndex !== undefined; }
+  public get isValid(): boolean {
+    return this._edgeIndex !== undefined;
+  }
   /**
    * Return true if the walker's edgeIndex is undefined.
    * * This method is the opposite of [[isValid]].
@@ -102,7 +108,9 @@ export class IndexedPolyfaceWalker {
    * `w.edgeMate(w).isUndefined === true`.
    * * This can also happen when methods that return a walker receive invalid input.
    */
-  public get isUndefined(): boolean { return this._edgeIndex === undefined; }
+  public get isUndefined(): boolean {
+    return this._edgeIndex === undefined;
+  }
   /**
    * Create a walker for a given polyface at an optional edge.
    * @param polyface reference to the client polyface. This reference is captured (the polyface is not copied).
