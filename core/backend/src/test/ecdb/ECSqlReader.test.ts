@@ -7,7 +7,7 @@ import { DbResult, using } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../core-backend";
 import { ECDb } from "../../ECDb";
-import { ECSqlStatement } from "../../ECSqlStatement";
+import { ECSqlStatement, ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -56,7 +56,7 @@ describe("ECSqlReader", (() => {
         </ECSchema>`), async (ecdb: ECDb) => {
         assert.isTrue(ecdb.isOpen);
 
-        const r = await ecdb.withStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withWriteStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlWriteStatement) => {
           return stmt.stepForInsert();
         });
         ecdb.saveChanges();
