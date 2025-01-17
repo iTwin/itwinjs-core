@@ -24,7 +24,6 @@ Table of contents:
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
       - [@itwin/core-bentley](#itwincore-bentley)
-      - [@itwin/appui-abstract](#itwinappui-abstract-1)
       - [@itwin/core-electron](#itwincore-electron)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-1)
