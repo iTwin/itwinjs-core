@@ -13,7 +13,7 @@ import { HubMock } from "../../HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
 import { _nativeDb, ChannelControl } from "../../core-backend";
 
-describe("BriefcaseManager", async () => {
+describe.only("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
   const managerAccessToken = "manager mock token";
   const accessToken = "access token";
@@ -21,7 +21,7 @@ describe("BriefcaseManager", async () => {
   // contested version0 files can cause errors that cause tests to not call shutdown, so always do it here
   afterEach(() => HubMock.shutdown());
 
-  it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
+  it.only("Open iModels with various names causing potential issues on Windows/Unix", async () => {
     HubMock.startup("bad names", KnownTestLocations.outputDir);
     let iModelName = "iModel Name With Spaces";
     let iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);

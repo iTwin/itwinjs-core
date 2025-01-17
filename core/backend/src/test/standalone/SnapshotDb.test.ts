@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
-import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
+import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
@@ -162,18 +162,4 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     expect(errorLogStub.callCount).equal(0);
   });
 
-  it("should not refreshContainer if SnapshotDb is not a checkpoint", async () => {
-    const clock = sinon.useFakeTimers();
-    clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
-    sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
-    sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
-    sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
-
-    const snapshot = V1CheckpointManager.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
-    const nowStub = sinon.stub(Date, "now");
-    await snapshot.refreshContainerForRpc("");
-    snapshot.close();
-    expect(nowStub.called).to.be.false;
-  });
 });

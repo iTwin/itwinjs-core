@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointManager, V1CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
@@ -171,21 +171,8 @@ export class RpcBriefcaseUtility {
       db = await SnapshotDb.openCheckpointFromRpc(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint", tokenProps);
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", { error: BentleyError.getErrorProps(e), ...tokenProps });
-
-      // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
-      const request = {
-        checkpoint,
-        localFile: V1CheckpointManager.getFileName(checkpoint),
-        aliasFiles: [],
-      };
-      db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
-
-      if (db === undefined) {
-        Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", tokenProps);
-        throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
-      }
-      Logger.logTrace(loggerCategory, "Opened V1 checkpoint", tokenProps);
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint", { error: BentleyError.getErrorProps(e), ...tokenProps });
+      throw e;
     }
 
     return db;
