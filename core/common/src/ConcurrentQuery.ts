@@ -78,6 +78,7 @@ export interface DbRuntimeStats {
   timeLimit: number;
   memLimit: number;
   memUsed: number;
+  prepareTime: number;
 }
 
 /**
@@ -741,8 +742,21 @@ export interface DbRequestExecutor<TRequest extends DbRequest, TResponse extends
 /** @internal */
 export interface DbQueryConfig {
   globalQuota?: QueryQuota;
+  /** For testing */
   ignoreDelay?: boolean;
+  /** Priority of request is ignored */
   ignorePriority?: boolean;
+  /** Max queue size after which queries are rejected with error QueueFull */
   requestQueueSize?: number;
+  /** Number of worker thread, default to 4 */
   workerThreads?: number;
+  doNotUsePrimaryConnToPrepare?: boolean;
+  /** After no activity for given time concurrenty query will automatically shutdown */
+  autoShutdowWhenIdealForSeconds?: number;
+  /** Maximum number of statement cache per worker. Default to 40 */
+  statementCacheSizePerWorker?: number;
+  /* Monitor poll interval in milliseconds. Its responsable for cancelling queries that pass quota. It can be set between 1000 and Max time quota for query */
+  monitorPollInterval?: number;
+  /** Set memory map io for each worker connection size in bytes. Default to zero mean do not use mmap io */
+  memoryMapFileSize?: number;
 }
