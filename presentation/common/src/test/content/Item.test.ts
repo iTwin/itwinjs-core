@@ -65,16 +65,23 @@ describe("Item", () => {
 
     it("creates valid Item from JSON with inputKeys", () => {
       const inputKey = createTestECInstanceKey();
-      const item = Item.fromJSON({
-        primaryKeys: [],
+      const item = createTestContentItem({
         inputKeys: [inputKey],
-        labelDefinition: createRandomLabelDefinition(),
-        imageId: "",
         values: {},
         displayValues: {},
-        mergedFieldNames: [],
       });
-      expect(item?.inputKeys).to.deep.eq([inputKey]);
+      expect(item.inputKeys).to.deep.eq([inputKey]);
+    });
+
+    it("creates valid Item from JSON with extended data", () => {
+      const item = createTestContentItem({
+        extendedData: {
+          x: 123,
+        },
+        values: {},
+        displayValues: {},
+      });
+      expect(item.extendedData).to.deep.eq({ x: 123 });
     });
 
     it("creates valid Item with null values", () => {
