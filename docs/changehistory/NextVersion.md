@@ -116,6 +116,7 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`       |
 | `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString` |
 | `TerrainProviderName`                          | N/A                               |
+| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`        |
 
 #### @itwin/core-bentley
 
