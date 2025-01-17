@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "5.0.0-dev.40",
+  "version": "5.0.0-dev.43",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",

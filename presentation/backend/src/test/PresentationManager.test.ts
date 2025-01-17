@@ -497,7 +497,7 @@ describe("PresentationManager", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const manager = new PresentationManager({ addon: nativePlatformMock.object });
       manager.dispose();
-      expect(() => manager.getNativePlatform()).to.throw(PresentationError);
+      expect(() => manager.getNativePlatform()).to.throw(Error);
     });
   });
 

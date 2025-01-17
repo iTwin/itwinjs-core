@@ -1004,7 +1004,7 @@ export class ExtensiveTestScenario {
     const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
-    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, PlanProjectionSettings.fromJSON({ elevation: 10.0 }));
     displayStyle3d.settings.environment = Environment.fromJSON({
       sky: {
         image: {
