@@ -140,11 +140,10 @@ export enum ItemField {
 export enum KeyinStatus {
   Dynamic = 0,
   Partial = 1,
-  DontUpdate = 2,
 }
 
 const enum Constants { // eslint-disable-line no-restricted-syntax
-  MAX_SAVED_VALUES = 20,
+  MAX_SAVED_VALUES = 10,
   SMALL_ANGLE = 1.0e-12,
   SMALL_DELTA = 0.00001,
 }
@@ -206,13 +205,6 @@ export class SavedState {
   public fixedOrg = false;
   public ignoreDataButton = true; // By default the data point that terminates a view tool or input collector should be ignored...
   public ignoreFlags: AccuDrawFlags = 0;
-}
-
-/** @internal */
-class SavedCoords {
-  public nSaveValues = 0;
-  public readonly savedValues: number[] = [];
-  public readonly savedValIsAngle: boolean[] = [];
 }
 
 /** @internal */
@@ -298,7 +290,10 @@ export class AccuDraw {
   public readonly savedStateViewTool = new SavedState(); // Restore point for shortcuts/tools...
   /** @internal */
   public readonly savedStateInputCollector = new SavedState(); // Restore point for shortcuts/tools...
-  private readonly _savedCoords = new SavedCoords(); // History of previous angles/distances...
+  private readonly _savedDistances: number[] = []; // History of previous distances...
+  private readonly _savedAngles: number[] = []; // History of previous angles...
+  private _savedDistanceIndex = -1; // Current saved distance index for choosing next/previous value...
+  private _savedAngleIndex = -1; // Current saved distance index for choosing next/previous value...
   /** @internal */
   public readonly baseAxes = new ThreeAxes(); // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
   /** @internal */
@@ -395,6 +390,8 @@ export class AccuDraw {
   public getFieldLock(index: ItemField): boolean { return this._fieldLocked[index]; }
   /** @internal */
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
+  /** Get the current keyin status for the supplied input field */
+  public isDynamicKeyinStatus(index: ItemField): boolean { return KeyinStatus.Dynamic === this.getKeyinStatus(index) }
 
   /** Get whether AccuDraw currently has input focus */
   public get hasInputFocus() { return true; }
@@ -448,11 +445,16 @@ export class AccuDraw {
 
   /** @internal */
   public setKeyinStatus(index: ItemField, status: KeyinStatus): void {
+    if (status === this._keyinStatus[index])
+      return;
+
     this._keyinStatus[index] = status;
     if (KeyinStatus.Dynamic !== status)
       this.dontMoveFocus = true;
     if (KeyinStatus.Partial === status)
       this._threshold = Math.abs(ItemField.X_Item === index ? this._rawDelta.y : this._rawDelta.x) + this._tolerance;
+
+    this.onFieldKeyinStatusChange(index);
   }
 
   private needsRefresh(vp: Viewport): boolean {
@@ -1026,7 +1028,7 @@ export class AccuDraw {
   private updateVector(angle: number): void {
     this.vector.set(Math.cos(angle), Math.sin(angle), 0.0);
     const rMatrix = this.getRotation();
-    rMatrix.multiplyTransposeVector(this.vector);
+    rMatrix.multiplyTransposeVectorInPlace(this.vector);
   }
 
   /** Allow the AccuDraw user interface to supply the distance parser */
@@ -1272,18 +1274,54 @@ export class AccuDraw {
     return (!IModelApp.toolAdmin.gridLock);
   }
 
+  /** Call from an AccuDraw UI event to check if key is valid input */
+  protected itemFieldInputIsValid(key: string, item: ItemField): boolean {
+    if (1 !== key.length)
+      return false;
+
+    switch (key) {
+      case ".":
+      case ",":
+        return true;
+
+      case "'": // feet/minutes...
+      case "\"": // inches/seconds...
+        return true;
+
+      case "°": // degrees...
+        return (ItemField.ANGLE_Item === item); // Allowed for angle input...
+
+      case "N":
+      case "S":
+      case "E":
+      case "W":
+      case "n":
+      case "s":
+      case "e":
+      case "w":
+        return (ItemField.ANGLE_Item === item && this.isBearingMode); // Allowed for bearing direction input, trumps shortcuts...
+    }
+
+    if (!Number.isNaN(parseInt(key, 10)))
+      return true;
+
+    if (key.toLowerCase() !== key.toUpperCase())
+      return false; // Treat unhandled letters as potential shortcuts...
+
+    // Let parser deal with anything else, like +-/*, etc.
+    return true;
+  }
+
   /** Call from an AccuDraw UI event to sync the supplied input field value */
   public async processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void> {
     if (BentleyStatus.SUCCESS !== this.updateFieldValue(index, input)) {
-      const saveKeyinStatus = this._keyinStatus[index]; // Don't want this to change when entering '.', etc.
-      this.updateFieldLock(index, false);
-      this._keyinStatus[index] = saveKeyinStatus;
+      this._unlockFieldInternal(index); // Don't want keyin status to change when entering '.', etc.
       return;
     }
 
     switch (index) {
       case ItemField.DIST_Item:
-        this.distanceLock(synchText, true);
+        this.distanceLock(synchText, false); // Don't save distance here, partial input...
         await this.doAutoPoint(index, CompassMode.Polar);
         break;
 
@@ -1323,36 +1361,35 @@ export class AccuDraw {
     this.refreshDecorationsAndDynamics();
   }
 
-  /** @internal */
-  public updateFieldLock(index: ItemField, locked: boolean): void {
-    if (locked) {
-      if (!this._fieldLocked[index]) {
-        this.setFieldLock(index, true);
-
-        switch (index) {
-          case ItemField.DIST_Item:
-            this.distanceLock(true, false);
-            break;
-
-          case ItemField.ANGLE_Item:
-            this.angleLock();
-            break;
-
-          case ItemField.X_Item:
-            this.locked |= LockedStates.X_BM;
-            break;
-
-          case ItemField.Y_Item:
-            this.locked |= LockedStates.Y_BM;
-            break;
-
-          case ItemField.Z_Item:
-            break;
-        }
-      }
+  private _lockFieldInternal(index: ItemField): void {
+    if (this._fieldLocked[index])
       return;
-    }
 
+    this.setFieldLock(index, true);
+
+    switch (index) {
+      case ItemField.DIST_Item:
+        this.distanceLock(true, false);
+        break;
+
+      case ItemField.ANGLE_Item:
+        this.angleLock();
+        break;
+
+      case ItemField.X_Item:
+        this.locked |= LockedStates.X_BM;
+        break;
+
+      case ItemField.Y_Item:
+        this.locked |= LockedStates.Y_BM;
+        break;
+
+      case ItemField.Z_Item:
+        break;
+    }
+  }
+
+  private _unlockFieldInternal(index: ItemField): void {
     switch (index) {
       case ItemField.DIST_Item:
         this.locked &= ~LockedStates.DIST_BM;
@@ -1373,7 +1410,16 @@ export class AccuDraw {
 
     if (index !== ItemField.Z_Item || !this.stickyZLock)
       this.setFieldLock(index, false);
+  }
 
+  /** @internal */
+  public updateFieldLock(index: ItemField, locked: boolean): void {
+    if (locked) {
+      this._lockFieldInternal(index);
+      return;
+    }
+
+    this._unlockFieldInternal(index);
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
@@ -1555,37 +1601,135 @@ export class AccuDraw {
     } else {
       this.locked &= ~LockedStates.ANGLE_BM;
       this.saveCoordinate(ItemField.ANGLE_Item, this._angle);
+      this.setKeyinStatus(ItemField.ANGLE_Item, KeyinStatus.Dynamic);
     }
+  }
+
+  private saveAngle(value: number): void {
+    if (Geometry.isAlmostEqualNumber(value, 0.0) || Geometry.isAlmostEqualNumber(Math.abs(value), Math.PI) || Geometry.isAlmostEqualNumber(Math.abs(value), (Math.PI / 2.0)))
+      return; // Don't accept 0, 90, -90, 180 and -180 degrees...
+
+    const foundIndex = this._savedAngles.findIndex(angle => Geometry.isAlmostEqualNumber(angle, value));
+    if (-1 !== foundIndex) {
+      this._savedAngleIndex = foundIndex; // Set index to existing entry with matching value...
+      return;
+    }
+
+    this._savedAngleIndex++;
+    if (this._savedAngleIndex >= Constants.MAX_SAVED_VALUES)
+      this._savedAngleIndex = 0;
+
+    this._savedAngles[this._savedAngleIndex] = value;
+  }
+
+  private saveDistance(value: number): void {
+    if (Geometry.isAlmostEqualNumber(value, 0.0))
+      return; // Don't accept zero or nearly zero...
+
+    value = Math.abs(value); // Only save positive distance...
+    const foundIndex = this._savedDistances.findIndex(distance => Geometry.isAlmostEqualNumber(distance, value));
+    if (-1 !== foundIndex) {
+      this._savedDistanceIndex = foundIndex; // Set index to existing entry with matching value...
+      return;
+    }
+
+    this._savedDistanceIndex++;
+    if (this._savedDistanceIndex >= Constants.MAX_SAVED_VALUES)
+      this._savedDistanceIndex = 0;
+
+    this._savedDistances[this._savedDistanceIndex] = value;
+    this._lastDistance = value;
   }
 
   /** @internal */
   public saveCoordinate(index: ItemField, value: number): void {
-    const isAngle = (ItemField.ANGLE_Item === index);
-    let currIndex = this._savedCoords.nSaveValues + 1;
+    if (ItemField.ANGLE_Item === index)
+      this.saveAngle(value);
+    else
+      this.saveDistance(value);
+  }
 
-    if (currIndex >= Constants.MAX_SAVED_VALUES)
-      currIndex = 0;
+  private getSavedAngle(next: boolean): number | undefined {
+    if (-1 === this._savedAngleIndex || 0 === this._savedAngles.length)
+      return undefined;
 
-    if (this._savedCoords.savedValues[this._savedCoords.nSaveValues] === value && this._savedCoords.savedValIsAngle[this._savedCoords.nSaveValues] === isAngle)
-      return;
+    const value = this._savedAngles[this._savedAngleIndex];
 
-    if (isAngle) {
-      // don't accept 0, 90, -90, and 180 degrees
-      if (value === 0.0 || value === Math.PI || value === (Math.PI / 2.0) || value === -Math.PI)
-        return;
-    } else {
-      // don't accept zero
-      value = Math.abs(value);
-      if (value < Constants.SMALL_ANGLE)
-        return;
+    if (next) {
+      this._savedAngleIndex++;
+      if (this._savedAngleIndex >= this._savedAngles.length)
+        this._savedAngleIndex = 0;
+    }
+    else {
+      this._savedAngleIndex--;
+      if (this._savedAngleIndex < 0)
+        this._savedAngleIndex = this._savedAngles.length - 1;
     }
 
-    this._savedCoords.savedValues[currIndex] = value;
-    this._savedCoords.savedValIsAngle[currIndex] = isAngle;
-    this._savedCoords.nSaveValues = currIndex;
+    return value;
+  }
+
+  private getSavedDistance(next: boolean): number | undefined {
+    if (-1 === this._savedDistanceIndex || 0 === this._savedDistances.length)
+      return undefined;
+
+    const value = this._savedDistances[this._savedDistanceIndex];
+
+    if (next) {
+      this._savedDistanceIndex++;
+      if (this._savedDistanceIndex >= this._savedDistances.length)
+        this._savedDistanceIndex = 0;
+    }
+    else {
+      this._savedDistanceIndex--;
+      if (this._savedDistanceIndex < 0)
+        this._savedDistanceIndex = this._savedDistances.length - 1;
+    }
+
+    return value;
+  }
+
+  /** @internal */
+  public getSavedValue(index: ItemField, next: boolean): void {
+    const isAngle = (ItemField.ANGLE_Item === index);
+    const savedValue = (isAngle ? this.getSavedAngle(next) : this.getSavedDistance(next));
+    if (undefined === savedValue)
+      return;
 
     if (!isAngle)
-      this._lastDistance = value;
+      this._lastDistance = savedValue;
+
+    const currValue = this.getValueByIndex(index);
+    this.setValueByIndex(index, currValue < 0.0 ? -savedValue : savedValue);
+
+    switch (index) {
+      case ItemField.X_Item:
+        this.setFieldLock(ItemField.X_Item, true);
+        this.onFieldValueChange(ItemField.X_Item);
+        this.locked |= LockedStates.X_BM;
+        break;
+
+      case ItemField.Y_Item:
+        this.setFieldLock(ItemField.Y_Item, true);
+        this.onFieldValueChange(ItemField.Y_Item);
+        this.locked |= LockedStates.Y_BM;
+        break;
+
+      case ItemField.Z_Item:
+        this.setFieldLock(ItemField.Z_Item, true);
+        this.onFieldValueChange(ItemField.Z_Item);
+        break;
+
+      case ItemField.DIST_Item:
+        this.distanceLock(true, false);
+        break;
+
+      case ItemField.ANGLE_Item:
+        this.locked &= ~LockedStates.XY_BM;
+        this.updateVector(this._angle);
+        this.angleLock();
+        break;
+    }
   }
 
   /** @internal */
@@ -2273,6 +2417,8 @@ export class AccuDraw {
   public onFieldLockChange(_index: ItemField) { }
   /** Called after input field value changes */
   public onFieldValueChange(_index: ItemField) { }
+  /** Called after input field keyin status changes */
+  public onFieldKeyinStatusChange(_index: ItemField) { }
   /** Called to request focus change to the specified input field */
   public setFocusItem(_index: ItemField) { }
 
@@ -2914,7 +3060,7 @@ export class AccuDraw {
     if (this.flags.dialogNeedsUpdate || !this.isActive) {
       if (this.isActive && this.smartKeyin) {
         // NOTE: fixPointRectangular sets newFocus to either x or y based on which axis is closer to the input point...
-        if (CompassMode.Rectangular === this.compassMode && !this.dontMoveFocus && !this.getFieldLock(this.newFocus))
+        if (CompassMode.Rectangular === this.compassMode && !this.dontMoveFocus && !this.getFieldLock(this.newFocus) && this.hasInputFocus)
           this.setFocusItem(this.newFocus);
       }
 
