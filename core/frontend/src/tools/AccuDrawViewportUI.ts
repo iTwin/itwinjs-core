@@ -35,10 +35,14 @@ export class AccuDrawViewportUI extends AccuDraw {
     suspendLocateToolTip: true,
     /** Show controls at a fixed location in the view (currently bottom middle) instead of following the cursor. */
     fixedLocation: false,
+    /** Layout controls in a single row horizontally instead of in columns vertically as an option when using fixed location. */
+    horizontalArrangement: false,
     /** Number of visible characters to show in text input fields. */
     fieldSize: 12,
-    /** Vertical spacing of text input fields. */
+    /** Row spacing of text input fields for vertical arrangement. */
     rowSpacingFactor: 1.2,
+    /** Column spacing of text input fields and buttons for horizontal arrangement. */
+    columnSpacingFactor: 1.1,
     /** Corner radius of text input fields and locks buttons. */
     borderRadius: "0.5em",
     /** Background color of unfocused text input fields and unlocked buttons. */
@@ -490,22 +494,27 @@ export class AccuDrawViewportUI extends AccuDraw {
     if (undefined === this.controls) {
       const overlay = vp.addNewDiv("accudraw-overlay", true, 35);
       const div = this.createControlDiv();
+      const is3dLayout = vp.view.is3d();
+      const isHorizontalLayout = AccuDrawViewportUI.controlProps.horizontalArrangement;
 
       overlay.appendChild(div);
 
       const createFieldAndLock = (item: ItemField) => {
         const itemField = itemFields[item] = this.createItemField(item);
-        itemField.style.top = `${rowOffset}px`;
-        itemField.style.left = "0";
+        itemField.style.top = isHorizontalLayout ? "0" : `${rowOffset}px`;
+        itemField.style.left = isHorizontalLayout ? `${columnOffset}px` : "0";
 
         div.appendChild(itemField);
 
-        rowOffset += itemField.offsetHeight * AccuDrawViewportUI.controlProps.rowSpacingFactor;
+        if (is3dLayout || ItemField.Z_Item !== item)
+          rowOffset += itemField.offsetHeight * AccuDrawViewportUI.controlProps.rowSpacingFactor;
+
         itemWidth = itemField.offsetWidth;
+        itemHeight = itemField.offsetHeight;
 
         const itemLock = itemLocks[item] = this.createItemFieldLock(item);
         itemLock.style.top = itemField.style.top;
-        itemLock.style.left = `${itemWidth}px`;
+        itemLock.style.left = isHorizontalLayout ? `${columnOffset + itemWidth}px` : `${itemWidth}px`;
 
         div.appendChild(itemLock);
 
@@ -513,10 +522,15 @@ export class AccuDrawViewportUI extends AccuDraw {
           lockWidth = itemLock.offsetWidth;
         else
           itemLock.style.width = `${lockWidth}px`;
+
+        if (is3dLayout || ItemField.Z_Item !== item)
+          columnOffset += (itemWidth + lockWidth) * AccuDrawViewportUI.controlProps.columnSpacingFactor;
       };
 
       let rowOffset = 0;
+      let columnOffset = 0;
       let itemWidth = 0;
+      let itemHeight = 0;
       let lockWidth = 0;
 
       const itemFields: HTMLInputElement[] = [];
@@ -526,12 +540,14 @@ export class AccuDrawViewportUI extends AccuDraw {
       createFieldAndLock(ItemField.ANGLE_Item);
 
       rowOffset = 0;
+      columnOffset = 0;
+
       createFieldAndLock(ItemField.X_Item);
       createFieldAndLock(ItemField.Y_Item);
       createFieldAndLock(ItemField.Z_Item); // Both polar and rectangular modes support Z in 3d views...
 
-      div.style.width = `${itemWidth + lockWidth + 5}px`;
-      div.style.height = `${rowOffset}px`;
+      div.style.width = isHorizontalLayout ? `${columnOffset}px` : `${itemWidth + lockWidth + 5}px`;
+      div.style.height = isHorizontalLayout ? `${itemHeight * AccuDrawViewportUI.controlProps.rowSpacingFactor}px` : `${rowOffset}px`;
 
       this.controls = { overlay, div, itemFields, itemLocks };
       this.updateControlVisibility(CompassMode.Polar === this.compassMode, vp.view.is3d());
