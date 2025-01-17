@@ -114,7 +114,7 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 
 | Removed                  | Replacement                                                 |
 | ------------------------ | ----------------------------------------------------------- |
-| `ByteStream.ByteStream`  | `ByteStream.fromUint8Array` or `ByteStream.fromArrayBuffer` |
+| `ByteStream constructor`  | `ByteStream.fromUint8Array` or `ByteStream.fromArrayBuffer` |
 | `ByteStream.nextUint8`   | `ByteStream.readUint8`                                      |
 | `ByteStream.nextUint16`  | `ByteStream.readUint16`                                     |
 | `ByteStream.nextUint32`  | `ByteStream.readUint32`                                     |
