@@ -19,11 +19,7 @@ Table of contents:
     - [Node.js](#nodejs)
     - [Electron](#electron)
     - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/core-backend](#itwincore-backend-1)
-    - [@itwin/core-common](#itwincore-common-1)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-electron](#itwincore-electron)
+  - [Deprecated API removals](#deprecated-api-removals) - [@itwin/core-backend](#itwincore-backend-1) - [@itwin/core-common](#itwincore-common-1) - [@itwin/core-bentley](#itwincore-bentley) - [@itwin/appui-abstract](#itwinappui-abstract) - [@itwin/core-electron](#itwincore-electron)
   - [API removals](#api-removals)
   - [Packages dropped](#packages-dropped)
 - [Change to pull/merge method](#change-to-pullmerge)
@@ -120,6 +116,21 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`       |
 | `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString` |
 | `TerrainProviderName`                          | N/A                               |
+
+#### @itwin/core-bentley
+
+| Removed                    | Replacement                                                 |
+| -------------------------- | ----------------------------------------------------------- |
+| `ByteStream constructor`   | `ByteStream.fromUint8Array` or `ByteStream.fromArrayBuffer` |
+| `ByteStream.nextUint8`     | `ByteStream.readUint8`                                      |
+| `ByteStream.nextUint16`    | `ByteStream.readUint16`                                     |
+| `ByteStream.nextUint32`    | `ByteStream.readUint32`                                     |
+| `ByteStream.nextInt32`     | `ByteStream.readInt32`                                      |
+| `ByteStream.nextFloat32`   | `ByteStream.readFloat32`                                    |
+| `ByteStream.nextFloat64`   | `ByteStream.readFloat64`                                    |
+| `ByteStream.nextId64`      | `ByteStream.readId64`                                       |
+| `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
+| `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
 
 #### @itwin/appui-abstract
 
