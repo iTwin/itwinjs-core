@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "add canvasDecorations view flag",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
