@@ -19,11 +19,7 @@ Table of contents:
     - [Node.js](#nodejs)
     - [Electron](#electron)
     - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/core-backend](#itwincore-backend-1)
-    - [@itwin/core-bentley](#itwincore-bentley)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-electron](#itwincore-electron)
+  - [Deprecated API removals](#deprecated-api-removals) - [@itwin/core-backend](#itwincore-backend-1) - [@itwin/core-common](#itwincore-common-1) - [@itwin/core-bentley](#itwincore-bentley) - [@itwin/appui-abstract](#itwinappui-abstract) - [@itwin/core-electron](#itwincore-electron)
   - [API removals](#api-removals)
   - [Packages dropped](#packages-dropped)
 - [Change to pull/merge method](#change-to-pullmerge)
@@ -109,6 +105,19 @@ The following previously-deprecated APIs have been removed:
 | `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
+
+#### @itwin/core-common
+
+| Removed                                        | Replacement                                          |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`                                  |
+| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`                          |
+| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString`                    |
+| `TerrainProviderName`                          | N/A                                                  |
+| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
+| `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
 
 #### @itwin/core-bentley
 
