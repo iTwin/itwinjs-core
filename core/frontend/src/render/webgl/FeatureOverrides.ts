@@ -378,7 +378,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
   public get isDisposed(): boolean { return undefined === this._lut; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._lut = dispose(this._lut);
     if (this._cleanup) {
       this._cleanup();

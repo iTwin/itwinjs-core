@@ -22,7 +22,7 @@ export class TargetGraphics {
   private _dynamics?: GraphicList;
   private _decorations?: Decorations;
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.foreground.length = this.background.length = this.overlays.length = 0;
     this._dynamics = disposeArray(this._dynamics);
     this._decorations = dispose(this._decorations);

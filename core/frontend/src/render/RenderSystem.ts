@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
+import { base64StringToUint8Array, Id64String } from "@itwin/core-bentley";
 import {
   ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
@@ -58,8 +58,8 @@ import { GraphicTemplate } from "./GraphicTemplate";
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
  * @internal
  */
-export abstract class RenderTextureDrape implements IDisposable {
-  public abstract dispose(): void;
+export abstract class RenderTextureDrape implements Disposable {
+  public abstract [Symbol.dispose](): void;
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -153,8 +153,8 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
-  public abstract dispose(): void;
+export abstract class RenderTerrainGeometry implements Disposable, RenderMemory.Consumer {
+  public abstract [Symbol.dispose](): void;
   public abstract get transform(): Transform | undefined;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
@@ -173,7 +173,7 @@ export class TerrainTexture {
   ) { }
 
   public cloneWithClip(clipRectangle: Range2d) {
-    return new TerrainTexture (this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
+    return new TerrainTexture(this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
   }
 }
 /** @internal */
@@ -219,7 +219,7 @@ export interface PlanarGridProps {
 /** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
  * @internal
  */
-export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
+export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
   readonly [_implementationProhibited]: "renderAreaPattern";
 }
 
@@ -295,7 +295,7 @@ export interface CreateGraphicFromTemplateArgs {
  * @public
  * @extensions
  */
-export abstract class RenderSystem implements IDisposable {
+export abstract class RenderSystem implements Disposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
    * This object is frozen and cannot be modified after the RenderSystem is created.
    * @internal
@@ -322,8 +322,12 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public abstract get isValid(): boolean;
 
-  /** @internal */
-  public abstract dispose(): void;
+  public [Symbol.dispose]() {
+    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+  }
+
+  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** The maximum permitted width or height of a texture supported by this render system. */
   public get maxTextureSize(): number { return 0; }

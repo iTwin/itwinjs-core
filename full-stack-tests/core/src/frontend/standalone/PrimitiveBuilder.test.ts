@@ -36,7 +36,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   after(async () => {
-    viewport?.dispose();
+    viewport?.[Symbol.dispose]();
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

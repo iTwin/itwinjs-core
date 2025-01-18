@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
+import { DbResult, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
 
 interface IClassRef {
@@ -554,7 +554,7 @@ export class PartialECChangeUnifier {
  * @beta
  *
 */
-export class ChangesetECAdaptor implements IDisposable {
+export class ChangesetECAdaptor implements Disposable {
   private readonly _mapCache: ECDbMap;
   private readonly _tableFilter = new Set<string>();
   private readonly _opFilter = new Set<SqliteChangeOp>();
@@ -639,7 +639,7 @@ export class ChangesetECAdaptor implements IDisposable {
   /**
    * dispose current instance and it will also dispose the changeset reader.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.close();
   }
   /**

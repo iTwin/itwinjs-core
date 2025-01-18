@@ -43,6 +43,7 @@ beta;class;EnumerationArrayProperty
 beta;class;EnumerationProperty
 beta;interface;EnumerationPropertyProps
 beta;interface;EnumerationProps
+beta;interface;Enumerator
 beta;interface;EnumeratorProps
 beta;class;Format
 internal;function;getFormatProps

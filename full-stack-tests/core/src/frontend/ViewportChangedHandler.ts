@@ -79,27 +79,13 @@ export class ViewportChangedHandler {
     this.expect(ChangeFlag.Initial, undefined, () => undefined);
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     Viewport.undoDelay = this._undoDelay;
 
     for (const removal of this._removals)
       removal();
 
     this._removals.length = 0;
-  }
-
-  /** Install a ViewportChangedHandler, execute the specified function, and uninstall the handler. */
-  public static test(vp: Viewport, func: (mon: ViewportChangedHandler) => void): void {
-    const mon = new ViewportChangedHandler(vp);
-    func(mon);
-    mon.dispose();
-  }
-
-  /** Async version of test(). */
-  public static async testAsync(vp: Viewport, func: (mon: ViewportChangedHandler) => Promise<void>): Promise<void> {
-    const mon = new ViewportChangedHandler(vp);
-    await func(mon);
-    mon.dispose();
   }
 
   /** Assert that executing the supplied function causes events to be omitted resulting in the specified flags. */

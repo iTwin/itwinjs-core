@@ -183,7 +183,7 @@ export class HyperModelingDecorator implements Decorator {
     });
 
     this._removeEventListeners.push(this.viewport.onViewportChanged.addListener((_, changeFlags) => this.onViewportChanged(changeFlags)));
-    this._removeEventListeners.push(this.viewport.onDisposed.addListener(() => this.dispose()));
+    this._removeEventListeners.push(this.viewport.onDisposed.addListener(() => this[Symbol.dispose]()));
 
     for (const marker of markers.markers) {
       marker.onMouseEnterEvent.addListener((mkr) => this.showToolbarAfterTimeout(mkr));
@@ -196,7 +196,7 @@ export class HyperModelingDecorator implements Decorator {
 
   private onViewportChanged(changeFlags: ChangeFlags): void {
     if (this.viewport.iModel !== this._iModel) {
-      this.dispose();
+      this[Symbol.dispose]();
       return;
     }
 
@@ -225,7 +225,7 @@ export class HyperModelingDecorator implements Decorator {
   }
 
   /** @internal */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!IModelApp.viewManager.dropDecorator(this))
       return;
 

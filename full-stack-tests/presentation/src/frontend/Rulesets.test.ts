@@ -3,9 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, RegisteredRuleset, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
@@ -58,12 +57,10 @@ describe("Rulesets", async () => {
   });
 
   it("creates ruleset from json and gets root node using it", async () => {
-    await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(RULESET_1), async () => {
-      const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
-      expect(rootNodes.length).to.be.equal(1);
-      expect(rootNodes[0].label.displayValue).to.equal("label 1");
-    });
-    await Presentation.presentation.rulesets().clear();
+    using _registered = await Presentation.presentation.rulesets().add(RULESET_1);
+    const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
+    expect(rootNodes.length).to.be.equal(1);
+    expect(rootNodes[0].label.displayValue).to.equal("label 1");
   });
 
   it("removes ruleset", async () => {
@@ -104,7 +101,7 @@ describe("Rulesets", async () => {
     });
 
     afterEach(async () => {
-      frontends.forEach((f) => f.dispose());
+      frontends.forEach((f) => f[Symbol.dispose]());
     });
 
     it("handles multiple simultaneous requests from different frontends with different rulesets with same id", async () => {
@@ -126,7 +123,7 @@ describe("Rulesets", async () => {
         expect(nodes[i][0].label.displayValue).to.eq(`label ${i + 1}`);
       });
 
-      registeredRulesets.forEach((r) => r.dispose());
+      registeredRulesets.forEach((r) => r[Symbol.dispose]());
     });
   });
 
@@ -138,23 +135,22 @@ describe("Rulesets", async () => {
     });
 
     afterEach(async () => {
-      frontend.dispose();
+      frontend[Symbol.dispose]();
     });
 
     it("can use the same frontend-registered ruleset after backend is reset", async () => {
       const props = { imodel, rulesetOrId: RULESET_1.id };
-      await using<RegisteredRuleset, Promise<void>>(await frontend.rulesets().add(RULESET_1), async () => {
-        const rootNodes1 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
-        expect(rootNodes1.length).to.be.equal(1);
-        expect(rootNodes1[0].label.displayValue).to.be.equal("label 1");
+      using _registered = await frontend.rulesets().add(RULESET_1);
+      const rootNodes1 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
+      expect(rootNodes1.length).to.be.equal(1);
+      expect(rootNodes1[0].label.displayValue).to.be.equal("label 1");
 
-        resetBackend();
+      resetBackend();
 
-        const rootNodes2 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
-        expect(rootNodes2.length).to.be.equal(1);
-        expect(rootNodes2[0].label.displayValue).to.be.equal("label 1");
-        expect(rootNodes2).to.deep.eq(rootNodes1);
-      });
+      const rootNodes2 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
+      expect(rootNodes2.length).to.be.equal(1);
+      expect(rootNodes2[0].label.displayValue).to.be.equal("label 1");
+      expect(rootNodes2).to.deep.eq(rootNodes1);
     });
   });
 });

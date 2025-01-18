@@ -63,7 +63,7 @@ export class MeshRenderGeometry implements RenderGeometry {
     return data ? new this(data, params) : undefined;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (this.noDispose) {
       return;
     }

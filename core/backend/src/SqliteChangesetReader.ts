@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -83,7 +83,7 @@ export interface SqliteChange {
  * a db provided.
  * @beta
  */
-export class SqliteChangesetReader implements IDisposable {
+export class SqliteChangesetReader implements Disposable {
   private readonly _nativeReader = new IModelNative.platform.ChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
@@ -414,7 +414,7 @@ export class SqliteChangesetReader implements IDisposable {
    * Dispose this object
    * @beta
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.close();
   }
 }

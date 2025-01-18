@@ -37,7 +37,7 @@ export class EdgeLUT implements WebGLDisposable {
     this.silhouettePadding = silhouettePadding;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this.texture);
   }
 
@@ -76,7 +76,7 @@ export class IndexedEdgeGeometry extends MeshGeometry {
     this._indices = indices;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this._buffers);
     dispose(this._indices);
     dispose(this.edgeLut);

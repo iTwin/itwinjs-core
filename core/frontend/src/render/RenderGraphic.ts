@@ -6,7 +6,6 @@
  * @module Rendering
  */
 
-import { IDisposable } from "@itwin/core-bentley";
 import { RenderMemory } from "./RenderMemory";
 import { Range3d } from "@itwin/core-geometry";
 
@@ -18,8 +17,13 @@ import { Range3d } from "@itwin/core-geometry";
  * @public
  * @extensions
  */
-export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Consumer */ {
-  public abstract dispose(): void;
+export abstract class RenderGraphic implements Disposable /* , RenderMemory.Consumer */ {
+  public [Symbol.dispose](): void {
+    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+  }
+
+  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -43,7 +47,7 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
   /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */
   public dispose(): void { }
   /** Disposes of the owned graphic. */
-  public disposeGraphic(): void { this.graphic.dispose(); }
+  public disposeGraphic(): void { this.graphic[Symbol.dispose](); }
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
   /** @internal */

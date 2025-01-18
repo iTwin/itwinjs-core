@@ -104,7 +104,7 @@ export class IdMap implements WebGLDisposable {
     return 0 === this.textures.size && 0 === this.gradients.size;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     const textureArr = Array.from(this.textures.values());
     const gradientArr = this.gradients.extractArrays().values;
 

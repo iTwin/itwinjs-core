@@ -37,8 +37,13 @@ export class ClippingProgram {
     return numPlanes > 0 ? this._program : undefined;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._program = dispose(this._program);
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 }
 

@@ -338,7 +338,7 @@ describe("TxnManager", () => {
       }));
     }
 
-    public dispose(): void {
+    public [Symbol.dispose](): void {
       for (const cleanup of this._cleanup)
         cleanup();
 
@@ -346,10 +346,9 @@ describe("TxnManager", () => {
     }
 
     public static test(txns: TxnManager, event: BeEvent<(changes: TxnChangedEntities) => void>, func: (accum: EventAccumulator) => void): void {
-      const accum = new EventAccumulator(txns);
+      using accum = new EventAccumulator(txns);
       accum.listen(event);
       func(accum);
-      accum.dispose();
     }
 
     public static testElements(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {

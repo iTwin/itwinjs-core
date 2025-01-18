@@ -67,35 +67,32 @@ function isFeatureVisible(feature: PackedFeature, target: Target, includeNonLoca
 
 function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
   const commands = features.renderCommands.getCommands(pass);
-  const executor = new ShaderProgramExecutor(features.target, pass);
-  try {
-    for (const command of commands) {
-      if (command.opcode !== "drawPrimitive")
-        command.execute(executor);
+  using executor = new ShaderProgramExecutor(features.target, pass);
 
-      if (command.opcode !== "pushBatch")
-        continue;
+  for (const command of commands) {
+    if (command.opcode !== "drawPrimitive")
+      command.execute(executor);
 
-      const ovrs = command.batch.getOverrides(features.target);
-      if (ovrs.allHidden)
-        continue;
+    if (command.opcode !== "pushBatch")
+      continue;
 
-      const scratchFeature = PackedFeature.createWithIndex();
-      const table = command.batch.featureTable;
-      for (const feature of table.iterable(scratchFeature)) {
-        if (!ovrs.anyOverridden || isFeatureVisible(feature, features.target, features.includeNonLocatable)) {
-          yield {
-            elementId: Id64.fromUint32PairObject(feature.elementId),
-            subCategoryId: Id64.fromUint32PairObject(feature.subCategoryId),
-            geometryClass: feature.geometryClass,
-            modelId: Id64.fromUint32PairObject(feature.modelId),
-            iModel: command.batch.batchIModel ?? features.iModel,
-          };
-        }
+    const ovrs = command.batch.getOverrides(features.target);
+    if (ovrs.allHidden)
+      continue;
+
+    const scratchFeature = PackedFeature.createWithIndex();
+    const table = command.batch.featureTable;
+    for (const feature of table.iterable(scratchFeature)) {
+      if (!ovrs.anyOverridden || isFeatureVisible(feature, features.target, features.includeNonLocatable)) {
+        yield {
+          elementId: Id64.fromUint32PairObject(feature.elementId),
+          subCategoryId: Id64.fromUint32PairObject(feature.subCategoryId),
+          geometryClass: feature.geometryClass,
+          modelId: Id64.fromUint32PairObject(feature.modelId),
+          iModel: command.batch.batchIModel ?? features.iModel,
+        };
       }
     }
-  } finally {
-    executor.dispose();
   }
 }
 

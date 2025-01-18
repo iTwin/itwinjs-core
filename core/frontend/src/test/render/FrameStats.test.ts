@@ -25,16 +25,12 @@ describe("FrameStats", () => {
   });
 
   function testViewport(width: number, height: number, callback: (vp: ScreenViewport) => void): void {
-    const vp = openBlankViewport({ width, height });
+    using vp = openBlankViewport({ width, height });
     vp.viewFlags = vp.viewFlags.copy({ acsTriad: false, grid: false });
 
     IModelApp.viewManager.addViewport(vp);
 
-    try {
-      callback(vp);
-    } finally {
-      vp.dispose();
-    }
+    callback(vp);
   }
 
   it("should receive frame statistics from render loop when enabled", async () => {

@@ -42,7 +42,11 @@ public;class;Dictionary
 public;interface;DictionaryEntry
 public;class;DisposableList
 public;function;dispose
+public;function;dispose
+deprecated;function;dispose
 public;function;disposeArray
+public;function;disposeArray
+deprecated;function;disposeArray
 public;type;DisposeFunc
 public;enum;DuplicatePolicy
 public;class;Entry
@@ -59,11 +63,14 @@ public;type;Id64Array
 public;type;Id64Set
 public;type;Id64String
 public;interface;IDisposable
+deprecated;interface;IDisposable
 public;enum;IModelHubStatus
 public;enum;IModelStatus
 public;class;IndexedValue
 public;class;IndexMap
+public;function;isDisposable
 public;function;isIDisposable
+deprecated;function;isIDisposable
 public;function;isInstanceOf
 public;function;isProperSubclassOf
 public;function;isSubclassOf
@@ -141,6 +148,7 @@ public;class;UintArrayBuilder
 public;interface;UintArrayBuilderOptions
 public;class;UnexpectedErrors
 public;function;using
+deprecated;function;using
 public;function;utf8ToString
 public;class;YieldManager
 public;interface;YieldManagerOptions

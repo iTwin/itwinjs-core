@@ -331,7 +331,7 @@ export class ViewAttributes {
     parent.appendChild(this._element);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._removeMe();
     this._parent.removeChild(this._element);
   }
@@ -990,7 +990,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
 
   protected _close(): void {
     if (undefined !== this._attributes) {
-      this._attributes.dispose();
+      this._attributes[Symbol.dispose]();
       this._attributes = undefined;
     }
   }

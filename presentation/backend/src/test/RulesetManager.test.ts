@@ -137,7 +137,7 @@ describe("RulesetManager", () => {
 
       const result = manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
-      result!.dispose();
+      result![Symbol.dispose]();
 
       addonMock.verifyAll();
     });
@@ -156,7 +156,7 @@ describe("RulesetManager", () => {
 
       const result = manager.add(ruleset);
       expect(result).to.not.be.undefined;
-      result.dispose();
+      result[Symbol.dispose]();
 
       addonMock.verifyAll();
     });

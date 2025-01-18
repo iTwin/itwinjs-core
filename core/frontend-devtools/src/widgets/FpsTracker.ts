@@ -30,7 +30,7 @@ export class FpsTracker {
     }).label;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.toggle(false);
   }
 

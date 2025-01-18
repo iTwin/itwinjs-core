@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, dispose, IDisposable } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, dispose } from "@itwin/core-bentley";
 import {
   CheckBox,
   ColorInput,
@@ -24,7 +24,7 @@ const indent1 = "5px";
 const bottomSpace1 = "3px";
 const bottomSpace2 = "5px";
 
-export class ContoursSettings implements IDisposable {
+export class ContoursSettings implements Disposable {
   private readonly _vp: Viewport;
   private readonly _parent: HTMLElement;
   private readonly _element: HTMLElement;
@@ -212,7 +212,7 @@ export class ContoursSettings implements IDisposable {
     this._checkbox.checkbox.checked = this._vp.view.displayStyle.settings.contours.displayContours;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._parent.removeChild(this._element);
   }
 

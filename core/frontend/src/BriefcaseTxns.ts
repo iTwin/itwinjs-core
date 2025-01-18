@@ -115,7 +115,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._cleanup) {
       this._cleanup();
       this._cleanup = undefined;

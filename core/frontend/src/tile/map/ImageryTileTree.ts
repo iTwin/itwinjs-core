@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger} from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger } from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -44,7 +44,7 @@ export class ImageryMapTile extends RealityTile {
   public get texture() { return this._texture; }
   public get tilingScheme() { return this.imageryTree.tilingScheme; }
   public override get isDisplayable() { return (this.depth > 1) && super.isDisplayable; }
-  public override get isOutOfLodRange(): boolean { return this._outOfLodRange;}
+  public override get isOutOfLodRange(): boolean { return this._outOfLodRange; }
 
   public override setContent(content: ImageryTileContent): void {
     this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
@@ -57,10 +57,10 @@ export class ImageryMapTile extends RealityTile {
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
-    if (  (this.isLeaf )           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
+    if ((this.isLeaf)           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
       || isSmallerThanDrape
       || this._anyChildNotFound) {
-      if (this.isOutOfLodRange ) {
+      if (this.isOutOfLodRange) {
         drapeTiles.push(this);
         this.setIsReady();
       } else if (this.isLeaf && !isSmallerThanDrape && !this._anyChildNotFound) {
@@ -120,7 +120,7 @@ export class ImageryMapTile extends RealityTile {
         const rectangle = imageryTree.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
         const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
         const maximumSize = imageryTree.imageryLoader.maximumScreenSize;
-        const tile = new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize}, imageryTree, quadId, rectangle);
+        const tile = new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle);
         children.push(tile);
       });
 
@@ -150,9 +150,9 @@ export class ImageryMapTile extends RealityTile {
   private disposeTexture(): void {
     this._texture = dispose(this._texture);
   }
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this._mapTileUsageCount = 0;
-    super.dispose();
+    super[Symbol.dispose]();
   }
 }
 
@@ -168,7 +168,7 @@ export class ImageryTileTreeState {
   /** Get the scale range visibility of the imagery tile tree.
    * @returns the scale range visibility of the imagery tile tree.
    */
-  public getScaleRangeVisibility() {return this._scaleRangeVis;}
+  public getScaleRangeVisibility() { return this._scaleRangeVis; }
 
   /** Makes a deep copy of the current object.
    */
@@ -368,7 +368,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
 
     const modelId = iModel.transientIds.getNext();
     const tilingScheme = imageryProvider.tilingScheme;
-    const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
+    const rootLevel = (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
     const rootTileId = new QuadId(rootLevel, 0, 0).contentId;
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };

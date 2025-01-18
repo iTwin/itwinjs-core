@@ -218,7 +218,7 @@ export class SQLiteDb {
    */
   public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.prepareSqliteStatement(sql);
-    const release = () => stmt.dispose();
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val = callback(stmt);
       val instanceof Promise ? val.then(release, release) : release();
@@ -261,12 +261,8 @@ export class SQLiteDb {
 
   /** execute an SQL statement */
   public executeSQL(sql: string): DbResult {
-    const stmt = this.prepareSqliteStatement(sql);
-    try {
-      return stmt.step();
-    } finally {
-      stmt.dispose();
-    }
+    using stmt = this.prepareSqliteStatement(sql);
+    return stmt.step();
   }
 }
 
