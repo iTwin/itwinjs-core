@@ -335,14 +335,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * - [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
    * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
-  public getRow(args?: ECSqlRowArg): any {
+  public getRow(args: ECSqlRowArg = { rowFormat: QueryRowFormat.UseJsPropertyNames, classIdsToClassNames: true }): any {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
 
-    args = args ?? {};
-    if (args.rowFormat === undefined) {
-      args.rowFormat = QueryRowFormat.UseJsPropertyNames;
-    }
     const resp = this._stmt.toRow({
       classIdsToClassNames: args.classIdsToClassNames,
       useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
@@ -355,7 +351,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     return this.formatCurrentRow(resp, args.rowFormat);
   }
 
-  private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
+  private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | { [key: string]: any } {
     if (!this._stmt)
       throw new Error("ECSqlStatement is not prepared");
 
