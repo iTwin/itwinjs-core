@@ -10,6 +10,7 @@ Executing an ECSQL statement typically consists of these steps:
 1. Reset the statement and clear its parameter bindings, if the statement should be executed again.
 
 > For iModels only ECSQL SELECT statements can be executed. Data modification must be done through the API.
+> For example, see `[IModelDb.Elements.updateElement]($backend)`.
 > For [ECDb]($backend) ECSQL INSERT, UPDATE and DELETE statements can be executed as well.
 
 There are two ways to execute an ECSQL statement:
