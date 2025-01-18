@@ -12,7 +12,7 @@
  * * Fixed entry positions are:
  *   * [0] is start vertex index (in CCW order around its facet)
  *   * [1] is end vertex index (in CCW order around its facet)
- *   * [2] is facet index.
+ *   * [2] is facet index (or another number to associate with this edge).
  */
 export class SortableEdge extends Float64Array {
   /** Return the vertex index that appears first in the order stored.  */
@@ -23,7 +23,10 @@ export class SortableEdge extends Float64Array {
   public get vertexIndexB(): number {
     return this[1];
   }
-  /** Return the facet index.  */
+  /**
+   * Return the facet index.
+   * * This value is carried along during matching. Typically it is a facet index, but it does not have to be.
+   */
   public get facetIndex(): number {
     return this[2];
   }
@@ -110,7 +113,7 @@ export class SortableEdge extends Float64Array {
 }
 export type SortableEdgeCluster = SortableEdge | SortableEdge[];
 /**
- * An IndexedEdgeMatcher carries an array (`edges`) of edges start & end indices for sorting and subsequent analyses
+ * An IndexedEdgeMatcher carries an array of edge start & end indices for sorting and subsequent analyses
  * (such as testing for closed mesh).
  */
 export class IndexedEdgeMatcher {
@@ -123,8 +126,8 @@ export class IndexedEdgeMatcher {
    * Push a new edge.
    * @param vertexA start vertex
    * @param vertexB end vertex
-   * @param facetIndex facet index
-   * @returns the edge (as emplaced at the back of the sortableEdge array)
+   * @param facetIndex value to carry along during matching
+   * @returns the edge pushed onto the `edges` array
    */
   public addEdge(vertexA: number, vertexB: number, facetIndex: number): SortableEdge {
     const edge = new SortableEdge(vertexA, vertexB, facetIndex);
@@ -134,7 +137,7 @@ export class IndexedEdgeMatcher {
   /**
    * Push edges all around a facet, returning to vertexArray[0].
    * @param vertexArray array of vertex indices around facet
-   * @param facetIndex facet index
+   * @param facetIndex value to carry along during matching
    * @param closeLoop true to add an edge from last to first vertex.
    */
   public addPath(vertexArray: number[], facetIndex: number, closeLoop: boolean = true) {

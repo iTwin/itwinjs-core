@@ -82,7 +82,7 @@ export class FacetFaceData {
   }
   /**
    * Sets the param and paramDistance range of this FacetFaceData based on the newly terminated facets that make it up.
-   * Takes the polyface itself, the first and last indexes of the facets to be included in the face.
+   * Takes the polyface itself, and facetIndex range to be included in the face (facetStart <= facetIndex < facetEnd).
    * Returns true on success, false otherwise.
    */
   public setParamDistanceRangeFromNewFaceData(polyface: IndexedPolyface, facetStart: number, facetEnd: number): boolean {
