@@ -1274,7 +1274,7 @@ export class AccuDraw {
     return (!IModelApp.toolAdmin.gridLock);
   }
 
-  /** Call from an AccuDraw UI event to check if key is valid input */
+  /** Call from an AccuDraw UI event to check if key is valid for updating the input field value. */
   protected itemFieldInputIsValid(key: string, item: ItemField): boolean {
     if (1 !== key.length)
       return false;
@@ -1303,7 +1303,7 @@ export class AccuDraw {
     }
 
     if (!Number.isNaN(parseInt(key, 10)))
-      return true;
+      return true; // Accept numeric input...
 
     if (key.toLowerCase() !== key.toUpperCase())
       return false; // Treat unhandled letters as potential shortcuts...

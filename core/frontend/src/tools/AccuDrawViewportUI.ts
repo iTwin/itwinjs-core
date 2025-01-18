@@ -293,7 +293,8 @@ export class AccuDrawViewportUI extends AccuDraw {
 
   /** @internal */
   protected async doProcessKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void> {
-    if (!this.itemFieldInputIsValid(ev.key, item))
+    // Make sure a potentially valid input field value is rejected when any qualifier other than shift is active...
+    if (ev.ctrlKey || ev.altKey || ev.metaKey || !this.itemFieldInputIsValid(ev.key, item))
       return this.doProcessUnhandledKey(ev, isDown);
 
     if (this.doProcessOverrideKey(ev, isDown, item))
