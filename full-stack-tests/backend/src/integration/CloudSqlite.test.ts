@@ -6,14 +6,16 @@
 import { expect, use as useFromChai } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
-import { join } from "path";
+import { basename, join } from "path";
 import * as sinon from "sinon";
-import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { _nativeDb, BlobContainer, BriefcaseDb, BriefcaseManager, CloudSqlite, HubMock, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import { HubUtility, TestUserType } from "../HubUtility";
+import { IModelVersion } from "@itwin/core-common";
 
 // spell:ignore localstore itwindb
 
@@ -82,7 +84,27 @@ describe("CloudSqlite", () => {
   after(async () => {
     IModelHost.authorizationClient = undefined;
   });
+  it.only("attach/detach api", async () => {
+    const iTwinId = Guid.createValue();
+    HubMock.startup("test", KnownTestLocations.outputDir);
+    const version0 = IModelTestUtils.prepareOutputFile("attachdetach", "imodel1.bim");
+    SnapshotDb.createEmpty(version0, { rootSubject: { name: "attachdetach" } }).close();
+    const iModelId = await HubMock.createNewIModel({ accessToken: "", iTwinId, version0, iModelName: "attachdetach" });
+    const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken: "" });
+    const bc = await BriefcaseDb.open(bcProps);
+    testContainers[0].connect(caches[1]);
+    let db = SnapshotDb.openFile("testBim", { container: testContainers[0], });
+    const x = db[_nativeDb].getFilePath();
 
+    // const x = db[_nativeDb].getFilePath();
+    console.log(`${x}?vfs=${testContainers[0].cache?.name}`)
+    console.log(`/${testContainers[0].containerId}/testBim?vfs=${testContainers[0].cache?.name}`)
+    // expect(db).is.not.undefined;
+    // await CloudSqlite.withWriteLock({ user: "testuser", container: testContainers[0] }, async () => {
+    bc.attachDb(`/${testContainers[0].containerId}/testBim?vfs=${testContainers[0].cache?.name}`, "foo");
+    db.close();
+    //});
+  });
   it("should query bcvHttpLog", async () => {
     const c1Props = { containerId: testContainers[0].containerId, baseUri: AzuriteTest.baseUri, userToken: "" };
     let metadata = await AzuriteTest.service.queryMetadata(c1Props);
@@ -188,10 +210,10 @@ describe("CloudSqlite", () => {
     container.connect(caches[1]);
     let writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
     expect(writeLockExpiryTimeNoWriteLock).to.equal("");
-    await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+    await CloudSqlite.withWriteLock({ user: "testuser", container }, async () => {
       const firstWriteLockExpiryTime = Date.parse(container.writeLockExpires);
       await BeDuration.wait(500); // sleep 500ms so we get a new write lock expiry time.
-      await CloudSqlite.withWriteLock({user: "testuser", container}, async () => {
+      await CloudSqlite.withWriteLock({ user: "testuser", container }, async () => {
         const secondWriteLockExpiryTime = Date.parse(container.writeLockExpires);
         expect(secondWriteLockExpiryTime).to.be.greaterThanOrEqual(firstWriteLockExpiryTime);
         // subtract 30 minutes and make sure its less than the first write lock expiry time.
@@ -204,7 +226,7 @@ describe("CloudSqlite", () => {
     });
     writeLockExpiryTimeNoWriteLock = container.writeLockExpires; // Should be empty string when no write lock.
     expect(writeLockExpiryTimeNoWriteLock).to.equal("");
-    container.disconnect({detach: true});
+    container.disconnect({ detach: true });
   });
 
   it("should LogLevel.Trace set LogMask to ALL", async () => {
@@ -235,7 +257,7 @@ describe("CloudSqlite", () => {
     sinon.assert.called(logTrace);
     sinon.assert.called(logInfo);
     // Check for a dirty block log message
-    let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    let dirtyBlockLogMsg = logInfo.getCalls().some((call) => call.args[1].includes("is now dirty block"));
     expect(dirtyBlockLogMsg).to.be.true;
     // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
     // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
@@ -255,7 +277,7 @@ describe("CloudSqlite", () => {
     sinon.assert.notCalled(logTrace);
     sinon.assert.notCalled(logInfo);
     // Check for a dirty block log message(expect nothing)
-    dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    dirtyBlockLogMsg = logInfo.getCalls().some((call) => call.args[1].includes("is now dirty block"));
     expect(dirtyBlockLogMsg).to.be.false;
     // clean up
     logTrace.resetHistory();
@@ -283,7 +305,7 @@ describe("CloudSqlite", () => {
     };
     let stats = container.queryBcvStats();
     checkOptionalReturnValues(stats, false);
-    stats = container.queryBcvStats({addClientInformation: false});
+    stats = container.queryBcvStats({ addClientInformation: false });
     checkOptionalReturnValues(stats, false);
     expect(cache.isDaemon).to.be.false;
     // daemonless is always 0 locked blocks.
@@ -307,12 +329,12 @@ describe("CloudSqlite", () => {
     // Check bcv stats again after prefetching a database.
     db = container.queryDatabase(dbs[0]);
     expect(db!.localBlocks).to.equal(db!.totalBlocks);
-    stats = container.queryBcvStats({addClientInformation: true});
+    stats = container.queryBcvStats({ addClientInformation: true });
     checkOptionalReturnValues(stats, true);
     expect(stats.lockedCacheslots).to.equal(0);
     expect(stats.populatedCacheslots).to.equal(db!.totalBlocks);
     expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
-    container.disconnect({detach: true});
+    container.disconnect({ detach: true });
   });
 
   it("cloud containers", async () => {
@@ -362,7 +384,7 @@ describe("CloudSqlite", () => {
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
       expect(contain1.hasWriteLock).to.be.true;
-      await CloudSqlite.withWriteLock({user: user1, container: contain1 }, async () => {
+      await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
         expect(contain1.hasWriteLock).to.be.true;
       });
       expect(contain1.hasWriteLock).to.be.true; // Make sure that nested withWriteLocks with the same user don't release the write lock.
@@ -418,7 +440,7 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "admin"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, {nSeconds: 0}));
+    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, { nSeconds: 0 }));
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -561,10 +583,10 @@ describe("CloudSqlite", () => {
     // Upload dummy block to simulate an orphaned block.
     const blockName = await azSqlite.uploadDummyBlock(container, 24);
     // findOrphanedBlocks is false, so we expect to keep our dummy block.
-    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: false});
+    await CloudSqlite.cleanDeletedBlocks(container, { findOrphanedBlocks: false });
     await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(true);
     // findOrphanedBlocks is true, so we expect to remove our dummy block.
-    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: true});
+    await CloudSqlite.cleanDeletedBlocks(container, { findOrphanedBlocks: true });
     await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(false);
 
     expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
@@ -573,9 +595,9 @@ describe("CloudSqlite", () => {
     onProgress.onFirstCall().returns(2);
 
     // Faking the interval setup in cleanDeletedBlocks.
-    const clock = sinon.useFakeTimers({toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1});
+    const clock = sinon.useFakeTimers({ toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1 });
     let resolved = false;
-    CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
+    CloudSqlite.cleanDeletedBlocks(container, { nSeconds: 0, findOrphanedBlocks: true, onProgress }).then(() => {
       resolved = true;
     }).catch(() => {
       resolved = true;
@@ -598,12 +620,12 @@ describe("CloudSqlite", () => {
     onProgress.reset();
     onProgress.returns(0);
     // One final clean that we don't interrupt ( because we always return 0 from onProgress)
-    await CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, onProgress});
+    await CloudSqlite.cleanDeletedBlocks(container, { nSeconds: 0, onProgress });
     container.checkForChanges();
     expect(container.garbageBlocks).to.be.equal(0);
 
     container.releaseWriteLock();
-    container.disconnect({detach: true});
+    container.disconnect({ detach: true });
   });
 
   /** make sure that the auto-refresh for container tokens happens every hour */
