@@ -21,6 +21,7 @@ Table of contents:
     - [ECMAScript](#ecmascript)
   - [Deprecated API removals](#deprecated-api-removals)
     - [@itwin/core-backend](#itwincore-backend-1)
+    - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-electron](#itwincore-electron)
   - [API removals](#api-removals)
@@ -109,6 +110,21 @@ The following previously-deprecated APIs have been removed:
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
+#### @itwin/core-bentley
+
+| Removed                    | Replacement                                                 |
+| -------------------------- | ----------------------------------------------------------- |
+| `ByteStream constructor`   | `ByteStream.fromUint8Array` or `ByteStream.fromArrayBuffer` |
+| `ByteStream.nextUint8`     | `ByteStream.readUint8`                                      |
+| `ByteStream.nextUint16`    | `ByteStream.readUint16`                                     |
+| `ByteStream.nextUint32`    | `ByteStream.readUint32`                                     |
+| `ByteStream.nextInt32`     | `ByteStream.readInt32`                                      |
+| `ByteStream.nextFloat32`   | `ByteStream.readFloat32`                                    |
+| `ByteStream.nextFloat64`   | `ByteStream.readFloat64`                                    |
+| `ByteStream.nextId64`      | `ByteStream.readId64`                                       |
+| `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
+| `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
+
 #### @itwin/appui-abstract
 
 | Removed                     | Replacement |
@@ -149,7 +165,7 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | Removed                        | Replacement                                                                                                            |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
+| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
 
 ### Change to pullMerge
 
@@ -163,7 +179,7 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the *fastforward* method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
@@ -179,4 +195,3 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
-
