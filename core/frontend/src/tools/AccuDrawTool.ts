@@ -215,7 +215,7 @@ export class AccuDrawShortcuts {
         break;
     }
 
-    accudraw.setKeyinStatus(index, KeyinStatus.Partial);
+    // Set focus to new item and disable automatic focus change based on cursor location in rectangular mode.
     accudraw.setFocusItem(index);
     accudraw.dontMoveFocus = true;
   }
@@ -329,6 +329,23 @@ export class AccuDrawShortcuts {
     accudraw.clearTentative();
   }
 
+  public static choosePreviousValue(index: ItemField): void {
+    const accudraw = IModelApp.accuDraw;
+    accudraw.getSavedValue(index, false);
+    accudraw.refreshDecorationsAndDynamics();
+  }
+
+  public static chooseNextValue(index: ItemField): void {
+    const accudraw = IModelApp.accuDraw;
+    accudraw.getSavedValue(index, true);
+    accudraw.refreshDecorationsAndDynamics();
+  }
+
+  public static clearSavedValues(): void {
+    const accudraw = IModelApp.accuDraw;
+    accudraw.clearSavedValues();
+  }
+
   public static itemRotationModeChange(rotation: RotationMode): void {
     const accudraw = IModelApp.accuDraw;
     const vp = accudraw.currentView;
@@ -386,7 +403,7 @@ export class AccuDrawShortcuts {
     accudraw.planePt.setFrom(accudraw.published.origin);
     accudraw.published.flags |= AccuDrawFlags.SetOrigin;
     accudraw.activate();
-    accudraw.refreshDecorationsAndDynamics();
+    accudraw.refreshDecorationsAndDynamics(); // NOTE: Will already grab input focus thought processHints...
   }
 
   public static changeCompassMode(): void {
@@ -421,7 +438,7 @@ export class AccuDrawShortcuts {
       accudraw.locked = axisLockStatus;
     }
     accudraw.flags.baseMode = accudraw.compassMode;
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static lockSmart(): void {
@@ -463,7 +480,7 @@ export class AccuDrawShortcuts {
           accudraw.indexed |= LockedStates.X_BM;
         accudraw.angleLock();
       }
-      accudraw.refreshDecorationsAndDynamics();
+      this.requestInputFocus();
       return;
     }
 
@@ -507,7 +524,7 @@ export class AccuDrawShortcuts {
         accudraw.setRotationMode(RotationMode.Context);
       }
     }
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   /** Disable indexing when not currently indexed; if indexed, enable respective lock. */
@@ -576,12 +593,13 @@ export class AccuDrawShortcuts {
     if (accudraw.getFieldLock(ItemField.X_Item)) {
       accudraw.setFieldLock(ItemField.X_Item, false);
       accudraw.locked = accudraw.locked & ~LockedStates.X_BM;
+      accudraw.setKeyinStatus(ItemField.X_Item, KeyinStatus.Dynamic);
     } else {
       accudraw.saveCoordinate(ItemField.X_Item, accudraw.delta.x);
       accudraw.setFieldLock(ItemField.X_Item, true);
       accudraw.locked = accudraw.locked | LockedStates.X_BM;
     }
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static lockY(): void {
@@ -603,12 +621,13 @@ export class AccuDrawShortcuts {
     if (accudraw.getFieldLock(ItemField.Y_Item)) {
       accudraw.setFieldLock(ItemField.Y_Item, false);
       accudraw.locked = accudraw.locked & ~LockedStates.Y_BM;
+      accudraw.setKeyinStatus(ItemField.Y_Item, KeyinStatus.Dynamic);
     } else {
       accudraw.saveCoordinate(ItemField.Y_Item, accudraw.delta.y);
       accudraw.setFieldLock(ItemField.Y_Item, true);
       accudraw.locked = accudraw.locked | LockedStates.Y_BM;
     }
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static lockZ(): void {
@@ -624,6 +643,7 @@ export class AccuDrawShortcuts {
 
     if (accudraw.getFieldLock(ItemField.Z_Item)) {
       accudraw.setFieldLock(ItemField.Z_Item, false);
+      accudraw.setKeyinStatus(ItemField.Z_Item, KeyinStatus.Dynamic);
     } else {
       // Move focus to Z field...
       if (!isSnapped && accudraw.autoFocusFields) {
@@ -632,7 +652,7 @@ export class AccuDrawShortcuts {
       }
       accudraw.setFieldLock(ItemField.Z_Item, true);
     }
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static lockDistance(): void {
@@ -655,15 +675,14 @@ export class AccuDrawShortcuts {
     if (accudraw.getFieldLock(ItemField.DIST_Item)) {
       accudraw.setFieldLock(ItemField.DIST_Item, false);
       accudraw.locked &= ~LockedStates.DIST_BM;
-
-      accudraw.setKeyinStatus(ItemField.DIST_Item, KeyinStatus.Dynamic); // Need to clear partial status if locked by entering distance since focus stays in distance field...
+      accudraw.setKeyinStatus(ItemField.DIST_Item, KeyinStatus.Dynamic);
     } else {
       // Move focus to distance field...
       if (!isSnapped && accudraw.autoFocusFields)
         accudraw.setFocusItem(ItemField.DIST_Item);
       accudraw.distanceLock(true, true);
     }
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static lockAngle(): void {
@@ -671,7 +690,7 @@ export class AccuDrawShortcuts {
     if (!accudraw.isEnabled)
       return;
     accudraw.doLockAngle(accudraw.clearTentative());
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public lockIndex(): void {
@@ -719,7 +738,7 @@ export class AccuDrawShortcuts {
       accudraw.flags.indexLocked = true;
     }
 
-    accudraw.refreshDecorationsAndDynamics();
+    AccuDrawShortcuts.requestInputFocus();
   }
 
   public static setStandardRotation(rotation: RotationMode): void {
@@ -731,14 +750,14 @@ export class AccuDrawShortcuts {
       const axes = accudraw.baseAxes.clone();
       accudraw.accountForAuxRotationPlane(axes, accudraw.flags.auxRotationPlane);
       accudraw.setContextRotation(axes.toMatrix3d(), false, true);
-      accudraw.refreshDecorationsAndDynamics();
+      this.requestInputFocus();
       return;
     } else {
       accudraw.flags.baseRotation = rotation;
       accudraw.setRotationMode(rotation);
     }
     accudraw.updateRotation(true);
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static alignView(): void {
@@ -763,7 +782,7 @@ export class AccuDrawShortcuts {
     vp.synchWithView();
     vp.animateFrustumChange();
 
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static rotateToBase(): void { this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation); }
@@ -883,7 +902,7 @@ export class AccuDrawShortcuts {
     }
 
     accudraw.setContextRotation(newRotation.toMatrix3d(), true, true);
-    accudraw.refreshDecorationsAndDynamics();
+    this.requestInputFocus();
   }
 
   public static async rotateAxes(aboutCurrentZ: boolean) {

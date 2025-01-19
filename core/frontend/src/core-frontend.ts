@@ -118,6 +118,7 @@ export type {
 } from "./TxnEntityChanges";
 export * from "./tile/internal";
 export * from "./tools/AccuDrawTool";
+export * from "./tools/AccuDrawViewportUI";
 export * from "./tools/ClipViewTool";
 export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";
