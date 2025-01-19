@@ -3,6 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module AccuDraw
+ */
 import { AccuDraw, CompassMode, ItemField } from "../AccuDraw";
 import { ViewRect } from "../common/ViewRect";
 import { IModelApp } from "../IModelApp";
