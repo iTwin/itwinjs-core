@@ -206,7 +206,7 @@ For applications that wish to include a settings dialog for the user, a helper m
 
 When AccuDraw has input focus and does not handle a KeyboardEvent, the event will be propagated first to the active interactive tool, and then to [ToolAdmin.processShortcutKey]($frontend). This is where applications should test for and run their desired keyboard shortcuts.
 
-> NOTE: When using keyboard shortcuts from the appui package, it currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has inpur focus. To work around this limitation in the appui package, refer to the documentation for [AccuDrawViewportUI.doProcessUnhandledKey]($frontend).
+> NOTE: When using keyboard shortcuts from the appui package, it currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, refer to the documentation for [AccuDrawViewportUI.doProcessUnhandledKey]($frontend).
 
 ### Known Issues
 
