@@ -1733,6 +1733,12 @@ export class AccuDraw {
   }
 
   /** @internal */
+  public clearSavedValues(): void {
+    this._savedDistances.length = this._savedAngles.length = 0;
+    this._savedDistanceIndex = this._savedAngleIndex = -1;
+  }
+
+  /** @internal */
   public changeCompassMode(animate: boolean = false): void {
     this.unlockAllFields(); // Clear locks for the current mode and send change notifications...
     this.setCompassMode(CompassMode.Polar === this.compassMode ? CompassMode.Rectangular : CompassMode.Polar);

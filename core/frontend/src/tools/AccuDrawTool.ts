@@ -341,6 +341,11 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
+  public static clearSavedValues(): void {
+    const accudraw = IModelApp.accuDraw;
+    accudraw.clearSavedValues();
+  }
+
   public static itemRotationModeChange(rotation: RotationMode): void {
     const accudraw = IModelApp.accuDraw;
     const vp = accudraw.currentView;

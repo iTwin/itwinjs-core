@@ -81,6 +81,37 @@ export class AccuDrawViewportUI extends AccuDraw {
     this.focusItem = this.defaultFocusItem();
   }
 
+  /** Call to set a vertical layout that follows the cursor. This is the default configuration. */
+  public setVerticalCursorLayout() {
+    const props = AccuDrawViewportUI.controlProps;
+    props.horizontalArrangement = false;
+    props.fixedLocation = false;
+    props.suspendLocateToolTip = true;
+  }
+
+  /** Call to set a horizontal layout that is anchored to the bottom middle of the view. */
+  public setHorizontalFixedLayout() {
+    const props = AccuDrawViewportUI.controlProps;
+    props.horizontalArrangement = true;
+    props.fixedLocation = true;
+    props.suspendLocateToolTip = false;
+  }
+
+  /** Call to update the currently displayed controls after settings are changed. */
+  public refreshControls(): void {
+    if (undefined === this.controls)
+      return;
+
+    this.removeControls();
+    if (!this.isActive)
+      return;
+
+    // Shouldn't need to call IModelApp.toolAdmin.simulateMotionEvent() in this case...
+    const ev = new BeButtonEvent();
+    IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    this.updateControls(ev);
+  }
+
   /** @internal */
   protected suspendToolTips() {
     if (!AccuDrawViewportUI.controlProps.suspendLocateToolTip || undefined === (this.toolTipsSuspended = (IModelApp.accuSnap.userSettings.toolTip ? true : undefined)))
