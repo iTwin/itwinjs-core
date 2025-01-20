@@ -120,9 +120,37 @@ FROM
 | 104 | 0x18 |
 | 105 | 0x19 |
 
+# Testing INNER JOIN with string prop
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  e.ECInstanceId,
+  e.s,
+  v.id
+FROM
+  aps.TestElement e
+  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
+```
+
+| className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                          | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| AllProperties:IPrimitive | s            | false     | 1     | s        | s            | undefined    | string   | String | s                  |
+|                          | id           | false     | 2     | id_1     | id           | Id           | long     | Id     | id                 |
+
+| ECInstanceId | s    | id   |
+| ------------ | ---- | ---- |
+| 0x15         | str1 | 0x15 |
+| 0x18         | str4 | 0x18 |
+| 0x19         | str5 | 0x19 |
+
 # Testing LEFT OUTER JOIN on virtual table
 
 - dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
 
 ```sql
 SELECT
@@ -130,7 +158,7 @@ SELECT
   e.i,
   v.id
 FROM
-  ECVLib.IdSet ('["0x15", "0x18", "0x19"]') v
+  ECVLib.IdSet (?) v
   LEFT OUTER JOIN aps.TestElement e ON e.ECInstanceId = v.id
 ```
 
@@ -149,6 +177,7 @@ FROM
 # Testing LEFT OUTER JOIN on test table
 
 - dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
 
 ```sql
 SELECT
@@ -157,7 +186,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  LEFT OUTER JOIN ECVLib.IdSet ('["0x15", "0x18", "0x19"]') v ON e.ECInstanceId = v.id
+  LEFT OUTER JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
@@ -182,6 +211,7 @@ FROM
 # Testing JOIN
 
 - dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
 
 ```sql
 SELECT
@@ -190,7 +220,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  JOIN ECVLib.IdSet ('["0x15", "0x18", "0x19"]') v ON e.ECInstanceId = v.id
+  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
