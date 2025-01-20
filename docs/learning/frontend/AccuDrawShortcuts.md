@@ -39,7 +39,7 @@
 - [AccuDrawShortcuts.lockX]($frontend) - Change mode to Rectangular, toggle X lock, if locked focus Y otherwise focus closest axis.
 - [AccuDrawShortcuts.lockY]($frontend) - Change mode to Rectangular. toggle Y lock, if locked focus X otherwise focus closest axis.
 - [AccuDrawShortcuts.lockZ]($frontend) - Toggle Z lock, if locked focus Z.
-- [AccuDrawShortcuts.lockIndex]($frontend) - If axis and/or distance indexing active, lock corresponding fields. If axis and/or distanxe indexing inactive, disable for the next data point.
+- [AccuDrawShortcuts.lockIndex]($frontend) - If axis and/or distance indexing active, lock corresponding fields. If axis and/or distance indexing inactive, disable for the next data point.
 
 ![accudraw lock index](./accudraw-lock-index.png "Behavior of Lock Index with both Distance and Axis indexing active")
 
@@ -54,7 +54,7 @@
 
 ![accudraw standard rotations](./accudraw-standard-rotations.png "Top (Upper Left), Front (Upper Right),  Side (Lower Left), View (Lower Right)")
 
-> NOTE: When [IModelApp.toolAdmin.acsContextLock]($frontend) is true, standard rotations are relative to the view's ACS and not the design axes. This makes it much easier to work in a rotate coordinate system.
+> NOTE: When [IModelApp.toolAdmin.acsContextLock]($frontend) is true, standard rotations are relative to the view's ACS and not design coordinates. This makes it easier to work in rotated coordinate systems.
 
 - [AccuDrawShortcuts.rotate90]($frontend) - Rotate the compass 90° about the supplied axis.
   - Present as three separate shortcuts, ex. "RX", "RY", and "RZ".

@@ -861,7 +861,7 @@ export class AccuDrawSetOriginTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class AccuDrawShortcuts {
     // (undocumented)
     static alignView(): void;
