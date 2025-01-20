@@ -216,7 +216,7 @@
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-metadata",

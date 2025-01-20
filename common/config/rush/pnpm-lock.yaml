@@ -21,6 +21,12 @@ importers:
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
+      '@itwin/ecschema-locaters':
+        specifier: workspace:*
+        version: link:../ecschema-locaters
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../ecschema-metadata
       '@itwin/object-storage-azure':
         specifier: ^2.2.5
         version: 2.2.5(inversify@6.0.1)(reflect-metadata@0.1.13)

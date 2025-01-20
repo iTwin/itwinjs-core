@@ -112,7 +112,9 @@
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
     "touch": "^3.1.0",
-    "ws": "^7.5.10"
+    "ws": "^7.5.10",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-locaters": "workspace:*"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
