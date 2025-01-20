@@ -899,8 +899,6 @@ export class AccuDrawShortcuts {
     static lockDistance(): void;
     static lockIndex(): void;
     // (undocumented)
-    lockIndex(): void;
-    // (undocumented)
     static lockSmart(): void;
     // (undocumented)
     static lockX(): void;

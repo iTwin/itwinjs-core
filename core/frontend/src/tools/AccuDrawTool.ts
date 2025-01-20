@@ -572,6 +572,8 @@ export class AccuDrawShortcuts {
 
       accudraw.flags.indexLocked = true;
     }
+
+    this.requestInputFocus();
   }
 
   public static lockX(): void {
@@ -691,54 +693,6 @@ export class AccuDrawShortcuts {
       return;
     accudraw.doLockAngle(accudraw.clearTentative());
     this.requestInputFocus();
-  }
-
-  public lockIndex(): void {
-    const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
-
-    if (accudraw.flags.indexLocked) {
-      if (accudraw.locked)
-        AccuDrawShortcuts.lockSmart();
-
-      accudraw.flags.indexLocked = false;
-    } else {
-      if (CompassMode.Polar === accudraw.compassMode) {
-        if (accudraw.indexed & LockedStates.XY_BM) {
-          accudraw.setFieldLock(ItemField.ANGLE_Item, true);
-          accudraw.angleLock();
-        }
-
-        if (accudraw.indexed & LockedStates.DIST_BM)
-          AccuDrawShortcuts.lockDistance();
-      } else {
-        if (accudraw.indexed & LockedStates.X_BM) {
-          AccuDrawShortcuts.lockX();
-
-          if (accudraw.indexed & LockedStates.DIST_BM)
-            AccuDrawShortcuts.lockY();
-        }
-
-        if (accudraw.indexed & LockedStates.Y_BM) {
-          AccuDrawShortcuts.lockY();
-
-          if (accudraw.indexed & LockedStates.DIST_BM)
-            AccuDrawShortcuts.lockX();
-        }
-
-        if (accudraw.indexed & LockedStates.DIST_BM && !(accudraw.indexed & LockedStates.XY_BM)) {
-          if (accudraw.locked & LockedStates.X_BM)
-            AccuDrawShortcuts.lockY();
-          else
-            AccuDrawShortcuts.lockX();
-        }
-      }
-
-      accudraw.flags.indexLocked = true;
-    }
-
-    AccuDrawShortcuts.requestInputFocus();
   }
 
   public static setStandardRotation(rotation: RotationMode): void {
