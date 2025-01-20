@@ -30,7 +30,7 @@ function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): 
 /**
  * A shortcut may require no user input (immediate) or it may install a tool to collect the needed input. AccuDrawShortcuts are how users control AccuDraw.
  * A tool implementor should not use this class to setup AccuDraw, instead use AccuDrawHintBuilder to provide hints.
- * @alpha
+ * @beta
  */
 export class AccuDrawShortcuts {
   /** Disable/Enable AccuDraw for the session */

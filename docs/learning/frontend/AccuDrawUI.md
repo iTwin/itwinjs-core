@@ -96,7 +96,7 @@ AccuDraw keyboard shortcuts can also be used to move focus.
 - *Lock Angle* - Change mode to Polar, toggle Angle lock. if locked focus Angle field.
 - *Lock X* - Change mode to Rectangular, toggle X lock, if locked focus Y otherwise focus closest axis.
 - *Lock Y* - Change mode to Rectangular. toggle Y lock, if locked focus X otherwise focus closest axis.
-- *Lock Z* - Set focus to Z input field, toggle Z lock.
+- *Lock Z* - Toggle Z lock, if locked focus Z.
 
 ### Entering New Value
 
@@ -205,6 +205,8 @@ For applications that wish to include a settings dialog for the user, a helper m
 ### Keyboard Shortcuts
 
 When AccuDraw has input focus and does not handle a KeyboardEvent, the event will be propagated first to the active interactive tool, and then to [ToolAdmin.processShortcutKey]($frontend). This is where applications should test for and run their desired keyboard shortcuts.
+
+Refer [here](./AccuDrawShortcuts) for information regarding available shortcuts and what they do.
 
 > NOTE: When using keyboard shortcuts from the appui package, it currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, refer to the documentation for [AccuDrawViewportUI.doProcessUnhandledKey]($frontend).
 
