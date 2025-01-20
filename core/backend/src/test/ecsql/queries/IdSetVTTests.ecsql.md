@@ -76,7 +76,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstan
 | 104 |
 | 105 |
 
-# Testing JOINS with IdSet
+# Testing INNER JOINS with IdSet
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [0x15, 0x18, 0x19]
@@ -95,7 +95,7 @@ SELECT e.i FROM aps.TestElement e INNER JOIN ECVLib.IdSet(?) v ON e.ECInstanceId
 | 104 |
 | 105 |
 
-# Testing JOINS with IdSet and also select VirtualProp
+# Testing INNER JOINS with IdSet and also select VirtualProp
 
 - dataset: AllProperties.bim
 - bindIdSet 1, [0x15, 0x18, 0x19]
@@ -119,6 +119,91 @@ FROM
 | 101 | 0x15 |
 | 104 | 0x18 |
 | 105 | 0x19 |
+
+# Testing LEFT OUTER JOIN on virtual table
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  e.ECInstanceId,
+  e.i,
+  v.id
+FROM
+  ECVLib.IdSet ('["0x15", "0x18", "0x19"]') v
+  LEFT OUTER JOIN aps.TestElement e ON e.ECInstanceId = v.id
+```
+
+| className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|                          | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+| AllProperties:IPrimitive | i            | false     | 1     | i        | i            | undefined    | int      | Int  | i                  |
+|                          | id           | false     | 2     | id_1     | id           | Id           | long     | Id   | id                 |
+
+| ECInstanceId | i   | id   |
+| ------------ | --- | ---- |
+| 0x15         | 101 | 0x15 |
+| 0x18         | 104 | 0x18 |
+| 0x19         | 105 | 0x19 |
+
+# Testing LEFT OUTER JOIN on test table
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  e.ECInstanceId,
+  e.i,
+  v.id
+FROM
+  aps.TestElement e
+  LEFT OUTER JOIN ECVLib.IdSet ('["0x15", "0x18", "0x19"]') v ON e.ECInstanceId = v.id
+```
+
+| className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|                          | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+| AllProperties:IPrimitive | i            | false     | 1     | i        | i            | undefined    | int      | Int  | i                  |
+|                          | id           | false     | 2     | id_1     | id           | Id           | long     | Id   | id                 |
+
+| ECInstanceId | i   | id        |
+| ------------ | --- | --------- |
+| 0x14         | 100 | undefined |
+| 0x15         | 101 | 0x15      |
+| 0x16         | 102 | undefined |
+| 0x17         | 103 | undefined |
+| 0x18         | 104 | 0x18      |
+| 0x19         | 105 | 0x19      |
+| 0x1a         | 106 | undefined |
+| 0x1b         | 107 | undefined |
+| 0x1c         | 108 | undefined |
+| 0x1d         | 109 | undefined |
+
+# Testing JOIN
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  e.ECInstanceId,
+  e.i,
+  v.id
+FROM
+  aps.TestElement e
+  JOIN ECVLib.IdSet ('["0x15", "0x18", "0x19"]') v ON e.ECInstanceId = v.id
+```
+
+| className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|                          | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+| AllProperties:IPrimitive | i            | false     | 1     | i        | i            | undefined    | int      | Int  | i                  |
+|                          | id           | false     | 2     | id_1     | id           | Id           | long     | Id   | id                 |
+
+| ECInstanceId | i   | id   |
+| ------------ | --- | ---- |
+| 0x15         | 101 | 0x15 |
+| 0x18         | 104 | 0x18 |
+| 0x19         | 105 | 0x19 |
 
 # Testing by binding with hex ids
 
