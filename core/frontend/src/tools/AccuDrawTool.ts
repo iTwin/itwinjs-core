@@ -403,7 +403,7 @@ export class AccuDrawShortcuts {
     accudraw.planePt.setFrom(accudraw.published.origin);
     accudraw.published.flags |= AccuDrawFlags.SetOrigin;
     accudraw.activate();
-    accudraw.refreshDecorationsAndDynamics(); // NOTE: Will already grab input focus thought processHints...
+    accudraw.refreshDecorationsAndDynamics(); // NOTE: Will already grab input focus through processHints...
   }
 
   public static changeCompassMode(): void {

@@ -953,10 +953,6 @@ export class AccuDrawSuspendToggleTool extends Tool {
 // @beta
 export class AccuDrawViewportUI extends AccuDraw {
     constructor();
-    // @internal (undocumented)
-    protected acceptPartialInput(item: ItemField, forward?: boolean): Promise<void>;
-    // @internal (undocumented)
-    protected acceptSavedValue(item: ItemField, next: boolean): void;
     static controlProps: {
         suspendLocateToolTip: boolean;
         fixedLocation: boolean;
@@ -980,85 +976,19 @@ export class AccuDrawViewportUI extends AccuDraw {
             shadow: string;
         };
     };
-    // @internal (undocumented)
-    protected controls?: AccuDrawControls;
-    // @internal (undocumented)
-    protected createControlDiv(): HTMLDivElement;
-    // @internal (undocumented)
-    protected createItemField(item: ItemField): HTMLInputElement;
-    // @internal (undocumented)
-    protected createItemFieldLock(item: ItemField): HTMLButtonElement;
-    // @internal (undocumented)
-    protected doAcceptInput(ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void>;
-    // @internal (undocumented)
-    protected doChooseSavedValue(ev: KeyboardEvent, isDown: boolean, item: ItemField, next: boolean): Promise<void>;
-    // @internal (undocumented)
-    protected doDeleteInput(_ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void>;
-    // @internal (undocumented)
-    protected doFocusHome(ev: KeyboardEvent, isDown: boolean, _item: ItemField): void;
-    // @internal (undocumented)
-    protected doNavigate(ev: KeyboardEvent, isDown: boolean, item: ItemField, forward: boolean): Promise<void>;
-    // @internal (undocumented)
-    protected doNewInput(_ev: KeyboardEvent, isDown: boolean, item: ItemField): void;
-    // @internal (undocumented)
-    protected doProcessKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void>;
-    // @internal (undocumented)
-    protected doProcessOverrideKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): boolean;
     protected doProcessUnhandledKey(ev: KeyboardEvent, _isDown: boolean): Promise<void>;
-    // @internal (undocumented)
-    protected focusItem: ItemField;
     grabInputFocus(): void;
     get hasInputFocus(): boolean;
-    // @internal (undocumented)
-    protected initializeItemStyle(style: CSSStyleDeclaration, isButton: boolean): void;
-    // @internal (undocumented)
-    protected get isFocusAccuDraw(): boolean;
-    // @internal (undocumented)
-    protected get isFocusHome(): boolean;
     onCompassDisplayChange(state: "show" | "hide"): void;
     onCompassModeChange(): void;
     onFieldKeyinStatusChange(item: ItemField): void;
     onFieldLockChange(item: ItemField): void;
     onFieldValueChange(item: ItemField): void;
-    // @internal (undocumented)
-    protected onFocusChange(_ev: FocusEvent, item: ItemField, focusIn: boolean): void;
-    // @internal (undocumented)
-    protected onKeyboardEvent(ev: KeyboardEvent, isDown: boolean): Promise<void>;
     onMotion(ev: BeButtonEvent): void;
-    // @internal (undocumented)
-    protected processPartialInput(item: ItemField): Promise<void>;
-    // @internal (undocumented)
-    protected processRepeatedKey(ev: KeyboardEvent, isDown: boolean, item: ItemField, replacement: string): boolean;
-    // @internal (undocumented)
-    protected processReplacementKey(ev: KeyboardEvent, isDown: boolean, item: ItemField, replacement: string, allowStart: boolean): boolean;
     refreshControls(): void;
-    // @internal (undocumented)
-    protected removeControls(): void;
-    // @internal (undocumented)
-    protected setDynamicKeyinStatus(item: ItemField): void;
-    // @internal (undocumented)
-    protected setFocusHome(): void;
     setFocusItem(index: ItemField): void;
     setHorizontalFixedLayout(): void;
-    // @internal (undocumented)
-    protected setPartialKeyinStatus(item: ItemField, selectAll: boolean): void;
     setVerticalCursorLayout(): void;
-    // @internal (undocumented)
-    protected suspendToolTips(): void;
-    // @internal (undocumented)
-    protected toolTipsSuspended?: true;
-    // @internal (undocumented)
-    protected unsuspendToolTips(): void;
-    // @internal (undocumented)
-    protected updateControls(ev: BeButtonEvent): void;
-    // @internal (undocumented)
-    protected updateControlVisibility(isPolar: boolean, is3d?: boolean): void;
-    // @internal (undocumented)
-    protected updateItemFieldKeyinStatus(itemField: HTMLInputElement, item: ItemField): void;
-    // @internal (undocumented)
-    protected updateItemFieldLock(itemLock: HTMLButtonElement, item: ItemField): void;
-    // @internal (undocumented)
-    protected updateItemFieldValue(itemField: HTMLInputElement, item: ItemField): void;
 }
 
 // @public
