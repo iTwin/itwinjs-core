@@ -15,9 +15,6 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(view?: ViewState) { super(view); }
 
-  public override get neverDrawn() { return this._neverDrawn; }
-  public override get alwaysDrawn() { return this._alwaysDrawn; }
-  public get modelOverrides() { return this._modelOverrides; }
   public get elementOverrides() { return this._elementOverrides; }
   public get subCategoryOverrides() { return this._subCategoryOverrides; }
   public get visibleSubCategories() { return this._visibleSubCategories; }

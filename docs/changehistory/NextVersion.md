@@ -6,25 +6,31 @@ publish: false
 
 Table of contents:
 
-- [Selection set](#selection-set)
-- [Font APIs](#font-apis)
-- [API deprecations](#api-deprecations)
-  - [@itwin/core-common](#itwincore-common)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-- [Breaking Changes](#breaking-changes)
-  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-  - [Updated minimum requirements](#updated-minimum-requirements)
-    - [Node.js](#nodejs)
-    - [Electron](#electron)
-    - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/core-backend](#itwincore-backend-1)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-electron](#itwincore-electron)
-  - [API removals](#api-removals)
-  - [Packages dropped](#packages-dropped)
+- [NextVersion](#nextversion)
+  - [Selection set](#selection-set)
+  - [Font APIs](#font-apis)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/core-common](#itwincore-common)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+  - [Breaking Changes](#breaking-changes)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+    - [Updated minimum requirements](#updated-minimum-requirements)
+      - [Node.js](#nodejs)
+      - [Electron](#electron)
+      - [ECMAScript](#ecmascript)
+    - [Deprecated API removals](#deprecated-api-removals)
+      - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [@itwin/core-backend](#itwincore-backend-1)
+      - [@itwin/core-bentley](#itwincore-bentley)
+      - [@itwin/core-electron](#itwincore-electron)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-1)
+    - [Packages dropped](#packages-dropped)
+    - [Change to pullMerge](#change-to-pullmerge)
+      - [No pending/local changes](#no-pendinglocal-changes)
+      - [With pending/local changes](#with-pendinglocal-changes)
 
 ## Selection set
 
@@ -97,6 +103,55 @@ iTwin.js now supports only the latest Electron release (Electron 33) and has dro
 
 The following previously-deprecated APIs have been removed:
 
+#### @itwin/appui-abstract
+
+The following APIs have been removed in `@itwin/appui-abstract`.
+
+| **Removed**                     | **Replacement**                                           |
+|----------------------------------|-----------------------------------------------------------|
+| `AbstractStatusBarActionItem`    | Use `StatusBarActionItem` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarCustomItem`    | Use `StatusBarCustomItem` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarItem`          | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarItemUtilities` | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead. |
+| `AbstractStatusBarLabelItem`     | Use `StatusBarLabelItem` in `@itwin/appui-react` instead. |
+| `AbstractWidgetProps`            | Use `Widget` in `@itwin/appui-react` instead.             |
+| `AllowedUiItemProviderOverrides` | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`. |
+| `BackstageActionItem`            | `BackstageActionItem` in `@itwin/appui-react`.            |
+| `BackstageItem`                  | `BackstageItem` in `@itwin/appui-react`.                  |
+| `BackstageItemType`              | Use Type Guard instead.                                   |
+| `BackstageItemsChangedArgs`      | N/A                                                       |
+| `BackstageItemsManager`          | N/A                                                       |
+| `BackstageItemUtilities`         | `BackstageItemUtilities` in `@itwin/appui-react`.         |
+| `BackstageStageLauncher`         | `BackstageStageLauncher` in `@itwin/appui-react`.         |
+| `BaseUiItemsProvider`            | `BaseUiItemsProvider` in `@itwin/appui-react`.            |
+| `CommonBackstageItem`            | `CommonBackstageItem` in `@itwin/appui-react`.            |
+| `CommonStatusBarItem`            | Use `StatusBarItem` in `@itwin/appui-react` instead.      |
+| `createSvgIconSpec`              | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
+| `EditorPosition.columnSpan`      | N/A                                                       |
+| `getSvgSource`                   | Use `IconSpecUtilities.getWebComponentSource()` instead.  |
+| `isAbstractStatusBarActionItem`  | Use `isStatusBarActionItem` in `@itwin/appui-react` instead. |
+| `isAbstractStatusBarCustomItem`  | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead. |
+| `isAbstractStatusBarLabelItem`   | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead. |
+| `isActionItem`                   | Use `isBackstageActionItem` in `@itwin/appui-react` instead. |
+| `isStageLauncher`                | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead. |
+| `ProvidedItem`                   | `ProvidedItem` in `@itwin/appui-react`.                   |
+| `StagePanelLocation`             | `StagePanelLocation` in `@itwin/appui-react`.             |
+| `StagePanelSection`              | `StagePanelSection` in `@itwin/appui-react`.              |
+| `StageUsage`                     | `StageUsage` in `@itwin/appui-react`.                     |
+| `StatusBarItemId`                | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
+| `StatusBarLabelSide`             | `StatusBarLabelSide` in `@itwin/appui-react`.             |
+| `StatusBarSection`               | `StatusBarSection` in `@itwin/appui-react`.               |
+| `ToolbarItemId`                  | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.  |
+| `ToolbarManager`                 | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
+| `ToolbarOrientation`             | `ToolbarOrientation` in `@itwin/appui-react`.            |
+| `ToolbarUsage`                   | `ToolbarUsage` in `@itwin/appui-react`.                   |
+| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`. |
+| `UiItemProviderOverrides`        | `UiItemProviderOverrides` in `@itwin/appui-react`.        |
+| `UiItemsApplicationAction`       | N/A                                                       |
+| `UiItemsManager`                 | `UiItemsManager` in `@itwin/appui-react`.                 |
+| `UiItemsProvider`                | `UiItemsProvider` in `@itwin/appui-react`.                |
+| `WidgetState`                    | `WidgetState` in `@itwin/appui-react`.
+
 #### @itwin/core-backend
 
 | Removed               | Replacement |
@@ -107,6 +162,21 @@ The following previously-deprecated APIs have been removed:
 | `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
+
+#### @itwin/core-bentley
+
+| Removed                    | Replacement                                                 |
+| -------------------------- | ----------------------------------------------------------- |
+| `ByteStream constructor`   | `ByteStream.fromUint8Array` or `ByteStream.fromArrayBuffer` |
+| `ByteStream.nextUint8`     | `ByteStream.readUint8`                                      |
+| `ByteStream.nextUint16`    | `ByteStream.readUint16`                                     |
+| `ByteStream.nextUint32`    | `ByteStream.readUint32`                                     |
+| `ByteStream.nextInt32`     | `ByteStream.readInt32`                                      |
+| `ByteStream.nextFloat32`   | `ByteStream.readFloat32`                                    |
+| `ByteStream.nextFloat64`   | `ByteStream.readFloat64`                                    |
+| `ByteStream.nextId64`      | `ByteStream.readId64`                                       |
+| `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
+| `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
 
 #### @itwin/appui-abstract
 
@@ -149,3 +219,32 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
 | `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
+
+### Change to pullMerge
+
+Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fastforward method for merging changes. This change is transparent to users and is enabled by default.
+
+#### No pending/local changes
+
+- Incomming changes are applied using "fast-forward" method.
+
+#### With pending/local changes
+
+The merging process in this method follows these steps:
+
+1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
+2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
+3. The rebase process is executed as follows:
+   - All local transactions are reversed.
+   - All incoming changesets are applied using the fast-forward method.
+   - Local transactions are reinstated one by one, with any conflicts reported to the TxnManager.
+   - Once a local changeset is rebased, the local transaction is updated with the rebased changeset.
+
+This method offers several advantages:
+
+1. It allows applications to resolve conflicts effectively.
+2. Even after the pull/merge process, applications can still undo/redo their local transactions.
+3. The chances of pushing a corrupt changeset are minimal because the rebase process captures modified merge changesets without altering data outside the change tracking session.
+4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
+
+For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)

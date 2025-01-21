@@ -329,9 +329,7 @@ export class ViewFlags {
     return renderMode === this.renderMode ? this : this.copy({ renderMode });
   }
 
-  /** Adjust view flags for renderer.
-   * @internal
-   */
+  /** Adjust some view flags based on [[renderMode]]. For example, [[transparency]] is always treated as `false` in [[RenderMode.SolidFill]]. */
   public normalize(): ViewFlags {
     switch (this.renderMode) {
       case RenderMode.Wireframe:

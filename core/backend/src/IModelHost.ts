@@ -195,6 +195,7 @@ export interface IModelHostOptions {
    * Will be changed to default to `false` in 5.0.
    */
   allowSharedChannel?: boolean;
+
 }
 
 /** Configuration of core-backend.
@@ -206,7 +207,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
-
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
