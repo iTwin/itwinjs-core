@@ -208,6 +208,104 @@ FROM
 | 0x1c         | 108 | undefined |
 | 0x1d         | 109 | undefined |
 
+# Testing CROSS JOIN on test table
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  e.S,
+  e.i,
+  v.id
+FROM
+  aps.TestElement e
+  CROSS JOIN ECVLib.IdSet (?) v
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | s            | false     | 0     | s        | s    | undefined    | string   | String | s                  |
+| AllProperties:IPrimitive | i            | false     | 1     | i        | i    | undefined    | int      | Int    | i                  |
+|                          | id           | false     | 2     | id       | id   | Id           | long     | Id     | id                 |
+
+| s    | i   | id   |
+| ---- | --- | ---- |
+| str0 | 100 | 0x15 |
+| str0 | 100 | 0x18 |
+| str0 | 100 | 0x19 |
+| str1 | 101 | 0x15 |
+| str1 | 101 | 0x18 |
+| str1 | 101 | 0x19 |
+| str2 | 102 | 0x15 |
+| str2 | 102 | 0x18 |
+| str2 | 102 | 0x19 |
+| str3 | 103 | 0x15 |
+| str3 | 103 | 0x18 |
+| str3 | 103 | 0x19 |
+| str4 | 104 | 0x15 |
+| str4 | 104 | 0x18 |
+| str4 | 104 | 0x19 |
+| str5 | 105 | 0x15 |
+| str5 | 105 | 0x18 |
+| str5 | 105 | 0x19 |
+| str6 | 106 | 0x15 |
+| str6 | 106 | 0x18 |
+| str6 | 106 | 0x19 |
+| str7 | 107 | 0x15 |
+| str7 | 107 | 0x18 |
+| str7 | 107 | 0x19 |
+| str8 | 108 | 0x15 |
+| str8 | 108 | 0x18 |
+| str8 | 108 | 0x19 |
+| str9 | 109 | 0x15 |
+| str9 | 109 | 0x18 |
+| str9 | 109 | 0x19 |
+
+# Testing FULL JOIN
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+```sql
+SELECT
+  e.s,
+  e.i,
+  v.id
+FROM
+  aps.TestElement e
+  FULL JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | s            | false     | 0     | s        | s    | undefined    | string   | String | s                  |
+| AllProperties:IPrimitive | i            | false     | 1     | i        | i    | undefined    | int      | Int    | i                  |
+|                          | id           | false     | 2     | id       | id   | Id           | long     | Id     | id                 |
+
+| s    | i   | id        |
+| ---- | --- | --------- |
+| str0 | 100 | undefined |
+| str1 | 101 | 0x15      |
+| str2 | 102 | undefined |
+| str3 | 103 | undefined |
+| str4 | 104 | 0x18      |
+| str5 | 105 | 0x19      |
+| str6 | 106 | undefined |
+| str7 | 107 | undefined |
+| str8 | 108 | undefined |
+| str9 | 109 | undefined |
+
+# Testing NATURAL JOIN
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT e.S, e.i, v.id FROM aps.TestElement e NATURAL JOIN ECVLib.IdSet(?) v
+```
+
 # Testing JOIN
 
 - dataset: AllProperties.bim
