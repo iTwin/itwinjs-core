@@ -453,11 +453,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-<<<<<<< HEAD
 				version = 4.11.11;
-=======
-				version = 5.0.33;
->>>>>>> 17d22a448a (Added and updated test cases for alias support in CTE subquery (#7522))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
