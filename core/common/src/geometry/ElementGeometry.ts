@@ -879,14 +879,14 @@ export namespace ElementGeometry {
   }
 
   /** Return the body type that would be used to represent the supplied entry */
-  export function getBRepEntityType(entry: ElementGeometryDataEntry): BRepEntity.BRepType | undefined {
+  export function getBRepEntityType(entry: ElementGeometryDataEntry): BRepEntity.Type | undefined {
     switch (entry.opcode) {
       case ElementGeometryOpcode.PointPrimitive: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
         const ppfb = EGFBAccessors.PointPrimitive.getRootAsPointPrimitive(buffer);
         if (EGFBAccessors.BoundaryType.None === ppfb.boundary())
           return undefined;
-        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.BRepType.Sheet : BRepEntity.BRepType.Wire);
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
       }
 
       case ElementGeometryOpcode.PointPrimitive2d: {
@@ -894,18 +894,18 @@ export namespace ElementGeometry {
         const ppfb = EGFBAccessors.PointPrimitive2d.getRootAsPointPrimitive2d(buffer);
         if (EGFBAccessors.BoundaryType.None === ppfb.boundary())
           return undefined;
-        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.BRepType.Sheet : BRepEntity.BRepType.Wire);
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
       }
 
       case ElementGeometryOpcode.ArcPrimitive: {
         const buffer = new flatbuffers.ByteBuffer(entry.data);
         const ppfb = EGFBAccessors.ArcPrimitive.getRootAsArcPrimitive(buffer);
-        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.BRepType.Sheet : BRepEntity.BRepType.Wire);
+        return (EGFBAccessors.BoundaryType.Closed === ppfb.boundary() ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
       }
 
       case ElementGeometryOpcode.CurvePrimitive: {
         // should never be a point string or closed bcurve...
-        return BRepEntity.BRepType.Wire;
+        return BRepEntity.Type.Wire;
       }
 
       case ElementGeometryOpcode.CurveCollection: {
@@ -915,7 +915,7 @@ export namespace ElementGeometry {
         if ("curveCollection" !== geom.geometryCategory)
           return undefined;
         const curves = geom as CurveCollection;
-        return (curves.isAnyRegionType ? BRepEntity.BRepType.Sheet : BRepEntity.BRepType.Wire);
+        return (curves.isAnyRegionType ? BRepEntity.Type.Sheet : BRepEntity.Type.Wire);
       }
 
       case ElementGeometryOpcode.SolidPrimitive: {
@@ -925,12 +925,12 @@ export namespace ElementGeometry {
         if ("solid" !== geom.geometryCategory)
           return undefined;
         const solid = geom as SolidPrimitive;
-        return (solid.isClosedVolume ? BRepEntity.BRepType.Solid : BRepEntity.BRepType.Sheet);
+        return (solid.isClosedVolume ? BRepEntity.Type.Solid : BRepEntity.Type.Sheet);
       }
 
       case ElementGeometryOpcode.BsplineSurface: {
         // always a surface...
-        return BRepEntity.BRepType.Sheet;
+        return BRepEntity.Type.Sheet;
       }
 
       case ElementGeometryOpcode.Polyface: {
@@ -942,11 +942,11 @@ export namespace ElementGeometry {
         const polyface = (geom as Polyface);
         switch (polyface.expectedClosure) {
           case 0:
-            return PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface) ? BRepEntity.BRepType.Solid : BRepEntity.BRepType.Sheet;
+            return PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface) ? BRepEntity.Type.Solid : BRepEntity.Type.Sheet;
           case 1:
-            return BRepEntity.BRepType.Sheet;
+            return BRepEntity.Type.Sheet;
           case 2:
-            return BRepEntity.BRepType.Solid;
+            return BRepEntity.Type.Solid;
           default:
             return undefined;
         }
@@ -957,11 +957,11 @@ export namespace ElementGeometry {
         const ppfb = EGFBAccessors.BRepData.getRootAsBRepData(buffer);
         switch (ppfb.brepType()) {
           case EGFBAccessors.BRepType.Wire:
-            return BRepEntity.BRepType.Wire; // always be persisted as a curve type...
+            return BRepEntity.Type.Wire; // always be persisted as a curve type...
           case EGFBAccessors.BRepType.Sheet:
-            return BRepEntity.BRepType.Sheet;
+            return BRepEntity.Type.Sheet;
           case EGFBAccessors.BRepType.Solid:
-            return BRepEntity.BRepType.Solid;
+            return BRepEntity.Type.Solid;
           default:
             return undefined;
         }
@@ -1290,11 +1290,11 @@ export namespace ElementGeometry {
     const toBRepType = (typeFb: EGFBAccessors.BRepType) => {
       switch (typeFb) {
         case EGFBAccessors.BRepType.Wire:
-          return BRepEntity.BRepType.Wire;
+          return BRepEntity.Type.Wire;
         case EGFBAccessors.BRepType.Sheet:
-          return BRepEntity.BRepType.Sheet;
+          return BRepEntity.Type.Sheet;
         default:
-          return BRepEntity.BRepType.Solid;
+          return BRepEntity.Type.Solid;
       }
     };
 
@@ -1378,11 +1378,11 @@ export namespace ElementGeometry {
 
     builder.startBRepData(fbb);
 
-    const toEGFBBRepType = (type: BRepEntity.BRepType) => {
+    const toEGFBBRepType = (type: BRepEntity.Type) => {
       switch (type) {
-        case BRepEntity.BRepType.Wire:
+        case BRepEntity.Type.Wire:
           return EGFBAccessors.BRepType.Wire;
-        case BRepEntity.BRepType.Sheet:
+        case BRepEntity.Type.Sheet:
           return EGFBAccessors.BRepType.Sheet;
         default:
           return EGFBAccessors.BRepType.Solid;

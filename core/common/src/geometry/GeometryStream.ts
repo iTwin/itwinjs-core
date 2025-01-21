@@ -6,96 +6,88 @@
  * @module Geometry
  */
 
-import { Id64, Id64String, Id64StringSchema, IModelStatus } from "@itwin/core-bentley";
+import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZSchema, Matrix3d, Point2d, Point3d, Range3d, Transform,
-  TransformPropsSchema,
-  Vector3d, XYZPropsSchema, YawPitchRollAngles,
-  YawPitchRollPropsSchema,
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
-import { ColorDef, ColorDefPropsSchema } from "../ColorDef";
+import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps";
-import { BackgroundFill, BackgroundFillSchema, FillDisplay, FillDisplaySchema, GeometryClassSchema, GeometryParams } from "../GeometryParams";
+import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
 import { IModelError } from "../IModelError";
 import { AreaPattern } from "./AreaPattern";
-import { ImageGraphic, ImageGraphicPropsSchema } from "./ImageGraphic";
+import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { TextString, TextStringPropsSchema } from "./TextString";
-import { Base64EncodedStringSchema } from "../Base64EncodedString";
+import { TextString, TextStringProps } from "./TextString";
+import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
-import { Static, Type } from "@sinclair/typebox";
 
-/* eslint-disable @typescript-eslint/naming-convention */
-/**
- * Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
+/** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
  * @see [[GeometryStreamEntryProps]]
  * @public
  * @extensions
  */
-export const GeometryAppearancePropsSchema = Type.Object({
+export interface GeometryAppearanceProps {
   /** Optional [[SubCategory]] id for subsequent geometry. Use to create a GeometryStream with geometry that is not on the default [[SubCategory]] for the element's [[Category]] or is has geometry on multiple subCategories. */
-  subCategory: Type.Optional(Id64StringSchema),
+  subCategory?: Id64String;
   /** Optional color to override [[SubCategoryAppearance.color]] for subsequent geometry. */
-  color: Type.Optional(ColorDefPropsSchema),
-  weight: Type.Optional(Type.Number({ description: 'Optional weight to override [[SubCategoryAppearance.weight]] for subsequent geometry.' })),
+  color?: ColorDefProps;
+  /** Optional weight to override [[SubCategoryAppearance.weight]] for subsequent geometry. */
+  weight?: number;
   /** Optional style to override [[SubCategoryAppearance.styleId]] for subsequent geometry. */
-  style: Type.Optional(Id64StringSchema),
+  style?: Id64String;
   /** Optional transparency, 0.0 if undefined. Effective transparency is a combination of this value and [[SubCategoryAppearance.color]]. */
-  transparency: Type.Optional(Type.Number({ description: 'Optional transparency, 0.0 if undefined. Effective transparency is a combination of this value and [[SubCategoryAppearance.color]].' })),
+  transparency?: number;
   /** Optional display priority (2d only), 0 if undefined. Effective display priority is a combination of this value and [[SubCategoryAppearance.priority]]. */
-  displayPriority: Type.Optional(Type.Number({ description: 'Optional display priority (2d only), 0 if undefined. Effective display priority is a combination of this value and [[SubCategoryAppearance.priority]].' })),
+  displayPriority?: number;
   /** Optional GeometryClass (for DGN compatibility, subCategories preferred), [[GeometryClass.Primary]] if undefined. */
-  geometryClass: Type.Optional(GeometryClassSchema),
-}, { description: 'Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows. A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.' });
-export type GeometryAppearanceProps = Static<typeof GeometryAppearancePropsSchema>;
+  geometryClass?: GeometryClass;
+}
 
-/**
- * Add a [[gradient]], [[backgroundFill]], or solid [[color]] fill to subsequent planar regions (or meshes).
+/** Add a [[gradient]], [[backgroundFill]], or solid [[color]] fill to subsequent planar regions (or meshes).
  * Only one value among [[gradient]], [[backgroundFill]], and [[color]] should be set.
  * @see [[GeometryStreamEntryProps]]
  * @public
  * @extensions
  */
-export const AreaFillPropsSchema = Type.Object({
+export interface AreaFillProps {
   /** Fill display type, must be set to something other than [[FillDisplay.Never]] to display fill */
-  display: FillDisplaySchema,
-  transparency: Type.Optional(Type.Number({ description: 'Optional fill transparency, will be the same as outline transparency if undefined. Allows for different fill and outline transparencies' })),
+  display: FillDisplay;
+  /** Optional fill transparency, will be the same as outline transparency if undefined. Allows for different fill and outline transparencies */
+  transparency?: number;
   /** Set fill color to view background color. Use [[BackgroundFill.Solid]] for an opaque fill and [[BackgroundFill.Outline]] to display an outline using the line color */
-  backgroundFill: Type.Optional(BackgroundFillSchema),
+  backgroundFill?: BackgroundFill;
   /** Set fill color to a specific color. If the fill color the same as the line color, it is an opaque fill, otherwise it is an outline fill */
-  color: Type.Optional(ColorDefPropsSchema),
+  color?: ColorDefProps;
   /** Set fill using gradient properties. */
-  gradient: Type.Optional(Gradient.SymbPropsSchema),
-}, { description: 'Add a [[gradient]], [[backgroundFill]], or solid [[color]] fill to subsequent planar regions (or meshes). Only one value among [[gradient]], [[backgroundFill]], and [[color]] should be set.' });
-export type AreaFillProps = Static<typeof AreaFillPropsSchema>;
+  gradient?: Gradient.SymbProps;
+}
 
-/**
- * Override [[SubCategoryAppearance.materialId]] for subsequent surface and solid geometry.
+/** Override [[SubCategoryAppearance.materialId]] for subsequent surface and solid geometry.
  * @see [[GeometryStreamEntryProps]]
  * @public
  * @extensions
  */
-export const MaterialPropsSchema = Type.Object({
+export interface MaterialProps {
   /** Material id to use, specify an invalid [[Id64]] to override [[SubCategoryAppearance.materialId]] with no material. */
-  materialId: Type.Optional(Id64StringSchema),
+  materialId?: Id64String;
   /** @internal */
-  origin: Type.Optional(XYZPropsSchema),
+  origin?: XYZProps;
   /** @internal */
-  size: Type.Optional(XYZPropsSchema),
+  size?: XYZProps;
   /** @internal */
-  rotation: Type.Optional(YawPitchRollPropsSchema),
-}, { description: 'Override [[SubCategoryAppearance.materialId]] for subsequent surface and solid geometry.' });
-export type MaterialProps = Static<typeof MaterialPropsSchema>;
+  rotation?: YawPitchRollProps;
+}
 
 /** JSON representation of a brep GeometryStream entry.
  * @public
  */
 export namespace BRepEntity {
   /** Enum for type of solid kernel entity this represents */
-  export enum BRepType {
+  export enum Type {
     /** Body consisting of at least one solid region */
     Solid = 0,
     /** Body consisting of connected sets of faces having edges that are shared by a maximum of two faces */
@@ -103,55 +95,47 @@ export namespace BRepEntity {
     /** Body consisting of connected sets of edges having vertices that are shared by a maximum of two edges */
     Wire = 2,
   }
-  export const BRepTypeSchema = Type.Enum(BRepType, { description: 'Enum for type of solid kernel entity this represents' });
 
-  /**
-   * Optional symbology that can be assigned to individual faces of a solid or sheet body
-   */
-  export const FaceSymbologyPropsSchema = Type.Object({
+  /** Optional symbology that can be assigned to individual faces of a solid or sheet body */
+  export interface FaceSymbologyProps {
     /** Optional color override for face */
-    color: Type.Optional(ColorDefPropsSchema),
-    transparency: Type.Optional(Type.Number({ description: 'Optional transparency override for face' })),
+    color?: ColorDefProps;
+    /** Optional transparency override for face */
+    transparency?: number;
     /** Optional material override for face */
-    materialId: Type.Optional(Id64StringSchema),
-  }, { description: 'Optional symbology that can be assigned to individual faces of a solid or sheet body' });
-  export type FaceSymbologyProps = Static<typeof FaceSymbologyPropsSchema>;
+    materialId?: Id64String;
+  }
 
-  /**
-   * Geometry entry representing raw brep data.
+  /** Geometry entry representing raw brep data.
    * @see [[GeometryStreamEntryProps]]
    */
-  export const DataPropsSchema = Type.Object({
+  export interface DataProps {
     /** data as Base64 encoded string. Must be specifically requested using [[ElementLoadProps.wantBRepData]]. */
-    data: Type.Optional(Base64EncodedStringSchema),
+    data?: Base64EncodedString;
     /** body type, default is Solid */
-    type: Type.Optional(BRepTypeSchema),
+    type?: Type;
     /** body transform, default is identity */
-    transform: Type.Optional(TransformPropsSchema),
+    transform?: TransformProps;
     /** body face attachments */
-    faceSymbology: Type.Optional(Type.Array(FaceSymbologyPropsSchema)),
-  }, { description: 'Geometry entry representing raw brep data.' });
-  export type DataProps = Static<typeof DataPropsSchema>;
+    faceSymbology?: FaceSymbologyProps[];
+  }
 }
 
-
-/**
- * Add a reference to a [[GeometryPart]] from the GeometryStream of a [[GeometricElement]].
+/** Add a reference to a [[GeometryPart]] from the GeometryStream of a [[GeometricElement]].
  * @see [[GeometryStreamEntryProps]]
  * @public
  * @extensions
  */
-export const GeometryPartInstancePropsSchema = Type.Object({
+export interface GeometryPartInstanceProps {
   /** GeometryPart id */
-  part: Id64StringSchema,
+  part: Id64String;
   /** Optional translation relative to element's placement, 0.0,0.0,0.0 if undefined. For a 2d element/translation, supply non-zero x and y only */
-  origin: Type.Optional(XYZPropsSchema),
+  origin?: XYZProps;
   /** Optional rotation relative to element's placement, 0.0,0.0,0.0 if undefined. For a 2d element/rotation, supply a non-zero yaw angle only */
-  rotation: Type.Optional(YawPitchRollPropsSchema),
+  rotation?: YawPitchRollProps;
   /** Optional scale to apply to part, 1.0 if undefined */
-  scale: Type.Optional(Type.Number({ description: 'Optional scale to apply to part, 1.0 if undefined' })),
-}, { description: 'Add a reference to a [[GeometryPart]] from the GeometryStream of a [[GeometricElement]].' });
-export type GeometryPartInstanceProps = Static<typeof GeometryPartInstancePropsSchema>;
+  scale?: number;
+}
 
 /** Flags applied to the entire contents of a [[GeometryStreamProps]].
  * @see GeometryStreamHeaderProps
@@ -166,40 +150,41 @@ export enum GeometryStreamFlags {
    */
   ViewIndependent = 1 << 0,
 }
-export const GeometryStreamFlagsSchema = Type.Enum(GeometryStreamFlags, { description: "Flags applied to the entire contents of a GeometryStreamProps." });
-export const GeometryStreamHeaderPropsSchema = Type.Object(
-  { flags: GeometryStreamFlagsSchema },
-  { description: `An entry in a [[GeometryStreamProps]] containing [[GeometryStreamFlags]] that apply to the geometry stream as a whole.
- If this entry exists in the [[GeometryStreamProps]] array, it will always be the *first* entry.`}
-);
-export type GeometryStreamHeaderProps = Static<typeof GeometryStreamHeaderPropsSchema>;
 
-/**
- * Allowed GeometryStream entries - should only set one value.
+/** An entry in a [[GeometryStreamProps]] containing [[GeometryStreamFlags]] that apply to the geometry stream as a whole.
+ * If this entry exists in the [[GeometryStreamProps]] array, it will always be the *first* entry.
+ * @public
+ * @extensions
+ */
+export interface GeometryStreamHeaderProps {
+  /** The flags applied to the geometry stream. */
+  flags: GeometryStreamFlags;
+}
+
+/** Allowed GeometryStream entries - should only set one value.
  * @see [GeometryStream]($docs/learning/common/geometrystream.md)
  * @public
  * @extensions
  */
-export const GeometryStreamEntryPropsSchema = Type.Intersect([
-  GeomJson.GeometryPropsSchema,
-  Type.Object({
-    header: Type.Optional(GeometryStreamHeaderPropsSchema),
-    appearance: Type.Optional(GeometryAppearancePropsSchema),
-    styleMod: Type.Optional(LineStyle.ModifierPropsSchema),
-    fill: Type.Optional(AreaFillPropsSchema),
-    pattern: Type.Optional(AreaPattern.ParamsPropsSchema),
-    material: Type.Optional(MaterialPropsSchema),
-    geomPart: Type.Optional(GeometryPartInstancePropsSchema),
-    textString: Type.Optional(TextStringPropsSchema),
-    brep: Type.Optional(BRepEntity.DataPropsSchema),
-    image: Type.Optional(ImageGraphicPropsSchema),
-    subRange: Type.Optional(LowAndHighXYZSchema),
-  })
-], { description: 'Allowed GeometryStream entries - should only set one value.' });
-export type GeometryStreamEntryProps = Static<typeof GeometryStreamEntryPropsSchema>;
+export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
+  header?: GeometryStreamHeaderProps;
+  appearance?: GeometryAppearanceProps;
+  styleMod?: LineStyle.ModifierProps;
+  fill?: AreaFillProps;
+  pattern?: AreaPattern.ParamsProps;
+  material?: MaterialProps;
+  geomPart?: GeometryPartInstanceProps;
+  textString?: TextStringProps;
+  brep?: BRepEntity.DataProps;
+  image?: ImageGraphicProps;
+  subRange?: LowAndHighXYZ;
+}
 
-export const GeometryStreamPropsSchema = Type.Array(GeometryStreamEntryPropsSchema, { description: 'A [[GeometricElement]]\'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]].' });
-export type GeometryStreamProps = Static<typeof GeometryStreamPropsSchema>;
+/** A [[GeometricElement]]'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]].
+ * @public
+ * @extensions
+ */
+export type GeometryStreamProps = GeometryStreamEntryProps[];
 
 /** GeometryStreamBuilder is a helper class for populating the [[GeometryStreamProps]] array needed to create a [[GeometricElement]] or [[GeometryPart]].
  * @public
@@ -590,7 +575,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     }
   }
 
-
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private get entry() {
     if (undefined === this._entry)
       this._entry = new IteratorEntry(this._appearance, this._localToWorld);

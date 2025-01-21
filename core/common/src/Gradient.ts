@@ -7,13 +7,11 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Angle, AnglePropsSchema } from "@itwin/core-geometry";
-import { ColorDef, ColorDefPropsSchema } from "./ColorDef";
+import { Angle, AngleProps } from "@itwin/core-geometry";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
-import { Static, Type } from "@sinclair/typebox";
-import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsPropsSchema } from "./ThematicDisplay";
+import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 /** Namespace containing types for defining a color gradient, often used for filled planar regions.
  * @see [[GeometryParams]]
  * @see [[GraphicParams]]
@@ -30,8 +28,6 @@ export namespace Gradient {
     Outline = 2,
   }
 
-  export const FlagsSchema = Type.Enum(Flags, {description: "Flags applied to a [[Gradient.Symb]]."});
-
   /** Enumerates the modes by which a [[Gradient.Symb]]'s keys are applied to create an image. */
   export enum Mode {
     None = 0,
@@ -44,15 +40,13 @@ export namespace Gradient {
     Thematic = 6,
   }
 
-  export const ModeSchema = Type.Enum(Mode, {description: "Enumerates the modes by which a [[Gradient.Symb]]'s keys are applied to create an image."});
-
   /** Gradient fraction value to [[ColorDef]] pair */
-  export const KeyColorsPropsSchema = Type.Object({
-    value: Type.Number({ description: 'Fraction from 0.0 to 1.0 to denote position along gradient' }),
-        /** Color value for given fraction */
-    color: ColorDefPropsSchema,
-  })
-  export type KeyColorProps = Static<typeof KeyColorsPropsSchema>;
+  export interface KeyColorProps {
+    /** Fraction from 0.0 to 1.0 to denote position along gradient */
+    value: number;
+    /** Color value for given fraction */
+    color: ColorDefProps;
+  }
 
   /** Gradient fraction value to [[ColorDef]] pair
    * @see [[Gradient.KeyColorProps]]
@@ -71,25 +65,23 @@ export namespace Gradient {
     return (a.value === b.value) && a.color.equals(b.color);
   }
 
-  /**
-   * Multi-color area fill defined by a range of colors that vary by position
-   * @public
-   */
-  export const SymbPropsSchema = Type.Object({
+  /** Multi-color area fill defined by a range of colors that vary by position */
+  export interface SymbProps {
     /** Gradient type, must be set to something other than [[Gradient.Mode.None]] to display fill */
-    mode: ModeSchema,
+    mode: Mode;
     /** Gradient flags to enable outline display and invert color fractions, Flags.None if undefined */
-    flags: Type.Optional(FlagsSchema),
+    flags?: Flags;
     /** Gradient rotation angle, 0.0 if undefined */
-    angle: Type.Optional(AnglePropsSchema),
-    tint: Type.Optional(Type.Number({ description: 'Gradient tint value from 0.0 to 1.0, only used when [[Gradient.KeyColorProps]] size is 1, 0.0 if undefined' })),
-    shift: Type.Optional(Type.Number({ description: 'Gradient shift value from 0.0 to 1.0, 0.0 if undefined' })),
+    angle?: AngleProps;
+    /** Gradient tint value from 0.0 to 1.0, only used when [[Gradient.KeyColorProps]] size is 1, 0.0 if undefined */
+    tint?: number;
+    /** Gradient shift value from 0.0 to 1.0, 0.0 if undefined */
+    shift?: number;
     /** Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum */
-    keys: Type.Array(KeyColorsPropsSchema, { description: 'Gradient fraction value/color pairs, 1 minimum (uses tint for 2nd color), 8 maximum' }),
+    keys: KeyColorProps[];
     /** Settings applicable to [[ThematicDisplay]]. */
-    thematicSettings: Type.Optional(ThematicGradientSettingsPropsSchema),
-  }, { description: 'Multi-color area fill defined by a range of colors that vary by position' });
-  export type SymbProps = Static<typeof SymbPropsSchema>;
+    thematicSettings?: ThematicGradientSettingsProps;
+  }
 
   /** Arguments supplied to [[Gradient.Symb.produceImage]].
    * @public

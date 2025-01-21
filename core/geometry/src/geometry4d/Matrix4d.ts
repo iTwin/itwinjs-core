@@ -6,17 +6,18 @@
  * @module Numerics
  */
 
-import { Static, Type } from "@sinclair/typebox";
 import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { XYAndZ } from "../geometry3d/XYZProps";
-import { Point4d, Point4DPropsSchema } from "./Point4d";
+import { Point4d, Point4dProps } from "./Point4d";
 
-/* eslint-disable @typescript-eslint/naming-convention */
-export const Matrix4DPropsSchema = Type.Array(Point4DPropsSchema, {description: "Coordinate data with `Point4d` numeric data as an array `[x,y,z,w]`"});
-export type Matrix4dProps = Static<typeof Matrix4DPropsSchema>;
+/**
+ * Coordinate data with `Point4d` numeric data as an array `[x,y,z,w]`
+ * @public
+ */
+export type Matrix4dProps = Point4dProps[];
 
 /**
  * * A Matrix4d is a matrix with 4 rows and 4 columns.

@@ -6,21 +6,14 @@
  * @module Entities
  */
 
-import { Static, Type } from "@sinclair/typebox";
 import { Base64 } from "js-base64";
 
-/**
- * Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as required when converting EC properties of `binary` type to and from JSON.
+/** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as required when converting EC properties of `binary` type to and from JSON.
  * @see [[TextureProps.data]] and [[BRepEntity.DataProps.data]] for examples of properties of this type.
  * @public
  * @extensions
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const Base64EncodedStringSchema = Type.String({
-  description: 'Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as required when converting EC properties of `binary` type to and from JSON.'
-});
-
-export type Base64EncodedString = Static<typeof Base64EncodedStringSchema>;
+export type Base64EncodedString = string;
 
 /** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as persisted in an [ECDb]($backend) for properties of `binary` type.
  * @public

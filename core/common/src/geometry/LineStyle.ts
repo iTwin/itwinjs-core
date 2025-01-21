@@ -7,61 +7,42 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Transform, Vector3d, XYZPropsSchema, YawPitchRollAngles, YawPitchRollPropsSchema } from "@itwin/core-geometry";
-import { Static, Type } from "@sinclair/typebox";
+import { Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 
 /** @public */
 export namespace LineStyle {
 
-  // /** Modify the line style appearance without changing the line style definition.
-  //  * Applies to the style previously established by a [[GeometryAppearanceProps]] or current [[SubCategoryAppearance]].
-  //  * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
-  //  * @see [[GeometryStreamEntryProps]]
-  //  */
-  // export interface ModifierProps {
-  //   /** Optional scale to apply to all length values, 1.0 if undefined */
-  //   scale?: number;
-  //   /** Optional scale to apply to scalable dashes, 1.0 if undefined */
-  //   dashScale?: number;
-  //   /** Optional scale to apply to scalable gaps, 1.0 if undefined */
-  //   gapScale?: number;
-  //   /** Optional start width in meters to apply to dashes, no width if undefined */
-  //   startWidth?: number;
-  //   /** Optional end width in meters to apply to dashes, same as startWidth if undefined */
-  //   endWidth?: number;
-  //   /** Optional shift by distance in meters, 0.0 if undefined */
-  //   distPhase?: number;
-  //   /** Optional shift by fraction, 0.0 if undefined */
-  //   fractPhase?: number;
-  //   /** Optional flag to center stroke pattern and stretch ends, false if undefined */
-  //   centerPhase?: boolean;
-  //   /** Optional flag to enable or disable single segment mode */
-  //   segmentMode?: boolean;
-  //   /** Optional flag that denotes startWidth and endWidth represent physical widths that should not be affected by scale, false if undefined */
-  //   physicalWidth?: boolean;
-  //   /** Optional up vector for style (applicable to 3d only), 0.0,0.0,1.0 if undefined */
-  //   normal?: XYZProps;
-  //   /** Optional orientation for style (applicable to 3d only), 0.0,0.0,0.0 if undefined */
-  //   rotation?: YawPitchRollProps;
-  // }
-
-  // TODO optional commentary again
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  export const ModifierPropsSchema = Type.Object({
-    scale: Type.Optional(Type.Number({ description: 'Optional scale to apply to all length values, 1.0 if undefined' })),
-    dashScale: Type.Optional(Type.Number({ description: 'Optional scale to apply to scalable dashes, 1.0 if undefined' })),
-    gapScale: Type.Optional(Type.Number({ description: 'Optional scale to apply to scalable gaps, 1.0 if undefined' })),
-    startWidth: Type.Optional(Type.Number({ description: 'Optional start width in meters to apply to dashes, no width if undefined' })),
-    endWidth: Type.Optional(Type.Number({ description: 'Optional end width in meters to apply to dashes, same as startWidth if undefined' })),
-    distPhase: Type.Optional(Type.Number({ description: 'Optional shift by distance in meters, 0.0 if undefined' })),
-    fractPhase: Type.Optional(Type.Number({ description: 'Optional shift by fraction, 0.0 if undefined' })),
-    centerPhase: Type.Optional(Type.Boolean({ description: 'Optional flag to center stroke pattern and stretch ends, false if undefined' })),
-    segmentMode: Type.Optional(Type.Boolean({ description: 'Optional flag to enable or disable single segment mode' })),
-    physicalWidth: Type.Optional(Type.Boolean({ description: 'Optional flag that denotes startWidth and endWidth represent physical widths that should not be affected by scale, false if undefined' })),
-    normal: Type.Optional(XYZPropsSchema),
-    rotation: Type.Optional(YawPitchRollPropsSchema),
-  }, { description: 'Modify the line style appearance without changing the line style definition. Applies to the style previously established by a GeometryAppearanceProps or current SubCategoryAppearance. Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.' });
-  export type ModifierProps = Static<typeof ModifierPropsSchema>;
+  /** Modify the line style appearance without changing the line style definition.
+   * Applies to the style previously established by a [[GeometryAppearanceProps]] or current [[SubCategoryAppearance]].
+   * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
+   * @see [[GeometryStreamEntryProps]]
+   */
+  export interface ModifierProps {
+    /** Optional scale to apply to all length values, 1.0 if undefined */
+    scale?: number;
+    /** Optional scale to apply to scalable dashes, 1.0 if undefined */
+    dashScale?: number;
+    /** Optional scale to apply to scalable gaps, 1.0 if undefined */
+    gapScale?: number;
+    /** Optional start width in meters to apply to dashes, no width if undefined */
+    startWidth?: number;
+    /** Optional end width in meters to apply to dashes, same as startWidth if undefined */
+    endWidth?: number;
+    /** Optional shift by distance in meters, 0.0 if undefined */
+    distPhase?: number;
+    /** Optional shift by fraction, 0.0 if undefined */
+    fractPhase?: number;
+    /** Optional flag to center stroke pattern and stretch ends, false if undefined */
+    centerPhase?: boolean;
+    /** Optional flag to enable or disable single segment mode */
+    segmentMode?: boolean;
+    /** Optional flag that denotes startWidth and endWidth represent physical widths that should not be affected by scale, false if undefined */
+    physicalWidth?: boolean;
+    /** Optional up vector for style (applicable to 3d only), 0.0,0.0,1.0 if undefined */
+    normal?: XYZProps;
+    /** Optional orientation for style (applicable to 3d only), 0.0,0.0,0.0 if undefined */
+    rotation?: YawPitchRollProps;
+  }
 
   /** Optional modifiers to override line style definition */
   export class Modifier implements ModifierProps {

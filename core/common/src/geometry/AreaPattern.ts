@@ -6,33 +6,25 @@
  * @module Symbology
  */
 
-import { Id64, Id64String, Id64StringSchema } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Angle, AnglePropsSchema, Geometry, Matrix3d, Point2d, Point3d, Transform, XYPropsSchema, XYZPropsSchema, YawPitchRollAngles,
-  YawPitchRollPropsSchema,
+  Angle, AngleProps, Geometry, Matrix3d, Point2d, Point3d, Transform, XYProps, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
-import { ColorDef, ColorDefPropsSchema } from "../ColorDef";
-import { Static, Type } from "@sinclair/typebox";
+import { ColorDef, ColorDefProps } from "../ColorDef";
 
 /** @public */
 export namespace AreaPattern {
-
-  /**
- * Single hatch line definition
- * @public
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const HatchDefLinePropsSchema = Type.Object({
-  /** Angle of hatch line, 0.0 if undefined */
-  angle: Type.Optional(AnglePropsSchema),
-  /** Origin point (relative to placement) the hatch passes through, 0.0,0.0 if undefined */
-  through: Type.Optional(XYPropsSchema),
-  /** Offset of successive lines. X offset staggers dashes (ignored for solid lines) and Y offset controls the distance between both solid and dashed lines, 0.0,0.0 if undefined */
-  offset: Type.Optional(XYPropsSchema),
-  /** Array of gap and dash lengths for creating non-solid hatch lines, max of 20. A positive value denotes dash, a negative value a gap, solid line if undefined */
-  dashes: Type.Optional(Type.Array(Type.Number(), { description: 'Array of gap and dash lengths for creating non-solid hatch lines, max of 20. A positive value denotes dash, a negative value a gap, solid line if undefined' })),
-}, { description: 'Single hatch line definition' });
-export type HatchDefLineProps = Static<typeof HatchDefLinePropsSchema>;
+  /** Single hatch line definition */
+  export interface HatchDefLineProps {
+    /** Angle of hatch line, 0.0 if undefined */
+    angle?: AngleProps;
+    /** Origin point (relative to placement) the hatch passes through, 0.0,0.0 if undefined */
+    through?: XYProps;
+    /** Offset of successive lines. X offset staggers dashes (ignored for solid lines) and Y offset controls the distance between both solid and dashed lines, 0.0,0.0 if undefined */
+    offset?: XYProps;
+    /** Array of gap and dash lengths for creating non-solid hatch lines, max of 20. A positive value denotes dash, a negative value a gap, solid line if undefined */
+    dashes?: number[];
+  }
 
   export class HatchDefLine implements HatchDefLineProps {
     public angle?: Angle;
@@ -52,33 +44,37 @@ export type HatchDefLineProps = Static<typeof HatchDefLinePropsSchema>;
     }
   }
 
-  /**
- * Definition of a hatch, cross-hatch, or area pattern that can be applied to the interior of a planar region.
- * @see [[GeometryStreamEntryProps]]
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const ParamsPropsSchema = Type.Object({
-  /** Pattern offset (relative to placement), 0.0,0.0,0.0 if undefined */
-  origin: Type.Optional(XYZPropsSchema),
-  /** Pattern orientation (relative to placement), 0.0,0.0,0.0 if undefined */
-  rotation: Type.Optional(YawPitchRollPropsSchema),
-  space1: Type.Optional(Type.Number({ description: 'Spacing of first set of parallel lines in a hatch pattern, or row spacing between area pattern tiles, 0.0 if undefined' })),
-  space2: Type.Optional(Type.Number({ description: 'Spacing of second set of parallel lines in a cross-hatch (leave undefined or 0 for a hatch), or column spacing between area pattern tiles, 0.0 if undefined' })),
-  /** Angle of first set of parallel lines in a hatch pattern or area pattern tile direction, 0.0 if undefined */
-  angle1: Type.Optional(AnglePropsSchema),
-  /** Angle of second set of parallel lines in a cross-hatch, 0.0 if undefined */
-  angle2: Type.Optional(AnglePropsSchema),
-  scale: Type.Optional(Type.Number({ description: 'Scale to apply to area pattern symbol, 1.0 if undefined' })),
-  /** Pattern color, leave undefined to inherit color from parent element. For area patterns, does not override explicit colors stored in symbol */
-  color: Type.Optional(ColorDefPropsSchema),
-  weight: Type.Optional(Type.Number({ description: 'Pattern weight, leave undefined to inherit weight from parent element. For area patterns, does not override explicit weights stored in symbol' })),
-  invisibleBoundary: Type.Optional(Type.Boolean({ description: 'Set to inhibit display of pattern boundary, not applicable when boundary is also filled, false if undefined' })),
-  snappable: Type.Optional(Type.Boolean({ description: 'Set to allow snapping to pattern geometry, false if undefined' })),
-  /** [[GeometryPart]] id to use for tiled area pattern display */
-  symbolId: Type.Optional(Id64StringSchema),
-  defLines: Type.Optional(Type.Array(HatchDefLinePropsSchema, { description: 'Define an area pattern by supplying hatch line definitions instead of using a [[GeometryPart]]' })),
-}, { description: 'Definition of a hatch, cross-hatch, or area pattern that can be applied to the interior of a planar region.' });
-export type ParamsProps = Static<typeof ParamsPropsSchema>;
+  /** Definition of a hatch, cross-hatch, or area pattern that can be applied to the interior of a planar region.
+   * @see [[GeometryStreamEntryProps]]
+   */
+  export interface ParamsProps {
+    /** Pattern offset (relative to placement), 0.0,0.0,0.0 if undefined */
+    origin?: XYZProps;
+    /** Pattern orientation (relative to placement), 0.0,0.0,0.0 if undefined */
+    rotation?: YawPitchRollProps;
+    /** Spacing of first set of parallel lines in a hatch pattern, or row spacing between area pattern tiles, 0.0 if undefined */
+    space1?: number;
+    /** Spacing of second set of parallel lines in a cross-hatch (leave undefined or 0 for a hatch), or column spacing between area pattern tiles, 0.0 if undefined */
+    space2?: number;
+    /** Angle of first set of parallel lines in a hatch pattern or area pattern tile direction, 0.0 if undefined */
+    angle1?: AngleProps;
+    /** Angle of second set of parallel lines in a cross-hatch, 0.0 if undefined */
+    angle2?: AngleProps;
+    /** Scale to apply to area pattern symbol, 1.0 if undefined */
+    scale?: number;
+    /** Pattern color, leave undefined to inherit color from parent element. For area patterns, does not override explicit colors stored in symbol */
+    color?: ColorDefProps;
+    /** Pattern weight, leave undefined to inherit weight from parent element. For area patterns, does not override explicit weights stored in symbol */
+    weight?: number;
+    /** Set to inhibit display of pattern boundary, not applicable when boundary is also filled, false if undefined */
+    invisibleBoundary?: boolean;
+    /** Set to allow snapping to pattern geometry, false if undefined */
+    snappable?: boolean;
+    /** [[GeometryPart]] id to use for tiled area pattern display */
+    symbolId?: Id64String;
+    /** Define an area pattern by supplying hatch line definitions instead of using a [[GeometryPart]] */
+    defLines?: HatchDefLineProps[];
+  }
 
   /** Defines a hatch, cross hatch, or area pattern. */
   export class Params {

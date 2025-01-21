@@ -7,37 +7,67 @@
  * @module CartesianGeometry
  */
 
-import { Static, Type } from "@sinclair/typebox";
 import { Geometry } from "../Geometry";
 
-/* eslint-disable @typescript-eslint/naming-convention */
-export const WritableXAndYSchema = Type.Object({
-  x: Type.Number({description: "x coordinate"}),
-  y: Type.Number({description: "y coordinate"}),
-}, {description: "Interface for class with `x` and `y` as number properties."});
-export type WritableXAndY = Static<typeof WritableXAndYSchema>;
-export const WritableHasZSchema = Type.Object({
-  z: Type.Number({description: "z coordinate"}),
-}, {description: "Interface for class with `z` as number property."});
-export type WriteableHasZ = Static<typeof WritableHasZSchema>;
-export const WritableXYAndZSchema = Type.Intersect([WritableXAndYSchema, WritableHasZSchema], {description: "Interface for class with `x`, `y`, `z` as number properties."});
-export type WritableXYAndZ = Static<typeof WritableXYAndZSchema>;
-export const WritableLowAndHighXYSchema = Type.Object({
-  low: WritableXAndYSchema,
-  high: WritableXAndYSchema,
-}, {description: "Interface for class with named properties `low` and `high`, both being `WriteableXAndY`"});
-export type WritableLowAndHighXY = Static<typeof WritableLowAndHighXYSchema>;
-export const WritableLowAndHighXYZSchema = Type.Object({
-  low: WritableXYAndZSchema,
-  high: WritableXYAndZSchema,
-}, {description: "Interface for class with named properties `low` and `high`, both being `WriteableXYAndZ`"});
-export type WritableLowAndHighXYZ = Static<typeof WritableLowAndHighXYZSchema>;
-export const HasZSchema = Type.Readonly(WritableHasZSchema);
-export type HasZ = Static<typeof HasZSchema>;
-export const XAndYSchema = Type.Readonly(WritableXAndYSchema);
-export type XAndY = Static<typeof XAndYSchema>;
-export const XYAndZSchema = Type.Readonly(WritableXYAndZSchema);
-export type XYAndZ = Static<typeof XYAndZSchema>;
+/**
+ * Interface for class with `x` and `y` as number properties.
+ * @public
+ */
+export interface WritableXAndY {
+  /** x coordinate */
+  x: number;
+  /** y coordinate */
+  y: number;
+}
+/**
+ * Interface for class with `z` as number property.
+ * @public
+ */
+export interface WriteableHasZ {
+  /** z coordinate */
+  z: number;
+}
+/**
+ * Interface for class with `x`, `y`, `z` as number property.
+ * @public
+ */
+export interface WritableXYAndZ extends WritableXAndY, WriteableHasZ {
+}
+/**
+ * Interface for class with named properties `low` and `high`, both being `WriteableXAndY`
+ * @public
+ */
+export interface WritableLowAndHighXY {
+  /** Low x,y coordinates */
+  low: WritableXAndY;
+  /** High x,y,z coordinates */
+  high: WritableXAndY;
+}
+/**
+ * Interface for class with named properties `low` and `high`, both being `WriteableXYAndZ`
+ * @public
+ */
+export interface WritableLowAndHighXYZ {
+  /** Low x,y,z coordinates */
+  low: WritableXYAndZ;
+  /** High x,y,z coordinates */
+  high: WritableXYAndZ;
+}
+/**
+ * Interface for readable `z` number members.
+ * @public
+ */
+export type HasZ = Readonly<WriteableHasZ>;
+/**
+ * Interface for readable `x` and `y` number members.
+ * @public
+ */
+export type XAndY = Readonly<WritableXAndY>;
+/**
+ * Interface for type with readable `x`, `y`, `z` number members.
+ * @public
+ */
+export type XYAndZ = Readonly<WritableXYAndZ>;
 
 /** @public */
 export namespace XYAndZ { // eslint-disable-line @typescript-eslint/no-redeclare
@@ -70,59 +100,42 @@ export interface LowAndHighXYProps { low: XYProps, high: XYProps }
  * Interface for type with readable `low` and `high` members which have `x`, `y`, and `z` number members.
  * @public
  */
-export const LowAndHighXYZSchema = Type.Readonly(WritableLowAndHighXYZSchema);
-export type LowAndHighXYZ = Static<typeof LowAndHighXYZSchema>;
+export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 
 /** JSON representation of [[LowAndHighXYZ]].
  * @public
  */
 export interface LowAndHighXYZProps { low: XYZProps, high: XYZProps }
 
-export const XYZPropsSchema = Type.Union([
-  Type.Object({
-    x: Type.Optional(Type.Number({ description: "X coordinate" })),
-    y: Type.Optional(Type.Number({ description: "Y coordinate" })),
-    z: Type.Optional(Type.Number({ description: "Z coordinate" })),
-  }, { description: "Object with optional `x`, `y`, `z` properties" }),
-  Type.Array(Type.Number(), { description: "Number array" })
-], { description: "Interface for variant json (one of): (individually optional) `x`, `y`, `z` or number array" });
-export type XYZProps = Static<typeof XYZPropsSchema>;
-
+/**
+ * Interface for variant json (one of)
+ * * (individually optional) `x`, `y`, `z`
+ * * number array
+ * @public
+ */
+export type XYZProps = {
+  x?: number;
+  y?: number;
+  z?: number;
+} | number[];
 /**
  * Interface for variant json (one of)
  * * (individually optional) `x`, `y`
  * * number array
  * @public
  */
-export const XYPropsSchema = Type.Union([
-  Type.Object({
-    x: Type.Optional(Type.Number({ description: 'X coordinate' })),
-    y: Type.Optional(Type.Number({ description: 'Y coordinate' })),
-  }, { description: 'Object with optional x and y properties' }),
-  Type.Array(Type.Number(), { description: 'Array of numbers' })
-], { description: 'Interface for variant json (one of): (individually optional) `x`, `y` or number array' });
-export type XYProps = Static<typeof XYPropsSchema>;
-
+export type XYProps = {
+  x?: number;
+  y?: number;
+} | number[];
 /**
  * Interface for variant json (one of)
  * * array of number arrays, with one matrix row in each array
- * * flat array of numbers, in row-major order
+ * * flat array of numbers, in row-mor order
  * * `Matrix3d` object
  * @public
  */
-export const Matrix3dPropsSchema = Type.Union([
-  Type.Array(Type.Array(Type.Number(), { description: 'Array of numbers representing a row in the matrix' }), { description: 'Array of number arrays, with one matrix row in each array' }),
-  Type.Array(Type.Number(), { description: 'Flat array of numbers, in row-major order' }),
-], {
-  description: [
-    'Interface for variant json (one of):',
-    '* array of number arrays, with one matrix row in each array',
-    '* flat array of numbers, in row-major order',
-    '* `Matrix3d` object'
-  ].join(' ')
-});
-export type Matrix3dProps = Static<typeof Matrix3dPropsSchema>;
-
+export type Matrix3dProps = number[][] | number[];
 /**
  * Interface for variant json (one of)
  * * array of number arrays, with each low level array containing 4 numbers of a transform row (qx, qy, qz, ax)
@@ -130,23 +143,10 @@ export type Matrix3dProps = Static<typeof Matrix3dPropsSchema>;
  * * `Transform` object
  * @public
  */
-export const TransformPropsSchema = Type.Union([
-  Type.Array(Type.Array(Type.Number(), { description: 'Array of numbers representing a row in the transform' }), { description: 'Array of number arrays, with each low level array containing 4 numbers of a transform row (qx, qy, qz, ax)' }),
-  Type.Array(Type.Number(), { description: 'Flat array of 12 numbers, in row-major order for the 3 rows of 4 values' }),
-  Type.Object({
-    origin: XYZPropsSchema,
-    matrix: Matrix3dPropsSchema,
-  }, { description: 'Transform object' })
-], {
-  description: [
-    'Interface for variant json (one of):',
-    '* array of number arrays, with each low level array containing 4 numbers of a transform row (qx, qy, qz, ax)',
-    '* flat array of 12 numbers, in row-major order for the 3 rows of 4 values',
-    '* `Transform` object'
-  ].join(' ')
-});
-export type TransformProps = Static<typeof TransformPropsSchema>;
-
+export type TransformProps = number[][] | number[] | {
+  origin: XYZProps;
+  matrix: Matrix3dProps;
+};
 /**
  *  Interface for variant json representing a Range3d
  * * pair of `XYZProps` named `low` and `high`

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -9,10 +8,9 @@
 
 import { compareNumbers } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { ColorDef, ColorDefPropsSchema } from "./ColorDef";
-import { TextureTransparency } from "./TextureProps";
-import { Static, Type } from "@sinclair/typebox";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
+import { TextureTransparency } from "./TextureProps";
 
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.
  * @see [[ThematicGradientSettings.mode]]
@@ -29,7 +27,6 @@ export enum ThematicGradientMode {
   /** Apply isolines to the scene to achieve an effect similar to a contour map. Can only be used with [[ThematicDisplayMode.Height]]. */
   IsoLines = 3,
 }
-export const ThematicGradientModeSchema = Type.Enum(ThematicGradientMode, { description: "A thematic gradient mode used to generate and apply a thematic effect to a scene." });
 
 /** Describes how transparency is computed when applying a thematic gradient to a surface.
  * Each [[Gradient.KeyColor]] in [[ThematicGradientSettings.customKeys]] has a transparency value.
@@ -48,7 +45,6 @@ export enum ThematicGradientTransparencyMode {
    */
   MultiplySurfaceAndGradient = 1,
 }
-export const ThematicGradientTransparencyModeSchema = Type.Enum(ThematicGradientTransparencyMode, { description: "Describes how transparency is computed when applying a thematic gradient to a surface." });
 
 /** A color scheme used to generate the colors of a thematic gradient within an applied range.
  * @see [[ThematicGradientSettings.colorScheme]]
@@ -72,27 +68,27 @@ export enum ThematicGradientColorScheme {
    */
   Custom = 5,
 }
-export const ThematicGradientColorSchemeSchema = Type.Enum(ThematicGradientColorScheme, { description: "A color scheme used to generate the colors of a thematic gradient within an applied range."});
 
-/**
- * JSON representation of a [[ThematicGradientSettings]].
+/** JSON representation of a [[ThematicGradientSettings]].
  * @public
  * @extensions
  **/
-export const ThematicGradientSettingsPropsSchema = Type.Object({
+export interface ThematicGradientSettingsProps {
   /** See [[ThematicGradientSettings.mode]]. */
-  mode: Type.Optional(ThematicGradientModeSchema),
-  stepCount: Type.Optional(Type.Number({ description: 'See [[ThematicGradientSettings.stepCount]].' })),
+  mode?: ThematicGradientMode;
+  /** See [[ThematicGradientSettings.stepCount]]. */
+  stepCount?: number;
   /** See [[ThematicGradientSettings.marginColor]]. */
-  marginColor: Type.Optional(ColorDefPropsSchema),
+  marginColor?: ColorDefProps;
   /** See [[ThematicGradientSettings.colorScheme]]. */
-  colorScheme: Type.Optional(ThematicGradientColorSchemeSchema),
-  customKeys: Type.Optional(Type.Array(Gradient.KeyColorsPropsSchema, { description: 'See [[ThematicGradientSettings.customKeys]].' })),
-  colorMix: Type.Optional(Type.Number({ description: 'See [[ThematicGradientSettings.colorMix]].' })),
+  colorScheme?: ThematicGradientColorScheme;
+  /** See [[ThematicGradientSettings.customKeys. */
+  customKeys?: Gradient.KeyColorProps[];
+  /** See [[ThematicGradientSettings.colorMix]]. */
+  colorMix?: number;
   /** See [[ThematicGradientSettings.transparencyMode]]. */
-  transparencyMode: Type.Optional(ThematicGradientTransparencyModeSchema),
-}, { description: 'JSON representation of a [[ThematicGradientSettings]].' });
-export type ThematicGradientSettingsProps = Static<typeof ThematicGradientSettingsPropsSchema>;
+  transparencyMode?: ThematicGradientTransparencyMode;
+}
 
 /** Thematic settings specific to creating a color gradient used by [[ThematicDisplay]].
  * @public

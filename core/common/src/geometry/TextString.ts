@@ -6,9 +6,8 @@
  * @module Geometry
  */
 
-import { Point2d, Point3d, Range2d, Transform, Vector3d, XYZPropsSchema, YawPitchRollAngles, YawPitchRollPropsSchema } from "@itwin/core-geometry";
-import { FontId, FontIdSchema } from "../Fonts";
-import { Static, Type } from "@sinclair/typebox";
+import { Point2d, Point3d, Range2d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { FontId } from "../Fonts";
 
 /**
  * Optional cached text layout information used to support legacy proxy graphics.
@@ -20,28 +19,31 @@ export interface TextStringGlyphData {
   range: Range2d;
 }
 
-/**
- * Properties for a TextString class.
+/** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]
  * @public
  * @extensions
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const TextStringPropsSchema = Type.Object({
-  text: Type.String({ description: 'Text string' }),
+export interface TextStringProps {
+  /** text string */
+  text: string;
   /** FontId for the TextString. FontIds are mapped to font names and types via the FontMap */
-  font: FontIdSchema,
-  height: Type.Number({ description: 'Text height' }),
-  widthFactor: Type.Optional(Type.Number({ description: 'Width / height ratio. Default is 1.0' })),
-  bold: Type.Optional(Type.Boolean({ description: 'Bold text. Default is false' })),
-  italic: Type.Optional(Type.Boolean({ description: 'Italic text. Default is false' })),
-  underline: Type.Optional(Type.Boolean({ description: 'Underline text. Default is false' })),
+  font: FontId;
+  /* text height */
+  height: number;
+  /*  width / height ratio. Default is 1.0 */
+  widthFactor?: number;
+  /** bold text. Default is false */
+  bold?: boolean;
+  /** italic text. Default is false */
+  italic?: boolean;
+  /** underline text. Default is false */
+  underline?: boolean;
   /** Optional position relative to element's placement. Default is 0,0,0 */
-  origin: Type.Optional(XYZPropsSchema),
+  origin?: XYZProps;
   /** Optional rotation relative to element's placement. Default is identity matrix */
-  rotation: Type.Optional(YawPitchRollPropsSchema),
-}, { description: 'Properties for a TextString class.' });
-export type TextStringProps = Static<typeof TextStringPropsSchema>;
+  rotation?: YawPitchRollProps;
+}
 
 /** A single line of text, all with the same font, styles (underline, bold, italic), and size.
  * This class also holds the origin and direction for the text.
