@@ -6,23 +6,32 @@ publish: false
 
 Table of contents:
 
-- [Selection set](#selection-set)
-- [Font APIs](#font-apis)
-- [API deprecations](#api-deprecations)
-  - [@itwin/core-common](#itwincore-common)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-- [Breaking Changes](#breaking-changes)
-  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-  - [Updated minimum requirements](#updated-minimum-requirements)
-    - [Node.js](#nodejs)
-    - [Electron](#electron)
-    - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals) - [@itwin/core-backend](#itwincore-backend-1) - [@itwin/core-common](#itwincore-common-1) - [@itwin/core-bentley](#itwincore-bentley) - [@itwin/appui-abstract](#itwinappui-abstract) - [@itwin/core-electron](#itwincore-electron)
-  - [API removals](#api-removals)
-  - [Packages dropped](#packages-dropped)
-- [Change to pull/merge method](#change-to-pullmerge)
+- [NextVersion](#nextversion)
+  - [Selection set](#selection-set)
+  - [Font APIs](#font-apis)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/core-common](#itwincore-common)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+  - [Breaking Changes](#breaking-changes)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+    - [Updated minimum requirements](#updated-minimum-requirements)
+      - [Node.js](#nodejs)
+      - [Electron](#electron)
+      - [ECMAScript](#ecmascript)
+    - [Deprecated API removals](#deprecated-api-removals)
+      - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [@itwin/core-backend](#itwincore-backend-1)
+      - [@itwin/core-bentley](#itwincore-bentley)
+      - [@itwin/core-common](#itwincore-common-1)
+      - [@itwin/core-electron](#itwincore-electron)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-2)
+    - [Packages dropped](#packages-dropped)
+    - [Change to pullMerge](#change-to-pullmerge)
+      - [No pending/local changes](#no-pendinglocal-changes)
+      - [With pending/local changes](#with-pendinglocal-changes)
 
 ## Selection set
 
@@ -95,6 +104,55 @@ iTwin.js now supports only the latest Electron release (Electron 33) and has dro
 
 The following previously-deprecated APIs have been removed:
 
+#### @itwin/appui-abstract
+
+The following APIs have been removed in `@itwin/appui-abstract`.
+
+| **Removed**                         | **Replacement**                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| `AbstractStatusBarActionItem`       | Use `StatusBarActionItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarCustomItem`       | Use `StatusBarCustomItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItem`             | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItemUtilities`    | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead.                          |
+| `AbstractStatusBarLabelItem`        | Use `StatusBarLabelItem` in `@itwin/appui-react` instead.                              |
+| `AbstractWidgetProps`               | Use `Widget` in `@itwin/appui-react` instead.                                          |
+| `AllowedUiItemProviderOverrides`    | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`.                              |
+| `BackstageActionItem`               | `BackstageActionItem` in `@itwin/appui-react`.                                         |
+| `BackstageItem`                     | `BackstageItem` in `@itwin/appui-react`.                                               |
+| `BackstageItemType`                 | Use Type Guard instead.                                                                |
+| `BackstageItemsChangedArgs`         | N/A                                                                                    |
+| `BackstageItemsManager`             | N/A                                                                                    |
+| `BackstageItemUtilities`            | `BackstageItemUtilities` in `@itwin/appui-react`.                                      |
+| `BackstageStageLauncher`            | `BackstageStageLauncher` in `@itwin/appui-react`.                                      |
+| `BaseUiItemsProvider`               | `BaseUiItemsProvider` in `@itwin/appui-react`.                                         |
+| `CommonBackstageItem`               | `CommonBackstageItem` in `@itwin/appui-react`.                                         |
+| `CommonStatusBarItem`               | Use `StatusBarItem` in `@itwin/appui-react` instead.                                   |
+| `createSvgIconSpec`                 | Use `IconSpecUtilities.createWebComponentIconSpec()` instead.                          |
+| `EditorPosition.columnSpan`         | N/A                                                                                    |
+| `getSvgSource`                      | Use `IconSpecUtilities.getWebComponentSource()` instead.                               |
+| `isAbstractStatusBarActionItem`     | Use `isStatusBarActionItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarCustomItem`     | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarLabelItem`      | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead.                            |
+| `isActionItem`                      | Use `isBackstageActionItem` in `@itwin/appui-react` instead.                           |
+| `isStageLauncher`                   | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead.                        |
+| `ProvidedItem`                      | `ProvidedItem` in `@itwin/appui-react`.                                                |
+| `StagePanelLocation`                | `StagePanelLocation` in `@itwin/appui-react`.                                          |
+| `StagePanelSection`                 | `StagePanelSection` in `@itwin/appui-react`.                                           |
+| `StageUsage`                        | `StageUsage` in `@itwin/appui-react`.                                                  |
+| `StatusBarItemId`                   | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `StatusBarLabelSide`                | `StatusBarLabelSide` in `@itwin/appui-react`.                                          |
+| `StatusBarSection`                  | `StatusBarSection` in `@itwin/appui-react`.                                            |
+| `ToolbarItemId`                     | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.                               |
+| `ToolbarManager`                    | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
+| `ToolbarOrientation`                | `ToolbarOrientation` in `@itwin/appui-react`.                                          |
+| `ToolbarUsage`                      | `ToolbarUsage` in `@itwin/appui-react`.                                                |
+| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`.                           |
+| `UiItemProviderOverrides`           | `UiItemProviderOverrides` in `@itwin/appui-react`.                                     |
+| `UiItemsApplicationAction`          | N/A                                                                                    |
+| `UiItemsManager`                    | `UiItemsManager` in `@itwin/appui-react`.                                              |
+| `UiItemsProvider`                   | `UiItemsProvider` in `@itwin/appui-react`.                                             |
+| `WidgetState`                       | `WidgetState` in `@itwin/appui-react`.                                                 |
+
 #### @itwin/core-backend
 
 | Removed               | Replacement |
@@ -105,19 +163,6 @@ The following previously-deprecated APIs have been removed:
 | `IModelHost.platform` | N/A         |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
-
-#### @itwin/core-common
-
-| Removed                                        | Replacement                                          |
-| ---------------------------------------------- | ---------------------------------------------------- |
-| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`                                  |
-| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`                          |
-| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`                          |
-| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`                          |
-| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString`                    |
-| `TerrainProviderName`                          | N/A                                                  |
-| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
-| `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
 
 #### @itwin/core-bentley
 
@@ -133,6 +178,19 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ByteStream.nextId64`      | `ByteStream.readId64`                                       |
 | `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
 | `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
+
+#### @itwin/core-common
+
+| Removed                                        | Replacement                                          |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`                                  |
+| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`                          |
+| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString`                    |
+| `TerrainProviderName`                          | N/A                                                  |
+| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
+| `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
 
 #### @itwin/appui-abstract
 
