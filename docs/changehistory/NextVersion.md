@@ -9,6 +9,8 @@ Table of contents:
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
   - [Font APIs](#font-apis)
+  - [Geometry](#geometry)
+    - [Polyface Traversal](#polyface-traversal)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
@@ -51,6 +53,20 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 - [IModelDb.fonts]($backend) permits you to read and write font-related information, including [FontFile]($backend)s, into an [IModelDb]($backend).
 
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
+
+## Geometry
+
+### Polyface Traversal
+
+Conventional [IndexedPolyface]($core-geometry) data defines each facet by a sequence of point indices around the facet, however these indices do not indicate which facet is adjacent across an edge, nor do they indicate which facets are adjacent at a vertex. The topology of the mesh is incomplete.
+
+The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete the topology of an `IndexedPolyface` and to navigate these adjacencies. A one-time call to [IndexedPolyfaceWalker.buildEdgeMateIndices]($core-geometry) populates a new optional index array of the [PolyfaceData]($core-geometry). This array stores the cross-edge relationship, and is valid as long as the mesh topology is unchanged. After this step, the following queries support navigation around a facet, around a vertex, and across an edge. Given an `IndexedPolyfaceWalker` object that refers to a particular edge:
+
+- [IndexedPolyfaceWalker.nextAroundFacet]($core-geometry) and [IndexedPolyfaceWalker.previousAroundFacet]($core-geometry) return a walker referring to the next/previous edge around the facet.
+- [IndexedPolyfaceWalker.nextAroundVertex]($core-geometry) and [IndexedPolyfaceWalker.previousAroundVertex]($core-geometry) return a walker referring to the next/previous edge around the edges' start vertex.
+- [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
+
+If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
 
 ## API deprecations
 
