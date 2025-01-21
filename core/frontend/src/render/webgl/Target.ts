@@ -1480,18 +1480,16 @@ export class OnScreenTarget extends Target {
       this._2dCanvas.needsClear = false;
     }
 
-    if (this.currentViewFlags.canvasDecorations) {
-      const canvasDecs = this.graphics.canvasDecorations;
-      if (canvasDecs) {
-        for (const overlay of canvasDecs) {
-          ctx.save();
-          if (overlay.position)
-            ctx.translate(overlay.position.x, overlay.position.y);
+    const canvasDecs = this.graphics.canvasDecorations;
+    if (canvasDecs) {
+      for (const overlay of canvasDecs) {
+        ctx.save();
+        if (overlay.position)
+          ctx.translate(overlay.position.x, overlay.position.y);
 
-          overlay.drawDecoration(ctx);
-          this._2dCanvas.needsClear = true;
-          ctx.restore();
-        }
+        overlay.drawDecoration(ctx);
+        this._2dCanvas.needsClear = true;
+        ctx.restore();
       }
     }
   }

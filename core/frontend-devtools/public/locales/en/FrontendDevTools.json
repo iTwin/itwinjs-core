@@ -331,9 +331,6 @@
     "ChangeCamera": {
       "keyin": "fdt camera"
     },
-    "ToggleCanvasDecorations": {
-      "keyin": "fdt canvas decorations"
-    },
     "ToggleDrawingGraphics": {
       "keyin": "fdt drawing graphics"
     },

@@ -73,7 +73,6 @@ describe("ViewFlags", () => {
         wiremesh: on,
         forceSurfaceDiscard: on,
         noWhiteOnWhiteReversal: on,
-        noCanvasDecorations: on,
         renderMode: RenderMode.SolidFill,
       };
 
@@ -116,7 +115,6 @@ describe("ViewFlags", () => {
       backgroundMap: true,
       forceSurfaceDiscard: true,
       noWhiteOnWhiteReversal: true,
-      noCanvasDecorations: true,
     });
   });
 

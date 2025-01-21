@@ -607,25 +607,3 @@ export class ChangeCameraTool extends Tool {
     return this.run(camera);
   }
 }
-
-/** Change the camera settings of the selected viewport.
- * @beta
- */
-export class ToggleCanvasDecorationsTool extends Tool {
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
-  public static override toolId = "ToggleCanvasDecorations";
-
-  public override async run(showDecorations: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
-      return false;
-    vp.viewFlags = vp.viewFlags.with("canvasDecorations", showDecorations);
-    return true;
-  }
-
-  public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
-    const showDecorations = !!parseToggle(inArgs[0]);
-    return this.run(showDecorations);
-  }
-}

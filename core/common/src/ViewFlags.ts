@@ -112,8 +112,6 @@ export interface ViewFlagProps {
    * @see [[ViewFlags.whiteOnWhiteReversal]].
    */
   noWhiteOnWhiteReversal?: boolean;
-  /**If true, canvas decorations will not be drawn */
-  noCanvasDecorations?: boolean;
 }
 
 function edgesRequired(renderMode: RenderMode, visibleEdges: boolean): boolean {
@@ -228,8 +226,6 @@ export class ViewFlags {
    */
   public readonly lighting: boolean;
 
-  public readonly canvasDecorations: boolean;
-
   /** Create a new ViewFlags.
    * @param flags The properties to initialize. Any properties not specified are initialized to their default values.
    */
@@ -258,7 +254,6 @@ export class ViewFlags {
     this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
     this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
     this.lighting = flags?.lighting ?? false;
-    this.canvasDecorations = flags?.canvasDecorations ?? true;
   }
 
   /** Produce a copy of these ViewFlags with some modified properties. Any properties not explicitly specified by `changedFlags` will retain their current values.
@@ -418,8 +413,6 @@ export class ViewFlags {
       out.forceSurfaceDiscard = true;
     if (!this.whiteOnWhiteReversal)
       out.noWhiteOnWhiteReversal = true;
-    if (!this.canvasDecorations)
-      out.noCanvasDecorations = true;
 
     out.renderMode = this.renderMode;
     return out;
@@ -454,7 +447,6 @@ export class ViewFlags {
       wiremesh: this.wiremesh,
       forceSurfaceDiscard: this.forceSurfaceDiscard,
       noWhiteOnWhiteReversal: !this.whiteOnWhiteReversal,
-      noCanvasDecorations: !this.canvasDecorations,
     };
   }
 
@@ -515,7 +507,6 @@ export class ViewFlags {
       wiremesh: JsonUtils.asBool(json.wiremesh),
       forceSurfaceDiscard: JsonUtils.asBool(json.forceSurfaceDiscard),
       whiteOnWhiteReversal: !JsonUtils.asBool(json.noWhiteOnWhiteReversal),
-      canvasDecorations: !JsonUtils.asBool(json.noCanvasDecorations),
     });
   }
 
@@ -547,8 +538,7 @@ export class ViewFlags {
       && this.thematicDisplay === other.thematicDisplay
       && this.wiremesh === other.wiremesh
       && this.forceSurfaceDiscard === other.forceSurfaceDiscard
-      && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal
-      && this.canvasDecorations === other.canvasDecorations;
+      && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
   }
 }
 
