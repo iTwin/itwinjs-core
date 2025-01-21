@@ -136,8 +136,6 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
       iModelId: string;
       changesetId: string;
       exportType: string;
-      geometryOptions: any;
-      viewDefinitionFilter: any;
     };
 
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
