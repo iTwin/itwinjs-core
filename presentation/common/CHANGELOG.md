@@ -1,6 +1,54 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Mon, 13 Jan 2025 14:09:29 GMT and should not be manually modified.
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+_Version update only_
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+### Updates
+
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:39 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- Add extended data for calculated properties
+- ContentFormatter does not throw when formatting properties with 'undefined' value
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Fix failure to deserialize content from JSON for instances with nulls in array property values
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+### Updates
+
+- ContentFormatter does not throw when formatting properties with 'undefined' value
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:46 GMT
+
+_Version update only_
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT

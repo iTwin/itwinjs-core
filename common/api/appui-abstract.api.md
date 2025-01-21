@@ -558,8 +558,6 @@ export enum DisplayMessageType {
 // @public
 export interface EditorPosition {
     columnIndex: number;
-    // @deprecated
-    columnSpan?: number;
     rowPriority: number;
 }
 

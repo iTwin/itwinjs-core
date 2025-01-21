@@ -199,13 +199,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
     await provider.initialize();
     const resolveChildren = (_childIds: QuadId[]) => {};
 
-    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async function (_input: RequestInfo | URL, _init?: RequestInit) {
-      return Promise.resolve({
-        status: 200,
-        headers: new Headers({ "content-type": "application/json" }),
-        json: async () => {},
-      } as unknown as Response);
-    });
+    const fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
 
     await (provider as any)._generateChildIds(QuadId.createFromContentId("1_0_0"), resolveChildren);
     expect(fetchStub).toHaveBeenCalledOnce();

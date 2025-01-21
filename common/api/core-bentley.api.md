@@ -144,11 +144,6 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
-    // @deprecated
-    constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
-        byteOffset: number;
-        byteLength: number;
-    });
     advance(numBytes: number): boolean;
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
@@ -162,23 +157,7 @@ export class ByteStream {
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
-    // @deprecated (undocumented)
-    get nextFloat32(): number;
-    // @deprecated (undocumented)
-    get nextFloat64(): number;
-    // @deprecated (undocumented)
-    get nextId64(): Id64String;
-    // @deprecated (undocumented)
-    get nextInt32(): number;
-    // @deprecated (undocumented)
-    get nextUint16(): number;
-    // @deprecated (undocumented)
-    get nextUint24(): number;
-    // @deprecated (undocumented)
-    get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
-    // @deprecated (undocumented)
-    get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
     readFloat32(): number;
     readFloat64(): number;
@@ -1217,6 +1196,8 @@ export class Logger {
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
+    // @beta
+    static get staticMetaData(): StaticLoggerMetaData;
     static stringifyMetaData(metaData?: LoggingMetaData): string;
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
@@ -1590,8 +1571,11 @@ export enum SpanKind {
     SERVER = 1
 }
 
-// @internal
-export const staticLoggerMetadata: Map<string, LoggingMetaData>;
+// @beta
+export interface StaticLoggerMetaData {
+    delete(key: string): void;
+    set(key: string, metadata: LoggingMetaData): void;
+}
 
 // @alpha
 export abstract class StatusCategory {
@@ -1647,8 +1631,6 @@ export class TransientIdSequence {
     getNext(): Id64String;
     readonly initialLocalId: number;
     merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number;
-    // @deprecated
-    get next(): Id64String;
     peekNext(): Id64String;
     toJSON(): TransientIdSequenceProps;
 }

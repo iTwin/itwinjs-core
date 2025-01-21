@@ -24,7 +24,7 @@ describe("IModel Views", () => {
   });
 
   it("should load font map", async () => {
-    const fontMap: FontMap = await iModel.loadFontMap();
+    const fontMap: FontMap = await iModel.loadFontMap(); // eslint-disable-line @typescript-eslint/no-deprecated
     expect(fontMap).to.exist.and.be.not.empty;
   });
 

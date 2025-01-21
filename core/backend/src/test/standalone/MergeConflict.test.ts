@@ -18,9 +18,12 @@ import {
   BriefcaseDb,
   ChannelControl,
   DictionaryModel,
+  ExternalSourceAspect,
   SpatialCategory,
+  SqliteChangeOp,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
@@ -143,23 +146,68 @@ describe("Merge conflict & locking", () => {
     } as ElementAspectProps);
     b2.saveChanges();
 
-    const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
-    await assertThrowsAsync(
-      async () => b2.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` }),
-      "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+    const conflicts: {
+      cause: SqliteConflictCause,
+      tableName: string,
+      opcode?: SqliteChangeOp,
+      id: Id64String,
+    }[] = [];
 
-    expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
-    onChangesetConflictStub.restore();
+    // we will not handle conflict and let the default conflict handler deal with it.
+    b2.txns.changeMergeManager.addConflictHandler({
+      id: "custom", handler: (arg: RebaseChangesetConflictArgs) => {
+        conflicts.push({
+          cause: arg.cause,
+          tableName: arg.tableName,
+          opcode: arg.opcode,
+          id: arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String,
+        });
+        return undefined;
+      }
+    });
+
+    await b2.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` });
+
+    expect(conflicts.length).to.be.equals(3);
+
+    chai.expect(
+      [
+        {
+          "cause": "Data",
+          "tableName": "bis_Element",
+          "opcode": "Updated",
+          "id": "0x20000000004"
+        },
+        {
+          "cause": "Data",
+          "tableName": "bis_ElementMultiAspect",
+          "opcode": "Updated",
+          "id": "0x20000000001"
+        },
+        {
+          "cause": "Data",
+          "tableName": "bis_Model",
+          "opcode": "Updated",
+          "id": "0x20000000001"
+        }
+      ]).to.be.deep.equals(conflicts);
+
     await b3.pullChanges();
+    await b1.pullChanges();
+
+    // b2 win as default conflict handler choose Replace to override local changes over master.
+    (b2.elements.getAspect(aspectId1) as ExternalSourceAspect).identifier = "test identifier (modified by b2)";
+    (b3.elements.getAspect(aspectId1) as ExternalSourceAspect).identifier = "test identifier (modified by b2)";
+    (b1.elements.getAspect(aspectId1) as ExternalSourceAspect).identifier = "test identifier (modified by b2)";
 
     b1.close();
     b2.close();
     b3.close();
   });
-  it("pull/merge causing update conflict - cascade delete causing local changes (with no lock)", async () => {
+  it("pull/merge causing update conflict - update causing local changes (with no lock)", async () => {
     /**
-     * To simulate a incorrect changeset we disable lock and make some changes where we add
-     * aspect for a deleted element and try to pull/push/merge it. Which will fail with following error.
+     * To simulate a a data conflict for dirty read we update same aspect from two different briefcases
+     * and when the second briefcase try to push its changes it will fail with following error.
      * "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."
      */
     const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
@@ -195,12 +243,14 @@ describe("Merge conflict & locking", () => {
       newCategoryCode.value,
       new SubCategoryAppearance({ color: 0xff0000 }),
     );
+
+    // insert element and aspect
     const el1 = b1.elements.insertElement(IModelTestUtils.createPhysicalObject(b1, modelId, spatialCategoryId).toJSON());
     b1.saveChanges();
-    await b1.pushChanges({ accessToken: accessToken1, description: `inserted element ${el1}` });
+    await b1.pushChanges({ accessToken: accessToken1, description: `inserted element with aspect ${el1}` });
 
     await b2.pullChanges();
-    b2.elements.insertAspect({
+    const aspectId1 = b2.elements.insertAspect({
       classFullName: "BisCore:ExternalSourceAspect",
       element: {
         relClassName: "BisCore:ElementOwnsExternalSourceAspects",
@@ -209,22 +259,90 @@ describe("Merge conflict & locking", () => {
       kind: "",
       identifier: "test identifier",
     } as ElementAspectProps);
+    b2.saveChanges();
 
     b1.elements.deleteElement(el1);
     b1.saveChanges();
-
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
-    b2.saveChanges();
 
-    const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
+    const conflicts: {
+      cause: SqliteConflictCause,
+      tableName: string,
+      opcode?: SqliteChangeOp,
+      id: Id64String | undefined,
+    }[] = [];
+
+    // we will not handle conflict and let the default conflict handler deal with it.
+    b2.txns.changeMergeManager.addConflictHandler({
+      id: "custom", handler: (arg: RebaseChangesetConflictArgs) => {
+        let id;
+        if (arg.cause !== "ForeignKey") {
+          id = arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String;
+        }
+        conflicts.push({
+          cause: arg.cause,
+          tableName: arg.tableName,
+          opcode: arg.opcode,
+          id,
+        });
+        return undefined;
+      }
+    });
+
+
     await assertThrowsAsync(
-      async () => b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` }),
-      "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+      async () => b2.pushChanges({ accessToken: accessToken1, description: `inserted element with aspect ${el1}` }),
+      "Foreign key conflicts in ChangeSet. Aborting rebase.");
 
-    expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
-    onChangesetConflictStub.restore();
+    expect(conflicts.length).to.be.equals(3);
+    expect(conflicts).to.deep.equal([
+      {
+        cause: "NotFound",
+        tableName: "bis_Element",
+        opcode: "Updated",
+        id: "0x20000000004"
+      },
+      {
+        cause: "Data",
+        tableName: "bis_Model",
+        opcode: "Updated",
+        id: "0x20000000001"
+      },
+      {
+        cause: "ForeignKey",
+        tableName: "",
+        opcode: undefined,
+        id: undefined
+      }
+    ]);
 
+    b2.txns.changeMergeManager.addConflictHandler({
+      id: "delete_aspect_when_element_is_deleted", handler: (arg: RebaseChangesetConflictArgs) => {
+        if (arg.cause === "NotFound" && arg.tableName === "bis_Element") {
+          // if element does not exist any more let delete the aspects as well.
+          const elId = arg.getValueId(0, arg.opcode === "Inserted" ? "New" : "Old") as Id64String;
+          b2.elements.getAspects(elId).forEach((aspect) => {
+            b2.elements.deleteAspect(aspect.id);
+          });
+        }
+        return undefined;
+      }
+    });
+
+    b2.saveChanges();
+    conflicts.length = 0;
+
+    await b2.pushChanges({ accessToken: accessToken1, description: `nothing is pushed as the only change we made is reverted` });
     await b3.pullChanges();
+    await b1.pullChanges();
+
+    expect(() => b1.elements.getElement(el1)).throws(`Element=${el1}`);
+    expect(() => b2.elements.getElement(el1)).throws(`Element=${el1}`);
+    expect(() => b3.elements.getElement(el1)).throws(`Element=${el1}`);
+
+    expect(() => b1.elements.getAspect(aspectId1)).throws(`ElementAspect not found ${aspectId1}`);
+    expect(() => b2.elements.getAspect(aspectId1)).throws(`ElementAspect not found ${aspectId1}`);
+    expect(() => b3.elements.getAspect(aspectId1)).throws(`ElementAspect not found ${aspectId1}`);
 
     b1.close();
     b2.close();
@@ -331,7 +449,7 @@ describe("Merge conflict & locking", () => {
     const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     /* we should be able to apply all changesets */
     await b3.pullChanges();
-    expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
+    expect(onChangesetConflictStub.callCount).eq(0, "native conflict handler should not be called BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
     b1.close();
     b2.close();

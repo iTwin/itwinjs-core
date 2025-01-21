@@ -6,6 +6,7 @@
 import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
+    BlobContainer,
   EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, SettingGroupSchema, SettingsContainer,
   SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
@@ -17,7 +18,7 @@ describe("Workspace Examples", () => {
   let iModel: StandaloneDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModelForWrite("test.bim");
+    iModel = IModelTestUtils.openIModelForWrite("test.bim", { copyFilename: "WorkspaceExamples.bim" });
   });
 
   after(() => {
@@ -322,6 +323,15 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
       expect(cornusDb.cloudProps).not.to.be.undefined;
       expect(cornusDb.cloudProps!.version).to.equal("1.0.0");
+
+      const svc = BlobContainer.service!;
+      expect(svc).not.to.be.undefined;
+      const metadata = await svc.queryMetadata({
+        baseUri: cornusDb.container.fromProps.baseUri,
+        containerId: cornusDb.container.fromProps.containerId,
+        userToken: AzuriteTest.service.userToken.admin,
+      });
+      expect(metadata.containerType).to.equal("workspace");
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreatePatch
       cornusDb.container.acquireWriteLock("Lief E. Greene");
