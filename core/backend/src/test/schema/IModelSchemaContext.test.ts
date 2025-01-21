@@ -7,7 +7,8 @@ import * as path from "path";
 import { Code } from "@itwin/core-common";
 import {
   DefinitionElement, IModelDb,
-  SnapshotDb, SpatialViewDefinition, ViewDefinition3d,
+  RepositoryLink,
+  SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -26,7 +27,7 @@ describe.only("IModel Schema Context", () => {
     imodel?.close();
   });
 
-  it("should verify the Entity metadata of known element subclasses", () => {
+  it("should verify the Entity metadata of known element subclasses", async () => {
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
@@ -36,19 +37,30 @@ describe.only("IModel Schema Context", () => {
       if (undefined === ecClass)
         return;
       assert.equal(ecClass.fullName, el.classFullName.replace(":", "."));
-      /*
+
       // I happen to know that this is a BisCore:RepositoryLink
-      assert.equal(legacyData.ecclass, RepositoryLink.classFullName);
+      assert.equal(ecClass.fullName, RepositoryLink.classFullName.replace(":", "."));
       //  Check the metadata on the class itself
-      assert.isTrue(legacyData.baseClasses.length > 0);
-      assert.equal(legacyData.baseClasses[0], UrlLink.classFullName);
-      assert.equal(legacyData.customAttributes![0].ecclass, "BisCore:ClassHasHandler");
+      const baseClass = await ecClass.baseClass;
+      assert.exists(ecClass.baseClass);
+      if (undefined === baseClass)
+        return;
+
+      assert.equal(baseClass.fullName, UrlLink.classFullName.replace(":", "."));
+      assert.exists(ecClass.customAttributes);
+      assert.isTrue(ecClass.customAttributes?.has("BisCore.ClassHasHandler"));
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.exists(legacyData.properties);
-      assert.isDefined(legacyData.properties.repositoryGuid);
-      const p = legacyData.properties.repositoryGuid;
-      assert.equal(p.extendedType, "BeGuid");
-      assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");*/
+      assert.exists(ecClass.properties);
+      const property = await ecClass.getProperty("repositoryGuid");
+      assert.exists(property);
+      if (undefined === property)
+        return;
+
+      if(!property.isPrimitive())
+        assert.fail("Property is not primitive");
+
+      assert.equal(property.extendedTypeName, "BeGuid");
+      assert.isTrue(property.customAttributes?.has("CoreCustomAttributes.HiddenProperty"));
     }
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
