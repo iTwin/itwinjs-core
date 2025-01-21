@@ -1,6 +1,16 @@
 # Change Log - @itwin/ecschema-locaters
 
-This log was last generated on Fri, 22 Nov 2024 17:59:05 GMT and should not be manually modified.
+This log was last generated on Mon, 13 Jan 2025 14:09:29 GMT and should not be manually modified.
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
 
 ## 4.10.2
 Thu, 21 Nov 2024 15:22:20 GMT
@@ -281,7 +291,7 @@ Tue, 17 Oct 2023 15:14:32 GMT
 
 ### Updates
 
-- Expose the SchemaFileUtility class to allow users to export in memory Schemas to xml files.
+- Expose the SchemaFileUtility class to allow users to export in memory Schemas to xml files. 
 - extract-api run
 - Export SchemaFileUtility and make beta
 - Change SchemaFileUtility class to SchemaXml namespace, update class names

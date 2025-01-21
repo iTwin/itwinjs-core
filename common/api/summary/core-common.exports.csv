@@ -466,7 +466,7 @@ internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
 public;function;isPowerOfTwo
-internal;function;isValidImageSourceFormat
+public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 beta;interface;ITwinError
 beta;namespace;ITwinError
@@ -506,7 +506,7 @@ public;interface;MaterialProps
 internal;class;MeshEdge
 internal;class;MeshEdges
 internal;class;MeshPolyline
-internal;class;MeshPolylineList
+internal;type;MeshPolylineList
 public;class;ModelClipGroup
 public;interface;ModelClipGroupProps
 public;class;ModelClipGroups
@@ -641,9 +641,6 @@ public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
 public;namespace;Quantization
-internal;function;isInRange
-internal;function;isQuantizable
-internal;function;isQuantized
 public;class;QueryBinder
 public;interface;QueryLimit
 public;interface;QueryOptions
