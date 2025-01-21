@@ -61,6 +61,8 @@ export interface LoggerLevelsConfig {
 export interface StaticLoggerMetaData {
   /** Add or update some metadata to be included with every logged message. */
   set(key: string, metadata: LoggingMetaData): void;
+  /** Checks if any metadata is set to the specified `key`. */
+  has(key: string): boolean;
   /** Remove metadata previously [[set]] using the specified `key`, so it will no longer be included with every logged message. */
   delete(key: string): void;
 }
