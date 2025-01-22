@@ -292,18 +292,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     }
   }
 
-  /**
-   * Provided as a work around to appui keyboard shortcuts currently requiring focus on home.
-   * A sub-class can override of this method to explicity process the shortcuts.
-   * by overriding as follows...
-   * ```ts
-   * super.doProcessUnhandledKey(ev, isDown);
-   * if (isDown)
-   *   UiFramework.keyboardShortcuts.processKey(ev.key, ev.altKey, ev.ctrlKey, ev.shiftKey);
-   * ```
-   * @see [[ToolAdmin.processShortcutKey]]
-   */
-  protected async doProcessUnhandledKey(ev: KeyboardEvent, _isDown: boolean): Promise<void> {
+  private async doProcessUnhandledKey(ev: KeyboardEvent, _isDown: boolean): Promise<void> {
     ev.preventDefault();
   }
 
