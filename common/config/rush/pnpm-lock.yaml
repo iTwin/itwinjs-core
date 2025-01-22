@@ -116,8 +116,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -300,8 +300,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -418,8 +418,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -487,8 +487,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -657,8 +657,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       electron:
         specifier: ^33.0.0
         version: 33.0.0
@@ -849,8 +849,8 @@ importers:
         specifier: ~6.1.1
         version: 6.1.1
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -913,8 +913,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -1005,8 +1005,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -1148,8 +1148,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -1275,8 +1275,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       debug:
         specifier: ^2.6.9
         version: 2.6.9
@@ -1435,8 +1435,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -1492,8 +1492,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -1704,8 +1704,8 @@ importers:
         specifier: 5.0.0-dev.1
         version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -1762,8 +1762,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -1865,8 +1865,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -2088,8 +2088,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -2257,8 +2257,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -2629,8 +2629,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -2758,8 +2758,8 @@ importers:
         specifier: 1.6.0
         version: 1.6.0
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       deep-equal:
         specifier: ^1
         version: 1.0.0
@@ -3043,8 +3043,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -3179,8 +3179,8 @@ importers:
         specifier: 1.6.0
         version: 1.6.0
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -3287,8 +3287,8 @@ importers:
         specifier: 1.6.0
         version: 1.6.0
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -3414,8 +3414,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(chai@4.3.10)
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -3559,8 +3559,8 @@ importers:
         specifier: ^0.15.2
         version: 0.15.2
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -3746,8 +3746,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -4063,8 +4063,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       cross-spawn:
         specifier: ^7.0.5
         version: 7.0.5
@@ -4246,8 +4246,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -4344,8 +4344,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       cpx2:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
@@ -6269,10 +6269,6 @@ packages:
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
 
-  at-least-node@1.0.0:
-    resolution: {integrity: sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==}
-    engines: {node: '>= 4.0.0'}
-
   atomically@1.7.0:
     resolution: {integrity: sha512-Xcz9l0z7y9yQ9rdDaxlmaI4uJHf/T8g9hOEzJcsEqX2SjCj4J20uK7+ldkDHMbpJDK76wF7xEIgxc/vSlsfw5w==}
     engines: {node: '>=10.12.0'}
@@ -6607,10 +6603,6 @@ packages:
   clone-response@1.0.3:
     resolution: {integrity: sha512-ROoL94jJH2dUVML2Y/5PEDNaSHgeOdSDicUyS7izcF63G6sTc/FTjLub4b8Il9S8S0beOfYt0TaA5qvFK+w0wA==}
 
-  co@4.6.0:
-    resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
-    engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
-
   color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
 
@@ -6711,9 +6703,9 @@ packages:
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
-  cpx2@3.0.0:
-    resolution: {integrity: sha512-WVI69l0qqlDboGngiggQitRyto20og3YNNZp6ySva9dRMYpy9OQd5ep7mQvkvuBeUkIluOKR6jBOek7FRS7X0w==}
-    engines: {node: '>=6.5'}
+  cpx2@8.0.0:
+    resolution: {integrity: sha512-RxD9jrSVNSOmfcbiPlr3XnKbUKH9K1w2HCv0skczUKhsZTueiDBecxuaSAKQkYSLQaGVA4ZQJZlTj5hVNNEvKg==}
+    engines: {node: ^20.0.0 || >=22.0.0, npm: '>=10'}
     hasBin: true
 
   create-ecdh@4.0.4:
@@ -6780,8 +6772,9 @@ packages:
     resolution: {integrity: sha512-8pYCQiL9Xdcg0UPSD3d+0KMlOjp+KGU5EPwYddgzQ7DATsg4fuUDjQtsYLmWjnk2obnNHgV3vE2Y4jejSOJVBQ==}
     engines: {node: '>=10'}
 
-  debounce@1.2.1:
-    resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
+  debounce@2.2.0:
+    resolution: {integrity: sha512-Xks6RUDLZFdz8LIdR6q0MTH44k7FikOmnh5xkSjMig6ch45afc8sjTjRQf3P6ax8dMgcQrYO/AR2RGWURrruqw==}
+    engines: {node: '>=18'}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -7546,10 +7539,6 @@ packages:
     resolution: {integrity: sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g==}
     engines: {node: '>=6 <7 || >=8'}
 
-  fs-extra@9.1.0:
-    resolution: {integrity: sha512-hcg3ZmepS30/7BSFqRvoo3DOMQu7IjqxO5nCDt+zM9XWjb33Wg7ziNT+Qvqbuc3+gWpzO02JubVyk2G4Zvo1OQ==}
-    engines: {node: '>=10'}
-
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
@@ -7869,6 +7858,10 @@ packages:
 
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
+    engines: {node: '>= 4'}
+
+  ignore@6.0.2:
+    resolution: {integrity: sha512-InwqeHHN2XpumIkMvpl/DCJVrAHgCsG5+cn1XlnLWGwtZBm8QJfSusItfrwx81CTp5agNZqpKU2J/ccC5nGT4A==}
     engines: {node: '>= 4'}
 
   import-fresh@3.3.0:
@@ -9017,6 +9010,10 @@ packages:
   p-map@3.0.0:
     resolution: {integrity: sha512-d3qXVTF/s+W+CdJ5A29wywV2n8CQQYahlgz2bFiA+4eVNJbHJodPZ+/gXwPGh0bOqA+j8S+6+ckmvLGPk1QpxQ==}
     engines: {node: '>=8'}
+
+  p-map@7.0.3:
+    resolution: {integrity: sha512-VkndIv2fIB99swvQoA65bm+fsmt6UNdGeIB0oxBs+WhAhdh08QA04JXpI7rbB9r08/nkbysKoya9rtDERYOYMA==}
+    engines: {node: '>=18'}
 
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
@@ -12854,8 +12851,6 @@ snapshots:
 
   asynckit@0.4.0: {}
 
-  at-least-node@1.0.0: {}
-
   atomically@1.7.0: {}
 
   available-typed-arrays@1.0.7:
@@ -13294,8 +13289,6 @@ snapshots:
     dependencies:
       mimic-response: 1.0.1
 
-  co@4.6.0: {}
-
   color-convert@1.9.3:
     dependencies:
       color-name: 1.1.3
@@ -13384,16 +13377,17 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cpx2@3.0.0:
+  cpx2@8.0.0:
     dependencies:
-      co: 4.6.0
-      debounce: 1.2.1
+      debounce: 2.2.0
       debug: 4.4.0
       duplexer: 0.1.2
-      fs-extra: 9.1.0
-      glob: 7.2.3
+      fs-extra: 11.2.0
+      glob: 11.0.1
       glob2base: 0.0.12
-      minimatch: 3.1.2
+      ignore: 6.0.2
+      minimatch: 10.0.1
+      p-map: 7.0.3
       resolve: 1.22.10
       safe-buffer: 5.2.1
       shell-quote: 1.8.2
@@ -13499,7 +13493,7 @@ snapshots:
     dependencies:
       mimic-fn: 3.1.0
 
-  debounce@1.2.1: {}
+  debounce@2.2.0: {}
 
   debug@2.6.9:
     dependencies:
@@ -14462,13 +14456,6 @@ snapshots:
       jsonfile: 4.0.0
       universalify: 0.1.2
 
-  fs-extra@9.1.0:
-    dependencies:
-      at-least-node: 1.0.0
-      graceful-fs: 4.2.11
-      jsonfile: 6.1.0
-      universalify: 2.0.1
-
   fs.realpath@1.0.0: {}
 
   fsevents@2.3.2:
@@ -14853,6 +14840,8 @@ snapshots:
   ignore-styles@5.0.1: {}
 
   ignore@5.3.2: {}
+
+  ignore@6.0.2: {}
 
   import-fresh@3.3.0:
     dependencies:
@@ -16103,6 +16092,8 @@ snapshots:
   p-map@3.0.0:
     dependencies:
       aggregate-error: 3.1.0
+
+  p-map@7.0.3: {}
 
   p-try@2.2.0: {}
 

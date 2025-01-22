@@ -52,7 +52,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-jest-snapshot": "^2.0.0",
     "chai-subset": "1.6.0",
-    "cpx2": "^3.0.0",
+    "cpx2": "^8.0.0",
     "deep-equal": "^1",
     "faker": "^4.1.0",
     "fast-sort": "^3.0.2",

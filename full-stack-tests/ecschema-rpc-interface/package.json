@@ -61,7 +61,7 @@
     "@types/node": "~20.9.5",
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
-    "cpx2": "^3.0.0",
+    "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "internal-tools": "workspace:*",

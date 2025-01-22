@@ -55,7 +55,7 @@
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
-    "cpx2": "^3.0.0",
+    "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "mocha": "^10.2.0",

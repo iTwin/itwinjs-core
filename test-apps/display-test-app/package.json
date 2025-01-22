@@ -86,7 +86,7 @@
     "@typescript-eslint/parser": "~8.11.0",
     "browserslist-to-esbuild": "^1.2.0",
     "child_process": "^1.0.2",
-    "cpx2": "^3.0.0",
+    "cpx2": "^8.0.0",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
