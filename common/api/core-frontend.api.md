@@ -311,7 +311,6 @@ import { SubCategoryOverride } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubLayerId } from '@itwin/core-common';
 import { SyncMode } from '@itwin/core-common';
-import { TelemetryManager } from '@itwin/core-telemetry';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapping } from '@itwin/core-common';
@@ -974,7 +973,6 @@ export class AccuDrawViewportUI extends AccuDraw {
             shadow: string;
         };
     };
-    protected doProcessUnhandledKey(ev: KeyboardEvent, _isDown: boolean): Promise<void>;
     grabInputFocus(): void;
     get hasInputFocus(): boolean;
     onCompassDisplayChange(state: "show" | "hide"): void;
@@ -5456,8 +5454,6 @@ export class IModelApp {
     static startup(opts?: IModelAppOptions): Promise<void>;
     // @internal
     static stopEventLoop(): void;
-    // @internal
-    static readonly telemetry: TelemetryManager;
     static get tentativePoint(): TentativePoint;
     static get terrainProviderRegistry(): TerrainProviderRegistry;
     static get tileAdmin(): TileAdmin;

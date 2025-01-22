@@ -16,14 +16,11 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.0.39
-        version: 5.0.39
+        specifier: 5.0.40
+        version: 5.0.40
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
-      '@itwin/core-telemetry':
-        specifier: workspace:*
-        version: link:../telemetry
       '@itwin/object-storage-azure':
         specifier: ^2.2.5
         version: 2.2.5(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -793,9 +790,6 @@ importers:
       '@itwin/core-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@itwin/core-telemetry':
-        specifier: workspace:*
-        version: link:../telemetry
       '@itwin/object-storage-core':
         specifier: ^2.2.5
         version: 2.2.5(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -1352,52 +1346,6 @@ importers:
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
-
-  ../../core/telemetry:
-    dependencies:
-      '@itwin/core-bentley':
-        specifier: workspace:*
-        version: link:../bentley
-      '@itwin/core-common':
-        specifier: workspace:*
-        version: link:../common
-    devDependencies:
-      '@itwin/build-tools':
-        specifier: workspace:*
-        version: link:../../tools/build
-      '@itwin/certa':
-        specifier: workspace:*
-        version: link:../../tools/certa
-      '@itwin/eslint-plugin':
-        specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
-      eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
-      rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
-      source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
-      typescript:
-        specifier: ~5.6.2
-        version: 5.6.2
-      webpack:
-        specifier: ^5.97.1
-        version: 5.97.1(webpack-cli@5.0.1)
 
   ../../core/webgl-compatibility:
     dependencies:
@@ -4713,8 +4661,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.0.39':
-    resolution: {integrity: sha512-OjiAd1Y02qtb+o034dfQYB3ilmIo52Hr1zkMAICjhF6PUfx/olio/mBpaekRnCahgYN2LEo9EnogPt4YhZeJ+w==}
+  '@bentley/imodeljs-native@5.0.40':
+    resolution: {integrity: sha512-CCfE140vIAPicz18+lPtMBkCXTOmmDKs+GENDg5PDcRGQCQSSyg+xJDLaKm3HEeRGYahRBFK/FOi2ieE/7eZcg==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11142,7 +11090,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.0.39': {}
+  '@bentley/imodeljs-native@5.0.40': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
