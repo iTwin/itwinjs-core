@@ -211,23 +211,23 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 
 | Removed                        | Replacement                                                                                                                                                 |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@itwin/backend-webpack-tools` | We no longer recommend bundling backends via webpack, which was previously recommended to shrink the size of backends.                                      |
+| `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all.                                      |
 | `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client. |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                      |
 
 ### Change to pullMerge
 
-Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fastforward method for merging changes. This change is transparent to users and is enabled by default.
+Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
 
 #### No pending/local changes
 
-- Incomming changes are applied using "fast-forward" method.
+- Incoming changes are applied using "fast-forward" method.
 
 #### With pending/local changes
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
