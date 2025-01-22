@@ -8,19 +8,19 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "../../IModelError";
+import { BackendBuffer, BackendReadable } from "../../BackendTypes";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
-import { Readable } from "node:stream";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export interface FormDataCommon {
-  append(name: string, value: string | Blob | Buffer, fileName?: string): void;
+  append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
 }
 
 /** @internal */
-export interface ReadableFormData extends Readable {
+export interface ReadableFormData extends BackendReadable {
   getHeaders(): { [key: string]: any };
 }
 

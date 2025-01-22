@@ -7,11 +7,11 @@
  */
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "../../IModelError";
+import { BackendReadable } from "../../BackendTypes";
 import { RpcProtocol } from "./RpcProtocol";
-import { Readable } from "node:stream";
 
 // cspell:ignore unmarshal
- 
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 function isBuffer(val: any): boolean {
   return val && typeof (val.constructor) !== "undefined" && typeof (val.constructor.isBuffer) === "function" && val.constructor.isBuffer(val);
@@ -40,7 +40,7 @@ export interface RpcSerializedValue {
   objects: string;
   data: Uint8Array[];
   chunks?: number;
-  stream?: Readable;
+  stream?: BackendReadable;
 }
 
 /** @internal */
