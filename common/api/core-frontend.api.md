@@ -390,6 +390,8 @@ export class AccuDraw {
     // @internal (undocumented)
     changeCompassMode(animate?: boolean): void;
     // @internal (undocumented)
+    clearSavedValues(): void;
+    // @internal (undocumented)
     clearTentative(): boolean;
     compassMode: CompassMode;
     // @internal (undocumented)
@@ -448,6 +450,8 @@ export class AccuDraw {
     // @internal (undocumented)
     getRotation(rMatrix?: Matrix3d): Matrix3d;
     // @internal (undocumented)
+    getSavedValue(index: ItemField, next: boolean): void;
+    // @internal (undocumented)
     static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined;
     // @internal (undocumented)
     static getStandardRotation(nStandard: StandardViewId, vp: Viewport | undefined, useACS: boolean, out?: Matrix3d): Matrix3d;
@@ -465,10 +469,12 @@ export class AccuDraw {
     get isActive(): boolean;
     get isBearingMode(): boolean;
     get isDeactivated(): boolean;
+    isDynamicKeyinStatus(index: ItemField): boolean;
     get isEnabled(): boolean;
     get isInactive(): boolean;
     // @internal (undocumented)
     isZLocked(vp: Viewport): boolean;
+    protected itemFieldInputIsValid(key: string, item: ItemField): boolean;
     // @internal (undocumented)
     readonly lastAxes: ThreeAxes;
     // @internal (undocumented)
@@ -480,6 +486,7 @@ export class AccuDraw {
     onCompassModeChange(): void;
     // @internal (undocumented)
     onEndDynamics(): boolean;
+    onFieldKeyinStatusChange(_index: ItemField): void;
     onFieldLockChange(_index: ItemField): void;
     onFieldValueChange(_index: ItemField): void;
     // @internal (undocumented)
@@ -853,12 +860,18 @@ export class AccuDrawSetOriginTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class AccuDrawShortcuts {
     // (undocumented)
     static alignView(): void;
     // (undocumented)
     static changeCompassMode(): void;
+    // (undocumented)
+    static chooseNextValue(index: ItemField): void;
+    // (undocumented)
+    static choosePreviousValue(index: ItemField): void;
+    // (undocumented)
+    static clearSavedValues(): void;
     // (undocumented)
     static defineACSByElement(): Promise<boolean>;
     // (undocumented)
@@ -884,8 +897,6 @@ export class AccuDrawShortcuts {
     // (undocumented)
     static lockDistance(): void;
     static lockIndex(): void;
-    // (undocumented)
-    lockIndex(): void;
     // (undocumented)
     static lockSmart(): void;
     // (undocumented)
@@ -934,6 +945,46 @@ export class AccuDrawSuspendToggleTool extends Tool {
     run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export class AccuDrawViewportUI extends AccuDraw {
+    constructor();
+    static controlProps: {
+        suspendLocateToolTip: boolean;
+        fixedLocation: boolean;
+        horizontalArrangement: boolean;
+        fieldSize: number;
+        rowSpacingFactor: number;
+        columnSpacingFactor: number;
+        borderRadius: string;
+        backgroundColor: string;
+        text: {
+            fontFamily: string;
+            fontSize: string;
+            color: string;
+            focusColor: string;
+        };
+        button: {
+            pressedColor: string;
+            padding: string;
+            margin: string;
+            outlineWidth: string;
+            shadow: string;
+        };
+    };
+    grabInputFocus(): void;
+    get hasInputFocus(): boolean;
+    onCompassDisplayChange(state: "show" | "hide"): void;
+    onCompassModeChange(): void;
+    onFieldKeyinStatusChange(item: ItemField): void;
+    onFieldLockChange(item: ItemField): void;
+    onFieldValueChange(item: ItemField): void;
+    onMotion(ev: BeButtonEvent): void;
+    refreshControls(): void;
+    setFocusItem(index: ItemField): void;
+    setHorizontalFixedLayout(): void;
+    setVerticalCursorLayout(): void;
 }
 
 // @public
@@ -6056,8 +6107,6 @@ export enum KeyinParseError {
 
 // @internal (undocumented)
 export enum KeyinStatus {
-    // (undocumented)
-    DontUpdate = 2,
     // (undocumented)
     Dynamic = 0,
     // (undocumented)

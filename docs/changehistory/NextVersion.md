@@ -6,28 +6,34 @@ publish: false
 
 Table of contents:
 
-- [Selection set](#selection-set)
-- [Font APIs](#font-apis)
-- [API deprecations](#api-deprecations)
-  - [@itwin/core-bentley](#itwincore-bentley)
-  - [@itwin/core-common](#itwincore-common)
-  - [@itwin/core-backend](#itwincore-backend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-- [Breaking Changes](#breaking-changes)
-  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-  - [Updated minimum requirements](#updated-minimum-requirements)
-    - [Node.js](#nodejs)
-    - [Electron](#electron)
-    - [ECMAScript](#ecmascript)
-  - [Deprecated API removals](#deprecated-api-removals)
-    - [@itwin/core-backend](#itwincore-backend-1)
+- [NextVersion](#nextversion)
+  - [Selection set](#selection-set)
+  - [Font APIs](#font-apis)
+  - [Geometry](#geometry)
+    - [Polyface Traversal](#polyface-traversal)
+  - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-electron](#itwincore-electron)
-  - [API removals](#api-removals)
-  - [Packages dropped](#packages-dropped)
-- [Change to pull/merge method](#change-to-pullmerge)
+    - [@itwin/core-common](#itwincore-common)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+  - [Breaking Changes](#breaking-changes)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+    - [Updated minimum requirements](#updated-minimum-requirements)
+      - [Node.js](#nodejs)
+      - [Electron](#electron)
+      - [ECMAScript](#ecmascript)
+    - [Deprecated API removals](#deprecated-api-removals)
+      - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [@itwin/core-backend](#itwincore-backend-1)
+      - [@itwin/core-bentley](#itwincore-bentley)
+      - [@itwin/core-electron](#itwincore-electron)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-1)
+    - [Packages dropped](#packages-dropped)
+    - [Change to pullMerge](#change-to-pullmerge)
+      - [No pending/local changes](#no-pendinglocal-changes)
+      - [With pending/local changes](#with-pendinglocal-changes)
 
 ## Selection set
 
@@ -48,6 +54,20 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 - [IModelDb.fonts]($backend) permits you to read and write font-related information, including [FontFile]($backend)s, into an [IModelDb]($backend).
 
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
+
+## Geometry
+
+### Polyface Traversal
+
+Conventional [IndexedPolyface]($core-geometry) data defines each facet by a sequence of point indices around the facet, however these indices do not indicate which facet is adjacent across an edge, nor do they indicate which facets are adjacent at a vertex. The topology of the mesh is incomplete.
+
+The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete the topology of an `IndexedPolyface` and to navigate these adjacencies. A one-time call to [IndexedPolyfaceWalker.buildEdgeMateIndices]($core-geometry) populates a new optional index array of the [PolyfaceData]($core-geometry). This array stores the cross-edge relationship, and is valid as long as the mesh topology is unchanged. After this step, the following queries support navigation around a facet, around a vertex, and across an edge. Given an `IndexedPolyfaceWalker` object that refers to a particular edge:
+
+- [IndexedPolyfaceWalker.nextAroundFacet]($core-geometry) and [IndexedPolyfaceWalker.previousAroundFacet]($core-geometry) return a walker referring to the next/previous edge around the facet.
+- [IndexedPolyfaceWalker.nextAroundVertex]($core-geometry) and [IndexedPolyfaceWalker.previousAroundVertex]($core-geometry) return a walker referring to the next/previous edge around the edges' start vertex.
+- [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
+
+If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
 
 ## API deprecations
 
@@ -125,6 +145,55 @@ iTwin.js now supports only the latest Electron release (Electron 33) and has dro
 ### Deprecated API removals
 
 The following previously-deprecated APIs have been removed:
+
+#### @itwin/appui-abstract
+
+The following APIs have been removed in `@itwin/appui-abstract`.
+
+| **Removed**                         | **Replacement**                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| `AbstractStatusBarActionItem`       | Use `StatusBarActionItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarCustomItem`       | Use `StatusBarCustomItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItem`             | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItemUtilities`    | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead.                          |
+| `AbstractStatusBarLabelItem`        | Use `StatusBarLabelItem` in `@itwin/appui-react` instead.                              |
+| `AbstractWidgetProps`               | Use `Widget` in `@itwin/appui-react` instead.                                          |
+| `AllowedUiItemProviderOverrides`    | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`.                              |
+| `BackstageActionItem`               | `BackstageActionItem` in `@itwin/appui-react`.                                         |
+| `BackstageItem`                     | `BackstageItem` in `@itwin/appui-react`.                                               |
+| `BackstageItemType`                 | Use Type Guard instead.                                                                |
+| `BackstageItemsChangedArgs`         | N/A                                                                                    |
+| `BackstageItemsManager`             | N/A                                                                                    |
+| `BackstageItemUtilities`            | `BackstageItemUtilities` in `@itwin/appui-react`.                                      |
+| `BackstageStageLauncher`            | `BackstageStageLauncher` in `@itwin/appui-react`.                                      |
+| `BaseUiItemsProvider`               | `BaseUiItemsProvider` in `@itwin/appui-react`.                                         |
+| `CommonBackstageItem`               | `CommonBackstageItem` in `@itwin/appui-react`.                                         |
+| `CommonStatusBarItem`               | Use `StatusBarItem` in `@itwin/appui-react` instead.                                   |
+| `createSvgIconSpec`                 | Use `IconSpecUtilities.createWebComponentIconSpec()` instead.                          |
+| `EditorPosition.columnSpan`         | N/A                                                                                    |
+| `getSvgSource`                      | Use `IconSpecUtilities.getWebComponentSource()` instead.                               |
+| `isAbstractStatusBarActionItem`     | Use `isStatusBarActionItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarCustomItem`     | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarLabelItem`      | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead.                            |
+| `isActionItem`                      | Use `isBackstageActionItem` in `@itwin/appui-react` instead.                           |
+| `isStageLauncher`                   | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead.                        |
+| `ProvidedItem`                      | `ProvidedItem` in `@itwin/appui-react`.                                                |
+| `StagePanelLocation`                | `StagePanelLocation` in `@itwin/appui-react`.                                          |
+| `StagePanelSection`                 | `StagePanelSection` in `@itwin/appui-react`.                                           |
+| `StageUsage`                        | `StageUsage` in `@itwin/appui-react`.                                                  |
+| `StatusBarItemId`                   | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `StatusBarLabelSide`                | `StatusBarLabelSide` in `@itwin/appui-react`.                                          |
+| `StatusBarSection`                  | `StatusBarSection` in `@itwin/appui-react`.                                            |
+| `ToolbarItemId`                     | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.                               |
+| `ToolbarManager`                    | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
+| `ToolbarOrientation`                | `ToolbarOrientation` in `@itwin/appui-react`.                                          |
+| `ToolbarUsage`                      | `ToolbarUsage` in `@itwin/appui-react`.                                                |
+| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`.                           |
+| `UiItemProviderOverrides`           | `UiItemProviderOverrides` in `@itwin/appui-react`.                                     |
+| `UiItemsApplicationAction`          | N/A                                                                                    |
+| `UiItemsManager`                    | `UiItemsManager` in `@itwin/appui-react`.                                              |
+| `UiItemsProvider`                   | `UiItemsProvider` in `@itwin/appui-react`.                                             |
+| `WidgetState`                       | `WidgetState` in `@itwin/appui-react`.                                                 |
 
 #### @itwin/core-backend
 
