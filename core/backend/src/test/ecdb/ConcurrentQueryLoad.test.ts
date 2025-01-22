@@ -1,11 +1,11 @@
-import { LogLevel, Logger, StopWatch } from "@itwin/core-bentley";
-import { ECDb } from "../../ECDb";
-import { DbQueryConfig, ECSqlReader, IModelError, QueryQuota, QueryStats } from "@itwin/core-common";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { _nativeDb } from "../../core-backend";
+import { Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
+import { DbQueryConfig, ECSqlReader, QueryStats } from "@itwin/core-common";
 import { expect } from "chai";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
+import { ECDb } from "../../ECDb";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { _nativeDb } from "../../core-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 interface ITaskResult {
   stats: QueryStats;
@@ -36,6 +36,7 @@ class LoadSimulator {
     ConcurrentQuery.shutdown(this.db[_nativeDb]);
     if (this.senario.config) {
       const config = ConcurrentQuery.resetConfig(this.db[_nativeDb], this.senario.config);
+      // eslint-disable-next-line no-console
       console.log(config);
     }
     const overalTime = new StopWatch();
@@ -139,7 +140,7 @@ describe.skip("ConcurrentQueryLoad", () => {
       },
       totalBatches: 1,
       taskPerBatch: 1,
-      createReader: (db: ECDb | IModelDb) => {
+      createReader: (dbs: ECDb | IModelDb) => {
         const quries = [
           {
             sql: `
@@ -167,7 +168,7 @@ describe.skip("ConcurrentQueryLoad", () => {
           }
         ];
         const idx = Math.floor(Math.random() * quries.length);
-        return db.createQueryReader(quries[idx].sql);
+        return dbs.createQueryReader(quries[idx].sql);
       }
     };
 
@@ -175,6 +176,7 @@ describe.skip("ConcurrentQueryLoad", () => {
     const db = SnapshotDb.openFile(verySmallFile);
     const simulator = new LoadSimulator(db, senario);
     const result = await simulator.run();
+    // eslint-disable-next-line no-console
     console.log(result);
     db.close();
     expect(result.errorCount).to.be.equal(0);
