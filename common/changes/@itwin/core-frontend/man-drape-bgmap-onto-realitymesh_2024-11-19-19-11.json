@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added ability to drape the background map onto a reality mesh.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
