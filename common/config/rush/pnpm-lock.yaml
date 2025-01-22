@@ -3604,8 +3604,8 @@ importers:
         specifier: ^1.0.10
         version: 1.0.10
       rollup-plugin-visualizer:
-        specifier: ^5.9.2
-        version: 5.9.2(rollup@4.28.1)
+        specifier: ^5.14.0
+        version: 5.14.0(rollup@4.28.1)
       rollup-plugin-webpack-stats:
         specifier: ^0.2.0
         version: 0.2.0(rollup@4.28.1)
@@ -3800,8 +3800,8 @@ importers:
         specifier: ^1.0.10
         version: 1.0.10
       rollup-plugin-visualizer:
-        specifier: ^5.9.2
-        version: 5.9.2(rollup@4.28.1)
+        specifier: ^5.14.0
+        version: 5.14.0(rollup@4.28.1)
       rollup-plugin-webpack-stats:
         specifier: ^0.2.0
         version: 0.2.0(rollup@4.28.1)
@@ -9508,13 +9508,16 @@ packages:
   rollup-plugin-ignore@1.0.10:
     resolution: {integrity: sha512-VsbnfwwaTv2Dxl2onubetX/3RnSnplNnjdix0hvF8y2YpqdzlZrjIq6zkcuVJ08XysS8zqW3gt3ORBndFDgsrg==}
 
-  rollup-plugin-visualizer@5.9.2:
-    resolution: {integrity: sha512-waHktD5mlWrYFrhOLbti4YgQCn1uR24nYsNuXxg7LkPH8KdTXVWR9DNY1WU0QqokyMixVXJS4J04HNrVTMP01A==}
-    engines: {node: '>=14'}
+  rollup-plugin-visualizer@5.14.0:
+    resolution: {integrity: sha512-VlDXneTDaKsHIw8yzJAFWtrzguoJ/LnQ+lMpoVfYJ3jJF4Ihe5oYLAqLklIK/35lgUY+1yEzCkHyZ1j4A5w5fA==}
+    engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
-      rollup: 2.x || 3.x
+      rolldown: 1.x
+      rollup: 2.x || 3.x || 4.x
     peerDependenciesMeta:
+      rolldown:
+        optional: true
       rollup:
         optional: true
 
@@ -16567,10 +16570,10 @@ snapshots:
 
   rollup-plugin-ignore@1.0.10: {}
 
-  rollup-plugin-visualizer@5.9.2(rollup@4.28.1):
+  rollup-plugin-visualizer@5.14.0(rollup@4.28.1):
     dependencies:
       open: 8.4.2
-      picomatch: 2.3.1
+      picomatch: 4.0.2
       source-map: 0.7.4
       yargs: 17.7.2
     optionalDependencies:

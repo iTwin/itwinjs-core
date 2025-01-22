@@ -7,7 +7,7 @@ import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
-import rollupVisualizer from "rollup-plugin-visualizer";
+import { visualizer as rollupVisualizer } from "rollup-plugin-visualizer";
 import externalGlobals from "rollup-plugin-external-globals";
 import { webpackStats } from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
