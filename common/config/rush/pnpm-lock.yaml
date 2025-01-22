@@ -152,8 +152,8 @@ importers:
         specifier: ^18.0.1
         version: 18.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       sql-formatter:
         specifier: ^15.4.6
         version: 15.4.6
@@ -675,8 +675,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -864,8 +864,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typemoq:
         specifier: ^2.1.0
         version: 2.1.0
@@ -1023,8 +1023,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1093,8 +1093,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1166,8 +1166,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1390,8 +1390,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1952,8 +1952,8 @@ importers:
         specifier: ^18.0.1
         version: 18.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -2508,8 +2508,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       stream-browserify:
         specifier: ^3.0.0
         version: 3.0.0
@@ -2653,8 +2653,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       stream-browserify:
         specifier: ^3.0.0
         version: 3.0.0
@@ -2925,8 +2925,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       stream-browserify:
         specifier: ^3.0.0
         version: 3.0.0
@@ -3067,8 +3067,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       stream-browserify:
         specifier: ^3.0.0
         version: 3.0.0
@@ -4371,8 +4371,8 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
       source-map-loader:
-        specifier: ^4.0.0
-        version: 4.0.0(webpack@5.97.1)
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -6056,10 +6056,6 @@ packages:
 
   '@yarnpkg/lockfile@1.1.0':
     resolution: {integrity: sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==}
-
-  abab@2.0.6:
-    resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}
-    deprecated: Use your platform's native atob() and btoa() methods instead
 
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -9781,9 +9777,9 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  source-map-loader@4.0.0:
-    resolution: {integrity: sha512-i3KVgM3+QPAHNbGavK+VBq03YoJl24m9JWNbLgsjTj8aJzXG9M61bantBTNBt7CNwY2FYf+RJRYJ3pzalKjIrw==}
-    engines: {node: '>= 14.15.0'}
+  source-map-loader@5.0.0:
+    resolution: {integrity: sha512-k2Dur7CbSLcAH73sBcIkV5xjPV4SzqO1NJ7+XaQl8if3VODDUj3FNchNGpqgJSKbvUfJuhVdv8K2Eu8/TNl2eA==}
+    engines: {node: '>= 18.12.0'}
     peerDependencies:
       webpack: ^5.72.1
 
@@ -12621,8 +12617,6 @@ snapshots:
   '@xtuc/long@4.2.2': {}
 
   '@yarnpkg/lockfile@1.1.0': {}
-
-  abab@2.0.6: {}
 
   abbrev@1.1.1: {}
 
@@ -16902,9 +16896,8 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  source-map-loader@4.0.0(webpack@5.97.1):
+  source-map-loader@5.0.0(webpack@5.97.1):
     dependencies:
-      abab: 2.0.6
       iconv-lite: 0.6.3
       source-map-js: 1.2.1
       webpack: 5.97.1(webpack-cli@5.0.1)
