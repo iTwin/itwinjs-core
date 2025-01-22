@@ -1,4 +1,4 @@
-import { StopWatch } from "@itwin/core-bentley";
+import { LogLevel, Logger, StopWatch } from "@itwin/core-bentley";
 import { ECDb } from "../../ECDb";
 import { DbQueryConfig, ECSqlReader, IModelError, QueryQuota, QueryStats } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -115,10 +115,10 @@ class LoadSimulator {
   }
 }
 
-describe("ConcurrentQueryLoad", () => {
-  it.only("should run", async () => {
-
-
+describe.skip("ConcurrentQueryLoad", () => {
+  it("should run", async () => {
+    Logger.initializeToConsole();
+    Logger.setLevel("ECDb.ConcurrentQuery", LogLevel.Trace);
     // const defaultConfig: {
     //   workerThreads: 4,
     //   requestQueueSize: 2000,
@@ -135,33 +135,33 @@ describe("ConcurrentQueryLoad", () => {
     const senario: ISenario = {
       name: "ConcurrentQueryLoad",
       config: {
-
+        autoShutdowWhenIdealForSeconds: 10,
       },
-      totalBatches: 10,
-      taskPerBatch: 10,
+      totalBatches: 1,
+      taskPerBatch: 1,
       createReader: (db: ECDb | IModelDb) => {
         const quries = [
-          // {
-          //   sql: `
-          //   WITH sequence(n) AS (
-          //     SELECT  1
-          //     UNION ALL
-          //     SELECT n + 1 FROM sequence WHERE n < 100
-          //   )
-          //   SELECT  COUNT(*)
-          //   FROM bis.SpatialIndex i, sequence s
-          //   WHERE i.ECInstanceId MATCH  iModel_spatial_overlap_aabb(
-          //     iModel_bbox(random(), random(), random(), random(),random(), random()))`
-          // },
-          // {
-          //   sql: `
-          //   WITH sequence(n) AS (
-          //     SELECT  1
-          //     UNION ALL
-          //     SELECT n + 1 FROM sequence WHERE n < 10000
-          //   )
-          //   SELECT  COUNT(*) FROM sequence`
-          // },
+          {
+            sql: `
+            WITH sequence(n) AS (
+              SELECT  1
+              UNION ALL
+              SELECT n + 1 FROM sequence WHERE n < 10000
+            )
+            SELECT  COUNT(*)
+            FROM bis.SpatialIndex i, sequence s
+            WHERE i.ECInstanceId MATCH  iModel_spatial_overlap_aabb(
+              iModel_bbox(random(), random(), random(), random(),random(), random()))`
+          },
+          {
+            sql: `
+            WITH sequence(n) AS (
+              SELECT  1
+              UNION ALL
+              SELECT n + 1 FROM sequence WHERE n < 1000000
+            )
+            SELECT  COUNT(*) FROM sequence`
+          },
           {
             sql: "SELECT $ FROM bis.Element LIMIT 10000"
           }
@@ -170,10 +170,9 @@ describe("ConcurrentQueryLoad", () => {
         return db.createQueryReader(quries[idx].sql);
       }
     };
-    const largeFile = `D:/temp/PaulM.bim`
-    const verySmallFile = IModelTestUtils.resolveAssetFile("test.bim");
 
-    const db = SnapshotDb.openFile(largeFile);
+    const verySmallFile = IModelTestUtils.resolveAssetFile("test.bim");
+    const db = SnapshotDb.openFile(verySmallFile);
     const simulator = new LoadSimulator(db, senario);
     const result = await simulator.run();
     console.log(result);
