@@ -204,11 +204,27 @@ For applications that wish to include a settings dialog for the user, a helper m
 
 ### Keyboard Shortcuts
 
+Keyboard shortcuts are essential to using AccuDraw effectively and efficiently. Refer [here](./AccuDrawShortcuts) for information regarding available shortcuts and what they do.
+
 When AccuDraw has input focus and does not handle a KeyboardEvent, the event will be propagated first to the active interactive tool, and then to [ToolAdmin.processShortcutKey]($frontend). This is where applications should test for and run their desired keyboard shortcuts.
 
-Refer [here](./AccuDrawShortcuts) for information regarding available shortcuts and what they do.
+> NOTE: When using keyboard shortcuts from the appui package, they currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, applications should override the implementation of [ToolAdmin.processShortcutKey] from the appui package to remove the focus location check.
 
-> NOTE: When using keyboard shortcuts from the appui package, it currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, refer to the documentation for [AccuDrawViewportUI.doProcessUnhandledKey]($frontend).
+```ts
+export class MyToolAdmin extends FrameworkToolAdmin {
+  public override async processShortcutKey(e: KeyboardEvent, wentDown: boolean): Promise<boolean> {
+    if (!wentDown || UiFramework.isContextMenuOpen || "Escape" === e.key)
+      return false;
+    UiFramework.keyboardShortcuts.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
+    return true;
+  }
+}
+
+iModelApp: {
+  accuDraw: new AccuDrawViewportUI(),
+  toolAdmin: new MyToolAdmin(),
+},
+```
 
 ### Known Issues
 

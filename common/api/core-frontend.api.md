@@ -973,7 +973,6 @@ export class AccuDrawViewportUI extends AccuDraw {
             shadow: string;
         };
     };
-    protected doProcessUnhandledKey(ev: KeyboardEvent, _isDown: boolean): Promise<void>;
     grabInputFocus(): void;
     get hasInputFocus(): boolean;
     onCompassDisplayChange(state: "show" | "hide"): void;
