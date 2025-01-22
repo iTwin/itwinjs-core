@@ -38,8 +38,7 @@
   },
   "dependencies": {
     "@itwin/core-extension": "workspace:*",
-    "buffer": "^6.0.3",
-    "url": "^0.11.0"
+    "buffer": "^6.0.3"
   },
   "activationEvents": [
     "onStartup"

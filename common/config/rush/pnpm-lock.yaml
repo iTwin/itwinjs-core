@@ -2138,9 +2138,6 @@ importers:
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
-      url:
-        specifier: ^0.11.0
-        version: 0.11.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -9281,9 +9278,6 @@ packages:
     resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
     engines: {node: '>=6'}
 
-  punycode@1.3.2:
-    resolution: {integrity: sha512-RofWgt/7fL5wP1Y7fxE7/EmTLzQVnB0ycyibJ0OOHIlJqTNzglYFxVwETOcIoJqJmpDXJ9xImDv+Fq34F/d4Dw==}
-
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -9299,11 +9293,6 @@ packages:
   qs@6.13.1:
     resolution: {integrity: sha512-EJPeIn0CYrGu+hli1xilKAPXODtJ12T0sP63Ijx2/khC2JtuaN3JyNIpvmnkmaEtha9ocbG4A4cMcr+TvqvwQg==}
     engines: {node: '>=0.6'}
-
-  querystring@0.2.0:
-    resolution: {integrity: sha512-X/xY82scca2tau62i9mDyU9K+I+djTMUsvwf7xnUX5GLvVzgJybOJf4Y6o9Zx3oJK/LSXg5tTZBjwzqVPaPO2g==}
-    engines: {node: '>=0.4.x'}
-    deprecated: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
 
   querystringify@2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
@@ -10322,9 +10311,6 @@ packages:
 
   url-parse@1.5.10:
     resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
-
-  url@0.11.0:
-    resolution: {integrity: sha512-kbailJa29QrtXnxgq+DdCEGlbTeYM2eJUxsz6vjZavrCYPMIFHMKQmSKYAIuUK2i7hgPm28a8piX5NTUtM/LKQ==}
 
   username@5.1.0:
     resolution: {integrity: sha512-PCKbdWw85JsYMvmCv5GH3kXmM66rCd9m1hBEDutPNv94b/pqCMT4NtcKyeWYvLFiE8b+ha1Jdl8XAaUdPn5QTg==}
@@ -16338,8 +16324,6 @@ snapshots:
 
   punycode.js@2.3.1: {}
 
-  punycode@1.3.2: {}
-
   punycode@2.3.1: {}
 
   qs@6.11.0:
@@ -16353,8 +16337,6 @@ snapshots:
   qs@6.13.1:
     dependencies:
       side-channel: 1.1.0
-
-  querystring@0.2.0: {}
 
   querystringify@2.2.0: {}
 
@@ -17516,11 +17498,6 @@ snapshots:
     dependencies:
       querystringify: 2.2.0
       requires-port: 1.0.0
-
-  url@0.11.0:
-    dependencies:
-      punycode: 1.3.2
-      querystring: 0.2.0
 
   username@5.1.0:
     dependencies:
