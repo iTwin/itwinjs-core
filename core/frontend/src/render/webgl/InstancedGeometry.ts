@@ -110,7 +110,7 @@ export class InstanceBuffersData extends InstanceData {
     return new InstanceBuffersData(count, tfBuf, transformCenter, symBuf, idBuf, disableDisposal);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this._noDispose) {
       dispose(this.transforms);
       dispose(this.featureIds);
@@ -220,7 +220,7 @@ export class InstanceBuffers {
     return new InstanceBuffers(instances.buffers, range);
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this._data);
   }
 
@@ -332,7 +332,7 @@ export class PatternBuffers extends InstanceData {
     return this.offsets.isDisposed;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this.offsets);
   }
 
@@ -439,8 +439,8 @@ export class InstancedGeometry extends CachedGeometry {
     return !this._ownsBuffers || this._buffers.isDisposed;
   }
 
-  public dispose() {
-    this._repr.dispose();
+  public [Symbol.dispose]() {
+    this._repr[Symbol.dispose]();
     if (this._ownsBuffers)
       dispose(this._buffers);
   }
