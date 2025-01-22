@@ -5,19 +5,20 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import { imageBufferToPngDataUrl, IModelApp, openImageDataUrlInNewWindow, ReadImageToCanvasOptions, Tool } from "@itwin/core-frontend";
-import { parseArgs, parseToggle } from "@itwin/frontend-devtools";
+import { imageBufferToPngDataUrl, IModelApp, openImageDataUrlInNewWindow, Tool } from "@itwin/core-frontend";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 interface SaveImageOptions {
   copyToClipboard?: boolean;
   width?: number;
   height?: number;
+  includeDecorations?: boolean;
 }
 
 export class SaveImageTool extends Tool {
   public static override toolId = "SaveImage";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get maxArgs() { return 4; }
 
   public override async run(opts?: SaveImageOptions): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -40,7 +41,14 @@ export class SaveImageTool extends Tool {
       return true;
     }
 
-    const url = imageBufferToPngDataUrl(buffer, false);
+    let url;
+    if (opts?.includeDecorations) {
+      const canvas = vp.readImageToCanvas({includeCanvasDecorations: opts.includeDecorations});
+      url = canvas.toDataURL();
+    } else {
+      url = imageBufferToPngDataUrl(buffer, false);
+    }
+
     if (!url) {
       alert("Failed to produce PNG");
       return true;
@@ -86,52 +94,8 @@ export class SaveImageTool extends Tool {
       opts.height = args.getInteger("h");
     }
 
+    opts.includeDecorations = args.getBoolean("i");
+
     return this.run(opts);
-  }
-}
-
-export class SaveImageWithCanvasDecorationsTool extends Tool {
-  public static override toolId = "SaveImageWithCanvasDecorations";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
-
-  public override async run(showDecorations: boolean): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
-      return false;
-
-    const width = vp.viewRect.width;
-    const height = vp.viewRect.height;
-
-    await vp.waitForSceneCompletion();
-    const buffer = vp.readImageBuffer({ size: new Point2d(width, height) });
-    if (!buffer) {
-      alert("Failed to read image");
-      return true;
-    }
-
-    const options: ReadImageToCanvasOptions = {
-      includeCanvasDecorations: showDecorations,
-    }
-
-    const canvas = vp.readImageToCanvas(options);
-    const url = canvas.toDataURL();
-
-    if (!url) {
-      alert("Failed to produce PNG");
-      return true;
-    }
-
-    openImageDataUrlInNewWindow(url, "Saved View");
-    return true;
-  }
-
-  public override async parseAndRun(...args: string[]): Promise<boolean> {
-    let showDecorations;
-    if (!args[0])
-      showDecorations = true;
-    else
-      showDecorations = !!parseToggle(args[0]);
-    return this.run(showDecorations);
   }
 }

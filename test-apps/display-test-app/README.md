@@ -202,7 +202,7 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the scope to be used for OIDC auth.
 * IMJS_OIDC_REDIRECT_URI
   * If defined, the redirect URI to be used for OIDC auth.
-    * NOTE: as long as IMJS_OIDC_HEADLESS is not defined, OIDC auth will default to using "http://localhost:3000/signin-callback" for this.
+    * NOTE: as long as IMJS_OIDC_HEADLESS is not defined, OIDC auth will default to using "<http://localhost:3000/signin-callback>" for this.
 * IMJS_OIDC_CLIENT_SECRET
   * If defined in iOS, the client secret to be used for OIDC auth.
 * IMJS_BRIEFCASE_CACHE_LOCATION
@@ -251,6 +251,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
   * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
   * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
+  * `i=0|1` - if `1`, canvas decorations will be included in the saved image. By default they are not. NOTE: This is only true if a single viewport is present. If multiple viewports are present, canvas decorations will always be included in the saved image.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * `dta zoom selected` - zoom the selected viewport to the elements in the selection set. Optional arguments specify the margin or padding percent as follows:
   * `l=` `r=` `t=` `b=` followed by a number indicating the left, right, top, and/or bottom padding or margin percent.
