@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { Frustum, ImageBuffer } from "@itwin/core-common";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
@@ -75,7 +75,7 @@ export interface RenderTargetDebugControl {
  * Application code never interacts directly with a `RenderTarget` - it interacts with the `Viewport`'s API which forwards requests to the `RenderTarget`.
  * @public
  */
-export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderTarget implements Disposable, RenderMemory.Consumer {
   /** @internal */
   protected abstract readonly [_implementationProhibited]: unknown;
 
@@ -139,7 +139,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   }
 
   /** @internal */
-  public dispose(): void { }
+  public [Symbol.dispose](): void { }
   /** @internal */
   public reset(): void { }
   /** @internal */

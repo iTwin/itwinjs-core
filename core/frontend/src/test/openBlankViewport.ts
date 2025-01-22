@@ -54,9 +54,9 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
   class BlankViewport extends ScreenViewport {
     public ownedIModel?: BlankConnection;
 
-    public override dispose(): void {
+    public override[Symbol.dispose](): void {
       document.body.removeChild(this.parentDiv);
-      super.dispose();
+      super[Symbol.dispose]();
       this.ownedIModel?.closeSync();
     }
   }
@@ -74,27 +74,19 @@ export type TestBlankViewportOptions = BlankViewportOptions & { test: (vp: Scree
  * @internal
  */
 export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): void {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    if (typeof args === "function")
-      args(vp);
-    else
-      args.test(vp);
-  } finally {
-    vp.dispose();
-  }
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  if (typeof args === "function")
+    args(vp);
+  else
+    args.test(vp);
 }
 
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
 export async function testBlankViewportAsync(args: ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    await args(vp);
-  } finally {
-    vp.dispose();
-  }
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  await args(vp);
 }
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
@@ -250,7 +242,7 @@ export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNon
       features.insert(pixel.feature);
     }
   },
-  readRect, excludeNonLocatable, excludedElements);
+    readRect, excludeNonLocatable, excludedElements);
 
   return features;
 }

@@ -54,7 +54,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
     // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
     return compareStrings(lhs.modelId, rhs.modelId) || compareIModelTileTreeIds(lhs.treeId, rhs.treeId)
-      ||  comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
+      || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
   }
 
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
@@ -125,7 +125,7 @@ export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iM
     const id = kvp.id as PrimaryTreeId;
     assert(undefined !== id.modelId);
     if (modelIds.has(id.modelId))
-      kvp.owner.dispose();
+      kvp.owner[Symbol.dispose]();
   }
 }
 
@@ -488,7 +488,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
 }
 /** @internal */
 export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined {
-  const classifier =  SpatialClassifier.fromModelMapLayer(layerSettings);
+  const classifier = SpatialClassifier.fromModelMapLayer(layerSettings);
   return classifier ? new ModelMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
 }
 

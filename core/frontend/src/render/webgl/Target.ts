@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
@@ -295,14 +295,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     const depth = System.instance.createDepthBuffer(rect.width, rect.height, 1);
     if (undefined === depth) {
-      color.dispose();
+      color[Symbol.dispose]();
       return undefined;
     }
 
     this._fbo = FrameBuffer.create([color], depth);
     if (undefined === this._fbo) {
-      color.dispose();
-      depth.dispose();
+      color[Symbol.dispose]();
+      depth[Symbol.dispose]();
       return undefined;
     }
 
@@ -326,7 +326,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     dispose(db);
   }
 
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this.reset();
     this.disposeFbo();
     dispose(this._compositor);
@@ -441,11 +441,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     });
   }
 
-  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<string, T> | undefined, newMap: Map<string, T> | undefined): void {
+  private changeDrapesOrClassifiers<T extends Disposable>(oldMap: Map<string, T> | undefined, newMap: Map<string, T> | undefined): void {
     if (undefined === newMap) {
       if (undefined !== oldMap)
         for (const value of oldMap.values())
-          value.dispose();
+          value[Symbol.dispose]();
 
       return;
     }
@@ -453,7 +453,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (undefined !== oldMap) {
       for (const entry of oldMap)
         if (newMap.get(entry[0]) !== entry[1])
-          entry[1].dispose();
+          entry[1][Symbol.dispose]();
     }
   }
   public changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined) {
@@ -557,7 +557,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
   public override reset(): void {
-    this.graphics.dispose();
+    this.graphics[Symbol.dispose]();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
 
@@ -1247,11 +1247,11 @@ export class OnScreenTarget extends Target {
       && super.isDisposed;
   }
 
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this._blitGeom = dispose(this._blitGeom);
     this._scratchProgParams = undefined;
     this._scratchDrawParams = undefined;
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   public override collectStatistics(stats: RenderMemory.Statistics): void {

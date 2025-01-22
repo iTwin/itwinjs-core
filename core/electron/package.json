@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "5.0.0-dev.45",
+  "version": "5.0.0-dev.46",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -52,7 +52,7 @@
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~20.9.5",
+    "@types/node": "~20.17.0",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "electron": "^33.0.0",

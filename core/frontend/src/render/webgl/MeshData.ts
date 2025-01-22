@@ -101,10 +101,10 @@ export class MeshData implements WebGLDisposable {
 
   public get isDisposed(): boolean { return undefined === this.texture && this.lut.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.lut);
     if (this._ownsTexture)
-      this.texture!.dispose();
+      this.texture![Symbol.dispose]();
   }
 
   public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }

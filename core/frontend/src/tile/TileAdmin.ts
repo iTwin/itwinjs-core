@@ -580,7 +580,7 @@ export class TileAdmin {
     this._tileUserSetsForRequests.clear();
     this._tileUsagePerUser.clear();
     this._tileTreePropsRequests.length = 0;
-    this._lruList.dispose();
+    this._lruList[Symbol.dispose]();
   }
 
   /** Returns the union of the input set and the input TileUser, to be associated with a [[TileRequest]].

@@ -236,7 +236,7 @@ export abstract class IModelConnection extends IModel {
   protected beforeClose(): void {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
-    this.tiles.dispose();
+    this.tiles[Symbol.dispose]();
     this.subcategories.onIModelConnectionClose();
   }
 

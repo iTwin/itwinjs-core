@@ -1132,7 +1132,7 @@ export abstract class ViewState extends ElementState {
     this.forEachModelTreeRef((ref) => {
       const tree = ref.treeOwner.tileTree;
       if (undefined !== tree && (undefined === modelIds || Id64.has(modelIds, tree.modelId))) {
-        ref.treeOwner.dispose();
+        ref.treeOwner[Symbol.dispose]();
         refreshed = true;
       }
     });

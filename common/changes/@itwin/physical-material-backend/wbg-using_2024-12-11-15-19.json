@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/physical-material-backend",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/physical-material-backend"
+}
