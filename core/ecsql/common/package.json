@@ -10,7 +10,7 @@
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../../generated-docs/core/ecsql-common/file.json --tsIndexFile=./ecsql-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ecsql-common",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -47,7 +47,7 @@
     "eslint": "^9.13.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "nyc": {

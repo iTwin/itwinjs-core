@@ -10,7 +10,7 @@
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-common && npm run extract-extension-api",
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
@@ -55,7 +55,7 @@
     "@vitest/coverage-v8": "^2.1.0",
     "eslint": "^9.13.0",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^2.1.0"
   },

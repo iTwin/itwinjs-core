@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json ../../generated-docs",
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
@@ -36,7 +36,7 @@
     "cpx2": "^3.0.0",
     "eslint": "^9.13.0",
     "mocha": "^10.2.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "mocha": {

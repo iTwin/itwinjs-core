@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 && npm run -s webpack:test",
-    "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
     "cover": "",
     "docs": "",
@@ -68,7 +68,7 @@
     "npm-run-all": "^4.1.5",
     "null-loader": "^4.0.1",
     "path-browserify": "^1.0.1",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "source-map-loader": "^4.0.0",
     "stream-browserify": "^3.0.0",
     "typescript": "~5.6.2",

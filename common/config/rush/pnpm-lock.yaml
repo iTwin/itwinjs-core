@@ -146,8 +146,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -185,8 +185,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -237,8 +237,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -312,8 +312,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -430,8 +430,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -499,8 +499,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -532,8 +532,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -568,8 +568,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -605,8 +605,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -672,8 +672,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -745,8 +745,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -776,8 +776,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -861,8 +861,8 @@ importers:
         specifier: ~1.47.1
         version: 1.47.1
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -919,8 +919,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -953,8 +953,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1020,8 +1020,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -1090,8 +1090,8 @@ importers:
         specifier: ^10.3.12
         version: 10.3.12
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -1163,8 +1163,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -1245,8 +1245,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1290,8 +1290,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1338,8 +1338,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -1387,8 +1387,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -1447,8 +1447,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       semver:
         specifier: ^7.5.2
         version: 7.5.2
@@ -1504,8 +1504,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1546,8 +1546,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1594,8 +1594,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1628,8 +1628,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1667,8 +1667,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1710,8 +1710,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1771,8 +1771,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1880,8 +1880,8 @@ importers:
         specifier: ^4.1.5
         version: 4.1.5
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -1946,8 +1946,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -2015,8 +2015,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -2112,8 +2112,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -2155,8 +2155,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -2278,8 +2278,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -2505,8 +2505,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -2650,8 +2650,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -2739,9 +2739,6 @@ importers:
       '@types/node':
         specifier: ~20.9.5
         version: 20.9.5
-      '@types/rimraf':
-        specifier: ^2.0.2
-        version: 2.0.2
       '@types/sinon':
         specifier: ^17.0.2
         version: 17.0.2
@@ -2779,8 +2776,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -2925,8 +2922,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1(webpack@5.97.1)
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -3067,8 +3064,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-loader:
         specifier: ^4.0.0
         version: 4.0.0(webpack@5.97.1)
@@ -3209,8 +3206,8 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -3320,8 +3317,8 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -3450,8 +3447,8 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -3595,8 +3592,8 @@ importers:
         specifier: ^18.0.0
         version: 18.0.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       rollup-plugin-copy:
         specifier: ^3.4.0
         version: 3.4.0
@@ -3791,8 +3788,8 @@ importers:
         specifier: ^18.0.0
         version: 18.0.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       rollup-plugin-copy:
         specifier: ^3.4.0
         version: 3.4.0
@@ -3855,8 +3852,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -3907,8 +3904,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -3956,8 +3953,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4002,8 +3999,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4051,8 +4048,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4084,8 +4081,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2(mocha@10.2.0)
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       tree-kill:
         specifier: ^1.2.2
         version: 1.2.2
@@ -4182,8 +4179,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4261,8 +4258,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.6
@@ -4305,8 +4302,8 @@ importers:
         specifier: ^9.13.0
         version: 9.13.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4365,8 +4362,8 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       sinon:
         specifier: ^17.0.2
         version: 17.0.2
@@ -4426,8 +4423,8 @@ importers:
         specifier: ^10.2.0
         version: 10.2.0
       rimraf:
-        specifier: ^3.0.2
-        version: 3.0.2
+        specifier: ^6.0.1
+        version: 6.0.1
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -5681,9 +5678,6 @@ packages:
   '@types/glob@5.0.35':
     resolution: {integrity: sha512-wc+VveszMLyMWFvXLkloixT4n0harUIVZjnpzztaZ0nKLuul7Z32iMt2fUFGAaZ4y1XWjFRMtCI5ewvyh4aIeg==}
 
-  '@types/glob@5.0.38':
-    resolution: {integrity: sha512-rTtf75rwyP9G2qO5yRpYtdJ6aU1QqEhWbtW55qEgquEDa6bXW0s2TWZfDm02GuppjEozOWG/F2UnPq5hAQb+gw==}
-
   '@types/glob@7.2.0':
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
 
@@ -5767,9 +5761,6 @@ packages:
 
   '@types/responselike@1.0.3':
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
-
-  '@types/rimraf@2.0.2':
-    resolution: {integrity: sha512-Hm/bnWq0TCy7jmjeN5bKYij9vw5GrDFWME4IuxV08278NtU/VdGbzsBohcCUJ7+QMqmUq5hpRKB39HeQWJjztQ==}
 
   '@types/semver@7.3.10':
     resolution: {integrity: sha512-zsv3fsC7S84NN6nPK06u79oWgrPVd0NvOyqgghV1haPaFcVxIrP4DLomRwGAXk0ui4HZA7mOcSFL98sMVW9viw==}
@@ -7678,6 +7669,11 @@ packages:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
     hasBin: true
 
+  glob@11.0.1:
+    resolution: {integrity: sha512-zrQDm8XPnYEKawJScsnM0QzobJxlT/kHOOlRTio8IH/GrmxRE5fjllkzdaHclIuNjUQTJYH2xHNIGfdpJkDJUw==}
+    engines: {node: 20 || >=22}
+    hasBin: true
+
   glob@7.2.0:
     resolution: {integrity: sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==}
     deprecated: Glob versions prior to v9 are no longer supported
@@ -8198,6 +8194,10 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
+  jackspeak@4.0.2:
+    resolution: {integrity: sha512-bZsjR/iRjl1Nk1UkjGpAzLNfQtzuijhn2g+pbZb98HQ1Gk8vM9hfbxeMBP+M2/UUdwj0RqGG3mlvk2MsAqwvEw==}
+    engines: {node: 20 || >=22}
+
   jest-diff@21.2.1:
     resolution: {integrity: sha512-E5fu6r7PvvPr5qAWE1RaUwIh/k6Zx/3OOkZ4rk5dBJkEWRrUuSgbMt2EO8IUTPTd6DOqU3LW6uTIwX5FRvXoFA==}
 
@@ -8488,6 +8488,10 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
+  lru-cache@11.0.2:
+    resolution: {integrity: sha512-123qHRfJBmo2jXDbo/a5YOQrJoHF/GNQTLzQ5+IdK5pWpceK17yRc6ozlWd25FxvGKQbIUs91fDFkXmDHTKcyA==}
+    engines: {node: 20 || >=22}
+
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
@@ -8670,6 +8674,10 @@ packages:
 
   minimalistic-crypto-utils@1.0.1:
     resolution: {integrity: sha512-JIYlbt6g8i5jKfJ3xz7rF0LXmv2TkDxBLUkiBeZ7bAx4GnnNMr8xFpGnOxn6GhTEHx3SjRrZEoU+j04prX1ktg==}
+
+  minimatch@10.0.1:
+    resolution: {integrity: sha512-ethXTt3SGGR+95gudmqJ1eNhRO7eGEGIgYA9vnPatK4/etz2MEVDno5GMCibdMTuBMyElzIlgxMna3K94XDIDQ==}
+    engines: {node: 20 || >=22}
 
   minimatch@3.0.8:
     resolution: {integrity: sha512-6FsRAQsxQ61mw+qP1ZzbL9Bc78x2p5OqNgNpnoAFLTrX8n5Kxph0CsnhmKKNXTWjXqU5L0pGPR7hYk+XWZr60Q==}
@@ -9114,6 +9122,10 @@ packages:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
 
+  path-scurry@2.0.0:
+    resolution: {integrity: sha512-ypGJsmGtdXUOeM5u93TyeIEfEhM6s+ljAhrk5vAvSx8uyY/02OvrZnA0YNGUrPXfpJMgI1ODd3nwz8Npx4O4cg==}
+    engines: {node: 20 || >=22}
+
   path-to-regexp@0.1.10:
     resolution: {integrity: sha512-7lf7qcQidTku0Gu3YDPc8DJ1q7OOucfa/BSsIwjuh56VU7katFvuM8hULfkwB3Fns/rsVF7PwPKVw1sl5KQS9w==}
 
@@ -9490,6 +9502,11 @@ packages:
 
   rimraf@5.0.10:
     resolution: {integrity: sha512-l0OE8wL34P4nJH/H2ffoaniAokM2qSmrtXHmlpvYr5AVVX8msAyW0l8NVJFDxlSK4u3Uh/f41cQheDVdnYijwQ==}
+    hasBin: true
+
+  rimraf@6.0.1:
+    resolution: {integrity: sha512-9dkvaxAsk/xNXSJzMgFqqMCuFgt2+KsOFek3TMLfo8NCPfWpBmqwyNn5Y+NX56QUYfCtsyhF3ayiboEoUmJk/A==}
+    engines: {node: 20 || >=22}
     hasBin: true
 
   ripemd160@2.0.2:
@@ -12123,11 +12140,6 @@ snapshots:
       '@types/minimatch': 5.1.2
       '@types/node': 20.9.5
 
-  '@types/glob@5.0.38':
-    dependencies:
-      '@types/minimatch': 5.1.2
-      '@types/node': 20.9.5
-
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
@@ -12206,11 +12218,6 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.9.5
-
-  '@types/rimraf@2.0.2':
-    dependencies:
-      '@types/glob': 5.0.38
       '@types/node': 20.9.5
 
   '@types/semver@7.3.10': {}
@@ -14592,6 +14599,15 @@ snapshots:
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
 
+  glob@11.0.1:
+    dependencies:
+      foreground-child: 3.3.0
+      jackspeak: 4.0.2
+      minimatch: 10.0.1
+      minipass: 7.1.2
+      package-json-from-dist: 1.0.1
+      path-scurry: 2.0.0
+
   glob@7.2.0:
     dependencies:
       fs.realpath: 1.0.0
@@ -15169,6 +15185,10 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
+  jackspeak@4.0.2:
+    dependencies:
+      '@isaacs/cliui': 8.0.2
+
   jest-diff@21.2.1:
     dependencies:
       chalk: 2.4.2
@@ -15506,6 +15526,8 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
+  lru-cache@11.0.2: {}
+
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
@@ -15673,6 +15695,10 @@ snapshots:
   minimalistic-assert@1.0.1: {}
 
   minimalistic-crypto-utils@1.0.1: {}
+
+  minimatch@10.0.1:
+    dependencies:
+      brace-expansion: 2.0.1
 
   minimatch@3.0.8:
     dependencies:
@@ -16193,6 +16219,11 @@ snapshots:
       lru-cache: 10.4.3
       minipass: 7.1.2
 
+  path-scurry@2.0.0:
+    dependencies:
+      lru-cache: 11.0.2
+      minipass: 7.1.2
+
   path-to-regexp@0.1.10: {}
 
   path-to-regexp@0.1.12: {}
@@ -16543,6 +16574,11 @@ snapshots:
   rimraf@5.0.10:
     dependencies:
       glob: 10.4.5
+
+  rimraf@6.0.1:
+    dependencies:
+      glob: 11.0.1
+      package-json-from-dist: 1.0.1
 
   ripemd160@2.0.2:
     dependencies:

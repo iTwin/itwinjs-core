@@ -7,7 +7,7 @@
   "scripts": {
     "copy:config": "internal-tools copy-config",
     "build": "tsc 1>&2 && npm run -s webpack:test",
-    "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json coverage",
     "cover": "npm run -s test",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -91,7 +91,7 @@
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
     "path-browserify": "^1.0.1",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "source-map-loader": "^4.0.0",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",

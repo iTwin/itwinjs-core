@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import Backend from "i18next-http-backend";
 import * as path from "path";
-import rimraf from "rimraf";
+import { rimrafSync } from "rimraf";
 import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
@@ -213,7 +213,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
   PresentationBackend.terminate();
   await IModelHost.shutdown();
   if (hierarchiesCacheDirectory) {
-    rimraf.sync(hierarchiesCacheDirectory);
+    rimrafSync.sync(hierarchiesCacheDirectory);
   }
 
   // terminate frontend

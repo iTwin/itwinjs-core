@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 --outDir lib/cjs",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "copy:config": "internal-tools copy-config",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
@@ -65,7 +65,7 @@
     "fs-extra": "^8.1.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "sinon": "^17.0.2"
   },
   "devDependencies": {

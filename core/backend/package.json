@@ -11,7 +11,7 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets && npm run -s copy:ecsqltestmdfiles",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "clean": "rimraf lib .rush/temp/package-deps*.json  ../../tools/internal/ios/core-test-runner/build ../../tools/internal/lib",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json  ../../tools/internal/ios/core-test-runner/build ../../tools/internal/lib",
     "docs": "betools docs --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson --excludeGlob=**/*.d.ts",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",
     "copy:ecsqltestmdfiles": "cpx \"./src/test/ecsql/queries/*\" ./lib/cjs/test/ecsql/queries",
@@ -90,7 +90,7 @@
     "node-simctl": "~7.6.1",
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "sinon": "^17.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.6.2",
