@@ -346,16 +346,17 @@ export interface AzureBlobStorageCredentials {
     baseUrl?: string;
 }
 
-// @internal
+// @public
 export interface BackendHubAccess {
+    // @internal
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @deprecated
-    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+    // @internal @deprecated
+    downloadV1Checkpoint: (arg: DownloadRequest) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -367,11 +368,14 @@ export interface BackendHubAccess {
     pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
     }) => Promise<ChangesetIndex>;
+    // @internal
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
+    // @internal
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
+    // @internal
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
@@ -823,9 +827,6 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     // @deprecated
     static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
 }
-
-// @internal @deprecated (undocumented)
-export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
 export class CheckpointManager {
@@ -1802,14 +1803,8 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
-    // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
-    // @deprecated
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     saveChanges(changesetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -2034,8 +2029,6 @@ class Element_2 extends Entity {
     // (undocumented)
     static get className(): string;
     code: Code;
-    // @beta @deprecated
-    protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
@@ -2043,8 +2036,6 @@ class Element_2 extends Entity {
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
-    // @beta @deprecated
-    getPredecessorIds(): Id64Set;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
@@ -2336,13 +2327,9 @@ export class Entity {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal @deprecated
-    protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @internal @deprecated
-    getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
     getReferenceIds(): EntityReferenceSet;
     id: Id64String;
@@ -2565,11 +2552,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
         elementId: Id64String;
         aspectId: Id64String;
     }>;
-    // @deprecated (undocumented)
-    static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
-        elementId?: Id64String;
-        aspectId?: Id64String;
-    };
     identifier: string;
     jsonProperties?: string;
     kind: string;
@@ -3081,7 +3063,7 @@ export class HubMock {
     // (undocumented)
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     // (undocumented)
-    static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
+    static downloadV1Checkpoint(arg: DownloadRequest): Promise<ChangesetIndexAndId>;
     // (undocumented)
     static findLocalHub(iModelId: GuidString): LocalHub;
     static getChangesetFromNamedVersion(arg: IModelIdArg & {
@@ -3120,12 +3102,6 @@ export class HubMock {
     static shutdown(): void;
     static startup(mockName: LocalDirName, outputDir: string): void;
 }
-
-// @beta @deprecated (undocumented)
-export const IModelCloneContext: typeof IModelElementCloneContext;
-
-// @beta @deprecated (undocumented)
-export type IModelCloneContext = IModelElementCloneContext;
 
 // @public
 export abstract class IModelDb extends IModel {
@@ -3245,16 +3221,12 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
-    // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal
     queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
     // @internal
     querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]>;
@@ -3269,8 +3241,6 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @internal (undocumented)
     restartDefaultTxn(): void;
-    // @deprecated
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
     // @internal @deprecated (undocumented)
@@ -3395,8 +3365,6 @@ export namespace IModelDb {
         }): Promise<ViewStore.CloudAccess>;
         static readonly defaultQueryParams: ViewQueryParams;
         getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined;
-        // @deprecated (undocumented)
-        getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps;
         getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps>;
         // (undocumented)
         get hasViewStore(): boolean;
@@ -3573,7 +3541,6 @@ export interface IModelHostOptions {
     // @internal
     crashReportingConfig?: CrashReportingConfig;
     enableOpenTelemetry?: boolean;
-    // @internal
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
@@ -4746,30 +4713,22 @@ export class RenderMaterialElement extends DefinitionElement {
     toJSON(): RenderMaterialProps;
 }
 
-// @public (undocumented)
-export namespace RenderMaterialElement {
-    // @deprecated
-    export class Params {
-        constructor(paletteName: string);
-        color?: RgbFactorProps;
-        description?: string;
-        diffuse?: number;
-        finish?: number;
-        normalMap?: NormalMapProps & {
-            scale?: number;
-        };
-        paletteName: string;
-        patternMap?: TextureMapProps;
-        reflect?: number;
-        reflectColor?: number[];
-        specular?: number;
-        specularColor?: RgbFactorProps;
-        transmit?: number;
-    }
-}
-
 // @public
-export interface RenderMaterialElementParams extends RenderMaterialElement.Params {
+export interface RenderMaterialElementParams {
+    color?: RgbFactorProps;
+    description?: string;
+    diffuse?: number;
+    finish?: number;
+    normalMap?: NormalMapProps & {
+        scale?: number;
+    };
+    paletteName: string;
+    patternMap?: TextureMapProps;
+    reflect?: number;
+    reflectColor?: number[];
+    specular?: number;
+    specularColor?: RgbFactorProps;
+    transmit?: number;
 }
 
 // @public

@@ -9,7 +9,7 @@ public;class;AuxCoordSystem3d
 public;class;AuxCoordSystemSpatial
 beta;interface;AvailableCoordinateReferenceSystemProps
 beta;interface;AzureBlobStorageCredentials
-internal;interface;BackendHubAccess
+public;interface;BackendHubAccess
 public;enum;BackendLoggerCategory
 public;type;BindParameter
 public;class;BisCoreSchema
@@ -39,8 +39,6 @@ beta;interface;ChannelControl
 beta;namespace;ChannelControl
 beta;type;ChannelKey
 public;class;ChannelRootAspect
-internal;type;CheckpointArg
-deprecated;type;CheckpointArg
 internal;class;CheckpointManager
 public;interface;CheckpointProps
 public;class;ClassRegistry
@@ -233,10 +231,6 @@ public;class;GroupInformationModel
 public;class;GroupInformationPartition
 public;class;GroupModel
 internal;class;HubMock
-beta;const;IModelCloneContext
-deprecated;const;IModelCloneContext
-beta;type;IModelCloneContext
-deprecated;type;IModelCloneContext
 public;class;IModelDb
 public;namespace;IModelDb
 internal;enum;TileContentState
@@ -341,7 +335,6 @@ beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships
 public;class;RenderMaterialElement
-public;namespace;RenderMaterialElement
 public;interface;RenderMaterialElementParams
 public;class;RenderMaterialOwnsRenderMaterials
 public;class;RenderTimeline

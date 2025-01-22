@@ -217,7 +217,7 @@ export interface BackendHubAccess {
    * @deprecated in 3.x. V1 checkpoints are deprecated. Download V2 checkpoint using [[V2CheckpointManager.downloadCheckpoint]].
    * @internal
    */
-  downloadV1Checkpoint: (arg: DownloadRequest) => Promise<ChangesetIndexAndId>; // eslint-disable-line @typescript-eslint/no-deprecated
+  downloadV1Checkpoint: (arg: DownloadRequest) => Promise<ChangesetIndexAndId>;
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
