@@ -9,7 +9,7 @@ import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
 import { visualizer as rollupVisualizer } from "rollup-plugin-visualizer";
 import externalGlobals from "rollup-plugin-external-globals";
-import { webpackStats } from "rollup-plugin-webpack-stats";
+import webpackStats from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
 import { createRequire } from "module";
@@ -46,7 +46,7 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
         .replace("\\lib\\cjs\\", "\\src\\")
         .replace("/lib/cjs/", "/src/")
         .replace(".js", ".ts");
-    } catch {}
+    } catch { }
   }
 });
 
@@ -88,14 +88,14 @@ export default defineConfig(() => {
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-                rollupVisualizer({
-                  open: true,
-                  filename: "stats.html",
-                  template: "treemap",
-                  sourcemap: true,
-                }),
-                webpackStats(), // needs to be the last plugin
-              ]
+              rollupVisualizer({
+                open: true,
+                filename: "stats.html",
+                template: "treemap",
+                sourcemap: true,
+              }),
+              webpackStats(), // needs to be the last plugin
+            ]
             : []),
           externalGlobals({
             // allow global `window` object to access electron as external global
