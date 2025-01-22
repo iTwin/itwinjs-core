@@ -81,7 +81,7 @@
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "faker": "^4.1.0",
-    "jsdom": "^19.0.0",
+    "jsdom": "^26.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
