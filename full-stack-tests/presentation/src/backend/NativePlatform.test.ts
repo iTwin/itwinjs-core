@@ -36,7 +36,7 @@ describe("NativePlatform", () => {
   });
 
   afterEach(() => {
-    nativePlatform.dispose();
+    nativePlatform[Symbol.dispose]();
     try {
       imodel.close();
     } catch {}
