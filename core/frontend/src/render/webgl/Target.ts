@@ -1189,7 +1189,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // vp.rendersToScreen tells us if the view is being rendered directly to the webgl canvas on screen, which happens in the case of a single viewport.
       // In that case, we need to combine the 2d canvas with the webgl canvas or we will lose canvas decorations in the copied image.
       // options.includeCanvasDecorations will be true if the caller wants to include the decorations in the copied image.
-      if (vp && vp.rendersToScreen && options?.includeCanvasDecorations) {
+      if (vp?.rendersToScreen && options?.includeCanvasDecorations) {
         const twoDCanvas = vp.canvas;
         const ctx = retCanvas.getContext("2d")!;
         ctx.drawImage(twoDCanvas, 0, 0);
