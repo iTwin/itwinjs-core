@@ -7,7 +7,7 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -298,7 +298,7 @@ export interface ReadImageToCanvasOptions {
  * @public
  * @extensions
  */
-export abstract class Viewport implements IDisposable, TileUser {
+export abstract class Viewport implements Disposable, TileUser {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
    * otherwise, avoid performing excessive computations in response to this event.
@@ -1158,15 +1158,20 @@ export abstract class Viewport implements IDisposable, TileUser {
     IModelApp.tileAdmin.registerUser(this);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this.isDisposed)
       return;
 
     this._target = dispose(this._target);
-    this.subcategories.dispose();
+    this.subcategories[Symbol.dispose]();
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   private setView(view: ViewState): void {
@@ -3096,8 +3101,8 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public override dispose(): void {
-    super.dispose();
+  public override[Symbol.dispose](): void {
+    super[Symbol.dispose]();
     this._decorationCache.clear();
   }
 

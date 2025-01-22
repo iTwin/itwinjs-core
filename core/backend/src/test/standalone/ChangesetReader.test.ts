@@ -259,7 +259,7 @@ describe("Changeset Reader API", async () => {
 
     if (true || "test local changes") {
       const reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
@@ -327,7 +327,6 @@ describe("Changeset Reader API", async () => {
         stage: "New",
         fallbackClassId: undefined,
       });
-      adaptor.dispose();
     }
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
@@ -396,7 +395,7 @@ describe("Changeset Reader API", async () => {
     }
     if (true || "test changeset file") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
@@ -464,11 +463,10 @@ describe("Changeset Reader API", async () => {
         stage: "New",
         fallbackClassId: undefined,
       });
-      adaptor.dispose();
     }
     if (true || "test ChangesetAdaptor.acceptClass()") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptClass("TestDomain.Test2dElement");
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
@@ -477,11 +475,10 @@ describe("Changeset Reader API", async () => {
       const changes = Array.from(cci.instances);
       assert.equal(changes.length, 1);
       assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-      adaptor.dispose();
     }
     if (true || "test ChangesetAdaptor.adaptor()") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptOp("Updated");
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
@@ -497,7 +494,6 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "Old");
-      adaptor.dispose();
     }
     rwIModel.close();
   });

@@ -24,7 +24,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
   const colors = new ColorIndex();
   colors.initUniform(ColorDef.from(255, 0, 0, transparency));
 
-  const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
+  const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0)];
   const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points)
     qpoints.add(point);
@@ -47,7 +47,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
   }
 
   if (texture)
-    args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
+    args.textureMapping = { texture, uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)] };
 
   const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
   return IModelApp.renderSystem.createMesh(params)!;
@@ -95,7 +95,7 @@ describe("Surface transparency", () => {
   });
 
   afterEach(() => {
-    viewport.dispose();
+    viewport[Symbol.dispose]();
   });
 
   afterAll(async () => {
@@ -124,17 +124,17 @@ describe("Surface transparency", () => {
     const graphic = setup(viewport.view as SpatialViewState);
 
     const mesh = graphic as MeshGraphic;
-	  expect(mesh).instanceof(MeshGraphic);
+    expect(mesh).instanceof(MeshGraphic);
     const primitive = (mesh as any)._primitives[0] as Primitive;
-	  expect(primitive).instanceof(Primitive);
-	  expect(primitive.cachedGeometry).instanceof(SurfaceGeometry);
+    expect(primitive).instanceof(Primitive);
+    expect(primitive.cachedGeometry).instanceof(SurfaceGeometry);
 
     const plan = createRenderPlanFromViewport(viewport);
     viewport.target.changeRenderPlan(plan);
 
     const primPass = primitive.getPass(viewport.target as Target);
-	  expect(Pass.rendersOpaqueAndTranslucent(primPass)).toBe(false);
-	  expect(Pass.toRenderPass(primPass as SinglePass)).toEqual(pass);
+    expect(Pass.rendersOpaqueAndTranslucent(primPass)).toBe(false);
+    expect(Pass.toRenderPass(primPass as SinglePass)).toEqual(pass);
   }
 
   function expectOpaque(setup: SetupFunc): void {
@@ -267,7 +267,7 @@ describe("Surface transparency", () => {
       ownership: { iModel: imodel, key: imodel.transientIds.getNext() },
       image: { source: img, transparency: TextureTransparency.Translucent },
     });
-	  expect(tx).toBeDefined();
+    expect(tx).toBeDefined();
 
     expectTranslucent(() => createMesh(0, tx));
     expectTranslucent(() => createMesh(127, tx));
