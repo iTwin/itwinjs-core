@@ -8,7 +8,6 @@
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { BackendReadable, BackendWritable } from "../../BackendTypes";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
@@ -16,6 +15,7 @@ import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
+import { Readable, Writable } from "node:stream";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
@@ -23,7 +23,7 @@ import { WebAppRpcRequest } from "./WebAppRpcRequest";
  * @public
  * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
-export interface HttpServerRequest extends BackendReadable {
+export interface HttpServerRequest extends Readable {
   aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
@@ -54,7 +54,7 @@ export interface HttpServerRequest extends BackendReadable {
  * @public
  * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
  */
-export interface HttpServerResponse extends BackendWritable {
+export interface HttpServerResponse extends Writable {
   send(body?: any): HttpServerResponse;
   status(code: number): HttpServerResponse;
   set(field: string, value: string): void;
