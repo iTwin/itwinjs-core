@@ -213,7 +213,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
   PresentationBackend.terminate();
   await IModelHost.shutdown();
   if (hierarchiesCacheDirectory) {
-    rimrafSync.sync(hierarchiesCacheDirectory);
+    rimrafSync(hierarchiesCacheDirectory);
   }
 
   // terminate frontend
