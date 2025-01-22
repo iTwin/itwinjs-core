@@ -168,12 +168,6 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
 }
 
 /**
- * @deprecated in 3.x. Use [[DownloadRequest]].
- * @internal
- */
-export type CheckpointArg = DownloadRequest;
-
-/**
  * Arguments to create a new iModel in iModelHub
  *  @public
  */
@@ -188,7 +182,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
  * Generally direct access to these methods should not be required, since higher-level apis are provided.
  * @note This interface is implemented in another repository. Any changes made to this interface must be validated against
  * the implementation found here: https://github.com/iTwin/imodels-clients/blob/main/itwin-platform-access/imodels-access-backend/src/BackendIModelsAccess.ts
- * @internal
+ * @public
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
@@ -223,7 +217,7 @@ export interface BackendHubAccess {
    * @deprecated in 3.x. V1 checkpoints are deprecated. Download V2 checkpoint using [[V2CheckpointManager.downloadCheckpoint]].
    * @internal
    */
-  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line @typescript-eslint/no-deprecated
+  downloadV1Checkpoint: (arg: DownloadRequest) => Promise<ChangesetIndexAndId>; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /**
    * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.

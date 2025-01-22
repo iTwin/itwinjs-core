@@ -121,7 +121,7 @@ export interface IModelHostOptions {
 
   /**
    * The kind of iModel hub server to use.
-   * @internal
+   * @public
    */
   hubAccess?: BackendHubAccess;
 
