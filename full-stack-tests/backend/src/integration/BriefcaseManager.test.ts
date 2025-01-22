@@ -8,12 +8,14 @@ import * as os from "os";
 import * as readline from "readline";
 import * as sinon from "sinon";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
-import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
+import { BriefcaseIdValue, BriefcaseProps, CategoryProps, ColorDef, GeometryStreamBuilder, IModelError, IModelVersion } from "@itwin/core-common";
+import { BriefcaseDb, BriefcaseManager, Category, CheckpointManager, GeometricElement3d, IModelHost, IModelJsFs, RequestNewBriefcaseArg, SpatialCategory, V2CheckpointManager } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import path = require("path");
+import { LineString3d, Point3d } from "@itwin/core-geometry";
 
 // Configuration needed:
 //    IMJS_TEST_REGULAR_USER_NAME
@@ -76,6 +78,45 @@ describe("BriefcaseManager", () => {
     expect(iModel.changeset.id).to.equal(changesetId);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
+
+  it.only("upload mirukuru", async () => {
+    IModelHost.authorizationClient = {getAccessToken: async () => accessToken};
+    const iModelId = await IModelHost.hubAccess.createNewIModel({
+      iModelName: "mirukuru",
+      iTwinId: testITwinId,
+      version0: path.join("D:","repos", "itwinjs-core", "core", "backend", "src", "test", "assets", "mirukuru.ibim"),
+      accessToken,
+      noLocks: true,
+    });
+    const props = await BriefcaseManager.downloadBriefcase({
+      iModelId,
+      iTwinId: testITwinId,
+      accessToken,
+
+    });
+    const iModel = await BriefcaseDb.open({
+      fileName: props.fileName,
+      readonly: false,
+    });
+    const rootSubject = iModel.elements.getRootSubject();
+    rootSubject.description = "updated description for cs 1";
+    iModel.elements.updateElement(rootSubject as any);
+    iModel.saveChanges();
+    await iModel.pushChanges({accessToken, description: "updated rootsubject description"});
+
+    const geometricElement: GeometricElement3d = iModel.elements.getElement("0x29");
+    const builder = new GeometryStreamBuilder();
+    if (!builder.appendGeometry(LineString3d.createPoints([Point3d.create(1, 1, 1), Point3d.create(2, 2, 2)])))
+      throw new Error("uhoh");
+    geometricElement.geom = builder.geometryStream;
+    iModel.elements.updateElement(geometricElement as any);
+    iModel.saveChanges();
+    await iModel.pushChanges({accessToken, description: "updated geomstream to be line"});
+
+    // in theory ive made the iModel how I need it to look
+
+
+});
 
   it("should open and close an iModel from the Hub", async () => {
     const iModel = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
