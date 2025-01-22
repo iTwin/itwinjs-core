@@ -38,7 +38,7 @@
     "@types/chai": "4.3.1",
     "@types/express": "^4.17.20",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~20.9.5",
+    "@types/node": "~20.17.0",
     "@types/semver": "7.3.10",
     "@types/spdy": "^3.4.4",
     "assert": "^2.0.0",
@@ -52,7 +52,7 @@
     "source-map-loader": "^4.0.0",
     "stream-browserify": "^3.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.76.0",
+    "webpack": "^5.97.1",
     "webpack-cli": "^5.0.1"
   }
 }

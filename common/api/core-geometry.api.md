@@ -229,7 +229,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     areaToChordXY(fraction0: number, fraction1: number): number;
+    binormalVector(result?: Vector3d): Vector3d;
     get center(): Point3d;
+    set center(center: XYAndZ);
+    get centerRef(): Point3d;
     circularRadius(): number | undefined;
     circularRadiusXY(): number | undefined;
     clone(): Arc3d;
@@ -1493,6 +1496,7 @@ export abstract class CurveChain extends CurveCollection {
     protected _curves: CurvePrimitive[];
     cyclicCurvePrimitive(index: number, cyclic?: boolean): CurvePrimitive | undefined;
     endPoint(result?: Point3d): Point3d | undefined;
+    endPointAndDerivative(result?: Ray3d): Ray3d | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     getChild(i: number): CurvePrimitive | undefined;
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
@@ -1500,6 +1504,7 @@ export abstract class CurveChain extends CurveCollection {
     reverseChildrenInPlace(): void;
     reverseInPlace(): void;
     startPoint(result?: Point3d): Point3d | undefined;
+    startPointAndDerivative(result?: Ray3d): Ray3d | undefined;
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
@@ -1624,6 +1629,7 @@ export class CurveExtendOptions {
 export class CurveFactory {
     static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean): boolean;
     static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal?: number): Path;
+    static createArcFromSectionData(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d): Arc3d | undefined;
     static createArcPointTangentPoint(start: Point3d, tangentAtStart: Vector3d, end: Point3d): Arc3d | undefined;
     static createArcPointTangentRadius(start: Point3d, tangentAtStart: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
@@ -1631,7 +1637,7 @@ export class CurveFactory {
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
     static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[];
-    static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions): SectionSequenceWithPlanes | undefined;
+    static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain, initialSection: AnyCurve, options?: MiteredSweepOptions): SectionSequenceWithPlanes | undefined;
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
     static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
@@ -2436,14 +2442,17 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     areaXY(): number;
     clear(): void;
     clone(result?: GrowableXYZArray): GrowableXYZArray;
+    cloneCompressed(tolerance?: number, result?: GrowableXYZArray): GrowableXYZArray;
     compareLexicalBlock(ia: number, ib: number): number;
     component(pointIndex: number, componentIndex: number): number;
+    compressInPlace(tolerance?: number): GrowableXYZArray;
     protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {
         count: number;
         offset: number;
     };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
+    static createCompressed(source: IndexedXYZCollection, tolerance?: number, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined;
@@ -2473,7 +2482,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     interpolate(i: number, fraction: number, j: number, result?: Point3d): Point3d | undefined;
     static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean;
     isCloseToPlane(plane: Plane3dByOriginAndUnitNormal, tolerance?: number): boolean;
-    isIndexValid(index: number): boolean;
     get length(): number;
     set length(newLength: number);
     mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number): void;
@@ -2502,7 +2510,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number, z: number): boolean;
     sortIndicesLexical(): Uint32Array;
     sumLengths(): number;
-    transferFromGrowableXYZArray(destIndex: number, source: GrowableXYZArray, sourceIndex: number): boolean;
+    transferFromGrowableXYZArray(destIndex: number, source: IndexedXYZCollection, sourceIndex: number): boolean;
     tryTransformInverseInPlace(transform: Transform): boolean;
     vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined;
     vectorXYAndZIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d | undefined;
@@ -2805,11 +2813,13 @@ export class IndexedPolyface extends Polyface {
     static create(needNormals?: boolean, needParams?: boolean, needColors?: boolean, twoSided?: boolean): IndexedPolyface;
     createVisitor(numWrap?: number): IndexedPolyfaceVisitor;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
+    edgeIndexToFaceLoop(k: number | undefined): Range1d | undefined;
+    edgeIndexToFacetIndex(k: number | undefined): number | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     get faceCount(): number;
     get facetCount(): number;
-    facetIndex0(index: number): number;
-    facetIndex1(index: number): number;
+    facetIndex0(facetIndex: number): number;
+    facetIndex1(facetIndex: number): number;
     protected _facetStart: number[];
     protected _facetToFaceData: number[];
     // @deprecated
@@ -2817,7 +2827,7 @@ export class IndexedPolyface extends Polyface {
     isAlmostEqual(other: any): boolean;
     get isEmpty(): boolean;
     isSameGeometryClass(other: any): boolean;
-    isValidFacetIndex(index: number): boolean;
+    isValidFacetIndex(facetIndex: number): boolean;
     get normalCount(): number;
     numEdgeInFacet(facetIndex: number): number;
     get paramCount(): number;
@@ -2826,6 +2836,7 @@ export class IndexedPolyface extends Polyface {
     reverseIndices(): void;
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
+    static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined;
     setNewFaceData(endFacetIndex?: number): boolean;
     terminateFacet(validateAllIndices?: boolean): string[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
@@ -2870,6 +2881,27 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
 }
 
 // @public
+export class IndexedPolyfaceWalker {
+    static buildEdgeMateIndices(polyface: IndexedPolyface): void;
+    clone(edgeIndex?: number): IndexedPolyfaceWalker | undefined;
+    static createAtEdgeIndex(polyface: IndexedPolyface, edgeIndex?: number): IndexedPolyfaceWalker;
+    static createAtFacetIndex(polyface: IndexedPolyface, facetIndex: number, offsetWithinFacet?: number): IndexedPolyfaceWalker;
+    static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet?: number): IndexedPolyfaceWalker;
+    get edgeIndex(): number | undefined;
+    edgeMate(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    isDifferentEdgeInSamePolyface(other: IndexedPolyfaceWalker): boolean;
+    isSameEdge(other: IndexedPolyfaceWalker): boolean;
+    get isUndefined(): boolean;
+    get isValid(): boolean;
+    loadVisitor(visitor: IndexedPolyfaceVisitor): boolean;
+    nextAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    nextAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    get polyface(): IndexedPolyface | undefined;
+    previousAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    previousAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+}
+
+// @public
 export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection {
     abstract clear(): void;
     abstract pop(): void;
@@ -2907,7 +2939,7 @@ export abstract class IndexedXYZCollection {
     distanceSquaredIndexXYAndZ(index0: number, target: XYAndZ): number | undefined;
     dotProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
     dotProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number | undefined;
-    findOrderedDuplicates(tolerance?: number): number[];
+    findOrderedDuplicates(tolerance?: number, preserveLast?: boolean): number[];
     front(result?: Point3d): Point3d | undefined;
     getArray(): Point3d[];
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
@@ -2918,6 +2950,7 @@ export abstract class IndexedXYZCollection {
     abstract getYAtUncheckedPointIndex(pointIndex: number): number;
     abstract getZAtUncheckedPointIndex(pointIndex: number): number;
     interpolateIndexIndex(index0: number, fraction: number, index1: number, result?: Point3d): Point3d | undefined;
+    isIndexValid(index: number): boolean;
     abstract get length(): number;
     linearCombination(scales: number[], result?: Point3d | Vector3d): XYZ;
     get points(): Iterable<Point3d>;
@@ -3665,7 +3698,9 @@ export type Matrix4dProps = Point4dProps[];
 // @public
 export interface MiteredSweepOptions {
     capped?: boolean;
+    endTangent?: Vector3d;
     outputSelect?: MiteredSweepOutputSelect;
+    startTangent?: Vector3d;
     strokeOptions?: StrokeOptions;
     wrapIfPhysicallyClosed?: boolean;
 }
@@ -4486,7 +4521,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addIndexedPolyface(source: IndexedPolyface, reversed?: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
-    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number): void;
+    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number, capped?: boolean): void;
     addParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     addParamXY(x: number, y: number): number;
     addPoint(xyz: Point3d): number;
@@ -4578,6 +4613,8 @@ export class PolyfaceData {
     copyNormalTo(i: number, dest: Vector3d): void;
     copyParamTo(i: number, dest: Point2d): void;
     copyPointTo(i: number, dest: Point3d): void;
+    edgeIndexToEdgeMateIndex(k: number | undefined): number | undefined;
+    edgeMateIndex?: Array<number | undefined>;
     edgeVisible: boolean[];
     get expectedClosure(): number;
     set expectedClosure(value: number);
@@ -4592,6 +4629,7 @@ export class PolyfaceData {
     get indexCount(): number;
     isAlmostEqual(other: PolyfaceData): boolean;
     isAlmostEqualParamIndexUV(i: number, u: number, v: number): boolean;
+    isValidEdgeIndex(value: number | undefined): boolean;
     static isValidFacetStartIndexArray(facetStartIndex: number[]): boolean;
     normal?: GrowableXYZArray;
     get normalCount(): number;

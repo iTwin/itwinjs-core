@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream, IDisposable } from "@itwin/core-bentley";
+import { ByteStream } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
@@ -167,7 +167,7 @@ describe("Disposal of System", () => {
     assert.isFalse(isDisposed(texture0!));
     assert.isFalse(isDisposed(texture1!));
 
-    system.dispose();
+    system[Symbol.dispose]();
 
     // Post-disposal
     assert.isTrue(isDisposed(texture0!));
@@ -238,15 +238,15 @@ describe("Disposal of WebGL Resources", () => {
     assert.isFalse(isDisposed(meshGraphic1));
     assert.isFalse(isDisposed(tileGraphic));
 
-    meshGraphic0.dispose();
-    meshGraphic1.dispose();
+    meshGraphic0[Symbol.dispose]();
+    meshGraphic1[Symbol.dispose]();
 
     // Post-disposal of graphic 0 and graphic 1
     assert.isTrue(isDisposed(meshGraphic0));
     assert.isTrue(isDisposed(meshGraphic1));
     assert.isFalse(isDisposed(tileGraphic));
 
-    tileGraphic.dispose();
+    tileGraphic[Symbol.dispose]();
 
     // Post-disposal of tileGraphic
     assert.isTrue(isDisposed(tileGraphic));
@@ -274,12 +274,12 @@ describe("Disposal of WebGL Resources", () => {
       expect(tx).not.to.be.undefined;
       expect(tx.isDisposed).to.be.false;
 
-      blitGeom = target._blitGeom as IDisposable;
+      blitGeom = target._blitGeom as Disposable;
       expect(blitGeom === undefined).to.equal(vp instanceof OffScreenViewport);
       if (blitGeom)
         expect(blitGeom.isDisposed).to.be.false;
 
-      vp.dispose();
+      vp[Symbol.dispose]();
       expect(vp.isDisposed).to.be.true;
       expect(target.isDisposed).to.be.true;
 
@@ -298,7 +298,7 @@ describe("Disposal of WebGL Resources", () => {
     public constructor() { super(); }
     public collectGraphics(_context: SceneContext, _target: PlanarClassifierTarget): void { }
     public setSource(_classifierTreeRef?: TileTreeReference, _planarClipMask?: PlanarClipMaskState): void { }
-    public dispose(): void {
+    public [Symbol.dispose](): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;
     }
@@ -309,7 +309,7 @@ describe("Disposal of WebGL Resources", () => {
     public constructor() { super(); }
     public collectGraphics(_context: SceneContext): void { }
     public collectStatistics(_stats: RenderMemory.Statistics): void { }
-    public dispose(): void {
+    public [Symbol.dispose](): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;
     }
@@ -317,7 +317,7 @@ describe("Disposal of WebGL Resources", () => {
 
   interface ClassifierOrDrape {
     disposed: boolean;
-    dispose(): void;
+    [Symbol.dispose](): void;
   }
 
   async function testClassifiersOrDrapes<T extends ClassifierOrDrape>(
@@ -396,7 +396,7 @@ describe("Disposal of WebGL Resources", () => {
     expect(c2.disposed).to.be.true;
 
     // Dispose of the target.
-    vp.dispose();
+    vp[Symbol.dispose]();
     expect(target[key]).to.be.undefined;
     expect(c1.disposed).to.be.true;
   }
@@ -454,8 +454,8 @@ describe("Disposal of WebGL Resources", () => {
     assert.isFalse(isDisposed(texture));
     assert.isFalse(isDisposed(graphic));
 
-    system.dispose();
-    graphic.dispose();
+    system[Symbol.dispose]();
+    graphic[Symbol.dispose]();
 
     // Post-disposal of non-related items
     assert.isFalse(isDisposed(target));
@@ -473,7 +473,7 @@ describe("Disposal of WebGL Resources", () => {
     const clipMask = exposedTarget.clipMask;
     const environmentMap = exposedTarget.environmentMap;
     const diffuseMap = exposedTarget.diffuseMap;
-    target.dispose();
+    target[Symbol.dispose]();
 
     // Post-disposal of target (not owned resource checks)
     if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))

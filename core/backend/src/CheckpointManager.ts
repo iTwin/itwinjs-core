@@ -199,6 +199,8 @@ export class V2CheckpointManager {
     try {
       const container = this.getContainer(v2props, checkpoint);
       const dbName = v2props.dbName;
+      // Use the new token from the recently queried v2 checkpoint just incase the one we currently have is expired.
+      container.accessToken = v2props.sasToken;
       if (!container.isConnected)
         container.connect(this.cloudCache);
       container.checkForChanges();

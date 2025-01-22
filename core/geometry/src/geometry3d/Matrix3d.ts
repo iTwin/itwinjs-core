@@ -720,12 +720,11 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * Construct a rigid matrix (orthogonal matrix with +1 determinant) using vectorA and its 2 perpendicular.
+   * Construct a rigid matrix (orthogonal matrix with determinant 1) using vectorA and its 2 perpendiculars.
    * * If axisOrder is not passed then `AxisOrder = AxisOrder.ZXY` is used as default.
    * * This function internally uses createPerpendicularVectorFavorXYPlane and createRigidFromColumns.
-   * * If you want to rotate a given plane (which contains (0,0,0)) to the xy-plane, pass the normal vector of
-   * your plane into createRigidHeadsUp. The transpose of the returned Matrix3d can be used to rotate your plane
-   * to the xy-plane. If plane does not contain (0,0,0) then the plane is rotated to a plane parallel to the xy-plane.
+   * * Passing the normal of a plane P into this method returns a matrix whose transpose rotates geometry in P
+   * to the xy-plane if P contains the origin, or to a plane parallel to the xy-plane if P does not contain the origin.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/2PerpendicularVectorsTo1Vector
    */
   public static createRigidHeadsUp(

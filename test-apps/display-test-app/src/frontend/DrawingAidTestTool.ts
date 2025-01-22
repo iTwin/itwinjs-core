@@ -5,9 +5,7 @@
 
 import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, GeometryStreamProps } from "@itwin/core-common";
-import {
-  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, SnapStatus,
-} from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, SnapStatus } from "@itwin/core-frontend";
 
 export class DrawingAidTestTool extends PrimitiveTool {
   public static override toolId = "DrawingAidTest.Points";

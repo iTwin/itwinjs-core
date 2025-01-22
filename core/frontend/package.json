@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "5.0.0-dev.7",
+  "version": "5.0.0-dev.46",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm && npm run -s webpackWorkers && npm run -s copy:workers",
     "build:cjs": "npm run -s copy:js:cjs && tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",
@@ -45,12 +45,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^5.0.0-dev.7",
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.7",
-    "@itwin/core-common": "workspace:^5.0.0-dev.7",
-    "@itwin/core-geometry": "workspace:^5.0.0-dev.7",
-    "@itwin/core-orbitgt": "workspace:^5.0.0-dev.7",
-    "@itwin/core-quantity": "workspace:^5.0.0-dev.7"
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-orbitgt": "workspace:*",
+    "@itwin/core-quantity": "workspace:*"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -81,7 +81,7 @@
     "vitest": "^2.1.0",
     "vite-multiple-assets": "^1.3.1",
     "vite-plugin-static-copy": "1.0.6",
-    "webpack": "^5.76.0"
+    "webpack": "^5.97.1"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
@@ -91,12 +91,10 @@
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/object-storage-core": "^2.2.5",
     "@itwin/core-i18n": "workspace:*",
-    "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "fuse.js": "^3.3.0",
-    "meshoptimizer": "~0.20.0",
     "wms-capabilities": "0.4.0"
   }
 }

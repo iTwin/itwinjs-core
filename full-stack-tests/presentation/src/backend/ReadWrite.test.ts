@@ -39,7 +39,7 @@ describe("ReadWrite", () => {
     const imodelPath = imodel.pathName;
     imodel.close();
     fs.unlinkSync(imodelPath);
-    manager.dispose();
+    manager[Symbol.dispose]();
   });
 
   describe("Handling read-write operations", () => {

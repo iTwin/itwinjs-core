@@ -200,6 +200,7 @@ describe("ArcGISMapLayerImageryProvider", () => {
     const resolveChildren = (_childIds: QuadId[]) => {};
 
     const fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
+
     await (provider as any)._generateChildIds(QuadId.createFromContentId("1_0_0"), resolveChildren);
     expect(fetchStub).toHaveBeenCalledOnce();
     // eslint-disable-next-line @typescript-eslint/no-base-to-string

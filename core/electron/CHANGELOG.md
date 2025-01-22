@@ -1,6 +1,28 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Thu, 14 Nov 2024 18:13:56 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Jan 2025 21:59:34 GMT and should not be manually modified.
+
+## 4.10.5
+Tue, 21 Jan 2025 21:56:45 GMT
+
+_Version update only_
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+### Updates
+
+- Bumped `username` to `7.0.0`
 
 ## 4.10.1
 Thu, 14 Nov 2024 18:11:00 GMT

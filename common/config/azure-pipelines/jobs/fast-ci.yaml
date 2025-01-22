@@ -13,7 +13,7 @@ variables:
   - name: win_pool
     value: "iModelTechCI"
   - name: linux_pool
-    value: "iModeljs Linux"
+    value: "imodelNative-Debian12"
   - name: mac_pool
     value: "iModelTechMacArm"
   - name: BUILD_URL
@@ -28,7 +28,8 @@ pr:
       - release/*
   paths:
     exclude:
-      - "**.md"
+      - "**/README.md"
+      - "**.api.md"
       - docs/**
       - .github/CODEOWNERS
       - common/changes/**/*.json
@@ -73,9 +74,9 @@ jobs:
     steps:
       - checkout: self
         persistCredentials: true
-      - task: NodeTool@0
+      - task: UseNode@1
         inputs:
-          versionSpec: "22.x"
+          version: "22.x"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then

@@ -435,6 +435,7 @@
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = "$(iModelJsIosRT)includes";
 				INFOPLIST_FILE = "imodeljs-backend-test-app/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -462,7 +463,7 @@
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = "$(iModelJsIosRT)includes";
 				INFOPLIST_FILE = "imodeljs-backend-test-app/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -485,7 +486,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				INFOPLIST_FILE = "imodeljs-backend-test-appUITests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -508,7 +509,7 @@
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				INFOPLIST_FILE = "imodeljs-backend-test-appUITests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
