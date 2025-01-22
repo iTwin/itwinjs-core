@@ -8,7 +8,7 @@
 
 import { ClassInfo, InstanceKey } from "../EC";
 import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
-import { ValuesDictionary } from "../Utils";
+import { omitUndefined, ValuesDictionary } from "../Utils";
 import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
 
 /**
@@ -85,11 +85,15 @@ export class Item {
   ) {
     this.primaryKeys = primaryKeys;
     this.imageId = imageId; // eslint-disable-line @typescript-eslint/no-deprecated
-    this.classInfo = classInfo;
+    if (classInfo) {
+      this.classInfo = classInfo;
+    }
     this.values = values;
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
-    this.extendedData = extendedData;
+    if (extendedData) {
+      this.extendedData = extendedData;
+    }
     this.label = typeof label === "string" ? LabelDefinition.fromLabelString(label) : label;
   }
 
@@ -102,16 +106,16 @@ export class Item {
 
   /** Serialize this object to JSON */
   public toJSON(): ItemJSON {
-    const { label, ...baseItem } = this;
-    return {
+    const { label, values, displayValues, ...baseItem } = this;
+    return omitUndefined({
       ...baseItem,
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      values: Value.toJSON(this.values) as ValuesMapJSON,
+      values: Value.toJSON(values) as ValuesMapJSON,
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
+      displayValues: DisplayValue.toJSON(displayValues) as DisplayValuesMapJSON,
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       labelDefinition: LabelDefinition.toJSON(label),
-    };
+    });
   }
 
   /** Deserialize [[Item]] from JSON */

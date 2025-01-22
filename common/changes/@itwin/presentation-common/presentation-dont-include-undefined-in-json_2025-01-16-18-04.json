@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "When serializing content, don't put `undefined` values to JSON.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

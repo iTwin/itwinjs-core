@@ -144,11 +144,6 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
-    // @deprecated
-    constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
-        byteOffset: number;
-        byteLength: number;
-    });
     advance(numBytes: number): boolean;
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
@@ -162,23 +157,7 @@ export class ByteStream {
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
-    // @deprecated (undocumented)
-    get nextFloat32(): number;
-    // @deprecated (undocumented)
-    get nextFloat64(): number;
-    // @deprecated (undocumented)
-    get nextId64(): Id64String;
-    // @deprecated (undocumented)
-    get nextInt32(): number;
-    // @deprecated (undocumented)
-    get nextUint16(): number;
-    // @deprecated (undocumented)
-    get nextUint24(): number;
-    // @deprecated (undocumented)
-    get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
-    // @deprecated (undocumented)
-    get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
     readFloat32(): number;
     readFloat64(): number;
@@ -1652,8 +1631,6 @@ export class TransientIdSequence {
     getNext(): Id64String;
     readonly initialLocalId: number;
     merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number;
-    // @deprecated
-    get next(): Id64String;
     peekNext(): Id64String;
     toJSON(): TransientIdSequenceProps;
 }
