@@ -223,7 +223,7 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     params.textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return options.system.createMaterial(params, options.iModel);
+  return undefined;
 }
 
 function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {

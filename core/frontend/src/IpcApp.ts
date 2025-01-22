@@ -140,11 +140,6 @@ export class IpcApp {
     });
   }
 
-  /** @deprecated in 3.x. use [[appFunctionIpc]] */
-  public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
-    return this[_callIpcChannel](ipcAppChannels.functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
-  }
-
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
   public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(ipcAppChannels.functions);
 

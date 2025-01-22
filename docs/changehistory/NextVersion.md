@@ -103,6 +103,71 @@ iTwin.js now supports only the latest Electron release (Electron 33) and has dro
 
 The following previously-deprecated APIs have been removed:
 
+#### @itwin/core-frontend
+
+
+PullChangesOptions: progressCallback: use downloadProgressCallback instead
+DisplayStyleState: onScheduleScriptReferenceChanged: use onScheduleScriptChanged instead
+scheduleScriptReference: use scheduleScript instead
+IModelAppOptions: rpcInterfaces:    * See [[MobileRpcManager.initializeClient]], [[ElectronRpcManager.initializeFrontend]], [[BentleyCloudRpcManager.initializeClient]].
+
+IModelConnection: displayedExtents
+IModelConnection: query: use createQueryReader instead (same parameter)
+IModelConnection: queryRowCount: Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
+
+IModelConnection: restartQuery : Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
+IModelConnection: expandDisplayedExtents: use displayedExtents instead
+IModelConnection:getThumbnail : use ViewStore apis instead
+callIpcHost: use appFunctionIpc instead
+callNativeHost: use nativeAppIpc instead
+
+     * @deprecated in 3.6. `progress` argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
+
+  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+    // eslint-disable-next-line @typescript-eslint/unified-signatures, @typescript-eslint/no-deprecated
+    asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+
+getDisplayedExtents:    * @deprecated in 3.6. These extents are based on [[IModelConnection.displayedExtents]], which is deprecated. Consider using [[computeFitRange]] or [[getViewedExtents]] instead.
+readImage: use readImageBuffer
+
+setEventController: removed (this was for internal use)
+
+GraphicBuilder: pickId:    * @deprecated in 3.x. This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
+
+createMaterial: use createRenderMaterial
+createTextureFromImageBuffer: Use [[createTexture]]
+createTextureFromImage: Use [[createTexture]]
+createTextureFromImageSource: use RenderSystem.createTextureFromSource
+
+
+
+readImage: use readImageBuffer
+
+
+| **Deprecated**                               | **Replacement**                                                                                              |
+|----------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `PullChangesOptions.progressCallback`        | Use `downloadProgressCallback` instead.                                                                     |
+| `DisplayStyleState.onScheduleScriptReferenceChanged` | Use `onScheduleScriptChanged` instead.                                                               |
+| `DisplayStyleState.scheduleScriptReference`  | Use `scheduleScript` instead.                                                                               |
+| `IModelAppOptions.rpcInterfaces`             | See `[[MobileRpcManager.initializeClient]]`, `[[ElectronRpcManager.initializeFrontend]]`, `[[BentleyCloudRpcManager.initializeClient]]`. |
+| `IModelConnection.displayedExtents`          | Use `expandDisplayedExtents` instead.                                                                       |
+| `IModelConnection.query`                     | Use `createQueryReader` instead (same parameter).                                                           |
+| `IModelConnection.queryRowCount`             | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`.|
+| `IModelConnection.restartQuery`              | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.|
+| `IModelConnection.expandDisplayedExtents`    | Use `displayedExtents` instead.                                                                             |
+| `IModelConnection.getThumbnail`              | Use `ViewStore` APIs instead.                                                                               |
+| `callIpcHost`                                | Use `appFunctionIpc` instead.                                                                               |
+| `callNativeHost`                             | Use `nativeAppIpc` instead.                                                                                 |
+| `requestDownloadBriefcase(progress)`         | Use `DownloadBriefcaseOptions.progressCallback` instead.                                                    |
+| `getDisplayedExtents`                        | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
+| `readImage`                                  | Use `readImageBuffer` instead.                                                                              |
+| `setEventController`                         | Removed (was for internal use).                                                                             |
+| `GraphicBuilder.pickId`                      | Deprecated in 3.x. Maintain the current pickable ID yourself.                                               |
+| `createMaterial`                             | Use `createRenderMaterial` instead.                                                                         |
+| `createTextureFromImageBuffer`               | Use `createTexture` instead.                                                                                |
+| `createTextureFromImage`                     | Use `createTexture` instead.                                                                                |
+| `createTextureFromImageSource`               | Use `RenderSystem.createTextureFromSource` instead.                                                         |
+
 #### @itwin/appui-abstract
 
 The following APIs have been removed in `@itwin/appui-abstract`.
@@ -177,12 +242,6 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ByteStream.nextId64`      | `ByteStream.readId64`                                       |
 | `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
 | `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
-
-#### @itwin/appui-abstract
-
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `EditorPosition.columnSpan` | N/A         |
 
 #### @itwin/core-electron
 

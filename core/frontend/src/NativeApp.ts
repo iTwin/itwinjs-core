@@ -65,10 +65,6 @@ export interface NativeAppOpts extends IpcAppOptions {
 export class NativeApp {
   private static _removeAppNotify?: RemoveFunction;
 
-  /** @deprecated in 3.x. use nativeAppIpc */
-  public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
-    return IpcApp[_callIpcChannel](nativeAppIpcStrings.channelName, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
-  }
   /** A Proxy to call one of the [NativeAppFunctions]($common) functions via IPC. */
   public static nativeAppIpc = IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppIpcStrings.channelName);
 
@@ -139,26 +135,17 @@ export class NativeApp {
   public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf?: IModelVersion): Promise<BriefcaseDownloader>;
 
-  /**
-   * @deprecated in 3.6. `progress` argument is now deprecated, use [[DownloadBriefcaseOptions.progressCallback]] instead.
-   */
-  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
-    // eslint-disable-next-line @typescript-eslint/unified-signatures, @typescript-eslint/no-deprecated
-    asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
-
   public static async requestDownloadBriefcase(
     iTwinId: string,
     iModelId: string,
     downloadOptions: DownloadBriefcaseOptions,
-    asOf: IModelVersion = IModelVersion.latest(),
-    progress?: ProgressCallback, // eslint-disable-line @typescript-eslint/no-deprecated
-  ): Promise<BriefcaseDownloader> {
-    const shouldReportProgress = !!progress || !!downloadOptions.progressCallback;
+    asOf: IModelVersion = IModelVersion.latest()
+    ): Promise<BriefcaseDownloader> {
+    const shouldReportProgress = !!downloadOptions.progressCallback;
 
     let stopProgressEvents = () => { };
     if (shouldReportProgress) {
       const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
-        progress?.(data);
         downloadOptions.progressCallback?.(data);
       };
 

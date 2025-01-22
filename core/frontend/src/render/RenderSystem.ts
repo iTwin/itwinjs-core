@@ -354,17 +354,6 @@ export abstract class RenderSystem implements IDisposable {
    */
   public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
-  /** Create a [RenderMaterial]($common) from parameters
-   * If the parameters include a non-empty key, and no previously-created material already exists with that key, the newly-created material will be cached on the IModelConnection such
-   * that it can later be retrieved by the same key using [[RenderSystem.findMaterial]].
-   * @param _params A description of the material's properties.
-   * @param _imodel The IModelConnection associated with the material.
-   * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
-   * @deprecated in 3.x. Use [[createRenderMaterial]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
-
   /** Create a [RenderMaterial]($common).
    * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
    */
@@ -733,52 +722,6 @@ export abstract class RenderSystem implements IDisposable {
    */
   public getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined {
     return undefined;
-  }
-
-  /** Create a new texture from an [[ImageBuffer]].
-   * @deprecated in 3.x. Use [[createTexture]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
-    return this.createTexture({
-      type: params.type,
-      ownership,
-      image: {
-        source: image,
-        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
-      },
-    });
-  }
-
-  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
-   * @deprecated in 3.x. Use [[createTexture]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
-    return this.createTexture({
-      type: params.type,
-      ownership,
-      image: {
-        source: image,
-        transparency: hasAlpha ? TextureTransparency.Mixed : TextureTransparency.Opaque,
-      },
-    });
-  }
-
-  /** Create a new texture from an ImageSource.
-   * @deprecated in 3.x. Use RenderSystem.createTextureFromSource.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
-    return this.createTextureFromSource({
-      type: params.type,
-      source,
-      ownership,
-      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Mixed,
-    });
   }
 
   /** Create a texture from an ImageSource. */

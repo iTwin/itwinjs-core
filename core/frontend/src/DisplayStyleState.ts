@@ -55,10 +55,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
 
-  /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
-   */
-  public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
@@ -128,7 +124,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -157,7 +152,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     this._queryRenderTimelinePropsPromise = undefined;
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -309,7 +303,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(script);
       this._scriptReference = scriptRef;
 
@@ -321,14 +314,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } finally {
       this._assigningScript = false;
     }
-  }
-
-  /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
-   * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated in 3.x. Use [[scheduleScript]].
-   */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this._scriptReference;
   }
 
   /** Attach a [ContextRealityModel]($common) to this display style.

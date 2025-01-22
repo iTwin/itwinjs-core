@@ -184,14 +184,6 @@ export abstract class GraphicBuilder extends GraphicAssembler {
     };
   }
 
-  /** The Id to be associated with the graphic for picking.
-   * @see [[GraphicBuilderOptions.pickable]] for more options.
-   * @deprecated in 3.x. This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
-   */
-  public get pickId(): Id64String | undefined {
-    return this.pickable?.id;
-  }
-
   /**
    * Processes the accumulated symbology and geometry to produce a renderable graphic.
    * This function can only be called once; after the [[RenderGraphic]] has been extracted the [[GraphicBuilder]] should no longer be used.

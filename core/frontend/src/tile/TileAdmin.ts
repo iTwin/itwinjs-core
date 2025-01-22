@@ -785,19 +785,22 @@ export class TileAdmin {
    * Otherwise, special tiles must be requested based on the script's sourceId (RenderTimeline or DisplayStyle element).
    * @internal
    */
-  public getScriptInfoForTreeId(modelId: Id64String, script: RenderSchedule.ScriptReference | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
-    if (!script || !script.script.requiresBatching)
+  public getScriptInfoForTreeId(modelId: Id64String, script: RenderSchedule.Script | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
+    if (!script || !script.requiresBatching)
       return undefined;
 
-    const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
+    const timeline = script.modelTimelines.find((x) => x.modelId === modelId);
     if (!timeline || (!timeline.requiresBatching && !timeline.containsTransform))
       return undefined;
 
     // Frontend schedule scripts require the element Ids to be included in the script - previously saved views may have omitted them.
-    if (!Id64.isValidId64(script.sourceId) || (this.enableFrontendScheduleScripts && !timeline.omitsElementIds))
-      return { timeline };
+    //if (!Id64.isValidId64(script.sourceId) || (this.enableFrontendScheduleScripts && !timeline.omitsElementIds))
+    //  return { timeline };
 
-    return { animationId: script.sourceId };
+    //return { animationId: script.sourceId };
+
+    // TODO: figure out how to handle sourceId when scriptReference is removed
+    return undefined;
   }
 
   private dispatchTileTreePropsRequests(): void {
