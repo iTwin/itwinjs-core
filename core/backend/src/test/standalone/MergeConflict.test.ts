@@ -25,7 +25,7 @@ import {
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+import * as sinon from "sinon";
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
