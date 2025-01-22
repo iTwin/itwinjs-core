@@ -201,6 +201,17 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
 
+#### @itwin/core-geometry
+
+| Removed               | Replacement |
+| --------------------- | ----------- |
+| `PathFragment.childFractionTChainDistance`        | `PathFragment.childFractionToChainDistance` |
+| `GrowableXYArray.setXYZAtCheckedPointIndex`       | `GrowableXYArray.setXYAtCheckedPointIndex`  |
+| `PolyfaceBuilder.findOrAddPoint`                  | `PolyfaceBuilder.addPoint`                  |
+| `PolyfaceBuilder.findOrAddParamXY`                | `PolyfaceBuilder.addParamXY`                |
+| `PolyfaceBuilder.findOrAddParamInGrowableXYArray` | `PolyfaceBuilder.addParamInGrowableXYArray` |
+| `PolyfaceBuilder.findOrAddPointXYZ`               | `PolyfaceBuilder.addPointXYZ`               |
+
 ### API removals
 
 The following APIs have been removed:
