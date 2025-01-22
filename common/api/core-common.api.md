@@ -1988,15 +1988,18 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
+    autoShutdowWhenIdealForSeconds?: number;
+    // (undocumented)
+    doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
-    // (undocumented)
     ignoreDelay?: boolean;
-    // (undocumented)
     ignorePriority?: boolean;
+    memoryMapFileSize?: number;
     // (undocumented)
+    monitorPollInterval?: number;
     requestQueueSize?: number;
-    // (undocumented)
+    statementCacheSizePerWorker?: number;
     workerThreads?: number;
 }
 
@@ -2086,17 +2089,19 @@ export enum DbResponseStatus {
     // (undocumented)
     Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
     // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  generic error*/
+    Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
     // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  ecsql prepared failed*/
+    Error_ECSql_PreparedFailed = 101,/*  generic error*/
     // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql step failed*/
+    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
     // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql failed to serialized row to json.*/
+    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
     // (undocumented)
-    Partial = 3,/*  ecsql binding failed.*/
+    Partial = 3,/*  ecsql failed to serialized row to json.*/
     // (undocumented)
-    QueueFull = 5,/*  class or property or instance specified was not found or property as not of type blob.*/
+    QueueFull = 5,/*  ecsql binding failed.*/
+    // (undocumented)
+    ShuttingDown = 6,/*  class or property or instance specified was not found or property as not of type blob.*/
     // (undocumented)
     Timeout = 4
 }
@@ -2109,6 +2114,8 @@ export interface DbRuntimeStats {
     memLimit: number;
     // (undocumented)
     memUsed: number;
+    // (undocumented)
+    prepareTime: number;
     // (undocumented)
     timeLimit: number;
     // (undocumented)
@@ -7486,6 +7493,7 @@ export interface QueryStats {
     backendMemUsed: number;
     backendRowsReturned: number;
     backendTotalTime: number;
+    prepareTime: number;
     retryCount: number;
     totalTime: number;
 }
