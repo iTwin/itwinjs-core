@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Support esm build output",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
