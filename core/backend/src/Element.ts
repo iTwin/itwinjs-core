@@ -355,14 +355,6 @@ export class Element extends Entity {
     return val;
   }
 
-  /** Collect the Ids of this element's *references* at this level of the class hierarchy.
-   * @deprecated in 3.x. use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   * @beta
-   */
-  protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void {
-    return this.collectReferenceIds(predecessorIds);
-  }
-
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addModel(this.model); // The modeledElement is a reference
@@ -370,15 +362,6 @@ export class Element extends Entity {
       referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
     if (this.parent)
       referenceIds.addElement(this.parent.id); // A parent element is a reference
-  }
-
-  /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @beta
-   * @deprecated in 3.x. use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   */
-  public getPredecessorIds(): Id64Set {
-    return this.getReferenceIds();
   }
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
