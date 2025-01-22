@@ -7194,7 +7194,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -8234,7 +8234,7 @@ export class OffScreenTarget extends Target {
     // (undocumented)
     onResized(): void;
     // (undocumented)
-    readImageToCanvas(): HTMLCanvasElement;
+    readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement;
     // (undocumented)
     setViewRect(rect: ViewRect, temporary: boolean): void;
     // (undocumented)
@@ -8318,7 +8318,7 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined;
     // (undocumented)
-    readImageToCanvas(): HTMLCanvasElement;
+    readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement;
     // (undocumented)
     setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
@@ -9068,6 +9068,11 @@ export interface ReadImageBufferArgs {
     rect?: ViewRect;
     size?: XAndY;
     upsideDown?: boolean;
+}
+
+// @public
+export interface ReadImageToCanvasOptions {
+    includeCanvasDecorations?: boolean;
 }
 
 // @internal (undocumented)
@@ -10351,7 +10356,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // @internal (undocumented)
     readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined;
     // @internal (undocumented)
-    readImageToCanvas(): HTMLCanvasElement;
+    readImageToCanvas(_options?: ReadImageToCanvasOptions): HTMLCanvasElement;
     // @internal (undocumented)
     abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
     // @internal (undocumented)
@@ -11612,7 +11617,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     computeEdgeWeight(pass: RenderPass, baseWeight: number): number;
     // (undocumented)
-    copyImageToCanvas(): HTMLCanvasElement;
+    copyImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement;
     // (undocumented)
     createPlanarClassifier(properties?: ActiveSpatialClassifier): PlanarClassifier;
     // (undocumented)
@@ -14748,7 +14753,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @deprecated
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
-    readImageToCanvas(): HTMLCanvasElement;
+    readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement;
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     readPixels(args: ReadPixelsArgs): void;
     // @internal

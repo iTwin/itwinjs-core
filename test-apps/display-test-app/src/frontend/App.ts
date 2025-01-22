@@ -57,7 +57,7 @@ import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer"
 import { MacroTool } from "./MacroTools";
 import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
-import { SaveImageTool } from "./SaveImageTool";
+import { SaveImageTool, SaveImageWithCanvasDecorationsTool } from "./SaveImageTool";
 import { ToggleSecondaryIModelTool } from "./TiledGraphics";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
@@ -358,6 +358,7 @@ export class DisplayTestApp {
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
+      SaveImageWithCanvasDecorationsTool,
       ShutDownTool,
       SignInTool,
       SignOutTool,

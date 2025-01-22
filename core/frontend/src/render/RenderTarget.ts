@@ -12,7 +12,7 @@ import { Point2d, XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../Viewport";
+import { ReadImageBufferArgs, ReadImageToCanvasOptions, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
@@ -176,7 +176,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   /** @internal */
-  public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
+  public readImageToCanvas(_options?: ReadImageToCanvasOptions): HTMLCanvasElement { return document.createElement("canvas"); }
   /** @internal */
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
 

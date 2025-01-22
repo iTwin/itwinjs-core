@@ -55,6 +55,9 @@
     "SaveImage": {
       "keyin": "dta save image"
     },
+    "SaveImageWithCanvasDecorations": {
+      "keyin": "dta save image with decorations"
+    },
     "OutputShaders": {
       "keyin": "dta output shaders"
     },

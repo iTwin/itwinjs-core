@@ -15,7 +15,7 @@ import { ViewRect } from "../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../../Viewport";
+import { ReadImageBufferArgs, ReadImageToCanvasOptions, Viewport } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
@@ -1178,7 +1178,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(): HTMLCanvasElement {
+  public copyImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
@@ -1188,7 +1188,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       const vp = IModelApp.viewManager.selectedView;
       // vp.rendersToScreen tells us if the view is being rendered directly to the webgl canvas on screen, which happens in the case of a single viewport.
       // In that case, we need to combine the 2d canvas with the webgl canvas or we will lose canvas decorations in the copied image.
-      if (vp && vp.rendersToScreen) {
+      // options.includeCanvasDecorations will be true if the caller wants to include the decorations in the copied image.
+      if (vp && vp.rendersToScreen && options?.includeCanvasDecorations) {
         const twoDCanvas = vp.canvas;
         const ctx = retCanvas.getContext("2d")!;
         ctx.drawImage(twoDCanvas, 0, 0);
@@ -1524,8 +1525,8 @@ export class OnScreenTarget extends Target {
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
-  public override readImageToCanvas(): HTMLCanvasElement {
-    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
+  public override readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+    return this._usingWebGLCanvas ? this.copyImageToCanvas(options) : this._2dCanvas.canvas;
   }
 }
 
@@ -1568,8 +1569,8 @@ export class OffScreenTarget extends Target {
     this.renderSystem.frameBufferStack.pop();
   }
 
-  public override readImageToCanvas(): HTMLCanvasElement {
-    return this.copyImageToCanvas();
+  public override readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+    return this.copyImageToCanvas(options);
   }
 }
 

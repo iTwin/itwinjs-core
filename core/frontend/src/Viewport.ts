@@ -262,6 +262,16 @@ export interface ReadPixelsArgs {
   excludedElements?: Iterable<Id64String>;
 }
 
+/** Arguments supplied to [[Viewport.readImageToCanvas]].
+ * @public
+ */
+export interface ReadImageToCanvasOptions {
+  /** If defined, canvas decorations will be included in the saved image.
+   * @note This only affects single viewport applications. For multi-viewport applications, the canvas decorations are always included.
+   */
+  includeCanvasDecorations?: boolean;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -2703,8 +2713,8 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
    * @see [[readImageBuffer]] to obtain the image as an array of RGBA pixels.
    */
-  public readImageToCanvas(): HTMLCanvasElement {
-    return this.target.readImageToCanvas();
+  public readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+    return this.target.readImageToCanvas(options);
   }
 
   /** Used internally by `waitForSceneCompletion`.
