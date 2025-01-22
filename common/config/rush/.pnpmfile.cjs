@@ -59,6 +59,14 @@ function readPackage(pkg) {
     pkg.dependencies["typescript"] = "~5.6.2";
   }
 
+  // Workaround for https://github.com/electron/get/issues/304
+  else if (pkg.name == "electron") {
+    pkg.dependencies["@electron/get"] = "^3.1.0";
+  }
+  else if (pkg.name == "@electron/get") {
+    pkg.optionalDependencies = {};
+  }
+
   return pkg;
 }
 
