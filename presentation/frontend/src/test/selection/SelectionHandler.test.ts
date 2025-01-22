@@ -37,13 +37,13 @@ describe("SelectionHandler", () => {
   });
 
   afterEach(() => {
-    selectionHandler.dispose();
+    selectionHandler[Symbol.dispose]();
   });
 
   describe("dispose", () => {
     it("stops listening for selection change events", () => {
       expect(selectionManagerMock.object.selectionChange.numberOfListeners).to.eq(1);
-      selectionHandler.dispose();
+      selectionHandler[Symbol.dispose]();
       expect(selectionManagerMock.object.selectionChange.numberOfListeners).to.eq(0);
     });
   });

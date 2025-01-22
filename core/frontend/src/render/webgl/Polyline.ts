@@ -57,7 +57,7 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
 
   public get isDisposed(): boolean { return this._buffers.isDisposed && this.lut.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (!this.noDispose) {
       dispose(this.lut);
       dispose(this._buffers);
