@@ -89,7 +89,7 @@
     "mocha": "^10.2.0",
     "node-simctl": "~7.6.1",
     "null-loader": "^4.0.1",
-    "nyc": "^15.1.0",
+    "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "sinon": "^18.0.1",
     "source-map-loader": "^5.0.0",
