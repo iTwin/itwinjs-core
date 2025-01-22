@@ -1,3 +1,10 @@
+function overrideToWorkspace(pkg, dependencies) {
+  for (const dep of dependencies) {
+    pkg.dependencies[dep] = "workspace:*";
+    pkg.peerDependencies[dep] = "workspace:*";
+  }
+}
+
 function readPackage(pkg) {
   // Hacky mess: For external packages to this monorepo that have peer dependencies on packages
   // in this repo, we need to do some magic in order to get the peerDeps to point to a correct
@@ -7,13 +14,22 @@ function readPackage(pkg) {
 
   // https://github.com/iTwin/imodels-clients
   if (pkg.name == "@itwin/imodels-access-backend") {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-    pkg.dependencies["@itwin/core-backend"] = "workspace:*";
-    pkg.dependencies["@itwin/core-common"] = "workspace:*";
+    overrideToWorkspace(pkg, [
+      "@itwin/core-bentley",
+      "@itwin/core-backend",
+      "@itwin/core-common",
+    ]);
   } else if (pkg.name == "@itwin/imodels-access-frontend") {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-    pkg.dependencies["@itwin/core-frontend"] = "workspace:*";
-    pkg.dependencies["@itwin/core-common"] = "workspace:*";
+    overrideToWorkspace(pkg, [
+      "@itwin/core-bentley",
+      "@itwin/core-frontend",
+      "@itwin/core-common",
+    ]);
+  } else if (pkg.name == "@itwin/imodels-access-common") {
+    overrideToWorkspace(pkg, [
+      "@itwin/core-bentley",
+      "@itwin/core-common",
+    ]);
   }
 
   // https://github.com/iTwin/auth-clients
@@ -26,33 +42,34 @@ function readPackage(pkg) {
       "@itwin/service-authorization",
     ].includes(pkg.name)
   ) {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-    if (
-      pkg.name === "@itwin/browser-authorization" ||
-      pkg.name === "@itwin/electron-authorization"
-    ) {
-      pkg.dependencies["@itwin/core-common"] = "workspace:*";
-    }
+    overrideToWorkspace(pkg, [
+      "@itwin/core-bentley",
+      "@itwin/core-common"
+    ]);
     if (pkg.name == "@itwin/oidc-signin-tool") {
-      pkg.dependencies["@itwin/certa"] = "workspace:*";
+      overrideToWorkspace(pkg, ["@itwin/certa"]);
     }
   }
 
   // https://github.com/iTwin/reality-data-client
   else if (pkg.name == "@itwin/reality-data-client") {
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-    pkg.dependencies["@itwin/core-common"] = "workspace:*";
-    pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
+    overrideToWorkspace(pkg, [
+      "@itwin/core-bentley",
+      "@itwin/core-common",
+      "@itwin/core-geometry",
+    ]);
   }
 
   // https://github.com/iTwin/imodel-transformer/blob/main/packages/transformer/package.json
   else if (pkg.name == "@itwin/imodel-transformer") {
-    pkg.dependencies["@itwin/core-backend"] = "workspace:*";
-    pkg.dependencies["@itwin/core-bentley"] = "workspace:*";
-    pkg.dependencies["@itwin/core-common"] = "workspace:*";
-    pkg.dependencies["@itwin/core-geometry"] = "workspace:*";
-    pkg.dependencies["@itwin/core-quantity"] = "workspace:*";
-    pkg.dependencies["@itwin/ecschema-metadata"] = "workspace:*";
+    overrideToWorkspace(pkg, [
+      "@itwin/core-backend",
+      "@itwin/core-bentley",
+      "@itwin/core-common",
+      "@itwin/core-geometry",
+      "@itwin/core-quantity",
+      "@itwin/ecschema-metadata",
+    ]);
   }
 
   else if (pkg.name == "@microsoft/api-extractor") {
