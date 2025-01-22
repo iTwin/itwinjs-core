@@ -113,7 +113,17 @@ async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
 
-const testArgs = {
+const testArgs: {
+  accessToken: string;
+  sessionId: string;
+  dataSource: {
+    iTwinId: string;
+    id: string;
+    changeId?: string;
+    type: string;
+  };
+  format: GraphicRepresentationFormat;
+} = {
   accessToken: "this-is-a-fake-access-token",
   sessionId: "testSession",
   dataSource: {
@@ -122,7 +132,7 @@ const testArgs = {
     changeId: undefined,
     type: "srcType",
   },
-  format: "IMODEL" as GraphicRepresentationFormat,
+  format: "IMODEL",
 };
 
 describe("queryGraphicRepresentations", () => {
@@ -216,7 +226,7 @@ describe("obtainGraphicRepresentationUrl", () => {
             changeId: args.versionId,
             type: "srcType",
           },
-          format: "IMODEL" as GraphicRepresentationFormat,
+          format: "IMODEL",
           requireExactVersion: args.exact,
         });
 

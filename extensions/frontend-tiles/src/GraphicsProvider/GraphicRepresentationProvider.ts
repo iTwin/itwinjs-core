@@ -10,7 +10,7 @@ import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
 /** The expected format of the Graphic Representation
  * @beta
  */
-export type GraphicRepresentationFormat = "IMODEL" | "3DTiles" | "CESIUM";
+export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL";
 
 /** Graphic representations are generated from Data Sources.
  * The status of a Graphic Representation indicates the progress of that generation process.
