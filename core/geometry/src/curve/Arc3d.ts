@@ -139,6 +139,8 @@ export class EllipticalArcApproximationOptions {
    * default quadratic. For best results, this function should be a bijection.
    * @param forcePath whether to return a [[Path]] instead of a [[Loop]] when approximating a full elliptical arc,
    * default false.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximationGeneral/ and
+   *  https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximation
    */
   public static create(
     method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.AdaptiveSubdivision,
