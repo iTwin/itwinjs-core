@@ -744,7 +744,7 @@ PRAGMA explain_query (
 
 | id  | parent | notused | detail                                                     |
 | --- | ------ | ------- | ---------------------------------------------------------- |
-| 3   | 0      | 62      | SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
+| 3   | 0      | 0       | SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
 
 # Trying PRAGMA explain_query with cte
 
@@ -765,7 +765,7 @@ PRAGMA explain_query (  [WITH    cnt (x,y) AS (      SELECT 100, 200    )  SELEC
 | --- | ------ | ------- | ----------------- |
 | 2   | 0      | 0       | CO-ROUTINE cnt    |
 | 3   | 2      | 0       | SCAN CONSTANT ROW |
-| 8   | 0      | 16      | SCAN cnt          |
+| 8   | 0      | 0       | SCAN cnt          |
 
 # Trying PRAGMA explain_query with recursive cte
 
@@ -790,14 +790,14 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id | parent | notused | detail            |
-| -- | ------ | ------- | ----------------- |
-| 2  | 0      | 0       | CO-ROUTINE cnt    |
-| 5  | 2      | 0       | SETUP             |
-| 6  | 5      | 0       | SCAN CONSTANT ROW |
-| 19 | 2      | 0       | RECURSIVE STEP    |
-| 20 | 19     | 216     | SCAN cnt          |
-| 31 | 0      | 215     | SCAN cnt          |
+| id  | parent | notused | detail            |
+| --- | ------ | ------- | ----------------- |
+| 2   | 0      | 0       | CO-ROUTINE cnt    |
+| 5   | 2      | 0       | SETUP             |
+| 6   | 5      | 0       | SCAN CONSTANT ROW |
+| 19  | 2      | 0       | RECURSIVE STEP    |
+| 20  | 19     | 0       | SCAN cnt          |
+| 31  | 0      | 0       | SCAN cnt          |
 
 # Using Scalar values in select clause with + operator
 
