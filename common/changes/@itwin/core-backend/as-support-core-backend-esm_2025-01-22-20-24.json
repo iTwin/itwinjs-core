@@ -3,7 +3,7 @@
     {
       "packageName": "@itwin/core-backend",
       "comment": "Support esm build output",
-      "type": "minor"
+      "type": "none"
     }
   ],
   "packageName": "@itwin/core-backend"
