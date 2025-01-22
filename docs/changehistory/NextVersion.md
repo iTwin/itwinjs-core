@@ -123,50 +123,50 @@ The following previously-deprecated APIs have been removed:
 
 The following APIs have been removed in `@itwin/appui-abstract`.
 
-| **Removed**                     | **Replacement**                                           |
-|----------------------------------|-----------------------------------------------------------|
-| `AbstractStatusBarActionItem`    | Use `StatusBarActionItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarCustomItem`    | Use `StatusBarCustomItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarItem`          | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarItemUtilities` | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarLabelItem`     | Use `StatusBarLabelItem` in `@itwin/appui-react` instead. |
-| `AbstractWidgetProps`            | Use `Widget` in `@itwin/appui-react` instead.             |
-| `AllowedUiItemProviderOverrides` | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`. |
-| `BackstageActionItem`            | `BackstageActionItem` in `@itwin/appui-react`.            |
-| `BackstageItem`                  | `BackstageItem` in `@itwin/appui-react`.                  |
-| `BackstageItemType`              | Use Type Guard instead.                                   |
-| `BackstageItemsChangedArgs`      | N/A                                                       |
-| `BackstageItemsManager`          | N/A                                                       |
-| `BackstageItemUtilities`         | `BackstageItemUtilities` in `@itwin/appui-react`.         |
-| `BackstageStageLauncher`         | `BackstageStageLauncher` in `@itwin/appui-react`.         |
-| `BaseUiItemsProvider`            | `BaseUiItemsProvider` in `@itwin/appui-react`.            |
-| `CommonBackstageItem`            | `CommonBackstageItem` in `@itwin/appui-react`.            |
-| `CommonStatusBarItem`            | Use `StatusBarItem` in `@itwin/appui-react` instead.      |
-| `createSvgIconSpec`              | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
-| `EditorPosition.columnSpan`      | N/A                                                       |
-| `getSvgSource`                   | Use `IconSpecUtilities.getWebComponentSource()` instead.  |
-| `isAbstractStatusBarActionItem`  | Use `isStatusBarActionItem` in `@itwin/appui-react` instead. |
-| `isAbstractStatusBarCustomItem`  | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead. |
-| `isAbstractStatusBarLabelItem`   | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead. |
-| `isActionItem`                   | Use `isBackstageActionItem` in `@itwin/appui-react` instead. |
-| `isStageLauncher`                | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead. |
-| `ProvidedItem`                   | `ProvidedItem` in `@itwin/appui-react`.                   |
-| `StagePanelLocation`             | `StagePanelLocation` in `@itwin/appui-react`.             |
-| `StagePanelSection`              | `StagePanelSection` in `@itwin/appui-react`.              |
-| `StageUsage`                     | `StageUsage` in `@itwin/appui-react`.                     |
-| `StatusBarItemId`                | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
-| `StatusBarLabelSide`             | `StatusBarLabelSide` in `@itwin/appui-react`.             |
-| `StatusBarSection`               | `StatusBarSection` in `@itwin/appui-react`.               |
-| `ToolbarItemId`                  | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.  |
-| `ToolbarManager`                 | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
-| `ToolbarOrientation`             | `ToolbarOrientation` in `@itwin/appui-react`.            |
-| `ToolbarUsage`                   | `ToolbarUsage` in `@itwin/appui-react`.                   |
-| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`. |
-| `UiItemProviderOverrides`        | `UiItemProviderOverrides` in `@itwin/appui-react`.        |
-| `UiItemsApplicationAction`       | N/A                                                       |
-| `UiItemsManager`                 | `UiItemsManager` in `@itwin/appui-react`.                 |
-| `UiItemsProvider`                | `UiItemsProvider` in `@itwin/appui-react`.                |
-| `WidgetState`                    | `WidgetState` in `@itwin/appui-react`.
+| **Removed**                         | **Replacement**                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| `AbstractStatusBarActionItem`       | Use `StatusBarActionItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarCustomItem`       | Use `StatusBarCustomItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItem`             | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItemUtilities`    | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead.                          |
+| `AbstractStatusBarLabelItem`        | Use `StatusBarLabelItem` in `@itwin/appui-react` instead.                              |
+| `AbstractWidgetProps`               | Use `Widget` in `@itwin/appui-react` instead.                                          |
+| `AllowedUiItemProviderOverrides`    | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`.                              |
+| `BackstageActionItem`               | `BackstageActionItem` in `@itwin/appui-react`.                                         |
+| `BackstageItem`                     | `BackstageItem` in `@itwin/appui-react`.                                               |
+| `BackstageItemType`                 | Use Type Guard instead.                                                                |
+| `BackstageItemsChangedArgs`         | N/A                                                                                    |
+| `BackstageItemsManager`             | N/A                                                                                    |
+| `BackstageItemUtilities`            | `BackstageItemUtilities` in `@itwin/appui-react`.                                      |
+| `BackstageStageLauncher`            | `BackstageStageLauncher` in `@itwin/appui-react`.                                      |
+| `BaseUiItemsProvider`               | `BaseUiItemsProvider` in `@itwin/appui-react`.                                         |
+| `CommonBackstageItem`               | `CommonBackstageItem` in `@itwin/appui-react`.                                         |
+| `CommonStatusBarItem`               | Use `StatusBarItem` in `@itwin/appui-react` instead.                                   |
+| `createSvgIconSpec`                 | Use `IconSpecUtilities.createWebComponentIconSpec()` instead.                          |
+| `EditorPosition.columnSpan`         | N/A                                                                                    |
+| `getSvgSource`                      | Use `IconSpecUtilities.getWebComponentSource()` instead.                               |
+| `isAbstractStatusBarActionItem`     | Use `isStatusBarActionItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarCustomItem`     | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarLabelItem`      | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead.                            |
+| `isActionItem`                      | Use `isBackstageActionItem` in `@itwin/appui-react` instead.                           |
+| `isStageLauncher`                   | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead.                        |
+| `ProvidedItem`                      | `ProvidedItem` in `@itwin/appui-react`.                                                |
+| `StagePanelLocation`                | `StagePanelLocation` in `@itwin/appui-react`.                                          |
+| `StagePanelSection`                 | `StagePanelSection` in `@itwin/appui-react`.                                           |
+| `StageUsage`                        | `StageUsage` in `@itwin/appui-react`.                                                  |
+| `StatusBarItemId`                   | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `StatusBarLabelSide`                | `StatusBarLabelSide` in `@itwin/appui-react`.                                          |
+| `StatusBarSection`                  | `StatusBarSection` in `@itwin/appui-react`.                                            |
+| `ToolbarItemId`                     | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.                               |
+| `ToolbarManager`                    | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
+| `ToolbarOrientation`                | `ToolbarOrientation` in `@itwin/appui-react`.                                          |
+| `ToolbarUsage`                      | `ToolbarUsage` in `@itwin/appui-react`.                                                |
+| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`.                           |
+| `UiItemProviderOverrides`           | `UiItemProviderOverrides` in `@itwin/appui-react`.                                     |
+| `UiItemsApplicationAction`          | N/A                                                                                    |
+| `UiItemsManager`                    | `UiItemsManager` in `@itwin/appui-react`.                                              |
+| `UiItemsProvider`                   | `UiItemsProvider` in `@itwin/appui-react`.                                             |
+| `WidgetState`                       | `WidgetState` in `@itwin/appui-react`.                                                 |
 
 #### @itwin/core-backend
 
@@ -193,12 +193,6 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ByteStream.nextId64`      | `ByteStream.readId64`                                       |
 | `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
 | `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
-
-#### @itwin/appui-abstract
-
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `EditorPosition.columnSpan` | N/A         |
 
 #### @itwin/core-electron
 
@@ -231,24 +225,25 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                                                                                            |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
+| Removed                        | Replacement                                                                                                                                                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all.                                      |
+| `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client. |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                      |
 
 ### Change to pullMerge
 
-Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fastforward method for merging changes. This change is transparent to users and is enabled by default.
+Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
 
 #### No pending/local changes
 
-- Incomming changes are applied using "fast-forward" method.
+- Incoming changes are applied using "fast-forward" method.
 
 #### With pending/local changes
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
