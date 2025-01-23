@@ -523,11 +523,11 @@ export class Schema implements CustomAttributeContainerProps {
     }
   }
 
-  public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
+  public async getReference(refSchemaName: string): Promise<Schema | undefined> {
     if (this.references.length === 0)
       return undefined;
 
-    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase());
   }
 
   public getReferenceNameByAlias(alias: string): string | undefined {
@@ -538,11 +538,11 @@ export class Schema implements CustomAttributeContainerProps {
     return schema ? schema.name : undefined;
   }
 
-  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
+  public getReferenceSync(refSchemaName: string): Schema | undefined {
     if (this.references.length === 0)
       return undefined;
 
-    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase());
   }
 
   /**

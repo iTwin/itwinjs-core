@@ -70,11 +70,11 @@ export class SchemaContextEditor {
    * @internal
   */
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
-    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest);
+    const schema = await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest);
     if (schema === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
-    return schema;
+    return schema as MutableSchema;
   }
 
   /**
@@ -222,11 +222,11 @@ export class SchemaContextEditor {
   }
 
   private async lookupSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<MutableSchema> {
-    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, matchType);
+    const schema = await this.schemaContext.getCachedSchema(schemaKey, matchType);
     if (schema === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
-    return schema;
+    return schema as MutableSchema;
   }
 
   /**

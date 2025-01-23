@@ -68,13 +68,13 @@ export class SchemaReadHelper<T = unknown> {
    * @param schema The Schema to populate
    * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public async readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo> {
+  public async readSchemaInfo(schema: Schema, rawSchema: T): Promise<SchemaInfo> {
     // Ensure context matches schema context
     if (schema.context) {
       if (this._context !== schema.context)
         throw new ECObjectsError(ECObjectsStatus.DifferentSchemaContexts, "The SchemaContext of the schema must be the same SchemaContext held by the SchemaReadHelper.");
     } else {
-      (schema as Schema as MutableSchema).setContext(this._context);
+      (schema as MutableSchema).setContext(this._context);
     }
 
     this._parser = new this._parserType(rawSchema);
@@ -104,12 +104,12 @@ export class SchemaReadHelper<T = unknown> {
    * @param schema The Schema to populate
    * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public async readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+  public async readSchema(schema: Schema, rawSchema: T): Promise<Schema> {
     if (!this._schemaInfo) {
       await this.readSchemaInfo(schema, rawSchema);
     }
 
-    const cachedSchema = await this._context.getCachedSchema<U>(this._schemaInfo!.schemaKey, SchemaMatchType.Latest);
+    const cachedSchema = await this._context.getCachedSchema(this._schemaInfo!.schemaKey, SchemaMatchType.Latest);
     if (undefined === cachedSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Could not load schema ${schema.schemaKey.toString()}`);
 
@@ -117,7 +117,7 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /* Finish loading the rest of the schema */
-  private async loadSchema<U extends Schema>(schemaInfo: SchemaInfo, schema: U): Promise<U> {
+  private async loadSchema(schemaInfo: SchemaInfo, schema: Schema): Promise<Schema> {
     // Verify that there are no schema reference cycles, this will start schema loading by loading their headers
     (await SchemaGraph.generateGraph(schemaInfo, this._context)).throwIfCycles();
 
@@ -154,7 +154,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param schema The Schema to populate
    * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U {
+  public readSchemaSync(schema: Schema, rawSchema: T): Schema {
     this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object
