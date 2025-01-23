@@ -112,10 +112,9 @@ export class Entity {
 
   public getMetaData(): EntityClass {
     if (!this._metadata) {
-      this._metadata = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
-      if (!this._metadata) {
-        throw new Error(`Could not find metadata for schema item key ${this.schemaItemKey.fullName}.`);
-      }
+      const metadata = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
+      EntityClass.assertIsEntityClass(metadata); // Throws if not found or not an entity
+      this._metadata = metadata;
     }
 
     return this._metadata;
