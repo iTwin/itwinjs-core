@@ -36,7 +36,7 @@ export class Entity {
 
   private static _schemaItemKey?: SchemaItemKey;
 
-  /** Lazy loaded SchemaKey which is constructed once when first accessed and uses schemaName
+  /** Serves as a unique identifier for this class. Typed variant of [[classFullName]].
    * @internal
    */
   public static get schemaItemKey(): SchemaItemKey {

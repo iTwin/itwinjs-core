@@ -24,7 +24,7 @@ export class Schema {
 
   private static _schemaKey?: SchemaKey;
 
-  /** Lazy loaded SchemaKey which is constructed once when first accessed and uses schemaName
+  /** Unique identifier for this schema, typed variant of [[schemaName]].
    * @internal
    */
   public static get schemaKey(): SchemaKey {
