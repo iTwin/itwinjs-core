@@ -233,7 +233,7 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
   });
 
   afterEach(() => {
-    storage.dispose();
+    storage[Symbol.dispose]();
     sinon.restore();
   });
 
@@ -579,11 +579,11 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
     const disposableConnectivityInfo = {
       onInternetConnectivityChanged: new BeEvent(),
       status: InternetConnectivityStatus.Offline,
-      dispose: sinon.spy(),
+      [Symbol.dispose]: sinon.spy(),
     };
     storage = new OfflineCachingFavoritePropertiesStorage({ impl, connectivityInfo: disposableConnectivityInfo });
-    storage.dispose();
-    expect(disposableConnectivityInfo.dispose).to.be.calledOnce;
+    storage[Symbol.dispose]();
+    expect(disposableConnectivityInfo[Symbol.dispose]).to.be.calledOnce;
   });
 
   const callInConnectivityContext = async <T>(cb: () => Promise<T>, connectivityStatus: InternetConnectivityStatus) => {
