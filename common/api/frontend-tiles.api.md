@@ -88,7 +88,7 @@ export type GraphicRepresentation = {
 });
 
 // @beta
-export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL";
+export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL" | string;
 
 // @beta
 export type GraphicRepresentationStatus = "Complete" | "InProgress" | "Invalid" | "NotStarted";
