@@ -19,6 +19,9 @@ export class ECVersion {
   private _write: number = 0;
   private _minor: number = 0;
 
+  // Define a static global instance representing zero
+  public static readonly ZERO = new ECVersion(0, 0, 0);
+
   /**
    * The constructor will throw an ECObjectsError if any of the parameters below are above the threshold.
    * @param read Can support up to 999.

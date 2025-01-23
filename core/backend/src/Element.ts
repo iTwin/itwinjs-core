@@ -22,7 +22,6 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _elementWasCreated, _verifyChannel } from "./internal/Symbols";
-import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -401,8 +400,6 @@ export class Element extends Entity {
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
-
-  public getMetaData(): EntityClass | undefined { return this.iModel.schemaContext.getSchemaItemSync(new SchemaItemKey(this.className, new SchemaKey(this.schemaName, 1, 0, 0))); }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
