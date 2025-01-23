@@ -34,6 +34,8 @@ Table of contents:
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
+  - [Graphics](#graphics)
+    - [Read Image To Canvas](#read-image-to-canvas)
 
 ## Selection set
 
@@ -286,3 +288,9 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
+
+## Graphics
+
+### Read Image To Canvas
+
+Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so the [ReadImageToCanvasOptions]($core-frontend) interface was created to allow the option to choose whether or not canvas decorations are included in the saved image. Now, if [ReadImageToCanvasOptions.includeCanvasDecorations]($core-frontend) is true, canvas decorations will be included in the saved image. If undefined or false, previous behavior will persist and canvas decorations will not be included. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of[ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
