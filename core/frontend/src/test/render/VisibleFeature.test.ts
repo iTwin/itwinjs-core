@@ -23,7 +23,7 @@ describe("Visible feature query", () => {
 
   afterEach(() => {
     if (viewport) {
-      viewport.dispose();
+      viewport[Symbol.dispose]();
       viewport = undefined;
     }
   });
@@ -45,7 +45,7 @@ describe("Visible feature query", () => {
     if (view.viewFlags.acsTriad || view.viewFlags.grid)
       view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 
-    const vp = ScreenViewport.create(div, view);
+    using vp = ScreenViewport.create(div, view);
     IModelApp.viewManager.addViewport(vp);
     expect(vp.target.debugControl).toBeDefined();
     vp.target.debugControl!.devicePixelRatioOverride = devicePixelRatio ?? 1;
@@ -55,7 +55,6 @@ describe("Visible feature query", () => {
     try {
       callback(vp);
     } finally {
-      vp.dispose();
       document.body.removeChild(div);
     }
   }

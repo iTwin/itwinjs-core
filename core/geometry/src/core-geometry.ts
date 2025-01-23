@@ -241,6 +241,7 @@ export * from "./polyface/FacetFaceData";
 export * from "./polyface/Polyface";
 export * from "./polyface/FacetLocationDetail";
 export * from "./polyface/IndexedPolyfaceVisitor";
+export * from "./polyface/IndexedPolyfaceWalker";
 export * from "./polyface/multiclip/GriddedRaggedRange2dSet";
 export * from "./polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
 export * from "./polyface/PolyfaceBuilder";

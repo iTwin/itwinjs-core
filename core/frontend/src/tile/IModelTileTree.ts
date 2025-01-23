@@ -95,10 +95,10 @@ function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, mod
 /** No graphical editing scope is currently active. */
 class StaticState {
   public readonly type = "static";
-  public readonly dispose: () => void;
+  public readonly [Symbol.dispose]!: () => void;
 
   public constructor(root: RootTile) {
-    this.dispose = GraphicalEditingScope.onEnter.addOnce((scope: GraphicalEditingScope) => {
+    this[Symbol.dispose] = GraphicalEditingScope.onEnter.addOnce((scope: GraphicalEditingScope) => {
       root.transition(new InteractiveState(scope, root));
     });
   }
@@ -107,7 +107,7 @@ class StaticState {
 /** A graphical editing scope is currently active, but no elements in the tile tree's model have been modified. */
 class InteractiveState {
   public readonly type = "interactive";
-  public readonly dispose: () => void;
+  public readonly [Symbol.dispose]!: () => void;
 
   public constructor(scope: GraphicalEditingScope, root: RootTile) {
     const removeEndingListener = scope.onExiting.addOnce((_) => {
@@ -121,7 +121,7 @@ class InteractiveState {
         root.transition(new DynamicState(root, elemChanges, scope));
     });
 
-    this.dispose = () => {
+    this[Symbol.dispose] = () => {
       removeEndingListener();
       removeGeomListener();
     };
@@ -134,9 +134,9 @@ class DynamicState {
   public readonly rootTile: DynamicIModelTile;
   private readonly _dispose: () => void;
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._dispose();
-    this.rootTile.dispose();
+    this.rootTile[Symbol.dispose]();
   }
 
   public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, scope: GraphicalEditingScope) {
@@ -163,7 +163,7 @@ class DynamicState {
 /** The tile tree has been disposed. */
 class DisposedState {
   public readonly type = "disposed";
-  public dispose(): void { }
+  public [Symbol.dispose](): void { }
 }
 
 const disposedState = new DisposedState();
@@ -220,9 +220,9 @@ class RootTile extends Tile {
     this.loadChildren();
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     this.transition(disposedState);
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -301,7 +301,7 @@ class RootTile extends Tile {
       this.children.push(newState.rootTile);
     }
 
-    this._tileState.dispose();
+    this._tileState[Symbol.dispose]();
     this._tileState = newState;
 
     if (resetRange)
@@ -392,9 +392,9 @@ export class IModelTileTree extends TileTree {
     });
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     this.decoder.release();
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   public get maxDepth() { return 32; }

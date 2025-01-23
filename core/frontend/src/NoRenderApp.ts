@@ -40,7 +40,7 @@ export class NullTarget extends RenderTarget {
   public override setFlashed(): void { }
   public setViewRect(): void { }
   public override onResized(): void { }
-  public override dispose(): void { }
+  public override[Symbol.dispose](): void { }
   public updateViewRect(): boolean { return false; }
   public readPixels(): void { }
   public get screenSpaceEffects(): Iterable<string> { return []; }
