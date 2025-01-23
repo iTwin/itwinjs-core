@@ -16,12 +16,7 @@ export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODE
  * The status of a Graphic Representation indicates the progress of that generation process.
  * @beta
  */
-export enum GraphicRepresentationStatus {
-  InProgress = "InProgress",
-  Complete = "Complete",
-  NotStarted = "NotStarted",
-  Invalid = "Invalid",
-}
+export type GraphicRepresentationStatus = "Complete" | "InProgress" | "Invalid" | "NotStarted";
 
 /**
  * Represents a data source for a graphic representation.
@@ -71,10 +66,10 @@ export type GraphicRepresentation = {
    * Therefore, the url is optional if the status is not complete, and required if the status is complete.
    */
 } & ({
-  status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
+  status: Exclude<GraphicRepresentationStatus, "Complete">;
   url?: string;
 } | {
-  status: GraphicRepresentationStatus.Complete;
+  status: "Complete";
   url: string;
 });
 
@@ -180,21 +175,40 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
       break;
     }
 
-    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
+    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === "Complete"));
     for (const foundSource of foundSources) {
-      const graphicRepresentation: GraphicRepresentation = {
-        displayName: foundSource.displayName,
-        representationId: foundSource.id,
-        status: foundSource.status,
-        format: args.format,
-        url: foundSource._links?.mesh.href,
-        dataSource: {
-          iTwinId: args.dataSource.iTwinId,
-          id: foundSource.request.iModelId,
-          changeId: foundSource.request.changesetId,
-          type: foundSource.request.exportType,
-        },
-      };
+      let graphicRepresentation: GraphicRepresentation;
+      if (foundSource.status === "Complete") {
+        // If the service response's status is complete, it's guaranteed to have a url defined in links.mesh.
+        graphicRepresentation = {
+          displayName: foundSource.displayName,
+          representationId: foundSource.id,
+          status: foundSource.status,
+          format: args.format,
+          url: foundSource._links!.mesh.href,
+          dataSource: {
+            iTwinId: args.dataSource.iTwinId,
+            id: foundSource.request.iModelId,
+            changeId: foundSource.request.changesetId,
+            type: foundSource.request.exportType,
+          },
+        };
+      } else {
+        // Otherwise the url may be undefined because the representation is not finished being generated
+        graphicRepresentation = {
+          displayName: foundSource.displayName,
+          representationId: foundSource.id,
+          status: foundSource.status,
+          format: args.format,
+          url: foundSource._links?.mesh.href,
+          dataSource: {
+            iTwinId: args.dataSource.iTwinId,
+            id: foundSource.request.iModelId,
+            changeId: foundSource.request.changesetId,
+            type: foundSource.request.exportType,
+          },
+        };
+      }
 
       yield graphicRepresentation;
     }
