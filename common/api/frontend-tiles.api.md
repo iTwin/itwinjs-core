@@ -80,27 +80,18 @@ export type GraphicRepresentation = {
     format: GraphicRepresentationFormat;
     dataSource: DataSource;
 } & ({
-    status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
+    status: Exclude<GraphicRepresentationStatus, "Complete">;
     url?: string;
 } | {
-    status: GraphicRepresentationStatus.Complete;
+    status: "Complete";
     url: string;
 });
 
 // @beta
-export type GraphicRepresentationFormat = "IMODEL" | "3DTiles" | "CESIUM";
+export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL";
 
 // @beta
-export enum GraphicRepresentationStatus {
-    // (undocumented)
-    Complete = "Complete",
-    // (undocumented)
-    InProgress = "InProgress",
-    // (undocumented)
-    Invalid = "Invalid",
-    // (undocumented)
-    NotStarted = "NotStarted"
-}
+export type GraphicRepresentationStatus = "Complete" | "InProgress" | "Invalid" | "NotStarted";
 
 // @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
