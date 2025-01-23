@@ -12,7 +12,7 @@ import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlParser } from "../Deserialization/XmlParser";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, PrimitiveType } from "../ECObjects";
+import { ECClassModifier, PrimitiveType, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -443,22 +443,60 @@ export class Schema implements CustomAttributeContainerProps {
     this._schemaKey = new SchemaKey(this._schemaKey.name, newVersion);
   }
 
-  /**
-   * Gets an item from within this schema. To get by full name use lookupItem instead.
-   * @param key the local (unqualified) name, lookup is case-insensitive
-   */
-  public async getItem<T extends SchemaItem>(name: string): Promise<T | undefined> {
-    // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
-    return this.getItemSync<T>(name);
-  }
+  public getEntityClass = async (name: string): Promise<EntityClass | undefined> => this.getItem(name, EntityClass);
+  public getMixin = async (name: string): Promise<Mixin | undefined> => this.getItem(name, Mixin);
+  public getStructClass = async (name: string): Promise<StructClass | undefined> => this.getItem(name, StructClass);
+  public getCustomAttributeClass = async (name: string): Promise<CustomAttributeClass | undefined> => this.getItem(name, CustomAttributeClass);
+  public getRelationshipClass = async (name: string): Promise<RelationshipClass | undefined> => this.getItem(name, RelationshipClass);
+  public getEnumeration = async (name: string): Promise<Enumeration | undefined> => this.getItem(name, Enumeration);
+  public getKindOfQuantity = async (name: string): Promise<KindOfQuantity | undefined> => this.getItem(name, KindOfQuantity);
+  public getPropertyCategory = async (name: string): Promise<PropertyCategory | undefined> => this.getItem(name, PropertyCategory);
+  public getUnit = async (name: string): Promise<Unit | undefined> => this.getItem(name, Unit);
+  public getInvertedUnit = async (name: string): Promise<InvertedUnit | undefined> => this.getItem(name, InvertedUnit);
+  public getConstant = async (name: string): Promise<Constant | undefined> => this.getItem(name, Constant);
+  public getPhenomenon = async (name: string): Promise<Phenomenon | undefined> => this.getItem(name, Phenomenon);
+  public getUnitSystem = async (name: string): Promise<UnitSystem | undefined> => this.getItem(name, UnitSystem);
+  public getFormat = async (name: string): Promise<Format | undefined> => this.getItem(name, Format);
 
   /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
    * @param key the local (unqualified) name, lookup is case-insensitive
+   * @param itemConstructor optional, the constructor of the item to return. If missing, the returned value cannot be type checked.
    */
-  public getItemSync<T extends SchemaItem>(name: string): T | undefined {
-    // Case-insensitive search
-    return this._items.get(name.toUpperCase()) as T;
+  public async getItem<T extends SchemaItem>(name: string, itemConstructor?: new (...args: any[]) => T): Promise<T | undefined> {
+    // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
+    return this.getItemSync<T>(name, itemConstructor);
+  }
+
+  public getEntityClassSync = (name: string) : EntityClass | undefined => this.getItemSync(name, EntityClass);
+  public getMixinSync = (name: string) : Mixin | undefined => this.getItemSync(name, Mixin);
+  public getStructClassSync = (name: string) : StructClass | undefined => this.getItemSync(name, StructClass);
+  public getCustomAttributeClassSync = (name: string) : CustomAttributeClass | undefined => this.getItemSync(name, CustomAttributeClass);
+  public getRelationshipClassSync = (name: string) : RelationshipClass | undefined => this.getItemSync(name, RelationshipClass);
+  public getEnumerationSync = (name: string) : Enumeration | undefined => this.getItemSync(name, Enumeration);
+  public getKindOfQuantitySync = (name: string) : KindOfQuantity | undefined => this.getItemSync(name, KindOfQuantity);
+  public getPropertyCategorySync = (name: string) : PropertyCategory | undefined => this.getItemSync(name, PropertyCategory);
+  public getUnitSync = (name: string) : Unit | undefined => this.getItemSync(name, Unit);
+  public getInvertedUnitSync = (name: string) : InvertedUnit | undefined => this.getItemSync(name, InvertedUnit);
+  public getConstantSync = (name: string) : Constant | undefined => this.getItemSync(name, Constant);
+  public getPhenomenonSync = (name: string) : Phenomenon | undefined => this.getItemSync(name, Phenomenon);
+  public getUnitSystemSync = (name: string) : UnitSystem | undefined => this.getItemSync(name, UnitSystem);
+  public getFormatSync = (name: string) : Format | undefined => this.getItemSync(name, Format);
+
+  /**
+   * Gets an item from within this schema. To get by full name use lookupItem instead.
+   * @param key the local (unqualified) name, lookup is case-insensitive
+   * @param itemConstructor optional, the constructor of the item to return. If missing, the returned value cannot be type checked.
+   */
+  private getItemSync<T extends SchemaItem>(name: string, itemConstructor?: new (...args: any[]) => T): T | undefined {
+    const value = this._items.get(name.toUpperCase());
+    if (value === undefined)
+      return value;
+
+    if (itemConstructor !== undefined && (value.schemaItemType !== (itemConstructor as unknown as typeof SchemaItem).schemaItemType))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `The item ${name} is not of the expected type.`);
+
+    return value as T;
   }
 
   /**
