@@ -84,6 +84,44 @@ export class PolyfaceData {
    * * Closed solid is a mesh with no boundary edge. Open sheet is a mesh that has boundary edge(s).
    */
   private _expectedClosure: number;
+
+  /**
+   * Optional index array for moving "across an edge" to an adjacent facet.
+   * * This array:
+   *   * completes the topology of the polyface.
+   *   * has the same length as the other PolyfaceData index arrays.
+   *   * is populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
+   *   * is used by [[IndexedPolyfaceWalker]] to traverse the polyface.
+   *   * is invalid if the polyface topology is subsequently changed.
+   * * Let k1 = edgeMateIndex[k] be defined. Then:
+   *   * k1 is an index (an "edge index") into the PolyfaceData index arrays. (The same for k.)
+   *   * k and k1 refer to the two oppositely oriented sides of an interior edge in the polyface.
+   *   * pointIndex[k1] is the point at the opposite end of the edge that starts at pointIndex[k].
+   *   * edgeMateIndex[k1] === k.
+   * * If k1 is undefined, then there is no adjacent facet across the edge that starts at pointIndex[k],
+   * i.e. k refers to a boundary edge.
+   */
+  public edgeMateIndex?: Array<number | undefined>;
+  /**
+   * Dereference the edgeMateIndex array.
+   * * This method returns undefined if:
+   *   * k is undefined
+   *   * `this.edgeMateIndex` is undefined
+   *   * k is out of bounds for `this.edgeMateIndex`
+   *   * `this.edgeMateIndex[k]` is undefined
+   */
+  public edgeIndexToEdgeMateIndex(k: number | undefined): number | undefined {
+    if (k !== undefined
+      && this.edgeMateIndex !== undefined
+      && k >= 0 && k < this.edgeMateIndex.length)
+      return this.edgeMateIndex[k];
+    return undefined;
+  }
+  /** Test if `value` is a valid index into the `pointIndex` array. */
+  public isValidEdgeIndex(value: number | undefined): boolean {
+    return value !== undefined && value >= 0 && value < this.pointIndex.length;
+  }
+
   /**
    * Constructor for facets.
    * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.

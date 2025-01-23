@@ -207,7 +207,7 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
       }
       resultCount++;
     }
-    stmt.dispose();
+    stmt[Symbol.dispose]();
     stmt = undefined;
 
     if (resultCount === 0 && test.stepStatus) {
@@ -220,7 +220,7 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
     }
   } finally {
     if(stmt !== undefined)
-      stmt.dispose();
+      stmt[Symbol.dispose]();
   }
 }
 

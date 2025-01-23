@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Drop dependency on @itwin/core-telemetry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
