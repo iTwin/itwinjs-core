@@ -158,11 +158,14 @@ class PrimaryTreeReference extends TileTreeReference {
       });
     }
 
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleScript); // eslint-disable-line @typescript-eslint/no-deprecated
+
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
       treeId: this.createTreeId(view, model.id),
       isPlanProjection: planProjection,
+      timeline: scriptInfo?.timeline,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);

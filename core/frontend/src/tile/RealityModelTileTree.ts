@@ -537,9 +537,6 @@ export class RealityModelTileTree extends RealityTileTree {
     super(params);
 
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-    if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
-      const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
-    }
   }
   public override get isContentUnbounded() { return this._isContentUnbounded; }
 }
