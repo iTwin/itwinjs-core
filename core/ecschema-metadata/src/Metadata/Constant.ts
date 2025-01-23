@@ -22,7 +22,8 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class Constant extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.Constant;
+  public override readonly schemaItemType = Constant.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.Constant; }
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _definition: string;
   protected _numerator?: number;
@@ -136,6 +137,28 @@ export class Constant extends SchemaItem {
    */
   protected setDenominator(denominator: number) {
     this._denominator = denominator;
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type Constant.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Constant, false otherwise.
+   */
+  public static isConstant(item?: SchemaItem): item is Constant {
+    if (item && item.schemaItemType === SchemaItemType.Constant)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Constant.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Constant if it is a Constant, undefined otherwise.
+   */
+  public static assertIsConstant(item?: SchemaItem): asserts item is Constant {
+    if (!this.isConstant(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Constant}' (Constant)`);
   }
 }
 /**

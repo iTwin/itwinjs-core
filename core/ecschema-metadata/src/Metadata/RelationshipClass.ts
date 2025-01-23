@@ -33,7 +33,8 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  */
 export class RelationshipClass extends ECClass {
   public override readonly schema!: Schema;
-  public override readonly schemaItemType = SchemaItemType.RelationshipClass;
+  public override readonly schemaItemType = RelationshipClass.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.RelationshipClass; }
   protected _strength: StrengthType;
   protected _strengthDirection: StrengthDirection;
   protected _source: RelationshipConstraint;
@@ -138,6 +139,28 @@ export class RelationshipClass extends ECClass {
 
   public override async fromJSON(relationshipClassProps: RelationshipClassProps) {
     this.fromJSONSync(relationshipClassProps);
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type RelationshipClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a RelationshipClass, false otherwise.
+   */
+  public static isRelationshipClass(item?: SchemaItem): item is RelationshipClass {
+    if (item && item.schemaItemType === SchemaItemType.RelationshipClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type RelationshipClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to RelationshipClass if it is a RelationshipClass, undefined otherwise.
+   */
+  public static assertIsRelationshipClass(item?: SchemaItem): asserts item is RelationshipClass {
+    if (!this.isRelationshipClass(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.RelationshipClass}' (RelationshipClass)`);
   }
 }
 

@@ -24,7 +24,8 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class EntityClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.EntityClass;
+  public override readonly schemaItemType = EntityClass.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.EntityClass; }
   protected _mixins?: LazyLoadedMixin[];
 
   public get mixins(): LazyLoadedMixin[] {

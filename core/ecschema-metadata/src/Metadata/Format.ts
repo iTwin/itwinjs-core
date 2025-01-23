@@ -23,7 +23,8 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class Format extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.Format;
+  public override readonly schemaItemType = Format.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.Format; }
   protected _base: BaseFormat;
   protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
@@ -328,6 +329,27 @@ export class Format extends SchemaItem {
    */
   protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]>) {
     this._units = units;
+  }
+
+  /** Type guard to check if the SchemaItem is of type Format.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Format, false otherwise.
+   */
+  public static isFormat(item?: SchemaItem): item is Format {
+  if (item && item.schemaItemType === SchemaItemType.Format)
+    return true;
+
+  return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Format.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Format if it is a Format, undefined otherwise.
+   */
+  public static assertIsFormat(item?: SchemaItem): asserts item is Format {
+    if (!this.isFormat(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Format}' (Format)`);
   }
 }
 
