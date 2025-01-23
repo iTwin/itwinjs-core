@@ -172,14 +172,6 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(result).undefined;
   });
 
-  it("getViewThumbnail should work as expected", async () => {
-    const modelQueryParams: ModelQueryParams = { limit: 10, from: ViewState.classFullName };
-    const modelProps = await iModel.views.queryProps(modelQueryParams);
-    const viewId = modelProps[0].id!.toString();
-    const result = await iModel.views.getThumbnail(viewId);
-    expect(result).to.not.be.undefined;
-  });
-
   it("getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
     const wgs84Converter = iModel.geoServices.getConverter("WGS84");
     const nad27Converter = iModel.geoServices.getConverter("NAD27");

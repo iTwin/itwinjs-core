@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
+  BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
   ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -17,7 +17,6 @@ import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/Pars
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
@@ -66,7 +65,7 @@ export class FakeREProps implements RelatedElementProps {
   public constructor() { this.id = Id64.invalid; }
 }
 
-export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String }): ViewState {
+export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges?: boolean, renderMode?: RenderMode, is2d?: boolean, animationId?: Id64String; }): ViewState {
   return {
     iModel,
     is3d: () => true !== options?.is2d,
@@ -615,7 +614,6 @@ describe("mirukuru TileTree", () => {
       await ElectronApp.startup({
         iModelApp: {
           localization: new EmptyLocalization(),
-          rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
           tileAdmin,
         },
       });
@@ -779,7 +777,6 @@ describe("TileAdmin", () => {
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
-        rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
       });
 
       if (ProcessDetector.isElectronAppFrontend) {
@@ -787,7 +784,6 @@ describe("TileAdmin", () => {
           iModelApp: {
             tileAdmin: props,
             localization: new EmptyLocalization(),
-            rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
           },
         });
       }

@@ -15,7 +15,7 @@ const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.co
 
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
+import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
@@ -123,11 +123,6 @@ export interface IModelAppOptions {
    *  @internal
    */
   noRender?: boolean;
-  /**
-   * @deprecated in 3.7. Specify desired RPC interfaces in the platform-specific RPC manager call instead.
-   * See [[MobileRpcManager.initializeClient]], [[ElectronRpcManager.initializeFrontend]], [[BentleyCloudRpcManager.initializeClient]].
-   */
-  rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
@@ -731,7 +726,7 @@ export class IModelApp {
    * @beta
    */
   public static translateStatus(status: number) {
-    let key: { scope: string, val: string, status?: string };
+    let key: { scope: string, val: string, status?: string; };
     if (typeof status !== "number") {
       key = { scope: "Errors", val: "IllegalValue" };
     } else {

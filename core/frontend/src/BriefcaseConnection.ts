@@ -16,7 +16,6 @@ import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
-import { ProgressCallback } from "./request/Request";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
 
@@ -54,11 +53,6 @@ export interface GenericAbortSignal {
  * @public
  */
 export interface PullChangesOptions {
-  /**
-   * Function called regularly to report progress of changes download.
-   * @deprecated in 3.6. Use [[downloadProgressCallback]] instead.
-   */
-  progressCallback?: ProgressCallback; // eslint-disable-line @typescript-eslint/no-deprecated
   /** Function called regularly to report progress of changes download. */
   downloadProgressCallback?: OnDownloadProgress;
   /** Interval for calling progress callback (in milliseconds). */
@@ -342,13 +336,12 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     const removeListeners: VoidFunction[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const shouldReportProgress = !!options?.progressCallback || !!options?.downloadProgressCallback;
+
+    const shouldReportProgress = !!options?.downloadProgressCallback;
 
     if (shouldReportProgress) {
-      const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        options?.progressCallback?.(data);
+      const handleProgress = (_evt: Event, data: { loaded: number, total: number; }) => {
+
         options?.downloadProgressCallback?.(data);
       };
 

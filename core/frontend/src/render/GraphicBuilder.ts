@@ -12,7 +12,7 @@ import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
 import { GraphicType } from "../common/render/GraphicType";
-import type { PickableGraphicOptions} from "../common/render/BatchOptions";
+import type { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { GraphicAssembler } from "../common/render/GraphicAssembler";
 import { _implementationProhibited } from "../common/internal/Symbols";
 import { GraphicTemplate } from "./GraphicTemplate";
@@ -182,14 +182,6 @@ export abstract class GraphicBuilder extends GraphicAssembler {
 
       return pixelSize * 0.25;
     };
-  }
-
-  /** The Id to be associated with the graphic for picking.
-   * @see [[GraphicBuilderOptions.pickable]] for more options.
-   * @deprecated in 3.x. This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
-   */
-  public get pickId(): Id64String | undefined {
-    return this.pickable?.id;
   }
 
   /**

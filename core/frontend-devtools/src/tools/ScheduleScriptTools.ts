@@ -30,11 +30,11 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 3; }
 
-  public async parse(input: string[], vp: Viewport) {
+  public async parse(input: string[]) {
     const args = parseArgs(input);
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this._sourceId = args.get("i") ?? vp.displayStyle.scheduleScriptReference?.sourceId;
+
+    this._sourceId = args.get("i");
     if (!this._sourceId)
       return false;
 

@@ -35,7 +35,6 @@ describe("ElectronApp tests.", () => {
 
     await ElectronApp.startup({
       iModelApp: {
-        rpcInterfaces: [TestRpcInterface],
         localization: new EmptyLocalization(),
       },
     });

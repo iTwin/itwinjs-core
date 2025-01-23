@@ -67,7 +67,6 @@ before(async () => {
     case "electron":
       return ElectronApp.startup({
         iModelApp: {
-          rpcInterfaces,
           localization: new EmptyLocalization(),
         },
       });

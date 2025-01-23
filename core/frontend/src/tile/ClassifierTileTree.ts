@@ -69,14 +69,14 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     return Id64.isValid(id.modelId) ? iModel.tiles.getTileTreeOwner(id, this) : this._nonexistentTreeOwner;
   }
 
-  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner; }>): void {
     // Note: This is invoked when an element hosting a schedule script is updated - it doesn't care about frontend schedule scripts.
     for (const tree of trees)
       if (scriptSourceId === tree.id.animationId)
         modelIds.add(tree.id.modelId);
   }
 
-  public addSpatialModels(modelIds: Set<Id64String>, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+  public addSpatialModels(modelIds: Set<Id64String>, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner; }>): void {
     for (const tree of trees)
       modelIds.add(tree.id.modelId);
   }
@@ -194,7 +194,7 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line @typescript-eslint/no-deprecated
+  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScript ? new RenderSchedule.ScriptReference(source.scheduleScript) : undefined);
   return {
     modelId: classifier.modelId,
     type,

@@ -334,11 +334,6 @@ export abstract class ViewState extends ElementState {
     return this.displayStyle.scheduleScript;
   }
 
-  /** @internal */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
-  }
-
   /** Get the globe projection mode.
    * @internal
    */
@@ -608,7 +603,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number } {
+  public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number; } {
     if (viewRot === undefined)
       viewRot = this.getRotation();
 

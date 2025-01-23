@@ -131,7 +131,7 @@ const scratchRay = Ray3d.createXAxis();
 
 /** @internal */
 export class RealityTileRegion {
-  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number }) {
+  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number; }) {
     this.minLongitude = values.minLongitude;
     this.minLatitude = values.minLatitude;
     this.minHeight = values.minHeight;
@@ -159,7 +159,7 @@ export class RealityTileRegion {
   public static isGlobal(boundingVolume: any) {
     return Array.isArray(boundingVolume?.region) && (boundingVolume.region[2] - boundingVolume.region[0]) > Angle.piRadians && (boundingVolume.region[3] - boundingVolume.region[1]) > Angle.piOver2Radians;
   }
-  public getRange(): { range: Range3d, corners?: Point3d[] } {
+  public getRange(): { range: Range3d, corners?: Point3d[]; } {
     const maxAngle = Math.max(Math.abs(this.maxLatitude - this.minLatitude), Math.abs(this.maxLongitude - this.minLongitude));
     let corners;
     let range: Range3d;
@@ -189,7 +189,7 @@ export class RealityTileRegion {
 
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion; } | undefined {
     if (undefined === boundingVolume)
       return undefined;
 
@@ -414,7 +414,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   private _viewFlagOverrides: ViewFlagOverrides;
   private readonly _deduplicateVertices: boolean;
 
-  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }) {
+  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean; }) {
     super(opts?.produceGeometry ?? false);
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
@@ -537,11 +537,6 @@ export class RealityModelTileTree extends RealityTileTree {
     super(params);
 
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-    if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
-      const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
-      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
-      this.iModel.expandDisplayedExtents(worldContentRange);
-    }
   }
   public override get isContentUnbounded() { return this._isContentUnbounded; }
 }
@@ -699,7 +694,7 @@ export namespace RealityModelTileTree {
     iModel: IModelConnection,
     modelId: Id64String,
     tilesetToDb: Transform | undefined,
-    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean },
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean; },
   ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree

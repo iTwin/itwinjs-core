@@ -8,7 +8,7 @@
  */
 
 import { ProcessDetector } from "@itwin/core-bentley";
-import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { _callIpcChannel, IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
 import { electronIpcStrings } from "../common/ElectronIpcInterface";
@@ -68,7 +68,7 @@ export class ElectronApp {
       throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();
-      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
+      ElectronRpcManager.initializeFrontend(this._ipc, [IModelReadRpcInterface, IModelTileRpcInterface]);
     }
     await NativeApp.startup(this._ipc!, opts);
   }

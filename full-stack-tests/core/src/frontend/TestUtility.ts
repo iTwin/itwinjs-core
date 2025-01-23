@@ -123,7 +123,6 @@ export class TestUtility {
   public static get iModelAppOptions(): IModelAppOptions {
     return {
       applicationVersion: "1.2.1.1",
-      rpcInterfaces,
     };
   }
 

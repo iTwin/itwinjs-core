@@ -121,7 +121,7 @@ interface GraphicsOptions {
   patterns: Map<string, RenderGeometry[]>;
 }
 
-function constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+function constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number; } | undefined): TextureMapping.ConstantLodParamProps | undefined {
   if (undefined === propsJson)
     return undefined;
 
@@ -195,38 +195,38 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return col ? ColorDef.from(col[0] * 255 + 0.5, col[1] * 255 + 0.5, col[2] * 255 + 0.5) : undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const params = new RenderMaterial.Params(mat);
-  params.diffuseColor = colorDefFromJson(json.diffuseColor);
+  const diffuseColor = colorDefFromJson(json.diffuseColor);
+  let diffuseWeight;
   if (json.diffuse !== undefined)
-    params.diffuse = JsonUtils.asDouble(json.diffuse);
+    diffuseWeight = JsonUtils.asDouble(json.diffuse);
 
-  params.specularColor = colorDefFromJson(json.specularColor);
+  const specularColor = colorDefFromJson(json.specularColor);
+  let specularWeight;
+  let specularExponent;
   if (json.specular !== undefined)
-    params.specular = JsonUtils.asDouble(json.specular);
-
-  params.reflectColor = colorDefFromJson(json.reflectColor);
-  if (json.reflect !== undefined)
-    params.reflect = JsonUtils.asDouble(json.reflect);
+    specularWeight = JsonUtils.asDouble(json.specular);
 
   if (json.specularExponent !== undefined)
-    params.specularExponent = json.specularExponent;
+    specularExponent = json.specularExponent;
 
+  let alpha;
   if (undefined !== json.transparency)
-    params.alpha = 1.0 - json.transparency;
+    alpha = 1.0 - json.transparency;
 
-  params.refract = JsonUtils.asDouble(json.refract);
-  params.shadows = JsonUtils.asBool(json.shadows);
-  params.ambient = JsonUtils.asDouble(json.ambient);
-
+  let textureMapping;
   if (undefined !== json.textureMapping)
-    params.textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
+    textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return options.system.createMaterial(params, options.iModel);
+  return options.system.createRenderMaterial({
+    source: { iModel: options.iModel, id: mat },
+    diffuse: { color: diffuseColor, weight: diffuseWeight },
+    specular: { color: specularColor, weight: specularWeight, exponent: specularExponent },
+    alpha,
+    textureMapping,
+  });
 }
 
-function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {
+function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams; } {
   const mod = primitive.modifier;
   switch (mod?.type) {
     case "instances":

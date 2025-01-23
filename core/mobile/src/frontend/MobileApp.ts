@@ -12,7 +12,7 @@ import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationFrontend } from "./MobileAuthorizationFrontend";
 
 /** @beta */
-export type MobileAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?: never } };
+export type MobileAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?: never; }; };
 
 /** receive notifications from backend */
 class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifications {
@@ -61,7 +61,7 @@ export class MobileApp {
         authorizationClient.setAccessToken(accessToken, expirationDate);
       });
 
-      const rpcInterfaces = opts?.iModelApp?.rpcInterfaces ?? [IModelReadRpcInterface, IModelTileRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
+      const rpcInterfaces = [IModelReadRpcInterface, IModelTileRpcInterface];
       MobileRpcManager.initializeClient(rpcInterfaces);
       this._isValid = true;
     }

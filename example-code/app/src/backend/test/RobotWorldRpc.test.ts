@@ -137,10 +137,10 @@ export function initializeRpcClientBentleyCloud(interfaces: RpcInterfaceDefiniti
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeFrontendForElectron
 
-export async function initializeElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
+export async function initializeElectron() {
   await ElectronApp.startup({
     iModelApp: {
-      rpcInterfaces,
+
       localization: new EmptyLocalization(),
     },
   });
