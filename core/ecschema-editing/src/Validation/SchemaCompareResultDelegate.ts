@@ -310,8 +310,8 @@ export class SchemaCompareResultDelegate {
    * @param formatA The first Format that is missing the unit.
    * @param unit The Unit or InvertedUnit missing from the second schema.
    */
-  public async reportFormatUnitMissing(formatA: Format, unit: Unit | InvertedUnit, _compareDirection: SchemaCompareDirection): Promise<void> {
-    const diag = new SchemaCompareDiagnostics.FormatUnitMissing(formatA, [unit]);
+  public async reportFormatUnitMissing(formatA: Format, unit: [Unit | InvertedUnit, string | undefined], _compareDirection: SchemaCompareDirection): Promise<void> {
+    const diag = new SchemaCompareDiagnostics.FormatUnitMissing(formatA, unit);
     await this.reportDiagnostic(diag);
   }
 
