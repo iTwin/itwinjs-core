@@ -1517,7 +1517,7 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parse(input: string[], vp: Viewport): Promise<boolean>;
+    parse(input: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
