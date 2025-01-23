@@ -173,3 +173,5 @@ export abstract class SchemaItem {
     this._description = description;
   }
 }
+
+export type SchemaItemConstructor<T extends SchemaItem> = new (...args: any[]) => T;
