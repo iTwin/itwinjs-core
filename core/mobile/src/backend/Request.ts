@@ -7,7 +7,7 @@
  */
 import * as _ from "lodash";
 import * as https from "https";
-import * as sarequest from "superagent";
+import sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 
 const loggerCategory: string = "core-mobile-backend.Request";

@@ -75,7 +75,7 @@ export class MobileRpcServer {
   }
 
   private _onConnection() {
-    this._server.on("connection", (connection) => {
+    this._server.on("connection", (connection: ws) => {
       this._connection = connection;
       this._connection.on("message", (data) => this._onConnectionMessage(data));
       this._createSender();
