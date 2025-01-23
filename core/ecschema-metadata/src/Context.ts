@@ -4,20 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaMatchType } from "./ECObjects";
-import { StructClass } from "./Metadata/Class";
-import { Constant } from "./Metadata/Constant";
-import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
-import { EntityClass } from "./Metadata/EntityClass";
-import { Enumeration } from "./Metadata/Enumeration";
-import { Format } from "./Metadata/Format";
-import { InvertedUnit } from "./Metadata/InvertedUnit";
-import { KindOfQuantity } from "./Metadata/KindOfQuantity";
-import { Mixin } from "./Metadata/Mixin";
-import { Phenomenon } from "./Metadata/Phenomenon";
-import { PropertyCategory } from "./Metadata/PropertyCategory";
-import { RelationshipClass } from "./Metadata/RelationshipClass";
-import { Unit } from "./Metadata/Unit";
-import { UnitSystem } from "./Metadata/UnitSystem";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaInfo } from "./Interfaces";
 import { MutableSchema, Schema } from "./Metadata/Schema";
@@ -431,114 +417,16 @@ export class SchemaContext implements ISchemaItemLocater {
     return this._knownSchemas.getSchema(schemaKey, matchType);
   }
 
-  // /**
-  //  * Attempts to get a Schema from the context's cache.
-  //  * Will return undefined if the cached schema is partially loaded.  Use [[getCachedSchema]] to await until the schema is completely loaded.
-  //  * @param schemaKey The SchemaKey to identify the Schema.
-  //  * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
-  //  * @internal
-  //  */
-  // public getCachedSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
-  //   return this._knownSchemas.getSchemaSync(schemaKey, matchType);
-  // }
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with EntityClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested EntityClass or undefined if not found.
-  //  */
-  // public getEntityClass = async (schemaItemKey: SchemaItemKey): Promise<EntityClass | undefined> => this.getSchemaItem(schemaItemKey, EntityClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with Mixin.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Mixin or undefined if not found.
-  //  */
-  // public getMixin = async (schemaItemKey: SchemaItemKey): Promise<Mixin | undefined> => this.getSchemaItem(schemaItemKey, Mixin);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with StructClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested StructClass or undefined if not found.
-  //  */
-  // public getStructClass = async (schemaItemKey: SchemaItemKey): Promise<StructClass | undefined> => this.getSchemaItem(schemaItemKey, StructClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with CustomAttributeClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested CustomAttributeClass or undefined if not found.
-  //  */
-  // public getCustomAttributeClass = async (schemaItemKey: SchemaItemKey): Promise<CustomAttributeClass | undefined> => this.getSchemaItem(schemaItemKey, CustomAttributeClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with RelationshipClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested RelationshipClass or undefined if not found.
-  //  */
-  // public getRelationshipClass = async (schemaItemKey: SchemaItemKey): Promise<RelationshipClass | undefined> => this.getSchemaItem(schemaItemKey, RelationshipClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with Enumeration.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Enumeration or undefined if not found.
-  //  */
-  // public getEnumeration = async (schemaItemKey: SchemaItemKey): Promise<Enumeration | undefined> => this.getSchemaItem(schemaItemKey, Enumeration);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with KindOfQuantity.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested KindOfQuantity or undefined if not found.
-  //  */
-  // public getKindOfQuantity = async (schemaItemKey: SchemaItemKey): Promise<KindOfQuantity | undefined> => this.getSchemaItem(schemaItemKey, KindOfQuantity);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with PropertyCategory.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested PropertyCategory or undefined if not found.
-  //  */
-  // public getPropertyCategory = async (schemaItemKey: SchemaItemKey): Promise<PropertyCategory | undefined> => this.getSchemaItem(schemaItemKey, PropertyCategory);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with Unit.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Unit or undefined if not found.
-  //  */
-  // public getUnit = async (schemaItemKey: SchemaItemKey): Promise<Unit | undefined> => this.getSchemaItem(schemaItemKey, Unit);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with InvertedUnit.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested InvertedUnit or undefined if not found.
-  //  */
-  // public getInvertedUnit = async (schemaItemKey: SchemaItemKey): Promise<InvertedUnit | undefined> => this.getSchemaItem(schemaItemKey, InvertedUnit);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with Constant.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Constant or undefined if not found.
-  //  */
-  // public getConstant = async (schemaItemKey: SchemaItemKey): Promise<Constant | undefined> => this.getSchemaItem(schemaItemKey, Constant);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with Phenomenon.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Phenomenon or undefined if not found.
-  //  */
-  // public getPhenomenon = async (schemaItemKey: SchemaItemKey): Promise<Phenomenon | undefined> => this.getSchemaItem(schemaItemKey, Phenomenon);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with UnitSystem.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested UnitSystem or undefined if not found.
-  //  */
-  // public getUnitSystem = async (schemaItemKey: SchemaItemKey): Promise<UnitSystem | undefined> => this.getSchemaItem(schemaItemKey, UnitSystem);
-
-  // /**
-  //  * Shortcut for calling getSchemaItem with Format.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Format or undefined if not found.
-  //  */
-  // public getFormat = async (schemaItemKey: SchemaItemKey): Promise<Format | undefined> => this.getSchemaItem(schemaItemKey, Format);
+  /**
+   * Attempts to get a Schema from the context's cache.
+   * Will return undefined if the cached schema is partially loaded.  Use [[getCachedSchema]] to await until the schema is completely loaded.
+   * @param schemaKey The SchemaKey to identify the Schema.
+   * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
+   * @internal
+   */
+  public getCachedSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
+    return this._knownSchemas.getSchemaSync(schemaKey, matchType);
+  }
 
   /**
    * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
@@ -553,104 +441,6 @@ export class SchemaContext implements ISchemaItemLocater {
       return undefined;
     return schema.getItem<T>(schemaItemKey.name, itemConstructor);
   }
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with EntityClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested EntityClass or undefined if not found.
-  //  */
-  // public getEntityClassSync = (schemaItemKey: SchemaItemKey): EntityClass | undefined => this.getSchemaItemSync(schemaItemKey, EntityClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with Mixin.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Mixin or undefined if not found.
-  //  */
-  // public getMixinSync = (schemaItemKey: SchemaItemKey): Mixin | undefined => this.getSchemaItemSync(schemaItemKey, Mixin);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with StructClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested StructClass or undefined if not found.
-  //  */
-  // public getStructClassSync = (schemaItemKey: SchemaItemKey): StructClass | undefined => this.getSchemaItemSync(schemaItemKey, StructClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with CustomAttributeClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested CustomAttributeClass or undefined if not found.
-  //  */
-  // public getCustomAttributeClassSync = (schemaItemKey: SchemaItemKey): CustomAttributeClass | undefined => this.getSchemaItemSync(schemaItemKey, CustomAttributeClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with RelationshipClass.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested RelationshipClass or undefined if not found.
-  //  */
-  // public getRelationshipClassSync = (schemaItemKey: SchemaItemKey): RelationshipClass | undefined => this.getSchemaItemSync(schemaItemKey, RelationshipClass);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with Enumeration.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Enumeration or undefined if not found.
-  //  */
-  // public getEnumerationSync = (schemaItemKey: SchemaItemKey): Enumeration | undefined => this.getSchemaItemSync(schemaItemKey, Enumeration);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with KindOfQuantity.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested KindOfQuantity or undefined if not found.
-  //  */
-  // public getKindOfQuantitySync = (schemaItemKey: SchemaItemKey): KindOfQuantity | undefined => this.getSchemaItemSync(schemaItemKey, KindOfQuantity);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with PropertyCategory.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested PropertyCategory or undefined if not found.
-  //  */
-  // public getPropertyCategorySync = (schemaItemKey: SchemaItemKey): PropertyCategory | undefined => this.getSchemaItemSync(schemaItemKey, PropertyCategory);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with Unit.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Unit or undefined if not found.
-  //  */
-  // public getUnitSync = (schemaItemKey: SchemaItemKey): Unit | undefined => this.getSchemaItemSync(schemaItemKey, Unit);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with InvertedUnit.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested InvertedUnit or undefined if not found.
-  //  */
-  // public getInvertedUnitSync = (schemaItemKey: SchemaItemKey): InvertedUnit | undefined => this.getSchemaItemSync(schemaItemKey, InvertedUnit);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with Constant.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Constant or undefined if not found.
-  //  */
-  // public getConstantSync = (schemaItemKey: SchemaItemKey): Constant | undefined => this.getSchemaItemSync(schemaItemKey, Constant);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with Phenomenon.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Phenomenon or undefined if not found.
-  //  */
-  // public getPhenomenonSync = (schemaItemKey: SchemaItemKey): Phenomenon | undefined => this.getSchemaItemSync(schemaItemKey, Phenomenon);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with UnitSystem.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested UnitSystem or undefined if not found.
-  //  */
-  // public getUnitSystemSync = (schemaItemKey: SchemaItemKey): UnitSystem | undefined => this.getSchemaItemSync(schemaItemKey, UnitSystem);
-
-  // /**
-  //  * Shortcut for calling getSchemaItemSync with Format.
-  //  * @param schemaItemKey The SchemaItemKey identifying the item to return.
-  //  * @returns The requested Format or undefined if not found.
-  //  */
-  // public getFormatSync = (schemaItemKey: SchemaItemKey): Format | undefined => this.getSchemaItemSync(schemaItemKey, Format);
 
   /**
    * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
