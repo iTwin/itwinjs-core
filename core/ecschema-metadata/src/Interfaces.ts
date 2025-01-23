@@ -86,3 +86,8 @@ export interface SchemaInfo {
 export interface WithSchemaKey {
   schemaKey: Readonly<SchemaKey>;
 }
+
+export interface HasMixins {
+  mixins: LazyLoadedMixin[];
+  getMixinsSync(): Iterable<Mixin>;
+}

@@ -12,7 +12,7 @@ import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, LazyLoadedECClass } from "../Interfaces";
+import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
@@ -22,7 +22,6 @@ import {
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
-import { EntityClass } from "./EntityClass";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -501,9 +500,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public async *getAllBaseClasses(): AsyncIterableIterator<ECClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
-      if (EntityClass.isEntityClass(ecClass)) {
-        for (let i = (ecClass).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass).mixins[i]);
+      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
+        for (let i = (ecClass as HasMixins).mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await (ecClass as HasMixins).mixins[i]);
         }
       }
 
@@ -522,8 +521,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = (ecClass: AnyClass) => {
-      if (EntityClass.isEntityClass(ecClass)) {
-        for (const m of Array.from(ecClass.getMixinsSync()).reverse()) {
+      if (ecClass.schemaItemType === SchemaItemType.EntityClass) {
+        for (const m of Array.from((ecClass as HasMixins).getMixinsSync()).reverse()) {
           baseClasses.push(m);
         }
       }

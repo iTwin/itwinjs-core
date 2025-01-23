@@ -11,7 +11,7 @@ import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedMixin } from "../Interfaces";
+import { HasMixins, LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
@@ -23,7 +23,7 @@ import { SchemaItem } from "./SchemaItem";
  * A Typescript class representation of an ECEntityClass.
  * @beta
  */
-export class EntityClass extends ECClass {
+export class EntityClass extends ECClass implements HasMixins {
   public override readonly schemaItemType = EntityClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.EntityClass; }
   protected _mixins?: LazyLoadedMixin[];
