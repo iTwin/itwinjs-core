@@ -10,9 +10,6 @@ import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
-} from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuDrawViewportUI, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
@@ -250,11 +247,6 @@ export class DisplayTestApp {
         uiAdmin: new UiManager(),
         realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         renderSys,
-        rpcInterfaces: [
-          DtaRpcInterface,
-          IModelReadRpcInterface,
-          IModelTileRpcInterface,
-        ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
           MapboxImagery: configuration.mapBoxKey
@@ -299,9 +291,6 @@ export class DisplayTestApp {
         await client.handleSigninCallback();
       }
 
-      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line @typescript-eslint/no-deprecated
-        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
       await LocalhostIpcApp.startup(opts);
     }
 

@@ -78,7 +78,6 @@ export class DisplayPerfTestApp {
       ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
-    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
@@ -127,7 +126,7 @@ export class DisplayPerfTestApp {
     IModelApp.animationInterval = undefined;
   }
 
-  public static async logException(ex: any, logFile?: { dir: string, name: string }): Promise<boolean> {
+  public static async logException(ex: any, logFile?: { dir: string, name: string; }): Promise<boolean> {
     const errMsg = ex.stack ?? (ex.toString ? ex.toString() : "unknown error type");
     const msg = `DPTA_EXCEPTION\n${errMsg}\n`;
     const client = DisplayPerfRpcInterface.getClient();

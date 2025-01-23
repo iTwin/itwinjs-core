@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Frustum, ImageBuffer } from "@itwin/core-common";
-import { Point2d, XAndY } from "@itwin/core-geometry";
+import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
@@ -67,7 +67,7 @@ export interface RenderTargetDebugControl {
   /** Obtain a summary of the render commands required to draw the scene currently displayed.
    * Each entry specifies  the type of command and the number of such commands required by the current scene.
    */
-  getRenderCommands(): Array<{ name: string, count: number }>;
+  getRenderCommands(): Array<{ name: string, count: number; }>;
 }
 
 /** Connects a [[Viewport]] to a graphics renderer such as a [WebGLRenderingContext](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext)

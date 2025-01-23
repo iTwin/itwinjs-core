@@ -6,7 +6,6 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
