@@ -87,6 +87,9 @@ export interface WithSchemaKey {
   schemaKey: Readonly<SchemaKey>;
 }
 
+/** This is needed to break a circular depependency between Class and EntityClass.
+ * @beta
+ */
 export interface HasMixins {
   mixins: LazyLoadedMixin[];
   getMixinsSync(): Iterable<Mixin>;
