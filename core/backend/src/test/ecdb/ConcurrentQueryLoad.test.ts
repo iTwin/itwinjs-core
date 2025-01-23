@@ -120,23 +120,24 @@ describe.skip("ConcurrentQueryLoad", () => {
   it("should run", async () => {
     Logger.initializeToConsole();
     Logger.setLevel("ECDb.ConcurrentQuery", LogLevel.Trace);
-    // const defaultConfig: {
+    // {
     //   workerThreads: 4,
     //   requestQueueSize: 2000,
     //   ignorePriority: false,
     //   ignoreDelay: true,
     //   doNotUsePrimaryConnToPrepare: false,
-    //   autoShutdowWhenIdealForSeconds: 120,
+    //   autoShutdowWhenIdlelForSeconds: 300,
     //   statementCacheSizePerWorker: 40,
     //   monitorPollInterval: 1000,
     //   memoryMapFileSize: 0,
+    //   allowTestingArgs: false,
     //   globalQuota: { time: 60, memory: 8388608 }
-    // };
+    // }
 
     const senario: ISenario = {
       name: "ConcurrentQueryLoad",
       config: {
-        autoShutdowWhenIdealForSeconds: 10,
+
       },
       totalBatches: 1,
       taskPerBatch: 1,

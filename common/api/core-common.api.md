@@ -1988,7 +1988,7 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
-    autoShutdowWhenIdealForSeconds?: number;
+    autoShutdowWhenIdlelForSeconds?: number;
     // (undocumented)
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
