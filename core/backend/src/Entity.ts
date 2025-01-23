@@ -10,6 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
+import { EntityClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -22,7 +23,7 @@ export class Entity {
    */
   public readonly isInstanceOfEntity = true as const;
   /** The Schema that defines this class. */
-  public static schema: typeof Schema;
+  public static schema: typeof Schema; // TODO: Schema key on the static level, but it requires a version which may differ between imodels
 
   private get _ctor(): typeof Entity { return this.constructor as typeof Entity; }
 
@@ -32,6 +33,20 @@ export class Entity {
    * be one JavaScript class for a given BIS class (usually the errant class will collide with its superclass.)
    */
   public static get className(): string { return "Entity"; }
+
+  private static _schemaItemKey?: SchemaItemKey;
+
+  /** Lazy loaded SchemaKey which is constructed once when first accessed and uses schemaName
+   * @internal
+   */
+  public static get schemaItemKey(): SchemaItemKey {
+    if (!this._schemaItemKey) {
+      this._schemaItemKey = new SchemaItemKey(this.className, this.schema.schemaKey);
+    }
+    return this._schemaItemKey;
+  }
+
+  private _metadata?: EntityClass;
 
   /** When working with an Entity it can be useful to set property values directly, bypassing the compiler's type checking.
    * This property makes such code slightly less tedious to read and write.
@@ -50,6 +65,7 @@ export class Entity {
 
   /** The Id of this Entity. May be invalid if the Entity has not yet been saved in the database. */
   public id: Id64String;
+
 
   protected constructor(props: EntityProps, iModel: IModelDb) {
     this.iModel = iModel;
@@ -91,6 +107,20 @@ export class Entity {
 
   /** Get the full BIS class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this._ctor.classFullName; }
+
+  public get schemaItemKey(): SchemaItemKey { return this._ctor.schemaItemKey; }
+
+  public getMetaData(): EntityClass {
+    if (!this._metadata) {
+      this._metadata = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
+      if (!this._metadata) {
+        throw new Error(`Could not find metadata for schema item key ${this.schemaItemKey.fullName}.`);
+      }
+    }
+
+    return this._metadata;
+  }
+
 
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
