@@ -1,5 +1,8 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
   test: {
     dir: "src/test",
     setupFiles: "./src/test/setupTests.ts",

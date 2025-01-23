@@ -205,7 +205,7 @@ describe("obtainGraphicRepresentationUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
-  async function fetchSources(resource: NodeJS.fetch.RequestInfo | RequestInfo): Promise<Response> {
+  async function fetchSources(resource: URL | RequestInfo): Promise<Response> {
     expect(typeof resource).to.equal("string");
     const url = resource as string;
 

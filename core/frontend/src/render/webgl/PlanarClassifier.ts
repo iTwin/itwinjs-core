@@ -64,7 +64,7 @@ class ClassifierTextures implements WebGLDisposable {
       && this.hilite.isDisposed;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this.color);
     dispose(this.feature);
     dispose(this.hilite);
@@ -105,7 +105,7 @@ class ClassifierFrameBuffers implements WebGLDisposable {
     return this.textures.isDisposed && this._hilite.isDisposed && this._fbo.isDisposed && this._clearGeom.isDisposed;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this._fbo);
     dispose(this._clearGeom);
     dispose(this.textures);
@@ -161,7 +161,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     this.texture = textureAndFbo.texture;
     this.fbo = textureAndFbo.fbo;
   }
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this.texture);
     dispose(this.fbo);
   }
@@ -335,7 +335,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public get isDisposed(): boolean { return undefined === this._classifierBuffers; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._classifierBuffers = dispose(this._classifierBuffers);
     this._maskBuffer = dispose(this._maskBuffer);
     this._classifierCombinedBuffer = dispose(this._classifierCombinedBuffer);
@@ -410,7 +410,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const requiredWidth = maxTextureSize;
 
     if (requiredWidth !== this._width || requiredHeight !== this._height)
-      this.dispose();
+      this[Symbol.dispose]();
 
     this._width = requiredWidth;
     this._height = requiredHeight;
@@ -470,11 +470,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
       builder.addFrustum(this._frustum);
 
-      builder.setSymbology(ColorDef.from(0,200,0,222), ColorDef.from(0,200,0,222), 2);
+      builder.setSymbology(ColorDef.from(0, 200, 0, 222), ColorDef.from(0, 200, 0, 222), 2);
       builder.addFrustumSides(context.viewingSpace.getFrustum());
-      builder.setSymbology(ColorDef.from(200,0,0,222), ColorDef.from(200,0,0,222), 2);
+      builder.setSymbology(ColorDef.from(200, 0, 0, 222), ColorDef.from(200, 0, 0, 222), 2);
       builder.addFrustumSides(this._debugFrustum!);
-      builder.setSymbology(ColorDef.from(0,0,200,222), ColorDef.from(0,0,200,222), 2);
+      builder.setSymbology(ColorDef.from(0, 0, 200, 222), ColorDef.from(0, 0, 200, 222), 2);
       builder.addFrustumSides(this._frustum);
       this._debugFrustumGraphic = builder.finish();
       context.outputGraphic(this._debugFrustumGraphic);
