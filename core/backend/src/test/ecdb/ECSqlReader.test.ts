@@ -45,7 +45,7 @@ describe("ECSqlReader", (() => {
       assert.equal(rows.length, 1);
     });
 
-    it("ecsql reader simple", async () => {
+    it("ecsql reader simple for IdSet", async () => {
       using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
         `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECEntityClass typeName="Foo" modifier="Sealed">
