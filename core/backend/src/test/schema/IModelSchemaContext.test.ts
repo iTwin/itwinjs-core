@@ -36,17 +36,19 @@ describe.only("IModel Schema Context", () => {
       assert.exists(ecClass);
       if (undefined === ecClass)
         return;
-      assert.equal(ecClass.fullName, el.classFullName.replace(":", "."));
+
+      assert.equal(ecClass.schema.name, el.schemaName);
+      assert.equal(ecClass.name, el.className);
 
       // I happen to know that this is a BisCore:RepositoryLink
-      assert.equal(ecClass.fullName, RepositoryLink.classFullName.replace(":", "."));
+      assert.equal(ecClass.fullName, RepositoryLink.schemaItemKey.fullName);
       //  Check the metadata on the class itself
       const baseClass = await ecClass.baseClass;
       assert.exists(ecClass.baseClass);
       if (undefined === baseClass)
         return;
 
-      assert.equal(baseClass.fullName, UrlLink.classFullName.replace(":", "."));
+      assert.equal(baseClass.fullName, UrlLink.schemaItemKey.fullName);
       assert.exists(ecClass.customAttributes);
       assert.isTrue(ecClass.customAttributes?.has("BisCore.ClassHasHandler"));
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
@@ -65,19 +67,27 @@ describe.only("IModel Schema Context", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
-      const metaData = el2.getClassMetaData();
+      const metaData = el2.getMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
         return;
-      assert.equal(metaData.ecclass, el2.classFullName);
+      assert.equal(metaData.fullName, el2.schemaItemKey.fullName);
       // I happen to know that this is a BisCore.SpatialViewDefinition
-      assert.equal(metaData.ecclass, SpatialViewDefinition.classFullName);
-      assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0], ViewDefinition3d.classFullName);
+      assert.equal(metaData.fullName, SpatialViewDefinition.schemaItemKey.fullName);
+
+      const baseClass = await metaData.baseClass;
+      assert.exists(metaData.baseClass);
+      if (undefined === baseClass)
+        return;
+
+      assert.equal(baseClass.fullName, ViewDefinition3d.schemaItemKey.fullName);
       assert.exists(metaData.properties);
-      assert.isDefined(metaData.properties.modelSelector);
-      const n = metaData.properties.modelSelector;
-      assert.equal(n.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
+      const prop = metaData.getPropertySync("modelSelector");
+      assert.isDefined(prop);
+      if(!prop?.isNavigation())
+        assert.fail("Property is not navigation property");
+
+      assert.equal((await prop.relationshipClass).fullName, "BisCore.SpatialViewDefinitionUsesModelSelector");
     }
   });
 
