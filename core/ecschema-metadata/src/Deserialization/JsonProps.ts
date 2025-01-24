@@ -136,6 +136,7 @@ export interface RelationshipConstraintProps {
   readonly polymorphic: boolean;
   readonly abstractConstraint?: string;
   readonly constraintClasses: string[];
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**

@@ -157,8 +157,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 # These are at the end to override all previous reviews
 
 ## Updates to the package.json should avoid requesting review by everyone
-## If the version updates or
-/common/changes/**/*.json                         @iTwin/itwinjs-core
+/common/changes/**/*.json
 /**/package.json                                  @iTwin/itwinjs-core
 /**/CHANGELOG.json                                @iTwin/itwinjs-core
 /**/CHANGELOG.md                                  @iTwin/itwinjs-core

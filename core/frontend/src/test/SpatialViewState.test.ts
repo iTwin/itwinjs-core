@@ -42,7 +42,7 @@ describe("SpatialViewState", () => {
         tileTree: undefined,
         loadStatus: TileTreeLoadStatus.NotLoaded,
         load: () => undefined,
-        dispose: () => undefined,
+        [Symbol.dispose]: () => undefined,
         loadTree: async () => Promise.resolve(undefined),
       };
     }

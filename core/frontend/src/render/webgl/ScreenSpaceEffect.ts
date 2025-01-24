@@ -149,7 +149,7 @@ export class ScreenSpaceEffects {
     this._copyGeometry = copyGeometry;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this._effectGeometry);
     dispose(this._copyGeometry);
   }
@@ -239,7 +239,7 @@ export class ScreenSpaceEffects {
           system.techniques.draw(effectParams);
         });
 
-        effectFbo.dispose();
+        effectFbo[Symbol.dispose]();
       }
     }
   }

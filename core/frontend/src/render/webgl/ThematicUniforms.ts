@@ -200,7 +200,7 @@ export class ThematicUniforms implements WebGLDisposable {
     return undefined === this._texture && undefined === this._sensors;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._texture = dispose(this._texture);
     this._sensors = dispose(this._sensors);
   }

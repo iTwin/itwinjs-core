@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelDb, SnapshotDb } from "../../../core-backend";
-import { DbResult, ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
+import { DbResult } from "@itwin/core-bentley";
+import { ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
@@ -26,13 +27,12 @@ async function runConcurrentQuery(imodel: IModelDb, sql: string): Promise<{metad
 }
 
 function pullAdditionalMetadataThroughECSqlStatement(imodel: IModelDb, metadata: any[], sql: string): void {
-  const stmt = imodel.prepareStatement(sql);
+  using stmt = imodel.prepareStatement(sql);
   if (stmt.step() === DbResult.BE_SQLITE_ROW) {
     const colCount = stmt.getColumnCount();
     if(colCount !== metadata.length) {
       // eslint-disable-next-line no-console
       console.error(`Column count mismatch: ${colCount} != ${metadata.length}. Not generating metadata from statement.`);
-      stmt.dispose();
       return;
     }
     for (let i = 0; i < colCount; i++) {
@@ -42,7 +42,6 @@ function pullAdditionalMetadataThroughECSqlStatement(imodel: IModelDb, metadata:
       if (originPropertyName !== undefined)
         metadata[i].originPropertyName = originPropertyName;
     }
-    stmt.dispose();
   }
 }
 
