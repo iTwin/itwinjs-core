@@ -19,6 +19,10 @@ export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" |
 /** @public */
 export type SubLayerId = string | number;
 
+/** @public */
+export type  PropertyBagArrayProperty = Array<number|string|boolean>;
+export interface PropertyBag { [key: string]: number | string | boolean | PropertyBagArrayProperty };
+
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
  * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
@@ -169,6 +173,11 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   */
   queryParams?: { [key: string]: string };
 
+  /** Data specific to each imagery format.
+   * @beta
+  */
+  properties?: PropertyBag;
+
 }
 
 /** JSON representation of a [[ModelMapLayerSettings]].
@@ -203,6 +212,11 @@ export interface MapLayerKey {
   key: string;
   value: string;
 }
+
+// export interface MapLayerProviderData {
+//   compare(rhs: MapLayerProviderData): number;
+//   clone(): MapLayerProviderData;
+// }
 
 /** Abstract base class for normalized representation of a [[MapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
  * This class is extended by [[ImageMapLayerSettings]] and [ModelMapLayerSettings]] to create the settings for image and model based layers.
@@ -287,6 +301,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public password?: string;
   public accessKey?: MapLayerKey;
 
+
   /** List of query parameters to append to the settings URL and persisted as part of the JSON representation.
    * @note Sensitive information like user credentials should be provided in [[unsavedQueryParams]] to ensure it is never persisted.
    * @beta
@@ -297,6 +312,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
    * @beta
   */
   public unsavedQueryParams?: { [key: string]: string };
+
+  /** TODO
+   * @beta
+  */
+  public readonly properties?: PropertyBag;
+
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 
@@ -311,6 +332,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (props.queryParams) {
       this.savedQueryParams = {...props.queryParams};
     }
+
+    if (props.properties) {
+      this.properties = {...props.properties}
+    }
+
     this.subLayers = [];
     if (!props.subLayers)
       return;
@@ -337,6 +363,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
     if (this.savedQueryParams)
       props.queryParams = {...this.savedQueryParams};
+
+    if (this.properties) {
+      props.properties = {...this.properties};
+    }
 
     return props;
   }
@@ -374,6 +404,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.queryParams = {...this.savedQueryParams};
     }
 
+    if (changedProps.properties) {
+      props.properties = {...changedProps.properties}
+    } else  if (this.properties) {
+      props.properties = {...this.properties}
+    }
     return props;
   }
 

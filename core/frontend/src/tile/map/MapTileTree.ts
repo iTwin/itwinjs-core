@@ -21,7 +21,7 @@ import { IModelApp } from "../../IModelApp";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
-import { SceneContext } from "../../ViewContext";
+import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
@@ -1240,6 +1240,10 @@ export class MapTileTreeReference extends TileTreeReference {
         }
       }
     }
+  }
+
+  public override decorate(context: DecorateContext): void {
+    this.forEachLayerTileTreeRef((ref) => ref.decorate(context));
   }
 }
 

@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger} from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, comparePrimitiveArrays, comparePrimitives, compareStrings, compareStringsOrUndefined, dispose, Logger, PrimitiveType} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, PropertyBag, PropertyBagArrayProperty, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -333,12 +333,33 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
           if (0 === cmp) {
             cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
             if (0 === cmp) {
-              cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
-              if (0 === cmp) {
-                for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++) {
-                  cmp = compareStrings(lhs.settings.subLayers[i].name, rhs.settings.subLayers[i].name);
+              if (lhs.settings.properties && rhs.settings.properties) {
+                for (const key of Object.keys(lhs.settings.properties)) {
+                  const lhsProp = lhs.settings.properties[key];
+                  const rhsProp = rhs.settings.properties[key];
+                  if (typeof lhsProp !== typeof rhsProp) {
+                    cmp = 1;
+                    break;
+                  }
+                  if (Array.isArray(lhsProp)) {
+                    cmp = comparePrimitiveArrays(lhsProp, rhsProp as PropertyBagArrayProperty);
+                    if (0 !== cmp)
+                      break;
+                  } else {
+                    cmp = comparePrimitives(lhsProp as PrimitiveType, rhsProp as PrimitiveType);
+                    if (0 !== cmp)
+                      break;
+                  }
+                }
+                if (0 === cmp) {
+                  cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
                   if (0 === cmp) {
-                    cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+                    for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++) {
+                      cmp = compareStrings(lhs.settings.subLayers[i].name, rhs.settings.subLayers[i].name);
+                      if (0 === cmp) {
+                        cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+                      }
+                    }
                   }
                 }
               }

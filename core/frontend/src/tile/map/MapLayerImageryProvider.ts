@@ -15,6 +15,7 @@ import { ScreenViewport } from "../../Viewport";
 import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
+import { DecorateContext } from "../../ViewContext";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -194,6 +195,11 @@ export abstract class MapLayerImageryProvider {
     // default implementation; simply return an empty feature info
     featureInfos.push({ layerName: this._settings.name });
   }
+
+  /** @internal */
+  public  decorate(_context: DecorateContext): void {
+    console.log ("MapLayerImageryProvider.Decorate called");
+    }
 
   /** @internal */
   protected async getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {

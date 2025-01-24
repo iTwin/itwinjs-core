@@ -3430,7 +3430,8 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
+      // this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
+      this.forEachTileTreeRef((ref) => context.addFromDecorator(ref));
 
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
