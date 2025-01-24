@@ -4440,7 +4440,9 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 // @beta
-export class PartialECChangeUnifier {
+export class PartialECChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    constructor(_db: AnyDb);
     appendFrom(adaptor: ChangesetECAdaptor): void;
     get instances(): IterableIterator<ChangedECInstance>;
     stripMetaData(): void;
