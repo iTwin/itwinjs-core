@@ -16,7 +16,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { _nativeDb, ChannelControl } from "../../core-backend";
 
-describe.only("Changeset Reader API", async () => {
+describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
   before(() => {
