@@ -90,7 +90,6 @@ export abstract class IModelConnection extends IModel {
   /** @internal */
   public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
 
-  private readonly _extentsExpansion = Range3d.createNull();
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
