@@ -2,6 +2,12 @@
   "name": "@itwin/ecschema2ts",
   "entries": [
     {
+      "version": "4.10.6",
+      "tag": "@itwin/ecschema2ts_v4.10.6",
+      "date": "Fri, 24 Jan 2025 08:02:40 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.10.5",
       "tag": "@itwin/ecschema2ts_v4.10.5",
       "date": "Tue, 21 Jan 2025 21:56:45 GMT",
