@@ -26,9 +26,10 @@ Table of contents:
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
-      - [@itwin/core-bentley](#itwincore-bentley)
+      - [@itwin/core-bentley](#itwincore-bentley-1)
       - [@itwin/core-electron](#itwincore-electron)
-      - [@itwin/core-frontend](#itwin-frontend)
+      - [@itwin/core-frontend](#itwincore-frontend-1)
+      - [@itwin/core-geometry](#itwincore-geometry)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-1)
     - [Packages dropped](#packages-dropped)
@@ -255,6 +256,17 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `readImage`                               | Use `readImageBuffer` instead.                                                                                |
 | `setEventController`                      | Removed (was for internal use).                                                                               |
 | `PullChangesOptions.progressCallback`     | Use `downloadProgressCallback` instead.                                                                      |
+
+#### @itwin/core-geometry
+
+| Removed               | Replacement |
+| --------------------- | ----------- |
+| `PathFragment.childFractionTChainDistance`        | `PathFragment.childFractionToChainDistance` |
+| `GrowableXYArray.setXYZAtCheckedPointIndex`       | `GrowableXYArray.setXYAtCheckedPointIndex`  |
+| `PolyfaceBuilder.findOrAddPoint`                  | `PolyfaceBuilder.addPoint`                  |
+| `PolyfaceBuilder.findOrAddParamXY`                | `PolyfaceBuilder.addParamXY`                |
+| `PolyfaceBuilder.findOrAddParamInGrowableXYArray` | `PolyfaceBuilder.addParamInGrowableXYArray` |
+| `PolyfaceBuilder.findOrAddPointXYZ`               | `PolyfaceBuilder.addPointXYZ`               |
 
 ### API removals
 
