@@ -211,14 +211,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/core-telemetry",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
-      "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "backend", "internal", "tools" ]
-    },
-    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
@@ -348,7 +340,7 @@
     },
     {
       "name": "@itwin/unified-selection",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -603,6 +595,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "get-system-fonts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -669,6 +665,10 @@
     {
       "name": "lodash",
       "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "marked",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "memfs",
@@ -825,6 +825,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sql-formatter",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "stream-browserify",

@@ -263,7 +263,6 @@ export class BriefcaseConnection extends IModelConnection {
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
-  /** @internal */
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the iTwin that owns this iModel. */
@@ -313,7 +312,7 @@ export class BriefcaseConnection extends IModelConnection {
     await this._modelsMonitor.close();
 
     this.beforeClose();
-    this.txns.dispose();
+    this.txns[Symbol.dispose]();
 
     this._isClosed = true;
     await IpcApp.appFunctionIpc.closeIModel(this._fileKey);

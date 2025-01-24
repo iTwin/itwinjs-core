@@ -230,8 +230,8 @@ class SectionAttachment {
     this._drawingExtents.z = Math.abs(this._drawingExtents.z);
   }
 
-  public dispose(): void {
-    this.viewport.dispose();
+  public [Symbol.dispose](): void {
+    this.viewport[Symbol.dispose]();
   }
 
   public addToScene(context: SceneContext): void {
@@ -370,7 +370,6 @@ export class DrawingViewState extends ViewState2d {
     this._attachment = dispose(this._attachment);
   }
 
-  /** @internal */
   public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const props = await this.querySectionDrawingProps();
@@ -457,7 +456,6 @@ export class DrawingViewState extends ViewState2d {
     };
   }
 
-  /** @internal */
   public override isDrawingView(): this is DrawingViewState { return true; }
 
   /** See [[ViewState.getOrigin]]. */
@@ -494,7 +492,6 @@ export class DrawingViewState extends ViewState2d {
       this._attachment.addToScene(context);
   }
 
-  /** @internal */
   public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
   }

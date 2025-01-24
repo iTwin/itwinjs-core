@@ -7,14 +7,13 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, CompressedId64Set, DbResult, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
-  ElementMeshRequestProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
+  IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
@@ -35,6 +34,7 @@ import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
+import { IpcApp } from "./IpcApp";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -159,21 +159,24 @@ export abstract class IModelConnection extends IModel {
    */
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled. */
-  public fontMap?: FontMap;
+  /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled.
+   * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   */
+  public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
+   * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
-  public async loadFontMap(): Promise<FontMap> {
-    if (undefined === this.fontMap) {
-      this.fontMap = new FontMap();
+  public async loadFontMap(): Promise<FontMap> { // eslint-disable-line @typescript-eslint/no-deprecated
+    if (undefined === this.fontMap) { // eslint-disable-line @typescript-eslint/no-deprecated
+      this.fontMap = new FontMap(); // eslint-disable-line @typescript-eslint/no-deprecated
       if (this.isOpen) {
         const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps());
-        this.fontMap.addFonts(fontProps.fonts);
+        this.fontMap.addFonts(fontProps.fonts); // eslint-disable-line @typescript-eslint/no-deprecated
       }
     }
-    return this.fontMap;
+    return this.fontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
@@ -247,7 +250,7 @@ export abstract class IModelConnection extends IModel {
   protected beforeClose(): void {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
-    this.tiles.dispose();
+    this.tiles[Symbol.dispose]();
     this.subcategories.onIModelConnectionClose();
   }
 
@@ -730,7 +733,7 @@ export class BlankConnection extends IModelConnection {
    * @param props The properties to use for the new BlankConnection.
    */
   public static create(props: BlankConnectionProps): BlankConnection {
-    return new this({
+    const connection = new BlankConnection({
       name: props.name,
       rootSubject: { name: props.name },
       projectExtents: props.extents,
@@ -739,6 +742,8 @@ export class BlankConnection extends IModelConnection {
       key: "",
       iTwinId: props.iTwinId,
     });
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
   }
 
   /** There are no connections to the backend to close in the case of a BlankConnection.
@@ -776,17 +781,18 @@ export class SnapshotConnection extends IModelConnection {
   private _isRemote?: boolean;
 
   /** Open an IModelConnection to a read-only snapshot iModel from a file name.
-   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
+   * @note This method is intended for desktop or mobile applications and is not available for web applications.
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
-    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    RpcManager.setIModel({ iModelId: "undefined", key: filePath });
+    if (!IpcApp.isValid)
+      throw new Error("IPC required to open a snapshot");
 
-    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
-    const connection = new SnapshotConnection(openResponse);
-    connection.routingContext = routingContext;
+
+    const connectionProps = await IpcApp.appFunctionIpc.openSnapshot(filePath);
+    const connection = new SnapshotConnection(connectionProps);
     IModelConnection.onOpen.raiseEvent(connection);
+
     return connection;
   }
 
@@ -819,7 +825,7 @@ export class SnapshotConnection extends IModelConnection {
     this.beforeClose();
     try {
       if (!this.isRemote) {
-        await SnapshotIModelRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
+        await IpcApp.appFunctionIpc.closeIModel(this.key);
       }
     } finally {
       this._isClosed = true;

@@ -3,6 +3,5 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export { staticLoggerMetadata } from "./staticLoggerMetadata";
 export { RepositoryStatus } from "./RepositoryStatus";
 export { DbChangeStage, DbConflictCause, DbConflictResolution, DbValueType } from "./BeSQLiteInternal";
