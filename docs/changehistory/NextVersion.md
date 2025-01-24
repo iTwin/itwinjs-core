@@ -241,14 +241,10 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `createTextureFromImage`                  | Use `createTexture` instead.                                                                                  |
 | `createTextureFromImageBuffer`            | Use `createTexture` instead.                                                                                  |
 | `createTextureFromImageSource`            | Use `RenderSystem.createTextureFromSource` instead.                                                           |
-| `DisplayStyleState.onScheduleScriptReferenceChanged` | Use `onScheduleScriptChanged` instead.                                                                |
-| `DisplayStyleState.scheduleScriptReference` | Use `scheduleScript` instead.                                                                                 |
 | `GraphicBuilder.pickId`                   | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                 |
 | `getDisplayedExtents`                     | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
-| `IModelAppOptions.rpcInterfaces`          | See `[[MobileRpcManager.initializeClient]]`, `[[ElectronRpcManager.initializeFrontend]]`, `[[BentleyCloudRpcManager.initializeClient]]`. |
 | `IModelConnection.displayedExtents`       | N/A                                                                                                          |
 | `IModelConnection.expandDisplayedExtents` | Use `displayedExtents` instead.                                                                               |
-| `IModelConnection.getThumbnail`           | Use `ViewStore` APIs instead.                                                                                 |
 | `IModelConnection.query`                  | Use `createQueryReader` instead (same parameter).                                                           |
 | `IModelConnection.queryRowCount`          | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
 | `IModelConnection.restartQuery`           | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`. |
