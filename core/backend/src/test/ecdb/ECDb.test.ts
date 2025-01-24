@@ -9,7 +9,6 @@ import { DbResult, Id64, Id64String, Logger, using } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { ECSchemaItemProps } from "@itwin/core-common";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;
