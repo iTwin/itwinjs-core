@@ -53,6 +53,9 @@ export enum ConflictCode {
   ConflictingEnumerationType = "C-700",
   ConflictingEnumeratorValue = "C-701",
 
+  ConflictingFormatUnit = "C-800",
+  ConflictingFormatUnitPhenomenon = "C-801",
+
   ConflictingPersistenceUnit = "C-1010",
   MixinAppliedMustDeriveFromConstraint = "C-1100",
 
@@ -109,6 +112,8 @@ export type AnySchemaDifferenceConflict =
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> |
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> |
   SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnit, SchemaOtherTypes.FormatUnit> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingFormatUnitPhenomenon, SchemaOtherTypes.FormatUnit> |
   SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
   SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
   SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>

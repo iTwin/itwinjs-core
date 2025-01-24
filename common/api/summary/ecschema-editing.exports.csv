@@ -65,6 +65,8 @@ beta;class;FormatDiagnosticReporter
 alpha;interface;FormatDifference
 alpha;class;FormatUnitChange
 alpha;class;FormatUnitChanges
+alpha;interface;FormatUnitDifference
+alpha;interface;FormatUnitLabelDifference
 alpha;function;getSchemaDifferences
 alpha;interface;IClassIdentifier
 alpha;interface;ICustomAttributeIdentifier

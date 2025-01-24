@@ -5240,7 +5240,10 @@ describe("Schema comparison tests", () => {
             includeZero: true,
             spacer: "A",
             units: [
-              { name: "SchemaA.UnitA" },
+              {
+                name: "SchemaA.UnitA",
+                label: "A",
+              },
             ],
           },
         },
@@ -5253,7 +5256,10 @@ describe("Schema comparison tests", () => {
             includeZero: true,
             spacer: "A",
             units: [
-              { name: "SchemaA.UnitB" },
+              {
+                name: "SchemaA.UnitB",
+                label: "B",
+              },
             ],
           },
         },
@@ -5272,8 +5278,8 @@ describe("Schema comparison tests", () => {
       const unitB = await schemaB.getItem("UnitB") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatUnitMissing, DiagnosticType.SchemaItem, itemA, [unitA], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.FormatUnitMissing, DiagnosticType.SchemaItem, itemB, [unitB], itemB.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatUnitMissing, DiagnosticType.SchemaItem, itemA, [unitA, "A"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.FormatUnitMissing, DiagnosticType.SchemaItem, itemB, [unitB, "B"], itemB.schema);
     });
 
     it("Different unit labels, diagnostic reported", async () => {
@@ -5312,7 +5318,7 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       const itemA = await schemaA.getItem("FormatA") as Format;
-      const unit = await schemaB.getItem("UnitA");
+      const unit = await schemaA.getItem("UnitA");
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
       validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [unit, "A", "B"], itemA.schema);
@@ -5354,10 +5360,10 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       const itemA = await schemaA.getItem("FormatA") as Format;
-      const unitA = await schemaB.getItem("UnitA") as Unit;
-      const unitB = await schemaB.getItem("UnitB") as Unit;
-      const unitC = await schemaB.getItem("UnitC") as Unit;
-      const unitD = await schemaB.getItem("UnitD") as Unit;
+      const unitA = await schemaA.getItem("UnitA") as Unit;
+      const unitB = await schemaA.getItem("UnitB") as Unit;
+      const unitC = await schemaA.getItem("UnitC") as Unit;
+      const unitD = await schemaA.getItem("UnitD") as Unit;
 
       expect(reporter.diagnostics.length).to.equal(4, "Expected total of 4 differences, one for each unit label.");
       validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [unitA, undefined, ""], itemA.schema);

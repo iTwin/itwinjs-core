@@ -22,46 +22,54 @@ export default {
       version: "01.00.00",
     },
   ],
-
   items: {
     TestUnitSystem: {
       schemaItemType: "UnitSystem",
     },
-    TestFormat: {
-      schemaItemType: "Format",
-      label: "real",
-      type: "Decimal",
-      precision: 6,
-      formatTraits: [
-        "KeepSingleZero",
-        "KeepDecimalPoint",
-        "ShowUnitLabel",
-      ],
-      decimalSeparator: ",",
-      thousandSeparator: " ",
+    TestPhenomenon: {
+      schemaItemType: "Phenomenon",
+      label: "Number",
+      description: "Number Phenomenon",
+      definition: "NUMBER",
     },
     TestUnit: {
       schemaItemType: "Unit",
-      label: "m",
-      phenomenon: "TargetSchema.AreaPhenomenon",
+      label: "two",
+      phenomenon: "TargetSchema.TestPhenomenon",
       unitSystem: "TargetSchema.TestUnitSystem",
-      definition: "M",
+      definition: "TWO",
     },
-    ChangedKoq: {
-      schemaItemType: "KindOfQuantity",
-      relativeError: 0.09290306,
-      persistenceUnit: "TargetSchema.TestUnit",
+    TestFormat: {
+      schemaItemType: "Format",
+      label: "real",
+      type: "Scientific",
+      scientificType: "Normalized",
+      precision: 12,
+      showSignOption: "NegativeParentheses",
+      formatTraits: "ExponentOnlyNegative",
+      uomSeparator: "",
+      composite: {
+        spacer: "",
+        units: [
+          {
+            name: "TargetSchema.TestUnit",
+            label: "du",
+          },
+        ],
+      },
     },
-    AreaPhenomenon: {
-      schemaItemType: "Phenomenon",
-      label: "Area",
-      description: "Area description",
-      definition: "Units.LENGTH(4)",
+    TestEntity: {
+      schemaItemType: "EntityClass",
+      modifier: "Abstract",
     },
-    TargetPropertyCategory: {
-      schemaItemType:"PropertyCategory",
-      label:"Target Schema Category",
-      priority: 100000,
+    ChangedUnitSystem: {
+      schemaItemType: "UnitSystem",
+    },
+    ChangedCategory: {
+      schemaItemType: "PropertyCategory",
+      label: "Struct",
+      description: "Struct Category",
+      priority: 4,
     },
     ChangedEnumeration: {
       schemaItemType: "Enumeration",
@@ -79,37 +87,124 @@ export default {
         },
       ],
     },
-    ChangedEntity: {
-      schemaItemType: "EntityClass",
+    ChangedPhenomenon: {
+      schemaItemType: "Phenomenon",
+      definition: "MOLE",
+    },
+    ChangedConstant: {
+      schemaItemType: "Constant",
+      label: "Tau",
+      phenomenon: "TargetSchema.ChangedPhenomenon",
+      definition: "TAU",
+      numerator: 6.2,
+      denominator: 3,
+    },
+    ChangedUnit: {
+      schemaItemType: "Unit",
+      label: "metre",
+      phenomenon: "TargetSchema.TestPhenomenon",
+      unitSystem: "TargetSchema.TestUnitSystem",
+      definition: "Metre",
+      numerator: 3,
+      denominator: 0.4,
+      offset: 0.101326,
+    },
+    ChangedInvertedUnit: {
+      schemaItemType: "InvertedUnit",
+      unitSystem: "TargetSchema.TestUnitSystem",
+      invertsUnit: "TargetSchema.TestUnit",
+    },
+    ChangedFormat: {
+      schemaItemType: "Format",
+      label: "Fractional",
+      description: "Fractional Format",
+      type: "Fractional",
+      precision: 64,
+      formatTraits: [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+      ],
+      decimalSeparator: ",",
+      thousandSeparator: " ",
+      composite: {
+        spacer: "",
+          units: [
+          {
+            name: "TargetSchema.TestUnit",
+            label: "2",
+          },
+        ],
+      },
+    },
+    ChangedKoq: {
+      schemaItemType: "KindOfQuantity",
+      label: "Width",
+      description: "Width KindOfQuantity",
+      persistenceUnit: "TargetSchema.TestUnit",
+      relativeError: 0.35352,
+      presentationUnits: [
+        "TargetSchema.TestFormat(4)[TargetSchema.TestUnit|1000]",
+      ],
+    },
+    ChangedStruct: {
+      schemaItemType: "StructClass",
+      label: "Test",
+      description: "Test Class",
+      modifier: "Abstract",
       properties: [{
-        name: "BooleanProperty",
+        name: "BoolProperty",
+        label: "Test",
+        description: "Test Property",
         type: "PrimitiveProperty",
-        typeName: "boolean",
+        typeName: "bool",
+        isReadOnly: false,
       }],
     },
-    ChangedBaseClassEntity: {
-      schemaItemType: "EntityClass",
-      baseClass: "TargetSchema.ChangedEntity",
+    ChangedCA: {
+      schemaItemType:"CustomAttributeClass",
+      appliesTo: "AnyClass",
+      modifier: "Sealed",
+      properties: [{
+        name: "EnumerationProperty",
+        type: "PrimitiveProperty",
+        priority: 102,
+        category: "TargetSchema.ChangedCategory",
+        typeName: "TargetSchema.ChangedEnumeration",
+      }],
     },
-    RelationshipEntity: {
+    ChangedMixin: {
+      schemaItemType: "Mixin",
+      label: "Test",
+      description: "Test Mixin",
+      appliesTo: "TargetSchema.TestEntity",
+    },
+    ChangedEntity: {
+      schemaItemType: "EntityClass",
+      baseClass: "TargetSchema.TestEntity",
+      label: "Test",
+    },
+    ChangedRelationship: {
       schemaItemType: "RelationshipClass",
-      description: "TestRelationship",
+      label: "Test",
+      description: "Test Relationship",
       strength: "Embedding",
       strengthDirection: "Forward",
       source: {
         polymorphic: true,
         multiplicity: "(0..*)",
         roleLabel: "Source RoleLabel",
-        abstractConstraint: "TargetSchema.ChangedEntity",
+        abstractConstraint: "TargetSchema.TestEntity",
         constraintClasses: [
+          "TargetSchema.TestEntity",
         ],
       },
       target: {
         polymorphic: true,
         multiplicity: "(0..*)",
         roleLabel: "Target RoleLabel",
-        abstractConstraint: "TargetSchema.ChangedEntity",
+        abstractConstraint: "TargetSchema.TestEntity",
         constraintClasses: [
+          "TargetSchema.TestEntity",
         ],
       },
     },

@@ -67,6 +67,10 @@ export class SchemaDifferenceWalker {
         return this._visitor.visitEnumeratorDifference(difference, index, array);
       case SchemaItemType.Format:
         return this._visitor.visitFormatDifference(difference, index, array);
+      case SchemaOtherTypes.FormatUnit:
+        return this._visitor.visitFormatUnitDifference(difference, index, array);
+      case SchemaOtherTypes.FormatUnitLabel:
+          return this._visitor.visitFormatUnitLabelDifference(difference, index, array);
       case SchemaItemType.InvertedUnit:
         return this._visitor.visitInvertedUnitDifference(difference, index, array);
       case SchemaItemType.KindOfQuantity:

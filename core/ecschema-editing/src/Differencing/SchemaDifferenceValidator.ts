@@ -6,8 +6,8 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
@@ -475,6 +475,51 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitKindOfQuantityPresentationFormatDifference(_entry: KindOfQuantityPresentationFormatDifference) {
+  }
+
+  /**
+   * Visitor implementation for handling FormatUnitDifference.
+   * @internal
+   */
+  public async visitFormatUnitDifference(entry: FormatUnitDifference) {
+    const targetFormat = await this.getTargetSchemaItem(entry.itemName) as Format;
+
+    if (targetFormat.units === undefined) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingFormatUnit,
+        difference: entry,
+        source: entry.difference[0].name,
+        target: null,
+        description: "The unit cannot be assiged if the format did not have a unit before.",
+      });
+    };
+
+    const targetUnit = targetFormat.units[0][0];
+    const targetPhenomenon = targetUnit.schemaItemType === SchemaItemType.InvertedUnit
+      ? (await targetUnit.invertsUnit)?.phenomenon
+      : targetUnit.phenomenon;
+
+    const sourceUnit = await this._sourceSchema.lookupItem(entry.difference[0].name) as Unit | InvertedUnit;
+    const sourcePhenomenon = sourceUnit.schemaItemType === SchemaItemType.InvertedUnit
+      ? (await sourceUnit.invertsUnit)?.phenomenon
+      : sourceUnit.phenomenon;
+
+    if (resolveLazyItemName(targetPhenomenon) !== resolveLazyItemName(sourcePhenomenon)) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingFormatUnitPhenomenon,
+        difference: entry,
+        source: entry.difference[0].name,
+        target: targetUnit.fullName,
+        description: "Format units has a different phenomenon.",
+      });
+    };
+  };
+
+  /**
+   * Visitor implementation for handling FormatUnitLabelDifference.
+   * @internal
+   */
+  public async visitFormatUnitLabelDifference(_entry: FormatUnitLabelDifference) {
   }
 
   /**
