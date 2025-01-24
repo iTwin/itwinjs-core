@@ -213,11 +213,6 @@ export interface MapLayerKey {
   value: string;
 }
 
-// export interface MapLayerProviderData {
-//   compare(rhs: MapLayerProviderData): number;
-//   clone(): MapLayerProviderData;
-// }
-
 /** Abstract base class for normalized representation of a [[MapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
  * This class is extended by [[ImageMapLayerSettings]] and [ModelMapLayerSettings]] to create the settings for image and model based layers.
  * One or more map layers may be included within [[MapImagerySettings]] object.
@@ -300,7 +295,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   public userName?: string;
   public password?: string;
   public accessKey?: MapLayerKey;
-
 
   /** List of query parameters to append to the settings URL and persisted as part of the JSON representation.
    * @note Sensitive information like user credentials should be provided in [[unsavedQueryParams]] to ensure it is never persisted.
