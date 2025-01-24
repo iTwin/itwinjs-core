@@ -2431,6 +2431,9 @@ export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceP
 // @internal (undocumented)
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference;
 
+// @internal
+export function createReaderPropsWithBaseUrl(streamBuffer: ByteStream | Uint8Array, yAxisUp: boolean, baseUrl?: string): GltfReaderProps | undefined;
+
 // @internal (undocumented)
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
 
@@ -9150,6 +9153,8 @@ export namespace RealityDataSource {
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // @alpha
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    // @internal
+    export function getTilesetUrlFromTilesetUrlImpl(rdSource: RealityDataSource): string | undefined;
 }
 
 // @alpha
@@ -9578,6 +9583,8 @@ export class RealityTileRegion {
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
+    // @internal (undocumented)
+    readonly baseUrl?: string;
     // @beta
     get batchTableProperties(): BatchTableProperties | undefined;
     // @internal (undocumented)
@@ -9644,6 +9651,8 @@ export class RealityTileTree extends TileTree {
 
 // @internal (undocumented)
 export interface RealityTileTreeParams extends TileTreeParams {
+    // (undocumented)
+    readonly baseUrl?: string;
     // (undocumented)
     readonly gcsConverterAvailable: boolean;
     // (undocumented)

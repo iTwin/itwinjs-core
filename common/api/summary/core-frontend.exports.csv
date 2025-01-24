@@ -141,6 +141,7 @@ internal;function;createMaskTreeReference
 internal;function;createModelMapLayerTileTreeReference
 internal;function;createOrbitGtTileTreeReference
 internal;function;createPrimaryTileTreeReference
+internal;function;createReaderPropsWithBaseUrl
 internal;function;createRealityTileTreeReference
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
@@ -595,6 +596,7 @@ alpha;function;createKeyFromBlobUrl
 alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
+internal;function;getTilesetUrlFromTilesetUrlImpl
 alpha;interface;RealityDataSourceProvider
 alpha;class;RealityDataSourceProviderRegistry
 internal;interface;RealityMeshGraphicParams

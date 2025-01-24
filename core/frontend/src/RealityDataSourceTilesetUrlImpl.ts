@@ -66,6 +66,9 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return undefined;
   }
 
+  public get tilesetUrl(): string | undefined {
+    return this._tilesetUrl;
+  }
   // This is to set the root url from the provided root document path.
   // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
   // otherwise the full path to root document is given.
