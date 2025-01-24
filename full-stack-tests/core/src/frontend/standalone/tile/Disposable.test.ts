@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
-import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
+import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
@@ -149,29 +149,22 @@ describe("Disposal of System", () => {
     const imageBuff = ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1);
     assert.isDefined(imageBuff);
 
-    // Texture from image buffer
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const textureParams0 = new RenderTexture.Params("-192837465");
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const texture0 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams0);
+    const texture0 = system.createTexture({ image: { source: imageBuff }, ownership: { iModel: imodel0, key: "-192837465" } });
     assert.isDefined(texture0);
 
-    // Texture from image source
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const textureParams1 = new RenderTexture.Params("-918273645");
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const texture1 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams1);
+    const texture1 = system.createTexture({ image: { source: imageBuff }, ownership: { iModel: imodel0, key: "-918273645" } });
     assert.isDefined(texture1);
 
     // Pre-disposal
-    assert.isFalse(isDisposed(texture0!));
-    assert.isFalse(isDisposed(texture1!));
+
+    assert.isFalse(isDisposed(texture0));
+    assert.isFalse(isDisposed(texture1));
 
     system[Symbol.dispose]();
 
     // Post-disposal
-    assert.isTrue(isDisposed(texture0!));
-    assert.isTrue(isDisposed(texture1!));
+    assert.isTrue(isDisposed(texture0));
+    assert.isTrue(isDisposed(texture1));
     assert.isUndefined(system.findTexture("-192837465", imodel0));
     assert.isUndefined(system.findTexture("-918273645", imodel0));
   });
@@ -441,10 +434,7 @@ describe("Disposal of WebGL Resources", () => {
     const exposedTarget = new ExposedTarget(target);
 
     // Create a graphic and a texture
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const textureParams = new RenderTexture.Params("-192837465");
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
+    let texture = system.createTexture({ image: { source: ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1) }, ownership: { iModel: imodel0, key: "-192837465" } });
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
@@ -462,8 +452,8 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(texture));
     assert.isTrue(isDisposed(graphic));
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
+    texture = system.createTexture({ image: { source: ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1) }, ownership: { iModel: imodel0, key: "-192837465" } });
+
     assert.isFalse(isDisposed(texture));
 
     // Get references to target members before they are modified due to disposing

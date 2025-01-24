@@ -159,6 +159,7 @@ class PrimaryTreeReference extends TileTreeReference {
     }
 
     const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleScriptReference); // eslint-disable-line @typescript-eslint/no-deprecated
+
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -563,7 +564,7 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(script: RenderSchedule.ScriptReference | undefined): void {
+  public updateAnimated(script: RenderSchedule.ScriptReference  | undefined): void {
     const ref = this._primaryRef;
     if (!ref || this._isExcluded)
       return;

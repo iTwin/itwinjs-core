@@ -11,7 +11,7 @@ import {
   StopWatch,
 } from "@itwin/core-bentley";
 import {
-  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
+  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d,
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
 import {
@@ -2683,19 +2683,6 @@ export abstract class Viewport implements Disposable, TileUser {
     return (0 === this.mapLayerFromIds(pixel.modelId, pixel.elementId).length);  // Maps no selectable.
   }
 
-  /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.
-   * @param rect The area of the view to read. The origin of a viewRect must specify the upper left corner.
-   * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
-   * @param flipVertically If true, the image is flipped along the x-axis.
-   * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
-   * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
-   * @deprecated in 3.x. Use readImageBuffer.
-   */
-  public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.target.readImage(rect, targetSize, flipVertically);
-  }
-
   /** Capture the image currently rendered in this viewport, or a subset thereof.
    * @param args Describes the region to capture and optional resizing. By default the entire image is captured with no resizing.
    * @returns The image, or `undefined` if the specified capture rect is not fully contained in [[viewRect], a 2d context could not be obtained, or the resultant image consists entirely
@@ -3232,16 +3219,6 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   public mouseMovementFromEvent(ev: MouseEvent): XAndY {
     return { x: ev.movementX, y: ev.movementY };
-  }
-
-  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined.
-   * @deprecated in 3.x. this was intended for internal use only.
-   */
-  public setEventController(controller?: EventController) {
-    if (this._evController)
-      this._evController.destroy();
-
-    this._evController = controller;
   }
 
   /** Invoked by ViewManager.addViewport.

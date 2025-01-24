@@ -13,7 +13,6 @@ import { Angle } from '@itwin/core-geometry';
 import { AngleSweep } from '@itwin/core-geometry';
 import { AnyCurvePrimitive } from '@itwin/core-geometry';
 import { Arc3d } from '@itwin/core-geometry';
-import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { Atmosphere } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxChannel } from '@itwin/core-geometry';
@@ -237,7 +236,6 @@ import { PolylineFlags } from '@itwin/core-common';
 import { PolylineIndices } from '@itwin/core-common';
 import { PolylineTypeFlags } from '@itwin/core-common';
 import { PrimaryTileTreeId } from '@itwin/core-common';
-import { PromiseReturnType } from '@itwin/core-bentley';
 import { PropertyDescription } from '@itwin/appui-abstract';
 import { PropertyRecord } from '@itwin/appui-abstract';
 import { PropertyValue } from '@itwin/appui-abstract';
@@ -4665,8 +4663,6 @@ export abstract class GraphicBuilder extends GraphicAssembler {
     // @beta
     abstract finishTemplate(): GraphicTemplate;
     readonly iModel?: IModelConnection;
-    // @deprecated
-    get pickId(): Id64String | undefined;
 }
 
 // @public
@@ -5532,11 +5528,7 @@ export abstract class IModelConnection extends IModel {
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     // @internal (undocumented)
     disableGCS(disable: boolean): void;
-    // @deprecated
-    readonly displayedExtents: AxisAlignedBox3d;
     readonly elements: IModelConnection.Elements;
-    // @deprecated
-    expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     // @deprecated
     fontMap?: FontMap;
@@ -5578,20 +5570,14 @@ export abstract class IModelConnection extends IModel {
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
     get projectCenterAltitude(): number | undefined;
-    // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal
     queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal @deprecated (undocumented)
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
-    // @deprecated
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
     spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]>;
@@ -6049,8 +6035,6 @@ export class IpcApp {
     static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal @deprecated (undocumented)
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
-    // @deprecated (undocumented)
-    static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
@@ -8038,8 +8022,6 @@ export class MutableChangeFlags extends ChangeFlags {
 
 // @public
 export class NativeApp {
-    // @deprecated (undocumented)
-    static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage_2, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
@@ -8055,8 +8037,6 @@ export class NativeApp {
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
     static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion): Promise<BriefcaseDownloader>;
-    // @deprecated (undocumented)
-    static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // @internal (undocumented)
     static shutdown(): Promise<void>;
     // @internal
@@ -8881,8 +8861,6 @@ export interface PullChangesOptions {
     // @beta
     abortSignal?: GenericAbortSignal;
     downloadProgressCallback?: OnDownloadProgress;
-    // @deprecated
-    progressCallback?: ProgressCallback;
     progressInterval?: number;
 }
 
@@ -10159,8 +10137,6 @@ export abstract class RenderSystem implements Disposable {
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
     // @internal (undocumented)
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
-    // @deprecated
-    createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
     // @internal (undocumented)
     createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -10208,12 +10184,6 @@ export abstract class RenderSystem implements Disposable {
     // @internal
     createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
     createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
-    // @deprecated
-    createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined;
-    // @deprecated
-    createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined;
-    // @deprecated
-    createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined>;
     createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined>;
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
@@ -10355,8 +10325,6 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
     // @internal (undocumented)
     queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
-    // @internal @deprecated (undocumented)
-    readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
     // @internal (undocumented)
     readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined;
     // @internal (undocumented)
@@ -10681,8 +10649,6 @@ export class ScreenViewport extends Viewport {
     resetUndo(): void;
     saveViewUndo(): void;
     setCursor(cursor?: string): void;
-    // @deprecated
-    setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
     synchWithView(options?: ViewChangeOptions): void;
@@ -11335,8 +11301,6 @@ export class SpatialViewState extends ViewState3d {
     forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal (undocumented)
     forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
-    // @deprecated
-    protected getDisplayedExtents(): AxisAlignedBox3d;
     // @internal
     getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
     // (undocumented)
@@ -11775,7 +11739,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     pushViewClip(): void;
     // (undocumented)
     queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
-    readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
     // (undocumented)
@@ -14760,8 +14723,6 @@ export abstract class Viewport implements Disposable, TileUser {
     // @internal (undocumented)
     pointToGrid(point: Point3d): void;
     queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
-    // @deprecated
-    readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
     readImageToCanvas(): HTMLCanvasElement;
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;

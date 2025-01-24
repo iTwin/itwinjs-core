@@ -653,14 +653,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this.resourceCache.delete(imodel);
   }
 
-  /** Attempt to create a material for the given iModel using a set of material parameters. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public override createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
-    const idMap = this.getIdMap(imodel);
-    const material = idMap.getMaterial(params);
-    return material;
-  }
-
   public override createRenderMaterial(args: CreateRenderMaterialArgs): RenderMaterial | undefined {
     if (args.source) {
       const cached = this.findMaterial(args.source.id, args.source.iModel);

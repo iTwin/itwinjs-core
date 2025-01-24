@@ -59,6 +59,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @deprecated in 3.x. use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */

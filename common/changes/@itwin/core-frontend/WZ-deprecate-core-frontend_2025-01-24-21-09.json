@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Removed part of deprecated APIs from core-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

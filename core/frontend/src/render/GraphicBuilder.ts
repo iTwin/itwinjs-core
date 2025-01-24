@@ -6,7 +6,6 @@
  * @module Rendering
  */
 
-import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
@@ -182,14 +181,6 @@ export abstract class GraphicBuilder extends GraphicAssembler {
 
       return pixelSize * 0.25;
     };
-  }
-
-  /** The Id to be associated with the graphic for picking.
-   * @see [[GraphicBuilderOptions.pickable]] for more options.
-   * @deprecated in 3.x. This provides only the **first** pickable Id for this graphic - you should keep track of the **current** pickable Id yourself.
-   */
-  public get pickId(): Id64String | undefined {
-    return this.pickable?.id;
   }
 
   /**
