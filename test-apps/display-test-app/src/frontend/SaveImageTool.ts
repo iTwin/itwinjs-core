@@ -12,12 +12,13 @@ interface SaveImageOptions {
   copyToClipboard?: boolean;
   width?: number;
   height?: number;
+  includeDecorations?: boolean;
 }
 
 export class SaveImageTool extends Tool {
   public static override toolId = "SaveImage";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get maxArgs() { return 4; }
 
   public override async run(opts?: SaveImageOptions): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -40,7 +41,14 @@ export class SaveImageTool extends Tool {
       return true;
     }
 
-    const url = imageBufferToPngDataUrl(buffer, false);
+    let url;
+    if (opts?.includeDecorations) {
+      const canvas = vp.readImageToCanvas({includeCanvasDecorations: opts.includeDecorations});
+      url = canvas.toDataURL();
+    } else {
+      url = imageBufferToPngDataUrl(buffer, false);
+    }
+
     if (!url) {
       alert("Failed to produce PNG");
       return true;
@@ -85,6 +93,8 @@ export class SaveImageTool extends Tool {
       opts.width = args.getInteger("w");
       opts.height = args.getInteger("h");
     }
+
+    opts.includeDecorations = args.getBoolean("i");
 
     return this.run(opts);
   }

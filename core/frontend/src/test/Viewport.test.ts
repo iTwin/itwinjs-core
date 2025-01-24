@@ -10,7 +10,7 @@ import {
   AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
+import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
@@ -21,6 +21,7 @@ import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
+import { CanvasDecoration } from "../core-frontend";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -715,5 +716,105 @@ describe("Viewport", () => {
         stub.mockRestore();
       });
     });
+  });
+
+  describe("Read Image To Canvas", () => {
+
+    class PixelCanvasDecoration implements CanvasDecoration {
+      public drawDecoration(ctx: CanvasRenderingContext2D) {
+        ctx.fillStyle = "red";
+        ctx.fillRect(0,0,1,1);
+      }
+    }
+
+    class PixelCanvasDecorator implements Decorator {
+      public decorate(context: DecorateContext) {
+
+        const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
+        builder.addLineString2d([new Point2d(0,0), new Point2d(1,1)],0);
+        context.addDecorationFromBuilder(builder);
+        context.addCanvasDecoration(new PixelCanvasDecoration());
+      }
+    }
+
+    function createViewport(): ScreenViewport {
+      const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+      const parentDiv = document.createElement("div");
+      parentDiv.setAttribute("height", "100px");
+      parentDiv.setAttribute("width", "100px");
+      parentDiv.style.height = parentDiv.style.width = "100px";
+      document.body.appendChild(parentDiv);
+      return ScreenViewport.create(parentDiv, state);
+    }
+
+    const activeDecorators: Decorator[] = [];
+    function addDecorator(dec: Decorator) {
+      IModelApp.viewManager.dropDecorator(dec);
+      IModelApp.viewManager.addDecorator(dec);
+      activeDecorators.push(dec);
+    }
+
+    function getPixelRgb(pixel: Uint8ClampedArray): [number, number, number] {
+      return [pixel[3], pixel[2], pixel[1]];
+    }
+
+    afterEach(() => {
+      for (const dec of activeDecorators) {
+        IModelApp.viewManager.dropDecorator(dec);
+      }
+
+      activeDecorators.length = 0;
+    });
+
+    it("should not include canvas decorations if omitCanvasDecorations is true", () => {
+      const vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+
+      const readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: true,
+      };
+
+      const canvas = vp.readImageToCanvas(readImageOptions);
+      const ctx = canvas.getContext("2d");
+      const pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      const rgb = getPixelRgb(pixel);
+      expect(rgb).toEqual([0,0,0]);
+
+
+
+      IModelApp.viewManager.dropViewport(vp);
+    });
+
+    it("should include canvas decorations if omitCanvasDecorations is false", () => {
+      const vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+
+      const readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: false,
+      };
+
+      const canvas = vp.readImageToCanvas(readImageOptions);
+      const ctx = canvas.getContext("2d");
+      const pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      const rgb = getPixelRgb(pixel);
+      expect(rgb).toEqual([255,0,0]);
+
+      IModelApp.viewManager.dropViewport(vp);
+    });
+
+    /**
+     * Other changes to the above tests which produced the same bug-free behavior (not what we want):
+     * Use openBlankViewport to get a blank viewport instead of creating a screen viewport directly
+     * Set vp.rendersToScreen to true before calling vp.renderFrame (for both vp types)
+     * Use vp.target.SetRenderToScreen to do the same thing
+     * Making sure all Viewports are removed before adding a new one at the beginning of the test
+     * Fully shutting down IModel App and then restarting it at the beginning of the test
+     */
   });
 });
