@@ -1235,6 +1235,28 @@ describe("Schema", () => {
         deserializeAndTestJSONSync(JSON.stringify(schemaJson), testRelationshipStrength);
         await testSerialization(_schema, false, unsupportedVersionError);
       });
+
+    it("should throw an error for V3_2 when encountered an unknown type", async () => {
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECStructClass typeName="PrimStruct">
+          <ECProperty propertyName="p2d" typeName="Point2d" />
+          <ECProperty propertyName="p3d" typeName="Point3d" />
+        </ECStructClass>
+        <ECEntityClass typeName="UseOfWrongPropertyTags">
+          <ECProperty propertyName="Struct" typeName="PrimStruct" />
+          <ECStructArrayProperty propertyName="Struct_Array" typeName="PrimStruct" />
+        </ECEntityClass>
+        </ECSchema>`;
+
+      _schema = new Schema(_context);
+      try {
+        await _xmlReader.readSchema(_schema, new DOMParser().parseFromString(schemaXml));
+      } catch (err: any) {
+        assert.equal(err.message, `The provided primitive type, Test.PrimStruct, is not a valid PrimitiveType or Enumeration.`);
+      }
+    });
+
     });
   });
 
