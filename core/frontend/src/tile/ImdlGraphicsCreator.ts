@@ -222,8 +222,12 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
   if (undefined !== json.textureMapping)
     params.textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return options.system.createRenderMaterial({});;
+  return options.system.createRenderMaterial({
+    diffuse: {color: params.diffuseColor, weight: params.diffuse},
+    specular: {color: params.specularColor, weight: params.specular, exponent: params.specularExponent},
+    alpha: params.alpha,
+    textureMapping: params.textureMapping
+   });;
 }
 
 function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {
