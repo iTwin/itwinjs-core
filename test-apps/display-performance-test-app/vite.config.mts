@@ -46,7 +46,7 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
         .replace("\\lib\\cjs\\", "\\src\\")
         .replace("/lib/cjs/", "/src/")
         .replace(".js", ".ts");
-    } catch { }
+    } catch {}
   }
 });
 
@@ -91,14 +91,14 @@ export default defineConfig(() => {
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-              rollupVisualizer({
-                open: true,
-                filename: "stats.html",
-                template: "treemap",
-                sourcemap: true,
-              }),
-              webpackStats(), // needs to be the last plugin
-            ]
+                rollupVisualizer({
+                  open: true,
+                  filename: "stats.html",
+                  template: "treemap",
+                  sourcemap: true,
+                }),
+                webpackStats(), // needs to be the last plugin
+              ]
             : []),
           externalGlobals({
             // allow global `window` object to access electron as external global
