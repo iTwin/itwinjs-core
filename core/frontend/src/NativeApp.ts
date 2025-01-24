@@ -6,13 +6,12 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
+import { BeEvent, GuidString, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications, OverriddenBy,
   RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
-import { ProgressCallback } from "./request/Request";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";

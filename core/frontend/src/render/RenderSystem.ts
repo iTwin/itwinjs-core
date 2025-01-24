@@ -8,7 +8,7 @@
 
 import { base64StringToUint8Array, Id64String } from "@itwin/core-bentley";
 import {
-  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
+  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";

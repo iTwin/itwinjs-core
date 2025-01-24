@@ -8,7 +8,6 @@ import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
-  TextureOwnership,
   TileTreeReference,
 } from "@itwin/core-frontend";
 import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";

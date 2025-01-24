@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, IModelStatus, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
+import { IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";

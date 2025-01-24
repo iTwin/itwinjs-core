@@ -708,10 +708,10 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this.updateModels();
     }
 
-    const curScript = this._view.displayStyle.scheduleScript; // eslint-disable-line @typescript-eslint/no-deprecated
+    const curScript = this._view.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
     const prevScript = this._scheduleScript;
     if (curScript !== prevScript) {
-      const curScript = this._view.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
+      this._scheduleScript = curScript;
       if (!curScript || !prevScript || !curScript.script.equals(prevScript.script))
         for (const ref of this._refs.values())
           ref.updateAnimated(curScript);

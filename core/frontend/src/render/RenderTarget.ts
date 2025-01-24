@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Frustum, ImageBuffer } from "@itwin/core-common";
-import { Point2d, XAndY } from "@itwin/core-geometry";
+import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";

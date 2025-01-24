@@ -106,7 +106,7 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
-    var textureMapping;
+    let textureMapping;
     if(texture) {
       textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
     }

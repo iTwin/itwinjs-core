@@ -7,19 +7,19 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, DbResult, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
+  Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
