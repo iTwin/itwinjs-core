@@ -1,10 +1,11 @@
+/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
-import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
+import { BackgroundMapType, BaseMapLayerSettings, ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
   PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
@@ -29,7 +30,7 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { ContoursPanel } from "./Contours";
+import { CreateGoogleMapsSessionOptions, GoogleMaps } from "./GoogleMaps";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -176,6 +177,13 @@ export class Viewer extends Window {
     const views = await ViewList.create(props.iModel, props.defaultViewName);
     const view = await views.getDefaultView(props.iModel);
     const viewer = new Viewer(surface, view, views, props);
+
+    const opts: CreateGoogleMapsSessionOptions = {
+      mapType: "satellite",
+      language: "en-US",
+      region: "US",
+    };
+
     return viewer;
   }
 
@@ -218,6 +226,7 @@ export class Viewer extends Window {
     this.disableEdges = true === props.disableEdges;
     this._imodel = props.iModel;
     this.viewport = ScreenViewport.create(this.contentDiv, view);
+
     this.views = views;
 
     this._maybeDisableEdges();
@@ -407,14 +416,72 @@ export class Viewer extends Window {
       tooltip: "Point cloud settings",
     });
 
-    this.toolBar.addDropDown({
-      iconUnicode: "\ue94b",
-      createDropDown: async (container: HTMLElement) => {
-        const panel = new ContoursPanel(this.viewport, container);
-        return panel;
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    const apiKey = "***INSERT YOUR API KEY HERE***";
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      click: async () =>  {
+
+        IModelApp.viewManager.addDecorator(decorator);
+
+        console.log("Google Maps");
+        // enableLegacyGoogleMaps(this.viewport, BackgroundMapType.Aerial);
+        // const opts: CreateGoogleMapsSessionOptions = {
+        //   mapType: "terrain",
+        //   language: "en-US",
+        //   region: "US",
+        //   layerTypes: ["layerRoadmap"],
+        // };
+        const opts: CreateGoogleMapsSessionOptions = {
+          mapType: "satellite",
+          language: "en-US",
+          region: "US",
+        };
+
+        try {
+          GoogleMaps.apiKey = apiKey;
+          this.viewport.displayStyle.backgroundMapBase = GoogleMaps.createBaseMapLayerSettings("satellite", opts);
+          console.log(`Session created successfully`);
+        } catch (e: any) {
+          console.log(e.message);
+        }
+
       },
-      tooltip: "Contour display",
-    });
+      tooltip: "Google Maps",
+    }));
+
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue9e8",
+      click: async () =>  {
+        const decorator = new GoogleMapsDecorator();
+
+        IModelApp.viewManager.addDecorator(decorator);
+
+        console.log("Google Maps");
+        // enableLegacyGoogleMaps(this.viewport, BackgroundMapType.Aerial);
+        // const opts: CreateGoogleMapsSessionOptions = {
+        //   language: "en-US",
+        //   region: "US",
+        //   layerTypes: ["layerRoadmap"],
+        // };
+        const opts: CreateGoogleMapsSessionOptions = {
+          mapType: "roadmap",
+          language: "en-US",
+          region: "US",
+        };
+
+        decorator.activate(this.viewport, opts.mapType);
+        try {
+
+          // const session = await GoogleMaps.createSession(apiKey, opts);
+          GoogleMaps.apiKey = apiKey;
+          this.viewport.displayStyle.backgroundMapBase = GoogleMaps.createBaseMapLayerSettings("roadmap", opts);
+          console.log(`Session created successfully`);
+        } catch (e: any) {
+          console.log(e.message);
+        }
+
+      },
 
     this.updateTitle();
     this.updateActiveSettings();
