@@ -94,6 +94,41 @@ export function createGraphicRepresentationsQueryUrl(args: { sourceId: string, s
   return url;
 }
 
+/** Represents an export object from a response from the Mesh Export Service.
+ * @internal
+ */
+interface ServiceJsonResponse {
+  id: string;
+  displayName: string;
+  status: GraphicRepresentationStatus;
+  request: {
+    iModelId: string;
+    changesetId: string;
+    exportType: string;
+  };
+
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
+  _links?: {
+    mesh: {
+      href: string;
+    };
+  };
+}
+
+/** Represents a response from the Mesh Export Service.
+ * @internal
+ */
+interface ServiceJsonResponses {
+  exports: ServiceJsonResponse[];
+
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
+  _links: {
+    next?: {
+      href: string;
+    };
+  };
+}
+
 /** Arguments supplied to [[queryGraphicRepresentations]].
  * @beta
  */
@@ -124,35 +159,6 @@ export interface QueryGraphicRepresentationsArgs {
  * @beta
  */
 export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
-  interface ServiceJsonResponse {
-    id: string;
-    displayName: string;
-    status: GraphicRepresentationStatus;
-    request: {
-      iModelId: string;
-      changesetId: string;
-      exportType: string;
-    };
-
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    _links?: {
-      mesh: {
-        href: string;
-      };
-    };
-  }
-
-  interface ServiceJsonResponses {
-    exports: ServiceJsonResponse[];
-
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    _links: {
-      next?: {
-        href: string;
-      };
-    };
-  }
-
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken,
