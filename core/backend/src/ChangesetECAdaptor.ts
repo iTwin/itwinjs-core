@@ -617,29 +617,23 @@ export class PartialECChangeUnifier implements Disposable {
     });
     this._readonly = true;
   }
+  private *getInstances(): IterableIterator<ChangedECInstance> {
+    const stmt = this._db.prepareSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`);
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const value = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
+      PartialECChangeUnifier.replaceBase64WithUint8Array(value);
+      yield value;
+    }
+    stmt[Symbol.dispose]();
+  }
   /**
    * Returns complete EC change instances.
    * @beta
    */
   public get instances(): IterableIterator<ChangedECInstance> {
-    return this._db.withPreparedSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`, (stmt) => {
-      const iterator = {
-        next: (): IteratorResult<ChangedECInstance> => {
-          if (stmt.step() === DbResult.BE_SQLITE_ROW) {
-            const value = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
-            PartialECChangeUnifier.replaceBase64WithUint8Array(value);
-            return { value, done: false };
-          }
-          return { value: undefined, done: true };
-        },
-        // eslint-object-shorthand @typescript-eslint/object-shorthand
-        [Symbol.iterator]: function () { return this; }
-      };
-      return iterator;
-    });
+    return this.getInstances();
   }
 }
-
 /**
  * Transform sqlite change to ec change. EC change is partial change as
  * it is per table while a single instance can span multiple table.
