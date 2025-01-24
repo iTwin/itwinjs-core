@@ -158,7 +158,7 @@ class PrimaryTreeReference extends TileTreeReference {
       });
     }
 
-    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleScript); // eslint-disable-line @typescript-eslint/no-deprecated
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleScriptReference); // eslint-disable-line @typescript-eslint/no-deprecated
 
     this._id = {
       modelId: model.id,
@@ -217,7 +217,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId);
-    const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle.scheduleScript)?.timeline; // eslint-disable-line @typescript-eslint/no-deprecated
+    const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle.scheduleScriptReference)?.timeline; // eslint-disable-line @typescript-eslint/no-deprecated
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || timeline !== this._id.timeline) {
       this._id = {
         modelId: this._id.modelId,
@@ -247,7 +247,7 @@ class PrimaryTreeReference extends TileTreeReference {
       };
     }
 
-    const animationId = IModelApp.tileAdmin.getScriptInfoForTreeId(modelId, view.displayStyle.scheduleScript)?.animationId; // eslint-disable-line @typescript-eslint/no-deprecated
+    const animationId = IModelApp.tileAdmin.getScriptInfoForTreeId(modelId, view.displayStyle.scheduleScriptReference)?.animationId; // eslint-disable-line @typescript-eslint/no-deprecated
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
@@ -564,13 +564,13 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(script: RenderSchedule.Script | undefined): void {
+  public updateAnimated(script: RenderSchedule.ScriptReference  | undefined): void {
     const ref = this._primaryRef;
     if (!ref || this._isExcluded)
       return;
 
     this._animatedRefs.length = 0;
-    const nodeIds = script?.getTransformBatchIds(ref.model.id);
+    const nodeIds = script?.script.getTransformBatchIds(ref.model.id);
     if (nodeIds)
       for (const nodeId of nodeIds)
         this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, nodeId));
@@ -630,12 +630,12 @@ class SpatialRefs implements SpatialTileTreeReferences {
   private _swapRefs = new Map<Id64String, SpatialModelRefs>();
   private _sectionCutOnlyRefs = new Map<Id64String, SpatialModelRefs>();
   private _swapSectionCutOnlyRefs = new Map<Id64String, SpatialModelRefs>();
-  private _scheduleScript?: RenderSchedule.Script;
+  private _scheduleScript?: RenderSchedule.ScriptReference;
   private _sectionCut?: StringifiedClipVector;
 
   public constructor(view: SpatialViewState, excludedModels: Set<Id64String> | undefined) {
     this._view = view;
-    this._scheduleScript = view.displayStyle.scheduleScript;
+    this._scheduleScript = view.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
     this._sectionCut = this.getSectionCutFromView();
     if (excludedModels)
       this._excludedModels = new Set(excludedModels);
@@ -711,8 +711,8 @@ class SpatialRefs implements SpatialTileTreeReferences {
     const curScript = this._view.displayStyle.scheduleScript; // eslint-disable-line @typescript-eslint/no-deprecated
     const prevScript = this._scheduleScript;
     if (curScript !== prevScript) {
-      this._scheduleScript = curScript;
-      if (!curScript || !prevScript || !curScript.equals(prevScript))
+      const curScript = this._view.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
+      if (!curScript || !prevScript || !curScript.script.equals(prevScript.script))
         for (const ref of this._refs.values())
           ref.updateAnimated(curScript);
     }

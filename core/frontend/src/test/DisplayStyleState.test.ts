@@ -37,7 +37,7 @@ describe("DisplayStyleState", () => {
     }];
 
     class Style extends DisplayStyle3dState {
-      public readonly eventPayloads: Array<RenderSchedule.Script | undefined>;
+      public readonly eventPayloads: Array<RenderSchedule.ScriptReference | undefined>;
 
       public constructor() {
         const props: DisplayStyle3dProps = {
@@ -50,11 +50,12 @@ describe("DisplayStyleState", () => {
         super(props, iModel);
 
         this.eventPayloads = [];
-        this.onScheduleScriptChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line @typescript-eslint/no-deprecated
+        this.onScheduleScriptReferenceChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line @typescript-eslint/no-deprecated
       }
 
-      public expectScript(props: RenderSchedule.ScriptProps): void {
+      public expectScript(props: RenderSchedule.ScriptProps, sourceId: string): void {
         expect(this.scheduleScript).toBeDefined();
+        expect(this.scheduleScriptReference!.sourceId).toEqual(sourceId); // eslint-disable-line @typescript-eslint/no-deprecated
         expect(this.scheduleScript!.modelTimelines[0].modelId).toEqual(props[0].modelId);
       }
 
@@ -97,7 +98,7 @@ describe("DisplayStyleState", () => {
 
       await style.finishLoading();
       expect(style.isLoading).toBe(false);
-      style.expectScript(script1);
+      style.expectScript(script1, "0x1");
       let state = style.scheduleScript;
 
       style.settings.renderTimeline = "0x2";
@@ -108,7 +109,7 @@ describe("DisplayStyleState", () => {
       expect(style.isLoading).toBe(false);
       expect(style.scheduleScript).not.toEqual(state);
       state = style.scheduleScript;
-      style.expectScript(script2);
+      style.expectScript(script2, "0x2");
 
       style.settings.renderTimeline = "0x2";
       expect(style.isLoading).toBe(false);
@@ -126,13 +127,13 @@ describe("DisplayStyleState", () => {
 
       style.settings.scheduleScriptProps = script1;
       const prevState = style.scheduleScript;
-      style.expectScript(script1);
+      style.expectScript(script1, "0xbeef");
       expect(prevState).toBeDefined();
 
       style.settings.scheduleScriptProps = script2;
       expect(style.scheduleScript).not.toEqual(prevState);
       expect(style.scheduleScript).toBeDefined();
-      style.expectScript(script2);
+      style.expectScript(script2, "0xbeef");
 
       style.settings.scheduleScriptProps = undefined;
       expect(style.scheduleScript).toBeUndefined();
@@ -141,11 +142,11 @@ describe("DisplayStyleState", () => {
     it("ignores renderTimeline if scheduleScriptProps is defined", async () => {
       const style = new Style();
       style.settings.scheduleScriptProps = script2;
-      style.expectScript(script2);
+      style.expectScript(script2, "0xbeef");
 
       await style.changeRenderTimeline("0x1");
       expect(style.settings.renderTimeline).toEqual("0x1");
-      style.expectScript(script2);
+      style.expectScript(script2, "0xbeef");
 
       const promise = new Promise<void>((resolve) => {
         let numCalls = 0;
@@ -163,22 +164,22 @@ describe("DisplayStyleState", () => {
 
       style.scheduleScript = undefined;
       await promise;
-      style.expectScript(script1);
+      style.expectScript(script1, "0x1");
 
       style.settings.scheduleScriptProps = script2;
-      style.expectScript(script2);
+      style.expectScript(script2, "0xbeef");
     });
 
     it("raises onScheduleScriptReferenceChanged", async () => {
       const style = new Style();
-      const expected: Array<RenderSchedule.Script | undefined> = [];
+      const expected: Array<RenderSchedule.ScriptReference | undefined> = [];
       function expectPayloads() {
         expect(style.eventPayloads).toEqual(expected);
       }
 
       function pushExpected(expectNonNull = true) {
         expect(style.scheduleScript !== undefined).toEqual(expectNonNull);
-        expected.push(style.scheduleScript);
+        expected.push(style.scheduleScriptReference); // eslint-disable-line @typescript-eslint/no-deprecated
         expectPayloads();
       }
 
@@ -219,17 +220,17 @@ describe("DisplayStyleState", () => {
       await style.changeRenderTimeline("0x2");
       expect(style.isLoading).toBe(false);
 
-      style.expectScript(script2);
-      expect(style.eventPayloads).toEqual([style.scheduleScript]);
+      style.expectScript(script2, "0x2");
+      expect(style.eventPayloads).toEqual([style.scheduleScriptReference]); // eslint-disable-line @typescript-eslint/no-deprecated
     });
 
     it("is set to undefined if loadScheduleScriptReference produces an exception", async () => {
       const style = new Style();
       await style.changeRenderTimeline("0x1");
-      style.expectScript(script1);
+      style.expectScript(script1, "0x1");
 
       await style.changeRenderTimeline("0x3");
-      expect(style.scheduleScript).toBeUndefined();
+      expect(style.scheduleScriptReference).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-deprecated
     });
   });
 });
