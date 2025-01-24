@@ -15,7 +15,7 @@ import { ViewRect } from "../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { ReadImageBufferArgs, ReadImageToCanvasOptions, Viewport } from "../../Viewport";
+import { ReadImageBufferArgs, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
@@ -158,6 +158,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public displayNormalMaps = true;
 
   public freezeRealityTiles = false;
+
+  protected _omitCanvasDecorations? = false;
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;
@@ -1178,25 +1180,54 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+  private getCanvasFromImageBuffer(): HTMLCanvasElement {
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
-    const pixelRatio = this.devicePixelRatio;
-    retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
-
-      const vp = IModelApp.viewManager.selectedView;
-      // vp.rendersToScreen tells us if the view is being rendered directly to the webgl canvas on screen, which happens in the case of a single viewport.
-      // In that case, we need to combine the 2d canvas with the webgl canvas or we will lose canvas decorations in the copied image.
-      // options.includeCanvasDecorations will be true if the caller wants to include the decorations in the copied image.
-      if (vp?.rendersToScreen && options?.includeCanvasDecorations) {
-        const twoDCanvas = vp.canvas;
-        const ctx = retCanvas.getContext("2d")!;
-        ctx.drawImage(twoDCanvas, 0, 0);
-      }
-
-
     return retCanvas;
+  }
+
+  private combineCanvasWithViewportOverlayCanvas(baseCanvas: HTMLCanvasElement, vp: ScreenViewport): HTMLCanvasElement {
+    const overlayCanvas = vp.canvas;
+    const ctx = baseCanvas.getContext("2d")!;
+    ctx.drawImage(overlayCanvas, 0, 0);
+    return baseCanvas;
+  }
+
+  private toggleOmitCanvasDecorations(hideDecorations: boolean, vp: ScreenViewport) {
+    this._omitCanvasDecorations = hideDecorations;
+    vp.invalidateScene();
+  }
+
+  public copyImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+
+    /** There are four cases to consider:
+    * 1. Single viewport, with decorations: Must combine the webgl canvas with the 2d canvas, as canvas decorations are overlayed on top of the webgl canvas using the 2d canvas.
+    * 2. Single viewport, no decorations: Basic Copy image from image buffer. Decorations will be automaticaly excluded as they are overlayed on the separate 2d canvas.
+    * 3. Multiple viewports, with decorations: Basic copy image from image buffer. In this case, decorations will be included as they are not overlayed on a separate canvas
+    *    when multiple viewports are present.
+    * 4. Multiple viewports, no decorations: Turn off decorations, copy image, then turn decorations back on.
+    */
+
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return document.createElement("canvas");
+
+    // case 1
+    if (vp.rendersToScreen && !options?.omitCanvasDecorations) {
+      return this.combineCanvasWithViewportOverlayCanvas(this.getCanvasFromImageBuffer(), vp);
+    }
+
+    // case 4
+    if (!vp.rendersToScreen && options?.omitCanvasDecorations) {
+      this.toggleOmitCanvasDecorations(true, vp);
+      const retCanvas = this.getCanvasFromImageBuffer();
+      this.toggleOmitCanvasDecorations(false, vp);
+      return retCanvas;
+    }
+
+    // cases 2 and 3
+    return this.getCanvasFromImageBuffer();
   }
 
   public drawPlanarClassifiers() {
@@ -1481,16 +1512,18 @@ export class OnScreenTarget extends Target {
       this._2dCanvas.needsClear = false;
     }
 
-    const canvasDecs = this.graphics.canvasDecorations;
-    if (canvasDecs) {
-      for (const overlay of canvasDecs) {
-        ctx.save();
-        if (overlay.position)
-          ctx.translate(overlay.position.x, overlay.position.y);
+    if (!this._omitCanvasDecorations) {
+      const canvasDecs = this.graphics.canvasDecorations;
+      if (canvasDecs) {
+        for (const overlay of canvasDecs) {
+          ctx.save();
+          if (overlay.position)
+            ctx.translate(overlay.position.x, overlay.position.y);
 
-        overlay.drawDecoration(ctx);
-        this._2dCanvas.needsClear = true;
-        ctx.restore();
+          overlay.drawDecoration(ctx);
+          this._2dCanvas.needsClear = true;
+          ctx.restore();
+        }
       }
     }
   }

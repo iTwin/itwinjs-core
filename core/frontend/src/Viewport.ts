@@ -266,10 +266,8 @@ export interface ReadPixelsArgs {
  * @public
  */
 export interface ReadImageToCanvasOptions {
-  /** If defined, canvas decorations will be included in the saved image.
-   * @note This only affects single viewport applications. For multi-viewport applications, the canvas decorations are always included.
-   */
-  includeCanvasDecorations?: boolean;
+  /** If true, canvas decorations will be included in the saved image. */
+  omitCanvasDecorations: boolean;
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
