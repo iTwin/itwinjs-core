@@ -6,7 +6,7 @@
  * @module ChangedElementsDb
  */
 
-import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, DbResult, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -38,14 +38,14 @@ export interface ProcessChangesetOptions {
 /** An ChangedElementsDb file
  * @internal
  */
-export class ChangedElementsDb implements IDisposable {
+export class ChangedElementsDb implements Disposable {
   private _nativeDb: IModelJsNative.ChangedElementsECDb | undefined;
 
   constructor() {
     this._nativeDb = new IModelNative.platform.ChangedElementsECDb();
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this._nativeDb)
       return;
 

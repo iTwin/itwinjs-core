@@ -30,7 +30,7 @@ export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.C
 
   public get isDisposed(): boolean { return undefined === this.texture; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._texture = dispose(this._texture);
   }
 

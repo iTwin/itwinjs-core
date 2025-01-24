@@ -13,7 +13,6 @@ import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
 import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
@@ -49,6 +48,14 @@ export interface ArrayPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends Pr
 }
 
 // @public
+export interface ArrayPropertyValueConstraints {
+    // (undocumented)
+    maxOccurs?: number;
+    // (undocumented)
+    minOccurs?: number;
+}
+
+// @public
 export interface ArrayTypeDescription extends BaseTypeDescription {
     memberType: TypeDescription;
     valueFormat: PropertyValueFormat.Array;
@@ -59,7 +66,7 @@ export class AsyncTasksTracker {
     // (undocumented)
     get pendingAsyncs(): Set<string>;
     // (undocumented)
-    trackAsyncTask(): IDisposable;
+    trackAsyncTask(): Disposable;
 }
 
 // @public
@@ -2123,6 +2130,14 @@ export interface NodeUpdateInfoJSON {
 }
 
 // @public
+export interface NumericPropertyValueConstraints {
+    // (undocumented)
+    maximumValue?: number;
+    // (undocumented)
+    minimumValue?: number;
+}
+
+// @public
 type Omit_2<T, K> = Pick<T, Exclude<keyof T, K>>;
 export { Omit_2 as Omit }
 
@@ -2464,6 +2479,7 @@ export enum PropertyGroupingValue {
 // @public
 export interface PropertyInfo {
     classInfo: ClassInfo;
+    constraints?: PropertyValueConstraints;
     enumerationInfo?: EnumerationInfo;
     extendedType?: string;
     kindOfQuantity?: KindOfQuantityInfo;
@@ -2539,6 +2555,9 @@ export interface PropertySpecification extends PropertyOverrides {
 }
 
 // @public
+export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
+
+// @public
 export enum PropertyValueFormat {
     Array = "Array",
     Primitive = "Primitive",
@@ -2563,8 +2582,10 @@ export enum QuerySpecificationTypes {
 }
 
 // @public
-export class RegisteredRuleset implements IDisposable, Ruleset {
+export class RegisteredRuleset implements Disposable, Ruleset {
+    [Symbol.dispose](): void;
     constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void);
+    // @deprecated (undocumented)
     dispose(): void;
     // (undocumented)
     get id(): string;
@@ -3109,6 +3130,14 @@ export interface StartStructProps {
     parentFieldName?: string;
     rawValues: ValuesMap;
     valueType: TypeDescription;
+}
+
+// @public
+export interface StringPropertyValueConstraints {
+    // (undocumented)
+    maximumLength?: number;
+    // (undocumented)
+    minimumLength?: number;
 }
 
 // @public

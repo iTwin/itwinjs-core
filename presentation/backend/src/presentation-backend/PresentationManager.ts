@@ -448,8 +448,14 @@ export class PresentationManager {
   }
 
   /** Dispose the presentation manager. Must be called to clean up native resources. */
+  public [Symbol.dispose]() {
+    this._detail[Symbol.dispose]();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
   public dispose() {
-    this._detail.dispose();
+    this[Symbol.dispose]();
   }
 
   /** @internal */

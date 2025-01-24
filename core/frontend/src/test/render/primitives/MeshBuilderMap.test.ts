@@ -52,7 +52,7 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   afterEach(() => {
-    viewport.dispose();
+    viewport[Symbol.dispose]();
   });
 
   it("constructor", () => {
