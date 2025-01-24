@@ -448,99 +448,98 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested EntityClass or undefined if not found.
    */
-  public getEntityClass = async (name: string): Promise<EntityClass | undefined> => this.getItem(name, EntityClass);
+  public async getEntityClass(name: string): Promise<EntityClass | undefined> { return this.getItem(name, EntityClass); }
 
   /**
    * Shortcut for calling getItem with Mixin.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Mixin or undefined if not found.
    */
-  public getMixin = async (name: string): Promise<Mixin | undefined> => this.getItem(name, Mixin);
+  public async getMixin(name: string): Promise<Mixin | undefined> { return this.getItem(name, Mixin); }
 
   /**
    * Shortcut for calling getItem with StructClass.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested StructClass or undefined if not found.
    */
-  public getStructClass = async (name: string): Promise<StructClass | undefined> => this.getItem(name, StructClass);
+  public async getStructClass(name: string): Promise<StructClass | undefined> { return this.getItem(name, StructClass); }
 
   /**
    * Shortcut for calling getItem with CustomAttributeClass.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested CustomAttributeClass or undefined if not found.
    */
-  public getCustomAttributeClass = async (name: string): Promise<CustomAttributeClass | undefined> => this.getItem(name, CustomAttributeClass);
+  public async getCustomAttributeClass(name: string): Promise<CustomAttributeClass | undefined> { return this.getItem(name, CustomAttributeClass); }
 
   /**
    * Shortcut for calling getItem with RelationshipClass.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested RelationshipClass or undefined if not found.
    */
-  public getRelationshipClass = async (name: string): Promise<RelationshipClass | undefined> => this.getItem(name, RelationshipClass);
+  public async getRelationshipClass(name: string): Promise<RelationshipClass | undefined> { return this.getItem(name, RelationshipClass); }
 
   /**
    * Shortcut for calling getItem with Enumeration.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Enumeration or undefined if not found.
    */
-  public getEnumeration = async (name: string): Promise<Enumeration | undefined> => this.getItem(name, Enumeration);
+  public async getEnumeration(name: string): Promise<Enumeration | undefined> { return this.getItem(name, Enumeration); }
 
   /**
    * Shortcut for calling getItem with KindOfQuantity.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested KindOfQuantity or undefined if not found.
    */
-  public getKindOfQuantity = async (name: string): Promise<KindOfQuantity | undefined> => this.getItem(name, KindOfQuantity);
+  public async getKindOfQuantity(name: string): Promise<KindOfQuantity | undefined> { return this.getItem(name, KindOfQuantity); }
 
   /**
    * Shortcut for calling getItem with PropertyCategory.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested PropertyCategory or undefined if not found.
    */
-  public getPropertyCategory = async (name: string): Promise<PropertyCategory | undefined> => this.getItem(name, PropertyCategory);
+  public async getPropertyCategory(name: string): Promise<PropertyCategory | undefined> { return this.getItem(name, PropertyCategory); }
 
   /**
    * Shortcut for calling getItem with Unit.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Unit or undefined if not found.
    */
-  public getUnit = async (name: string): Promise<Unit | undefined> => this.getItem(name, Unit);
+  public async getUnit(name: string): Promise<Unit | undefined> { return this.getItem(name, Unit); }
 
   /**
    * Shortcut for calling getItem with InvertedUnit.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested InvertedUnit or undefined if not found.
    */
-  public getInvertedUnit = async (name: string): Promise<InvertedUnit | undefined> => this.getItem(name, InvertedUnit);
+  public async getInvertedUnit(name: string): Promise<InvertedUnit | undefined> { return this.getItem(name, InvertedUnit); }
 
   /**
    * Shortcut for calling getItem with Constant.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Constant or undefined if not found.
    */
-  public getConstant = async (name: string): Promise<Constant | undefined> => this.getItem(name, Constant);
+  public async getConstant(name: string): Promise<Constant | undefined> { return this.getItem(name, Constant); }
 
   /**
    * Shortcut for calling getItem with Phenomenon.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Phenomenon or undefined if not found.
    */
-  public getPhenomenon = async (name: string): Promise<Phenomenon | undefined> => this.getItem(name, Phenomenon);
+  public async getPhenomenon(name: string): Promise<Phenomenon | undefined> { return this.getItem(name, Phenomenon); }
 
   /**
    * Shortcut for calling getItem with UnitSystem.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested UnitSystem or undefined if not found.
    */
-  public getUnitSystem = async (name: string): Promise<UnitSystem | undefined> => this.getItem(name, UnitSystem);
+  public async getUnitSystem(name: string): Promise<UnitSystem | undefined> { return this.getItem(name, UnitSystem); }
 
   /**
    * Shortcut for calling getItem with Format.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Format or undefined if not found.
    */
-  public getFormat = async (name: string): Promise<Format | undefined> => this.getItem(name, Format);
-
+  public async getFormat(name: string): Promise<Format | undefined> { return this.getItem(name, Format); }
   /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
    * @param key the local (unqualified) name, lookup is case-insensitive
@@ -556,98 +555,98 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested EntityClass or undefined if not found.
    */
-  public getEntityClassSync = (name: string): EntityClass | undefined => this.getItemSync(name, EntityClass);
+  public getEntityClassSync(name: string): EntityClass | undefined { return this.getItemSync(name, EntityClass); }
 
   /**
    * Shortcut for calling getItemSync with Mixin.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Mixin or undefined if not found.
    */
-  public getMixinSync = (name: string): Mixin | undefined => this.getItemSync(name, Mixin);
+  public getMixinSync(name: string): Mixin | undefined { return this.getItemSync(name, Mixin); }
 
   /**
    * Shortcut for calling getItemSync with StructClass.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested StructClass or undefined if not found.
    */
-  public getStructClassSync = (name: string): StructClass | undefined => this.getItemSync(name, StructClass);
+  public getStructClassSync(name: string): StructClass | undefined { return this.getItemSync(name, StructClass); }
 
   /**
    * Shortcut for calling getItemSync with CustomAttributeClass.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested CustomAttributeClass or undefined if not found.
    */
-  public getCustomAttributeClassSync = (name: string): CustomAttributeClass | undefined => this.getItemSync(name, CustomAttributeClass);
+  public getCustomAttributeClassSync(name: string): CustomAttributeClass | undefined { return this.getItemSync(name, CustomAttributeClass); }
 
   /**
    * Shortcut for calling getItemSync with RelationshipClass.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested RelationshipClass or undefined if not found.
    */
-  public getRelationshipClassSync = (name: string): RelationshipClass | undefined => this.getItemSync(name, RelationshipClass);
+  public getRelationshipClassSync(name: string): RelationshipClass | undefined { return this.getItemSync(name, RelationshipClass); }
 
   /**
    * Shortcut for calling getItemSync with Enumeration.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Enumeration or undefined if not found.
    */
-  public getEnumerationSync = (name: string): Enumeration | undefined => this.getItemSync(name, Enumeration);
+  public getEnumerationSync(name: string): Enumeration | undefined { return this.getItemSync(name, Enumeration); }
 
   /**
    * Shortcut for calling getItemSync with KindOfQuantity.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested KindOfQuantity or undefined if not found.
    */
-  public getKindOfQuantitySync = (name: string): KindOfQuantity | undefined => this.getItemSync(name, KindOfQuantity);
+  public getKindOfQuantitySync(name: string): KindOfQuantity | undefined { return this.getItemSync(name, KindOfQuantity); }
 
   /**
    * Shortcut for calling getItemSync with PropertyCategory.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested PropertyCategory or undefined if not found.
    */
-  public getPropertyCategorySync = (name: string): PropertyCategory | undefined => this.getItemSync(name, PropertyCategory);
+  public getPropertyCategorySync(name: string): PropertyCategory | undefined { return this.getItemSync(name, PropertyCategory); }
 
   /**
    * Shortcut for calling getItemSync with Unit.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Unit or undefined if not found.
    */
-  public getUnitSync = (name: string): Unit | undefined => this.getItemSync(name, Unit);
+  public getUnitSync(name: string): Unit | undefined { return this.getItemSync(name, Unit); }
 
   /**
    * Shortcut for calling getItemSync with InvertedUnit.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested InvertedUnit or undefined if not found.
    */
-  public getInvertedUnitSync = (name: string): InvertedUnit | undefined => this.getItemSync(name, InvertedUnit);
+  public getInvertedUnitSync(name: string): InvertedUnit | undefined { return this.getItemSync(name, InvertedUnit); }
 
   /**
    * Shortcut for calling getItemSync with Constant.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Constant or undefined if not found.
    */
-  public getConstantSync = (name: string): Constant | undefined => this.getItemSync(name, Constant);
+  public getConstantSync(name: string): Constant | undefined { return this.getItemSync(name, Constant); }
 
   /**
    * Shortcut for calling getItemSync with Phenomenon.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Phenomenon or undefined if not found.
    */
-  public getPhenomenonSync = (name: string): Phenomenon | undefined => this.getItemSync(name, Phenomenon);
+  public getPhenomenonSync(name: string): Phenomenon | undefined { return this.getItemSync(name, Phenomenon); }
 
   /**
    * Shortcut for calling getItemSync with UnitSystem.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested UnitSystem or undefined if not found.
    */
-  public getUnitSystemSync = (name: string): UnitSystem | undefined => this.getItemSync(name, UnitSystem);
+  public getUnitSystemSync(name: string): UnitSystem | undefined { return this.getItemSync(name, UnitSystem); }
 
   /**
    * Shortcut for calling getItemSync with Format.
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Format or undefined if not found.
    */
-  public getFormatSync = (name: string): Format | undefined => this.getItemSync(name, Format);
+  public getFormatSync(name: string): Format | undefined { return this.getItemSync(name, Format); }
 
   /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
