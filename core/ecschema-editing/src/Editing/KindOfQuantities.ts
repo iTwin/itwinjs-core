@@ -32,11 +32,11 @@ export class KindOfQuantities extends SchemaItems {
       if (persistenceUnit === undefined)
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(SchemaItemType.Unit, persistenceUnitKey));
 
-      if (persistenceUnit.schemaItemType === SchemaItemType.Unit) {
+      if (Unit.isUnit(persistenceUnit)) {
         koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
       }
 
-      if (persistenceUnit.schemaItemType === SchemaItemType.InvertedUnit) {
+      if (InvertedUnit.isInvertedUnit(persistenceUnit)) {
         koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
       }
 
