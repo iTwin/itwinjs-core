@@ -98,6 +98,7 @@ describe("ECDb", () => {
   it("should default to string in V3_1 when encountered an unknown type", () => {
     const fileName = "wrongPropertyTags.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
+
     using(ECDbTestHelper.createECDb(outDir, fileName,
       `<ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="PrimStruct">
