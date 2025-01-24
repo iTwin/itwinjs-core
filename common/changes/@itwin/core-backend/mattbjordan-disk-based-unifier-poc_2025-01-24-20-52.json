@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Improve change unifer to handle very large changeset",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
