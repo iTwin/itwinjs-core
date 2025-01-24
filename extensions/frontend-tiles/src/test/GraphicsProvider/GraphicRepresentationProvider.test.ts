@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { createGraphicRepresentationsQueryUrl, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { createGraphicRepresentationsQueryUrl, GraphicRepresentationFormat, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -113,7 +113,17 @@ async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
 
-const testArgs = {
+const testArgs: {
+  accessToken: string;
+  sessionId: string;
+  dataSource: {
+    iTwinId: string;
+    id: string;
+    changeId?: string;
+    type: string;
+  };
+  format: GraphicRepresentationFormat;
+} = {
   accessToken: "this-is-a-fake-access-token",
   sessionId: "testSession",
   dataSource: {
@@ -122,7 +132,7 @@ const testArgs = {
     changeId: undefined,
     type: "srcType",
   },
-  format: "IMDL",
+  format: "IMODEL",
 };
 
 describe("queryGraphicRepresentations", () => {
@@ -144,7 +154,11 @@ describe("queryGraphicRepresentations", () => {
 
   it("produces one set of results", async () => {
     await mockFetch(
-      async () => makeSourcesResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
+      async () => makeSourcesResponse({ exports: [
+        { id: "a", href: "http://tiles.com/a" },
+        { id: "b", href: "http://tiles.com/b" },
+        { id: "c", href: "http://tiles.com/c" }
+      ] }),
       async () => expectSources(["a", "b", "c"], testArgs),
     );
   });
@@ -155,9 +169,17 @@ describe("queryGraphicRepresentations", () => {
       async () => {
         if (!fetchedFirst) {
           fetchedFirst = true;
-          return makeSourcesResponse({ exports: [{ id: "a" }, { id: "b" }], next: "next.org" });
+          return makeSourcesResponse({ exports: [
+              { id: "a", href: "http://tiles.com/a" },
+              { id: "b", href: "http://tiles.com/b" },
+            ],
+            next: "next.org"
+          });
         } else {
-          return makeSourcesResponse({ exports: [{ id: "c" }, { id: "d" }] });
+          return makeSourcesResponse({ exports: [
+            { id: "c", href: "http://tiles.com/c" },
+            { id: "d", href: "http://tiles.com/d" }
+          ] });
         }
       },
       async () => expectSources(["a", "b", "c", "d"], testArgs));
@@ -165,10 +187,14 @@ describe("queryGraphicRepresentations", () => {
 
   it("includes only completed Data Sources unless otherwise specified", async () => {
     await mockFetch(
-      async () => makeSourcesResponse({ exports: [{ id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" }] }),
+      async () => makeSourcesResponse({ exports: [
+        { id: "a", status: "Complete", href: "http://tiles.com/a" },
+        { id: "b", status: "InProgress" },
+        { id: "c", status: "Invalid" }
+      ] }),
       async () => {
         await expectSources(["a"], testArgs);
-        await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
+        await expectSources(["a", "b", "c"], { ...testArgs, includeIncomplete: true }),
         await expectSources(["a"], { ...testArgs, includeIncomplete: false });
       },
     );
@@ -216,7 +242,7 @@ describe("obtainGraphicRepresentationUrl", () => {
             changeId: args.versionId,
             type: "srcType",
           },
-          format: "IMDL",
+          format: "IMODEL",
           requireExactVersion: args.exact,
         });
 
