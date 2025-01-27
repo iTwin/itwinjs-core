@@ -493,7 +493,7 @@ importers:
       '@types/supertest': ^6.0.2
       chai: ^4.3.10
       eslint: ^9.13.0
-      express: ^4.20.0
+      express: ^4.21.2
       express-ws: ^5.0.2
       mocha: ^10.2.0
       nyc: ^15.1.0
@@ -502,8 +502,8 @@ importers:
       supertest: ^7.0.0
       typescript: ~5.6.2
     dependencies:
-      express: 4.20.0
-      express-ws: 5.0.2_express@4.20.0
+      express: 4.21.2
+      express-ws: 5.0.2_express@4.21.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../backend
@@ -2032,7 +2032,7 @@ importers:
       chai: ^4.3.10
       electron: ^33.0.0
       eslint: ^9.13.0
-      express: ^4.20.0
+      express: ^4.21.2
       glob: ^10.3.12
       null-loader: ^4.0.1
       rimraf: ^3.0.2
@@ -2052,7 +2052,7 @@ importers:
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/express-server': link:../../core/express-server
       electron: 33.0.0
-      express: 4.20.0
+      express: 4.21.2
       semver: 7.5.2
       spdy: 4.0.1
     devDependencies:
@@ -2476,7 +2476,7 @@ importers:
       dotenv-expand: ^5.1.0
       electron: ^33.0.0
       eslint: ^9.13.0
-      express: ^4.20.0
+      express: ^4.21.2
       internal-tools: workspace:*
       npm-run-all: ^4.1.5
       null-loader: ^4.0.1
@@ -2530,7 +2530,7 @@ importers:
       dotenv-expand: 5.1.0
       electron: 33.0.0
       eslint: 9.13.0
-      express: 4.20.0
+      express: 4.21.2
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
       null-loader: 4.0.1_webpack@5.76.0
@@ -2596,7 +2596,7 @@ importers:
       dotenv-expand: ^5.1.0
       electron: ^33.0.0
       eslint: ^9.13.0
-      express: ^4.20.0
+      express: ^4.21.2
       express-ws: ^5.0.2
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -2666,8 +2666,8 @@ importers:
       dotenv-expand: 5.1.0
       electron: 33.0.0
       eslint: 9.13.0
-      express: 4.20.0
-      express-ws: 5.0.2_express@4.20.0
+      express: 4.21.2
+      express-ws: 5.0.2_express@4.21.2
       fs-extra: 8.1.0
       internal-tools: link:../../tools/internal
       node-simctl: 7.6.1
@@ -2940,7 +2940,7 @@ importers:
       detect-port: ~1.3.0
       electron: ^33.0.0
       eslint: ^9.13.0
-      express: ^4.20.0
+      express: ^4.21.2
       jsonc-parser: ~2.0.3
       lodash: ^4.17.21
       mocha: ^10.2.0
@@ -2953,7 +2953,7 @@ importers:
     dependencies:
       canonical-path: 1.0.0
       detect-port: 1.3.0
-      express: 4.20.0
+      express: 4.21.2
       jsonc-parser: 2.0.3
       lodash: 4.17.21
       mocha: 10.2.0
@@ -5146,7 +5146,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.16.20
+      '@types/node': 20.9.5
     dev: false
 
   /@types/debug/4.1.12:
@@ -5355,6 +5355,12 @@ packages:
     resolution: {integrity: sha512-Fz1xDMCF/B00/tYSVMlmK7hVeLh7jE5f3B7X1/hmV0MJBwE27KlS7EvD/Yp+z1lm8mVhwV5w+n8jOZG8AfTlKw==}
     dependencies:
       undici-types: 5.26.5
+
+  /@types/node/20.9.5:
+    resolution: {integrity: sha512-Uq2xbNq0chGg+/WQEU0LJTSs/1nKxz6u1iemLcGomkSnKokbW1fbLqc3HOqCf2JP7KjlL4QkS7oZZTrOQHQYgQ==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: false
 
   /@types/node/22.7.4:
     resolution: {integrity: sha512-y+NPi1rFzDs1NdQHHToqeiX2TIS79SWEAw9GYhkkx8bD0ChpfqC+n2j5OXOCpzfojBEBt6DnEnnG9MY0zk1XLg==}
@@ -6443,7 +6449,7 @@ packages:
       args: 5.0.3
       axios: 0.27.2
       etag: 1.8.1
-      express: 4.20.0
+      express: 4.21.2
       fs-extra: 11.2.0
       glob-to-regexp: 0.4.1
       jsonwebtoken: 9.0.2
@@ -7220,8 +7226,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /cookie/0.6.0:
-    resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
+  /cookie/0.7.1:
+    resolution: {integrity: sha512-6DnInpx7SJ2AK3+CTUE/ZM0vWTUboZCegxhC2xiIydHR9jNuTAASBrfEpHhiGOZw/nX51bHt6YQl8jsGo4y/0w==}
     engines: {node: '>= 0.6'}
 
   /cookiejar/2.1.4:
@@ -8490,20 +8496,20 @@ packages:
       strip-final-newline: 3.0.0
     dev: false
 
-  /express-ws/5.0.2_express@4.20.0:
+  /express-ws/5.0.2_express@4.21.2:
     resolution: {integrity: sha512-0uvmuk61O9HXgLhGl3QhNSEtRsQevtmbL94/eILaliEADZBHZOQUAiHFrGPrgsjikohyrmSG5g+sCfASTt0lkQ==}
     engines: {node: '>=4.5.0'}
     peerDependencies:
       express: ^4.0.0 || ^5.0.0-alpha.1
     dependencies:
-      express: 4.20.0
+      express: 4.21.2
       ws: 7.5.10
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  /express/4.20.0:
-    resolution: {integrity: sha512-pLdae7I6QqShF5PnNTCVn4hI91Dx0Grkn2+IAsMTgMIKuQVte2dN9PeGSSAME2FR8anOhVA62QDIUaWVfEXVLw==}
+  /express/4.21.2:
+    resolution: {integrity: sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==}
     engines: {node: '>= 0.10.0'}
     dependencies:
       accepts: 1.3.8
@@ -8511,27 +8517,27 @@ packages:
       body-parser: 1.20.3
       content-disposition: 0.5.4
       content-type: 1.0.5
-      cookie: 0.6.0
+      cookie: 0.7.1
       cookie-signature: 1.0.6
       debug: 2.6.9
       depd: 2.0.0
       encodeurl: 2.0.0
       escape-html: 1.0.3
       etag: 1.8.1
-      finalhandler: 1.2.0
+      finalhandler: 1.3.1
       fresh: 0.5.2
       http-errors: 2.0.0
       merge-descriptors: 1.0.3
       methods: 1.1.2
       on-finished: 2.4.1
       parseurl: 1.3.3
-      path-to-regexp: 0.1.10
+      path-to-regexp: 0.1.12
       proxy-addr: 2.0.7
-      qs: 6.11.0
+      qs: 6.13.0
       range-parser: 1.2.1
       safe-buffer: 5.2.1
       send: 0.19.0
-      serve-static: 1.16.0
+      serve-static: 1.16.2
       setprototypeof: 1.2.0
       statuses: 2.0.1
       type-is: 1.6.18
@@ -8659,12 +8665,12 @@ packages:
     dependencies:
       to-regex-range: 5.0.1
 
-  /finalhandler/1.2.0:
-    resolution: {integrity: sha512-5uXcUVftlQMFnWC9qu/svkWv3GTd2PfUhK/3PLkYNAe7FbqJMt3515HaxE6eRL74GdsriiwujiawdaB1BpEISg==}
+  /finalhandler/1.3.1:
+    resolution: {integrity: sha512-6BN9trH7bp3qvnrRyzsBz+g3lZxTNZTbVO2EV1CS0WIcDbawYVdYvGflME/9QP0h0pYlCDBCTjYa9nZzMDpyxQ==}
     engines: {node: '>= 0.8'}
     dependencies:
       debug: 2.6.9
-      encodeurl: 1.0.2
+      encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
       parseurl: 1.3.3
@@ -11582,8 +11588,8 @@ packages:
       lru-cache: 10.4.3
       minipass: 7.1.2
 
-  /path-to-regexp/0.1.10:
-    resolution: {integrity: sha512-7lf7qcQidTku0Gu3YDPc8DJ1q7OOucfa/BSsIwjuh56VU7katFvuM8hULfkwB3Fns/rsVF7PwPKVw1sl5KQS9w==}
+  /path-to-regexp/0.1.12:
+    resolution: {integrity: sha512-RA1GjUVMnvYFxuqovrEqZoxxW5NUZqbwKtYz/Tt7nXerk0LbLblQmrsgdeOxV5SFHf0UDggjS/bSeOZwt1pmEQ==}
 
   /path-to-regexp/6.3.0:
     resolution: {integrity: sha512-Yhpw4T9C6hPpgPeA28us07OJeqZ5EzQTkbfwuhsUg0c237RomFoETJgmp2sa3F/41gfLE6G5cqcYwznmeEeOlQ==}
@@ -11852,12 +11858,6 @@ packages:
     dependencies:
       escape-goat: 2.1.1
     dev: false
-
-  /qs/6.11.0:
-    resolution: {integrity: sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==}
-    engines: {node: '>=0.6'}
-    dependencies:
-      side-channel: 1.0.6
 
   /qs/6.13.0:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
@@ -12399,24 +12399,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  /send/0.18.0:
-    resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
-    engines: {node: '>= 0.8.0'}
-    dependencies:
-      debug: 2.6.9
-      depd: 2.0.0
-      destroy: 1.2.0
-      encodeurl: 1.0.2
-      escape-html: 1.0.3
-      etag: 1.8.1
-      fresh: 0.5.2
-      http-errors: 2.0.0
-      mime: 1.6.0
-      ms: 2.1.3
-      on-finished: 2.4.1
-      range-parser: 1.2.1
-      statuses: 2.0.1
-
   /send/0.19.0:
     resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
     engines: {node: '>= 0.8.0'}
@@ -12516,14 +12498,14 @@ packages:
     dependencies:
       randombytes: 2.1.0
 
-  /serve-static/1.16.0:
-    resolution: {integrity: sha512-pDLK8zwl2eKaYrs8mrPZBJua4hMplRWJ1tIFksVC3FtBEBnl8dxgeHtsaMS8DhS9i4fLObaon6ABoc4/hQGdPA==}
+  /serve-static/1.16.2:
+    resolution: {integrity: sha512-VqpjJZKadQB/PEbEwvFdO43Ax5dFBZ2UECszz8bQ7pi7wt//PWe1P6MN7eCnjsatYtBT6EuiClbjSWP2WrIoTw==}
     engines: {node: '>= 0.8.0'}
     dependencies:
-      encodeurl: 1.0.2
+      encodeurl: 2.0.0
       escape-html: 1.0.3
       parseurl: 1.3.3
-      send: 0.18.0
+      send: 0.19.0
 
   /set-blocking/2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
