@@ -96,7 +96,7 @@ describe("ECDb", () => {
     });
   });
 
-  it.only("should default to string in V3_1 when encountered an unknown type", () => {
+  it("should default to string in V3_1 when encountered an unknown type", () => {
     const fileName = "wrongPropertyTags.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
 
