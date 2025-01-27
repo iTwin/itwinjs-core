@@ -21,8 +21,6 @@ import {
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import type { IModelReadAPI, IModelReadIpcAPI, QueryRequest } from "@itwin/imodelread-common";
-import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
-import { IModelReadHTTPClient } from "@itwin/imodelread-client-http";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -38,6 +36,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
+import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -220,14 +219,9 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal */
-  protected constructor(iModelProps: IModelConnectionProps) {
+  protected constructor(iModelProps: IModelConnectionProps, iModelReadApi: IModelReadAPI) {
     super(iModelProps);
-    this._iModelReadApi = IpcApp.isValid
-      ? new IpcIModelRead(iModelProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead"))
-      : new IModelReadHTTPClient(
-        `http://localhost:3001/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
-        IModelApp,
-      );
+    this._iModelReadApi = iModelReadApi;
     super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -326,7 +320,7 @@ export abstract class IModelConnection extends IModel {
    */
   public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
-    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
+    const reader = this.createQueryReader(ecsql, params, builder.getOptions()); // eslint-disable-line @typescript-eslint/no-deprecated
     while (await reader.step())
       yield reader.formatCurrentRow();
   }
@@ -350,7 +344,7 @@ export abstract class IModelConnection extends IModel {
    */
 
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) {
+    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) { // eslint-disable-line @typescript-eslint/no-deprecated
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
@@ -374,7 +368,7 @@ export abstract class IModelConnection extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) { // eslint-disable-line @typescript-eslint/no-deprecated
       yield row;
     }
   }
@@ -732,6 +726,18 @@ export abstract class IModelConnection extends IModel {
 export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
+  /** @internal */
+  protected constructor(props: IModelConnectionProps) {
+    // TODO: investigate current RPC behavior with BlankConnection
+    const mockIModelReadApi: IModelReadAPI = {
+      getConnectionProps: async () => Promise.resolve(props),
+      getTooltipMessage: () => { throw new Error("getTooltipMessage not available for blank connection") },
+      runQuery: () => { throw new Error("runQuery not available for blank connection") },
+    }
+
+    super(props, mockIModelReadApi);
+  }
+
   /** The Guid that identifies the iTwin for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
@@ -807,7 +813,7 @@ export class SnapshotConnection extends IModelConnection {
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
 
     const connectionProps = await IpcApp.appFunctionIpc.openSnapshot(filePath);
-    const connection = new SnapshotConnection(connectionProps);
+    const connection = new SnapshotConnection(connectionProps, new IpcIModelRead(connectionProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
     IModelConnection.onOpen.raiseEvent(connection);
 
     return connection;
@@ -823,7 +829,7 @@ export class SnapshotConnection extends IModelConnection {
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line @typescript-eslint/no-deprecated
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
-    const connection = new SnapshotConnection(openResponse);
+    const connection = new SnapshotConnection(openResponse, {} as any);
     connection.routingContext = routingContext;
     connection._isRemote = true;
     IModelConnection.onOpen.raiseEvent(connection);
@@ -1139,7 +1145,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) { // eslint-disable-line @typescript-eslint/no-deprecated
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {

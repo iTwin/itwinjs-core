@@ -19,6 +19,8 @@ import { IpcApp } from "./IpcApp";
 import { ProgressCallback } from "./request/Request";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
+import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
+import type { IModelReadIpcAPI } from "@itwin/imodelread-common";
 
 /**
  * Download progress information.
@@ -272,7 +274,7 @@ export class BriefcaseConnection extends IModelConnection {
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
-    super(props);
+    super(props, new IpcIModelRead(props.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
     this._openMode = openMode;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
