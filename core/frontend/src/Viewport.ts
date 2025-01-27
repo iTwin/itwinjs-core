@@ -1580,6 +1580,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** @internal */
   protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void {
+
     for (const provider of this._tiledGraphicsProviders)
       provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
@@ -1589,6 +1590,20 @@ export abstract class Viewport implements Disposable, TileUser {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
   }
+
+  /** @beta */
+  public readonly mapTileTreeRefs: Iterable<TileTreeReference> =   {
+    [Symbol.iterator]: () => {
+      const it = this._mapTiledGraphicsProvider ? this._mapTiledGraphicsProvider?.tileTreeRefs[Symbol.iterator]() : undefined;
+      return {
+        next: () => {
+          const result = it?.next();
+          return result && !result.done ? {value: result.value, done: false} : {value: undefined, done: true};
+        }
+      };
+    }
+  };
+
 
   /** Apply a function to every [[TileTreeReference]] displayed by this viewport. */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
