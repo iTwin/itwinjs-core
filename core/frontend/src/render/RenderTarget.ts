@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Frustum, ImageBuffer } from "@itwin/core-common";
-import { Point2d, XAndY } from "@itwin/core-geometry";
+import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
@@ -169,10 +169,6 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
-  /** @deprecated in 3.x. use readImageBuffer
-   * @internal
-   */
-  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   /** @internal */
