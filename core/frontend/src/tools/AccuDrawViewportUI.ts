@@ -71,8 +71,6 @@ export class AccuDrawViewportUI extends AccuDraw {
     button: {
       /** Background color of locked buttons. */
       pressedColor: "rgba(50, 50, 50, 0.75)",
-      /** Padding to use on left and right of label and affects overall width. */
-      padding: "0.25em",
       /** Margin to use on left and right to position relative to text input field. */
       margin: "0.25em",
       /** Width of border outline. */
@@ -627,7 +625,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     this.updateItemFieldLock(itemLock, item);
 
     const button = AccuDrawViewportUI.controlProps.button;
-    style.paddingLeft = style.paddingRight = button.padding;
+    style.paddingLeft = style.paddingRight = "0";
     style.marginLeft = style.marginRight = button.margin;
     style.outlineWidth = button.outlineWidth;
 
@@ -704,13 +702,11 @@ export class AccuDrawViewportUI extends AccuDraw {
         const itemLock = itemLocks[item] = this.createItemFieldLock(item);
         itemLock.style.top = itemField.style.top;
         itemLock.style.left = isHorizontalLayout ? `${columnOffset + itemWidth}px` : `${itemWidth}px`;
+        itemLock.style.width = itemLock.style.height = `${itemHeight}px`; // Make square of same height as text field...
 
         div.appendChild(itemLock);
 
-        if (0 === lockWidth)
-          lockWidth = itemLock.offsetWidth;
-        else
-          itemLock.style.width = `${lockWidth}px`;
+        lockWidth = itemLock.offsetWidth;
 
         if (is3dLayout || ItemField.Z_Item !== item)
           columnOffset += (itemWidth + lockWidth) * AccuDrawViewportUI.controlProps.columnSpacingFactor;
