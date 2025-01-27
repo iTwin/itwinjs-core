@@ -556,7 +556,7 @@ describe("ECSql Query", () => {
     for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
       ids.push(row[0]);
     }
-    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
     assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
     let rows = 0;
@@ -576,7 +576,7 @@ describe("ECSql Query", () => {
       ids = row[0]; // getting only the first id
       break;
     }
-    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
     assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
     let rows = 0; // backend will fail to bind so no rows will be returned
@@ -592,7 +592,7 @@ describe("ECSql Query", () => {
   it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
     const ids: string[] = ["0x1","ABC","YZ"];
 
-    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
     assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
     let rows = 0; // backend will bind successfully but some of the values are not valid for IdSet VT so those values will be ignored
@@ -609,7 +609,7 @@ describe("ECSql Query", () => {
     const ids: string[] = ["ABC", "0x1","YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
 
     try{
-      imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId", QueryBinder.from([ids]));
+      imodel1.createQueryReader("SELECT * FROM BisCore.element, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
     }catch(err: any){
       assert.equal(err.message, "unsupported type");
     }

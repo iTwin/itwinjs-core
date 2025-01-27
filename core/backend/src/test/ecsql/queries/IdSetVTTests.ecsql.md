@@ -5,7 +5,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 - dataset: AllProperties.bim
 
 ```sql
-SELECT id from ECVLib.IdSet(?)
+SELECT id from ECVLib.IdSet(?) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 - bindIdSet 1, [0x15, 0x18, 0x19]
@@ -25,7 +25,7 @@ SELECT id from ECVLib.IdSet(?)
 - dataset: AllProperties.bim
 
 ```sql
-SELECT id a from ECVLib.IdSet(?)
+SELECT id a from ECVLib.IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 - bindIdSet 1, [0x15, 0x18, 0x19]
@@ -45,7 +45,7 @@ SELECT id a from ECVLib.IdSet(?)
 - dataset: AllProperties.bim
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet('["0x15", "0x18", "0x19"]') where id = ECInstanceId
+SELECT i FROM aps.TestElement,ECVLib.IdSet('["0x15", "0x18", "0x19"]') where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -63,7 +63,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet('["0x15", "0x18", "0x19"]') where id 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstanceId
+SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = TRUE
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -82,7 +82,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstan
 - bindIdSet 1, [0x15, 0x18, 0x19]
 
 ```sql
-SELECT e.i FROM aps.TestElement e INNER JOIN ECVLib.IdSet(?) v ON e.ECInstanceId = v.id
+SELECT e.i FROM aps.TestElement e INNER JOIN ECVLib.IdSet(?) v ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = 1
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -106,7 +106,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  INNER JOIN ECVLib.IdSet (?) v ON v.id = e.ECInstanceId
+  INNER JOIN ECVLib.IdSet (?) v ON v.id = e.ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = true
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -132,7 +132,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
+  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
@@ -159,7 +159,7 @@ SELECT
   v.id
 FROM
   ECVLib.IdSet (?) v
-  LEFT OUTER JOIN aps.TestElement e ON e.ECInstanceId = v.id
+  LEFT OUTER JOIN aps.TestElement e ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
@@ -186,7 +186,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  LEFT OUTER JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
+  LEFT OUTER JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
@@ -220,7 +220,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  CROSS JOIN ECVLib.IdSet (?) v
+  CROSS JOIN ECVLib.IdSet (?) v ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
@@ -274,7 +274,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  FULL JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
+  FULL JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES = TRUE
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
@@ -303,7 +303,7 @@ FROM
 - errorDuringPrepare: true
 
 ```sql
-SELECT e.S, e.i, v.id FROM aps.TestElement e NATURAL JOIN ECVLib.IdSet(?) v
+SELECT e.S, e.i, v.id FROM aps.TestElement e NATURAL JOIN ECVLib.IdSet(?) v ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = True
 ```
 
 # Testing JOIN
@@ -339,7 +339,7 @@ FROM
 - bindIdSet 1, [0x15, 0x18, 0x19]
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
+SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -359,7 +359,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
 - mode: Statement
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
+SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -381,7 +381,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
 - mode: ConcurrentQuery
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
+SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -407,7 +407,7 @@ FROM
   ),
   ECVLib.IdSet (?)
 WHERE
-  id = a
+  id = a ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
@@ -436,7 +436,7 @@ ECVLib.IdSet (?),
         SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
   )
 WHERE
-  id = a
+  id = a ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
@@ -465,7 +465,7 @@ ECVLib.IdSet (?),
         SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
   ))
 WHERE
-  id = a
+  id = a OPTIONS ENABLE_EXPERIMENTAL_FEATURES = 1
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
@@ -494,7 +494,7 @@ FROM
   )),
 ECVLib.IdSet (?)
 WHERE
-  id = a
+  id = a ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
@@ -523,7 +523,7 @@ FROM
   )),
 ECVLib.IdSet (?)
 WHERE
-  id = ECInstanceId
+  id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName |
@@ -552,7 +552,7 @@ ECVLib.IdSet (?),
         SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
   )
 WHERE
-  id = ECInstanceId
+  id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName |
