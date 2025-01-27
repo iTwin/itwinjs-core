@@ -318,7 +318,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id
+  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
@@ -564,3 +564,23 @@ WHERE
 | 101 |
 | 104 |
 | 105 |
+
+# Testing IdSet by setting ENABLE_EXPERIMENTAL_FEATURES to false
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = False
+```
+
+# Testing IdSet without ENABLE_EXPERIMENTAL_FEATURES
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
+```
