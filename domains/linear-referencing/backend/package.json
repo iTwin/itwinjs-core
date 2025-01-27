@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "5.0.0-dev.48",
+  "version": "5.0.0-dev.49",
   "main": "lib/cjs/linear-referencing-backend.js",
   "typings": "lib/cjs/linear-referencing-backend",
   "license": "MIT",
