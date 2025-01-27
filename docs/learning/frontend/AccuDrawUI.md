@@ -17,6 +17,7 @@ Applications can choose between a vertical or horizontal layout as well as wheth
     - [Explaining Focus](#explaining-focus)
     - [Moving Focus](#moving-focus)
     - [Entering New Value](#entering-new-value)
+    - [Expression Support](#expression-support)
     - [Accepting New Value](#accepting-new-value)
     - [Choosing a Previous Value](#choosing-a-previous-value)
     - [Nearest Snap Behavior](#nearest-snap-behavior)
@@ -129,6 +130,13 @@ When a non-letter key is pressed the value of the currently focused field is rep
 
 > When entering angles and directions, the "^" and ";" keys will be replaced by "°" for easier entry.
 
+### Expression Support
+
+Simple expressions using +, -, \*, and / can be written when entering values. For + and - the characters after the operator are treated as a quantity value, and for \* and / are treated as a real number.
+To use an expression, first enter a space before the desired operator. This avoids any ambiguity with entering a formatted quantity value such as 20'-6 1/2". The space is not required before entering \* or / when the text insertion cursor is not present. The space is always required for + or - as they can be used to specify the sign of a new quantity value.
+
+![accudraw expressions](./accudraw-expressions.png "Showing how to choose a point halfway between 2 points")
+
 ### Accepting New Value
 
 After entering a new value it can be accepted as follows:
@@ -204,14 +212,33 @@ For applications that wish to include a settings dialog for the user, a helper m
 
 ### Keyboard Shortcuts
 
+Keyboard shortcuts are essential to using AccuDraw effectively and efficiently. Refer [here](./AccuDrawShortcuts) for information regarding available shortcuts and what they do.
+
 When AccuDraw has input focus and does not handle a KeyboardEvent, the event will be propagated first to the active interactive tool, and then to [ToolAdmin.processShortcutKey]($frontend). This is where applications should test for and run their desired keyboard shortcuts.
 
-Refer [here](./AccuDrawShortcuts) for information regarding available shortcuts and what they do.
+> NOTE: When using keyboard shortcuts from the appui package, they currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, applications should override the implementation of [ToolAdmin.processShortcutKey] from the appui package to remove the focus location check.
 
-> NOTE: When using keyboard shortcuts from the appui package, it currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, refer to the documentation for [AccuDrawViewportUI.doProcessUnhandledKey]($frontend).
+```ts
+export class MyToolAdmin extends FrameworkToolAdmin {
+  public override async processShortcutKey(e: KeyboardEvent, wentDown: boolean): Promise<boolean> {
+    if (!wentDown || UiFramework.isContextMenuOpen || "Escape" === e.key)
+      return false;
+    UiFramework.keyboardShortcuts.processKey(e.key, e.altKey, e.ctrlKey, e.shiftKey);
+    return true;
+  }
+}
+
+iModelApp: {
+  accuDraw: new AccuDrawViewportUI(),
+  toolAdmin: new MyToolAdmin(),
+},
+```
 
 ### Known Issues
 
-There is currently a conflict when using the cursor layout with the option to show the tool assistance prompt at the cursor, they overlap. For now it is recommended that you disable the cursor prompt when testing the AccuDraw cursor UI.
+There is currently a conflict when using the cursor layout with the option to show the tool assistance prompt at the cursor, they overlap. For now it is recommended that you disable the cursor prompt when testing the AccuDraw cursor UI. The following methods have been provided to allow the popup manager to better coordinate with the cursor layout.
 
-Additional testing is required for touch input. Currently the touch cursor and AccuDraw cursor Ui don't interfere with each other, but more work needs to be done to evaluate if the cursor UI can have any benefit for touch input or should always be disabled.
+- [AccuDrawViewportUI.currentControlRect]($frontend)
+- [AccuDrawViewportUI.modifyControlRect]($frontend)
+
+Additional evaluation is required for touch input. Currently the touch cursor doesn't interfere with the cursor layout, but a means of entering values and using shortcuts is necessary to fully support touch workflows requiring precision input beyond just using AccuSnap.

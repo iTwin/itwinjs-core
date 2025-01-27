@@ -177,7 +177,7 @@ describe("System", () => {
     function requestThematicGradient(stepCount: number) {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Thematic,
-        thematicSettings: {stepCount},
+        thematicSettings: { stepCount },
         keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 229 }],
       });
       return IModelApp.renderSystem.getGradientTexture(symb, imodel);
@@ -186,7 +186,7 @@ describe("System", () => {
     it("should properly request a thematic gradient texture", async () => {
       const g1 = requestThematicGradient(5);
       expect(g1).toBeDefined();
-      g1!.dispose();
+      g1![Symbol.dispose]();
     });
 
     it("should properly cache and reuse thematic gradient textures", async () => {
@@ -195,8 +195,8 @@ describe("System", () => {
       const g2 = requestThematicGradient(5);
       expect(g2).toBeDefined();
       expect(g2 === g1).toBe(true);
-      g1!.dispose();
-      g2!.dispose();
+      g1![Symbol.dispose]();
+      g2![Symbol.dispose]();
     });
 
     it("should properly create separate thematic gradient textures if thematic settings differ", async () => {
@@ -205,8 +205,8 @@ describe("System", () => {
       const g2 = requestThematicGradient(6);
       expect(g2).toBeDefined();
       expect(g2 === g1).toBe(false);
-      g1!.dispose();
-      g2!.dispose();
+      g1![Symbol.dispose]();
+      g2![Symbol.dispose]();
     });
 
     async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
@@ -240,7 +240,7 @@ describe("System", () => {
       expect(t1).toEqual(t2);
       expect(t1).toBeDefined();
 
-      t1!.dispose();
+      t1![Symbol.dispose]();
     });
 
     it("should decode each different image once", async () => {
@@ -259,8 +259,8 @@ describe("System", () => {
       expect(t1).toBeDefined();
       expect(t2).toBeDefined();
 
-      t1!.dispose();
-      t2!.dispose();
+      t1![Symbol.dispose]();
+      t2![Symbol.dispose]();
     });
 
     it("should not record pending requests for unnamed textures", async () => {
@@ -273,8 +273,8 @@ describe("System", () => {
       const t2 = await p2;
       expect(t1).not.toEqual(t2);
 
-      t1!.dispose();
-      t2!.dispose();
+      t1![Symbol.dispose]();
+      t2![Symbol.dispose]();
     });
 
     it("should not record requests for previously-created textures", async () => {
@@ -298,7 +298,7 @@ describe("System", () => {
       const t3 = await p3;
       expect(t3).toEqual(t1);
 
-      t1!.dispose();
+      t1![Symbol.dispose]();
     });
 
     it("should return undefined and delete pending request on error", async () => {
@@ -319,7 +319,7 @@ describe("System", () => {
       expect(t2).toBeDefined();
       expectPendingRequests(0);
 
-      t2!.dispose();
+      t2![Symbol.dispose]();
     });
 
     it("should return undefined after render system is disposed", async () => {
@@ -447,7 +447,7 @@ describe("System", () => {
         expect(actual).toEqual(expected);
       };
 
-      test({ }, defaults);
+      test({}, defaults);
       test(defaults);
 
       const color = { r: 1, g: 127, b: 255 };

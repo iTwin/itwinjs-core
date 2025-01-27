@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
 import { BentleyError, LoggingMetaData } from "../BentleyError";
-import { using } from "../Disposable";
 import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { BeDuration } from "../Time";
 
@@ -413,16 +412,18 @@ describe("Logger", () => {
         }
       }, undefined);
 
-    await using(new PerfLogger("mytestroutine"), async (_r) => {
+    {
+      using _r = new PerfLogger("mytestroutine");
       await BeDuration.wait(10);
-    });
+    }
     assert.isEmpty(perfMessages);
 
     Logger.setLevel("Performance", LogLevel.Info);
 
-    await using(new PerfLogger("mytestroutine2"), async (_r) => {
+    {
+      using _r = new PerfLogger("mytestroutine2");
       await BeDuration.wait(10);
-    });
+    }
 
     assert.equal(perfMessages.length, 2);
     assert.equal(perfMessages[0], "mytestroutine2,START");
@@ -432,18 +433,20 @@ describe("Logger", () => {
     perfMessages.pop();
     perfMessages.pop();
 
-    const outerPerf = new PerfLogger("outer call");
-    const innerPerf = new PerfLogger("inner call");
-    for (let i = 0; i < 1000; i++) {
-      if (i % 2 === 0)
-        continue;
+    {
+      using _outerPerf = new PerfLogger("outer call");
+      {
+        using _innerPerf = new PerfLogger("inner call");
+        for (let i = 0; i < 1000; i++) {
+          if (i % 2 === 0)
+            continue;
+        }
+      }
+      for (let i = 0; i < 1000; i++) {
+        if (i % 2 === 0)
+          continue;
+      }
     }
-    innerPerf.dispose();
-    for (let i = 0; i < 1000; i++) {
-      if (i % 2 === 0)
-        continue;
-    }
-    outerPerf.dispose();
     assert.equal(perfMessages.length, 4);
     assert.equal(perfMessages[0], "outer call,START");
     assert.equal(perfMessages[1], "inner call,START");

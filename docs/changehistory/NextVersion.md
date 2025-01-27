@@ -9,7 +9,10 @@ Table of contents:
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
   - [Font APIs](#font-apis)
+  - [Geometry](#geometry)
+    - [Polyface Traversal](#polyface-traversal)
   - [API deprecations](#api-deprecations)
+    - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
     - [@itwin/core-frontend](#itwincore-frontend)
@@ -53,7 +56,47 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
 
+## Geometry
+
+### Polyface Traversal
+
+Conventional [IndexedPolyface]($core-geometry) data defines each facet by a sequence of point indices around the facet, however these indices do not indicate which facet is adjacent across an edge, nor do they indicate which facets are adjacent at a vertex. The topology of the mesh is incomplete.
+
+The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete the topology of an `IndexedPolyface` and to navigate these adjacencies. A one-time call to [IndexedPolyfaceWalker.buildEdgeMateIndices]($core-geometry) populates a new optional index array of the [PolyfaceData]($core-geometry). This array stores the cross-edge relationship, and is valid as long as the mesh topology is unchanged. After this step, the following queries support navigation around a facet, around a vertex, and across an edge. Given an `IndexedPolyfaceWalker` object that refers to a particular edge:
+
+- [IndexedPolyfaceWalker.nextAroundFacet]($core-geometry) and [IndexedPolyfaceWalker.previousAroundFacet]($core-geometry) return a walker referring to the next/previous edge around the facet.
+- [IndexedPolyfaceWalker.nextAroundVertex]($core-geometry) and [IndexedPolyfaceWalker.previousAroundVertex]($core-geometry) return a walker referring to the next/previous edge around the edges' start vertex.
+- [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
+
+If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
+
 ## API deprecations
+
+### @itwin/core-bentley
+
+- The [IDisposable]($core-bentley) interface, along with related [isIDisposable]($core-bentley) and [using]($core-bentley) utilities, have been deprecated in favor of [TypeScript's built-in](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) `Disposable` type and `using` declarations (from the upcoming [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) feature in ECMAScript).
+
+  For example, the following:
+
+  ```typescript
+  import { using } from "@itwin/core-bentley";
+  export function doSomeWork() {
+    using(new SomethingDisposable(), (temp) => {
+      // do something with temp
+    });
+  }
+  ```
+
+  should now be rewritten as:
+
+  ```typescript
+  export function doSomeWork() {
+    using temp = new SomethingDisposable();
+    // do something with temp
+  }
+  ```
+
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
 
 ### @itwin/core-common
 
@@ -192,18 +235,23 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
 | `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
 
-#### @itwin/appui-abstract
-
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `EditorPosition.columnSpan` | N/A         |
-
 #### @itwin/core-electron
 
 | Removed                             | Replacement                                               |
 | ----------------------------------- | --------------------------------------------------------- |
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+
+#### @itwin/core-geometry
+
+| Removed                                           | Replacement                                 |
+| ------------------------------------------------- | ------------------------------------------- |
+| `PathFragment.childFractionTChainDistance`        | `PathFragment.childFractionToChainDistance` |
+| `GrowableXYArray.setXYZAtCheckedPointIndex`       | `GrowableXYArray.setXYAtCheckedPointIndex`  |
+| `PolyfaceBuilder.findOrAddPoint`                  | `PolyfaceBuilder.addPoint`                  |
+| `PolyfaceBuilder.findOrAddParamXY`                | `PolyfaceBuilder.addParamXY`                |
+| `PolyfaceBuilder.findOrAddParamInGrowableXYArray` | `PolyfaceBuilder.addParamInGrowableXYArray` |
+| `PolyfaceBuilder.findOrAddPointXYZ`               | `PolyfaceBuilder.addPointXYZ`               |
 
 ### API removals
 
@@ -229,24 +277,25 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                                                                                            |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
+| Removed                        | Replacement                                                                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all. |
+| `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client.        |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                             |
 
 ### Change to pullMerge
 
-Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fastforward method for merging changes. This change is transparent to users and is enabled by default.
+Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
 
 #### No pending/local changes
 
-- Incomming changes are applied using "fast-forward" method.
+- Incoming changes are applied using "fast-forward" method.
 
 #### With pending/local changes
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.

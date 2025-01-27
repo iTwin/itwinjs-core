@@ -29,8 +29,6 @@ describe("ConnectivityInformationProvider", () => {
       NativeApp.onInternetConnectivityChanged.clear();
     });
 
-    afterEach(() => {});
-
     describe("constructor", () => {
       it("sets current status to the result of `NativeApp.checkInternetConnectivity` if not set already", async () => {
         const internetConnectivityResult = new ResolvablePromise<InternetConnectivityStatus>();
@@ -60,7 +58,7 @@ describe("ConnectivityInformationProvider", () => {
       it("unsubscribes from `NativeApp.onInternetConnectivityChanged` event", () => {
         const provider = new ConnectivityInformationProvider();
         expect(NativeApp.onInternetConnectivityChanged.numberOfListeners).to.eq(1);
-        provider.dispose();
+        provider[Symbol.dispose]();
         expect(NativeApp.onInternetConnectivityChanged.numberOfListeners).to.eq(0);
       });
     });

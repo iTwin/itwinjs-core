@@ -144,6 +144,7 @@ public;class;IndexedCollectionInterval
 public;class;IndexedPolyface
 public;class;IndexedPolyfaceSubsetVisitor
 public;class;IndexedPolyfaceVisitor
+public;class;IndexedPolyfaceWalker
 public;class;IndexedReadWriteXYZCollection
 public;class;IndexedXYCollection
 public;class;IndexedXYZCollection

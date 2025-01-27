@@ -142,12 +142,17 @@ export abstract class TileTree {
   public get isDisposed(): boolean { return this._isDisposed; }
 
   /** Dispose of this tree and any resources owned by it. This is typically invoked by a [[TileTreeOwner]]. */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this.isDisposed)
       return;
 
     this._isDisposed = true;
     dispose(this.rootTile);
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** @internal */
