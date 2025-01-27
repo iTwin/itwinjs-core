@@ -124,7 +124,7 @@ export function comparePrimitiveArrays (lhs?: Array<number|string|boolean>, rhs?
   else if (lhs.length === 0 && rhs.length === 0) {
     return 0;
   } else if (lhs.length !== rhs.length) {
-    return Math.abs(lhs.length - rhs.length);
+    return lhs.length - rhs.length;
   }
 
   let cmp = 0;
