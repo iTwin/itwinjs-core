@@ -30,7 +30,6 @@ import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IndexedPolyface } from '@itwin/core-geometry';
@@ -8075,11 +8074,13 @@ export namespace RenderSchedule {
 }
 
 // @public
-export abstract class RenderTexture implements IDisposable {
+export abstract class RenderTexture implements Disposable {
+    [Symbol.dispose](): void;
     protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
     compare(other: RenderTexture): number;
+    // @deprecated (undocumented)
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -8715,6 +8716,8 @@ export class RpcRegistry {
 
 // @internal
 export abstract class RpcRequest<TResponse = any> {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(client: RpcInterface, operation: string, parameters: any[]);
     static get activeRequests(): ReadonlyMap<string, RpcRequest>;
     static get aggregateLoad(): RpcOperationsProfile;
@@ -8725,8 +8728,6 @@ export abstract class RpcRequest<TResponse = any> {
     protected computeRetryAfter(attempts: number): number;
     get connecting(): boolean;
     static current(context: RpcInterface): RpcRequest;
-    // (undocumented)
-    dispose(): void;
     get elapsed(): number;
     static readonly events: BeEvent<RpcRequestEventHandler>;
     get extendedStatus(): string;

@@ -22,8 +22,9 @@ internal;class;AccuDrawSetLockXTool
 internal;class;AccuDrawSetLockYTool
 internal;class;AccuDrawSetLockZTool
 internal;class;AccuDrawSetOriginTool
-alpha;class;AccuDrawShortcuts
+beta;class;AccuDrawShortcuts
 internal;class;AccuDrawSuspendToggleTool
+beta;class;AccuDrawViewportUI
 public;class;AccuSnap
 public;namespace;AccuSnap
 internal;function;acquireImdlDecoder

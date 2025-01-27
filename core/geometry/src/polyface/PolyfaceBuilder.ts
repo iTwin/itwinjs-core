@@ -357,23 +357,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addPoint(xyz: Point3d): number {
     return this._polyface.addPoint(xyz);
   }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPoint instead.
-   */
-  public findOrAddPoint(xyz: Point3d): number {
-    return this.addPoint(xyz);
-  }
   /** Add a uv parameter to the polyface. */
   public addParamXY(x: number, y: number): number {
     return this._polyface.addParamUV(x, y);
-  }
-  /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamXY instead.
-   */
-  public findOrAddParamXY(x: number, y: number): number {
-    return this.addParamXY(x, y);
   }
   private static _workPointFindOrAddA = Point3d.create();
   private static _workVectorFindOrAdd = Vector3d.create();
@@ -453,13 +439,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamInGrowableXYArray instead.
-   */
-  public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
-    return this.addParamInGrowableXYArray(data, index);
-  }
-  /**
    * Add a uv parameter to the polyface, taking `u` from `ls.fractions` and `v` from input. The implementation is
    * free to either create a new param or return the index of a prior param with the same coordinates.
    * @param ls the linestring.
@@ -502,13 +481,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Add a point to the polyface. */
   public addPointXYZ(x: number, y: number, z: number): number {
     return this._polyface.addPointXYZ(x, y, z);
-  }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPointXYZ instead.
-   */
-  public findOrAddPointXYZ(x: number, y: number, z: number): number {
-    return this.addPointXYZ(x, y, z);
   }
   /** Returns a transform who can be applied to points on a triangular facet in order to obtain UV parameters. */
   private getUVTransformForTriangleFacet(pointA: Point3d, pointB: Point3d, pointC: Point3d): Transform | undefined {

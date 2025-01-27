@@ -85,7 +85,7 @@ class ExpiringIterable implements Iterable<VisibleFeature> {
     this._features = features;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._disposed = true;
     this._features = [];
   }
@@ -97,12 +97,8 @@ class ExpiringIterable implements Iterable<VisibleFeature> {
 }
 
 function invokeCallback(features: Iterable<VisibleFeature>, callback: QueryVisibleFeaturesCallback): void {
-  const iterable = new ExpiringIterable(features);
-  try {
-    callback(iterable);
-  } finally {
-    iterable.dispose();
-  }
+  using iterable = new ExpiringIterable(features);
+  callback(iterable);
 }
 
 /** Features read from pixels rendered by a viewport. */

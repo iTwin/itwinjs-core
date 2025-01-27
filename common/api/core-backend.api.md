@@ -118,7 +118,6 @@ import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
@@ -644,14 +643,14 @@ export interface ChangedECInstance {
 }
 
 // @internal
-export class ChangedElementsDb implements IDisposable {
+export class ChangedElementsDb implements Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor();
     // (undocumented)
     cleanCaches(): void;
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
-    // (undocumented)
-    dispose(): void;
     getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
     getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
     getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
@@ -715,7 +714,8 @@ export interface ChangesetArg extends IModelIdArg {
 }
 
 // @beta
-export class ChangesetECAdaptor implements IDisposable {
+export class ChangesetECAdaptor implements Disposable {
+    [Symbol.dispose](): void;
     constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
     acceptClass(classFullName: string): ChangesetECAdaptor;
     acceptOp(op: SqliteChangeOp): ChangesetECAdaptor;
@@ -729,7 +729,6 @@ export class ChangesetECAdaptor implements IDisposable {
     deleted?: ChangedECInstance;
     // (undocumented)
     readonly disableMetaData: boolean;
-    dispose(): void;
     inserted?: ChangedECInstance;
     get isDeleted(): boolean;
     isECTable(tableName: string): boolean;
@@ -1782,9 +1781,10 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-export class ECDb implements IDisposable {
+export class ECDb implements Disposable {
     // @internal (undocumented)
     get [_nativeDb](): IModelJsNative.ECDb;
+    [Symbol.dispose](): void;
     constructor();
     abandonChanges(): void;
     // @internal
@@ -1792,6 +1792,7 @@ export class ECDb implements IDisposable {
     closeDb(): void;
     createDb(pathName: string): void;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
@@ -1906,7 +1907,8 @@ export interface ECSqlRowArg {
 }
 
 // @public
-export class ECSqlStatement implements IterableIterator<any>, IDisposable {
+export class ECSqlStatement implements IterableIterator<any>, Disposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     bindArray(parameter: number | string, val: any[]): void;
     bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
@@ -1928,6 +1930,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: number | string, val: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
@@ -3427,10 +3430,12 @@ export interface IModelDbFonts {
 
 // @beta
 export class IModelElementCloneContext {
+    [Symbol.dispose](): void;
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
     cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
     static create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext>;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     dump(outputFileName: string): void;
@@ -5402,7 +5407,8 @@ export interface SqliteChange {
 export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
 // @beta
-export class SqliteChangesetReader implements IDisposable {
+export class SqliteChangesetReader implements Disposable {
+    [Symbol.dispose](): void;
     protected constructor(
     db: AnyDb);
     get changeIndex(): number;
@@ -5410,7 +5416,6 @@ export class SqliteChangesetReader implements IDisposable {
     get columnCount(): number;
     readonly db: AnyDb;
     get disableSchemaCheck(): boolean;
-    dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
     getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
     getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
@@ -5562,7 +5567,8 @@ export namespace SQLiteDb {
 }
 
 // @public
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
+export class SqliteStatement implements IterableIterator<any>, Disposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
     bindBlob(parameter: BindParameter, blob: Uint8Array): void;
@@ -5578,6 +5584,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getColumnBytes(colIndex: number): number;
     getColumnCount(): number;

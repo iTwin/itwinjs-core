@@ -27,7 +27,7 @@ describe("ViewState attached to Viewport", async () => {
 
   afterEach(() => {
     if (vp && !vp.isDisposed)
-      vp.dispose();
+      vp[Symbol.dispose]();
   });
 
   async function loadView(id = "0x34"): Promise<SpatialViewState> {
@@ -47,7 +47,7 @@ describe("ViewState attached to Viewport", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
     expect(view.isAttachedToViewport).to.be.true;
-    vp.dispose();
+    vp[Symbol.dispose]();
     expect(view.isAttachedToViewport).to.be.false;
   });
 
@@ -136,7 +136,7 @@ describe("ViewState attached to Viewport", async () => {
     expectChanges(false, false, true);
 
     reset();
-    vp.dispose();
+    vp[Symbol.dispose]();
     view.modelSelector.models.add("0xa");
     view.categorySelector.categories.add("0xb");
     view.categorySelector = view.categorySelector.clone();
