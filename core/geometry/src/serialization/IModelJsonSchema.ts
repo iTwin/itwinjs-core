@@ -392,9 +392,8 @@ export namespace IModelJson {
     origin: XYZProps;
     /** A previous mismatch existed between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
      * Now both native and TypeScript will output both and accept either, preferring "origin".
-     * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
+     * "baseOrigin" is undocumented in TypeScript; it should not be used.
      * @internal
-     * @deprecated in 3.x. use origin
      */
     baseOrigin?: XYZProps;
     /** base x size (required) */
@@ -493,10 +492,10 @@ export namespace IModelJson {
    * @public
    */
   export interface AuxChannelDataProps {
-  /** The input value for this data. */
-  input: number;
-  /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
-  values: number[];
+    /** The input value for this data. */
+    input: number;
+    /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
+    values: number[];
   }
   /**
    * Interface for a channel of analytical mesh data.
@@ -504,14 +503,14 @@ export namespace IModelJson {
    * @public
    */
   export interface AuxChannelProps {
-  /** An array of analytical data at one or more input values. */
-  data: AuxChannelDataProps[];
-  /** The type of data stored in this channel. */
-  dataType: AuxChannelDataType;
-  /** Optional channel name. */
-  name?: string;
-  /** Optional input name. */
-  inputName?: string;
+    /** An array of analytical data at one or more input values. */
+    data: AuxChannelDataProps[];
+    /** The type of data stored in this channel. */
+    dataType: AuxChannelDataType;
+    /** Optional channel name. */
+    name?: string;
+    /** Optional input name. */
+    inputName?: string;
   }
   /**
    * Interface for analytical mesh data.
@@ -519,10 +518,10 @@ export namespace IModelJson {
    * @public
   */
   export interface AuxDataProps {
-  /** Array with one or more channels of auxiliary data. */
-  channels: AuxChannelProps[];
-  /** Indices mapping channel data to the mesh facets (must be parallel to mesh indices). */
-  indices: number[];
+    /** Array with one or more channels of auxiliary data. */
+    channels: AuxChannelProps[];
+    /** Indices mapping channel data to the mesh facets (must be parallel to mesh indices). */
+    indices: number[];
   }
   /**
    * Interface for extra data attached to an indexed mesh.
