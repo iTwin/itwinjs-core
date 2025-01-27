@@ -1,10 +1,6 @@
 ## Handling of schemas with unknown/wrong elements
 
-A schema with a newer ECXml version might contain elements not known to the ECDb runtime being used as it's older.
-Also, a schema might contain wrong elements, for e.g. an ECProperty tag used for denoting a struct inside an entity class.
-A read compatible but write incompatible schema (only ECXml minor version incremented) cannot be imported into the iModel.
-However, any schema can be deserialized and loaded into memory but, the version 3.2 of ECXml schema.
-This schema is also then restricted from being serialized to a file or a string.
+A schema with a newer ECXml version might contain elements not recognized by the older ECDb runtime. Additionally, a schema might include incorrect elements, such as an ECProperty tag used to denote a struct inside an entity class. A read-compatible but write-incompatible schema (with only an ECXml minor version increment) cannot be imported into the iModel. However, any schema, except for version 3.2 of the ECXml schema, can be deserialized and loaded into memory. This schema version is also restricted from being serialized to a file or a string.
 
 ### Behavior of wrong property tags across different versions during deserialization
 
