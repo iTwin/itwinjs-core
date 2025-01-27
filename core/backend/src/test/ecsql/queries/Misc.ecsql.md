@@ -790,16 +790,6 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-<<<<<<< HEAD
-| id  | parent | notused | detail            |
-| --- | ------ | ------- | ----------------- |
-| 2   | 0      | 0       | CO-ROUTINE cnt    |
-| 5   | 2      | 0       | SETUP             |
-| 6   | 5      | 0       | SCAN CONSTANT ROW |
-| 19  | 2      | 0       | RECURSIVE STEP    |
-| 20  | 19     | 0       | SCAN cnt          |
-| 31  | 0      | 0       | SCAN cnt          |
-=======
 | notused | detail            |
 | ------- | ----------------- |
 | 0       | CO-ROUTINE cnt    |
@@ -808,7 +798,6 @@ PRAGMA explain_query (
 | 0       | RECURSIVE STEP    |
 | 216     | SCAN cnt          |
 | 215     | SCAN cnt          |
->>>>>>> 7bb7940058 (Added the feature to specify certain columns in expected Results table in the markdown testing framework (#7518))
 
 # Using Scalar values in select clause with + operator
 
