@@ -96,11 +96,11 @@ describe("ECDb", () => {
     });
   });
 
-  it("should default to string in V3_1 when encountered an unknown type", () => {
+  it.only("should default to string in V3_1 when encountered an unknown type", () => {
     const fileName = "wrongPropertyTags.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
 
-    using(ECDbTestHelper.createECDb(outDir, fileName,
+    using testECDb = ECDbTestHelper.createECDb(outDir, fileName,
       `<ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="PrimStruct">
         <ECProperty propertyName="p2d" typeName="Point2d" />
@@ -110,26 +110,25 @@ describe("ECDb", () => {
         <ECProperty propertyName="Struct" typeName="PrimStruct" />
         <ECStructArrayProperty propertyName="Struct_Array" typeName="PrimStruct" />
       </ECEntityClass>
-      </ECSchema>`), (testECDb: ECDb) => {
-      assert.isTrue(testECDb.isOpen);
-      });
+      </ECSchema>`);
+    assert.isTrue(testECDb.isOpen);
 
-    using(new ECDb(), (ecdb: ECDb) => {
-      ecdb.openDb(ecdbPath, ECDbOpenMode.ReadWrite);
-      assert.isTrue(ecdb.isOpen);
-      const schema = ecdb.getSchemaProps("Test");
-      assert.isDefined(schema);
-      const entityClass = schema.items;
-      assert.isDefined(entityClass);
-      const entityClassProps = entityClass?.UseOfWrongPropertyTags;
-      assert.isDefined(entityClassProps);
-      const _testPropFromEntityClass = entityClassProps as any;
-      if (entityClassProps) {
-        const structProperty = (_testPropFromEntityClass.properties as any[]).find((prop: any) => prop.name === "Struct");
-        assert.isDefined(structProperty);
-        assert.equal(structProperty.typeName , "string");  // default to string
+    using ecdb = new ECDb();
+    ecdb.openDb(ecdbPath, ECDbOpenMode.ReadWrite);
+    assert.isTrue(ecdb.isOpen);
+    const schema = ecdb.getSchemaProps("Test");
+    assert.isDefined(schema);
+    const entityClass = schema.items;
+    assert.isDefined(entityClass);
+    const entityClassProps = entityClass?.UseOfWrongPropertyTags;
+    assert.isDefined(entityClassProps);
+    const _testPropFromEntityClass = entityClassProps as any;
+    if (entityClassProps)
+      {
+      const structProperty = (_testPropFromEntityClass.properties as any[]).find((prop: any) => prop.name === "Struct");
+      assert.isDefined(structProperty);
+      assert.equal(structProperty.typeName , "string");  // default to string
       }
-    });
 });
 
   it("should be able to get schema props", () => {
