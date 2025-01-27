@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { AsyncMethodsOf, IModelStatus, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
+import { IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";
@@ -138,11 +138,6 @@ export class IpcApp {
           IpcApp[_callIpcChannel](channelName, functionName, methodName, ...args);
       },
     });
-  }
-
-  /** @deprecated in 3.x. use [[appFunctionIpc]] */
-  public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
-    return this[_callIpcChannel](ipcAppChannels.functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
