@@ -951,6 +951,8 @@ export class AccuDrawViewportUI extends AccuDraw {
         suspendLocateToolTip: boolean;
         fixedLocation: boolean;
         horizontalArrangement: boolean;
+        simplifiedInput: boolean;
+        mathOperations: boolean;
         fieldSize: number;
         rowSpacingFactor: number;
         columnSpacingFactor: number;
@@ -964,14 +966,15 @@ export class AccuDrawViewportUI extends AccuDraw {
         };
         button: {
             pressedColor: string;
-            padding: string;
             margin: string;
             outlineWidth: string;
             shadow: string;
         };
     };
+    protected currentControlRect(vp: ScreenViewport): ViewRect | undefined;
     grabInputFocus(): void;
     get hasInputFocus(): boolean;
+    protected modifyControlRect(_rect: ViewRect, _vp: ScreenViewport): void;
     onCompassDisplayChange(state: "show" | "hide"): void;
     onCompassModeChange(): void;
     onFieldKeyinStatusChange(item: ItemField): void;
