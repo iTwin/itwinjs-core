@@ -796,8 +796,8 @@ PRAGMA explain_query (
 | 0       | SETUP             |
 | 0       | SCAN CONSTANT ROW |
 | 0       | RECURSIVE STEP    |
-| 216     | SCAN cnt          |
-| 215     | SCAN cnt          |
+| 0       | SCAN cnt          |
+| 0       | SCAN cnt          |
 
 # Using Scalar values in select clause with + operator
 
