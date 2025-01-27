@@ -41,7 +41,7 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
       }
 
       // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend
-      if (pkgPath.includes("temp") || pkgPath.includes("backend")) return;
+      if (pkgPath.includes("temp") || pkgPath.includes("backend") || pkgPath.includes("authorization") || pkgPath.includes("imodels")) return;
       packageAliases[pkgName] = pkgPath
         .replace("\\lib\\cjs\\", "\\src\\")
         .replace("/lib/cjs/", "/src/")
