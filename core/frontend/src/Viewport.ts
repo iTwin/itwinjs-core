@@ -1592,16 +1592,8 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** @beta */
-  public readonly mapTileTreeRefs: Iterable<TileTreeReference> =   {
-    [Symbol.iterator]: () => {
-      const it = this._mapTiledGraphicsProvider ? this._mapTiledGraphicsProvider?.tileTreeRefs[Symbol.iterator]() : undefined;
-      return {
-        next: () => {
-          const result = it?.next();
-          return result && !result.done ? {value: result.value, done: false} : {value: undefined, done: true};
-        }
-      };
-    }
+  public get mapTileTreeRefs(): Iterable<TileTreeReference> {
+    return this._mapTiledGraphicsProvider?.tileTreeRefs ?? [];
   };
 
 
