@@ -12,7 +12,7 @@ import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlParser } from "../Deserialization/XmlParser";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, PrimitiveType } from "../ECObjects";
+import { ECClassModifier, PrimitiveType, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -30,7 +30,7 @@ import { Mixin } from "./Mixin";
 import { Phenomenon } from "./Phenomenon";
 import { PropertyCategory } from "./PropertyCategory";
 import { RelationshipClass } from "./RelationshipClass";
-import { SchemaItem, SchemaItemConstructor } from "./SchemaItem";
+import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 
@@ -646,7 +646,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name The local (unqualified) name of the item to return.
    * @returns The requested Format or undefined if not found.
    */
-  public getFormatSync(name: string): Format | undefined { return this.getItemSync(name, Format); }
+  public getFormatSync(name: string): Format | undefined { return this.getItemSync<Format>(name, Format); }
 
   /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
@@ -658,8 +658,8 @@ export class Schema implements CustomAttributeContainerProps {
     if (value === undefined)
       return value;
 
-    if (itemConstructor !== undefined && (value.schemaItemType !== (itemConstructor as unknown as typeof SchemaItem).schemaItemType))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `The item ${name} is not of the expected type.`);
+    if (itemConstructor !== undefined && (value.schemaItemType !== itemConstructor.schemaItemType))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `The item ${name} is of type ${value.schemaItemType}, but ${itemConstructor.schemaItemType} was expected.`);
 
     return value as T;
   }
@@ -1026,4 +1026,9 @@ export abstract class MutableSchema extends Schema {
   public abstract override deleteSchemaItem(name: string): Promise<void>;
   public abstract override deleteSchemaItemSync(name: string): void;
   public abstract override setAlias(alias: string): void;
+}
+
+export interface SchemaItemConstructor<T extends SchemaItem> {
+  new (...args: any[]): T;
+  schemaItemType: SchemaItemType;
 }

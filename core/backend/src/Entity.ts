@@ -110,11 +110,19 @@ export class Entity {
 
   public get schemaItemKey(): SchemaItemKey { return this._ctor.schemaItemKey; }
 
+  /** query metadata for this entity class from the iModel's schema
+   * @throws [[IModelError]] if there is a problem querying the schema
+   * @returns The metadata for the current entity
+   */
   public getMetaData(): EntityClass {
     if (!this._metadata) {
-      const metadata = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
-      EntityClass.assertIsEntityClass(metadata); // Throws if not found or not an entity
-      this._metadata = metadata;
+      const metadata = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, EntityClass);
+      metadata?.toJSON();
+      //this._metadata = metadata! as EntityClass;
+    }
+
+    if(!this._metadata) {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
 
     return this._metadata;

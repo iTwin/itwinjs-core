@@ -6,8 +6,8 @@
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaInfo } from "./Interfaces";
-import { MutableSchema, Schema } from "./Metadata/Schema";
-import { SchemaItem, SchemaItemConstructor } from "./Metadata/SchemaItem";
+import { MutableSchema, Schema, SchemaItemConstructor } from "./Metadata/Schema";
+import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /**
