@@ -968,7 +968,6 @@ export class AccuDrawViewportUI extends AccuDraw {
         };
         button: {
             pressedColor: string;
-            padding: string;
             margin: string;
             outlineWidth: string;
             shadow: string;
