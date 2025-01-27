@@ -38,7 +38,6 @@ export * from "./FontFile";
 export * from "./GeoCoordConfig";
 export * from "./GeographicCRSServices";
 export * from "./HubMock";
-export * from "./IModelCloneContext";
 export * from "./IModelDb";
 export * from "./IModelDbFonts";
 export * from "./IModelElementCloneContext";
