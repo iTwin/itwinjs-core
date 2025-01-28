@@ -36,8 +36,11 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public readonly backgroundDrapeMap: MapTileTreeReference;
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
-  public get tileTreeRefs(): Iterable<TileTreeReference> {
-    return [this.backgroundMap, this.overlayMap];
+  public * getReferences(viewport: Viewport): Iterable<TileTreeReference> {
+    if (viewport.viewFlags.backgroundMap) {
+      yield this.backgroundMap;
+      yield this.overlayMap;
+    }
   }
 
   public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void {
@@ -46,6 +49,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       func(this.overlayMap);
     }
   }
+
   constructor(viewportId: number, displayStyle: DisplayStyleState) {
     const mapSettings = displayStyle.backgroundMapSettings;
     const mapImagery = displayStyle.settings.mapImagery;

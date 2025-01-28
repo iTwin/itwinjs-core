@@ -127,6 +127,8 @@ class TestProvider implements TiledGraphicsProvider {
       func(ref);
   }
 
+  public getReferences() { return this.refs; }
+
   public set loadingComplete(loadingComplete: boolean | undefined) {
     if (undefined === loadingComplete)
       this.isLoadingComplete = undefined;

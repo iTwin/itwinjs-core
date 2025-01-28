@@ -1593,7 +1593,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** @beta */
   public get mapTileTreeRefs(): Iterable<TileTreeReference> {
-    return this._mapTiledGraphicsProvider?.tileTreeRefs ?? [];
+    return this._mapTiledGraphicsProvider?.getReferences(this) ?? [];
   };
 
 

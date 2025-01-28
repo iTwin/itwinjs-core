@@ -233,6 +233,8 @@ describe("TileAdmin", () => {
           func(ref);
       }
 
+      public getReferences() { return this.refs; }
+
       public async loadAllTrees(): Promise<void> {
         let allLoaded = true;
         for (const ref of this.refs) {
