@@ -216,16 +216,15 @@ export class MapFeatureInfoDecorator implements Decorator {
   };
 
   private getGeometryTreeRef(vp: Viewport): GeometryTileTreeReference | undefined {
-    let treeRef: GeometryTileTreeReference | undefined;
     if (vp.backgroundMapSettings.applyTerrain) {
-      vp.forEachMapTreeRef((ref: TileTreeReference) => {
-        if (!treeRef && ref instanceof MapTileTreeReference) {
-          treeRef = ref.createGeometryTreeReference();
+      for (const ref of vp.mapTileTreeRefs) {
+        if (ref instanceof MapTileTreeReference) {
+          return ref.createGeometryTreeReference();
         }
-      });
+      }
     }
 
-    return treeRef;
+    return undefined;
   }
 
   protected renderGraphics(context: DecorateContext) {
