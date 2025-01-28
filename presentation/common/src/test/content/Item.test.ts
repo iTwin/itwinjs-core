@@ -6,28 +6,27 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { Item, ItemJSON } from "../../presentation-common/content/Item";
 import { NestedContentValueJSON } from "../../presentation-common/content/Value";
+import { createTestContentItem, createTestLabelDefinition } from "../_helpers";
 import { createTestECInstanceKey } from "../_helpers/EC";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
-import { createTestContentItem } from "../_helpers";
 
 describe("Item", () => {
   describe("constructor", () => {
-    it("creates valid item with label", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
-      expect(item).to.matchSnapshot();
+    it("creates valid item with label string", () => {
+      const item = createTestContentItem({ label: "test", values: {}, displayValues: {} });
+      expect(item.label).to.matchSnapshot();
     });
 
     it("creates valid item with label definition", () => {
-      const item = new Item([], createRandomLabelDefinition(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
-      expect(item).to.matchSnapshot();
+      const item = createTestContentItem({ label: createTestLabelDefinition(), values: {}, displayValues: {} });
+      expect(item.label).to.matchSnapshot();
     });
   });
 
   describe("toJSON", () => {
     it("serializes inputKeys", () => {
       const inputKey = createTestECInstanceKey();
-      const item = new Item([], "", "", undefined, {}, {}, []);
-      item.inputKeys = [inputKey];
+      const item = createTestContentItem({ inputKeys: [inputKey], values: {}, displayValues: {} });
       const json = item.toJSON();
       expect(json.inputKeys).to.deep.eq([inputKey]);
     });
@@ -137,12 +136,12 @@ describe("Item", () => {
 
   describe("isFieldMerged", () => {
     it("returns false for unmerged field", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      const item = createTestContentItem({ values: {}, displayValues: {}, mergedFieldNames: [] });
       expect(item.isFieldMerged("key")).to.be.false;
     });
 
     it("returns true for merged field", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, ["key"]);
+      const item = createTestContentItem({ values: {}, displayValues: {}, mergedFieldNames: ["key"] });
       expect(item.isFieldMerged("key")).to.be.true;
     });
   });

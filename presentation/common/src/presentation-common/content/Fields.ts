@@ -21,12 +21,12 @@ import {
 } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
+import { omitUndefined } from "../Utils";
 import { CategoryDescription } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
 import { RendererDescription } from "./Renderer";
 import { TypeDescription } from "./TypeDescription";
-import { omitUndefined } from "../Utils";
 
 /**
  * Data structure for a [[Field]] serialized to JSON.
@@ -123,6 +123,31 @@ function isNestedContentField(field: FieldJSON | Field) {
 }
 
 /**
+ * Props for creating [[Field]].
+ * @public
+ */
+interface FieldProps {
+  /** Category information */
+  category: CategoryDescription;
+  /** Unique name */
+  name: string;
+  /** Display label */
+  label: string;
+  /** Description of this field's values data type */
+  type: TypeDescription;
+  /** Are values in this field read-only */
+  isReadonly: boolean;
+  /** Priority of the field */
+  priority: number;
+  /** Property editor used to edit values of this field */
+  editor?: EditorDescription;
+  /** Property renderer used to render values of this field */
+  renderer?: RendererDescription;
+  /** Extended data associated with this field */
+  extendedData?: { [key: string]: unknown };
+}
+
+/**
  * Describes a single content field. A field is usually represented as a grid column
  * or a property pane row.
  *
@@ -151,7 +176,7 @@ export class Field {
   private _parent?: NestedContentField;
 
   /**
-   * Creates an instance of Field.
+   * Creates an instance of [[Field]].
    * @param category Category information
    * @param name Unique name
    * @param label Display label
@@ -161,6 +186,7 @@ export class Field {
    * @param editor Property editor used to edit values of this field
    * @param renderer Property renderer used to render values of this field
    * @param extendedData Extended data associated with this field
+   * @deprecated in 5.0. Use an overload with [[FieldProps]] instead.
    */
   public constructor(
     category: CategoryDescription,
@@ -172,16 +198,44 @@ export class Field {
     editor?: EditorDescription,
     renderer?: RendererDescription,
     extendedData?: { [key: string]: unknown },
+  );
+  /** Creates an instance of [[Field]]. */
+  public constructor(props: FieldProps);
+  public constructor(
+    categoryOrProps: CategoryDescription | FieldProps,
+    name?: string,
+    label?: string,
+    type?: TypeDescription,
+    isReadonly?: boolean,
+    priority?: number,
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
+    extendedData?: { [key: string]: unknown },
   ) {
-    this.category = category;
-    this.name = name;
-    this.label = label;
-    this.type = type;
-    this.isReadonly = isReadonly;
-    this.priority = priority;
-    this.editor = editor;
-    this.renderer = renderer;
-    this.extendedData = extendedData;
+    /* istanbul ignore next */
+    const props =
+      "category" in categoryOrProps
+        ? categoryOrProps
+        : {
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            extendedData,
+          };
+    this.category = props.category;
+    this.name = props.name;
+    this.label = props.label;
+    this.type = props.type;
+    this.isReadonly = props.isReadonly;
+    this.priority = props.priority;
+    this.editor = props.editor;
+    this.renderer = props.renderer;
+    this.extendedData = props.extendedData;
   }
 
   /**
@@ -206,7 +260,7 @@ export class Field {
   }
 
   public clone() {
-    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor, this.renderer, this.extendedData);
+    const clone = new Field(this);
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -243,8 +297,8 @@ export class Field {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       return NestedContentField.fromJSON(json, categories);
     }
-    const field = Object.create(Field.prototype);
-    return Object.assign(field, json, {
+    return new Field({
+      ...json,
       category: Field.getCategoryFromFieldJson(json, categories),
     });
   }
@@ -258,17 +312,14 @@ export class Field {
     if (!json) {
       return undefined;
     }
-
     if (isPropertiesField(json)) {
       return PropertiesField.fromCompressedJSON(json, classesMap, categories);
     }
-
     if (isNestedContentField(json)) {
       return NestedContentField.fromCompressedJSON(json, classesMap, categories);
     }
-
-    const field = Object.create(Field.prototype);
-    return Object.assign(field, json, {
+    return new Field({
+      ...json,
       category: Field.getCategoryFromFieldJson(json, categories),
     });
   }
@@ -312,6 +363,15 @@ export class Field {
 }
 
 /**
+ * Props for creating [[PropertiesField]].
+ * @public
+ */
+interface PropertiesFieldProps extends FieldProps {
+  /** A list of properties this field is created from */
+  properties: Property[];
+}
+
+/**
  * Describes a content field that's based on one or more similar
  * EC properties.
  *
@@ -322,7 +382,7 @@ export class PropertiesField extends Field {
   public properties: Property[];
 
   /**
-   * Creates an instance of PropertiesField.
+   * Creates an instance of [[PropertiesField]].
    * @param category Category information
    * @param name Unique name
    * @param label Display label
@@ -332,20 +392,49 @@ export class PropertiesField extends Field {
    * @param properties A list of properties this field is created from
    * @param editor Property editor used to edit values of this field
    * @param renderer Property renderer used to render values of this field
+   * @deprecated in 5.0. Use an overload with [[PropertiesFieldProps]] instead.
    */
   public constructor(
     category: CategoryDescription,
     name: string,
     label: string,
-    description: TypeDescription,
+    type: TypeDescription,
     isReadonly: boolean,
     priority: number,
     properties: Property[],
     editor?: EditorDescription,
     renderer?: RendererDescription,
+  );
+  /** Creates an instance of [[PropertiesField]]. */
+  public constructor(props: PropertiesFieldProps);
+  public constructor(
+    categoryOrProps: CategoryDescription | PropertiesFieldProps,
+    name?: string,
+    label?: string,
+    type?: TypeDescription,
+    isReadonly?: boolean,
+    priority?: number,
+    properties?: Property[],
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
   ) {
-    super(category, name, label, description, isReadonly, priority, editor, renderer);
-    this.properties = properties;
+    /* istanbul ignore next */
+    const props =
+      "category" in categoryOrProps
+        ? categoryOrProps
+        : {
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            properties: properties!,
+          };
+    super(props);
+    this.properties = props.properties;
   }
 
   /** Is this a an array property field */
@@ -358,17 +447,7 @@ export class PropertiesField extends Field {
   }
 
   public override clone() {
-    const clone = new PropertiesField(
-      this.category,
-      this.name,
-      this.label,
-      this.type,
-      this.isReadonly,
-      this.priority,
-      this.properties,
-      this.editor,
-      this.renderer,
-    );
+    const clone = new PropertiesField(this);
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -394,16 +473,14 @@ export class PropertiesField extends Field {
     if (!json) {
       return undefined;
     }
-
     if (isArrayPropertiesField(json)) {
       return ArrayPropertiesField.fromJSON(json, categories);
     }
     if (isStructPropertiesField(json)) {
       return StructPropertiesField.fromJSON(json, categories);
     }
-
-    const field = Object.create(PropertiesField.prototype);
-    return Object.assign(field, json, {
+    return new PropertiesField({
+      ...json,
       category: this.getCategoryFromFieldJson(json, categories),
     });
   }
@@ -423,8 +500,8 @@ export class PropertiesField extends Field {
     if (isStructPropertiesField(json)) {
       return StructPropertiesField.fromCompressedJSON(json, classesMap, categories);
     }
-    const field = Object.create(PropertiesField.prototype);
-    return Object.assign(field, json, {
+    return new PropertiesField({
+      ...json,
       category: this.getCategoryFromFieldJson(json, categories),
       properties: json.properties.map((propertyJson) => fromCompressedPropertyJSON(propertyJson, classesMap)),
     });
@@ -492,26 +569,68 @@ export class PropertiesField extends Field {
 }
 
 /**
+ * Props for creating [[ArrayPropertiesField]].
+ * @public
+ */
+interface ArrayPropertiesFieldProps extends PropertiesFieldProps {
+  itemsField: PropertiesField;
+}
+
+/**
  * Describes a content field that's based on one or more similar EC array properties.
  * @public
  */
 export class ArrayPropertiesField extends PropertiesField {
   public itemsField: PropertiesField;
 
+  /**
+   * Creates an instance of [[ArrayPropertiesField]].
+   * @deprecated in 5.0. Use an overload with [[ArrayPropertiesFieldProps]] instead.
+   */
   public constructor(
     category: CategoryDescription,
     name: string,
     label: string,
-    description: TypeDescription,
+    type: TypeDescription,
     itemsField: PropertiesField,
     isReadonly: boolean,
     priority: number,
     properties: Property[],
     editor?: EditorDescription,
     renderer?: RendererDescription,
+  );
+  /** Creates an instance of [[ArrayPropertiesField]]. */
+  public constructor(props: ArrayPropertiesFieldProps);
+  public constructor(
+    categoryOrProps: CategoryDescription | ArrayPropertiesFieldProps,
+    name?: string,
+    label?: string,
+    type?: TypeDescription,
+    itemsField?: PropertiesField,
+    isReadonly?: boolean,
+    priority?: number,
+    properties?: Property[],
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
   ) {
-    super(category, name, label, description, isReadonly, priority, properties, editor, renderer);
-    this.itemsField = itemsField;
+    /* istanbul ignore next */
+    const props =
+      "category" in categoryOrProps
+        ? categoryOrProps
+        : {
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            properties: properties!,
+            itemsField: itemsField!,
+          };
+    super(props);
+    this.itemsField = props.itemsField;
   }
 
   public override isArrayPropertiesField(): this is ArrayPropertiesField {
@@ -519,18 +638,7 @@ export class ArrayPropertiesField extends PropertiesField {
   }
 
   public override clone() {
-    const clone = new ArrayPropertiesField(
-      this.category,
-      this.name,
-      this.label,
-      this.type,
-      this.itemsField.clone(),
-      this.isReadonly,
-      this.priority,
-      this.properties,
-      this.editor,
-      this.renderer,
-    );
+    const clone = new ArrayPropertiesField(this);
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -553,10 +661,10 @@ export class ArrayPropertiesField extends PropertiesField {
 
   /** Deserialize [[ArrayPropertiesField]] from JSON */
   public static override fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField {
-    const field = Object.create(ArrayPropertiesField.prototype);
-    return Object.assign(field, json, {
+    return new ArrayPropertiesField({
+      ...json,
       category: this.getCategoryFromFieldJson(json, categories),
-      itemsField: PropertiesField.fromJSON(json.itemsField, categories),
+      itemsField: PropertiesField.fromJSON(json.itemsField, categories)!,
     });
   }
 
@@ -569,13 +677,21 @@ export class ArrayPropertiesField extends PropertiesField {
     classesMap: { [id: string]: CompressedClassInfoJSON },
     categories: CategoryDescription[],
   ): ArrayPropertiesField {
-    const field = Object.create(ArrayPropertiesField.prototype);
-    return Object.assign(field, json, {
+    return new ArrayPropertiesField({
+      ...json,
       category: this.getCategoryFromFieldJson(json, categories),
       properties: json.properties.map((propertyJson) => fromCompressedPropertyJSON(propertyJson, classesMap)),
-      itemsField: PropertiesField.fromCompressedJSON(json.itemsField, classesMap, categories),
+      itemsField: PropertiesField.fromCompressedJSON(json.itemsField, classesMap, categories)!,
     });
   }
+}
+
+/**
+ * Props for creating [[StructPropertiesField]].
+ * @public
+ */
+interface StructPropertiesFieldProps extends PropertiesFieldProps {
+  memberFields: PropertiesField[];
 }
 
 /**
@@ -585,20 +701,54 @@ export class ArrayPropertiesField extends PropertiesField {
 export class StructPropertiesField extends PropertiesField {
   public memberFields: PropertiesField[];
 
+  /**
+   * Creates an instance of [[StructPropertiesField]].
+   * @deprecated in 5.0. Use an overload with [[StructPropertiesFieldProps]] instead.
+   */
   public constructor(
     category: CategoryDescription,
     name: string,
     label: string,
-    description: TypeDescription,
+    type: TypeDescription,
     memberFields: PropertiesField[],
     isReadonly: boolean,
     priority: number,
     properties: Property[],
     editor?: EditorDescription,
     renderer?: RendererDescription,
+  );
+  /** Creates an instance of [[StructPropertiesField]]. */
+  public constructor(props: StructPropertiesFieldProps);
+  public constructor(
+    categoryOrProps: CategoryDescription | StructPropertiesFieldProps,
+    name?: string,
+    label?: string,
+    type?: TypeDescription,
+    memberFields?: PropertiesField[],
+    isReadonly?: boolean,
+    priority?: number,
+    properties?: Property[],
+    editor?: EditorDescription,
+    renderer?: RendererDescription,
   ) {
-    super(category, name, label, description, isReadonly, priority, properties, editor, renderer);
-    this.memberFields = memberFields;
+    /* istanbul ignore next */
+    const props =
+      "category" in categoryOrProps
+        ? categoryOrProps
+        : {
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            properties: properties!,
+            memberFields: memberFields!,
+          };
+    super(props);
+    this.memberFields = props.memberFields;
   }
 
   public override isStructPropertiesField(): this is StructPropertiesField {
@@ -606,18 +756,7 @@ export class StructPropertiesField extends PropertiesField {
   }
 
   public override clone() {
-    const clone = new StructPropertiesField(
-      this.category,
-      this.name,
-      this.label,
-      this.type,
-      this.memberFields.map((m) => m.clone()),
-      this.isReadonly,
-      this.priority,
-      this.properties,
-      this.editor,
-      this.renderer,
-    );
+    const clone = new StructPropertiesField(this);
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -640,10 +779,10 @@ export class StructPropertiesField extends PropertiesField {
 
   /** Deserialize [[StructPropertiesField]] from JSON */
   public static override fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField {
-    const field = Object.create(StructPropertiesField.prototype);
-    return Object.assign(field, json, {
+    return new StructPropertiesField({
+      ...json,
       category: this.getCategoryFromFieldJson(json, categories),
-      memberFields: json.memberFields.map((m) => PropertiesField.fromJSON(m, categories)),
+      memberFields: json.memberFields.map((m) => PropertiesField.fromJSON(m, categories)!),
     });
   }
 
@@ -656,13 +795,47 @@ export class StructPropertiesField extends PropertiesField {
     classesMap: { [id: string]: CompressedClassInfoJSON },
     categories: CategoryDescription[],
   ): StructPropertiesField {
-    const field = Object.create(StructPropertiesField.prototype);
-    return Object.assign(field, json, {
+    return new StructPropertiesField({
+      ...json,
       category: this.getCategoryFromFieldJson(json, categories),
       properties: json.properties.map((propertyJson) => fromCompressedPropertyJSON(propertyJson, classesMap)),
-      memberFields: json.memberFields.map((m) => PropertiesField.fromCompressedJSON(m, classesMap, categories)),
+      memberFields: json.memberFields.map((m) => PropertiesField.fromCompressedJSON(m, classesMap, categories)!),
     });
   }
+}
+
+/**
+ * Props for creating [[NestedContentField]].
+ * @public
+ */
+interface NestedContentFieldProps extends FieldProps {
+  /** Information about an ECClass whose properties are nested inside this field */
+  contentClassInfo: ClassInfo;
+  /** Relationship path to [Primary class]($docs/presentation/content/Terminology#primary-class) */
+  pathToPrimaryClass: RelationshipPath;
+  /**
+   * Meaning of the relationship between the [primary class]($docs/presentation/content/Terminology#primary-class)
+   * and content class of this field.
+   *
+   * The value is set up through [[RelatedPropertiesSpecification.relationshipMeaning]] attribute when setting up
+   * presentation rules for creating the content.
+   */
+  relationshipMeaning?: RelationshipMeaning;
+  /**
+   * When content descriptor is requested in a polymorphic fashion, fields get created if at least one of the concrete classes
+   * has it. In certain situations it's necessary to know which concrete classes caused that and this attribute is
+   * here to help.
+   *
+   * **Example:** There's a base class `A` and it has two derived classes `B` and `C` and class `B` has a relationship to class `D`.
+   * When content descriptor is requested for class `A` polymorphically, it's going to contain fields for all properties of class `B`,
+   * class `C` and a nested content field for the `B -> D` relationship. The nested content field's `actualPrimaryClassIds` attribute
+   * will contain ID of class `B`, identifying that only this specific class has the relationship.
+   */
+  actualPrimaryClassIds?: Id64String[];
+  /** Contained nested fields */
+  nestedFields: Field[];
+  /** Flag specifying whether field should be expanded */
+  autoExpand?: boolean;
 }
 
 /**
@@ -700,7 +873,7 @@ export class NestedContentField extends Field {
   public autoExpand?: boolean;
 
   /**
-   * Creates an instance of NestedContentField.
+   * Creates an instance of [[NestedContentField]].
    * @param category Category information
    * @param name Unique name
    * @param label Display label
@@ -714,12 +887,13 @@ export class NestedContentField extends Field {
    * @param autoExpand Flag specifying whether field should be expanded
    * @param relationshipMeaning RelationshipMeaning of the field
    * @param renderer Property renderer used to render values of this field
+   * @deprecated in 5.0. Use an overload with [[NestedContentFieldProps]] instead.
    */
   public constructor(
     category: CategoryDescription,
     name: string,
     label: string,
-    description: TypeDescription,
+    type: TypeDescription,
     isReadonly: boolean,
     priority: number,
     contentClassInfo: ClassInfo,
@@ -728,33 +902,55 @@ export class NestedContentField extends Field {
     editor?: EditorDescription,
     autoExpand?: boolean,
     renderer?: RendererDescription,
+  );
+  /** Creates an instance of [[NestedContentField]]. */
+  public constructor(props: NestedContentFieldProps);
+  public constructor(
+    categoryOrProps: CategoryDescription | NestedContentFieldProps,
+    name?: string,
+    label?: string,
+    type?: TypeDescription,
+    isReadonly?: boolean,
+    priority?: number,
+    contentClassInfo?: ClassInfo,
+    pathToPrimaryClass?: RelationshipPath,
+    nestedFields?: Field[],
+    editor?: EditorDescription,
+    autoExpand?: boolean,
+    renderer?: RendererDescription,
   ) {
-    super(category, name, label, description, isReadonly, priority, editor, renderer);
-    this.contentClassInfo = contentClassInfo;
-    this.pathToPrimaryClass = pathToPrimaryClass;
-    this.relationshipMeaning = RelationshipMeaning.RelatedInstance;
-    this.nestedFields = nestedFields;
-    this.autoExpand = autoExpand;
-    this.actualPrimaryClassIds = [];
+    /* istanbul ignore next */
+    const props =
+      "category" in categoryOrProps
+        ? categoryOrProps
+        : {
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            contentClassInfo: contentClassInfo!,
+            pathToPrimaryClass: pathToPrimaryClass!,
+            nestedFields: nestedFields!,
+            autoExpand,
+          };
+    super(props);
+    this.contentClassInfo = props.contentClassInfo;
+    this.pathToPrimaryClass = props.pathToPrimaryClass;
+    this.relationshipMeaning = props.relationshipMeaning ?? RelationshipMeaning.RelatedInstance;
+    this.nestedFields = props.nestedFields;
+    this.autoExpand = props.autoExpand;
+    this.actualPrimaryClassIds = props.actualPrimaryClassIds ?? [];
   }
 
   public override clone() {
-    const clone = new NestedContentField(
-      this.category,
-      this.name,
-      this.label,
-      this.type,
-      this.isReadonly,
-      this.priority,
-      this.contentClassInfo,
-      this.pathToPrimaryClass,
-      this.nestedFields.map((n) => n.clone()),
-      this.editor,
-      this.autoExpand,
-      this.renderer,
-    );
-    clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
-    clone.relationshipMeaning = this.relationshipMeaning;
+    const clone = new NestedContentField({
+      ...this,
+      nestedFields: this.nestedFields.map((n) => n.clone()),
+    });
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -801,9 +997,9 @@ export class NestedContentField extends Field {
     if (!json) {
       return undefined;
     }
-
-    const field = Object.create(NestedContentField.prototype);
-    return Object.assign(field, json, this.fromCommonJSON(json, categories), {
+    return new NestedContentField({
+      ...json,
+      ...this.fromCommonJSON(json, categories),
       nestedFields: json.nestedFields
         .map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories))
         .filter((nestedField): nestedField is Field => !!nestedField),
@@ -817,8 +1013,9 @@ export class NestedContentField extends Field {
     categories: CategoryDescription[],
   ) {
     assert(classesMap.hasOwnProperty(json.contentClassInfo));
-    const field = Object.create(NestedContentField.prototype);
-    return Object.assign(field, json, this.fromCommonJSON(json, categories), {
+    return new NestedContentField({
+      ...json,
+      ...this.fromCommonJSON(json, categories),
       category: this.getCategoryFromFieldJson(json, categories),
       nestedFields: json.nestedFields
         .map((nestedFieldJson: FieldJSON) => Field.fromCompressedJSON(nestedFieldJson, classesMap, categories))
@@ -829,7 +1026,7 @@ export class NestedContentField extends Field {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[]): Partial<NestedContentField> {
+  private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[]) {
     return {
       category: this.getCategoryFromFieldJson(json, categories),
       relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
