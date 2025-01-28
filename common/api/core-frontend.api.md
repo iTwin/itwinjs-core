@@ -14638,6 +14638,7 @@ export abstract class Viewport implements Disposable, TileUser {
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     getTerrainHeightRange(): Range1d;
+    getTileTreeRefs(): Iterable<TileTreeReference>;
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getWorldFrustum(box?: Frustum): Frustum;
     // @internal
