@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { Constant } from "../Metadata/Constant";
 import { Unit } from "../Metadata/Unit";
-import { SchemaItemType } from "../ECObjects";
 import { almostEqual } from "@itwin/core-quantity";
 
 /**
