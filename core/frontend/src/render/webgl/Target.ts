@@ -15,7 +15,7 @@ import { ViewRect } from "../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { ReadImageBufferArgs, Viewport } from "../../Viewport";
+import { ReadImageBufferArgs, ReadImageToCanvasOptions, Viewport } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
@@ -64,6 +64,7 @@ import { FrameStatsCollector } from "../FrameStats";
 import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
 import { _implementationProhibited } from "../../common/internal/Symbols";
+import { IModelApp } from "../../IModelApp";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -157,6 +158,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public displayNormalMaps = true;
 
   public freezeRealityTiles = false;
+
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;
@@ -1093,12 +1095,24 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(): HTMLCanvasElement {
+  public copyImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return document.createElement("canvas");
+
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
+
+    if ((options !== undefined) && (!options.omitCanvasDecorations)) {
+      const overlayCanvas = vp.canvas;
+      const ctx = retCanvas.getContext("2d")!;
+      ctx.drawImage(overlayCanvas, 0, 0);
+    }
+
     const pixelRatio = this.devicePixelRatio;
     retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
+
     return retCanvas;
   }
 
@@ -1428,11 +1442,10 @@ export class OnScreenTarget extends Target {
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
-  public override readImageToCanvas(): HTMLCanvasElement {
-    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
+  public override readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+    return this._usingWebGLCanvas || options?.omitCanvasDecorations ? this.copyImageToCanvas(options) : this._2dCanvas.canvas;
   }
 }
-
 /** @internal */
 export class OffScreenTarget extends Target {
   public constructor(rect: ViewRect) {
@@ -1472,8 +1485,8 @@ export class OffScreenTarget extends Target {
     this.renderSystem.frameBufferStack.pop();
   }
 
-  public override readImageToCanvas(): HTMLCanvasElement {
-    return this.copyImageToCanvas();
+  public override readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+    return this.copyImageToCanvas(options);
   }
 }
 
