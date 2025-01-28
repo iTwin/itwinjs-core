@@ -267,7 +267,7 @@ export interface ReadPixelsArgs {
  */
 export interface ReadImageToCanvasOptions {
   /** If true, canvas decorations will not be included in the saved image. */
-  omitCanvasDecorations: boolean;
+  omitCanvasDecorations?: boolean;
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
