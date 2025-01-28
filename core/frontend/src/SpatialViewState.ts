@@ -207,9 +207,10 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public override forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    for (const ref of this._treeRefs)
-      func(ref);
+  public override * getModelTreeRefs(): Iterable<TileTreeReference> {
+    for (const ref of this._treeRefs) {
+      yield ref;
+    }
   }
 
   /** @internal */

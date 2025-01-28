@@ -507,18 +507,27 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  /** Execute a function against the [[TileTreeReference]]s associated with each viewed model.
-   * @note Each model may have more than one tile tree reference - for instance, if the view has a schedule script containing animation transforms.
-   * @internal
-   */
-  public abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
+  /** @internal */
+  public abstract getModelTreeRefs(): Iterable<TileTreeReference>;
 
   /** Execute a function against each [[TileTreeReference]] associated with this view.
-   * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
+   * This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
+   * @note This method is inefficient (iteration cannot be aborted) and awkward (callback cannot be async nor return a value). Prefer to iterate using [[getTileTreeRefs]].
+   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    this.forEachModelTreeRef(func);
-    this.displayStyle.forEachTileTreeRef(func);
+    for (const ref of this.getModelTreeRefs()) {
+      func(ref);
+    }
+
+    for (const ref of this.displayStyle.getTileTreeRefs()) {
+      func(ref);
+    }
+  }
+
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    yield * this.getModelTreeRefs();
+    yield * this.displayStyle.getTileTreeRefs();
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
@@ -1134,13 +1143,13 @@ export abstract class ViewState extends ElementState {
    */
   public refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean {
     let refreshed = false;
-    this.forEachModelTreeRef((ref) => {
+    for (const ref of this.getModelTreeRefs()) {
       const tree = ref.treeOwner.tileTree;
       if (undefined !== tree && (undefined === modelIds || Id64.has(modelIds, tree.modelId))) {
         ref.treeOwner[Symbol.dispose]();
         refreshed = true;
       }
-    });
+    }
 
     return refreshed;
   }
@@ -2427,10 +2436,10 @@ export abstract class ViewState2d extends ViewState {
   }
 
   /** @internal */
-  public override forEachModelTreeRef(func: (ref: TileTreeReference) => void): void {
-    const ref = this._tileTreeRef;
-    if (undefined !== ref)
-      func(ref);
+  public override * getModelTreeRefs(): Iterable<TileTreeReference> {
+    if (this._tileTreeRef) {
+      yield this._tileTreeRef;
+    }
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
