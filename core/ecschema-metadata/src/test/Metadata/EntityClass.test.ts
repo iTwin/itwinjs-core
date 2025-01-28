@@ -19,6 +19,50 @@ import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtil
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("EntityClass", () => {
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestEntityClass: {
+        schemaItemType: "EntityClass",
+        label: "Test Entity Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on EntityClass", async () => {
+      const testEntityClass = await ecSchema.getItem("TestEntityClass");
+      assert.isDefined(testEntityClass);
+      expect(EntityClass.isEntityClass(testEntityClass)).to.be.true;
+      expect(() => EntityClass.assertIsEntityClass(testEntityClass)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(EntityClass.isEntityClass(testPhenomenon)).to.be.false;
+      expect(() => EntityClass.assertIsEntityClass(testPhenomenon)).to.throw();
+    });
+
+    it("EntityClass type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestEntityClass")).to.be.instanceof(EntityClass);
+      expect(ecSchema.getItemSync("TestEntityClass")).to.be.instanceof(EntityClass);
+    });
+
+    it("EntityClass type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", EntityClass)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", EntityClass)).to.throw();
+    });
+  });
+
   describe("get inherited properties", () => {
     let schema: Schema;
 

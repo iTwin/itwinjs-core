@@ -81,6 +81,7 @@ import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
+import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
@@ -203,6 +204,9 @@ import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { RscFontEncodingProps } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaItemKey } from '@itwin/ecschema-metadata';
+import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -2344,6 +2348,7 @@ export class Entity {
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
+    getMetaData(): EntityClass;
     // @internal @deprecated
     getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
@@ -2359,6 +2364,10 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
+    // @internal
+    static get schemaItemKey(): SchemaItemKey;
+    // (undocumented)
+    get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
     toJSON(): EntityProps;
 }
@@ -3282,6 +3291,8 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
+    // (undocumented)
+    get schemaContext(): SchemaContext;
     // @beta
     simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
@@ -4859,6 +4870,8 @@ export class Schema {
     protected constructor();
     // @internal
     static get missingRequiredBehavior(): boolean;
+    // @internal
+    static get schemaKey(): SchemaKey_2;
     static get schemaName(): string;
     // @beta
     static toSemverString(paddedVersion: string): string;

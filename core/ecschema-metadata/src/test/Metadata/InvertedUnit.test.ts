@@ -12,11 +12,67 @@ import { Schema } from "../../Metadata/Schema";
 import { Unit } from "../../Metadata/Unit";
 import { UnitSystem } from "../../Metadata/UnitSystem";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestInvertedUnit: {
+        schemaItemType: "InvertedUnit",
+        label: "Test Inverted Unit",
+        unitSystem: "TestSchema.TestUnitSystem",
+        invertsUnit: "TestSchema.TestUnit",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+      TestUnitSystem: {
+        schemaItemType: "UnitSystem",
+        label: "Imperial",
+        description: "Units of measure from the british imperial empire",
+      },
+      TestUnit: {
+        schemaItemType: "Unit",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "Vert/Horizontal",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on InvertedUnit", async () => {
+      const testInvertedUnit = await ecSchema.getItem("TestInvertedUnit");
+      assert.isDefined(testInvertedUnit);
+      expect(InvertedUnit.isInvertedUnit(testInvertedUnit)).to.be.true;
+      expect(() => InvertedUnit.assertIsInvertedUnit(testInvertedUnit)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(InvertedUnit.isInvertedUnit(testPhenomenon)).to.be.false;
+      expect(() => InvertedUnit.assertIsInvertedUnit(testPhenomenon)).to.throw();
+    });
+
+    it("InvertedUnit type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestInvertedUnit")).to.be.instanceof(InvertedUnit);
+      expect(ecSchema.getItemSync("TestInvertedUnit")).to.be.instanceof(InvertedUnit);
+    });
+
+    it("InvertedUnit type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", InvertedUnit)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", InvertedUnit)).to.throw();
+    });
+  });
 
   describe("SchemaItemType", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);

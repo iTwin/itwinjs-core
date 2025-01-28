@@ -50,6 +50,46 @@ describe("Constant", () => {
     expect(testConst!.fullName).eq("TestSchema.TestConstant");
   });
 
+  describe("type safety checks", () => {
+    const fullyDefinedConstant = createSchemaJson({
+      label: "Test Constant",
+      description: "testing a constant",
+      phenomenon: "TestSchema.TestPhenomenon",
+      definition: "PI",
+      numerator: 5.5,
+      denominator: 5.1,
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Constant", async () => {
+      const testConst = await ecSchema.getItem("TestConstant");
+      assert.isDefined(testConst);
+      expect(Constant.isConstant(testConst)).to.be.true;
+      expect(() => Constant.assertIsConstant(testConst)).not.to.throw();
+      //verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Constant.isConstant(testPhenomenon)).to.be.false;
+      expect(() => Constant.assertIsConstant(testPhenomenon)).to.throw();
+    });
+
+    it("Constant type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestConstant")).to.be.instanceof(Constant);
+      expect(ecSchema.getItemSync("TestConstant")).to.be.instanceof(Constant);
+    });
+
+    it("Constant type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", Constant)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", Constant)).to.throw();
+    });
+  });
+
   describe("deserialization", () => {
     // Fully defined constant
     const fullyDefinedConstant = createSchemaJson({

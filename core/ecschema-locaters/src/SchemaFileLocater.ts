@@ -227,7 +227,7 @@ export abstract class SchemaFileLocater {
     return foundFiles;
   }
 
-  public abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+  public abstract getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
 
   /**
    * Compares two Schema versions.  If the left-hand version is greater, 1 is returned. If the

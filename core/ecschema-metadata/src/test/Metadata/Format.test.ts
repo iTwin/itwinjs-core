@@ -54,6 +54,51 @@ describe("Format", () => {
     expect(format!.fullName).eq("TestSchema.TestFormat");
   });
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestFormat: {
+        schemaItemType: "Format",
+        label: "Test Format",
+        description: "Used for testing",
+        type: "decimal",
+        precision: 6,
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Format", async () => {
+      const format = await ecSchema.getItem("TestFormat");
+      assert.isDefined(format);
+      expect(Format.isFormat(format)).to.be.true;
+      expect(() => Format.assertIsFormat(format)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Format.isFormat(testPhenomenon)).to.be.false;
+      expect(() => Format.assertIsFormat(testPhenomenon)).to.throw();
+    });
+
+    it("Format type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestFormat")).to.be.instanceof(Format);
+      expect(ecSchema.getItemSync("TestFormat")).to.be.instanceof(Format);
+    });
+
+    it("Format type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", Format)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", Format)).to.throw();
+    });
+  });
+
   describe("type checking json", () => {
     let jsonParser: JsonParser; // This is an easy way to test the logic directly in the parser without having to go through deserialization every time.
 

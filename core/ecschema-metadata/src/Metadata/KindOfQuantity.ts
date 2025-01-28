@@ -22,7 +22,8 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class KindOfQuantity extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.KindOfQuantity; // Needed to allow both run-time and compile-time check.
+  public override readonly schemaItemType = KindOfQuantity.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.KindOfQuantity; }
   protected _relativeError: number = 1.0;
   protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
@@ -210,6 +211,25 @@ export class KindOfQuantity extends SchemaItem {
    */
   protected setRelativeError(relativeError: number): void {
     this._relativeError = relativeError;
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type KindOfQuantity.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a KindOfQuantity, false otherwise.
+   */
+  public static isKindOfQuantity(item?: SchemaItem): item is KindOfQuantity {
+    return item?.schemaItemType === SchemaItemType.KindOfQuantity;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type KindOfQuantity.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to KindOfQuantity if it is a KindOfQuantity, undefined otherwise.
+   */
+  public static assertIsKindOfQuantity(item?: SchemaItem): asserts item is KindOfQuantity {
+    if (!this.isKindOfQuantity(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.KindOfQuantity}' (KindOfQuantity)`);
   }
 }
 /**

@@ -12,7 +12,7 @@ import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, LazyLoadedECClass } from "../Interfaces";
+import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
@@ -501,8 +501,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = (ecClass).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass).mixins[i]);
+        for (let i = (ecClass as HasMixins).mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await (ecClass as HasMixins).mixins[i]);
         }
       }
 
@@ -521,8 +521,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = (ecClass: AnyClass) => {
-      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (const m of Array.from(ecClass.getMixinsSync()).reverse()) {
+      if (ecClass.schemaItemType === SchemaItemType.EntityClass) {
+        for (const m of Array.from((ecClass as HasMixins).getMixinsSync()).reverse()) {
           baseClasses.push(m);
         }
       }
@@ -779,7 +779,29 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.StructClass;
+  public override readonly schemaItemType = StructClass.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.StructClass; }
+  /**
+   * Type guard to check if the SchemaItem is of type StructClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a StructClass, false otherwise.
+   */
+  public static isStructClass(item?: SchemaItem): item is StructClass {
+    if (item && item.schemaItemType === SchemaItemType.StructClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type StructClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to StructClass if it is a StructClass, undefined otherwise.
+   */
+  public static assertIsStructClass(item?: SchemaItem): asserts item is StructClass {
+    if (!this.isStructClass(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.StructClass}' (StructClass)`);
+  }
 }
 
 /**

@@ -495,12 +495,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     };
 
     const targetUnit = targetFormat.units[0][0];
-    const targetPhenomenon = targetUnit.schemaItemType === SchemaItemType.InvertedUnit
+    const targetPhenomenon = InvertedUnit.isInvertedUnit(targetUnit)
       ? (await targetUnit.invertsUnit)?.phenomenon
       : targetUnit.phenomenon;
 
     const sourceUnit = await this._sourceSchema.lookupItem(entry.difference[0].name) as Unit | InvertedUnit;
-    const sourcePhenomenon = sourceUnit.schemaItemType === SchemaItemType.InvertedUnit
+    const sourcePhenomenon = InvertedUnit.isInvertedUnit(sourceUnit)
       ? (await sourceUnit.invertsUnit)?.phenomenon
       : sourceUnit.phenomenon;
 

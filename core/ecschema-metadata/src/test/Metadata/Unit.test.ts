@@ -52,6 +52,57 @@ describe("Unit", () => {
     expect(unit!.fullName).eq("TestSchema.TestUnit");
   });
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestUnit: {
+        schemaItemType: "Unit",
+        label: "Test Unit",
+        description: "Used for testing",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "M",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+      TestUnitSystem: {
+        schemaItemType: "UnitSystem",
+        label: "Metric",
+        description: "Metric system",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Unit", async () => {
+      const testUnit = await ecSchema.getItem("TestUnit");
+      assert.isDefined(testUnit);
+      expect(Unit.isUnit(testUnit)).to.be.true;
+      expect(() => Unit.assertIsUnit(testUnit)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Unit.isUnit(testPhenomenon)).to.be.false;
+      expect(() => Unit.assertIsUnit(testPhenomenon)).to.throw();
+    });
+
+    it("Unit type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestUnit")).to.be.instanceof(Unit);
+      expect(ecSchema.getItemSync("TestUnit")).to.be.instanceof(Unit);
+    });
+
+    it("Unit type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", Unit)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", Unit)).to.throw();
+    });
+  });
+
   describe("deserialization", () => {
     const fullyDefinedUnit = createSchemaJson({
       label: "Millimeter",

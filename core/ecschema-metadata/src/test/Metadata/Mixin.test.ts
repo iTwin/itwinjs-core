@@ -74,6 +74,56 @@ describe("Mixin", () => {
     expect(mixin!.fullName).eq("TestSchema.TestMixin");
   });
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestMixin: {
+        schemaItemType: "Mixin",
+        label: "Test Mixin",
+        description: "Used for testing",
+        appliesTo: "TestSchema.TestEntityClass",
+      },
+      TestEntityClass: {
+        schemaItemType: "EntityClass",
+        label: "Test Entity Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Mixin", async () => {
+      const testMixin = await ecSchema.getItem("TestMixin");
+      assert.isDefined(testMixin);
+      expect(Mixin.isMixin(testMixin)).to.be.true;
+      expect(() => Mixin.assertIsMixin(testMixin)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Mixin.isMixin(testPhenomenon)).to.be.false;
+      expect(() => Mixin.assertIsMixin(testPhenomenon)).to.throw();
+    });
+
+    it("Mixin type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestMixin")).to.be.instanceof(Mixin);
+      expect(ecSchema.getItemSync("TestMixin")).to.be.instanceof(Mixin);
+    });
+
+    it("Mixin type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", Mixin)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", Mixin)).to.throw();
+    });
+  });
+
   describe("deserialization", () => {
     it("should succeed with fully defined", async () => {
       const testSchema = createSchemaJsonWithItems({

@@ -17,7 +17,6 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     static register(): void;
 }
 
-
 // (No @packageDocumentation comment for this package)
 
 ```
