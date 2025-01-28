@@ -25,20 +25,6 @@ import { StrengthDirection } from "../../ECObjects";
 describe("ECClass", () => {
   let schema: Schema;
 
-  it("should get fullName", async () => {
-    const schemaJson = createSchemaJsonWithItems({
-      testStruct: {
-        schemaItemType: "StructClass",
-      },
-    });
-
-    const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-    assert.isDefined(ecSchema);
-    const structClass = await ecSchema.getItem<StructClass>("testStruct");
-    assert.isDefined(structClass);
-    expect(structClass!.fullName).eq("TestSchema.testStruct");
-  });
-
   describe("get properties", () => {
     beforeEach(() => {
       schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);

@@ -43,6 +43,67 @@ describe("KindOfQuantity", () => {
     description: "A really long description...",
   };
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestKindOfQuantity: {
+        schemaItemType: "KindOfQuantity",
+        label: "Test Kind Of Quantity",
+        description: "Used for testing",
+        relativeError: 0.1,
+        persistenceUnit: "TestSchema.M",
+        presentationUnits: ["TestSchema.TestFormat"],
+      },
+      TestFormat: {
+        schemaItemType: "Format",
+        type: "Decimal",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+      M: {
+        schemaItemType: "Unit",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "M",
+      },
+      TestUnitSystem: {
+        schemaItemType: "UnitSystem",
+        label: "Metric",
+        description: "Metric system",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on KindOfQuantity", async () => {
+      const testKindOfQuantity = await ecSchema.getItem("TestKindOfQuantity");
+      assert.isDefined(testKindOfQuantity);
+      expect(KindOfQuantity.isKindOfQuantity(testKindOfQuantity)).to.be.true;
+      expect(() => KindOfQuantity.assertIsKindOfQuantity(testKindOfQuantity)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(KindOfQuantity.isKindOfQuantity(testPhenomenon)).to.be.false;
+      expect(() => KindOfQuantity.assertIsKindOfQuantity(testPhenomenon)).to.throw();
+    });
+
+    it("KindOfQuantity type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestKindOfQuantity")).to.be.instanceof(KindOfQuantity);
+      expect(ecSchema.getItemSync("TestKindOfQuantity")).to.be.instanceof(KindOfQuantity);
+    });
+
+    it("KindOfQuantity type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", KindOfQuantity)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", KindOfQuantity)).to.throw();
+    });
+  });
+
   describe("deserialization", () => {
     let context: SchemaContext;
     let schema: Schema;

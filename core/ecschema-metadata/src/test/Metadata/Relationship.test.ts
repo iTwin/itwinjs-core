@@ -107,6 +107,75 @@ describe("RelationshipClass", () => {
     expect(relClass!.fullName).eq("TestSchema.TestRelationship");
   });
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestRelationshipClass: {
+        schemaItemType: "RelationshipClass",
+        label: "Test Relationship Class",
+        description: "Used for testing",
+        strength: "referencing",
+        strengthDirection: "forward",
+        source: {
+          multiplicity: "(0..*)",
+          roleLabel: "source role",
+          polymorphic: true,
+          constraintClasses: ["TestSchema.SourceEntityClass"],
+        },
+        target: {
+          multiplicity: "(0..*)",
+          roleLabel: "target role",
+          polymorphic: true,
+          constraintClasses: ["TestSchema.TargetEntityClass"],
+        },
+      },
+      SourceEntityClass: {
+        schemaItemType: "EntityClass",
+        label: "Source Entity Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+      },
+      TargetEntityClass: {
+        schemaItemType: "EntityClass",
+        label: "Target Entity Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on RelationshipClass", async () => {
+      const testRelationshipClass = await ecSchema.getItem("TestRelationshipClass");
+      assert.isDefined(testRelationshipClass);
+      expect(RelationshipClass.isRelationshipClass(testRelationshipClass)).to.be.true;
+      expect(() => RelationshipClass.assertIsRelationshipClass(testRelationshipClass)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(RelationshipClass.isRelationshipClass(testPhenomenon)).to.be.false;
+      expect(() => RelationshipClass.assertIsRelationshipClass(testPhenomenon)).to.throw();
+    });
+
+    it("RelationshipClass type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestRelationshipClass")).to.be.instanceof(RelationshipClass);
+      expect(ecSchema.getItemSync("TestRelationshipClass")).to.be.instanceof(RelationshipClass);
+    });
+
+    it("RelationshipClass type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", RelationshipClass)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", RelationshipClass)).to.throw();
+    });
+  });
+
   describe("deserialization", () => {
 
     function createSchemaJson(relClassJson: any): any {

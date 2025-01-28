@@ -32,6 +32,51 @@ describe("CustomAttributeClass", () => {
     expect(testCAClass!.fullName).eq("TestSchema.TestCAClass");
   });
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestCAClass: {
+        schemaItemType: "CustomAttributeClass",
+        label: "Test CustomAttribute Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+        appliesTo: "AnyClass",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on CustomAttributeClass", async () => {
+      const testCustomAttributeClass = await ecSchema.getItem("TestCAClass");
+      assert.isDefined(testCustomAttributeClass);
+      expect(CustomAttributeClass.isCustomAttributeClass(testCustomAttributeClass)).to.be.true;
+      expect(() => CustomAttributeClass.assertIsCustomAttributeClass(testCustomAttributeClass)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(CustomAttributeClass.isCustomAttributeClass(testPhenomenon)).to.be.false;
+      expect(() => CustomAttributeClass.assertIsCustomAttributeClass(testPhenomenon)).to.throw();
+    });
+
+    it("CustomAttributeClass type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestCAClass")).to.be.instanceof(CustomAttributeClass);
+      expect(ecSchema.getItemSync("TestCAClass")).to.be.instanceof(CustomAttributeClass);
+    });
+
+    it("CustomAttributeClass type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", CustomAttributeClass)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", CustomAttributeClass)).to.throw();
+    });
+  });
+
   describe("deserialization", () => {
     function createSchemaJson(caClassJson: any): any {
       return createSchemaJsonWithItems({

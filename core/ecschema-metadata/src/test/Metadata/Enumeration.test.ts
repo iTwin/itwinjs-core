@@ -12,6 +12,8 @@ import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
+/* eslint-disable @typescript-eslint/naming-convention */
+
 describe("Enumeration", () => {
   it("should get fullName", async () => {
     const schemaJson = createSchemaJsonWithItems({
@@ -35,6 +37,54 @@ describe("Enumeration", () => {
     const testEnum = await schema.getItem<Enumeration>("testEnum");
     assert.isDefined(testEnum);
     expect(testEnum!.fullName).eq("TestSchema.testEnum");
+  });
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestEnumeration: {
+        schemaItemType: "Enumeration",
+        label: "Test Enumeration",
+        description: "Used for testing",
+        type: "int",
+        enumerators: [
+          { name: "Enum1", value: 1 },
+          { name: "Enum2", value: 2 },
+        ],
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Enumeration", async () => {
+      const testEnumeration = await ecSchema.getItem("TestEnumeration");
+      assert.isDefined(testEnumeration);
+      expect(Enumeration.isEnumeration(testEnumeration)).to.be.true;
+      expect(() => Enumeration.assertIsEnumeration(testEnumeration)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Enumeration.isEnumeration(testPhenomenon)).to.be.false;
+      expect(() => Enumeration.assertIsEnumeration(testPhenomenon)).to.throw();
+    });
+
+    it("Enumeration type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestEnumeration")).to.be.instanceof(Enumeration);
+      expect(ecSchema.getItemSync("TestEnumeration")).to.be.instanceof(Enumeration);
+    });
+
+    it("Enumeration type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", Enumeration)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", Enumeration)).to.throw();
+    });
   });
 
   describe("addEnumerator tests", () => {

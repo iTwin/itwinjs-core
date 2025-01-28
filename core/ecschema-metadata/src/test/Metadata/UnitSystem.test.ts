@@ -8,6 +8,9 @@ import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
 import { UnitSystem } from "../../Metadata/UnitSystem";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 describe("UnitSystem tests", () => {
   let testUnitSystem: UnitSystem;
@@ -40,6 +43,49 @@ describe("UnitSystem tests", () => {
     const unitSystem = await schema.getItem<UnitSystem>("testUnitSystem");
     assert.isDefined(unitSystem);
     expect(unitSystem!.fullName).eq("TestSchema.testUnitSystem");
+  });
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestUnitSystem: {
+        schemaItemType: "UnitSystem",
+        label: "Test Unit System",
+        description: "Used for testing",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on UnitSystem", async () => {
+      const item = await ecSchema.getItem("TestUnitSystem");
+      assert.isDefined(item);
+      expect(UnitSystem.isUnitSystem(item)).to.be.true;
+      expect(() => UnitSystem.assertIsUnitSystem(item)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(UnitSystem.isUnitSystem(testPhenomenon)).to.be.false;
+      expect(() => UnitSystem.assertIsUnitSystem(testPhenomenon)).to.throw();
+    });
+
+    it("UnitSystem type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestUnitSystem")).to.be.instanceof(UnitSystem);
+      expect(ecSchema.getItemSync("TestUnitSystem")).to.be.instanceof(UnitSystem);
+    });
+
+    it("UnitSystem type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", UnitSystem)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", UnitSystem)).to.throw();
+    });
   });
 
   describe("Async fromJson", () => {

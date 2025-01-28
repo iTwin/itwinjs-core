@@ -10,6 +10,20 @@ import { EntityClass } from "../../Metadata/EntityClass";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { SchemaItemType } from "../../ECObjects";
+import { Mixin } from "../../Metadata/Mixin";
+import { StructClass } from "../../Metadata/Class";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
+import { RelationshipClass } from "../../Metadata/RelationshipClass";
+import { Enumeration } from "../../Metadata/Enumeration";
+import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
+import { PropertyCategory } from "../../Metadata/PropertyCategory";
+import { Unit } from "../../Metadata/Unit";
+import { InvertedUnit } from "../../Metadata/InvertedUnit";
+import { Constant } from "../../Metadata/Constant";
+import { Phenomenon } from "../../Metadata/Phenomenon";
+import { UnitSystem } from "../../Metadata/UnitSystem";
+import { Format } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -215,6 +229,29 @@ describe("SchemaItemKey", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
       expect(SchemaItem.isSchemaItem(testSchema)).to.be.false;
       expect(SchemaItem.isSchemaItem("A")).to.be.false;
+    });
+  });
+
+  describe("schemaItemType static property", () => {
+    it("should throw on base class", () => {
+      expect(() => SchemaItem.schemaItemType).to.throw("you must override static schemaName in SchemaItem");
+    });
+
+    it("should return proper types for known classes", () => {
+      expect(EntityClass.schemaItemType).to.eql(SchemaItemType.EntityClass);
+      expect(Mixin.schemaItemType).to.eql(SchemaItemType.Mixin);
+      expect(StructClass.schemaItemType).to.eql(SchemaItemType.StructClass);
+      expect(CustomAttributeClass.schemaItemType).to.eql(SchemaItemType.CustomAttributeClass);
+      expect(RelationshipClass.schemaItemType).to.eql(SchemaItemType.RelationshipClass);
+      expect(Enumeration.schemaItemType).to.eql(SchemaItemType.Enumeration);
+      expect(KindOfQuantity.schemaItemType).to.eql(SchemaItemType.KindOfQuantity);
+      expect(PropertyCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+      expect(Unit.schemaItemType).to.eql(SchemaItemType.Unit);
+      expect(InvertedUnit.schemaItemType).to.eql(SchemaItemType.InvertedUnit);
+      expect(Constant.schemaItemType).to.eql(SchemaItemType.Constant);
+      expect(Phenomenon.schemaItemType).to.eql(SchemaItemType.Phenomenon);
+      expect(UnitSystem.schemaItemType).to.eql(SchemaItemType.UnitSystem);
+      expect(Format.schemaItemType).to.eql(SchemaItemType.Format);
     });
   });
 });
