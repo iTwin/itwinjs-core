@@ -1573,19 +1573,15 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** @internal */
-  public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
-    for (const provider of this._tiledGraphicsProviders)
-      func(provider);
+  protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
+    for (const provider of this.tiledGraphicsProviders) {
+      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
+    }
   }
 
-  /** @internal */
-  protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void {
-
-    for (const provider of this._tiledGraphicsProviders)
-      provider.forEachTileTreeRef(this, (ref) => func(ref));
-  }
-
-  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport. */
+  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
+   * @deprecated in 5.0. Use [[mapTileTreeRefs]] instead.
+   */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
@@ -1597,10 +1593,15 @@ export abstract class Viewport implements Disposable, TileUser {
   };
 
 
-  /** Apply a function to every [[TileTreeReference]] displayed by this viewport. */
+  /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
+   * @deprecated in 5.0. Use [[tileTreeRefs]] instead.
+   */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.view.forEachTileTreeRef(func);
-    this.forEachTiledGraphicsProviderTree(func);
+    for (const ref of this.tiledGraphicsProviderRefs()) {
+      func(ref);
+    }
+
     this.forEachMapTreeRef(func);
   }
 
@@ -1625,7 +1626,10 @@ export abstract class Viewport implements Disposable, TileUser {
    * @internal
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
+    for (const ref of this.tiledGraphicsProviderRefs()) {
+      trees.disclose(ref);
+    }
+
     this.forEachMapTreeRef((ref) => trees.disclose(ref));
     trees.disclose(this.view);
   }
@@ -2228,9 +2232,11 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Compute the range of all geometry to be displayed in this viewport. */
   public computeViewRange(): Range3d {
     const fitRange = this.view.computeFitRange();
-    this.forEachTiledGraphicsProviderTree((ref) => {
+
+    for (const ref of this.tiledGraphicsProviderRefs()) {
       ref.unionFitRange(fitRange);
-    });
+    }
+
     return fitRange;
   }
 
@@ -3419,7 +3425,9 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
+      for (const ref of this.tiledGraphicsProviderRefs()) {
+        context.addFromDecorator(ref);
+      }
 
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
