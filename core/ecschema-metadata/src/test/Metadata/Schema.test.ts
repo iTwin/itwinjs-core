@@ -1257,7 +1257,7 @@ describe("Schema", () => {
           }
       });
 
-      it.only("should throw an error for current version, when encountered an unknown type", async () => {
+      it("should throw an error for current version, when encountered an unknown type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
             <ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion - 1}">
           <ECStructClass typeName="PrimStruct">
