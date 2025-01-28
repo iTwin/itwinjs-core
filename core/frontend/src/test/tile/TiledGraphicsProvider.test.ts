@@ -253,7 +253,7 @@ describe("TiledGraphicsProvider", () => {
       const a = new TestRef(tree);
       const b = new TestRef(tree);
 
-      class TestProvider implements TiledGraphicsProvider {
+      class Pvdr implements TiledGraphicsProvider {
         public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void) {
           func(a);
           func(b);
@@ -265,7 +265,7 @@ describe("TiledGraphicsProvider", () => {
         }
       };
 
-      const provider = new TestProvider();
+      const provider = new Pvdr();
       const refs: TileTreeReference[] = [];
       for (const ref of TiledGraphicsProvider.getTileTreeRefs(provider, viewport)) {
         refs.push(ref);
@@ -280,14 +280,14 @@ describe("TiledGraphicsProvider", () => {
       const a = new TestRef(tree);
       const b = new TestRef(tree);
 
-      class TestProvider implements TiledGraphicsProvider {
+      class Pvdr implements TiledGraphicsProvider {
         public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void) {
           func(a);
           func(b);
         }
       };
 
-      const provider = new TestProvider();
+      const provider = new Pvdr();
       const refs: TileTreeReference[] = [];
       for (const ref of TiledGraphicsProvider.getTileTreeRefs(provider, viewport)) {
         refs.push(ref);
