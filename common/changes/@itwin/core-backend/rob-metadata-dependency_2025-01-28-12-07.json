@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Integrate ecschema-metadata package to make schema information available",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
