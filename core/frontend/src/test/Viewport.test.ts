@@ -355,35 +355,6 @@ describe("Viewport", () => {
       ],
     };
 
-    describe("readImage", () => {
-      it("reads image upside down by default (BUG)", () => {
-        test(rgbw2, (viewport) => {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const image = viewport.readImage()!;
-          expect(image).toBeDefined();
-          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
-        });
-      });
-
-      it("flips image vertically if specified", () => {
-        test(rgbw2, (viewport) => {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const image = viewport.readImage(undefined, undefined, true)!;
-          expect(image).toBeDefined();
-          expectColors(image, rgbw2.image);
-        });
-      });
-
-      it("inverts view rect y (BUG)", () => {
-        test(rgbwp1, (viewport) => {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
-          expect(image).toBeDefined();
-          expectColors(image, [ColorDef.blue, ColorDef.white]);
-        });
-      });
-    });
-
     describe("readImageBuffer", () => {
       it("reads image right-side up by default", () => {
         test(rgbw2, (viewport) => {
