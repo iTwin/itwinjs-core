@@ -404,12 +404,13 @@ export abstract class ViewState extends ElementState {
    * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
    */
   public get areAllTileTreesLoaded(): boolean {
-    let allLoaded = true;
-    this.forEachTileTreeRef((ref) => {
-      allLoaded = allLoaded && ref.isLoadingComplete;
-    });
+    for (const ref of this.getTileTreeRefs()) {
+      if (!ref.isLoadingComplete) {
+        return false;
+      }
+    }
 
-    return allLoaded;
+  return true;
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
@@ -534,7 +535,9 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    this.forEachTileTreeRef((ref) => trees.disclose(ref));
+    for (const ref of this.getTileTreeRefs()) {
+      trees.disclose(ref);
+    }
   }
 
   /** Discloses graphics memory consumed by viewed tile trees and other consumers like view attachments.
@@ -572,7 +575,9 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createScene(context: SceneContext): void {
-    this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
+    for (const ref of this.getTileTreeRefs()) {
+      ref.addToScene(context);
+    }
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()

@@ -145,9 +145,9 @@ export class SpatialViewState extends ViewState3d {
   public computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d {
     // Fit to the union of the ranges of all loaded tile trees.
     const range = options?.baseExtents?.clone() ?? new Range3d();
-    this.forEachTileTreeRef((ref) => {
+    for (const ref of this.getTileTreeRefs()) {
       ref.unionFitRange(range);
-    });
+    }
 
     // Fall back to the project extents if necessary.
     if (range.isNull)

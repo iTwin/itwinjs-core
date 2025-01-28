@@ -17,7 +17,7 @@ import { ViewRect } from "./common/ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
 import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
-import { TiledGraphicsProvider } from "./core-frontend";
+import { TiledGraphicsProvider } from "./tile/internal";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
