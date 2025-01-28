@@ -731,7 +731,6 @@ describe("Viewport", () => {
       public decorate(context: DecorateContext) {
 
         const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
-        builder.addLineString2d([new Point2d(0,0), new Point2d(1,1)],0);
         context.addDecorationFromBuilder(builder);
         context.addCanvasDecoration(new PixelCanvasDecoration());
       }
@@ -740,22 +739,17 @@ describe("Viewport", () => {
     function createViewport(): ScreenViewport {
       const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
       const parentDiv = document.createElement("div");
-      parentDiv.setAttribute("height", "100px");
-      parentDiv.setAttribute("width", "100px");
-      parentDiv.style.height = parentDiv.style.width = "100px";
+      parentDiv.setAttribute("height", "1px");
+      parentDiv.setAttribute("width", "1px");
+      parentDiv.style.height = parentDiv.style.width = "1px";
       document.body.appendChild(parentDiv);
       return ScreenViewport.create(parentDiv, state);
     }
 
     const activeDecorators: Decorator[] = [];
     function addDecorator(dec: Decorator) {
-      IModelApp.viewManager.dropDecorator(dec);
       IModelApp.viewManager.addDecorator(dec);
       activeDecorators.push(dec);
-    }
-
-    function getPixelRgb(pixel: Uint8ClampedArray): [number, number, number] {
-      return [pixel[3], pixel[2], pixel[1]];
     }
 
     afterEach(() => {
@@ -766,10 +760,9 @@ describe("Viewport", () => {
       activeDecorators.length = 0;
     });
 
-    it("should not include canvas decorations if omitCanvasDecorations is true", () => {
+    it("should not include canvas decorations if omitCanvasDecorations is true or ReadImageToCanvasOptions is undefined", () => {
       const vp = createViewport();
       IModelApp.viewManager.addViewport(vp);
-
       addDecorator(new PixelCanvasDecorator());
       vp.renderFrame();
 
@@ -777,21 +770,26 @@ describe("Viewport", () => {
         omitCanvasDecorations: true,
       };
 
-      const canvas = vp.readImageToCanvas(readImageOptions);
-      const ctx = canvas.getContext("2d");
-      const pixel = ctx!.getImageData(0, 0, 1, 1).data;
-      const rgb = getPixelRgb(pixel);
+      let canvas = vp.readImageToCanvas(readImageOptions);
+      let ctx = canvas.getContext("2d");
+      let pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      let rgb = [pixel[0], pixel[1], pixel[2]];
       expect(rgb).toEqual([0,0,0]);
 
 
+      canvas = vp.readImageToCanvas();
+      ctx = canvas.getContext("2d");
+      pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([0,0,0]);
 
       IModelApp.viewManager.dropViewport(vp);
-    });
+      });
+
 
     it("should include canvas decorations if omitCanvasDecorations is false", () => {
       const vp = createViewport();
       IModelApp.viewManager.addViewport(vp);
-
       addDecorator(new PixelCanvasDecorator());
       vp.renderFrame();
 
@@ -802,19 +800,71 @@ describe("Viewport", () => {
       const canvas = vp.readImageToCanvas(readImageOptions);
       const ctx = canvas.getContext("2d");
       const pixel = ctx!.getImageData(0, 0, 1, 1).data;
-      const rgb = getPixelRgb(pixel);
+      const rgb = [pixel[0], pixel[1], pixel[2]];
       expect(rgb).toEqual([255,0,0]);
 
       IModelApp.viewManager.dropViewport(vp);
     });
 
-    /**
-     * Other changes to the above tests which produced the same bug-free behavior (not what we want):
-     * Use openBlankViewport to get a blank viewport instead of creating a screen viewport directly
-     * Set vp.rendersToScreen to true before calling vp.renderFrame (for both vp types)
-     * Use vp.target.SetRenderToScreen to do the same thing
-     * Making sure all Viewports are removed before adding a new one at the beginning of the test
-     * Fully shutting down IModel App and then restarting it at the beginning of the test
-     */
+    it("should not include canvas decorations if omitCanvasDecorations is true with multiple viewports", () => {
+      const vp = createViewport();
+      const vp2 = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+      IModelApp.viewManager.addViewport(vp2);
+
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+      vp2.renderFrame();
+
+      const readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: true,
+      };
+
+      let canvas = vp.readImageToCanvas(readImageOptions);
+      let ctx = canvas.getContext("2d");
+      let pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      let rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([0,0,0]);
+
+      canvas = vp2.readImageToCanvas(readImageOptions);
+      ctx = canvas.getContext("2d");
+      pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([0,0,0]);
+
+      IModelApp.viewManager.dropViewport(vp);
+      IModelApp.viewManager.dropViewport(vp2);
+      });
+
+
+    it("should include canvas decorations if omitCanvasDecorations is false or ReadImageToCanvasOptions is undefined with multiple viewports", () => {
+      const vp = createViewport();
+      const vp2 = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+      IModelApp.viewManager.addViewport(vp2);
+
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+      vp2.renderFrame();
+
+      const readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: false,
+      };
+
+      let canvas = vp.readImageToCanvas(readImageOptions);
+      let ctx = canvas.getContext("2d");
+      let pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      let rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([255,0,0]);
+
+      canvas = vp2.readImageToCanvas();
+      ctx = canvas.getContext("2d");
+      pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([255,0,0]);
+
+      IModelApp.viewManager.dropViewport(vp);
+      IModelApp.viewManager.dropViewport(vp2);
+    });
   });
 });

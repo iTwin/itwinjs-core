@@ -5,14 +5,14 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import { imageBufferToPngDataUrl, IModelApp, openImageDataUrlInNewWindow, Tool } from "@itwin/core-frontend";
+import { IModelApp, openImageDataUrlInNewWindow, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 interface SaveImageOptions {
   copyToClipboard?: boolean;
   width?: number;
   height?: number;
-  includeDecorations?: boolean;
+  omitCanvasDecorations?: boolean;
 }
 
 export class SaveImageTool extends Tool {
@@ -41,13 +41,8 @@ export class SaveImageTool extends Tool {
       return true;
     }
 
-    let url;
-    if (opts?.includeDecorations) {
-      const canvas = vp.readImageToCanvas({includeCanvasDecorations: opts.includeDecorations});
-      url = canvas.toDataURL();
-    } else {
-      url = imageBufferToPngDataUrl(buffer, false);
-    }
+    const canvas = vp.readImageToCanvas({omitCanvasDecorations: !!opts?.omitCanvasDecorations});
+    const url = canvas.toDataURL();
 
     if (!url) {
       alert("Failed to produce PNG");
@@ -94,7 +89,7 @@ export class SaveImageTool extends Tool {
       opts.height = args.getInteger("h");
     }
 
-    opts.includeDecorations = args.getBoolean("i");
+    opts.omitCanvasDecorations = args.getBoolean("o");
 
     return this.run(opts);
   }

@@ -2714,11 +2714,28 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
-   * @see [[readImageBuffer]] to obtain the image as an array of RGBA pixels.
-   */
+  * When using this overload, the returned image will not include canvas decorations if only one viewport is active.
+  * If multiple viewports are active, the returned image will always include canvas decorations.
+  * @deprecated in 5.0 Use the overload accepting a ReadImageToCanvasOptions.
+  */
+  public readImageToCanvas(): HTMLCanvasElement;
+
+  /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
+  * This overload allows for specifying whether canvas decorations will be omitted from the returned image by passing in [[ReadImageToCanvasOptions]].
+  * The canvas decorations will be consistently omitted or included regardless of the number of active viewports.
+  * @param options Options for reading the image to the canvas.
+  */
+ // eslint-disable-next-line @typescript-eslint/unified-signatures
+  public readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
+
+  /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
+  * @see [[readImageBuffer]] to obtain the image as an array of RGBA pixels.
+  * @internal
+  */
   public readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
     return this.target.readImageToCanvas(options);
   }
+
 
   /** Used internally by `waitForSceneCompletion`.
    * @internal

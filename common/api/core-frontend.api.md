@@ -9073,7 +9073,7 @@ export interface ReadImageBufferArgs {
 
 // @public
 export interface ReadImageToCanvasOptions {
-    includeCanvasDecorations?: boolean;
+    omitCanvasDecorations: boolean;
 }
 
 // @internal (undocumented)
@@ -14764,7 +14764,9 @@ export abstract class Viewport implements Disposable, TileUser {
     // @deprecated
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
-    readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement;
+    // @deprecated
+    readImageToCanvas(): HTMLCanvasElement;
+    readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     readPixels(args: ReadPixelsArgs): void;
     // @internal

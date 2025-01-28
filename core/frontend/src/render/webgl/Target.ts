@@ -15,7 +15,7 @@ import { ViewRect } from "../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { ReadImageBufferArgs, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../../Viewport";
+import { ReadImageBufferArgs, ReadImageToCanvasOptions, Viewport } from "../../Viewport";
 import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
@@ -159,7 +159,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public freezeRealityTiles = false;
 
-  protected _omitCanvasDecorations? = false;
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;
@@ -1180,54 +1179,25 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  private getCanvasFromImageBuffer(): HTMLCanvasElement {
-    const image = this.readImageBuffer();
-    const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
-    const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
-    return retCanvas;
-  }
-
-  private combineCanvasWithViewportOverlayCanvas(baseCanvas: HTMLCanvasElement, vp: ScreenViewport): HTMLCanvasElement {
-    const overlayCanvas = vp.canvas;
-    const ctx = baseCanvas.getContext("2d")!;
-    ctx.drawImage(overlayCanvas, 0, 0);
-    return baseCanvas;
-  }
-
-  private toggleOmitCanvasDecorations(hideDecorations: boolean, vp: ScreenViewport) {
-    this._omitCanvasDecorations = hideDecorations;
-    vp.invalidateScene();
-  }
-
   public copyImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
-
-    /** There are four cases to consider:
-    * 1. Single viewport, with decorations: Must combine the webgl canvas with the 2d canvas, as canvas decorations are overlayed on top of the webgl canvas using the 2d canvas.
-    * 2. Single viewport, no decorations: Basic Copy image from image buffer. Decorations will be automaticaly excluded as they are overlayed on the separate 2d canvas.
-    * 3. Multiple viewports, with decorations: Basic copy image from image buffer. In this case, decorations will be included as they are not overlayed on a separate canvas
-    *    when multiple viewports are present.
-    * 4. Multiple viewports, no decorations: Turn off decorations, copy image, then turn decorations back on.
-    */
-
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return document.createElement("canvas");
 
-    // case 1
-    if (vp.rendersToScreen && !options?.omitCanvasDecorations) {
-      return this.combineCanvasWithViewportOverlayCanvas(this.getCanvasFromImageBuffer(), vp);
+    const image = this.readImageBuffer();
+    const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
+    const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
+
+    if ((options !== undefined) && (!options.omitCanvasDecorations)) {
+      const overlayCanvas = vp.canvas;
+      const ctx = retCanvas.getContext("2d")!;
+      ctx.drawImage(overlayCanvas, 0, 0);
     }
 
-    // case 4
-    if (!vp.rendersToScreen && options?.omitCanvasDecorations) {
-      this.toggleOmitCanvasDecorations(true, vp);
-      const retCanvas = this.getCanvasFromImageBuffer();
-      this.toggleOmitCanvasDecorations(false, vp);
-      return retCanvas;
-    }
+    const pixelRatio = this.devicePixelRatio;
+    retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
 
-    // cases 2 and 3
-    return this.getCanvasFromImageBuffer();
+    return retCanvas;
   }
 
   public drawPlanarClassifiers() {
@@ -1512,18 +1482,16 @@ export class OnScreenTarget extends Target {
       this._2dCanvas.needsClear = false;
     }
 
-    if (!this._omitCanvasDecorations) {
-      const canvasDecs = this.graphics.canvasDecorations;
-      if (canvasDecs) {
-        for (const overlay of canvasDecs) {
-          ctx.save();
-          if (overlay.position)
-            ctx.translate(overlay.position.x, overlay.position.y);
+    const canvasDecs = this.graphics.canvasDecorations;
+    if (canvasDecs) {
+      for (const overlay of canvasDecs) {
+        ctx.save();
+        if (overlay.position)
+          ctx.translate(overlay.position.x, overlay.position.y);
 
-          overlay.drawDecoration(ctx);
-          this._2dCanvas.needsClear = true;
-          ctx.restore();
-        }
+        overlay.drawDecoration(ctx);
+        this._2dCanvas.needsClear = true;
+        ctx.restore();
       }
     }
   }
@@ -1559,10 +1527,9 @@ export class OnScreenTarget extends Target {
   }
 
   public override readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
-    return this._usingWebGLCanvas ? this.copyImageToCanvas(options) : this._2dCanvas.canvas;
+    return this._usingWebGLCanvas || options?.omitCanvasDecorations ? this.copyImageToCanvas(options) : this._2dCanvas.canvas;
   }
 }
-
 /** @internal */
 export class OffScreenTarget extends Target {
   public constructor(rect: ViewRect) {

@@ -251,7 +251,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
   * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
   * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
-  * `i=0|1` - if `1`, canvas decorations will be included in the saved image. By default they are not. NOTE: This is only true if a single viewport is present. If multiple viewports are present, canvas decorations will always be included in the saved image.
+  * `o=0|1` - if `1`, canvas decorations will be omitted in the saved image. By default, they are included.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * `dta zoom selected` - zoom the selected viewport to the elements in the selection set. Optional arguments specify the margin or padding percent as follows:
   * `l=` `r=` `t=` `b=` followed by a number indicating the left, right, top, and/or bottom padding or margin percent.
