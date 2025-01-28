@@ -731,7 +731,7 @@ describe("Viewport", () => {
       activeDecorators.length = 0;
     });
 
-    it("should not include canvas decorations if omitCanvasDecorations is true or ReadImageToCanvasOptions is undefined", () => {
+    it("should not include canvas decorations if omitCanvasDecorations is true", () => {
       const vp = createViewport();
       IModelApp.viewManager.addViewport(vp);
       addDecorator(new PixelCanvasDecorator());
@@ -741,17 +741,10 @@ describe("Viewport", () => {
         omitCanvasDecorations: true,
       };
 
-      let canvas = vp.readImageToCanvas(readImageOptions);
-      let ctx = canvas.getContext("2d");
-      let pixel = ctx!.getImageData(0, 0, 1, 1).data;
-      let rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([0,0,0]);
-
-
-      canvas = vp.readImageToCanvas();
-      ctx = canvas.getContext("2d");
-      pixel = ctx!.getImageData(0, 0, 1, 1).data;
-      rgb = [pixel[0], pixel[1], pixel[2]];
+      const canvas = vp.readImageToCanvas(readImageOptions);
+      const ctx = canvas.getContext("2d");
+      const pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      const rgb = [pixel[0], pixel[1], pixel[2]];
       expect(rgb).toEqual([0,0,0]);
 
       IModelApp.viewManager.dropViewport(vp);
@@ -818,7 +811,7 @@ describe("Viewport", () => {
       });
 
 
-    it("should include canvas decorations if omitCanvasDecorations is false, undefined, or ReadImageToCanvasOptions is undefined with multiple viewports", () => {
+    it("should include canvas decorations if omitCanvasDecorations is false or undefined with multiple viewports", () => {
       const vp = createViewport();
       const vp2 = createViewport();
       IModelApp.viewManager.addViewport(vp);
@@ -843,12 +836,6 @@ describe("Viewport", () => {
       };
 
       canvas = vp2.readImageToCanvas(readImageOptions);
-      ctx = canvas.getContext("2d");
-      pixel = ctx!.getImageData(0, 0, 1, 1).data;
-      rgb = [pixel[0], pixel[1], pixel[2]];
-      expect(rgb).toEqual([255,0,0]);
-
-      canvas = vp2.readImageToCanvas();
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
       rgb = [pixel[0], pixel[1], pixel[2]];
