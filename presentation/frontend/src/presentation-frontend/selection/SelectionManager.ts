@@ -50,7 +50,7 @@ export class SelectionManager implements ISelectionProvider {
   private _hiliteSetProviders = new Map<IModelConnection, HiliteSetProvider>();
   private _ownsStorage: boolean;
 
-  private _knownIModels = new Map<string, IModelConnection>();
+  private _knownIModels = new Set<IModelConnection>();
   private _currentSelection = new CurrentSelectionStorage();
   private _selectionChanges = new Subject<StorageSelectionChangeEventArgs>();
   private _selectionEventsSubscription: Subscription;
@@ -74,7 +74,7 @@ export class SelectionManager implements ISelectionProvider {
     this._selectionEventsSubscription = this.streamSelectionEvents();
     this._listeners.push(
       IModelConnection.onOpen.addListener((imodel) => {
-        this._knownIModels.set(imodel.key, imodel);
+        this._knownIModels.add(imodel);
       }),
     );
     this._listeners.push(
@@ -91,7 +91,7 @@ export class SelectionManager implements ISelectionProvider {
 
   private onConnectionClose(imodel: IModelConnection): void {
     this._hiliteSetProviders.delete(imodel);
-    this._knownIModels.delete(imodel.key);
+    this._knownIModels.delete(imodel);
     this._currentSelection.clear(imodel.key);
     if (this._ownsStorage) {
       this.clearSelection("Connection Close Event", imodel);
@@ -161,10 +161,7 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   private handleEvent(evt: SelectionChangeEventArgs): void {
-    if (!this._knownIModels.has(evt.imodel.key)) {
-      this._knownIModels.set(evt.imodel.key, evt.imodel);
-    }
-
+    this._knownIModels.add(evt.imodel);
     switch (evt.changeType) {
       case SelectionChangeType.Add:
         this._selectionStorage.addToSelection({
@@ -374,7 +371,7 @@ export class SelectionManager implements ISelectionProvider {
           const currentSelectables = this._selectionStorage.getSelection({ iModelKey: args.imodelKey, level: args.level });
           return this._currentSelection.computeSelection(args.imodelKey, args.level, currentSelectables, args.selectables).pipe(
             mergeMap(({ level, changedSelection }): Observable<SelectionChangeEventArgs> => {
-              const imodel = this._knownIModels.get(args.imodelKey);
+              const imodel = findIModel(this._knownIModels, args.imodelKey);
               // istanbul ignore if
               if (!imodel) {
                 return EMPTY;
@@ -397,6 +394,15 @@ export class SelectionManager implements ISelectionProvider {
         },
       });
   }
+}
+
+function findIModel(set: Set<IModelConnection>, key: string) {
+  for (const imodel of set) {
+    if (imodel.key === key) {
+      return imodel;
+    }
+  }
+  return undefined;
 }
 
 /** @internal */
