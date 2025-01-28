@@ -7,7 +7,6 @@
     "resolvePackageJsonExports": true
   },
   "include": [
-    "src/**/*.ts",
-    "node_modules/@types/node/"
+    "src/**/*.ts"
   ]
 }

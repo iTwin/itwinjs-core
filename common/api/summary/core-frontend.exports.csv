@@ -595,7 +595,6 @@ alpha;function;createKeyFromBlobUrl
 alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
-internal;function;getTilesetUrlFromTilesetUrlImpl
 alpha;interface;RealityDataSourceProvider
 alpha;class;RealityDataSourceProviderRegistry
 internal;interface;RealityMeshGraphicParams
