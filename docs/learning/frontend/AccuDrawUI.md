@@ -290,7 +290,6 @@ The various lock shortcuts such as *Lock X* and *Lock Distance* have an erroneou
 
 There is currently a conflict when using the cursor layout with the option to show the tool assistance prompt at the cursor, they overlap. For now it is recommended that you disable the cursor prompt when testing the AccuDraw cursor UI. The following methods have been provided to allow for a popup management strategy that can better coordinate with the cursor layout.
 
-- [AccuDrawViewportUI.controlProps.cursorOffset]($frontend)
 - [AccuDrawViewportUI.currentControlRect]($frontend)
 - [AccuDrawViewportUI.modifyControlRect]($frontend)
 
