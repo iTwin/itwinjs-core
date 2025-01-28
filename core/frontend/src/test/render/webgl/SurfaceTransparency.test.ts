@@ -106,14 +106,12 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const params = new RenderMaterial.Params();
-    params.alpha = alpha;
-    if (texture)
-      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
-
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const material = IModelApp.renderSystem.createMaterial(params, imodel);
+    let textureMapping;
+    if(texture) {
+      textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
+    }
+    const material = IModelApp.renderSystem.createRenderMaterial({alpha,
+      textureMapping});
     expect(material).toBeDefined();
     return material!;
   }

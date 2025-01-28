@@ -2423,8 +2423,6 @@ export class GrowableXYArray extends IndexedXYCollection {
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean;
     setXYAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
-    // @deprecated
-    setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
     sortIndicesLexical(): Uint32Array;
     sumLengths(): number;
     transferFromGrowableXYArray(destIndex: number, source: GrowableXYArray, sourceIndex: number): boolean;
@@ -2566,7 +2564,7 @@ export namespace IModelJson {
         points: [XYZProps];
     }
     export interface BoxProps extends AxesProps {
-        // @internal @deprecated
+        // @internal
         baseOrigin?: XYZProps;
         baseX: number;
         baseY?: number;
@@ -4029,8 +4027,6 @@ export class PathFragment {
     childCurve: CurvePrimitive;
     childFraction0: number;
     childFraction1: number;
-    // @deprecated (undocumented)
-    childFractionTChainDistance(fraction: number): number;
     childFractionToChainDistance(fraction: number): number;
     static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;
@@ -4548,17 +4544,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     endFace(): boolean;
     findOrAddNormalInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddNormalInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined;
-    // @deprecated
-    findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     findOrAddParamInLineString(ls: LineString3d, index: number, v: number, priorIndexA?: number, priorIndexB?: number): number | undefined;
-    // @deprecated
-    findOrAddParamXY(x: number, y: number): number;
-    // @deprecated
-    findOrAddPoint(xyz: Point3d): number;
     findOrAddPointInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddPointInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndex?: number): number | undefined;
-    // @deprecated
-    findOrAddPointXYZ(x: number, y: number, z: number): number;
     // @internal
     static graphFacesToPolyface(faces: HalfEdge[]): IndexedPolyface;
     // @internal
