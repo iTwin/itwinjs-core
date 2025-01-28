@@ -46,3 +46,4 @@
 - [ECSQL Keywords](./ECSqlKeywords.md)
   - [Escaping keywords](./ECSqlKeywords.md#escaping-keywords)
 - [Views](./Views.md)
+- [IdSet Virtual Table](./IdSet.md)
