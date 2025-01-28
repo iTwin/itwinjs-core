@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Removed getThumbnail API from iModelConnection",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
