@@ -12,7 +12,7 @@ alpha;interface;GetGeoscienceTilesetArgs
 alpha;function;getGeoscienceTilesetUrl
 beta;type;GraphicRepresentation
 beta;type;GraphicRepresentationFormat
-beta;enum;GraphicRepresentationStatus
+beta;type;GraphicRepresentationStatus
 beta;function;initializeFrontendTiles
 beta;interface;MeshExport
 internal;interface;MeshExports
