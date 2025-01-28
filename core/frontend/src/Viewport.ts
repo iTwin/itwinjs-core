@@ -266,7 +266,7 @@ export interface ReadPixelsArgs {
  * @public
  */
 export interface ReadImageToCanvasOptions {
-  /** If true, canvas decorations will be included in the saved image. */
+  /** If true, canvas decorations will not be included in the saved image. */
   omitCanvasDecorations: boolean;
 }
 
