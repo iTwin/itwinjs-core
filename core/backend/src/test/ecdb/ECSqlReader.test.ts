@@ -47,6 +47,43 @@ describe("ECSqlReader", (() => {
       });
     });
 
+    it("ecsql reader simple for IdSet", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
+        `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="Foo" modifier="Sealed">
+            <ECProperty propertyName="n" typeName="int"/>
+          </ECEntityClass>
+        </ECSchema>`);
+        assert.isTrue(ecdb.isOpen);
+        ecdb.saveChanges();
+        const params = new QueryBinder();
+        params.bindIdSet(1, ["0x32"]);
+        const optionBuilder = new QueryOptionsBuilder();
+        optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
+        const rows = await reader.toArray();
+        assert.equal(rows[0].id, "0x32");
+        assert.equal(rows.length, 1);
+    });
+
+    it("bindIdSet not working with integer Ids", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
+        `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="Foo" modifier="Sealed">
+            <ECProperty propertyName="n" typeName="int"/>
+          </ECEntityClass>
+        </ECSchema>`)
+        assert.isTrue(ecdb.isOpen);
+        ecdb.saveChanges();
+        const params = new QueryBinder();
+        params.bindIdSet(1, ["50"]);
+        const optionBuilder = new QueryOptionsBuilder();
+        optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
+        const rows = await reader.toArray();
+        assert.equal(rows.length, 0);
+    });
+
     it("ecsql reader simple using query reader", async () => {
       await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
         `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
