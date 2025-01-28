@@ -371,6 +371,7 @@ export class AccuDraw {
     alwaysShowCompass: boolean;
     // @internal (undocumented)
     angleLock(): void;
+    get angleRoundOff(): RoundOff;
     // @internal (undocumented)
     protected _animationFrames: number;
     autoFocusFields: boolean;
@@ -409,6 +410,7 @@ export class AccuDraw {
     distanceIndexing: boolean;
     // @internal (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
+    get distanceRoundOff(): RoundOff;
     // @internal (undocumented)
     doAutoPoint(index: ItemField, mode: CompassMode): Promise<void>;
     // @internal (undocumented)
@@ -951,6 +953,10 @@ export class AccuDrawViewportUI extends AccuDraw {
         suspendLocateToolTip: boolean;
         fixedLocation: boolean;
         horizontalArrangement: boolean;
+        cursorOffset: {
+            x: number;
+            y: number;
+        };
         simplifiedInput: boolean;
         mathOperations: boolean;
         fieldSize: number;
@@ -10447,11 +10453,9 @@ export enum RotationMode {
     View = 4
 }
 
-// @internal (undocumented)
+// @public
 export class RoundOff {
-    // (undocumented)
     active: boolean;
-    // (undocumented)
     units: Set<number>;
 }
 
