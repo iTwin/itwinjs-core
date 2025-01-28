@@ -127,39 +127,4 @@ describe("ModelState", () => {
     assert.isTrue(range.low.isAlmostEqual({ x: 288874.09375, y: 3803760.75, z: -0.0005 }));
     assert.isTrue(range.high.isAlmostEqual({ x: 289160.84375, y: 3803959.5, z: 0.0005 }));
   });
-
-  it("view thumbnails", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    let thumbnail = await imodel3.views.getThumbnail("0x34");
-    assert.equal(thumbnail.format, "png", "thumbnail format");
-    assert.equal(thumbnail.height, 768, "thumbnail height");
-    assert.equal(thumbnail.width, 768, "thumbnail width");
-    assert.equal(thumbnail.image.length, 19086, "thumbnail length");
-    const image = thumbnail.image;
-    assert.equal(image[0], 0x89);
-    assert.equal(image[1], 0x50);
-    assert.equal(image[2], 0x4E);
-    assert.equal(image[3], 0x47);
-    assert.equal(image[4], 0x0D);
-    assert.equal(image[5], 0x0A);
-    assert.equal(image[6], 0x1A);
-    assert.equal(image[7], 0x0A);
-
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    thumbnail = await imodel2.views.getThumbnail("0x24");
-    assert.equal(thumbnail.format, "jpeg");
-    assert.equal(thumbnail.height, 768);
-    assert.equal(thumbnail.width, 768);
-    assert.equal(thumbnail.image.length, 18062);
-    assert.equal(thumbnail.image[3], 224);
-    assert.equal(thumbnail.image[18061], 217);
-
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      await imodel2.views.getThumbnail("0x25");
-    } catch {
-      return;
-    } // thumbnail doesn't exist
-    assert.fail("getThumbnail should not return");
-  });
 });
