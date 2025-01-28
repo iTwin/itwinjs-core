@@ -45,7 +45,7 @@ export interface DataSource {
  * @see [[queryGraphicRepresentations]] for its construction as a representation of the data produced by a query of data sources.
  * @beta
  */
-export type GraphicRepresentation = {
+export interface GraphicRepresentation {
   /** The display name of the Graphic Representation */
   displayName: string;
   /** The unique identifier for the Graphic Representation */
@@ -64,15 +64,9 @@ export type GraphicRepresentation = {
   dataSource: DataSource;
   /** The url of the graphic representation
    * @note The url can only be guaranteed to be valid if the status is complete.
-   * Therefore, the url is optional if the status is not complete, and required if the status is complete.
    */
-} & ({
-  status: Exclude<GraphicRepresentationStatus, "Complete">;
-  url?: string;
-} | {
-  status: "Complete";
-  url: string;
-});
+  url: string | undefined;
+}
 
 /** Creates a URL used to query for Graphic Representations
  * @internal
@@ -184,38 +178,19 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
 
     const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === "Complete"));
     for (const foundSource of foundSources) {
-      let graphicRepresentation: GraphicRepresentation;
-      if (foundSource.status === "Complete") {
-        // If the service response's status is complete, it's guaranteed to have a url defined in links.mesh.
-        graphicRepresentation = {
-          displayName: foundSource.displayName,
-          representationId: foundSource.id,
-          status: foundSource.status,
-          format: args.format,
-          url: foundSource._links!.mesh.href,
-          dataSource: {
-            iTwinId: args.dataSource.iTwinId,
-            id: foundSource.request.iModelId,
-            changeId: foundSource.request.changesetId,
-            type: foundSource.request.exportType,
-          },
-        };
-      } else {
-        // Otherwise the url may be undefined because the representation is not finished being generated
-        graphicRepresentation = {
-          displayName: foundSource.displayName,
-          representationId: foundSource.id,
-          status: foundSource.status,
-          format: args.format,
-          url: foundSource._links?.mesh.href,
-          dataSource: {
-            iTwinId: args.dataSource.iTwinId,
-            id: foundSource.request.iModelId,
-            changeId: foundSource.request.changesetId,
-            type: foundSource.request.exportType,
-          },
-        };
-      }
+      const graphicRepresentation: GraphicRepresentation = {
+        displayName: foundSource.displayName,
+        representationId: foundSource.id,
+        status: foundSource.status,
+        format: args.format,
+        url: foundSource._links?.mesh.href,
+        dataSource: {
+          iTwinId: args.dataSource.iTwinId,
+          id: foundSource.request.iModelId,
+          changeId: foundSource.request.changesetId,
+          type: foundSource.request.exportType,
+        },
+      };
 
       yield graphicRepresentation;
     }

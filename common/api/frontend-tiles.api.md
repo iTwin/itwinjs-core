@@ -73,19 +73,14 @@ export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
 export function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise<string | undefined>;
 
 // @beta
-export type GraphicRepresentation = {
+export interface GraphicRepresentation {
+    dataSource: DataSource;
     displayName: string;
+    format: GraphicRepresentationFormat;
     representationId: string;
     status: GraphicRepresentationStatus;
-    format: GraphicRepresentationFormat;
-    dataSource: DataSource;
-} & ({
-    status: Exclude<GraphicRepresentationStatus, "Complete">;
-    url?: string;
-} | {
-    status: "Complete";
-    url: string;
-});
+    url: string | undefined;
+}
 
 // @beta
 export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL" | string;
