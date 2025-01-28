@@ -7,7 +7,7 @@ import {
   BeButtonEvent, Cluster, DecorateContext, Decorator,
   GeometryTileTreeReference, GraphicBuilder, GraphicPrimitive, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
   ScreenViewport,
-  TileTreeReference, Viewport } from "@itwin/core-frontend";
+  Viewport } from "@itwin/core-frontend";
 import { GrowableXYZArray, LineString3d, Point2d, Point3d, Polyface, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 import { GeometryTerrainDraper } from "./GeometryTerrainDraper";

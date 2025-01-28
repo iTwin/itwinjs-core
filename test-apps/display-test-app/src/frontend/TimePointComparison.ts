@@ -22,7 +22,9 @@ class TimePointComparison {
   }
 
   public forEachTileTreeRef(viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
-    viewport.view.forEachTileTreeRef(func);
+    for (const ref of viewport.view.getTileTreeRefs()) {
+      func(ref);
+    }
   }
 
   public addToScene(output: SceneContext): void {
