@@ -22,8 +22,9 @@ internal;class;AccuDrawSetLockXTool
 internal;class;AccuDrawSetLockYTool
 internal;class;AccuDrawSetLockZTool
 internal;class;AccuDrawSetOriginTool
-alpha;class;AccuDrawShortcuts
+beta;class;AccuDrawShortcuts
 internal;class;AccuDrawSuspendToggleTool
+beta;class;AccuDrawViewportUI
 public;class;AccuSnap
 public;namespace;AccuSnap
 internal;function;acquireImdlDecoder
@@ -661,7 +662,7 @@ alpha;type;ResolveManifestFunc
 internal;type;RootIModelTile
 public;class;RotateViewTool
 public;enum;RotationMode
-internal;class;RoundOff
+public;class;RoundOff
 internal;class;SavedState
 public;class;Scene
 public;class;SceneContext

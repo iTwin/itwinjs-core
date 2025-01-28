@@ -23,14 +23,12 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class Format extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Format;
+  public override readonly schemaItemType = SchemaItemType.Format;
   protected _base: BaseFormat;
   protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Format;
-
     this._base = new BaseFormat(name);
   }
 
@@ -281,6 +279,55 @@ export class Format extends SchemaItem {
    */
   protected setStationSeparator(separator: string) {
     this._base.stationSeparator = separator;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setStationOffsetSize(stationOffsetSize: number) {
+    this._base.stationOffsetSize = stationOffsetSize;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setScientificType(scientificType: ScientificType) {
+    this._base.scientificType = scientificType;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setMinWidth(minWidth: number) {
+    this._base.minWidth = minWidth;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setSpacer(spacer: string) {
+    this._base.spacer = spacer;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setIncludeZero(includeZero: boolean) {
+    this._base.includeZero = includeZero;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setFormatTraits(formatTraits: FormatTraits) {
+    this._base.formatTraits = formatTraits;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]>) {
+    this._units = units;
   }
 }
 

@@ -46,19 +46,19 @@ class GeometryDecorator {
     this._texture = texture;
     this._normalMap = normalMap;
 
-    this._dispose = viewport.iModel.onClose.addListener(() => this.dispose());
+    this._dispose = viewport.iModel.onClose.addListener(() => this[Symbol.dispose]());
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._dispose) {
       this._dispose();
       this._dispose = undefined;
     }
 
     IModelApp.viewManager.dropDecorator(this);
-    this._texture?.dispose();
+    this._texture?.[Symbol.dispose]();
     this._texture = undefined;
-    this._normalMap?.dispose();
+    this._normalMap?.[Symbol.dispose]();
     this._normalMap = undefined;
   }
 

@@ -2,11 +2,9 @@
 
 exports[`Item constructor creates valid item with label 1`] = `
 Object {
-  "classInfo": undefined,
   "displayValues": Object {
     "key": "Kina",
   },
-  "extendedData": undefined,
   "imageId": "70c6cab5-86c7-4d22-b010-6c0cf48d9662",
   "labelDefinition": Object {
     "displayValue": "pink",
@@ -23,11 +21,9 @@ Object {
 
 exports[`Item constructor creates valid item with label definition 1`] = `
 Object {
-  "classInfo": undefined,
   "displayValues": Object {
     "key": "Keyboard",
   },
-  "extendedData": undefined,
   "imageId": "0ea0e226-a243-44c2-83b1-e941fb2d30c8",
   "labelDefinition": Object {
     "displayValue": "Oregon",
@@ -171,11 +167,9 @@ Object {
 exports[`Item listFromJSON parses items from JSON 1`] = `
 Array [
   Object {
-    "classInfo": undefined,
     "displayValues": Object {
       "a": "B",
     },
-    "extendedData": undefined,
     "imageId": "",
     "labelDefinition": Object {
       "displayValue": "",
@@ -194,11 +188,9 @@ Array [
     },
   },
   Object {
-    "classInfo": undefined,
     "displayValues": Object {
       "c": "D",
     },
-    "extendedData": undefined,
     "imageId": "",
     "labelDefinition": Object {
       "displayValue": "",

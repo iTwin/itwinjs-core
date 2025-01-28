@@ -22,7 +22,7 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class Constant extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Constant;
+  public override readonly schemaItemType = SchemaItemType.Constant;
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _definition: string;
   protected _numerator?: number;
@@ -30,7 +30,6 @@ export class Constant extends SchemaItem {
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Constant;
     this._definition = "";
   }
 

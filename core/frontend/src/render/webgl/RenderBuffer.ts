@@ -47,7 +47,7 @@ export class RenderBuffer implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this._glBuffer === undefined || this._glBuffer === null; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this.isDisposed) {
       System.instance.context.deleteRenderbuffer(this._glBuffer!);
       this._glBuffer = undefined;
@@ -110,7 +110,7 @@ export class RenderBufferMultiSample implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this._glBuffer === undefined || this._glBuffer === null; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this.isDisposed) {
       System.instance.context.deleteRenderbuffer(this._glBuffer!);
       this._glBuffer = undefined;

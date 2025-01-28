@@ -123,12 +123,7 @@ describe("FeatureAppearance", () => {
 describe("FeatureOverrides", () => {
   class Overrides extends FeatureOverrides {
     public constructor() { super(); }
-    public override get neverDrawn() { return this._neverDrawn; }
-    public override get alwaysDrawn() { return this._alwaysDrawn; }
-    public get modelOverrides() { return this._modelOverrides; }
     public get elementOverrides() { return this._elementOverrides; }
-    public get subCategoryOverrides() { return this._subCategoryOverrides; }
-    public get visibleSubCategories() { return this._visibleSubCategories; }
     public get modelSubCategoryOverrides() { return this._modelSubCategoryOverrides; }
   }
 
@@ -141,10 +136,6 @@ describe("FeatureOverrides", () => {
     assert.isFalse(overrides.isAlwaysDrawnExclusive, "drawn exclusive");
     assert.exists(overrides.neverDrawn, "never");
     assert.exists(overrides.alwaysDrawn, "always");
-    assert.exists(overrides.modelOverrides, "model overrides");
-    assert.exists(overrides.elementOverrides, "element overrides");
-    assert.exists(overrides.visibleSubCategories, "visible sub-categories");
-    assert.exists(overrides.subCategoryOverrides, "sub-category overrides");
   });
 
   it("isSubCategoryVisible works as expected", () => {
