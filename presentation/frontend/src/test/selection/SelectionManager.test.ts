@@ -1132,6 +1132,27 @@ describe("SelectionManager", () => {
       const selectable1instanceKeys = [createTestECInstanceKey({ id: "0x3" }), createTestECInstanceKey({ id: "0x4" })];
       const selectable2instanceKeys = [createTestECInstanceKey({ id: "0x5" }), createTestECInstanceKey({ id: "0x6" })];
 
+      it("ignores selection changes to unknown imodels", async () => {
+        storage.addToSelection({
+          imodelKey: "unknown-imodel",
+          source,
+          selectables: [{ className: "BisCore:Element", id: "0x1" }],
+        });
+        await waitFor(() => {
+          expect(changeListener).not.to.be.called;
+        });
+
+        // just confirm that adding to a known imodel does raise the event
+        storage.addToSelection({
+          imodelKey: imodel.key,
+          source,
+          selectables: [{ className: "BisCore:Element", id: "0x2" }],
+        });
+        await waitFor(() => {
+          expect(changeListener).to.be.calledOnce;
+        });
+      });
+
       it("converts add event selectables", async () => {
         const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
         const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
