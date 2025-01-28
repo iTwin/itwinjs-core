@@ -1591,7 +1591,7 @@ export abstract class Viewport implements Disposable, TileUser {
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
-  /** @beta */
+  /** Obtain an iterator over the tile tree references used to render map imagery in this viewport, if any. */
   public get mapTileTreeRefs(): Iterable<TileTreeReference> {
     return this._mapTiledGraphicsProvider?.getReferences(this) ?? [];
   };
