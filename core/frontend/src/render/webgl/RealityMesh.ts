@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, disposeArray, IDisposable, UintArray } from "@itwin/core-bentley";
+import { assert, dispose, disposeArray, UintArray } from "@itwin/core-bentley";
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
@@ -45,11 +45,11 @@ class ProjectedTexture {
 }
 type TerrainOrProjectedTexture = TerrainTexture | ProjectedTexture;
 
-class RealityTextureParam implements IDisposable {
+class RealityTextureParam implements Disposable {
   constructor(public texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
   public get isProjected() { return this._projectedTextureOrMatrix instanceof ProjectedTexture; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.texture = dispose(this.texture);
   }
 
@@ -120,7 +120,7 @@ class RealityTextureParam implements IDisposable {
 }
 
 /** @internal */
-export class RealityTextureParams implements IDisposable {
+export class RealityTextureParams implements Disposable {
   constructor(public params: RealityTextureParam[]) { }
   public static create(textures: TerrainOrProjectedTexture[]) {
     const maxTexturesPerMesh = System.instance.maxRealityImageryLayers;
@@ -167,7 +167,7 @@ export class RealityTextureParams implements IDisposable {
     return new RealityTextureParams(textureParams);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     disposeArray(this.params);
   }
 }
@@ -221,8 +221,8 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
   }
   public get bytesUsed(): number { return this.positions.bytesUsed + (undefined === this.normals ? 0 : this.normals.bytesUsed) + this.uvParams.bytesUsed + this.indices.bytesUsed; }
 
-  public override dispose() {
-    super.dispose();
+  public override[Symbol.dispose]() {
+    super[Symbol.dispose]();
     dispose(this.uvParams);
   }
 }
@@ -273,12 +273,12 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     this._indexType = 1 === bytesPerIndex ? GL.DataType.UnsignedByte : (2 === bytesPerIndex ? GL.DataType.UnsignedShort : GL.DataType.UnsignedInt);
   }
 
-  public override dispose() {
+  public override[Symbol.dispose]() {
     if (this.noDispose) {
       return;
     }
 
-    super.dispose();
+    super[Symbol.dispose]();
     dispose(this._realityMeshParams);
     if (true !== this._disableTextureDisposal)
       dispose(this.textureParams);
@@ -384,7 +384,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
       branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
     }
 
-    return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity(), {disableClipStyle: params.disableClipStyle});
+    return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity(), { disableClipStyle: params.disableClipStyle });
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

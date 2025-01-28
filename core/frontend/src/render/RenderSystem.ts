@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
+import { base64StringToUint8Array, Id64String } from "@itwin/core-bentley";
 import {
-  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
+  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
@@ -58,8 +58,8 @@ import { GraphicTemplate } from "./GraphicTemplate";
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
  * @internal
  */
-export abstract class RenderTextureDrape implements IDisposable {
-  public abstract dispose(): void;
+export abstract class RenderTextureDrape implements Disposable {
+  public abstract [Symbol.dispose](): void;
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
@@ -153,8 +153,8 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
-  public abstract dispose(): void;
+export abstract class RenderTerrainGeometry implements Disposable, RenderMemory.Consumer {
+  public abstract [Symbol.dispose](): void;
   public abstract get transform(): Transform | undefined;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
@@ -173,7 +173,7 @@ export class TerrainTexture {
   ) { }
 
   public cloneWithClip(clipRectangle: Range2d) {
-    return new TerrainTexture (this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
+    return new TerrainTexture(this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
   }
 }
 /** @internal */
@@ -219,7 +219,7 @@ export interface PlanarGridProps {
 /** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
  * @internal
  */
-export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
+export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
   readonly [_implementationProhibited]: "renderAreaPattern";
 }
 
@@ -295,7 +295,7 @@ export interface CreateGraphicFromTemplateArgs {
  * @public
  * @extensions
  */
-export abstract class RenderSystem implements IDisposable {
+export abstract class RenderSystem implements Disposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
    * This object is frozen and cannot be modified after the RenderSystem is created.
    * @internal
@@ -322,8 +322,12 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public abstract get isValid(): boolean;
 
-  /** @internal */
-  public abstract dispose(): void;
+  public [Symbol.dispose]() {
+    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+  }
+
+  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** The maximum permitted width or height of a texture supported by this render system. */
   public get maxTextureSize(): number { return 0; }
@@ -353,17 +357,6 @@ export abstract class RenderSystem implements IDisposable {
    * @returns A previously-created material matching the specified ID, or undefined if no such material exists.
    */
   public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
-
-  /** Create a [RenderMaterial]($common) from parameters
-   * If the parameters include a non-empty key, and no previously-created material already exists with that key, the newly-created material will be cached on the IModelConnection such
-   * that it can later be retrieved by the same key using [[RenderSystem.findMaterial]].
-   * @param _params A description of the material's properties.
-   * @param _imodel The IModelConnection associated with the material.
-   * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
-   * @deprecated in 3.x. Use [[createRenderMaterial]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a [RenderMaterial]($common).
    * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
@@ -733,52 +726,6 @@ export abstract class RenderSystem implements IDisposable {
    */
   public getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined {
     return undefined;
-  }
-
-  /** Create a new texture from an [[ImageBuffer]].
-   * @deprecated in 3.x. Use [[createTexture]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
-    return this.createTexture({
-      type: params.type,
-      ownership,
-      image: {
-        source: image,
-        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
-      },
-    });
-  }
-
-  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
-   * @deprecated in 3.x. Use [[createTexture]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
-    return this.createTexture({
-      type: params.type,
-      ownership,
-      image: {
-        source: image,
-        transparency: hasAlpha ? TextureTransparency.Mixed : TextureTransparency.Opaque,
-      },
-    });
-  }
-
-  /** Create a new texture from an ImageSource.
-   * @deprecated in 3.x. Use RenderSystem.createTextureFromSource.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
-    return this.createTextureFromSource({
-      type: params.type,
-      source,
-      ownership,
-      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Mixed,
-    });
   }
 
   /** Create a texture from an ImageSource. */
