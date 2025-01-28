@@ -34,7 +34,7 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
 
 // @beta (undocumented)
-export type AnyEnumerator = Enumerator_2<string | number>;
+export type AnyEnumerator = Enumerator<string | number>;
 
 // @beta (undocumented)
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
@@ -256,9 +256,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
     protected addProperty<T extends Property>(prop: T): T;
-    // (undocumented)
     get baseClass(): LazyLoadedECClass | undefined;
-    set baseClass(baseClass: LazyLoadedECClass | undefined);
     // (undocumented)
     protected _baseClass?: LazyLoadedECClass;
     // (undocumented)
@@ -292,6 +290,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // @alpha
     protected deletePropertySync(name: string): void;
     // (undocumented)
+    protected _derivedClasses?: Map<string, LazyLoadedECClass>;
+    // (undocumented)
     fromJSON(classProps: ClassProps): Promise<void>;
     // (undocumented)
     fromJSONSync(classProps: ClassProps): void;
@@ -302,6 +302,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     getBaseClassSync(): ECClass | undefined;
     getCustomAttributes(): Promise<CustomAttributeSet>;
     getCustomAttributesSync(): CustomAttributeSet;
+    getDerivedClasses(): Promise<ECClass[] | undefined>;
     getInheritedProperty(name: string): Promise<Property | undefined>;
     getInheritedPropertySync(name: string): Property | undefined;
     getProperties(resetCache?: boolean): Promise<Property[]>;
@@ -332,6 +333,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     get properties(): IterableIterator<Property> | undefined;
     // (undocumented)
     protected _properties?: Map<string, Property>;
+    protected setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
@@ -547,9 +549,9 @@ export class Enumeration extends SchemaItem {
     fromJSON(enumerationProps: EnumerationProps): Promise<void>;
     // (undocumented)
     fromJSONSync(enumerationProps: EnumerationProps): void;
-    getEnumerator(value: string): Enumerator_2<string> | undefined;
+    getEnumerator(value: string): Enumerator<string> | undefined;
     // (undocumented)
-    getEnumerator(value: number): Enumerator_2<number> | undefined;
+    getEnumerator(value: number): Enumerator<number> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     get isInt(): boolean;
@@ -610,7 +612,7 @@ export interface EnumerationProps extends SchemaItemProps {
 }
 
 // @beta (undocumented)
-interface Enumerator_2<T> {
+export interface Enumerator<T> {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
@@ -620,7 +622,6 @@ interface Enumerator_2<T> {
     // (undocumented)
     readonly value: T;
 }
-export { Enumerator_2 as Enumerator }
 
 // @beta (undocumented)
 export interface EnumeratorProps {
@@ -665,17 +666,31 @@ export class Format extends SchemaItem {
     // @alpha
     protected setDecimalSeparator(separator: string): void;
     // @alpha
+    protected setFormatTraits(formatTraits: FormatTraits): void;
+    // @alpha
     protected setFormatType(formatType: FormatType): void;
+    // @alpha
+    protected setIncludeZero(includeZero: boolean): void;
+    // @alpha
+    protected setMinWidth(minWidth: number): void;
     // (undocumented)
     protected setPrecision(precision: number): void;
     // @alpha
     protected setRoundFactor(roundFactor: number): void;
     // @alpha
+    protected setScientificType(scientificType: ScientificType): void;
+    // @alpha
     protected setShowSignOption(signOption: ShowSignOption): void;
+    // @alpha
+    protected setSpacer(spacer: string): void;
+    // @alpha
+    protected setStationOffsetSize(stationOffsetSize: number): void;
     // @alpha
     protected setStationSeparator(separator: string): void;
     // @alpha
     protected setThousandSeparator(separator: string): void;
+    // @alpha
+    protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]>): void;
     // @alpha
     protected setUomSeparator(separator: string): void;
     // (undocumented)

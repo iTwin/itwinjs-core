@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { SpatialClassifierTileTreeReference, Tile } from "../tile/internal";
@@ -17,8 +17,8 @@ export interface PlanarClassifierTarget { modelId: Id64String, tiles: Tile[], lo
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
  * @internal
  */
-export abstract class RenderPlanarClassifier implements IDisposable {
-  public abstract dispose(): void;
+export abstract class RenderPlanarClassifier implements Disposable {
+  public abstract [Symbol.dispose](): void;
   public abstract collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void;
   public abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
 }
