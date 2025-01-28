@@ -9054,7 +9054,7 @@ export interface ReadImageBufferArgs {
 
 // @public
 export interface ReadImageToCanvasOptions {
-    omitCanvasDecorations: boolean;
+    omitCanvasDecorations?: boolean;
 }
 
 // @internal (undocumented)
