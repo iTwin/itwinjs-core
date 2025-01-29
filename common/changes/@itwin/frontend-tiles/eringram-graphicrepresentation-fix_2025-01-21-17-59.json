@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-tiles",
-      "comment": "Update GraphicRepresentationFormat and GraphicRepresentationStatus to reflect the latest Mesh Export Service docs. Change GraphicRepresentationStatus from an enum to a string literal type.",
+      "comment": "Update GraphicRepresentationFormat and GraphicRepresentationStatus to reflect Mesh Export API docs. Change GraphicRepresentationStatus from an enum to a string literal type. Change GraphicRepresentation from type to interface.",
       "type": "none"
     }
   ],

@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { createGraphicRepresentationsQueryUrl, GraphicRepresentationFormat, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { createGraphicRepresentationsQueryUrl, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -113,17 +113,7 @@ async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
 
-const testArgs: {
-  accessToken: string;
-  sessionId: string;
-  dataSource: {
-    iTwinId: string;
-    id: string;
-    changeId?: string;
-    type: string;
-  };
-  format: GraphicRepresentationFormat;
-} = {
+const testArgs = {
   accessToken: "this-is-a-fake-access-token",
   sessionId: "testSession",
   dataSource: {
