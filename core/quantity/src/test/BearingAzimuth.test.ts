@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
@@ -43,9 +43,9 @@ describe("Bearing format tests:", () => {
   });
 
   it("should have valid units and format", () => {
-    assert.isTrue(degree.isValid);
-    assert.isTrue(rad.isValid);
-    assert.isTrue(bearingDMS.hasUnits);
+    expect(degree.isValid).to.be.true;
+    expect(rad.isValid).to.be.true;
+    expect(bearingDMS.hasUnits).to.be.true;
   });
 
   it("Roundtrip persisted radian to and from bearing", async () => {
@@ -170,7 +170,7 @@ describe("Bearing format tests:", () => {
     for (const entry of testData) {
       const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
       if (!Parser.isParsedQuantity(parseResult)) {
-        assert.fail(`Expected a parsed quantity for input ${entry.input}`);
+        expect.fail(`Expected a parsed quantity for input ${entry.input}`);
       }
       expect(parseResult.value).to.be.eql(entry.expected);
     }
@@ -193,7 +193,7 @@ describe("Bearing format tests:", () => {
     for (const entry of testData) {
       const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
       if (!Parser.isParsedQuantity(parseResult)) {
-        assert.fail(`Expected a parsed quantity for input ${entry.input}`);
+        expect.fail(`Expected a parsed quantity for input ${entry.input}`);
       }
       expect(parseResult.value).to.be.eql(entry.expected); ;
     }
@@ -211,7 +211,7 @@ describe("Bearing format tests:", () => {
     for (const entry of testData) {
       const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
       if (!Parser.isParsedQuantity(parseResult)) {
-        assert.fail(`Expected a parsed quantity for input ${entry.input}`);
+        expect.fail(`Expected a parsed quantity for input ${entry.input}`);
       }
       expect(parseResult.value).closeTo(entry.expected, 0.01);
     }
@@ -322,7 +322,7 @@ describe("Bearing format tests:", () => {
       if (Parser.isParseError(parseResult)) {
         expect(parseResult.error).to.be.eql(entry.expected);
       } else {
-        assert.fail(`Expected a ParseQuantityError for input ${entry.input}`);
+        expect.fail(`Expected a ParseQuantityError for input ${entry.input}`);
       }
     }
   });

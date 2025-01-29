@@ -984,7 +984,7 @@ describe("Synchronous Parsing tests:", async () => {
       if (Parser.isParseError(parseResult)){
         expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
       } else {
-        assert.fail(`Expected a ParseError with input: ${testEntry}`);
+        expect.fail(`Expected a ParseError with input: ${testEntry}`);
       }
     }
   });
@@ -1018,7 +1018,7 @@ describe("Synchronous Parsing tests:", async () => {
       if (Parser.isParseError(parseResult)){
         expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
       } else {
-        assert.fail(`Expected a ParseError with input: ${testEntry}`);
+        expect.fail(`Expected a ParseError with input: ${testEntry}`);
       }
     }
     });
