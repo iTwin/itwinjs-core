@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Removed getThumbnail API from iModelConnection",
+      "comment": "removed getThumbnail api",
       "type": "none"
     }
   ],

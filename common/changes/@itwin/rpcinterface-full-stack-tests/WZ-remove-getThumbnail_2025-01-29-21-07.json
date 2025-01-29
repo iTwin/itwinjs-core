@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/rpcinterface-full-stack-tests",
-      "comment": "Removed tests for getThumbnail",
+      "comment": "removed getThumbnail api",
       "type": "none"
     }
   ],
