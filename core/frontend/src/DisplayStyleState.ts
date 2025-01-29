@@ -256,17 +256,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityModel((model) => {
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    for (const model of this.realityModels) {
       if (!model.invisible) {
-        func(model.treeRef);
+        yield model.treeRef;
       }
-    });
-  }
-
-  /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityTileTreeRef(func);
+    }
   }
 
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.

@@ -21,20 +21,17 @@ Object {
 
 exports[`Item constructor creates valid item with label definition 1`] = `
 Object {
-  "displayValues": Object {
-    "key": "Keyboard",
-  },
-  "imageId": "0ea0e226-a243-44c2-83b1-e941fb2d30c8",
-  "labelDefinition": Object {
-    "displayValue": "Oregon",
-    "rawValue": "Toys",
-    "typeName": "string",
-  },
-  "mergedFieldNames": Array [],
-  "primaryKeys": Array [],
-  "values": Object {
-    "key": "Savings Account",
-  },
+  "displayValue": "test display value",
+  "rawValue": "test raw value",
+  "typeName": "string",
+}
+`;
+
+exports[`Item constructor creates valid item with label string 1`] = `
+Object {
+  "displayValue": "test",
+  "rawValue": "test raw value",
+  "typeName": "string",
 }
 `;
 
@@ -172,8 +169,8 @@ Array [
     },
     "imageId": "",
     "labelDefinition": Object {
-      "displayValue": "",
-      "rawValue": "",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
@@ -193,8 +190,8 @@ Array [
     },
     "imageId": "",
     "labelDefinition": Object {
-      "displayValue": "",
-      "rawValue": "",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
@@ -219,8 +216,8 @@ Array [
     },
     "imageId": "",
     "labelDefinition": Object {
-      "displayValue": "",
-      "rawValue": "",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
@@ -240,8 +237,8 @@ Array [
     },
     "imageId": "",
     "labelDefinition": Object {
-      "displayValue": "",
-      "rawValue": "",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],

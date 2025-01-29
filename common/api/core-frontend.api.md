@@ -370,6 +370,7 @@ export class AccuDraw {
     alwaysShowCompass: boolean;
     // @internal (undocumented)
     angleLock(): void;
+    get angleRoundOff(): RoundOff;
     // @internal (undocumented)
     protected _animationFrames: number;
     autoFocusFields: boolean;
@@ -408,6 +409,7 @@ export class AccuDraw {
     distanceIndexing: boolean;
     // @internal (undocumented)
     distanceLock(synchText: boolean, saveInHistory: boolean): void;
+    get distanceRoundOff(): RoundOff;
     // @internal (undocumented)
     doAutoPoint(index: ItemField, mode: CompassMode): Promise<void>;
     // @internal (undocumented)
@@ -950,6 +952,10 @@ export class AccuDrawViewportUI extends AccuDraw {
         suspendLocateToolTip: boolean;
         fixedLocation: boolean;
         horizontalArrangement: boolean;
+        cursorOffset: {
+            x: number;
+            y: number;
+        };
         simplifiedInput: boolean;
         mathOperations: boolean;
         fieldSize: number;
@@ -2861,10 +2867,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean): number;
     forEachRealityModel(func: (model: ContextRealityModelState) => void): void;
     // @internal (undocumented)
-    forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void;
-    // @internal (undocumented)
-    forEachTileTreeRef(func: (ref: TileTreeReference) => void): void;
-    // @internal (undocumented)
     getBackgroundMapGeometry(): BackgroundMapGeometry | undefined;
     // @internal (undocumented)
     getGlobalGeometryAndHeightRange(): {
@@ -2879,6 +2881,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     getPlanarClipMaskState(modelId: Id64String): PlanarClipMaskState | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
+    // @internal (undocumented)
+    getTileTreeRefs(): Iterable<TileTreeReference>;
     // @internal (undocumented)
     get globeMode(): GlobeMode;
     // @internal (undocumented)
@@ -6919,6 +6923,8 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     getMapLayerImageryProvider(mapLayerIndex: MapLayerIndex): MapLayerImageryProvider | undefined;
     getMapLayerIndexesFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerIndex[];
     // (undocumented)
+    getReferences(viewport: Viewport): Iterable<TileTreeReference>;
+    // (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[];
     // (undocumented)
     readonly overlayMap: MapTileTreeReference;
@@ -10444,11 +10450,9 @@ export enum RotationMode {
     View = 4
 }
 
-// @internal (undocumented)
+// @public
 export class RoundOff {
-    // (undocumented)
     active: boolean;
-    // (undocumented)
     units: Set<number>;
 }
 
@@ -11295,10 +11299,10 @@ export class SpatialViewState extends ViewState3d {
     equals(other: this): boolean;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
-    // @internal (undocumented)
-    forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
     // @internal
     getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
+    // @internal (undocumented)
+    getModelTreeRefs(): Iterable<TileTreeReference>;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // (undocumented)
@@ -12377,6 +12381,7 @@ export interface TileContentDecodingStatistics {
 export interface TiledGraphicsProvider {
     addToScene?: (context: SceneContext) => void;
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+    getReferences?: (viewport: Viewport) => Iterable<TileTreeReference>;
     isLoadingComplete?: (viewport: Viewport) => boolean;
 }
 
@@ -12384,6 +12389,7 @@ export interface TiledGraphicsProvider {
 export namespace TiledGraphicsProvider {
     // @internal
     export function addToScene(provider: TiledGraphicsProvider, context: SceneContext): void;
+    export function getTileTreeRefs(provider: TiledGraphicsProvider, viewport: Viewport): Iterable<TileTreeReference>;
     // @internal
     export function isLoadingComplete(provider: TiledGraphicsProvider, viewport: Viewport): boolean;
 }
@@ -14594,11 +14600,9 @@ export abstract class Viewport implements Disposable, TileUser {
     set flashedId(id: Id64String | undefined);
     get flashSettings(): FlashSettings;
     set flashSettings(settings: FlashSettings);
+    // @deprecated
     forEachMapTreeRef(func: (ref: TileTreeReference) => void): void;
-    // @internal (undocumented)
-    forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
-    // @internal (undocumented)
-    protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
+    // @deprecated
     forEachTileTreeRef(func: (ref: TileTreeReference) => void): void;
     // @internal
     get freezeScene(): boolean;
@@ -14631,6 +14635,7 @@ export abstract class Viewport implements Disposable, TileUser {
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal (undocumented)
     getTerrainHeightRange(): Range1d;
+    getTileTreeRefs(): Iterable<TileTreeReference>;
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getWorldFrustum(box?: Frustum): Frustum;
     // @internal
@@ -14673,6 +14678,7 @@ export abstract class Viewport implements Disposable, TileUser {
     mapLayerFromHit(hit: HitDetail): MapLayerInfoFromTileTree[];
     // @internal (undocumented)
     mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerInfoFromTileTree[];
+    get mapTileTreeRefs(): Iterable<TileTreeReference>;
     // @internal (undocumented)
     markSelectionSetDirty(): void;
     get neverDrawn(): Id64Set | undefined;
@@ -14772,6 +14778,8 @@ export abstract class Viewport implements Disposable, TileUser {
     synchWithView(_options?: ViewChangeOptions): void;
     // @internal (undocumented)
     get target(): RenderTarget;
+    // @internal (undocumented)
+    protected tiledGraphicsProviderRefs(): Iterable<TileTreeReference>;
     get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider>;
     // @alpha
     get tileSizeModifier(): number;
@@ -14995,8 +15003,7 @@ export abstract class ViewState extends ElementState {
     // @internal
     fixAspectRatio(windowAspect: number): void;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
-    // @internal
-    abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
+    // @deprecated
     forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
@@ -15016,12 +15023,16 @@ export abstract class ViewState extends ElementState {
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     // @internal
     getModelElevation(_modelId: Id64String): number;
+    // @internal (undocumented)
+    abstract getModelTreeRefs(): Iterable<TileTreeReference>;
     abstract getOrigin(): Point3d;
     abstract getRotation(): Matrix3d;
     // @internal (undocumented)
     static getStandardViewMatrix(id: StandardViewId): Matrix3d;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     getTargetPoint(result?: Point3d): Point3d;
+    // (undocumented)
+    getTileTreeRefs(): Iterable<TileTreeReference>;
     getUpVector(point: Point3d): Vector3d;
     getViewClip(): ClipVector | undefined;
     abstract getViewedExtents(): AxisAlignedBox3d;
@@ -15118,10 +15129,10 @@ export abstract class ViewState2d extends ViewState {
     get details(): ViewDetails;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
-    // @internal (undocumented)
-    forEachModelTreeRef(func: (ref: TileTreeReference) => void): void;
     // (undocumented)
     getExtents(): Vector3d;
+    // @internal (undocumented)
+    getModelTreeRefs(): Iterable<TileTreeReference>;
     // (undocumented)
     getOrigin(): Point3d;
     // (undocumented)
