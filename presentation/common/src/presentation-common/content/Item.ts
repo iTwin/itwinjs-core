@@ -87,7 +87,7 @@ export class Item {
    * @param displayValues Display values dictionary
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
-   * @deprecated in 5.0. Use an overload with [[ItemProps]] instead.
+   * @deprecated in 5.0. Use an overload with `ItemProps` instead.
    */
   public constructor(
     primaryKeys: InstanceKey[],
