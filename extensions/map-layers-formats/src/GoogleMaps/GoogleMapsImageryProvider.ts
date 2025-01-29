@@ -1,23 +1,25 @@
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, ScreenViewport, TileUrlImageryProvider } from "@itwin/core-frontend";
-import { CreateGoogleMapsSessionOptions, GoogleMaps, GoogleMapsMapType } from "./GoogleMaps";
+import { CreateGoogleMapsSessionOptions, GoogleMaps, LayerTypesType, MapTypesType } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
+import { GoogleMapsDecorator } from "./GoogleMapDecorator";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 const levelToken = "{level}";
 const rowToken = "{row}";
 const columnToken = "{column}";
 
-/** Number of load tile requests before we have to refresh the attributions data  */
-const attributionsRefreshCount = 40;
+const urlTemplate = `https://tile.googleapis.com/v1/2dtiles/${levelToken}/${columnToken}/${rowToken}`;
 
+/*
+* Google Maps imagery provider
+* @internal
+*/
 export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
-  private static _sessions: {[layerName: string]: string} = {};
-  private _attributions: string[]|undefined;
-  private _loadTileCounter = 0;
-  private _subLayerName = "";
+  private _decorator: GoogleMapsDecorator;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
+    this._decorator = new GoogleMapsDecorator();
   }
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
@@ -43,6 +45,13 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     } else {
       Logger.logError(loggerCategory, `Missing GoogleMaps api key/`);
     }
+
+    const isActivated = await this._decorator.activate(this._settings.properties!.mapType as MapTypesType);
+    if (!isActivated) {
+      const msg = `Failed to activate decorator`;
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
   }
 
   private createCreateSessionOptions(): CreateGoogleMapsSessionOptions {
@@ -58,16 +67,13 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
     const createSessionOptions: CreateGoogleMapsSessionOptions = {
 
-      mapType: this._settings.properties!.mapType as GoogleMapsMapType,
+      mapType: this._settings.properties!.mapType as MapTypesType,
       region: this._settings.properties!.region as string,
       language: this._settings.properties!.language as string,
     }
-    if (this._settings.properties?.orientation !== undefined) {
-      createSessionOptions.orientation = this._settings.properties!.orientation as number;
-    }
 
     if (this._settings.properties?.layerTypes !== undefined) {
-      createSessionOptions.layerTypes = this._settings.properties!.layerTypes as string[];
+      createSessionOptions.layerTypes = this._settings.properties!.layerTypes as LayerTypesType[];
     }
     return createSessionOptions;
 
@@ -75,20 +81,13 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, level: number): Promise<string> {
-    let url = this._settings.url;
-    if (TileUrlImageryProvider.validateUrlTemplate(url).status !== MapLayerSourceStatus.Valid) {
-      if (url.lastIndexOf("/") !== url.length - 1)
-        url = `${url}/`;
-      url = `${url}{level}/{column}/{row}.png`;
-    }
-
-    const tmpUrl = url.replace(levelToken, level.toString()).replace(columnToken, column.toString()).replace(rowToken, row.toString());
+    const tmpUrl = urlTemplate.replace(levelToken, level.toString()).replace(columnToken, column.toString()).replace(rowToken, row.toString());
     const obj = new URL(tmpUrl);
     if (this._settings.accessKey ) {
       obj.searchParams.append("key", this._settings.accessKey.value);
     }
 
-    // We 'session' param to be already part of the query parameters
+    // We assume the 'session' param to be already part of the query parameters (checked in initialize)
     return this.appendCustomParams(obj.toString());
   }
 
@@ -115,38 +114,15 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    // This is a hack until 'addLogoCards' is made async
-    if ((this._loadTileCounter++%attributionsRefreshCount  === 0)) {
-      this._attributions = await this.getAttributions(row, column, zoomLevel);
-    }
-
     return super.loadTile(row, column, zoomLevel);
   }
 
   public override decorate(context: DecorateContext): void {
-    context.viewport.invalidateDecorations();
-    console.log("GoogleMapsImageryProvider.decorate");
+    this._decorator.decorate(context);
   }
 
   public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
-    // const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
-    // const matchingAttributions = this.getMatchingAttributions(tiles);
-    // const copyrights: string[] = [];
-    // for (const match of matchingAttributions)
-    //   copyrights.push(match.copyrightMessage);
-
-    // let copyrightMsg = "";
-    // for (let i = 0; i < copyrights.length; ++i) {
-    //   if (i > 0)
-    //     copyrightMsg += "<br>";
-    //   copyrightMsg += copyrights[i];
-    // }
-    // const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
-    // const attributions = await this.getAttributions(tiles);
-    if (!this._attributions)
-      return;
-
-    const attributions = this._attributions;
+    const attributions: string[] = [];
     let copyrightMsg = "";
     for (let i = 0; i < attributions.length; ++i) {
       if (i > 0)
