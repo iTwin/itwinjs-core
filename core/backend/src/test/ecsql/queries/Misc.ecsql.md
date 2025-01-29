@@ -968,3 +968,137 @@ SELECT 0,0
 | 0_1 |
 | --- |
 | 0   |
+
+# Testing json_tree without schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json_tree(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_tree | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_tree | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_tree | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_tree | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_tree | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_tree | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_tree | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | parent | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | ------ | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | 0      | $.gravity | $    |
+
+# Testing json_tree with schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json1.json_tree(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_tree | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_tree | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_tree | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_tree | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_tree | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_tree | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_tree | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | parent | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | ------ | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | 0      | $.gravity | $    |
+
+# Testing json_each without schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json_each(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_each | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_each | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_each | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_each | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_each | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_each | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_each | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | $.gravity | $    |
+
+# Testing json_each with schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json1.json_each(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_each | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_each | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_each | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_each | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_each | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_each | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_each | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | $.gravity | $    |
+
+# Select ECDb schemas from ECDbMeta without schema name
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+Select s.Name, s.Alias from ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4;
+```
+
+# Select Test elements from sample dataset without schema name
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT e.ECClassId, e.DirectStr FROM TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
+```
