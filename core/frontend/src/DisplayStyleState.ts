@@ -22,6 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
+import { scheduleScriptSymbol, InternalScriptReference } from "./internal/scheduleScriptReference";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -54,6 +55,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
+  private [scheduleScriptSymbol]?: InternalScriptReference;
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
    * @deprecated in 3.x. use [[onScheduleScriptChanged]].
@@ -321,10 +323,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated in 3.x. Use [[scheduleScript]].
+   * @internal
    */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this._scriptReference;
+  public get scheduleScriptReference(): InternalScriptReference {
+    return this[scheduleScriptSymbol];
   }
 
   /** Attach a [ContextRealityModel]($common) to this display style.
