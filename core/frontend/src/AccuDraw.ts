@@ -187,9 +187,17 @@ export class Flags {
   public animateRotation = false;
 }
 
-/** @internal */
+/** AccuDraw value round off settings. Allows dynamic distance and angle values to be rounded to the nearest increment of the specified units value(s).
+ * @public
+ */
 export class RoundOff {
+  /** Whether rounding is to be applied to the corresponding dynamic distance or angle value.
+   * @note To be considered active, units must also specify at least one increment value.
+  */
   public active = false;
+  /** Round off increment value(s), meters for distance round off, and radians for angle round off.
+   * @note When multiple values are specified, rounding is based on smallest discernable value at current view zoom.
+   */
   public units = new Set<number>();
 }
 
@@ -363,6 +371,11 @@ export class AccuDraw {
   public autoFocusFields = true;
   /** When true fully specifying a point by entering both distance and angle in polar mode or XY[Z] in rectangular mode, the point is automatically accepted */
   public autoPointPlacement = false;
+
+  /** Get distance round off settings */
+  public get distanceRoundOff(): RoundOff { return this._distanceRoundOff; }
+  /** Get angle round off settings */
+  public get angleRoundOff(): RoundOff { return this._angleRoundOff; }
 
   private static _tempRot = new Matrix3d();
 
