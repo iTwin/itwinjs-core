@@ -19,7 +19,7 @@ class Env:
     # Constants
     avd_name = 'api-33'
     '''The name of the avd to use.'''
-    cmdline_tools_ver = '9.0'
+    cmdline_tools_ver = '12.0'
     '''The version of the Android command line tools to use.'''
 
     # Calculated variables
