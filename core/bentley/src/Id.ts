@@ -575,8 +575,11 @@ export namespace Id64 {
     /** Remove an Id from the set. */
     public delete(low: number, high: number): void {
       const set = this._map.get(high);
-      if (undefined !== set)
+      if (undefined !== set) {
         set.delete(low);
+        if (set.size === 0)
+          this._map.delete(high);
+      }
     }
 
     /** Returns true if the set contains the specified Id. */
@@ -734,13 +737,6 @@ export class TransientIdSequence {
    */
   public get currentLocalId(): number {
     return this._localId;
-  }
-
-  /** Generate and return the next transient Id64String in the sequence.
-   * @deprecated in 3.x. Use [[getNext]].
-   */
-  public get next(): Id64String {
-    return this.getNext();
   }
 
   /** Generate and return the next transient Id64String in the sequence. */

@@ -2,7 +2,7 @@
 #
 # Tests all supported versions of iTwin.js on latest versions of 3 main supported platforms; Windows, Ubuntu, and MacOS.
 #
-# Starts with the minimum Node version (currently 18.12.0) and then follows the tip of each subsequent major LTS (even-numbered) version.
+# Starts with the minimum Node version (currently 20.9.0) and then follows the tip of each subsequent major LTS (even-numbered) version.
 #
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
@@ -20,44 +20,29 @@ jobs:
   - job:
     variables:
       - name: linux_pool
-        value: "iModeljs Linux"
+        value: "imodelNative-Debian12"
       - name: mac_pool
-        value: iModelTechCI
+        value: iModelTechMacArm
       - name: win_pool
-        value: iModelTechCI
+        value: imodelNative-Win11-VS2022
 
     strategy:
       matrix:
-        "Windows_Node_20_x":
+        "Windows_Node_20_9_0":
           OS: windows-latest
           platform: Windows_NT
           name: $(win_pool)
-          node_version: 20.x
-        "Linux_Node_20_x":
+          node_version: 20.9.0
+        "Linux_Node_20_9_0":
           OS: ubuntu-latest
           platform: Linux
           name: $(linux_pool)
-          node_version: 20.x
-        "MacOS_Node_20_x":
+          node_version: 20.9.0
+        "MacOS_Node_20_9_0":
           OS: macOS-latest
           platform: Darwin
           name: $(mac_pool)
-          node_version: 20.x
-        "Windows_Node_18_12_0":
-          OS: windows-latest
-          platform: Windows_NT
-          name: $(win_pool)
-          node_version: 18.12.0
-        "Linux_Node_18_12_0":
-          OS: ubuntu-latest
-          platform: Linux
-          name: $(linux_pool)
-          node_version: 18.12.0
-        "MacOS_Node_18_12_0":
-          OS: macOS-latest
-          platform: Darwin
-          name: $(mac_pool)
-          node_version: 18.12.0
+          node_version: 20.9.0
       maxParallel: 3
 
     pool:

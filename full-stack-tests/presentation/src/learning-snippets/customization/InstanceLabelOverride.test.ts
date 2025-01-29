@@ -6,16 +6,16 @@ import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate, testLocalization } from "../../IntegrationTests";
-import { printRuleset } from "../Utils";
-import { collect } from "../../Utils";
 import { TestIModelConnection } from "../../IModelSetupUtils";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests";
+import { collect } from "../../Utils";
+import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await initialize({ localization: testLocalization });
+    await initialize({ imodelAppProps: { localization: testLocalization } });
     imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 

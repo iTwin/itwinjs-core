@@ -10,7 +10,7 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Polymorphic query", () => {
@@ -129,6 +129,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `poly_flat_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
+        await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         // first create Elements and then Relationship
@@ -159,6 +160,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         assert.equal(getCount(seedIModel, "TestPolySchema:TestElement"), ((hCount + 1) * flatSeedCount));
         seedIModel.saveChanges();
         seedIModel.close();
+        await IModelHost.shutdown();
       }
     }
     // now create single multiHierarchy based schema and iModel
@@ -166,6 +168,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     assert(IModelJsFs.existsSync(st2));
     const seedName2 = path.join(outDir, `poly_multi_${multiHierarchyCount.toString()}.bim`);
     if (!IModelJsFs.existsSync(seedName2)) {
+      await IModelHost.startup();
       const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_${multiHierarchyCount.toString()}.bim`), { rootSubject: { name: "PerfTest" } });
       await seedIModel2.importSchemas([st2]);
       // first create Elements and then Relationship
@@ -196,12 +199,22 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       assert.equal(getCount(seedIModel2, "TestPolySchema:TestElement"), ((multiHierarchyCount + 1) * multiSeedCount));
       seedIModel2.saveChanges();
       seedIModel2.close();
+      await IModelHost.shutdown();
     }
   });
   after(() => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
   });
+
+  beforeEach(async () => {
+    await IModelHost.startup();
+  });
+
+  afterEach(async () => {
+    await IModelHost.shutdown();
+  });
+
   it("Flat Read", async () => {
     for (const fhCount of flatHierarchyCounts) {
       const seedFileName = path.join(outDir, `poly_flat_${fhCount}.bim`);

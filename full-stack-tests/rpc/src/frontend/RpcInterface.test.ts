@@ -10,7 +10,7 @@ import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
   RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WebAppRpcRequest, WipRpcInterface,
+  SerializedRpcActivity, WebAppRpcRequest,
 } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
@@ -24,7 +24,6 @@ import { currentEnvironment } from "./_Setup.test";
 // cspell:ignore oldvalue newvalue
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const testToken: IModelRpcProps = { key: "test", iTwinId: "test", iModelId: "test", changeset: { id: "test" } };
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
@@ -517,11 +516,6 @@ describe("RpcInterface", () => {
     assert.equal(2, await TestRpcInterface.getClient().op14(1, 1));
   });
 
-  it("should successfully call WipRpcInterface.placeholder", async () => {
-    const s: string = await WipRpcInterface.getClient().placeholder(testToken);
-    assert.equal(s, "placeholder");
-  });
-
   it("should send app version to backend", async () => {
     const backupFn = RpcConfiguration.requestContext.serialize;
 
@@ -614,10 +608,10 @@ describe("RpcInterface", () => {
         return RpcSerializedValue.create(this.parameters[0]);
       }
 
-      public override dispose(): void {
+      public override[Symbol.dispose](): void {
         ++completed;
         assert.equal(this.parameters[0], (this as any)._raw);
-        super.dispose();
+        super[Symbol.dispose]();
       }
     }
 

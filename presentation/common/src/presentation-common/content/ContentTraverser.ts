@@ -6,7 +6,8 @@
  * @module Content
  */
 
-import { assert, IDisposable, using } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
+import { LabelDefinition } from "../LabelDefinition";
 import { CategoryDescription } from "./Category";
 import { Content } from "./Content";
 import { Descriptor } from "./Descriptor";
@@ -22,7 +23,6 @@ import {
   ValuesArray as PresentationValuesArray,
   ValuesMap as PresentationValuesMap,
 } from "./Value";
-import { LabelDefinition } from "../LabelDefinition";
 
 const NESTED_CONTENT_LABEL_SYMBOL = Symbol();
 
@@ -312,7 +312,7 @@ export function traverseContentItem(visitor: IContentVisitor, descriptor: Descri
   traverseContent(visitor, new Content(descriptor, [item]));
 }
 
-class VisitedCategories implements IDisposable {
+class VisitedCategories implements Disposable {
   private _visitedCategories: CategoryDescription[];
   private _didVisitAllHierarchy: boolean;
   constructor(
@@ -338,7 +338,7 @@ class VisitedCategories implements IDisposable {
       }
     }
   }
-  public dispose() {
+  public [Symbol.dispose]() {
     while (this._visitedCategories.pop()) {
       this._visitor.finishCategory();
     }
@@ -355,11 +355,10 @@ function traverseContentItemFields(visitor: IContentVisitor, fieldHierarchies: F
 
   try {
     fieldHierarchies.forEach((fieldHierarchy) => {
-      using(new VisitedCategories(visitor, fieldHierarchy.field.category), (res) => {
-        if (res.shouldContinue) {
-          traverseContentItemField(visitor, fieldHierarchy, item);
-        }
-      });
+      using res = new VisitedCategories(visitor, fieldHierarchy.field.category);
+      if (res.shouldContinue) {
+        traverseContentItemField(visitor, fieldHierarchy, item);
+      }
     });
   } finally {
     visitor.finishItem();
@@ -408,13 +407,15 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
     } else if (pathUpToField.length > 0) {
       fieldHierarchy = {
         ...fieldHierarchy,
-        field: Object.assign(fieldHierarchy.field.clone(), {
-          type: {
+        field: (function () {
+          const clone = fieldHierarchy.field.clone();
+          clone.type = {
             valueFormat: PropertyValueFormat.Array,
             typeName: `${fieldHierarchy.field.type.typeName}[]`,
             memberType: fieldHierarchy.field.type,
-          },
-        }),
+          };
+          return clone;
+        })(),
       };
     }
 
@@ -507,14 +508,14 @@ function traverseContentItemStructFieldValue(
         // Not finding a member field means we're traversing an ECStruct. We still need to carry member information, so we
         // create a fake field to represent the member
         memberField = {
-          field: new Field(
-            fieldHierarchy.field.category,
-            memberDescription.name,
-            memberDescription.label,
-            memberDescription.type,
-            fieldHierarchy.field.isReadonly,
-            0,
-          ),
+          field: new Field({
+            category: fieldHierarchy.field.category,
+            name: memberDescription.name,
+            label: memberDescription.label,
+            type: memberDescription.type,
+            isReadonly: fieldHierarchy.field.isReadonly,
+            priority: 0,
+          }),
           childFields: [],
         };
       }
@@ -731,16 +732,11 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
       nextFieldValues.display.push(nextDisplayValue);
     }
   });
-  const convertedItem = new Item(
-    item.primaryKeys,
-    item.label,
-    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
-    item.classInfo,
-    { [nextField.name]: nextFieldValues.raw },
-    { [nextField.name]: nextFieldValues.display },
-    item.mergedFieldNames,
-    item.extendedData,
-  );
+  const convertedItem = new Item({
+    ...item,
+    values: { [nextField.name]: nextFieldValues.raw },
+    displayValues: { [nextField.name]: nextFieldValues.display },
+  });
   return { emptyNestedItem: false, convertedItem };
 }
 
@@ -753,8 +749,9 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
     return child;
   });
   const convertedFieldHierarchy: FieldHierarchy = {
-    field: Object.assign(fieldHierarchy.field.clone(), {
-      type: {
+    field: (function () {
+      const clone = fieldHierarchy.field.clone();
+      clone.type = {
         valueFormat: PropertyValueFormat.Array,
         typeName: `${fieldHierarchy.field.type.typeName}[]`,
         memberType: {
@@ -766,8 +763,9 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
             type: member.field.type,
           })),
         },
-      } as TypeDescription,
-    }),
+      };
+      return clone;
+    })(),
     childFields: convertedChildFieldHierarchies,
   };
   return convertedFieldHierarchy;
@@ -816,15 +814,11 @@ function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<
   }
 
   const converted = convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy, rawValue);
-  const convertedItem = new Item(
-    item.primaryKeys,
-    item.label,
-    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
-    item.classInfo,
-    { [fieldName]: converted.raw },
-    { [fieldName]: converted.display },
-    converted.mergedFieldNames,
-    item.extendedData,
-  );
+  const convertedItem = new Item({
+    ...item,
+    values: { [fieldName]: converted.raw },
+    displayValues: { [fieldName]: converted.display },
+    mergedFieldNames: converted.mergedFieldNames,
+  });
   return { emptyNestedItem: false, convertedItem };
 }

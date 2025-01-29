@@ -40,7 +40,7 @@ describe("EntityClass", () => {
 
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
       expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
@@ -54,7 +54,7 @@ describe("EntityClass", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
-    it("from mixins synchronously", () => {
+    it("from mixins synchronously", async () => {
       const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
       const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
 
@@ -63,7 +63,7 @@ describe("EntityClass", () => {
 
       const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
       (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
       expect(entityClass.getPropertySync("MixinPrimProp")).to.be.undefined;

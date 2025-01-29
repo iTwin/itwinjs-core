@@ -3,6 +3,7 @@ Release Tag;API Item Type;API Item Name
 public;function;addFieldHierarchy
 public;class;ArrayPropertiesField
 public;interface;ArrayPropertiesFieldJSON
+public;interface;ArrayPropertyValueConstraints
 public;interface;ArrayTypeDescription
 internal;class;AsyncTasksTracker
 public;interface;BaseFieldJSON
@@ -250,7 +251,10 @@ public;type;LabelRawValueJSON
 deprecated;type;LabelRawValueJSON
 internal;class;LocalizationHelper
 internal;interface;LocalizationHelperProps
-public;interface;MultiElementPropertiesRequestOptions
+public;interface;MultiElementPropertiesBaseRequestOptions
+public;interface;MultiElementPropertiesByClassRequestOptions
+public;interface;MultiElementPropertiesByIdsRequestOptions
+public;type;MultiElementPropertiesRequestOptions
 public;interface;MultiSchemaClassesSpecification
 public;interface;NamedFieldDescriptor
 public;interface;NavigationPropertyInfo
@@ -294,6 +298,7 @@ deprecated;interface;NodePathFilteringDataJSON
 public;interface;NodeUpdateInfo
 public;interface;NodeUpdateInfoJSON
 deprecated;interface;NodeUpdateInfoJSON
+public;interface;NumericPropertyValueConstraints
 public;type;Paged
 public;interface;PagedResponse
 public;interface;PageOptions
@@ -351,6 +356,7 @@ public;interface;PropertyOverrides
 public;interface;PropertyRangeGroupSpecification
 public;interface;PropertySortingRule
 public;interface;PropertySpecification
+public;type;PropertyValueConstraints
 public;enum;PropertyValueFormat
 public;type;QuerySpecification
 public;interface;QuerySpecificationBase
@@ -425,6 +431,7 @@ public;interface;StartContentProps
 public;interface;StartFieldProps
 public;interface;StartItemProps
 public;interface;StartStructProps
+public;interface;StringPropertyValueConstraints
 public;interface;StringQuerySpecification
 public;interface;StringRulesetVariable
 public;interface;StringRulesetVariableJSON

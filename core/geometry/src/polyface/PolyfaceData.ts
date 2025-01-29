@@ -84,6 +84,44 @@ export class PolyfaceData {
    * * Closed solid is a mesh with no boundary edge. Open sheet is a mesh that has boundary edge(s).
    */
   private _expectedClosure: number;
+
+  /**
+   * Optional index array for moving "across an edge" to an adjacent facet.
+   * * This array:
+   *   * completes the topology of the polyface.
+   *   * has the same length as the other PolyfaceData index arrays.
+   *   * is populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
+   *   * is used by [[IndexedPolyfaceWalker]] to traverse the polyface.
+   *   * is invalid if the polyface topology is subsequently changed.
+   * * Let k1 = edgeMateIndex[k] be defined. Then:
+   *   * k1 is an index (an "edge index") into the PolyfaceData index arrays. (The same for k.)
+   *   * k and k1 refer to the two oppositely oriented sides of an interior edge in the polyface.
+   *   * pointIndex[k1] is the point at the opposite end of the edge that starts at pointIndex[k].
+   *   * edgeMateIndex[k1] === k.
+   * * If k1 is undefined, then there is no adjacent facet across the edge that starts at pointIndex[k],
+   * i.e. k refers to a boundary edge.
+   */
+  public edgeMateIndex?: Array<number | undefined>;
+  /**
+   * Dereference the edgeMateIndex array.
+   * * This method returns undefined if:
+   *   * k is undefined
+   *   * `this.edgeMateIndex` is undefined
+   *   * k is out of bounds for `this.edgeMateIndex`
+   *   * `this.edgeMateIndex[k]` is undefined
+   */
+  public edgeIndexToEdgeMateIndex(k: number | undefined): number | undefined {
+    if (k !== undefined
+      && this.edgeMateIndex !== undefined
+      && k >= 0 && k < this.edgeMateIndex.length)
+      return this.edgeMateIndex[k];
+    return undefined;
+  }
+  /** Test if `value` is a valid index into the `pointIndex` array. */
+  public isValidEdgeIndex(value: number | undefined): boolean {
+    return value !== undefined && value >= 0 && value < this.pointIndex.length;
+  }
+
   /**
    * Constructor for facets.
    * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
@@ -494,15 +532,32 @@ export class PolyfaceData {
     return result;
   }
   /**
-   * Apply `transform` to point and normal arrays and to auxData.
-   * * IMPORTANT This base class is just a data carrier. It does not know if the index order and normal directions
-   * have special meaning, i.e., caller must separately reverse index order and normal direction if needed.
+   * Apply a transform to the mesh data.
+   * * Transform the data as follows:
+   *   * apply `transform` to points.
+   *   * apply inverse transpose of `transform` to normals and renormalize. This preserves normals perpendicular
+   * to transformed facets, and keeps them pointing outward, e.g, if the mesh is closed. If the transform is not
+   * invertible or a normal has zero length, the normal(s) are left unchanged, and this error is silently ignored.
+   *   * apply `transform` to auxData.
+   *   * scale faceData distances by the cube root of the absolute value of the determinant of `transform.matrix`.
+   * * Note that if the transform is a mirror, this method does NOT reverse index order. This is the caller's
+   * responsibility. This base class is just a data carrier: PolyfaceData does not know if the index order has
+   * special meaning.
+  * * Note that this method always returns true. If transforming normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     this.point.multiplyTransformInPlace(transform);
     if (this.normal && !transform.matrix.isIdentity)
       this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
-    return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
+    if (this.face.length > 0) {
+      const distScale = Math.cbrt(Math.abs(transform.matrix.determinant()));
+      for (const faceData of this.face)
+        faceData.scaleDistances(distScale);
+    }
+    if (this.auxData)
+      this.auxData.tryTransformInPlace(transform);
+    return true;
   }
   /**
    * Compress the instance by equating duplicate data.
