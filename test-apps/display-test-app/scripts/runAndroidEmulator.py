@@ -324,12 +324,25 @@ def make_upack_executable(upack_dir: str) -> None:
         for file in files:
             os.chmod(f'{root}/{file}', 0o755)
 
+def sdk_version_exists(dst_dir: str, version: str) -> bool:
+    '''
+    Check if the given version of the Android SDK is present in the given upack directory.
+    '''
+    parts = version.split('.')
+    if len(parts) < 2:
+        return False
+    if parts[1] == '0':
+        version = parts[0]
+    else:
+        version = f'{parts[0]}-ext{parts[1]}'
+    return os.path.exists(f'{dst_dir}/platforms/android-{version}')
+
 def download_upack_if_needed(name: str, version: str) -> None:
     '''
     Check if the given upack is present, and download it if not.
     '''
     dst_dir = f'{env.upack_dir}/{name}'
-    if os.path.exists(dst_dir):
+    if os.path.exists(dst_dir) and (not name == 'androidsdk_macos' or sdk_version_exists(dst_dir, version)):
         log(f'upack {name} already present.')
     else:
         log(f'Downloading {name} upack...')
@@ -351,7 +364,7 @@ def download_upacks_if_needed() -> None:
     if not os.path.exists(env.upack_dir):
         os.mkdir(env.upack_dir)
     download_upack_if_needed('androidavd_macos', '33.0.0-1')
-    download_upack_if_needed('androidsdk_macos', '33.5.0-0')
+    download_upack_if_needed('androidsdk_macos', '34.0.0-0')
     # If jdk_dir includes a __MACOS subdirectory, it is openjdk 11, and we want 21, so delete the
     # existing jdk_dir.
     if os.path.exists(os.path.join(env.jdk_dir, '__MACOSX')):
