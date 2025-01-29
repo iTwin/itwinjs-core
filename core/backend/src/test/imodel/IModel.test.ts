@@ -6,13 +6,13 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
-  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -120,23 +120,52 @@ describe("iModel", () => {
     assert.equal(categoryClass!.className, "Category");
   });
 
-  it("FontMap", () => {
-    const fonts1 = imodel1.fontMap;
+  it("Fonts", () => {
+    const dbFonts = imodel1.fonts;
+    expect(Array.from(dbFonts.queryMappedFamilies({ includeNonEmbedded: true })).length).to.equal(4);
+    expect(dbFonts.findDescriptor(1)).to.deep.equal({ name: "Arial", type: FontType.TrueType });
+    expect(dbFonts.findId({ name: "Arial" })).to.equal(1);
+    expect(dbFonts.findId({ name: "arial" })).to.equal(1);
+
+    expect(dbFonts.findDescriptor(2)).to.deep.equal({ name: "Font0", type: FontType.Rsc });
+    expect(dbFonts.findId({ name: "Font0" })).to.equal(2);
+    expect(dbFonts.findId({ name: "fOnt0" })).to.equal(2);
+
+    expect(dbFonts.findDescriptor(3)).to.deep.equal({ name: "ShxFont0", type: FontType.Shx });
+    expect(dbFonts.findId({ name: "ShxFont0" })).to.equal(3);
+    expect(dbFonts.findId({ name: "shxfont0" })).to.equal(3);
+
+    expect(dbFonts.findDescriptor(4)).to.deep.equal({ name: "Calibri", type: FontType.TrueType });
+    expect(dbFonts.findId({ name: "Calibri" })).to.equal(4);
+    expect(dbFonts.findId({ name: "cAlIbRi" })).to.equal(4);
+
+    expect(dbFonts.findId({ name: "notfound" })).to.be.undefined;
+
+    const fonts1 = imodel1.fontMap; // eslint-disable-line @typescript-eslint/no-deprecated
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
     assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
+    assert.equal(1, fonts1.getFont("arial")!.id, "get Font 1, by name case insensitive");
+
     assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
     assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
     assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
+    assert.equal(2, fonts1.getFont("fOnt0")!.id, "get Font 2, by name case insensitive");
+
     assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
     assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
     assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
+    assert.equal(3, fonts1.getFont("shxfont0")!.id, "get Font 3, by name case insensitive");
+
     assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
     assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
-    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
+    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 4, by name");
+    assert.equal(4, fonts1.getFont("cAlIbRi")!.id, "get Font 4, by name case insensitive");
+
     assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
+
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap"); // eslint-disable-line @typescript-eslint/no-deprecated
   });
 
   it("should load a known element by Id from an existing iModel", () => {
@@ -695,25 +724,24 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    using _r = new DisableNativeAssertions();
+    let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
-    });
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
   });
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
@@ -2532,10 +2560,9 @@ describe("iModel", () => {
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
     assert.throws(() => imodel1.prepareStatement(invalidSql, false));
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
-    const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
+    using statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);
     assert.isTrue(statement?.isPrepared);
-    statement!.dispose();
   });
 
   it("containsClass", () => {
@@ -2843,5 +2870,39 @@ describe("iModel", () => {
     imodel.close();
 
     expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
+  });
+
+  it("should throw \"constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting a relationsip instance with the same prop twice", () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "insertDuplicateInstance.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "insertDuplicateInstance" } });
+    const elements = imodel.elements;
+
+    // Create a new physical model
+    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
+
+    // create a SpatialCategory
+    const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+
+    // Create a couple of physical elements.
+    const elementProps: GeometricElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: newModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+    };
+
+    const id0 = elements.insertElement(elementProps);
+    const id1 = elements.insertElement(elementProps);
+
+    const props: RelationshipProps = {
+      classFullName: "BisCore:ElementGroupsMembers",
+      sourceId: id0,
+      targetId: id1,
+    };
+
+    imodel.relationships.insertInstance(props)
+    expect(() => imodel.relationships.insertInstance(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
+
+    imodel.close();
   });
 });

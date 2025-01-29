@@ -15,7 +15,7 @@ import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   ModelDisplayTransform,
   ModelDisplayTransformProvider,
-  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -27,6 +27,7 @@ import {
 } from "./TestConfig";
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
 import { Transform } from "@itwin/core-geometry";
+import { TestSnapshotConnection } from "./TestSnapshotConnection";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -64,6 +65,8 @@ interface TestResult {
   numSelectedTiles: number;
   /** Approximate time in milliseconds before all tiles were ready for display. */
   tileLoadingTime: number;
+  /** The total number of milliseconds spent decoding content. */
+  tileDecodingTime: number;
   /** Amount of memory requested from the GPU for the graphics of the tiles selected for display. */
   selectedTileGpuBytes: number;
   /** Amount of memory requested from the GPU for the graphics of all tiles in the tile trees viewed by this test.
@@ -354,17 +357,15 @@ export class TestRunner {
     if (!test)
       return undefined;
 
-    const vp = test.viewport;
+    using vp = test.viewport;
     if (testConfig.testType === "image" || testConfig.testType === "both") {
       this.updateTestNames(test, undefined, true);
 
       const canvas = vp.readImageToCanvas();
       await savePng(this.getImageName(test), canvas);
 
-      if (testConfig.testType === "image") {
-        vp.dispose();
+      if (testConfig.testType === "image")
         return test;
-      }
     }
 
     // Throw away the first N frames until the timings become more consistent.
@@ -376,7 +377,6 @@ export class TestRunner {
     this.updateTestNames(test);
     await (testConfig.testType === "readPixels" ? this.recordReadPixels(test) : this.recordRender(test));
 
-    vp.dispose();
     return test;
   }
 
@@ -580,8 +580,12 @@ export class TestRunner {
     await viewport.waitForSceneCompletion();
     timer.stop();
 
+    const decodingTime = IModelApp.tileAdmin.statistics.decoding.total;
+    IModelApp.tileAdmin.resetStatistics();
+
     const selectedTiles = getSelectedTileStats(viewport);
     return {
+      tileDecodingTime: decodingTime,
       tileLoadingTime: timer.current.milliseconds,
       selectedTileIds: selectedTiles.ids,
       numSelectedTiles: selectedTiles.count,
@@ -708,7 +712,7 @@ export class TestRunner {
     } else {
       // Load local iModel and its saved views
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
-      const iModel = await SnapshotConnection.openFile(filepath);
+      const iModel = await TestSnapshotConnection.openFile(filepath);
 
       const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
       let externalSavedViews: ViewStateSpec[] = [];
@@ -901,6 +905,7 @@ export class TestRunner {
     rowData.set("Test Name", this.getTestName(test));
     rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
     if (!this._minimizeOutput) {
+      rowData.set("Tile Decoding Time", test.tileDecodingTime);
       rowData.set("Tile Loading Time", test.tileLoadingTime);
       rowData.set("Num Selected Tiles", test.numSelectedTiles);
       rowData.set("Selected Tile GPU MB", test.selectedTileGpuBytes / (1024 * 1024));

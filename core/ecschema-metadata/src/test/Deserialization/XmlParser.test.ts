@@ -110,6 +110,8 @@ describe("XmlParser", () => {
         modifier: "None",
         baseClass: "TestSchema.TestBaseClass",
         appliesTo: "AnotherClass",
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
       };
 
       const actualProps = parser.parseCustomAttributeClass(itemElement);
@@ -158,6 +160,8 @@ describe("XmlParser", () => {
         label: "TestLabel",
         description: "Test description",
         modifier: "Abstract",
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
         baseClass: "TestSchema.TestBaseClass",
         mixins: ["TestSchema.TestMixin", "TestSchema.TestMixin2"],
       } as EntityClassProps;
@@ -188,6 +192,8 @@ describe("XmlParser", () => {
         description: "Test class",
         label: "Test",
         modifier: "None",
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
         baseClass: "TestSchema.Element",
         mixins: ["TestSchema.Mixin1", "TestSchema.Mixin2"],
       } as EntityClassProps;
@@ -224,6 +230,8 @@ describe("XmlParser", () => {
         description: "Test class",
         label: "Test",
         modifier: "None",
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
         baseClass: "BisCore.Element",
         mixins: ["BisCore.Mixin1", "CoreCustomAttribute.ElementMixin1", "CoreCustomAttribute.ElementMixin2"],
       } as EntityClassProps;
@@ -270,6 +278,8 @@ describe("XmlParser", () => {
         description: "Test description",
         modifier: "Abstract",
         baseClass: "TestSchema.TestBaseStructClass",
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
       } as EntityClassProps;
 
       const actualProps = parser.parseStructClass(itemElement);
@@ -313,6 +323,8 @@ describe("XmlParser", () => {
         enumerators,
         description: undefined,
         label: undefined,
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
       } as EnumerationProps;
 
       const actualProps = parser.parseEnumeration(itemElement);
@@ -705,6 +717,8 @@ describe("XmlParser", () => {
         baseClass: undefined,
         description: undefined,
         label: undefined,
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
       } as MixinProps;
 
       const actualProps = parser.parseMixin(itemElement);
@@ -1476,6 +1490,8 @@ describe("XmlParser", () => {
         baseClass: undefined,
         description: undefined,
         label: undefined,
+        originalECSpecMajorVersion: 3,
+        originalECSpecMinorVersion: 1,
       };
 
       const actualProps = parser.parseRelationshipClass(itemElement);
@@ -1654,6 +1670,8 @@ describe("XmlParser", () => {
         alias: "testschema",
         description: "A test schema",
         label: undefined,
+        ecSpecMajorVersion: Schema.currentECSpecMajorVersion,
+        ecSpecMinorVersion: Schema.currentECSpecMinorVersion,
       } as SchemaProps;
 
       const actualProps = parser.parseSchema();

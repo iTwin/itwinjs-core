@@ -288,9 +288,9 @@ class ViewAttachments {
     }
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const attachment of this._attachments)
-      attachment.dispose();
+      attachment[Symbol.dispose]();
 
     this._attachments.length = 0;
   }
@@ -396,9 +396,7 @@ export class SheetViewState extends ViewState2d {
     return this._attachments?.attachments;
   }
 
-  /** @internal */
   public override isDrawingView(): this is DrawingViewState { return false; }
-  /** @internal */
   public override isSheetView(): this is SheetViewState { return true; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
@@ -449,12 +447,10 @@ export class SheetViewState extends ViewState2d {
       this._attachments.collectStatistics(stats);
   }
 
-  /** @internal */
   public override get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
 
-  /** @internal */
   public override getViewedExtents(): AxisAlignedBox3d {
     return this._viewedExtents;
   }
@@ -509,7 +505,6 @@ export class SheetViewState extends ViewState2d {
     return ids;
   }
 
-  /** @internal */
   public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const attachmentIds = await this.queryAttachmentIds();
@@ -531,7 +526,6 @@ export class SheetViewState extends ViewState2d {
     this._attachments = dispose(this._attachments);
   }
 
-  /** @internal */
   public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }
@@ -612,14 +606,13 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 }
 
 /** Draws the contents of a view attachment into a sheet view. */
-interface Attachment {
+interface Attachment extends Disposable {
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
   discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
   readonly zDepth: number;
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
-  dispose(): void;
   readonly viewport?: Viewport;
 }
 
@@ -754,8 +747,8 @@ class OrthographicAttachment {
       this._hiddenLineSettings = style.settings.hiddenLineSettings;
   }
 
-  public dispose(): void {
-    this._viewport.dispose();
+  public [Symbol.dispose](): void {
+    this._viewport[Symbol.dispose]();
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
@@ -980,8 +973,8 @@ class RasterAttachment {
     this.zDepth = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
   }
 
-  public dispose(): void {
-    this._viewport?.dispose();
+  public [Symbol.dispose](): void {
+    this._viewport?.[Symbol.dispose]();
   }
 
   public get viewAttachmentProps() {

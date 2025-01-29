@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -62,8 +62,8 @@ import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -195,7 +195,7 @@ export interface PresentationManagerProps {
  *
  * @public
  */
-export class PresentationManager implements IDisposable {
+export class PresentationManager implements Disposable {
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _localizationHelper: FrontendLocalizationHelper;
@@ -259,11 +259,17 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper.locale = locale;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (this._clearEventListener) {
       this._clearEventListener();
       this._clearEventListener = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   private onUpdate = (_evt: Event, report: UpdateInfo) => {

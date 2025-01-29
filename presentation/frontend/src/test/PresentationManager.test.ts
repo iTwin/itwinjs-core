@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeDuration, BeEvent, CompressedId64Set, using } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, CompressedId64Set } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelApp, IModelConnection, IpcApp, QuantityFormatter } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
@@ -77,7 +77,7 @@ import {
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
@@ -113,12 +113,12 @@ describe("PresentationManager", () => {
   });
 
   afterEach(() => {
-    manager.dispose();
+    manager[Symbol.dispose]();
     Presentation.terminate();
   });
 
   function recreateManager(props?: Partial<PresentationManagerProps>) {
-    manager && manager.dispose();
+    manager && manager[Symbol.dispose]();
     manager = PresentationManager.create({
       rpcRequestsHandler: rpcRequestsHandlerMock.object,
       ...props,
@@ -214,7 +214,9 @@ describe("PresentationManager", () => {
     it("starts listening to update events", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(() => {});
-      using(PresentationManager.create(), (_) => {});
+      {
+        using _ = PresentationManager.create();
+      }
       expect(addListenerSpy).to.be.calledOnceWith(
         PresentationIpcEvents.Update,
         sinon.match((arg) => typeof arg === "function"),
@@ -415,7 +417,7 @@ describe("PresentationManager", () => {
     it("does not inject ruleset variables into request options in IpcApp", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       sinon.stub(IpcApp, "addListener");
-      manager.dispose();
+      manager[Symbol.dispose]();
       manager = PresentationManager.create({
         rpcRequestsHandler: rpcRequestsHandlerMock.object,
       });

@@ -34,6 +34,8 @@ export interface SchemaProps {
   readonly references?: SchemaReferenceProps[];
   readonly items?: { [name: string]: SchemaItemProps };
   readonly customAttributes?: Array<{ [value: string]: any }>;
+  readonly ecSpecMajorVersion?: number;
+  readonly ecSpecMinorVersion?: number;
 }
 
 /**
@@ -72,6 +74,8 @@ export interface SchemaItemProps {
   readonly label?: string;
   readonly description?: string;
   readonly customAttributes?: Array<{ [value: string]: any }>;
+  readonly originalECSpecMajorVersion?: number;
+  readonly originalECSpecMinorVersion?: number;
 }
 
 /**
@@ -132,6 +136,7 @@ export interface RelationshipConstraintProps {
   readonly polymorphic: boolean;
   readonly abstractConstraint?: string;
   readonly constraintClasses: string[];
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**

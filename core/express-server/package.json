@@ -1,18 +1,18 @@
 {
   "name": "@itwin/express-server",
-  "version": "4.10.0-dev.36",
+  "version": "5.0.0-dev.51",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0 || ^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ExpressServer",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
@@ -43,7 +43,7 @@
     "@types/chai": "4.3.1",
     "@types/express": "^4.17.20",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.17.0",
     "@types/sinon": "^17.0.2",
     "@types/supertest": "^6.0.2",
     "@types/express-ws": "^3.0.3",
@@ -61,7 +61,7 @@
     "@itwin/core-common": "workspace:*"
   },
   "dependencies": {
-    "express": "^4.20.0",
+    "express": "^4.21.2",
     "express-ws": "^5.0.2"
   },
   "nyc": {

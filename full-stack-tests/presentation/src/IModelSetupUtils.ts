@@ -2,6 +2,8 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
+import { XMLParser } from "fast-xml-parser";
 import path from "path";
 import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
@@ -17,8 +19,27 @@ import {
   LocalFileName,
   PhysicalElementProps,
 } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { XMLParser } from "fast-xml-parser";
+import { IModelConnection } from "@itwin/core-frontend";
+
+export class TestIModelConnection extends IModelConnection {
+  constructor(private readonly _db: IModelDb) {
+    super(_db.getConnectionProps());
+    IModelConnection.onOpen.raiseEvent(this);
+  }
+
+  public override get isClosed(): boolean {
+    return !this._db.isOpen;
+  }
+
+  public override async close(): Promise<void> {
+    IModelConnection.onClose.raiseEvent(this);
+    this._db.close();
+  }
+
+  public static openFile(filePath: string): IModelConnection {
+    return new TestIModelConnection(SnapshotDb.openFile(filePath));
+  }
+}
 
 export function createValidIModelFileName(imodelName: string) {
   return sanitize(imodelName.replace(/[ ]+/g, "-").replaceAll("`", "").replaceAll("'", "")).toLocaleLowerCase();
@@ -45,9 +66,8 @@ export async function buildTestIModelDb(name: string, cb: (db: IModelDb) => Prom
  * frontend connection to the imodel.
  */
 export async function buildTestIModelConnection(name: string, cb: (db: IModelDb) => Promise<void>): Promise<IModelConnection> {
-  const { db, fileName } = await buildTestIModelDb(name, cb);
-  db.close();
-  return SnapshotConnection.openFile(fileName);
+  const { db } = await buildTestIModelDb(name, cb);
+  return new TestIModelConnection(db);
 }
 
 /** Import an ECSchema into given iModel. */

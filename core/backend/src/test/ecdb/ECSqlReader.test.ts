@@ -3,7 +3,7 @@ import { assert } from "chai";
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, using } from "@itwin/core-bentley";
+import { DbResult } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../core-backend";
 import { ECDb } from "../../ECDb";
@@ -28,60 +28,95 @@ describe("ECSqlReader", (() => {
     const outDir = KnownTestLocations.outputDir;
 
     it("ecsql reader simple", async () => {
-      await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
+      using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
         `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECEntityClass typeName="Foo" modifier="Sealed">
             <ECProperty propertyName="n" typeName="int"/>
           </ECEntityClass>
-        </ECSchema>`), async (ecdb: ECDb) => {
+        </ECSchema>`);
+      assert.isTrue(ecdb.isOpen);
+      ecdb.saveChanges();
+      const params = new QueryBinder();
+      params.bindIdSet(1, ["0x32"]);
+      const optionBuilder = new QueryOptionsBuilder();
+      optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+      reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
+      const rows = await reader.toArray();
+      assert.equal(rows[0].id, "0x32");
+      assert.equal(rows.length, 1);
+    });
+
+    it("ecsql reader simple for IdSet", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
+        `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="Foo" modifier="Sealed">
+            <ECProperty propertyName="n" typeName="int"/>
+          </ECEntityClass>
+        </ECSchema>`);
         assert.isTrue(ecdb.isOpen);
         ecdb.saveChanges();
         const params = new QueryBinder();
         params.bindIdSet(1, ["0x32"]);
         const optionBuilder = new QueryOptionsBuilder();
         optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
         const rows = await reader.toArray();
         assert.equal(rows[0].id, "0x32");
         assert.equal(rows.length, 1);
-      });
     });
 
-    it("ecsql reader simple using query reader", async () => {
-      await using(ECDbTestHelper.createECDb(outDir, "test.ecdb",
+    it("bindIdSet not working with integer Ids", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
         `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECEntityClass typeName="Foo" modifier="Sealed">
             <ECProperty propertyName="n" typeName="int"/>
           </ECEntityClass>
-        </ECSchema>`), async (ecdb: ECDb) => {
+        </ECSchema>`)
         assert.isTrue(ecdb.isOpen);
-
-        const r = await ecdb.withWriteStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlWriteStatement) => {
-          return stmt.stepForInsert();
-        });
         ecdb.saveChanges();
-        assert.equal(r.status, DbResult.BE_SQLITE_DONE);
-        assert.equal(r.id, "0x1");
-
         const params = new QueryBinder();
-        params.bindId("firstId", r.id!);
+        params.bindIdSet(1, ["50"]);
+        const optionBuilder = new QueryOptionsBuilder();
+        optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
+        const rows = await reader.toArray();
+        assert.equal(rows.length, 0);
+    });
 
-        reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
-        assert.isTrue(await reader.step());
-        assert.equal(reader.current.id, "0x1");
-        assert.equal(reader.current.ecinstanceid, "0x1");
-        assert.equal(reader.current.n, 20);
-        assert.equal(reader.current.ID, "0x1");
-        assert.equal(reader.current.ECINSTANCEID, "0x1");
-        assert.equal(reader.current[0], "0x1");
-        assert.equal(reader.current[1], 20);
+    it("ecsql reader simple using query reader", async () => {
+      using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
+        `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="Foo" modifier="Sealed">
+            <ECProperty propertyName="n" typeName="int"/>
+          </ECEntityClass>
+        </ECSchema>`);
+      assert.isTrue(ecdb.isOpen);
 
-        const row0 = reader.current.toRow();
-        assert.equal(row0.ECInstanceId, "0x1");
-        assert.equal(row0.n, 20);
-
-        assert.isFalse(await reader.step());
+      const r = await ecdb.withStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlStatement) => {
+        return stmt.stepForInsert();
       });
+      ecdb.saveChanges();
+      assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+      assert.equal(r.id, "0x1");
+
+      const params = new QueryBinder();
+      params.bindId("firstId", r.id!);
+
+      reader = ecdb.createQueryReader("SELECT ECInstanceId, n FROM ts.Foo WHERE ECInstanceId=:firstId", params, { limit: { count: 1 } });
+      assert.isTrue(await reader.step());
+      assert.equal(reader.current.id, "0x1");
+      assert.equal(reader.current.ecinstanceid, "0x1");
+      assert.equal(reader.current.n, 20);
+      assert.equal(reader.current.ID, "0x1");
+      assert.equal(reader.current.ECINSTANCEID, "0x1");
+      assert.equal(reader.current[0], "0x1");
+      assert.equal(reader.current[1], 20);
+
+      const row0 = reader.current.toRow();
+      assert.equal(row0.ECInstanceId, "0x1");
+      assert.equal(row0.n, 20);
+
+      assert.isFalse(await reader.step());
     });
   });
 
@@ -548,6 +583,64 @@ describe("ECSqlReader", (() => {
           actualRowCount = row.toRow().numResults;
         }
         assert.equal(actualRowCount, expectedRowCount);
+      });
+
+    });
+
+    describe("Tests for extendedType and extendType property behaviour of QueryPropertyMetaData", () => {
+
+      it("Id type column with alias", async () => {
+        reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("Id", metaData[0].extendedType);
+        assert.equal("Id", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Id type column without alias", async () => {
+        reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("Id", metaData[0].extendedType);
+        assert.equal("Id", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("ClassId type column", async () => {
+        reader = iModel.createQueryReader("SELECT ECClassId FROM bis.Element ORDER BY ECClassId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("ClassId", metaData[0].extendedType);
+        assert.equal("ClassId", metaData[0].extendType);    // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Column without extended type", async () => {
+        reader = iModel.createQueryReader("SELECT s.Name FROM meta.ECSchemaDef s ORDER BY s.Name ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal(undefined, metaData[0].extendedType);
+        assert.equal("", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Column without extended type with alias", async () => {
+        reader = iModel.createQueryReader("SELECT s.Name a FROM meta.ECSchemaDef s ORDER BY a ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal(undefined, metaData[0].extendedType);
+        assert.equal("", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Geometric type column with alias", async () => {
+        reader = iModel.createQueryReader("select GeometryStream A from bis.GeometricElement3d LIMIT 1");
+        const metaData = await reader.getMetaData();
+        assert.equal("GeometryStream", metaData[0].extendedType);
+        assert.equal("GeometryStream", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+      });
+
+      it("Geometric type column without alias", async () => {
+        reader = iModel.createQueryReader("select GeometryStream from bis.GeometricElement3d LIMIT 1");
+        const metaData = await reader.getMetaData();
+        assert.equal("GeometryStream", metaData[0].extendedType);
+        assert.equal("GeometryStream", metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);   // eslint-disable-line @typescript-eslint/no-deprecated
       });
 
     });

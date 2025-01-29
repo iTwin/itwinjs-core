@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { GuidString, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   AngleProps, ClipVectorProps, LowAndHighXYProps, LowAndHighXYZProps, TransformProps, XYProps, XYZProps, YawPitchRollProps,
 } from "@itwin/core-geometry";
@@ -14,7 +14,7 @@ import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } from "./geometry/ElementGeometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
-import { IModelError, IModelStatus } from "./IModelError";
+import { IModelError } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { TextAnnotationProps } from "./annotation/TextAnnotation";
 

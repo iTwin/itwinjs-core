@@ -104,7 +104,7 @@ export class IdMap implements WebGLDisposable {
     return 0 === this.textures.size && 0 === this.gradients.size;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     const textureArr = Array.from(this.textures.values());
     const gradientArr = this.gradients.extractArrays().values;
 
@@ -651,14 +651,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       return;
     dispose(idMap);
     this.resourceCache.delete(imodel);
-  }
-
-  /** Attempt to create a material for the given iModel using a set of material parameters. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public override createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
-    const idMap = this.getIdMap(imodel);
-    const material = idMap.getMaterial(params);
-    return material;
   }
 
   public override createRenderMaterial(args: CreateRenderMaterialArgs): RenderMaterial | undefined {

@@ -66,7 +66,7 @@ export interface ECSqlRowArg {
  * @deprecated in 4.10.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
  * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
  */
-export class ECSqlStatement implements IterableIterator<any>, IDisposable {
+export class ECSqlStatement implements IterableIterator<any>, Disposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
   private _props = new PropertyMetaDataMap([]);
@@ -125,11 +125,16 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * > Do not call this method directly on a statement that is being managed by a statement cache.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._stmt) {
       this._stmt.dispose(); // free native statement
       this._stmt = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 
   /** Binds the specified value to the specified ECSQL parameter.
@@ -492,6 +497,15 @@ export class ECSqlWriteStatement implements IDisposable {
     return this._stmt.getNativeSql();
   }
 
+  /** Call this function when finished with this statement. This releases the native resources held by the statement.
+   *
+   * > Do not call this method directly on a statement that is being managed by a statement cache.
+   */
+  public [Symbol.dispose](): void {
+    if (this._stmt) {
+      this._stmt.dispose(); // free native statement;
+    }
+  }
   /** Call this function when finished with this statement. This releases the native resources held by the statement.
    *
    * > Do not call this method directly on a statement that is being managed by a statement cache.

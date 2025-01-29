@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { ECClassModifier, EntityClass, RelationshipClass, RelationshipConstraint, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ECEditingStatus } from "../../Editing/Exception";
-import { AnyDiagnostic } from "../../ecschema-editing";
+import { AnyDiagnostic, AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -22,6 +22,20 @@ function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
 
 describe("Relationship Class merger tests", () => {
   let targetContext: SchemaContext;
+
+  const sourceJson = {
+    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    name: "SourceSchema",
+    version: "1.0.0",
+    alias: "source",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
+  };
+
   const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
@@ -1062,5 +1076,449 @@ describe("Relationship Class merger tests", () => {
     });
 
     await expect(merge).to.be.rejectedWith("Changing the class 'BaseRelationship' baseClass is not supported.");
+  });
+
+  describe("iterative tests", () => {
+    it("should add a re-mapped relationship class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testItem: {
+            schemaItemType: "RelationshipClass",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: true,
+              roleLabel: "refers to",
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+  
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {               
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "any",
+          },
+        },
+      }, targetContext);
+  
+      const result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "RelationshipClass");
+        expect(conflict).to.have.a.property("target", "CustomAttributeClass");
+        return true;
+      });
+  
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
+      schemaEdits.items.rename(testItem, "mergedRelationship");
+  
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+  
+      await expect(mergedSchema.getItem("testItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
+      });
+      await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.RelationshipClass);
+      });
+    });
+
+    it("should add a re-mapped relationship class with re-mapped constraint classes", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testItem: {
+            schemaItemType: "RelationshipClass",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: true,
+              roleLabel: "refers to",
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+  
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {         
+          testEntity: {
+            schemaItemType: "StructClass",
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "any",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
+      schemaEdits.items.rename(testItem, "mergedRelationship");
+      const testEntity = await sourceSchema.getItem("testEntity") as EntityClass;
+      schemaEdits.items.rename(testEntity, "mergedEntity");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+  
+      await expect(mergedSchema.getItem("mergedEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.EntityClass);
+      });
+      await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
+        .then((ecClass: RelationshipClass) => {
+          expect(ecClass).to.have.a.property("source").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.nested.property("constraintClasses[0].name").to.equal("mergedEntity");
+            expect(source).to.have.a.nested.property("abstractConstraint.name").to.equal("mergedEntity");
+            return true;
+          });
+          expect(ecClass).to.have.a.property("target").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.nested.property("constraintClasses[0].name").to.equal("mergedEntity");
+            expect(source).to.have.a.nested.property("abstractConstraint.name").to.equal("mergedEntity");
+            return true;
+          });
+      });
+    });
+
+    it("should merge changes to re-mapped relationship class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testItem: {
+            schemaItemType: "RelationshipClass",
+            modifier: "None",
+            label: "Changed Link",
+            description: "Changed Link Relationship",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: false,
+              roleLabel: "entity has entity",
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "entity has entity (reversed)",
+              polymorphic: false,
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+  
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {   
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          mergedRelationship: {
+            schemaItemType: "RelationshipClass",            
+            modifier: "Sealed",
+            label: "Link",
+            description: "Link Relationship",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: true,
+              roleLabel: "refers to",
+              constraintClasses: [
+                "TargetSchema.testEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "TargetSchema.testEntity",
+              ],
+            },
+          },            
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "any",
+          },
+        },
+      }, targetContext);
+    
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
+      schemaEdits.items.rename(testItem, "mergedRelationship");
+  
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+  
+      await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
+        .then((ecClass: RelationshipClass) => {
+          expect(ecClass).to.have.a.property("modifier").to.equal(ECClassModifier.None);
+          expect(ecClass).to.have.a.property("label").to.equal("Changed Link");
+          expect(ecClass).to.have.a.property("description").to.equal("Changed Link Relationship");
+          expect(ecClass).to.have.a.property("source").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.property("polymorphic").to.equal(false);
+            expect(source).to.have.a.property("roleLabel").to.equal("entity has entity");
+            return true;
+          });
+          expect(ecClass).to.have.a.property("target").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.property("polymorphic").to.equal(false);
+            expect(source).to.have.a.property("roleLabel").to.equal("entity has entity (reversed)");
+            return true;
+          });
+        });
+    });
+
+    it("should add constraint classes to re-mapped relationship class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {          
+          testEntity: {
+            schemaItemType: "EntityClass",
+            baseClass: "SourceSchema.baseEntity",
+          },
+          baseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testItem: {
+            schemaItemType: "RelationshipClass",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: false,
+              roleLabel: "entity has entity",
+              abstractConstraint: "SourceSchema.baseEntity",
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "entity has entity (reversed)",
+              polymorphic: false,
+              abstractConstraint: "SourceSchema.baseEntity",
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+  
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {   
+          baseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          mergedRelationship: {
+            schemaItemType: "RelationshipClass",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: true,
+              roleLabel: "refers to",
+              abstractConstraint: "TargetSchema.baseEntity",
+              constraintClasses: [
+                "TargetSchema.baseEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              abstractConstraint: "TargetSchema.baseEntity",
+              constraintClasses: [
+                "TargetSchema.baseEntity",
+              ],
+            },
+          },            
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "any",
+          },
+        },
+      }, targetContext);
+    
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
+      schemaEdits.items.rename(testItem, "mergedRelationship");
+  
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+  
+      await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
+        .then((ecClass: RelationshipClass) => {
+          expect(ecClass).to.have.a.property("source").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.nested.property("constraintClasses[0].name").to.equal("baseEntity");
+            expect(source).to.have.a.nested.property("constraintClasses[1].name").to.equal("testEntity");
+            return true;
+          });
+          expect(ecClass).to.have.a.property("target").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.nested.property("constraintClasses[0].name").to.equal("baseEntity");
+            expect(source).to.have.a.nested.property("constraintClasses[1].name").to.equal("testEntity");
+            return true;
+          });
+      });
+    });
+
+    it("should add re-mapped constraint classes to re-mapped relationship class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {          
+          testEntity: {
+            schemaItemType: "EntityClass",
+            baseClass: "SourceSchema.baseEntity",
+          },
+          baseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testItem: {
+            schemaItemType: "RelationshipClass",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: false,
+              roleLabel: "entity has entity",
+              abstractConstraint: "SourceSchema.baseEntity",
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "entity has entity (reversed)",
+              polymorphic: false,
+              abstractConstraint: "SourceSchema.baseEntity",
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+            },
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+  
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testEntity: {
+            schemaItemType: "StructClass",
+          },
+          baseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          mergedRelationship: {
+            schemaItemType: "RelationshipClass",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              polymorphic: true,
+              roleLabel: "refers to",
+              abstractConstraint: "TargetSchema.baseEntity",
+              constraintClasses: [
+                "TargetSchema.baseEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              abstractConstraint: "TargetSchema.baseEntity",
+              constraintClasses: [
+                "TargetSchema.baseEntity",
+              ],
+            },
+          },            
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "any",
+          },
+        },
+      }, targetContext);
+    
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
+      schemaEdits.items.rename(testItem, "mergedRelationship");
+  
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "EntityClass");
+        expect(conflict).to.have.a.property("target", "StructClass");
+        return true;
+      });
+
+      const testEntity = await sourceSchema.getItem("testEntity") as EntityClass;
+      schemaEdits.items.rename(testEntity, "mergedEntity");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+  
+      await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
+        .then((ecClass: RelationshipClass) => {
+          expect(ecClass).to.have.a.property("source").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.nested.property("constraintClasses[0].name").to.equal("baseEntity");
+            expect(source).to.have.a.nested.property("constraintClasses[1].name").to.equal("mergedEntity");
+            return true;
+          });
+          expect(ecClass).to.have.a.property("target").to.satisfy((source: RelationshipConstraint) => {
+            expect(source).to.have.a.nested.property("constraintClasses[0].name").to.equal("baseEntity");
+            expect(source).to.have.a.nested.property("constraintClasses[1].name").to.equal("mergedEntity");
+            return true;
+          });
+      });
+    });
   });
 });
