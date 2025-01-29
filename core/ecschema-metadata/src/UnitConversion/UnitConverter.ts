@@ -16,11 +16,14 @@ import { UnitGraph } from "./UnitTree";
  * @internal
  */
 export class UnitConverter {
+  private _uGraph: UnitGraph;
+
   /**
    * Create Converter context
    * @param _context SchemaContext with contexts added to it.
    */
   constructor(private readonly _context: SchemaContext) {
+    this._uGraph = new UnitGraph(this._context);
   }
 
   /**
@@ -48,11 +51,10 @@ export class UnitConverter {
       });
     }
 
-    const unitGraph = new UnitGraph(this._context);
-    const from = await unitGraph.resolveUnit(fromSchemaItemName, fromSchema);
-    const to = await unitGraph.resolveUnit(toSchemaItemName, toSchema);
+    const from = await this._uGraph.resolveUnit(fromSchemaItemName, fromSchema);
+    const to = await this._uGraph.resolveUnit(toSchemaItemName, toSchema);
 
-    return this.processUnits(from, to, unitGraph);
+    return this.processUnits(from, to);
   }
 
   /**
@@ -60,7 +62,7 @@ export class UnitConverter {
    * @param to Target unit converted to
    * @internal
    */
-  private async processUnits(from: Unit | Constant, to: Unit | Constant, unitGraph: UnitGraph): Promise<UnitConversion> {
+  private async processUnits(from: Unit | Constant, to: Unit | Constant): Promise<UnitConversion> {
     if (from.key.matches(to.key))
       return UnitConversion.identity;
 
@@ -71,15 +73,15 @@ export class UnitConverter {
       });
 
     // Add nodes and subsequent children to graph
-    await unitGraph.addUnit(from);
-    await unitGraph.addUnit(to);
+    await this._uGraph.addUnit(from);
+    await this._uGraph.addUnit(to);
 
     const fromBaseUnits = new Map<string, number>();
     const toBaseUnits = new Map<string, number>();
     // Calculate map of UnitConversions to get between from -> base
-    const fromMapStore = unitGraph.reduce(from, fromBaseUnits);
+    const fromMapStore = this._uGraph.reduce(from, fromBaseUnits);
     // Calculate map of UnitConversions to get between base -> to
-    const toMapStore = unitGraph.reduce(to, toBaseUnits);
+    const toMapStore = this._uGraph.reduce(to, toBaseUnits);
 
     if (!this.checkBaseUnitsMatch(fromBaseUnits, toBaseUnits))
       throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not have matching base units`, () => {
