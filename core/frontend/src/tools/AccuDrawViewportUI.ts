@@ -40,6 +40,8 @@ export class AccuDrawViewportUI extends AccuDraw {
     fixedLocation: false,
     /** Layout controls in a single row horizontally instead of in columns vertically as an option when using fixed location. */
     horizontalArrangement: false,
+    /** When controls follow the cursor, the X and Y offsets applied to the current point to position the top left (values in inches based on screen DPI) */
+    cursorOffset: { x: .4, y: .1 },
     /** Replace "^", ";", and ".." with "°" or ":" for easier input. */
     simplifiedInput: true,
     /** Enable simple math operations not supported by quantity parser. */
@@ -678,11 +680,13 @@ export class AccuDrawViewportUI extends AccuDraw {
     if (undefined !== this._controls && this._controls.overlay.parentElement !== vp.vpDiv)
       this.removeControls(); // Could be enhanced to save/restore partial input of currently focused item...
 
+    const props = AccuDrawViewportUI.controlProps;
+
     if (undefined === this._controls) {
       const overlay = vp.addNewDiv("accudraw-overlay", true, 35);
       const div = this.createControlDiv();
       const is3dLayout = vp.view.is3d();
-      const isHorizontalLayout = AccuDrawViewportUI.controlProps.horizontalArrangement;
+      const isHorizontalLayout = props.horizontalArrangement;
 
       overlay.appendChild(div);
 
@@ -694,7 +698,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         div.appendChild(itemField);
 
         if (is3dLayout || ItemField.Z_Item !== item)
-          rowOffset += itemField.offsetHeight * AccuDrawViewportUI.controlProps.rowSpacingFactor;
+          rowOffset += itemField.offsetHeight * props.rowSpacingFactor;
 
         itemWidth = itemField.offsetWidth;
         itemHeight = itemField.offsetHeight;
@@ -709,7 +713,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         lockWidth = itemLock.offsetWidth;
 
         if (is3dLayout || ItemField.Z_Item !== item)
-          columnOffset += (itemWidth + lockWidth) * AccuDrawViewportUI.controlProps.columnSpacingFactor;
+          columnOffset += (itemWidth + lockWidth) * props.columnSpacingFactor;
       };
 
       let rowOffset = 0;
@@ -732,7 +736,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       createFieldAndLock(ItemField.Z_Item); // Both polar and rectangular modes support Z in 3d views...
 
       div.style.width = isHorizontalLayout ? `${columnOffset}px` : `${itemWidth + lockWidth + 5}px`;
-      div.style.height = isHorizontalLayout ? `${itemHeight * AccuDrawViewportUI.controlProps.rowSpacingFactor}px` : `${rowOffset}px`;
+      div.style.height = isHorizontalLayout ? `${itemHeight * props.rowSpacingFactor}px` : `${rowOffset}px`;
 
       this._controls = { overlay, div, itemFields, itemLocks };
       this.updateControlVisibility(CompassMode.Polar === this.compassMode, vp.view.is3d());
@@ -745,12 +749,12 @@ export class AccuDrawViewportUI extends AccuDraw {
     const viewRect = vp.viewRect;
     const position = vp.worldToView(ev.point);
 
-    if (AccuDrawViewportUI.controlProps.fixedLocation) {
+    if (props.fixedLocation) {
       position.x = (viewRect.left + ((viewRect.width - this._controls.div.offsetWidth) * 0.5));
       position.y = (viewRect.bottom - this._controls.div.offsetHeight);
     } else {
-      position.x += Math.floor(vp.pixelsFromInches(0.4)) + 0.5;
-      position.y += Math.floor(vp.pixelsFromInches(0.1)) + 0.5;
+      position.x += Math.floor(vp.pixelsFromInches(props.cursorOffset.x)) + 0.5;
+      position.y += Math.floor(vp.pixelsFromInches(props.cursorOffset.y)) + 0.5;
     }
 
     const controlRect = new ViewRect(position.x, position.y, position.x + this._controls.div.offsetWidth, position.y + this._controls.div.offsetHeight);
