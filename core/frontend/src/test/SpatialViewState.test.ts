@@ -51,10 +51,7 @@ describe("SpatialViewState", () => {
   function createView(ranges: Range3d[]): SpatialViewState {
     const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     const refs = ranges.map((range) => new TreeRef(range));
-    view.forEachModelTreeRef = (func: (ref: TileTreeReference) => void) => {
-      for (const ref of refs)
-        func(ref);
-    };
+    view.getModelTreeRefs = () => refs;
 
     return view;
   }
