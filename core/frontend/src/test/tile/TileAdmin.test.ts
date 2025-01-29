@@ -233,6 +233,8 @@ describe("TileAdmin", () => {
           func(ref);
       }
 
+      public getReferences() { return this.refs; }
+
       public async loadAllTrees(): Promise<void> {
         let allLoaded = true;
         for (const ref of this.refs) {
@@ -282,8 +284,11 @@ describe("TileAdmin", () => {
 
     async function render(...viewports: Viewport[]): Promise<void> {
       const loadTrees = new Array<Promise<void>>();
-      for (const viewport of viewports)
-        viewport.forEachTiledGraphicsProvider((p) => loadTrees.push((p as Provider).loadAllTrees()));
+      for (const viewport of viewports) {
+        for (const p of viewport.tiledGraphicsProviders) {
+          loadTrees.push((p as Provider).loadAllTrees());
+        }
+      }
 
       await Promise.all(loadTrees);
 
