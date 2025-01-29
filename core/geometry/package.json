@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "4.8.0-dev.34",
+  "version": "5.0.0-dev.51",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
@@ -12,15 +12,15 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
-    "test": "mocha",
+    "test": "vitest --run",
     "extract-api": "betools extract-api --entry=core-geometry",
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
-    "cover": "nyc npm -s test",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "cover": "vitest --run --coverage",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {
@@ -38,29 +38,17 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
-    "@types/chai": "4.3.1",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/flatbuffers": "~1.10.0",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
-    "chai": "^4.3.10",
-    "debug": "^2.6.9",
-    "eslint": "^8.56.0",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
+    "@types/node": "~20.17.0",
+    "@vitest/coverage-v8": "^2.1.0",
+    "eslint": "^9.13.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2",
+    "vitest": "^2.1.0"
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "flatbuffers": "~1.12.0"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc",
-    "check-coverage": true,
-    "statements": 85,
-    "functions": 85,
-    "branches": 70,
-    "lines": 85
   }
 }

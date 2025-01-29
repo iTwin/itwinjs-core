@@ -29,6 +29,7 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
+import { ContoursPanel } from "./Contours";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -406,6 +407,15 @@ export class Viewer extends Window {
       tooltip: "Point cloud settings",
     });
 
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue94b",
+      createDropDown: async (container: HTMLElement) => {
+        const panel = new ContoursPanel(this.viewport, container);
+        return panel;
+      },
+      tooltip: "Contour display",
+    });
+
     this.updateTitle();
     this.updateActiveSettings();
   }
@@ -555,9 +565,9 @@ export class Viewer extends Window {
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
   public override onClosing(): void {
-    this.toolBar.dispose();
+    this.toolBar[Symbol.dispose]();
     if (this._debugWindow) {
-      this._debugWindow.dispose();
+      this._debugWindow[Symbol.dispose]();
       this._debugWindow = undefined;
     }
 

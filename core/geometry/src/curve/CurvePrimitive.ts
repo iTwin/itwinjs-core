@@ -254,16 +254,13 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return Math.abs(context.getSum());
   }
   /**
-   * Returns a (high accuracy) range of the curve between fractional positions
-   * * Default implementation returns the range of the curve from clonePartialCurve.
+   * Returns the range of the curve between fractional positions.
+   * * Default implementation calls [[rangeBetweenFractionsByClone]].
    */
   public rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     return this.rangeBetweenFractionsByClone(fraction0, fraction1, transform);
   }
-  /**
-   * Returns a (high accuracy) range of the curve between fractional positions
-   * * Default implementation returns the range of the curve from clonePartialCurve
-   */
+  /** Returns a high accuracy range of the curve between fractional positions using [[clonePartialCurve]]. */
   public rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d {
     if (fraction0 === fraction1)
       return Range3d.create(this.fractionToPoint(fraction0));
@@ -273,13 +270,13 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return Range3d.createNull();
   }
   /**
-   * Returns an approximate range based on a fixed number of evaluations
+   * Returns an approximate range based on a fixed number of evaluations.
    * * Default implementation returns a range determined by evaluating a specified number of points on the curve.
-   * * Optional evaluate again at interval midpoints and extrapolate any increase
+   * * Optionally evaluate again at interval midpoints and extrapolate any increase.
    * * For a smooth curve, Richardson extrapolation suggests each subdivision moves 3/4 of the way to final. So
-   * extrapolationFactor of 1/3 gets speculatively moves closer to the tight range, and larger multipliers increase
+   * extrapolationFactor of 1/3 speculatively moves closer to the tight range, and larger multipliers increase
    * confidence in being safely larger.
-   * * This function is faster version to compute the range of a portion of a curve (because some curves can be
+   * * This function is faster to compute the range of a portion of a curve, because some curves can be
    * expensive to compute the partial curve and/or to compute the partial curve's range.
    * @param fraction0 start fraction for evaluation
    * @param fraction1 end fraction for evaluation
@@ -529,11 +526,15 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * Search for a point on the curve that is closest to the spacePoint.
    * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
-   * succeed
-   * @param spacePoint point in space
-   * @param extend true to extend the curve (if possible), false for no extend, single CurveExtendOptions (for both
-   * directions), or array of distinct CurveExtendOptions for start and end.
-   * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
+   * succeed.
+   * @param spacePoint point in space.
+   * @param extend if applicable, compute the closest point to the curve extended according to variant type:
+   * * false: do not extend the curve
+   * * true: extend the curve at both start and end
+   * * CurveExtendOptions: extend the curve in the specified manner at both start and end
+   * * CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point.
    */
   public closestPoint(
     spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
@@ -786,7 +787,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
-   * for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset()
+   * for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use [[CurveOps.constructCurveXYOffset]]
    * instead.
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Geometry } from "../../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -66,7 +66,7 @@ describe("Point4d", () => {
     const pointA3 = Point4d.fromJSON(pointA.toJSON());
     testExactPoint4dPoint4d(ck, pointA, pointA3);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Shifts", () => {
@@ -94,7 +94,7 @@ describe("Point4d", () => {
       pointB.xyzw[i] = e;
       ck.testFalse(pointB.isAlmostZero, "Point4d.isAlmostZero");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Vectors", () => {
@@ -110,7 +110,7 @@ describe("Point4d", () => {
     const diffAB4 = pointB.scale(pointA.w).minus(pointA.scale(pointB.w));
     const diffAB3W = Point4d.create(diffAB3.x, diffAB3.y, diffAB3.z, 0.0);
     ck.testPoint4d(diffAB4, diffAB3W, "crossWeightedDifference)");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Planes", () => {
@@ -142,8 +142,8 @@ describe("Point4d", () => {
     const workPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
     Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.createZero(), workPlane);
     const zeroPoint = Point4d.createZero();
-    zeroPoint.setComponent(3,1);  // homogeneous "zero" has weight 1
-    const testPoint = Point4d.createFromPoint([1,4,9,16]);
+    zeroPoint.setComponent(3, 1);  // homogeneous "zero" has weight 1
+    const testPoint = Point4d.createFromPoint([1, 4, 9, 16]);
     let workPoint = Point4d.createFromPoint(testPoint);
     ck.testPoint4d(testPoint, workPoint);
     workPoint = Point4d.createFromPoint([]);
@@ -158,9 +158,9 @@ describe("Point4d", () => {
     ck.testCoordinate(testPoint.y, workPoint.y);
     ck.testCoordinate(testPoint.z, workPoint.z);
     ck.testCoordinate(1, workPoint.w);
-    workPoint = Point4d.createFromPoint({x: testPoint.x, y: testPoint.y, z: testPoint.z, w: testPoint.w});
+    workPoint = Point4d.createFromPoint({ x: testPoint.x, y: testPoint.y, z: testPoint.z, w: testPoint.w });
     ck.testPoint4d(testPoint, workPoint);
-    workPoint = Point4d.createFromPoint({x: testPoint.x, y: testPoint.y});
+    workPoint = Point4d.createFromPoint({ x: testPoint.x, y: testPoint.y });
     ck.testCoordinate(testPoint.x, workPoint.x);
     ck.testCoordinate(testPoint.y, workPoint.y);
     ck.testCoordinate(0, workPoint.z);
@@ -195,24 +195,28 @@ describe("Point4d", () => {
       return c * size;
     };
     // verify new impl is at least as successful and accurate as old impl
+    const testPlaneImplementations = (pt: Point4d, count: number = 0) => {
+      const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
+      const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
+      ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
+      if (oldPlane && newPlane) {
+        ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same origins`);
+        ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same normals`);
+      } else if (!!oldPlane && !newPlane) {  // error case: recompute to debug
+        const oldPlane1 = toPlane3dByOriginAndUnitNormalOrig(pt);
+        const newPlane1 = pt.toPlane3dByOriginAndUnitNormal();
+        ck.testDefined(oldPlane1); ck.testUndefined(newPlane1);  // silence linter
+      }
+    };
     for (let size = 1.0e-7; size < 1.e8; size *= 10) {
       for (let count = 0; count < 100; ++count) {
         const pt = Point4d.create(randomCoordinate(size), randomCoordinate(size), randomCoordinate(size), randomCoordinate(size));
-        const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
-        const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
-        ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
-        if (oldPlane && newPlane) {
-          ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), "plane implementations have same origins");
-          ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), "plane implementations have same normals");
-        } else if (!!oldPlane && !newPlane) {  // error case: recompute to debug
-          const oldPlane1 = toPlane3dByOriginAndUnitNormalOrig(pt);
-          const newPlane1 = pt.toPlane3dByOriginAndUnitNormal();
-          ck.testDefined(oldPlane1); ck.testUndefined(newPlane1);  // silence linter
-        }
+        testPlaneImplementations(pt, count);
       }
     }
-
-    expect(ck.getNumErrors()).equals(0);
+    // flaky test investigation
+    testPlaneImplementations(Point4d.create(0, 1.4171408489160875e-10, 0, -8.561060281069466e-7));
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Vectors", () => {
@@ -229,7 +233,7 @@ describe("Point4d", () => {
     const diffAB3W = Point4d.create(diffAB3.x, diffAB3.y, diffAB3.z, 0.0);
 
     ck.testPoint4d(diffAB4, diffAB3W, "crossWeightedDifference)");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Packing", () => {
@@ -245,7 +249,7 @@ describe("Point4d", () => {
         ck.testCoordinate(packedData[i0 + i], pointI.dotProduct(unitVectors[i]));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Distances", () => {
@@ -261,7 +265,7 @@ describe("Point4d", () => {
     ck.testCoordinate(pointA.realDistanceXY(pointB)!, xyzA.realDistanceXY(xyzB)!);
     ck.testUndefined(pointA.realDistanceXY(vectorB));
     ck.testUndefined(vectorA.realDistanceXY(pointB));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Quaternions", () => {
@@ -299,6 +303,6 @@ describe("Point4d", () => {
     Point4d.interpolateQuaternions(quatA, 0.75, quatANeg); // not sure what this means physically.
 
     ck.testUndefined(quatA.radiansToPoint4dXYZW(Point4d.createZero()));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

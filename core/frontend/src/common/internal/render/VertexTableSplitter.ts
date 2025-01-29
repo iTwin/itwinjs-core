@@ -219,7 +219,7 @@ class MaterialAtlasRemapper {
       alpha: alphaOverridden ? (entry[0] >>> 24) / 255.0 : undefined,
       diffuse: {
         color: rgbOverridden ? ColorDef.fromTbgr(entry[0] & 0xffffff) : undefined,
-        weight: (entry[1] >>> 8) / 255.0,
+        weight: ((entry[1] >>> 8) & 0xff) / 255.0,
       },
       specular: {
         color: ColorDef.fromTbgr(entry[2]),
@@ -277,9 +277,23 @@ class Node {
     this.indices.push(newIndex);
   }
 
-  public buildOutput(maxDimension: number): VertexTableWithIndices {
+  public buildOutput(maxDimension: number, surfaceMaterial?: SurfaceMaterial): VertexTableWithIndices {
     const materialAtlas = this.atlas?.buildAtlasTable();
-    const material: SurfaceMaterial | undefined = (materialAtlas instanceof Uint32Array) ? undefined : materialAtlas;
+
+    let material: SurfaceMaterial | undefined;
+    if (materialAtlas instanceof Uint32Array) {
+      const colorTableOffset = undefined !== this.colors?.colors.length && this.colors?.colors.length > 1 ? this.colors?.colors.length : 0;
+      material = {
+        isAtlas: true,
+        hasTranslucency: (surfaceMaterial?.isAtlas && surfaceMaterial?.hasTranslucency) ?? false,
+        overridesAlpha: (surfaceMaterial?.isAtlas && surfaceMaterial?.overridesAlpha) ?? false,
+        vertexTableOffset: colorTableOffset,
+        numMaterials: materialAtlas.length / 4,
+      };
+    } else {
+      material = materialAtlas;
+    }
+
     return {
       indices: this.indices.toVertexIndices(),
       vertices: this.vertices.buildVertexTable(maxDimension, this.colors?.buildColorTable(), materialAtlas),
@@ -697,7 +711,7 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
   const edges = args.params.edges ? splitEdges(args.params.edges, nodes, args.maxDimension) : undefined;
 
   for (const [id, node] of nodes) {
-    const { vertices, indices, material } = node.buildOutput(args.maxDimension);
+    const { vertices, indices, material } = node.buildOutput(args.maxDimension, args.params.surface.material);
     const params: MeshParams = {
       vertices,
       surface: {

@@ -124,7 +124,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
       let tile = this._elements.findEquivalent((t: ElementTile) => compareStrings(t.contentId, change.id));
       if (change.type === DbOpcode.Delete) {
         if (tile) {
-          tile.dispose();
+          tile[Symbol.dispose]();
           this._elements.remove(tile);
         }
       } else {
@@ -220,7 +220,7 @@ class ElementTile extends Tile {
     if (partitionIndex < children.length) {
       const expired = children.splice(partitionIndex);
       for (const child of expired)
-        child.dispose();
+        child[Symbol.dispose]();
     }
 
     // Restore ordering.
@@ -286,11 +286,14 @@ class ElementTile extends Tile {
 
   public update(range: Range3d): void {
     range.clone(this.range);
+    const center = this.range.low.interpolate(0.5, this.range.high);
+    const radius = 0.5 * this.range.low.distance(this.range.high);
+    this.boundingSphere.init(center, radius);
 
     // Discard out-dated graphics.
     assert(undefined !== this.children);
     for (const child of this.children)
-      child.dispose();
+      child[Symbol.dispose]();
 
     this.children.length = 0;
   }
@@ -391,6 +394,7 @@ class GraphicsTile extends Tile {
       type: tree.batchType,
       loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },
+      timeline: tree.timeline,
     });
 
     let content: TileContent = { isLeaf: true };

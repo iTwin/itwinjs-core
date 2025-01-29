@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -146,11 +144,6 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
-    // @deprecated
-    constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
-        byteOffset: number;
-        byteLength: number;
-    });
     advance(numBytes: number): boolean;
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
@@ -164,23 +157,7 @@ export class ByteStream {
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
-    // @deprecated (undocumented)
-    get nextFloat32(): number;
-    // @deprecated (undocumented)
-    get nextFloat64(): number;
-    // @deprecated (undocumented)
-    get nextId64(): Id64String;
-    // @deprecated (undocumented)
-    get nextInt32(): number;
-    // @deprecated (undocumented)
-    get nextUint16(): number;
-    // @deprecated (undocumented)
-    get nextUint24(): number;
-    // @deprecated (undocumented)
-    get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
-    // @deprecated (undocumented)
-    get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
     readFloat32(): number;
     readFloat64(): number;
@@ -524,9 +501,15 @@ export class DisposableList implements IDisposable {
 }
 
 // @public
+export function dispose(disposable?: Disposable): undefined;
+
+// @public @deprecated (undocumented)
 export function dispose(disposable?: IDisposable): undefined;
 
 // @public
+export function disposeArray(list?: Disposable[]): undefined;
+
+// @public @deprecated (undocumented)
 export function disposeArray(list?: IDisposable[]): undefined;
 
 // @public
@@ -671,6 +654,7 @@ export namespace Id64 {
         delete(low: number, high: number): void;
         deleteId(id: Id64String): void;
         deleteIds(ids: Id64Arg): void;
+        equals(other: Uint32Set): boolean;
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
@@ -696,7 +680,7 @@ export type Id64Set = Set<Id64String>;
 // @public
 export type Id64String = string;
 
-// @public
+// @public @deprecated
 export interface IDisposable {
     dispose(): void;
 }
@@ -1010,6 +994,9 @@ export class IndexMap<T> {
 }
 
 // @public
+export function isDisposable(obj: unknown): obj is Disposable;
+
+// @public @deprecated
 export function isIDisposable(obj: unknown): obj is IDisposable;
 
 // @public
@@ -1169,7 +1156,7 @@ export namespace JsonUtils {
     export function asString(json: any, defaultVal?: string): string;
     export function isEmptyObject(json: any): boolean;
     export function isEmptyObjectOrUndefined(json: any): boolean;
-    export function isNonEmptyObject(value: any): value is Object;
+    export function isNonEmptyObject(value: any): value is object;
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
@@ -1218,6 +1205,8 @@ export class Logger {
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
+    // @beta
+    static get staticMetaData(): StaticLoggerMetaData;
     static stringifyMetaData(metaData?: LoggingMetaData): string;
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
@@ -1298,13 +1287,16 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 // @public
+export type MaybePromise<T> = T | Promise<T>;
+
+// @public
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
 
 // @public
 export class MutableCompressedId64Set implements OrderedId64Iterable {
-    [Symbol.iterator](): Iterator<string, any, undefined>;
+    [Symbol.iterator](): Iterator<string, any, any>;
     constructor(ids?: CompressedId64Set);
     add(id: Id64String): void;
     clear(): void;
@@ -1323,7 +1315,7 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
 
 // @public
 export type NonFunctionPropertyNamesOf<T> = {
-    [K in keyof T]: T[K] extends Function ? never : K;
+    [K in keyof T]: T[K] extends (...args: any) => any ? never : K;
 }[keyof T];
 
 // @public
@@ -1337,7 +1329,7 @@ export class ObservableSet<T> extends Set<T> {
 }
 
 // @public
-export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
+export function omit<T extends object, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
 
 // @beta
 export class OneAtATimeAction<T> {
@@ -1402,9 +1394,11 @@ export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
 // @public
-export class PerfLogger implements IDisposable {
-    constructor(operation: string, metaData?: LoggingMetaData);
+export class PerfLogger implements Disposable {
     // (undocumented)
+    [Symbol.dispose](): void;
+    constructor(operation: string, metaData?: LoggingMetaData);
+    // @deprecated (undocumented)
     dispose(): void;
 }
 
@@ -1415,7 +1409,7 @@ export type PickAsyncMethods<T> = {
 
 // @public
 export type PickMethods<T> = {
-    [P in keyof T]: T[P] extends Function ? T[P] : never;
+    [P in keyof T]: T[P] extends (...args: any) => any ? T[P] : never;
 };
 
 // @public
@@ -1588,8 +1582,11 @@ export enum SpanKind {
     SERVER = 1
 }
 
-// @internal
-export const staticLoggerMetadata: Map<String, LoggingMetaData>;
+// @beta
+export interface StaticLoggerMetaData {
+    delete(key: string): void;
+    set(key: string, metadata: LoggingMetaData): void;
+}
 
 // @alpha
 export abstract class StatusCategory {
@@ -1645,8 +1642,6 @@ export class TransientIdSequence {
     getNext(): Id64String;
     readonly initialLocalId: number;
     merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number;
-    // @deprecated
-    get next(): Id64String;
     peekNext(): Id64String;
     toJSON(): TransientIdSequenceProps;
 }
@@ -1742,7 +1737,7 @@ export class UnexpectedErrors {
     static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
 }
 
-// @public
+// @public @deprecated
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
 
 // @public

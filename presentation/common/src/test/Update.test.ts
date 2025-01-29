@@ -19,7 +19,7 @@ import {
   StandardNodeTypes,
 } from "../presentation-common";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 const testNode: Node = {
   key: {

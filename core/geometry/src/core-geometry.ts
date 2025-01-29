@@ -179,9 +179,9 @@ export * from "./numerics/ClusterableArray";
 export * from "./numerics/Complex";
 export * from "./numerics/ConvexPolygon2d";
 export * from "./numerics/PascalCoefficients";
-export * from "./numerics/Polynomials";
 export * from "./numerics/Quadrature";
 export * from "./numerics/Range1dArray";
+export * from "./numerics/SmallSystem";
 export * from "./numerics/TriDiagonalSystem";
 
 export * from "./curve/Arc3d";
@@ -241,6 +241,7 @@ export * from "./polyface/FacetFaceData";
 export * from "./polyface/Polyface";
 export * from "./polyface/FacetLocationDetail";
 export * from "./polyface/IndexedPolyfaceVisitor";
+export * from "./polyface/IndexedPolyfaceWalker";
 export * from "./polyface/multiclip/GriddedRaggedRange2dSet";
 export * from "./polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
 export * from "./polyface/PolyfaceBuilder";

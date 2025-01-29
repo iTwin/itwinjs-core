@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -124,7 +124,7 @@ describe("ClipPlane", () => {
       }
     }
     ck.checkpoint("BoundedSegmentIntersection");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ describe("ClipPlane", () => {
     ck.testCoordinate(h0 - dh, clip.altitude(testPoint), "evaluate shifted plane");
 
     ck.checkpoint("Offset");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ describe("ClipPlane", () => {
       });
 
     ck.checkpoint("Offset");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------
@@ -201,7 +201,7 @@ describe("ClipPlane", () => {
       Angle.createDegrees(45))!;
     ck.testTrue(tiltPlane.isPointInside(Point3d.create(1, 0, 0)));
     ck.testFalse(tiltPlane.isPointInside(Point3d.create(1, 0, 10)));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // ---------------------------------------------------------------------------------------------------
 
@@ -258,7 +258,7 @@ describe("ClipPlane", () => {
     const plane = Plane3dByOriginAndUnitNormal.createXYZUVW(0, 1, 0, 0, 1, 0)!;
     Point3dArrayPolygonOps.polygonPlaneCrossings(plane, triangleThrough11, crossings);
     ck.testExactNumber(2, crossings.length, "2 crossings for plane with exact hit");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -294,7 +294,7 @@ describe("ConvexClipPlaneSet", () => {
     }
 
     ck.checkpoint("ConvexClipPlaneSet");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipPointsOnOrInside", () => {
@@ -317,7 +317,7 @@ describe("ConvexClipPlaneSet", () => {
     }
 
     ck.checkpoint("IsPointOn&IsPointOnOrInside");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   function testConvertMeshToClipper(mesh: IndexedPolyface) {
@@ -350,7 +350,7 @@ describe("ConvexClipPlaneSet", () => {
       mesh.reverseNormals();
       testConvertMeshToClipper(mesh);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -412,7 +412,7 @@ describe("ClipPlaneSet", () => {
       }
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------
@@ -471,7 +471,7 @@ describe("ClipPlaneSet", () => {
     }
     convexSetA.reloadSweptPolygon([], sweepDirection, 1);
     ck.checkpoint("SweptPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------
@@ -506,7 +506,7 @@ describe("ClipPlaneSet", () => {
     ck.testFalse(set.isSphereInside(origin0, distanceToPlanes - .0001));
 
     ck.checkpoint("SphereInside");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------
@@ -550,7 +550,7 @@ describe("ClipPlaneSet", () => {
     ck.testCoordinate(.75, intervals[1].x1, "End interval of second region");
 
     ck.checkpoint("IntervalsFromSegment");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // ---------------------------------------------------------------------------------------------------
@@ -593,7 +593,7 @@ describe("ClipPlaneSet", () => {
     ck.testExactNumber(set.classifyPointContainment(array, true), ClipPlaneContainment.StronglyOutside, "All points outside except for one on border (not counting)");
 
     ck.checkpoint("ClassifyPointContainment");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("AnnounceClippedIntervals", () => {
     const ck = new Checker();
@@ -606,7 +606,7 @@ describe("ClipPlaneSet", () => {
     const convexSet = ConvexClipPlaneSet.createXYBox(0, 0, 4, 4);
     ck.testFalse(convexSet.announceClippedSegmentIntervals(0, 4, pointA, pointB));
     ck.testFalse(convexSet.announceClippedSegmentIntervals(1, 0, pointA, pointB));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SweptPolyline", () => {
     const ck = new Checker();
@@ -625,7 +625,7 @@ describe("ClipPlaneSet", () => {
     const failCC = ConvexClipPlaneSet.createSweptPolyline([pointA, pointC, pointB, pointB, pointA], unitZ);
     ck.testUndefined(failCCW);
     ck.testUndefined(failCC);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -656,13 +656,13 @@ describe("ClipPlaneUtilities", () => {
       (a: number, b: number, _cp: CurvePrimitive) => { sum += b - a; });
 
     ck.testExactNumber(intervalSize * intervals.length, sum, "summed data from announceNNC");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
 describe("CurveClips", () => {
   it("CurvePrimitiveClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).equals(0);
+    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
     const traceCurve = Arc3d.createXY(Point3d.create(0, 0.2, 0), 1.0);
     const curves = Sample.createSmoothCurvePrimitives(2.0);
     const output: GeometryQuery[] = [];
@@ -688,11 +688,11 @@ describe("CurveClips", () => {
         });
     }
     GeometryCoreTestIO.saveGeometry(output, "ClipPlane", "CurvePrimitiveClips");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PlaneArcClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).equals(0);
+    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
     const arc = Arc3d.createXY(Point3d.create(0, 0.2, 0), 2.0, AngleSweep.createStartEndDegrees(0, 270.0));
 
     const plane = ClipPlane.createEdgeXY(Point3d.create(3, 1, 0), Point3d.create(3, -10, 0))!;
@@ -708,11 +708,11 @@ describe("CurveClips", () => {
         ck.testTrue(plane.isPointOn(point2), "interval end point is ON");
       });
     ck.checkpoint("PlaneArcClips");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PlaneSetArcClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).equals(0);
+    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
     const arc = Arc3d.createXYEllipse(Point3d.create(0, 0.2, 0), 3.0, 0.5, AngleSweep.createStartEndDegrees(0, 270.0));
     const pointA = Point3d.create(-1.5, 1);
     const pointB = Point3d.create(2, -0.5);
@@ -751,7 +751,7 @@ describe("CurveClips", () => {
       clipper1.announceClippedSegmentIntervals(fractionAB0, fractionAB1, pointA, pointB, segmentAnnouncer);
     }
     ck.checkpoint("PlaneSetArcClips");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PlaneSetConstructions", () => {
@@ -794,7 +794,7 @@ describe("CurveClips", () => {
     }
 
     ck.checkpoint("PlaneSetArcClips");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Negation", () => {
@@ -814,7 +814,7 @@ describe("CurveClips", () => {
     // touch setFlags ...
     planeA.setFlags(true, false);
     ck.checkpoint("Negation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SinglePlaneCLip", () => {
@@ -834,7 +834,7 @@ describe("CurveClips", () => {
     const areaB = PolygonOps.sumTriangleAreas(splitB);
     ck.testCoordinate(area0, areaA + areaB);
     ck.checkpoint("SinglePlaneCLip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ConvexSetPolygonClip", () => {
@@ -859,7 +859,7 @@ describe("CurveClips", () => {
 
     ck.testCoordinate(areaA, (bx - ax) * (by - ay));
     ck.checkpoint("ConvexSetPolygonClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SweptPolygon", () => {
@@ -885,7 +885,7 @@ describe("CurveClips", () => {
     }
 
     ck.checkpoint("SweptPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("QuickClipStatus", () => {
@@ -912,7 +912,7 @@ describe("CurveClips", () => {
     ck.testExactNumber(ClipStatus.TrivialAccept, ClipUtilities.pointSetSingleClipStatus(spreadQ,
       UnionOfConvexClipPlaneSets.createConvexSets([]), 0.0));
     ck.checkpoint("QuickClipStatus");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createPlaneVariants", () => {
@@ -926,7 +926,7 @@ describe("CurveClips", () => {
     const clipPlaneB1 = ClipPlane.createPlane(planeByNormalB, false, false, clipPlaneA);
     ck.testTrue(clipPlaneB0.isAlmostEqual(clipPlaneB1));
     ck.checkpoint("QuickClipStatus");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createNormalAndDistanceVariants", () => {
@@ -941,7 +941,7 @@ describe("CurveClips", () => {
 
     ck.testUndefined(ClipPlane.createNormalAndDistance(Vector3d.createZero(), distance));
     ck.checkpoint("QuickClipStatus");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("createNormalAndPointVariants", () => {
@@ -956,7 +956,7 @@ describe("CurveClips", () => {
 
     ck.testUndefined(ClipPlane.createNormalAndPoint(Vector3d.createZero(), pointOnPlane));
     ck.checkpoint("QuickClipStatus");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ClipToRange", () => {
     const ck = new Checker();
@@ -991,7 +991,7 @@ describe("CurveClips", () => {
       ck.testUndefined(clipped, prettyPrint(clipPlane), prettyPrint(range));
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipToRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("RangeFaces", () => {
     const ck = new Checker();
@@ -1005,7 +1005,7 @@ describe("CurveClips", () => {
       GeometryCoreTestIO.captureGeometry(allGeometry, Loop.create(lineString), 0, 0, 0);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "RangeFaces");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipConvexSetToRange", () => {
@@ -1073,7 +1073,7 @@ describe("CurveClips", () => {
       dy += 20.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipConvexSetToRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -1109,7 +1109,7 @@ describe("CurveClips", () => {
     // empty range quick out . . .
     ck.testUndefined(IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(Range3d.createNull(), polygon), "null range clips to nothing");
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipConvexPolygonToRangeCoverage");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("StairwellClipViaSweptPolyline", () => {
@@ -1145,7 +1145,7 @@ describe("CurveClips", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip1, x2, y0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("StairwellClipViaLinearSweep", () => {
@@ -1191,7 +1191,7 @@ describe("CurveClips", () => {
       y0 += 15.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClipViaLinearSweep");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 
@@ -1231,7 +1231,7 @@ describe("PolygonClipper", () => {
       x0 += dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonClipper", "Singletons");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 /**
@@ -1433,7 +1433,7 @@ describe("ClipPlaneDocs", () => {
       out.shift(b, 0);
     }
     out.saveToFile("ClipPlaneDocs", "Quadrants");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SinglePlaneWithGridTests", () => {
     const out = new OutputManager();
@@ -1495,7 +1495,7 @@ describe("ClipPlaneDocs", () => {
     out.shift(30, 0);
 
     out.saveToFile("ClipPlaneDocs", "SinglePlaneWithGridTests");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("UnionOfConvexClipPlaneSets", () => {
     const ck = new Checker();
@@ -1543,7 +1543,7 @@ describe("ClipPlaneDocs", () => {
       out.setY0(0);
     }
     out.saveToFile("ClipPlaneDocs", "UnionOfConvexClipPlaneSets");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

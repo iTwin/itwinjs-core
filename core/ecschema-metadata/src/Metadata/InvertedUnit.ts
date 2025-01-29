@@ -13,7 +13,6 @@ import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
-import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
@@ -23,17 +22,19 @@ import { UnitSystem } from "./UnitSystem";
  * @beta
  */
 export class InvertedUnit extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.InvertedUnit; // eslint-disable-line
+  public override readonly schemaItemType = SchemaItemType.InvertedUnit;
   protected _invertsUnit?: LazyLoadedUnit; // required
   protected _unitSystem?: LazyLoadedUnitSystem; // required
 
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.schemaItemType = SchemaItemType.InvertedUnit;
-  }
-
   public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
+
+  /**
+   * @alpha
+   */
+  public static isInvertedUnit(object: any): object is InvertedUnit {
+    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.InvertedUnit;
+  }
 
   /**
    * Save this InvertedUnit's properties to an object for serializing to JSON.

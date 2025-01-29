@@ -1,81 +1,81 @@
 sep=;
-Release Tag;API Item
-alpha;AllOrAnyOp = "ONLY" | "ALL"
-alpha;AllOrDistinctOp = "DISTINCT" | "ALL"
-alpha;AssignmentExpr 
-alpha;BetweenExpr 
-alpha;BinaryBooleanExpr 
-alpha;BinaryBooleanOp = "AND" | "OR" | "=" | ">=" | ">" | "
-alpha;BinaryValueExpr 
-alpha;BinaryValueOp = "&" | "|" | "
-alpha;class BooleanExpr 
-alpha;CastExpr 
-alpha;ClassNameExpr 
-alpha;class ClassRefExpr 
-alpha;CompoundSelectOp = "UNION" | "UNION ALL" | "INTERSECT" | "EXCEPT"
-alpha;class ComputedExpr 
-alpha;CteBlockExpr 
-alpha;CteBlockRefExpr 
-alpha;CteExpr 
-alpha;DeleteStatementExpr 
-alpha;DerivedPropertyExpr 
-alpha;DisqualifyOp = "+"
-alpha;ECSqlOption
-alpha;ECSqlOptionsClauseExpr 
-alpha;ECSqlSupportedOptions = "NoECClassIdFilter" | "ReadonlyPropertiesAreUpdatable"
-alpha;ECSqlWriter
-alpha;ECSqlWriterArgs
-alpha;class Expr
-alpha;ExprFactory
-alpha;ExprType
-alpha;FirstOrLast = "FIRST" | "LAST"
-alpha;FromClauseExpr 
-alpha;FuncCallExpr 
-alpha;GroupByClauseExpr 
-alpha;HavingClauseExpr 
-alpha;IIFExpr 
-alpha;InExpr 
-alpha;InsertStatementExpr 
-alpha;IsNullExpr 
-alpha;IsOfTypeExpr 
-alpha;JoinDirection = "FORWARD" | "BACKWARD"
-alpha;JoinSpec = BooleanExpr | string[] | undefined
-alpha;JoinType
-alpha;Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "BY" | "CASE" | "CAST" | "CROSS" | "DATE" | "DELETE" | "DESC" | "DISTINCT" | "ECSQLOPTIONS" | "ELSE" | "END" | "ESCAPE" | "EXCEPT" | "EXISTS" | "FIRST" | "FORWARD" | "FROM" | "FULL" | "GROUP" | "HAVING" | "IIF" | "IN" | "INNER" | "INSERT" | "INTERSECT" | "INTO" | "IS" | "JOIN" | "LAST" | "LEFT" | "LIKE" | "LIMIT" | "NATURAL" | "NOT" | "NULL" | "NULLS" | "OFFSET" | "ON" | "ONLY" | "OR" | "ORDER" | "OUTER" | "RECURSIVE" | "RIGHT" | "SELECT" | "SET" | "THEN" | "TIME" | "TIMESTAMP" | "UNION" | "UPDATE" | "USING" | "VALUES" | "WHEN" | "WHERE" | "WITH"
-alpha;LikeExpr 
-alpha;LimitClauseExpr 
-alpha;LiteralExpr 
-alpha;LiteralValueType
-alpha;MemberFuncCallExpr 
-alpha;NativeECSqlParseNode
-alpha;NativeECSqlParseNodeProvider
-alpha;NavValueCreationFuncExpr 
-alpha;NextSelect
-alpha;NotExpr 
-alpha;OrderByClauseExpr 
-alpha;OrderBySpecExpr 
-alpha;ParameterExpr 
-alpha;PolymorphicInfo
-alpha;PropertyNameExpr 
-alpha;QualifiedJoinExpr 
-alpha;RecursiveCte = "RECURSIVE"
-alpha;SearchCaseExpr 
-alpha;SelectExpr 
-alpha;SelectionClauseExpr 
-alpha;SelectStatementExpr 
-alpha;SetClauseExpr 
-alpha;SortDirection = "ASC" | "DESC"
-alpha;class StatementExpr 
-alpha;SubqueryExpr 
-alpha;SubqueryRefExpr 
-alpha;SubqueryTestExpr 
-alpha;SubqueryTestOp = "EXISTS"
-alpha;TableValuedFuncExpr 
-alpha;UnaryBooleanOp = "NOT"
-alpha;UnaryValueExpr 
-alpha;UnaryValueOp = "-" | "+" | "~"
-alpha;UpdateStatementExpr 
-alpha;UsingRelationshipJoinExpr 
-alpha;class ValueExpr 
-alpha;WhenThenBlock
-alpha;WhereClauseExp 
+Release Tag;API Item Type;API Item Name
+alpha;type;AllOrAnyOp
+alpha;type;AllOrDistinctOp
+alpha;class;AssignmentExpr
+alpha;class;BetweenExpr
+alpha;class;BinaryBooleanExpr
+alpha;type;BinaryBooleanOp
+alpha;class;BinaryValueExpr
+alpha;type;BinaryValueOp
+alpha;class;BooleanExpr
+alpha;class;CastExpr
+alpha;class;ClassNameExpr
+alpha;class;ClassRefExpr
+alpha;type;CompoundSelectOp
+alpha;class;ComputedExpr
+alpha;class;CteBlockExpr
+alpha;class;CteBlockRefExpr
+alpha;class;CteExpr
+alpha;class;DeleteStatementExpr
+alpha;class;DerivedPropertyExpr
+alpha;type;DisqualifyOp
+alpha;interface;ECSqlOption
+alpha;class;ECSqlOptionsClauseExpr
+alpha;type;ECSqlSupportedOptions
+alpha;class;ECSqlWriter
+alpha;interface;ECSqlWriterArgs
+alpha;class;Expr
+alpha;class;ExprFactory
+alpha;enum;ExprType
+alpha;type;FirstOrLast
+alpha;class;FromClauseExpr
+alpha;class;FuncCallExpr
+alpha;class;GroupByClauseExpr
+alpha;class;HavingClauseExpr
+alpha;class;IIFExpr
+alpha;class;InExpr
+alpha;class;InsertStatementExpr
+alpha;class;IsNullExpr
+alpha;class;IsOfTypeExpr
+alpha;type;JoinDirection
+alpha;type;JoinSpec
+alpha;enum;JoinType
+alpha;type;Keywords
+alpha;class;LikeExpr
+alpha;class;LimitClauseExpr
+alpha;class;LiteralExpr
+alpha;enum;LiteralValueType
+alpha;class;MemberFuncCallExpr
+alpha;interface;NativeECSqlParseNode
+alpha;interface;NativeECSqlParseNodeProvider
+alpha;class;NavValueCreationFuncExpr
+alpha;interface;NextSelect
+alpha;class;NotExpr
+alpha;class;OrderByClauseExpr
+alpha;class;OrderBySpecExpr
+alpha;class;ParameterExpr
+alpha;interface;PolymorphicInfo
+alpha;class;PropertyNameExpr
+alpha;class;QualifiedJoinExpr
+alpha;type;RecursiveCte
+alpha;class;SearchCaseExpr
+alpha;class;SelectExpr
+alpha;class;SelectionClauseExpr
+alpha;class;SelectStatementExpr
+alpha;class;SetClauseExpr
+alpha;type;SortDirection
+alpha;class;StatementExpr
+alpha;class;SubqueryExpr
+alpha;class;SubqueryRefExpr
+alpha;class;SubqueryTestExpr
+alpha;type;SubqueryTestOp
+alpha;class;TableValuedFuncExpr
+alpha;type;UnaryBooleanOp
+alpha;class;UnaryValueExpr
+alpha;type;UnaryValueOp
+alpha;class;UpdateStatementExpr
+alpha;class;UsingRelationshipJoinExpr
+alpha;class;ValueExpr
+alpha;interface;WhenThenBlock
+alpha;class;WhereClauseExp

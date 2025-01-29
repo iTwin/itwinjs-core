@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef } from "../ColorDef";
 import { RgbColor } from "../RgbColor";
@@ -84,54 +84,46 @@ describe("FeatureAppearance", () => {
     test({ transp: 1.0 }, { transparency: 1.0 });
   });
 
-  it("view-dependent transparency", () => {
-    it("to and from JSON", () => {
-      function test(appProps: FeatureAppearanceProps, expectViewDependent: boolean): void {
-        const expected = expectViewDependent ? true : undefined;
-        const app = FeatureAppearance.fromJSON(appProps);
-        expect(app.viewDependentTransparency).to.equal(expected);
-        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
-      }
+  it("view-dependent transparency serialization", () => {
+    function test(appProps: FeatureAppearanceProps, expectViewDependent: boolean): void {
+      const expected = expectViewDependent ? true : undefined;
+      const app = FeatureAppearance.fromJSON(appProps);
+      expect(app.viewDependentTransparency).to.equal(expected);
+      expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+    }
 
-      test({ }, false);
-      test({ transparency: undefined }, false);
-      test({ transparency: 1 }, false);
-      test({ transparency: 0 }, false );
+    test({ }, false);
+    test({ transparency: undefined }, false);
+    test({ transparency: 1 }, false);
+    test({ transparency: 0 }, false );
 
-      test({ transparency: 1, viewDependentTransparency: true }, true);
-      test({ transparency: 0, viewDependentTransparency: true }, true);
+    test({ transparency: 1, viewDependentTransparency: true }, true);
+    test({ transparency: 0, viewDependentTransparency: true }, true);
 
-      test({ viewDependentTransparency: true }, false);
-      test({ transparency: undefined, viewDependentTransparency: true }, false);
-    });
+    test({ viewDependentTransparency: true }, false);
+    test({ transparency: undefined, viewDependentTransparency: true }, false);
+  });
+  it("view-dependent transparency from subcategory override", () => {
+    function test(ovrProps: SubCategoryAppearance.Props, expectViewDependent: boolean): void {
+      const expected = expectViewDependent ? true : undefined;
+      const ovr = SubCategoryOverride.fromJSON(ovrProps);
+      const app = FeatureAppearance.fromSubCategoryOverride(ovr);
+      expect(app.viewDependentTransparency).to.equal(expected);
+      expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+    }
 
-    it("from subcategory override", () => {
-      function test(ovrProps: SubCategoryAppearance.Props, expectViewDependent: boolean): void {
-        const expected = expectViewDependent ? true : undefined;
-        const ovr = SubCategoryOverride.fromJSON(ovrProps);
-        const app = FeatureAppearance.fromSubCategoryOverride(ovr);
-        expect(app.viewDependentTransparency).to.equal(expected);
-        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
-      }
-
-      test({ transp: 0.5 }, true);
-      test({ transp: 0 }, true);
-      test({ transp: undefined }, false);
-      test({ }, false);
-      test({ color: ColorDef.blue.toJSON() }, false);
-    });
+    test({ transp: 0.5 }, true);
+    test({ transp: 0 }, true);
+    test({ transp: undefined }, false);
+    test({ }, false);
+    test({ color: ColorDef.blue.toJSON() }, false);
   });
 });
 
 describe("FeatureOverrides", () => {
   class Overrides extends FeatureOverrides {
     public constructor() { super(); }
-    public override get neverDrawn() { return this._neverDrawn; }
-    public override get alwaysDrawn() { return this._alwaysDrawn; }
-    public get modelOverrides() { return this._modelOverrides; }
     public get elementOverrides() { return this._elementOverrides; }
-    public get subCategoryOverrides() { return this._subCategoryOverrides; }
-    public get visibleSubCategories() { return this._visibleSubCategories; }
     public get modelSubCategoryOverrides() { return this._modelSubCategoryOverrides; }
   }
 
@@ -144,10 +136,6 @@ describe("FeatureOverrides", () => {
     assert.isFalse(overrides.isAlwaysDrawnExclusive, "drawn exclusive");
     assert.exists(overrides.neverDrawn, "never");
     assert.exists(overrides.alwaysDrawn, "always");
-    assert.exists(overrides.modelOverrides, "model overrides");
-    assert.exists(overrides.elementOverrides, "element overrides");
-    assert.exists(overrides.visibleSubCategories, "visible sub-categories");
-    assert.exists(overrides.subCategoryOverrides, "sub-category overrides");
   });
 
   it("isSubCategoryVisible works as expected", () => {
@@ -166,16 +154,16 @@ describe("FeatureOverrides", () => {
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const modelApp1 = FeatureAppearance.fromJSON(props1);
     const modelApp2 = FeatureAppearance.fromJSON(props2);
-    overrides.overrideModel(id, modelApp1); // eslint-disable-line deprecation/deprecation
+    overrides.overrideModel(id, modelApp1); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.exists(overrides.getModelOverridesById(id));
 
-    overrides.overrideModel(id, modelApp2); // eslint-disable-line deprecation/deprecation
+    overrides.overrideModel(id, modelApp2); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrideModel will override prexisting model associated with given id if replaceExisting is not set to false explicitly");
 
-    overrides.overrideModel(id, modelApp1, false); // eslint-disable-line deprecation/deprecation
+    overrides.overrideModel(id, modelApp1, false); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrides will not replace model if replace existing is set to false");
 
-    overrides.overrideModel(id, modelApp1); // eslint-disable-line deprecation/deprecation
+    overrides.overrideModel(id, modelApp1); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp1), "overrides will replace model if replace existing isn't set to false (test 2)");
   });
 
@@ -190,17 +178,17 @@ describe("FeatureOverrides", () => {
     // Even though the subcategory is invisible, it's possible a model will override it to be visible.
     // So overrideSubCategory() will record the appearance override anyway.
     expect(overrides.getSubCategoryOverridesById(id)).to.be.undefined;
-    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line deprecation/deprecation
+    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line @typescript-eslint/no-deprecated
     expect(overrides.getSubCategoryOverridesById(id)).not.to.be.undefined;
 
     overrides.setVisibleSubCategory(id);
-    overrides.overrideSubCategory(id, subCatApp2); // eslint-disable-line deprecation/deprecation
+    overrides.overrideSubCategory(id, subCatApp2); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.exists(overrides.getSubCategoryOverridesById(id), "if subCategoryId is in subCategoryVisible set, then subCategoryApp set");
 
-    overrides.overrideSubCategory(id, subCatApp1, false); // eslint-disable-line deprecation/deprecation
+    overrides.overrideSubCategory(id, subCatApp1, false); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp2), "overrides will not replace subCatApp if replace existing is set to false");
 
-    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line deprecation/deprecation
+    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp1), "overrides will replace subCatApp if replace existing isn't set to false");
   });
 
@@ -213,17 +201,17 @@ describe("FeatureOverrides", () => {
     const elemApp2 = FeatureAppearance.fromJSON(props2);
 
     overrides.setNeverDrawn(id);
-    overrides.overrideElement(id, elemApp1); // eslint-disable-line deprecation/deprecation
+    overrides.overrideElement(id, elemApp1); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isUndefined(overrides.getElementOverridesById(id), "if elementId is in never drawn set, then nothing is set");
 
     overrides = new Overrides();
-    overrides.overrideElement(id, elemApp1); // eslint-disable-line deprecation/deprecation
+    overrides.overrideElement(id, elemApp1); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.exists(overrides.getElementOverridesById(id), "if elementId is not in never drawn set, then elemApp is set");
 
-    overrides.overrideElement(id, elemApp2, false); // eslint-disable-line deprecation/deprecation
+    overrides.overrideElement(id, elemApp2, false); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp1), "overrides will not replace elemApp if replace existing is set to false");
 
-    overrides.overrideElement(id, elemApp2); // eslint-disable-line deprecation/deprecation
+    overrides.overrideElement(id, elemApp2); // eslint-disable-line @typescript-eslint/no-deprecated
     assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp2), "overrides will replace elemApp if replace existing isn't set to false");
   });
 
@@ -255,12 +243,12 @@ describe("FeatureOverrides", () => {
     const defApp = FeatureAppearance.fromRgb(ColorDef.red);
     ovrs.setDefaultOverrides(defApp);
 
-    ovrs.overrideElement(el1, app); // eslint-disable-line deprecation/deprecation
-    ovrs.overrideModel(mod1, app); // eslint-disable-line deprecation/deprecation
-    ovrs.overrideSubCategory(cat1, app); // eslint-disable-line deprecation/deprecation
-    ovrs.overrideElement(el2, noApp); // eslint-disable-line deprecation/deprecation
-    ovrs.overrideModel(mod2, noApp); // eslint-disable-line deprecation/deprecation
-    ovrs.overrideSubCategory(cat2, noApp); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideElement(el1, app); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.overrideModel(mod1, app); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.overrideSubCategory(cat1, app); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.overrideElement(el2, noApp); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.overrideModel(mod2, noApp); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.overrideSubCategory(cat2, noApp); // eslint-disable-line @typescript-eslint/no-deprecated
 
     const expectAppearance = (elem: Id64String, model: Id64String, subcat: Id64String, expectedAppearance: FeatureAppearance) => {
       const feature = new Feature(elem, subcat, GeometryClass.Primary);
@@ -372,18 +360,18 @@ describe("FeatureOverrides", () => {
     expectAppearance("0xa", 2, halfTransp);
     expectAppearance("0xa", 3, halfTranspWeight5);
 
-    ovrs.overrideElement("0xc", FeatureAppearance.defaults); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideElement("0xc", FeatureAppearance.defaults); // eslint-disable-line @typescript-eslint/no-deprecated
     expectAppearance("0xc", 1, red);
     expectAppearance("0xc", 2, halfTransp);
     expectAppearance("0xc", 3, halfTranspWeight5);
 
-    ovrs.overrideElement("0xa", blue); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideElement("0xa", blue); // eslint-disable-line @typescript-eslint/no-deprecated
     expectAppearance("0xa", 1, blue);
     expectAppearance("0xa", 2, merge(blue, { transparency: 0.5 }));
     expectAppearance("0xa", 3, merge(blue, { transparency: 0.5, weight: 5 }));
 
     const greenWeight3 = FeatureAppearance.fromJSON({ rgb: { r: 0, g: 255, b: 0 }, weight: 3 });
-    ovrs.overrideElement("0xb", greenWeight3); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideElement("0xb", greenWeight3); // eslint-disable-line @typescript-eslint/no-deprecated
     expectAppearance("0xb", 1, greenWeight3);
     expectAppearance("0xb", 2, merge(greenWeight3, { transparency: 0.5 }));
     expectAppearance("0xb", 3, merge(greenWeight3, { transparency: 0.5 }));

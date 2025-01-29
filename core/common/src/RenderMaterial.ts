@@ -6,6 +6,7 @@
  * @module Rendering
  */
 
+import { compareStrings, Guid, GuidString } from "@itwin/core-bentley";
 import { ColorDef } from "./ColorDef";
 import { TextureMapping } from "./TextureMapping";
 
@@ -17,20 +18,27 @@ export abstract class RenderMaterial {
   public readonly key?: string;
   /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
+  /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */
+  private readonly _guid: GuidString;
 
-  // eslint-disable-next-line deprecation/deprecation
-  protected constructor(params: RenderMaterial.Params) {
+  protected constructor(params: { key?: string, textureMapping?: TextureMapping }) {
     this.key = params.key;
     this.textureMapping = params.textureMapping;
+    this._guid = Guid.createValue();
   }
 
   public get hasTexture(): boolean {
     return undefined !== this.textureMapping?.texture;
   }
+
+  /** An [OrderedComparator]($bentley) that compares this material against `other`. */
+  public compare(other: RenderMaterial): number {
+    return compareStrings(this._guid, other._guid);
+  }
 }
 
 /** @public */
-export namespace RenderMaterial { // eslint-disable-line no-redeclare
+export namespace RenderMaterial {
   function clampToNormalizedRange(value: number): number {
     return Math.max(0.0, Math.min(1.0, value));
   }
@@ -67,7 +75,7 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     public constructor(key?: string) { this.key = key; }
 
     /** Obtain an immutable instance of a RenderMaterial with all default properties. */
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     public static readonly defaults = new Params();
 
     /** A value from 0.0 (fully-transparent) to 1.0 (fully-opaque) controlling the transparency of surfaces to which this material is applied;
@@ -79,9 +87,9 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     }
 
     /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     public static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const materialParams = new Params();
       materialParams.key = key;
       materialParams.diffuseColor = diffuseColor;
@@ -94,5 +102,5 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
   }
 }
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 Object.freeze(RenderMaterial.Params.defaults);

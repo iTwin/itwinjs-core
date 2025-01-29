@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, isIDisposable } from "@itwin/core-bentley";
+import { BeEvent, isDisposable, isIDisposable } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
@@ -60,7 +60,7 @@ export interface FavoritePropertiesManagerProps {
  *
  * @public
  */
-export class FavoritePropertiesManager implements IDisposable {
+export class FavoritePropertiesManager implements Disposable {
   /**
    * Used in tests to avoid collisions between multiple runs using the same storage
    * @internal
@@ -89,11 +89,19 @@ export class FavoritePropertiesManager implements IDisposable {
     this._imodelInitializationPromises = new Map<IModelConnection, Promise<void>>();
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     // istanbul ignore else
-    if (isIDisposable(this._storage)) {
+    if (isDisposable(this._storage)) {
+      this._storage[Symbol.dispose]();
+    } else if (isIDisposable(this._storage)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
       this._storage.dispose();
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /**
@@ -182,7 +190,7 @@ export class FavoritePropertiesManager implements IDisposable {
    */
   public startConnectionInitialization(imodel: IModelConnection) {
     if (!this.isInitialized(imodel) && !this._imodelInitializationPromises.has(imodel)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._imodelInitializationPromises.set(imodel, this.initializeConnection(imodel));
     }
   }
@@ -198,7 +206,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
     let promise = this._imodelInitializationPromises.get(imodel);
     if (!promise) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       promise = this.initializeConnection(imodel);
 
       // Put the promise in the map to avoid possible multiple initializations from different promises.
@@ -373,7 +381,7 @@ export class FavoritePropertiesManager implements IDisposable {
    */
   public async hasAsync(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<boolean> {
     await this.ensureInitialized(imodel);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.has(field, imodel, scope);
   }
 
@@ -418,7 +426,7 @@ export class FavoritePropertiesManager implements IDisposable {
    */
   public async sortFieldsAsync(imodel: IModelConnection, fields: Field[]): Promise<Field[]> {
     await this.ensureInitialized(imodel);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.sortFields(imodel, fields);
   }
 

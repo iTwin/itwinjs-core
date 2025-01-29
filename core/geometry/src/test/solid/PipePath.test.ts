@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Arc3d } from "../../curve/Arc3d";
@@ -39,7 +39,7 @@ describe("PipePath", () => {
       y0 += 10.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PipePath", "TorusPipeAlongArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TorusPipeTransformed", () => {
@@ -106,8 +106,8 @@ describe("PipePath", () => {
           if (!ck.testDefined(pipeScaledRadii))
             continue;
           if (!ck.testCoordinate(1, pipeScaledRadii.cloneVectorX().magnitude(), "TorusPipe.cloneVectorX returns unit vector") ||
-              !ck.testCoordinate(1, pipeScaledRadii.cloneVectorY().magnitude(), "TorusPipe.cloneVectorY returns unit vector") ||
-              !ck.testCoordinate(1, pipeScaledRadii.cloneVectorZ().magnitude(), "TorusPipe.cloneVectorZ returns unit vector"))
+            !ck.testCoordinate(1, pipeScaledRadii.cloneVectorY().magnitude(), "TorusPipe.cloneVectorY returns unit vector") ||
+            !ck.testCoordinate(1, pipeScaledRadii.cloneVectorZ().magnitude(), "TorusPipe.cloneVectorZ returns unit vector"))
             continue;
           let builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeScaledRadii, 20, 20);
@@ -152,7 +152,7 @@ describe("PipePath", () => {
       z0 += 10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PipePath", "TorusPipeTransformed");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("KeyPointPath", () => {
@@ -173,6 +173,6 @@ describe("PipePath", () => {
     const pipe = CurveFactory.createPipeSegments(path, pipeRadius);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, pipe, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PipePath", "KeyPointPath");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

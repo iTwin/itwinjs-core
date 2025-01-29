@@ -3,16 +3,12 @@ parameters:
     type: string # data type of the parameter; required
 
 steps:
-  - checkout: self
-    clean: true
-    fetchDepth: 1
-
   - template: setup-integration-users.yaml
 
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
-      versionSpec: "${{ parameters.nodeVersion }}"
+      version: "${{ parameters.nodeVersion }}"
       checkLatest: true
 
   - script: "git config --local user.email imodeljs-admin@users.noreply.github.com"

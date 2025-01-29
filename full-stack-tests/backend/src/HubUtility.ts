@@ -59,7 +59,9 @@ export class HubUtility {
   public static async getTestITwinId(accessToken: AccessToken): Promise<GuidString> {
     if (undefined !== HubUtility.iTwinId)
       return HubUtility.iTwinId;
-    return HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
+
+    HubUtility.iTwinId = await HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
+    return HubUtility.iTwinId;
   }
 
   private static imodelCache = new Map<string, GuidString>();
@@ -113,9 +115,8 @@ export class HubUtility {
     const earliestChangesetIndex = earliestIndex > 0 ? earliestIndex - 1 : 0; // Query results exclude earliest specified changeset
     const latestChangesetIndex = latestIndex; // Query results include latest specified change set
 
-    const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download Changesets");
+    using _perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download Changesets");
     await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangesetIndex, end: latestChangesetIndex }, targetDir: changesetsPath });
-    perfLogger.dispose();
     return changesets;
   }
 
@@ -133,7 +134,7 @@ export class HubUtility {
     // Download the seed file
     const seedPathname = path.join(downloadDir, "seed", iModelId.concat(".bim"));
     if (!IModelJsFs.existsSync(seedPathname)) {
-      const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
+      using _perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
       await V1CheckpointManager.downloadCheckpoint({
         localFile: seedPathname,
         checkpoint: {
@@ -146,7 +147,6 @@ export class HubUtility {
           },
         },
       });
-      perfLogger.dispose();
     }
 
     // Download the change sets
@@ -212,7 +212,7 @@ export class HubUtility {
       const startTime = new Date().getTime();
       let csResult = ChangeSetStatus.Success;
       try {
-        nativeDb.applyChangeset(changeSet);
+        nativeDb.applyChangeset(changeSet, false);
       } catch (err: any) {
         csResult = err.errorNumber;
       }
@@ -226,7 +226,7 @@ export class HubUtility {
       });
     }
 
-    perfLogger.dispose();
+    perfLogger[Symbol.dispose]();
     nativeDb.closeFile();
 
     return results;

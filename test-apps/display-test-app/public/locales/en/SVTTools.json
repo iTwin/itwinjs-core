@@ -151,6 +151,9 @@
     "PlaceLineString": {
       "keyin": "dta place line string"
     },
+    "MoveElement": {
+      "keyin": "dta move element"
+    },
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },
@@ -191,8 +194,14 @@
     "DtaClassify": {
       "keyin": "dta classify"
     },
+    "DtaClipMask": {
+      "keyin": "dta clip mask"
+    },
     "CreateSectionDrawing": {
       "keyin": "dta create section drawing"
+    },
+    "ToggleSecondaryIModel": {
+      "keyin": "dta imodel attach"
     }
   }
 }

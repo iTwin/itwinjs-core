@@ -23,6 +23,8 @@
     "strict": true,
     "strictNullChecks": true,
     "stripInternal": false,
-    "target": "ES2021"
+    "useDefineForClassFields": false,
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable", "ESNext.Disposable"]
   }
 }

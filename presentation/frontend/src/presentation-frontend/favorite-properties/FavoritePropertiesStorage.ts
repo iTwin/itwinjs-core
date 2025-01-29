@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { AccessToken, compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { AccessToken, compareStrings, Dictionary, Guid, isDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
@@ -187,7 +187,7 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
   connectivityInfo?: IConnectivityInformationProvider;
 }
 /** @internal */
-export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
+export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, Disposable {
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
   private _propertiesOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, Set<PropertyFullName>>(iTwinAndIModelIdsKeyComparer);
@@ -200,17 +200,14 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
   }
 
-  public dispose() {
-    if (isIDisposable(this._connectivityInfo)) {
-      this._connectivityInfo.dispose();
-    }
+  public [Symbol.dispose]() {
+    isDisposable(this._connectivityInfo) && this._connectivityInfo[Symbol.dispose]();
   }
 
   public get impl() {
     return this._impl;
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onConnectivityStatusChanged = (args: { status: InternetConnectivityStatus }) => {
     // istanbul ignore else
     if (args.status === InternetConnectivityStatus.Online) {

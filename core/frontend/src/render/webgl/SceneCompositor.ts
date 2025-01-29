@@ -96,7 +96,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.volClassBlendMsBuff;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this.accumulation = dispose(this.accumulation);
     this.revealage = dispose(this.revealage);
     this.color = dispose(this.color);
@@ -463,7 +463,7 @@ class FrameBuffers implements WebGLDisposable {
       && undefined === this.idsAndAltZComposite && undefined === this.edlDrawCol;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
     this.depthAndOrder = dispose(this.depthAndOrder);
@@ -584,7 +584,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.clearTranslucent && undefined === this.clearPickAndColor;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this.composite = dispose(this.composite);
     this.occlusion = dispose(this.occlusion);
     this.occlusionXBlur = dispose(this.occlusionXBlur);
@@ -599,8 +599,10 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 interface BatchInfo {
   featureTable: RenderFeatureTable;
   iModel?: IModelConnection;
+  transformFromIModel?: Transform;
   tileId?: string;
   viewAttachmentId?: Id64String;
+  inSectionDrawingAttachment?: boolean;
 }
 
 // Represents a view of data read from a region of the frame buffer.
@@ -645,8 +647,16 @@ class PixelBuffer implements Pixel.Buffer {
     const featureId = this.getFeatureId(pixelIndex);
     if (undefined !== featureId) {
       const batch = this._batchState.find(featureId);
-      if (undefined !== batch)
-        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId, viewAttachmentId: batch.viewAttachmentId };
+      if (undefined !== batch) {
+        return {
+          featureTable: batch.featureTable,
+          iModel: batch.batchIModel,
+          transformFromIModel: batch.transformFromBatchIModel,
+          tileId: batch.tileId,
+          viewAttachmentId: batch.viewAttachmentId,
+          inSectionDrawingAttachment: batch.inSectionDrawingAttachment,
+        };
+      }
     }
 
     return undefined;
@@ -732,12 +742,14 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel, tileId, viewAttachmentId;
+    let featureTable, iModel, transformToIModel, tileId, viewAttachmentId, inSectionDrawingAttachment;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
       iModel = batchInfo.iModel;
+      transformToIModel = batchInfo.transformFromIModel;
       tileId = batchInfo.tileId;
       viewAttachmentId = batchInfo.viewAttachmentId;
+      inSectionDrawingAttachment = batchInfo.inSectionDrawingAttachment;
     }
 
     return new Pixel.Data({
@@ -747,8 +759,10 @@ class PixelBuffer implements Pixel.Buffer {
       planarity,
       batchType: featureTable?.type,
       iModel,
+      transformFromIModel: transformToIModel,
       tileId,
       viewAttachmentId,
+      inSectionDrawingAttachment,
     });
   }
 
@@ -794,7 +808,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   protected _needHiddenEdges: boolean;
 
   public abstract get isDisposed(): boolean;
-  public abstract dispose(): void;
+  public abstract [Symbol.dispose](): void;
   public abstract preDraw(): void;
   public abstract draw(_commands: RenderCommands): void;
   public abstract drawForReadPixels(_commands: RenderCommands, sceneOverlays: GraphicList, worldOverlayDecorations: GraphicList | undefined, viewOverlayDecorations: GraphicList | undefined): void;
@@ -1293,7 +1307,7 @@ class Compositor extends SceneCompositor {
         this._geom.disableVolumeClassifier();
         this._textures.disableVolumeClassifier();
         if (undefined !== this._vcAltDepthStencil) {
-          this._vcAltDepthStencil.dispose();
+          this._vcAltDepthStencil[Symbol.dispose]();
           this._vcAltDepthStencil = undefined;
         }
         this._haveVolumeClassifier = false;
@@ -1362,7 +1376,7 @@ class Compositor extends SceneCompositor {
         this._geom.disableVolumeClassifier();
         this._textures.disableVolumeClassifier();
         if (undefined !== this._vcAltDepthStencil) {
-          this._vcAltDepthStencil.dispose();
+          this._vcAltDepthStencil[Symbol.dispose]();
           this._vcAltDepthStencil = undefined;
         }
         this._haveVolumeClassifier = false;
@@ -1609,7 +1623,7 @@ class Compositor extends SceneCompositor {
     System.instance.frameBufferStack.execute(fbo, true, false, () => {
       try {
         gl.readPixels(rect.left, bottom, rect.width, rect.height, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
-      } catch (e) {
+      } catch {
         result = undefined;
       }
     });
@@ -1629,7 +1643,7 @@ class Compositor extends SceneCompositor {
       && this.eyeDomeLighting.isDisposed;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this.reset();
     dispose(this.solarShadowMap);
     dispose(this.eyeDomeLighting);

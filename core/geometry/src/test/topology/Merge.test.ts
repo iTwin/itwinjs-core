@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Angle } from "../../geometry3d/Angle";
@@ -54,7 +54,7 @@ describe("GraphMerge", () => {
       edges.removeArrayMembersWithY1Below(q.faceSuccessor.y);
 
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MergeQuadQuad", () => {
@@ -98,6 +98,6 @@ describe("GraphMerge", () => {
       x0 += dy;
       y0 = 0.0;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

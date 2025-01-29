@@ -83,3 +83,20 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
  * @public
  */
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
+
+/**
+ * Removes all `undefined` properties from given `obj` object and returns
+ * the same (mutated) object.
+ *
+ * Example: `omitUndefined({ a: 1, b: undefined })` will return `{ a: 1 }`
+ *
+ * @internal
+ */
+export function omitUndefined<T extends object>(obj: T): T {
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value === undefined) {
+      delete obj[key as keyof T];
+    }
+  });
+  return obj;
+}

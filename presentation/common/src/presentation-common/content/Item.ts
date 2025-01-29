@@ -8,8 +8,8 @@
 
 import { ClassInfo, InstanceKey } from "../EC";
 import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
-import { ValuesDictionary } from "../Utils";
-import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
+import { omitUndefined, ValuesDictionary } from "../Utils";
+import { DisplayValue, DisplayValueJSON, DisplayValuesMap, DisplayValuesMapJSON, Value, ValueJSON, ValuesMap, ValuesMapJSON } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -19,15 +19,30 @@ export interface ItemJSON {
   inputKeys?: InstanceKey[];
   primaryKeys: InstanceKey[];
   // TODO: rename to `label`
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   labelDefinition: LabelDefinitionJSON;
   /** @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. */
   imageId: string;
   classInfo?: ClassInfo;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   values: ValuesDictionary<ValueJSON>;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   displayValues: ValuesDictionary<DisplayValueJSON>;
+  mergedFieldNames: string[];
+  extendedData?: { [key: string]: any };
+}
+
+/**
+ * Props for creating [[Item]].
+ * @public
+ */
+interface ItemProps {
+  inputKeys?: InstanceKey[];
+  primaryKeys: InstanceKey[];
+  label: LabelDefinition;
+  classInfo?: ClassInfo;
+  values: ValuesDictionary<Value>;
+  displayValues: ValuesDictionary<DisplayValue>;
   mergedFieldNames: string[];
   extendedData?: { [key: string]: any };
 }
@@ -72,6 +87,7 @@ export class Item {
    * @param displayValues Display values dictionary
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/presentation/content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
+   * @deprecated in 5.0. Use an overload with `ItemProps` instead.
    */
   public constructor(
     primaryKeys: InstanceKey[],
@@ -82,15 +98,44 @@ export class Item {
     displayValues: ValuesDictionary<DisplayValue>,
     mergedFieldNames: string[],
     extendedData?: { [key: string]: any },
+  );
+  public constructor(props: ItemProps);
+  public constructor(
+    primaryKeysOrProps: ItemProps | InstanceKey[],
+    label?: string | LabelDefinition,
+    imageId?: string,
+    classInfo?: ClassInfo | undefined,
+    values?: ValuesDictionary<Value>,
+    displayValues?: ValuesDictionary<DisplayValue>,
+    mergedFieldNames?: string[],
+    extendedData?: { [key: string]: any },
   ) {
-    this.primaryKeys = primaryKeys;
-    this.imageId = imageId; // eslint-disable-line deprecation/deprecation
-    this.classInfo = classInfo;
-    this.values = values;
-    this.displayValues = displayValues;
-    this.mergedFieldNames = mergedFieldNames;
-    this.extendedData = extendedData;
-    this.label = typeof label === "string" ? LabelDefinition.fromLabelString(label) : label;
+    /* istanbul ignore next */
+    const props = Array.isArray(primaryKeysOrProps)
+      ? {
+          primaryKeys: primaryKeysOrProps,
+          label: typeof label === "string" ? LabelDefinition.fromLabelString(label) : label!,
+          imageId: imageId!,
+          classInfo,
+          values: values!,
+          displayValues: displayValues!,
+          mergedFieldNames: mergedFieldNames!,
+          extendedData,
+        }
+      : primaryKeysOrProps;
+
+    if ("inputKeys" in props) {
+      this.inputKeys = props.inputKeys;
+    }
+    this.primaryKeys = props.primaryKeys;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.imageId = "imageId" in props ? props.imageId : "";
+    this.classInfo = props.classInfo;
+    this.values = props.values;
+    this.displayValues = props.displayValues;
+    this.mergedFieldNames = props.mergedFieldNames;
+    this.extendedData = props.extendedData;
+    this.label = props.label;
   }
 
   /**
@@ -102,16 +147,16 @@ export class Item {
 
   /** Serialize this object to JSON */
   public toJSON(): ItemJSON {
-    const { label, ...baseItem } = this;
-    return {
+    const { label, values, displayValues, ...baseItem } = this;
+    return omitUndefined({
       ...baseItem,
-      // eslint-disable-next-line deprecation/deprecation
-      values: Value.toJSON(this.values) as ValuesMapJSON,
-      // eslint-disable-next-line deprecation/deprecation
-      displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      values: Value.toJSON(values) as ValuesMapJSON,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      displayValues: DisplayValue.toJSON(displayValues) as DisplayValuesMapJSON,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       labelDefinition: LabelDefinition.toJSON(label),
-    };
+    });
   }
 
   /** Deserialize [[Item]] from JSON */
@@ -122,16 +167,17 @@ export class Item {
     if (typeof json === "string") {
       return JSON.parse(json, (key, value) => Item.reviver(key, value));
     }
-    const item = Object.create(Item.prototype);
-    const { labelDefinition, ...baseJson } = json;
-    return Object.assign(item, baseJson, {
-      // eslint-disable-next-line deprecation/deprecation
-      values: Value.fromJSON(json.values),
-      // eslint-disable-next-line deprecation/deprecation
-      displayValues: DisplayValue.fromJSON(json.displayValues),
-      // eslint-disable-next-line deprecation/deprecation
+    const { labelDefinition, values, displayValues, ...baseJson } = json;
+
+    return new Item({
+      ...baseJson,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      values: Value.fromJSON(values) as ValuesMap,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      displayValues: DisplayValue.fromJSON(displayValues) as DisplayValuesMap,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       label: LabelDefinition.fromJSON(labelDefinition),
-    } as Partial<Item>);
+    });
   }
 
   /**

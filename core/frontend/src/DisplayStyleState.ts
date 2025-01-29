@@ -59,6 +59,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @deprecated in 3.x. use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
@@ -123,12 +124,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const script = RenderSchedule.Script.fromJSON(scriptProps);
       if (script)
         newState = new RenderSchedule.ScriptReference(this.id, script);
-    } catch (_) {
+    } catch {
       // schedule state is undefined.
     }
 
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -150,14 +151,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
           if (script)
             newState = new RenderSchedule.ScriptReference(timelineId, script);
         }
-      } catch (_) {
+      } catch {
         // schedule state is undefined.
       }
     }
 
     this._queryRenderTimelinePropsPromise = undefined;
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -168,7 +169,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     try {
       const omitScriptElementIds = !IModelApp.tileAdmin.enableFrontendScheduleScripts;
       return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds } }) as RenderTimelineProps;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -255,13 +256,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityModel((model) => func(model.treeRef));
-  }
-
-  /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityTileTreeRef(func);
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    for (const model of this.realityModels) {
+      if (!model.invisible) {
+        yield model.treeRef;
+      }
+    }
   }
 
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
@@ -305,7 +305,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(script);
       this._scriptReference = scriptRef;
 

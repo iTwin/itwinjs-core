@@ -32,7 +32,7 @@ yargs.strict(true)
           describe: "Specify a baseUrl to resolve modules"
         },
         "includes": {
-          describe: "Specify a baseUrl to resolve modules"
+          describe: "Deprecated - this flag does nothing and will be removed in @itwin/build-tools 5.x"
         },
         "excludes": {
           describe: "Specify a directory, filename, or pattern to be excluded"
@@ -88,7 +88,11 @@ yargs.strict(true)
         },
         "apiSummaryFolder": {
           describe: "Directory for the API summary. Defaults to `<Rush repository root>/common/api/summary`."
-        }
+        },
+        "includeUnexportedApis": {
+          boolean: true,
+          describe: "If this flag is set, then APIs that are unexported, but still indirectly accessible via exported APIs, will also be included to the API report. Defaults to `false`"
+        },
       })
     },
     (argv) => { extractApiCommand(argv) })
@@ -136,14 +140,13 @@ function docsCommand(options) {
   const outOpt = options.out ? ["--out", options.out] : [];
   const jsonOpt = options.json ? ["--json", options.json] : [];
   const baseUrlOpt = options.baseUrl ? ["--baseUrl", options.baseUrl] : [];
-  const includesOpt = options.includes ? ["--includes", options.includes] : [];
   const excludesOpt = options.excludes ? ["--excludes", options.excludes] : [];
   const excludesGlobOpt = options.excludeGlob ? ["--excludeGlob", options.excludeGlob] : [];
   const testExcludeGlobOpt = options.testExcludeGlob ? ["--testExcludeGlob", options.testExcludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
   exec("node", [getScriptPath("docs.js"),
-  ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
+  ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt,
   ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
 }
 
@@ -161,7 +164,8 @@ function extractApiCommand(options) {
   const apiReportFolderOpt = options.apiReportFolder ? ["--apiReportFolder", options.apiReportFolder] : [];
   const apiReportTempFolderOpt = options.apiReportTempFolder ? ["--apiReportTempFolder", options.apiReportTempFolder] : [];
   const apiSummaryFolderOpt = options.apiSummaryFolder ? ["--apiSummaryFolder", options.apiSummaryFolder] : [];
-  exec("node", [getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt]);
+  const includeUnexportedApisOpt = options.includeUnexportedApis ? ["--includeUnexportedApis"] : [];
+  exec("node", [getScriptPath("extract-api.js"), ...entryOpt, ...ignoreTagsOpt, ...apiReportFolderOpt, ...apiReportTempFolderOpt, ...apiSummaryFolderOpt, ...includeUnexportedApisOpt]);
 }
 
 function pseudolocalizeCommand(options) {

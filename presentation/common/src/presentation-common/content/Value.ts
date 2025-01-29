@@ -53,13 +53,13 @@ export namespace Value {
    * Serialize [[Value]] to JSON
    * @deprecated in 3.x. Use [[Value]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: ValueJSON): Value {
     if (json === null) {
       return undefined;
     }
     if (isNestedContentValue(json)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return json.map(NestedContentValue.fromJSON);
     }
     if (isArrayValue(json)) {
@@ -75,13 +75,13 @@ export namespace Value {
    * Deserialize [[Value]] from JSON
    * @deprecated in 3.x. Use [[Value]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(value: Value): ValueJSON {
     if (undefined === value) {
       return null;
     }
     if (isNestedContentValue(value)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return value.map(NestedContentValue.toJSON);
     }
     if (isArrayValue(value)) {
@@ -98,13 +98,13 @@ export namespace Value {
  * A map of raw values
  * @public
  */
-export interface ValuesMap extends ValuesDictionary<Value> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface ValuesMap extends ValuesDictionary<Value> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * An array of raw values
  * @public
  */
-export interface ValuesArray extends Array<Value> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface ValuesArray extends Array<Value> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Display value type.
@@ -134,7 +134,7 @@ export namespace DisplayValue {
    * Serialize [[DisplayValue]] to JSON
    * @deprecated in 3.x. Use [[DisplayValue]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: DisplayValueJSON): DisplayValue {
     if (json === null) {
       return undefined;
@@ -152,7 +152,7 @@ export namespace DisplayValue {
    * Deserialize [[DisplayValue]] from JSON
    * @deprecated in 3.x. Use [[DisplayValue]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(value: DisplayValue): DisplayValueJSON {
     if (undefined === value) {
       return null;
@@ -171,13 +171,13 @@ export namespace DisplayValue {
  * A map of display values
  * @public
  */
-export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * An array of display values
  * @public
  */
-export interface DisplayValuesArray extends Array<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface DisplayValuesArray extends Array<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Data structure that describes nested content value.
@@ -215,7 +215,7 @@ export namespace NestedContentValue {
    * Serialize [[NestedContentValue]] to JSON
    * @deprecated in 3.x. Use [[NestedContentValue]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(value: NestedContentValue): NestedContentValueJSON {
     return {
       ...value,
@@ -228,7 +228,7 @@ export namespace NestedContentValue {
    * Deserialize [[NestedContentValue]] from JSON
    * @deprecated in 3.x. Use [[NestedContentValue]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: NestedContentValueJSON): NestedContentValue {
     return {
       ...json,
@@ -243,30 +243,30 @@ export namespace NestedContentValue {
  * @public
  * @deprecated in 3.x. Use [[Value]]
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type ValueJSON = string | number | boolean | null | ValuesMapJSON | ValuesArrayJSON | NavigationPropertyValue | NestedContentValueJSON[];
 /**
  * JSON representation of [[ValuesMap]]
  * @public
  * @deprecated in 3.x. Use [[ValuesMap]]
  */
-// eslint-disable-next-line deprecation/deprecation
-export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[ValuesArray]]
  * @public
  * @deprecated in 3.x. Use [[ValuesArray]]
  */
-// eslint-disable-next-line deprecation/deprecation
-export interface ValuesArrayJSON extends Array<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export interface ValuesArrayJSON extends Array<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[DisplayValue]]
  * @public
  * @deprecated in 3.x. Use [[DisplayValue]]
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON;
 
 /**
@@ -274,16 +274,16 @@ export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayVal
  * @public
  * @deprecated in 3.x. Use [[DisplayValuesMap]]
  */
-// eslint-disable-next-line deprecation/deprecation
-export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[DisplayValuesArray]]
  * @public
  * @deprecated in 3.x. Use [[DisplayValuesArray]]
  */
-// eslint-disable-next-line deprecation/deprecation
-export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[NestedContentValue]]
@@ -292,9 +292,9 @@ export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {} // es
  */
 export interface NestedContentValueJSON {
   primaryKeys: InstanceKey[];
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   values: ValuesDictionary<ValueJSON>;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   displayValues: ValuesDictionary<DisplayValueJSON>;
   mergedFieldNames: string[];
 }
@@ -316,9 +316,9 @@ export interface DisplayValueGroup {
  * @deprecated in 3.x. Use [[DisplayValueGroup]]
  */
 export interface DisplayValueGroupJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   displayValue: DisplayValueJSON;
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   groupedRawValues: ValueJSON[];
 }
 
@@ -328,12 +328,12 @@ export namespace DisplayValueGroup {
    * Serialize [[DisplayValueGroup]] to JSON
    * @deprecated in 3.x. Use [[DisplayValueGroup]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function toJSON(group: DisplayValueGroup): DisplayValueGroupJSON {
     return {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       displayValue: DisplayValue.toJSON(group.displayValue),
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       groupedRawValues: group.groupedRawValues.map(Value.toJSON),
     };
   }
@@ -342,24 +342,25 @@ export namespace DisplayValueGroup {
    * Deserialize [[DisplayValueGroup]] from JSON
    * @deprecated in 3.x. Use [[DisplayValueGroup]]
    */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   export function fromJSON(json: DisplayValueGroupJSON): DisplayValueGroup {
     return {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       displayValue: DisplayValue.fromJSON(json.displayValue),
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       groupedRawValues: json.groupedRawValues.map(Value.fromJSON),
     };
   }
 }
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function isNestedContentValue(v: Value | ValueJSON): v is NestedContentValue[] | NestedContentValueJSON[] {
   return (
     v !== undefined &&
     Array.isArray(v) &&
     (v.length === 0 ||
-      ((v[0] as NestedContentValue).primaryKeys !== undefined &&
+      (!!v[0] &&
+        (v[0] as NestedContentValue).primaryKeys !== undefined &&
         (v[0] as NestedContentValue).values !== undefined &&
         (v[0] as NestedContentValue).displayValues !== undefined &&
         (v[0] as NestedContentValue).mergedFieldNames !== undefined))
@@ -367,14 +368,14 @@ function isNestedContentValue(v: Value | ValueJSON): v is NestedContentValue[] |
 }
 
 function isArrayValue(
-  v: Value | ValueJSON | DisplayValue | DisplayValueJSON, // eslint-disable-line deprecation/deprecation
-  // eslint-disable-next-line deprecation/deprecation
+  v: Value | ValueJSON | DisplayValue | DisplayValueJSON, // eslint-disable-line @typescript-eslint/no-deprecated
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
 ): v is ValuesArray | ValuesArrayJSON | DisplayValuesArray | DisplayValuesArrayJSON {
   // note: we don't guarantee by 100% that v is ValuesArray | DisplayValuesArray, but merely make compiler happy.
   // we have other means to determine the type of value.
   return v !== undefined && Array.isArray(v);
 }
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function isMapValue(v: Value | ValueJSON | DisplayValue | DisplayValueJSON): v is ValuesMap | ValuesMapJSON | DisplayValuesMap | DisplayValuesMapJSON {
   return v !== undefined && typeof v === "object" && !Array.isArray(v);
 }
@@ -382,72 +383,72 @@ function isPrimitiveValue(v: Value | DisplayValue): v is string | number | boole
   return !isArrayValue(v) && !isMapValue(v);
 }
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function valuesArrayFromJSON(json: ValuesArrayJSON): ValuesArray {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return json.map(Value.fromJSON);
 }
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function valuesArrayToJSON(values: ValuesArray): ValuesArrayJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return values.map(Value.toJSON);
 }
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function valuesMapFromJSON(json: ValuesMapJSON): ValuesMap {
   const map: ValuesMap = {};
   for (const key in json) {
     /* istanbul ignore else */
     if (json.hasOwnProperty(key)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       map[key] = Value.fromJSON(json[key]);
     }
   }
   return map;
 }
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function valuesMapToJSON(values: ValuesMap): ValuesMapJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const map: ValuesMapJSON = {};
   for (const key in values) {
     /* istanbul ignore else */
     if (values.hasOwnProperty(key)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       map[key] = Value.toJSON(values[key]);
     }
   }
   return map;
 }
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function displayValuesArrayFromJSON(json: DisplayValuesArrayJSON): DisplayValuesArray {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return json.map(DisplayValue.fromJSON);
 }
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function displayValuesArrayToJSON(values: DisplayValuesArray): DisplayValuesArrayJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return values.map(DisplayValue.toJSON);
 }
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function displayValuesMapFromJSON(json: DisplayValuesMapJSON): DisplayValuesMap {
   const map: DisplayValuesMap = {};
   for (const key in json) {
     /* istanbul ignore else */
     if (json.hasOwnProperty(key)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       map[key] = DisplayValue.fromJSON(json[key]);
     }
   }
   return map;
 }
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function displayValuesMapToJSON(values: DisplayValuesMap): DisplayValuesMapJSON {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const map: DisplayValuesMapJSON = {};
   for (const key in values) {
     /* istanbul ignore else */
     if (values.hasOwnProperty(key)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       map[key] = DisplayValue.toJSON(values[key]);
     }
   }

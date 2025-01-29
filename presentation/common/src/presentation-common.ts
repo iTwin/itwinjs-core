@@ -19,7 +19,7 @@ export * from "./presentation-common/RegisteredRuleset";
 export * from "./presentation-common/RulesetVariables";
 export * from "./presentation-common/RulesetsFactory";
 export * from "./presentation-common/Update";
-export * from "./presentation-common/Utils";
+export { DEFAULT_KEYS_BATCH_SIZE, Omit, PagedResponse, PartialBy, Subtract, ValuesDictionary, getInstancesCount } from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
 export * from "./presentation-common/LocalizationHelper";
 export * from "./presentation-common/InstanceFilterDefinition";
@@ -34,7 +34,6 @@ export * from "./presentation-common/KoqPropertyValueFormatter";
  */
 export * from "./presentation-common/PresentationRpcInterface";
 export * from "./presentation-common/RpcRequestsHandler";
-export * from "./presentation-common/ElementProperties";
 
 /**
  * @module UnifiedSelection
@@ -63,6 +62,7 @@ export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
 export * from "./presentation-common/content/ContentTraverser";
 export * from "./presentation-common/content/PropertyValueFormatter";
+export * from "./presentation-common/ElementProperties";
 
 /**
  * @module Hierarchies

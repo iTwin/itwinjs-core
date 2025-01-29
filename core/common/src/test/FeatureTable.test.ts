@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import {
-  Feature, FeatureTable, ModelFeature, MultiModelPackedFeatureTable, PackedFeature, PackedFeatureModelTable, PackedFeatureTable,
+  Feature, FeatureTable, ModelFeature, PackedFeature,
 } from "../FeatureTable";
+import { MultiModelPackedFeatureTable, PackedFeatureModelTable, PackedFeatureTable } from "../internal/PackedFeatureTable"; 
 import { GeometryClass } from "../GeometryParams";
 
 function makeFeatureTable(numFeatures: number): FeatureTable {

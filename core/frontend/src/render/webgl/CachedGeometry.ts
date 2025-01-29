@@ -103,7 +103,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   // Draws this geometry
   public abstract draw(): void;
 
-  public abstract dispose(): void;
+  public abstract [Symbol.dispose](): void;
 
   // Intended to be overridden by specific subclasses
   public get materialInfo(): MaterialInfo | undefined { return undefined; }
@@ -252,7 +252,7 @@ export class IndexedGeometryParams implements WebGLDisposable {
       && this.indices.isDisposed;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.buffers);
     dispose(this.positions);
     dispose(this.indices);
@@ -272,7 +272,7 @@ export abstract class IndexedGeometry extends CachedGeometry {
 
   public get isDisposed(): boolean { return this._params.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this._params);
   }
 
@@ -385,14 +385,14 @@ export class SkyBoxGeometryParams implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this.positions.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.buffers);
     dispose(this.positions);
   }
 }
 
 /** @internal */
-namespace SkyBoxQuads { // eslint-disable-line no-redeclare
+namespace SkyBoxQuads {
   let skyBoxQuads: SkyBoxQuads | undefined;
 
   export function getInstance(): SkyBoxQuads {
@@ -442,7 +442,7 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
 
   public get isDisposed(): boolean { return this._params.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this._params);
   }
 
@@ -485,7 +485,7 @@ class ViewportQuad {
 }
 
 /** @internal */
-namespace ViewportQuad { // eslint-disable-line no-redeclare
+namespace ViewportQuad {
   let viewportQuad: ViewportQuad | undefined;
 
   export function getInstance(): ViewportQuad {
@@ -727,8 +727,8 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
 
   public override get isDisposed(): boolean { return super.isDisposed && this._worldPosBuff.isDisposed; }
 
-  public override dispose() {
-    super.dispose();
+  public override[Symbol.dispose]() {
+    super[Symbol.dispose]();
     dispose(this._worldPosBuff);
   }
 }
@@ -1101,7 +1101,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._positions.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.buffers);
     dispose(this._positions);
   }
@@ -1166,7 +1166,7 @@ export class PolylineBuffers implements WebGLDisposable {
       && this.nextIndicesAndParams.isDisposed;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.buffers);
     dispose(this.indices);
     dispose(this.prevIndices);

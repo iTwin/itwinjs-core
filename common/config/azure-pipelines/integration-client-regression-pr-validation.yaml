@@ -12,11 +12,15 @@ variables:
   - group: iModel.js Integration Test Users
 
 jobs:
-  - job: Node_20_x
+  - job: Node_22_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
     steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
       - template: templates/integration-test-steps.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 22.x

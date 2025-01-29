@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, IModelStatus, ServerError } from "@itwin/core-common";
+import { assert, IModelStatus } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import {
   MapLayerImageryProvider,
   MapLayerImageryProviderStatus,
@@ -96,7 +96,7 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       }
 
       if (preferredTms !== undefined) {
-        const tmsLink= layer.tileMatrixSetLinks.find((tmsl) => tmsl.tileMatrixSet === preferredTms!.identifier);
+        const tmsLink= layer.tileMatrixSetLinks.find((tmsl) => tmsl.tileMatrixSet === preferredTms.identifier);
         this._preferredLayerTileMatrixSet.set(layer.identifier, { tileMatrixSet: preferredTms, limits: tmsLink?.tileMatrixSetLimits } );
       }
     });

@@ -537,17 +537,11 @@ export class RealityModelTileTree extends RealityTileTree {
     super(params);
 
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-    if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
-      const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
-      /* eslint-disable-next-line deprecation/deprecation */
-      this.iModel.expandDisplayedExtents(worldContentRange);
-    }
   }
   public override get isContentUnbounded() { return this._isContentUnbounded; }
 }
 
 /** @internal */
-// eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
   export interface ReferenceBaseProps {
     iModel: IModelConnection;
@@ -584,7 +578,7 @@ export namespace RealityModelTileTree {
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
 
-    public get planarClipMaskPriority(): number {
+    public override get planarClipMaskPriority(): number {
       if (this._planarClipMask?.settings.priority !== undefined)
         return this._planarClipMask.settings.priority;
 

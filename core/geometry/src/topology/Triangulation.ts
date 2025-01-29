@@ -20,10 +20,10 @@ import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
-import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
+import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "./InsertAndRetriangulateContext";
 
 /**
- * (static) methods for triangulating polygons
+ * Static methods for triangulating polygons and points.
  * * @internal
  */
 export class Triangulator {
@@ -31,7 +31,7 @@ export class Triangulator {
   /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them
    * * The shared edge mates are c and e.
    * * (abc) are a triangle in CCW order
-   * * (dfe) are a triangle in CCW order. (!! node dfe instead of def.)
+   * * (dfe) are a triangle in CCW order. (Note: dfe instead of def!!)
    */
   private static flipEdgeBetweenTriangles(a: HalfEdge, b: HalfEdge, c: HalfEdge, d: HalfEdge, e: HalfEdge, f: HalfEdge) {
     // Reassign all of the pointers
@@ -154,41 +154,38 @@ export class Triangulator {
     return numFlip;
   }
 
-  /** Create a graph with a triangulation points.
-   * * The outer limit of the graph is the convex hull of the points.
-   * * The outside loop is marked `HalfEdgeMask.EXTERIOR`
+  /**
+   * Create a graph from an xy-triangulation of the given points.
+   * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
+   * @param points the points to triangulate
+   * @param zRule optional rule for updating the z-coordinate of an existing vertex when an xy-duplicate point is
+   * inserted into the graph. Default is `InsertedVertexZOptions.ReplaceIfLarger`.
+   * @param pointTolerance optional xy-distance tolerance for equating vertices. Default is
+   * `Geometry.smallMetricDistance`.
    */
-  public static createTriangulatedGraphFromPoints(points: Point3d[]): HalfEdgeGraph | undefined {
+  public static createTriangulatedGraphFromPoints(
+    points: Point3d[],
+    zRule: InsertedVertexZOptions = InsertedVertexZOptions.ReplaceIfLarger,
+    pointTolerance: number = Geometry.smallMetricDistance,
+  ): HalfEdgeGraph | undefined {
     if (points.length < 3)
       return undefined;
     const hull: Point3d[] = [];
     const interior: Point3d[] = [];
     Point3dArray.computeConvexHullXY(points, hull, interior, true);
     const graph = new HalfEdgeGraph();
-    const context = InsertAndRetriangulateContext.create(graph);
-    Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
+    const context = InsertAndRetriangulateContext.create(graph, pointTolerance);
+    const face0 = Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
+    if (undefined === face0)
+      return undefined;
     // HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
     let numInsert = 0;
     for (const p of interior) {
-      context.insertAndRetriangulate(p, true);
-      numInsert++;
-      if (numInsert > 16) {
-        /*
-        context.reset();
-        Triangulator.flipTriangles(context.graph);
-        // console.log (" intermediate flips " + numFlip);
-        */
-        numInsert = 0;
-      }
+      context.insertAndRetriangulate(p, zRule);
+      numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
     }
-    /*
-        // final touchup for aspect ratio flip
-        for (let i = 0; i < 15; i++) {
-          const numFlip = Triangulator.flipTriangles(graph);
-          if (numFlip === 0)
-            break;
-        }
-        */
+    if (face0.countEdgesAroundFace() > 3) // all vertices are on the hull (or duplicates of them)
+      return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
     return graph;
   }
   /**
@@ -308,18 +305,15 @@ export class Triangulator {
   /**
    * Triangulate the polygon made up of by a series of points.
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
-   * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops
+   * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops.
    */
   public static createTriangulatedGraphFromSingleLoop(data: LineStringDataVariant): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
-
     if (!startingNode || graph.countNodes() < 6)
       return undefined;
-
     if (!Triangulator.triangulateSingleFace(graph, startingNode))
       return undefined;
-
     Triangulator.flipTriangles(graph);
     return graph;
   }
@@ -442,19 +436,20 @@ export class Triangulator {
     return undefined;
   }
   /**
-   * create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order
+   * Create a circular doubly linked list of internal and external nodes from polygon points in the specified winding order.
    * * This applies the masks used by typical applications:
-   *   * HalfEdgeMask.BOUNDARY on both sides
+   *   * HalfEdgeMask.BOUNDARY on both sides.
    *   * HalfEdgeMask.PRIMARY_EDGE on both sides.
-   * * Use `createFaceLoopFromCoordinatesAndMasks` for detail control of masks.
+   * * Use [[createFaceLoopFromCoordinatesAndMasks]] for detailed control of masks.
    */
-  public static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  public static createFaceLoopFromCoordinates(
+    graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean,
+  ): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
     return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop,
       HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE,
       markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK);
   }
-
   /**
    * create a circular doubly linked list of internal and external nodes from polygon points.
    * * Optionally jump to the "other" side so the returned loop has positive area

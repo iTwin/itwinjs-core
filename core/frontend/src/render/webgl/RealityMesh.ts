@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, disposeArray, IDisposable, UintArray } from "@itwin/core-bentley";
+import { assert, dispose, disposeArray, UintArray } from "@itwin/core-bentley";
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
@@ -28,6 +28,7 @@ import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 const scratchOverlapRange = Range2d.createNull();
 const scratchBytes = new Uint8Array(4);
@@ -44,11 +45,11 @@ class ProjectedTexture {
 }
 type TerrainOrProjectedTexture = TerrainTexture | ProjectedTexture;
 
-class RealityTextureParam implements IDisposable {
+class RealityTextureParam implements Disposable {
   constructor(public texture: RenderTexture | undefined, private _projectedTextureOrMatrix: ProjectedTexture | Matrix4) { }
   public get isProjected() { return this._projectedTextureOrMatrix instanceof ProjectedTexture; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.texture = dispose(this.texture);
   }
 
@@ -119,7 +120,7 @@ class RealityTextureParam implements IDisposable {
 }
 
 /** @internal */
-export class RealityTextureParams implements IDisposable {
+export class RealityTextureParams implements Disposable {
   constructor(public params: RealityTextureParam[]) { }
   public static create(textures: TerrainOrProjectedTexture[]) {
     const maxTexturesPerMesh = System.instance.maxRealityImageryLayers;
@@ -166,7 +167,7 @@ export class RealityTextureParams implements IDisposable {
     return new RealityTextureParams(textureParams);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     disposeArray(this.params);
   }
 }
@@ -220,14 +221,17 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
   }
   public get bytesUsed(): number { return this.positions.bytesUsed + (undefined === this.normals ? 0 : this.normals.bytesUsed) + this.uvParams.bytesUsed + this.indices.bytesUsed; }
 
-  public override dispose() {
-    super.dispose();
+  public override[Symbol.dispose]() {
+    super[Symbol.dispose]();
     dispose(this.uvParams);
   }
 }
 
 /** @internal */
-export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
+export class RealityMeshGeometry extends IndexedGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "reality-mesh" = "reality-mesh" as const;
+  public readonly isInstanceable = false;
+  public noDispose = false;
   public readonly hasTextures: boolean;
   public override get asRealityMesh(): RealityMeshGeometry | undefined { return this; }
   public override get isDisposed(): boolean { return this._realityMeshParams.isDisposed; }
@@ -269,8 +273,12 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     this._indexType = 1 === bytesPerIndex ? GL.DataType.UnsignedByte : (2 === bytesPerIndex ? GL.DataType.UnsignedShort : GL.DataType.UnsignedInt);
   }
 
-  public override dispose() {
-    super.dispose();
+  public override[Symbol.dispose]() {
+    if (this.noDispose) {
+      return;
+    }
+
+    super[Symbol.dispose]();
     dispose(this._realityMeshParams);
     if (true !== this._disableTextureDisposal)
       dispose(this.textureParams);
@@ -376,7 +384,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
     }
 
-    return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity());
+    return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity(), { disableClipStyle: params.disableClipStyle });
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

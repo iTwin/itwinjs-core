@@ -14,7 +14,8 @@ import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
-import { OvrFlags } from "./RenderFlags";
+import { Contours } from "./Contours";
+import { OvrFlags } from "../../common/internal/render/OvrFlags";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -30,6 +31,7 @@ export class BatchUniforms {
 
   private _overrides?: FeatureOverrides;
   private _sensors?: ThematicSensors;
+  private _contours?: Contours;
   private _batchId = new Float32Array(4);
 
   private _scratchBytes = new Uint8Array(4);
@@ -72,6 +74,8 @@ export class BatchUniforms {
       this._featureMode = FeatureMode.Pick;
     else
       this._featureMode = FeatureMode.None;
+
+    this._contours = undefined !== batch && this.wantContourLines ? batch.getContours(this._target) : undefined;
   }
 
   public resetBatchState(): void {
@@ -88,6 +92,26 @@ export class BatchUniforms {
   public bindThematicSensors(uniform: UniformHandle): void {
     if (undefined !== this._sensors)
       this._sensors.bindTexture(uniform);
+  }
+
+  public get wantContourLines(): boolean {
+    const contours = this._target.plan.contours;
+    return undefined !== contours && contours.displayContours && contours.groups.length > 0;
+  }
+
+  public bindContourLUT(uniform: UniformHandle): void {
+    // Note we can't use sync() here because a different texture may have been assigned to the desired texture unit
+    if (undefined !== this._contours)
+      this._contours.bindContourLUT(uniform);
+  }
+
+  public bindContourLUTWidth(uniform: UniformHandle): void {
+    if (!sync(this, uniform)) {
+      if (undefined === this._contours)
+        uniform.setUniform1ui(0);
+      else
+        this._contours.bindContourLUTWidth(uniform);
+    }
   }
 
   public bindLUT(uniform: UniformHandle): void {

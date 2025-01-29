@@ -6,7 +6,7 @@
  * @module UnifiedSelection
  */
 
-import { DisposableList, IDisposable } from "@itwin/core-bentley";
+import { DisposableList } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Keys, KeySet } from "@itwin/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
@@ -45,7 +45,7 @@ export interface SelectionHandlerProps {
  *
  * @public
  */
-export class SelectionHandler implements IDisposable {
+export class SelectionHandler implements Disposable {
   private _inSelect: boolean;
   private _disposables: DisposableList;
 
@@ -81,15 +81,20 @@ export class SelectionHandler implements IDisposable {
    * Destructor. Must be called before disposing this object to make sure it cleans
    * up correctly.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._disposables.dispose();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /**
    * Called when the selection changes. Handles this callback by first checking whether
    * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected onSelectionChanged = (evt: SelectionChangeEventArgs, provider: ISelectionProvider): void => {
     if (!this.onSelect || !this.shouldHandle(evt)) {
       return;
