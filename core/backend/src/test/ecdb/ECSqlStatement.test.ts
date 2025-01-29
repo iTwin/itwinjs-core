@@ -3127,7 +3127,7 @@ describe("ECSqlStatement", () => {
           <ECProperty propertyName="booleanProperty" typeName="boolean"/>
           <ECProperty propertyName="blobProperty" typeName="binary"/>
           <ECProperty propertyName="doubleProperty" typeName="double"/>
-          <ECProperty propertyName="customIdProperty" typeName="id"/>
+          <ECProperty propertyName="customIdProperty" typeName="string"/>
           <ECProperty propertyName="customIdSetProperty" typeName="string"/>
           <ECProperty propertyName="intProperty" typeName="int"/>
           <ECProperty propertyName="longProperty" typeName="long"/>
