@@ -2901,8 +2901,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
-    // @deprecated
-    readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
@@ -2915,8 +2913,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
     set scheduleScript(script: RenderSchedule.Script | undefined);
-    // @deprecated
-    get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
+    // (undocumented)
+    _scheduleScriptEvents: InternalScheduleScriptEvents;
+    // @internal
+    get scheduleScriptReference(): InternalScriptReference;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
     // @internal
     setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
