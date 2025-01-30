@@ -10,19 +10,27 @@ import textwrap
 import threading
 import time
 from typing import Union
+from pathlib import Path
 
 class Env:
     '''
     Class to determine where to find files.
     '''
 
-    # Constants
-    avd_name = 'api-33'
-    '''The name of the avd to use.'''
+    # Constants: Edit these to change the versions of the Android SDK, AVD, and Open JDK.
+    # Note: these are upack version strings.
+    avd_ver = '34.0.0-1'
+    '''The version of the avd to use.'''
+    sdk_ver = '34.0.0-0'
+    '''The version of the Android SDK to use.'''
+    jdk_ver = '21.0.1-0'
+    '''The version of the Open JDK to use.'''
     cmdline_tools_ver = '12.0'
     '''The version of the Android command line tools to use.'''
 
     # Calculated variables
+    avd_name: str
+    '''The name of the avd to use.'''
     bin_dir: str
     ''' The directory of the Android command line tools binaries. '''
     emulator_dir: str
@@ -51,6 +59,7 @@ class Env:
     ''' The full path to the env.json file used by display-test-app. '''
 
     def __init__(self):
+        self.avd_name = f'api-{self.avd_ver.split('.')[0]}'
         self.bin_dir = f'{self.sdk_dir}/cmdline-tools/{self.cmdline_tools_ver}/bin'
         self.emulator_dir = f'{self.sdk_dir}/emulator'
         self.adb = f'{self.sdk_dir}/platform-tools/adb'
@@ -108,12 +117,19 @@ class Emulator:
         self.__jdk_home = jdk_home
         self.__emulator_dir = emulator_dir
 
-    def fix_ini_path(self) -> None:
+    def fix_ini_paths(self) -> None:
         ini_path = f'{self.__avd_home}/{self.__avd_name}.ini'
         for line in fileinput.input(ini_path, inplace=True):
             newline = line
             if line.startswith('path='):
                 newline = f'path={self.__avd_home}/{self.__avd_name}.avd\n'
+            sys.stdout.write(newline)
+        config_path = f'{self.__avd_home}/{self.__avd_name}.avd/config.ini'
+        skin_path = f'{Path.home()}/Library/Android/sdk/skins/pixel_6'
+        for line in fileinput.input(config_path, inplace=True):
+            newline = line
+            if line.startswith('skin.path='):
+                newline = f'skin.path={skin_path}\n'
             sys.stdout.write(newline)
 
     def start(self) -> None:
@@ -176,7 +192,7 @@ def start_emulator() -> Emulator:
     '''
     emulator = Emulator(env.avd_name, env.avd_dir, env.jdk_dir, env.emulator_dir)
     log('Fixing path setting in emulator\'s ini file...')
-    emulator.fix_ini_path()
+    emulator.fix_ini_paths()
     log('Starting Android emulator...')
     emulator.start()
     shell_cmd = 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
@@ -329,20 +345,59 @@ def sdk_version_exists(dst_dir: str, version: str) -> bool:
     Check if the given version of the Android SDK is present in the given upack directory.
     '''
     parts = version.split('.')
-    if len(parts) < 2:
-        return False
+    if len(parts) != 3:
+        raise Exception(f'SDK Version must have 3 parts!')
     if parts[1] == '0':
         version = parts[0]
     else:
         version = f'{parts[0]}-ext{parts[1]}'
     return os.path.exists(f'{dst_dir}/platforms/android-{version}')
 
+def avd_version_exists(dst_dir: str, version: str) -> bool:
+    '''
+    Check if the given version of the Android AVD is present in the given upack directory.
+    '''
+    return os.path.exists(f'{dst_dir}/{env.avd_name}.avd')
+
+def jdk_version_exists(dst_dir: str, version: str) -> bool:
+    '''
+    Check if the given version of the Open JDK is present in the given upack directory.
+    '''
+    parts = version.split('.')
+    if len(parts) != 3:
+        raise Exception(f'JDK Version must have 3 parts!')
+    if '-' in parts[2]:
+        parts[2] = parts[2].split('-')[0]
+    on_jvm_version = False
+    with open(f'{dst_dir}/Info.plist') as file:
+        while line := file.readline():
+            if on_jvm_version:
+                return line.strip() == f'<string>{parts[0]}.{parts[1]}.{parts[2]}</string>'
+            else:
+                on_jvm_version = line.strip() == '<key>JVMVersion</key>'
+    raise Exception(f'Could not find OpenJDK version in Info.plist!')
+
+def upack_exists(name: str, version: str) -> bool:
+    '''
+    Check if the given upack is present.
+    '''
+    dst_dir = f'{env.upack_dir}/{name}'
+    if not os.path.exists(dst_dir):
+        return False
+    if name == 'androidavd_macos':
+        return avd_version_exists(dst_dir, version)
+    if name == 'androidsdk_macos':
+        return sdk_version_exists(dst_dir, version)
+    if name == 'openjdk_macos':
+        return jdk_version_exists(dst_dir, version)
+    raise Exception(f'Unknown upack name: {name}!')
+
 def download_upack_if_needed(name: str, version: str) -> None:
     '''
     Check if the given upack is present, and download it if not.
     '''
     dst_dir = f'{env.upack_dir}/{name}'
-    if os.path.exists(dst_dir) and (not name == 'androidsdk_macos' or sdk_version_exists(dst_dir, version)):
+    if upack_exists(name, version):
         log(f'upack {name} already present.')
     else:
         log(f'Downloading {name} upack...')
@@ -363,13 +418,13 @@ def download_upacks_if_needed() -> None:
     log('Downloading upacks if needed...')
     if not os.path.exists(env.upack_dir):
         os.mkdir(env.upack_dir)
-    download_upack_if_needed('androidavd_macos', '33.0.0-1')
-    download_upack_if_needed('androidsdk_macos', '34.0.0-0')
+    download_upack_if_needed('androidavd_macos', env.avd_ver)
+    download_upack_if_needed('androidsdk_macos', env.sdk_ver)
     # If jdk_dir includes a __MACOS subdirectory, it is openjdk 11, and we want 21, so delete the
     # existing jdk_dir.
     if os.path.exists(os.path.join(env.jdk_dir, '__MACOSX')):
         shutil.rmtree(env.jdk_dir)
-    download_upack_if_needed('openjdk_macos', '21.0.1-0')
+    download_upack_if_needed('openjdk_macos', env.jdk_ver)
     log('upacks downloaded.')
 
 def build_test_app() -> None:
