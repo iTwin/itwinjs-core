@@ -45,7 +45,7 @@ steps:
     git commit -m "Update gather-docs.yaml"
     git push --set-upstream https://$(GH_TOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName)
   displayName: 'Check gather-docs.yaml branch'
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'), ne(variables['Build.SourceBranchName'], 'master'))
   env:
     GITHUB_TOKEN: $(GH_TOKEN)
     CURRENT_BRANCH: $(Build.SourceBranch)
