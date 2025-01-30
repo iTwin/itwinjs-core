@@ -52,6 +52,6 @@ With the general evolution of schemas, there may come a time when a schema has b
 A write-incompatable schema can be loaded, but it can be neither imported into an iModel, nor can it be serialized to a file or string.
 
 Such a schema is likely to contain elements that are unknown to the current ECDb runtime being used.
-To know more about how these unknown elements are handled, refer to [Handling Unknown And Wrong Schema Elements For Newer Versions](./HandlingUnknownAndWrongSchemaElementsForNewerVersions.md)
+To know more about how these unknown elements are handled, refer to [Handling Unknown And Wrong Schema Elements For Newer Versions](./HandlingUnknownSchemaElementsForNewerVersions.md)
 
 To be able to perform read and write operations on a schema with a newer ECXml version, it us recommended to upgrade the ECDb runtime to a version that supports the ECXml version.
