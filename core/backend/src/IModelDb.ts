@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import { join } from "path";
 import * as touch from "touch";
-import { IModelJsNative, InstanceSerializationMethod } from "@bentley/imodeljs-native";
+import { IModelJsNative, InstanceSerializationMethod, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
@@ -17,11 +17,12 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode,
-  ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometry, ElementGeometryCacheOperationRequestProps,
+  ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGraphicsRequestProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamBuilder, GeometryStreamProps, IModel,
-  IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, mapNativeElementProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps,
+  IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
+  mapNativeElementProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
@@ -1881,7 +1882,7 @@ export namespace IModelDb {
       let nativeInstance: NativeInterfaceMap<T>;
       try {
         nativeInstance = this._iModel[_nativeDb].getInstance({ id: elementId, classId, serializationMethod: InstanceSerializationMethod.BeJsNapi, useJsNames: true, classIdsToClassNames: true, abbreviateBlobs: false }) as NativeInterfaceMap<T>;
-      } catch (err) {
+      } catch {
         return undefined;
       }
 
@@ -1894,7 +1895,7 @@ export namespace IModelDb {
 
       if (elementProps.classFullName === "BisCore:CategorySelector") {
         const categories = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
-           
+
           statement.bindId(1, elementId); // elementId can't be null here, but eslint recognizes it as an error.
 
           const ids: Id64Array = [];
@@ -1909,7 +1910,7 @@ export namespace IModelDb {
 
       if (elementProps.classFullName === "BisCore:ModelSelector") {
         const models = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
-           
+
           statement.bindId(1, elementId); // elementId can't be null here, but eslint recognizes it as an error.
 
           const ids: Id64Array = [];
