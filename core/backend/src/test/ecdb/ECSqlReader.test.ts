@@ -52,16 +52,16 @@ describe("ECSqlReader", (() => {
             <ECProperty propertyName="n" typeName="int"/>
           </ECEntityClass>
         </ECSchema>`);
-      assert.isTrue(ecdb.isOpen);
-      ecdb.saveChanges();
-      const params = new QueryBinder();
-      params.bindIdSet(1, ["0x32"]);
-      const optionBuilder = new QueryOptionsBuilder();
-      optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-      reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
-      const rows = await reader.toArray();
-      assert.equal(rows[0].id, "0x32");
-      assert.equal(rows.length, 1);
+        assert.isTrue(ecdb.isOpen);
+        ecdb.saveChanges();
+        const params = new QueryBinder();
+        params.bindIdSet(1, ["0x32"]);
+        const optionBuilder = new QueryOptionsBuilder();
+        optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
+        const rows = await reader.toArray();
+        assert.equal(rows[0].id, "0x32");
+        assert.equal(rows.length, 1);
     });
 
     it("bindIdSet not working with integer Ids", async () => {
