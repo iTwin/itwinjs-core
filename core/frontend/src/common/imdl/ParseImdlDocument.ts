@@ -31,7 +31,6 @@ import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
 import { getMeshoptDecoder, MeshoptDecoder } from "../../tile/internal";
-import { CreateRenderMaterialArgs } from "../../render/CreateRenderMaterialArgs";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -171,43 +170,45 @@ class Material extends RenderMaterial {
     return { isAtlas: false, material };
   }
 
-
-  public constructor(params: CreateRenderMaterialArgs, imdl?: Imdl.SurfaceMaterialParams) {
-    super({
-      ...params,
-      textureMapping: params.textureMapping ? new TextureMapping(params.textureMapping.texture, new TextureMapping.Params(params.textureMapping)) : undefined,
-    });
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public constructor(params: RenderMaterial.Params, imdl?: Imdl.SurfaceMaterialParams) {
+    super(params);
 
     this.materialParams = imdl ?? {
       alpha: params.alpha,
       diffuse: {
-        color: params.diffuse?.color instanceof ColorDef ? params.diffuse.color.toJSON() : RgbColor.fromJSON(params.diffuse?.color).toColorDef().toJSON(),
-        weight: params.diffuse?.weight,
+        color: params.diffuseColor?.toJSON(),
+        weight: params.diffuse,
       },
       specular: {
-        color: params.specular?.color instanceof ColorDef ? params.specular.color.toJSON() : RgbColor.fromJSON(params.specular?.color).toColorDef().toJSON(),
-        weight: params.specular?.weight,
-        exponent: params.specular?.exponent,
+        color: params.specularColor?.toJSON(),
+        weight: params.specular,
+        exponent: params.specularExponent,
       },
     };
   }
 
   public static create(args: MaterialParams): Material {
-
-    const params: CreateRenderMaterialArgs = {};
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
     if (args.diffuse) {
-      params.diffuse = {
-        color: args.diffuse.color instanceof ColorDef ? args.diffuse.color : RgbColor.fromJSON(args.diffuse.color).toColorDef(),
-        weight: args.diffuse.weight,
-      };
+      if (undefined !== args.diffuse.weight)
+        params.diffuse = args.diffuse?.weight;
+
+      if (args.diffuse?.color)
+        params.diffuseColor = args.diffuse.color instanceof ColorDef ? args.diffuse.color : RgbColor.fromJSON(args.diffuse.color).toColorDef();
     }
+
     if (args.specular) {
-      params.specular = {
-        color: args.specular.color instanceof ColorDef ? args.specular.color : RgbColor.fromJSON(args.specular.color).toColorDef(),
-        weight: args.specular.weight,
-        exponent: args.specular.exponent,
-      };
+      if (undefined !== args.specular.weight)
+        params.specular = args.specular.weight;
+
+      if (undefined !== args.specular.exponent)
+        params.specularExponent = args.specular.exponent;
+
+      if (args.specular.color)
+        params.specularColor = args.specular.color instanceof ColorDef ? args.specular.color : RgbColor.fromJSON(args.specular.color).toColorDef();
     }
 
     return new Material(params);
@@ -1155,33 +1156,34 @@ class Parser {
     if (!materialJson)
       return undefined;
 
-
-    const materialArgs: CreateRenderMaterialArgs = { };
-    materialArgs.diffuse = {color: this.colorDefFromMaterialJson(materialJson.diffuseColor)};
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const materialParams = new RenderMaterial.Params(key);
+    materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
     if (materialJson.diffuse !== undefined)
-      materialArgs.diffuse.weight = JsonUtils.asDouble(materialJson.diffuse);
+      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
 
-    materialArgs.specular = {color: this.colorDefFromMaterialJson(materialJson.specularColor)};
+    materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
     if (materialJson.specular !== undefined)
-      materialArgs.specular.weight = JsonUtils.asDouble(materialJson.specular);
+      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
+
+    materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
+    if (materialJson.reflect !== undefined)
+      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+
     if (materialJson.specularExponent !== undefined)
-      materialArgs.specular.exponent = materialJson.specularExponent;
+      materialParams.specularExponent = materialJson.specularExponent;
 
-    // TODO: There seems to be no more reflect, shadows, ambient in CreateRenderMaterialArgs
-    // materialArgs. = this.colorDefFromMaterialJson(materialJson.reflectColor);
-    // if (materialJson.reflect !== undefined)
-    //   materialArgs.reflect = JsonUtils.asDouble(materialJson.reflect);
-    // materialParams.refract = JsonUtils.asDouble(materialJson.refract);
-    // materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
-    // materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
+    if (undefined !== materialJson.transparency)
+      materialParams.alpha = 1.0 - materialJson.transparency;
 
-    if (materialJson.transparency !== undefined)
-      materialArgs.alpha = 1.0 - materialJson.transparency;
+    materialParams.refract = JsonUtils.asDouble(materialJson.refract);
+    materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
+    materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
 
-    if (materialJson.textureMapping !== undefined)
-      materialArgs.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+    if (undefined !== materialJson.textureMapping)
+      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
-    return new Material(materialArgs);
+    return new Material(materialParams);
   }
 
   private parseNamedTexture(namedTex: ImdlNamedTexture, name: string): RenderTexture | undefined {
