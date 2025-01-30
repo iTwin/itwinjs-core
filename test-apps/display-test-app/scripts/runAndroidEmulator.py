@@ -59,7 +59,8 @@ class Env:
     ''' The full path to the env.json file used by display-test-app. '''
 
     def __init__(self):
-        self.avd_name = f'api-{self.avd_ver.split('.')[0]}'
+        avd_ver_0 = self.avd_ver.split('.')[0]
+        self.avd_name = f'api-{avd_ver_0}'
         self.bin_dir = f'{self.sdk_dir}/cmdline-tools/{self.cmdline_tools_ver}/bin'
         self.emulator_dir = f'{self.sdk_dir}/emulator'
         self.adb = f'{self.sdk_dir}/platform-tools/adb'
