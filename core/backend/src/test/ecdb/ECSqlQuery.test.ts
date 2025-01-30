@@ -365,6 +365,7 @@ describe("ECSql Query", () => {
     /* eslint-enable @typescript-eslint/naming-convention  */
     const builder = new QueryOptionsBuilder();
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     builder.setConvertClassIdsToNames(true);
     // With ECDb Profile 4002
     for (const testQuery of testQueries) {
@@ -595,7 +596,7 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.backendCpuTime > 0);
   });
   it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
-    const ids: string[] = ["0x1","ABC","YZ"];
+    const ids: string[] = ["0x1", "ABC", "YZ"];
 
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
@@ -611,11 +612,11 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.backendCpuTime > 0);
   });
   it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
-    const ids: string[] = ["ABC", "0x1","YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
+    const ids: string[] = ["ABC", "0x1", "YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
 
-    try{
+    try {
       imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
-    }catch(err: any){
+    } catch (err: any) {
       assert.equal(err.message, "unsupported type");
     }
   });

@@ -1881,13 +1881,13 @@ describe("ECSqlStatement", () => {
       });
 
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
-        let idSet: Id64String[] = [];
-        stmt.bindIdSet(1, idSet);
-        let result = stmt.step();
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt1: ECSqlStatement) => {
+        const idSet: Id64String[] = [];
+        stmt1.bindIdSet(1, idSet);
+        const result = stmt1.step();
         assert.equal(result, DbResult.BE_SQLITE_DONE);
-        stmt.reset();
-        stmt.clearBindings();
+        stmt1.reset();
+        stmt1.clearBindings();
       });
     });
 
