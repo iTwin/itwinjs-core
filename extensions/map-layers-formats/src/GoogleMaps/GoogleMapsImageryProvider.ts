@@ -17,12 +17,26 @@ const urlTemplate = `https://tile.googleapis.com/v1/2dtiles/${levelToken}/${colu
 export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
   private _decorator: GoogleMapsDecorator;
+  private _hadUnrecoverableError = false;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._decorator = new GoogleMapsDecorator();
   }
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
+  }
+
+  protected async createSession() : Promise<boolean> {
+    const sessionOptions = this.createCreateSessionOptions();
+    if (this._settings.accessKey ) {
+      // Create session and store in query parameters
+      const sessionObj = await GoogleMaps.createSession(this._settings.accessKey.value, sessionOptions);
+      this._settings.unsavedQueryParams = {session: sessionObj.session};
+      return true;
+    } else {
+      Logger.logError(loggerCategory, `Missing GoogleMaps api key/`);
+      return false;
+    }
   }
 
   public override async initialize(): Promise<void> {
@@ -37,13 +51,11 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
 
-    const sessionOptions = this.createCreateSessionOptions();
-    if (this._settings.accessKey ) {
-      // Create session and store in query parameters
-      const sessionObj = await GoogleMaps.createSession(this._settings.accessKey.value, sessionOptions);
-      this._settings.unsavedQueryParams = {session: sessionObj.session};
-    } else {
-      Logger.logError(loggerCategory, `Missing GoogleMaps api key/`);
+    const isSessionCreated = await this.createSession();
+    if (!isSessionCreated) {
+      const msg = `Failed to create session`;
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
     }
 
     const isActivated = await this._decorator.activate(this._settings.properties!.mapType as MapTypesType);
@@ -113,8 +125,55 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     return attributions;
   }
 
+  private async logJsonError(tileResponse: Response) {
+    try {
+      const error = await tileResponse.json();
+      Logger.logError(loggerCategory, `Error while loading tile: ${error?.message}`);
+    } catch {
+      Logger.logError(loggerCategory, `Error while loading tile: ${tileResponse.statusText}`);
+    }
+  }
+
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    return super.loadTile(row, column, zoomLevel);
+    if (this._hadUnrecoverableError)
+      return undefined;
+
+    try {
+      let tileUrl: string = await this.constructUrl(row, column, zoomLevel);
+      let tileResponse: Response = await this.makeTileRequest(tileUrl);
+      if (!tileResponse.ok) {
+        if (tileResponse.headers.get("content-type")?.includes("application/json")) {
+          // Session might have expired, lets try to re-new it.
+          const isSessionCreated = await this.createSession();
+          if (isSessionCreated) {
+            tileUrl = await this.constructUrl(row, column, zoomLevel);
+            tileResponse = await this.makeTileRequest(tileUrl);
+            if (!tileResponse.ok) {
+              if (tileResponse.headers.get("content-type")?.includes("application/json")) {
+                await this.logJsonError(tileResponse);
+              } else {
+                Logger.logError(loggerCategory, `Error while loading tile: ${tileResponse.statusText}`);
+              }
+              this._hadUnrecoverableError = true;   // Prevent from doing more invalid requests
+              return undefined;
+            }
+          } else {
+            await this.logJsonError(tileResponse);
+          }
+        } else {
+          Logger.logError(loggerCategory, `Error while loading tile: ${tileResponse.statusText}`);
+          return undefined;
+        }
+      }
+      return await this.getImageFromTileResponse(tileResponse, zoomLevel);
+    } catch (error: any) {
+      if (error?.code === 401) {
+        Logger.logError(loggerCategory, `Authorize to load tile: ${error.message}`);
+      } else {
+        Logger.logError(loggerCategory, `Error while loading tile: ${error.message}`);
+      }
+      return undefined;
+    }
   }
 
   public override decorate(context: DecorateContext): void {

@@ -375,7 +375,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // Clone members not part of MapLayerProps
     clone.userName = this.userName;
     clone.password = this.password;
-    clone.accessKey = this.accessKey;
     if (this.unsavedQueryParams)
       clone.unsavedQueryParams = {...this.unsavedQueryParams};
     if (this.savedQueryParams)
