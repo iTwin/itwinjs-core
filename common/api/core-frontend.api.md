@@ -315,7 +315,6 @@ import { TextureTransparency } from '@itwin/core-common';
 import { ThematicDisplay } from '@itwin/core-common';
 import { ThematicDisplaySensor } from '@itwin/core-common';
 import { ThematicDisplaySensorSettings } from '@itwin/core-common';
-import { ThumbnailProps } from '@itwin/core-common';
 import { TileProps } from '@itwin/core-common';
 import { TileReadStatus } from '@itwin/core-common';
 import { TileVersionInfo } from '@itwin/core-common';
@@ -5668,8 +5667,6 @@ export namespace IModelConnection {
         // @internal
         constructor(_iModel: IModelConnection);
         convertViewStatePropsToViewState(viewProps: ViewStateProps): Promise<ViewState>;
-        // @deprecated
-        getThumbnail(_viewId: Id64String): Promise<ThumbnailProps>;
         getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]>;
         load(viewDefinitionId: ViewIdString): Promise<ViewState>;
         // @deprecated
