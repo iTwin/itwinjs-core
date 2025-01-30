@@ -13,7 +13,7 @@ import {
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe.only("IModel Schema Context", () => {
+describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;
 
   before(() => {
