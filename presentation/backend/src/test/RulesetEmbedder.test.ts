@@ -512,8 +512,10 @@ describe("RulesetEmbedder", () => {
   describe("getRulesets", () => {
     function setupMocksForQueryingAllRulesets(rulesets: Array<{ ruleset: Ruleset; elementId: Id64String }>) {
       imodelMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup((x) => x.withPreparedStatement(moq.It.isAny(), moq.It.isAny()))
         .callback((_ecsql, callbackFun) => {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const statementMock = moq.Mock.ofType<ECSqlStatement>();
           rulesets.forEach((entry) => {
             statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);

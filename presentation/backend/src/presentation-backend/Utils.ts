@@ -41,6 +41,7 @@ export function getLocalizedStringEN(key: string) {
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
   let key: InstanceKey | undefined;
   const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(query, (stmt) => {
     try {
       stmt.bindId(1, id);

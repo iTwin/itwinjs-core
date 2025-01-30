@@ -243,6 +243,7 @@ export class RulesetEmbedder {
     }
 
     const rulesetList: Ruleset[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();

@@ -110,6 +110,7 @@ export class SelectionScopesHelper {
         INNER JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
        WHERE e.ECInstanceId = ?
       `;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return imodel.withPreparedStatement(query, (stmt): InstanceKey | undefined => {
       stmt.bindId(1, graphicalElementId);
       // istanbul ignore else
@@ -144,6 +145,7 @@ export class SelectionScopesHelper {
       INNER JOIN meta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
       WHERE e.ECInstanceId = ? AND (baseSchema.Name || ':' || baseClass.Name) = ?
       `;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return imodel.withPreparedStatement(query, (stmt): boolean => {
       stmt.bindId(1, elementId);
       stmt.bindString(2, baseClassFullName);

@@ -138,6 +138,7 @@ function loadProperties(db: IModelDb, className: string, ids: string[], loadAspe
     FROM ${className}
     WHERE ECInstanceId IN (${ids.map((_v, idx) => `:id${idx}`).join(",")})`;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   return db.withPreparedStatement(query, (stmt) => {
     const properties: any[] = [];
     stmt.bindValues(ids);
@@ -272,6 +273,7 @@ function queryExternalSourceGroupRepositories(db: IModelDb, elementId: string) {
 }
 
 function queryRelatedClasses(db: IModelDb, query: string, bindings: object) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   return db.withPreparedStatement(query, (stmt) => {
     stmt.bindValues(bindings);
     const relatedClasses = new Map<string, string[]>();

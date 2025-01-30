@@ -19,8 +19,10 @@ describe("getElementsCount", () => {
 
   it("returns 0 when statement has no rows", () => {
     imodelMock
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .returns((_q, cb) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
         statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         return cb(statementMock.object);
@@ -31,10 +33,13 @@ describe("getElementsCount", () => {
   it("returns count when statement has row", () => {
     const elementCount = 3;
     imodelMock
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .returns((_q, cb) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const valueMock = moq.Mock.ofType<ECSqlValue>();
         valueMock.setup((x) => x.getInteger()).returns(() => elementCount);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const statementMock = moq.Mock.ofType<ECSqlStatement>();
         statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
         statementMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
@@ -46,6 +51,7 @@ describe("getElementsCount", () => {
   it("adds WHERE clause when class list is defined and not empty", () => {
     imodelMock
       .setup((x) =>
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         x.withPreparedStatement(
           moq.It.is((query) => query.includes("WHERE")),
           moq.It.isAny(),

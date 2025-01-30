@@ -300,6 +300,7 @@ export function getElementsCount(db: IModelDb, classNames: string[]) {
     FROM bis.Element e
     ${whereClause ? `WHERE ${whereClause}` : ""}
   `;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
     return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
   });

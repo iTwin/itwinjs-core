@@ -12,13 +12,16 @@ import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normali
 
 describe("getElementKey", () => {
   const imodel = moq.Mock.ofType<IModelDb>();
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const stmt = moq.Mock.ofType<ECSqlStatement>();
 
   beforeEach(() => {
     stmt.reset();
     imodel.reset();
     imodel
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .callback((_query: string, cb: (stmt: ECSqlStatement) => void) => {
         cb(stmt.object);
       });
@@ -26,7 +29,8 @@ describe("getElementKey", () => {
 
   it("returns valid key for existing id", () => {
     const id = createRandomId();
-
+    
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const sqlQueryResult = moq.Mock.ofType<ECSqlValue>();
     sqlQueryResult.setup((x) => x.getClassNameForClassId()).returns(() => "schema.class");
 
