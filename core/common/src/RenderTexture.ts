@@ -18,7 +18,7 @@ export type TextureImageSpec = Id64String | string;
 
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
- * @see [RenderSystem.createTextureFromImage]($frontend) to obtain a texture from an HTML image.
+ * @see [RenderSystem.createTexture]($frontend) to obtain a texture.
  * @see [RenderSystem.createTextureFromElement]($frontend) to obtain a texture from a [Texture]($backend) element.
  * @public
  */
