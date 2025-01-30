@@ -5,7 +5,7 @@
 
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
+import { queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
 import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider";
 
@@ -83,7 +83,7 @@ export interface QueryMeshExportsArgs {
  * @beta
  */
 export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
-  const graphicsArgs = {
+  const graphicsArgs: QueryGraphicRepresentationsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
@@ -92,7 +92,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: "IMDL",
+    format: "IMODEL",
     urlPrefix: args.urlPrefix,
     includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
