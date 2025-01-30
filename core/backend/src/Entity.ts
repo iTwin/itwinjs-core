@@ -114,11 +114,9 @@ export class Entity {
    * @throws [[IModelError]] if there is a problem querying the schema
    * @returns The metadata for the current entity
    */
-  public getMetaData(): EntityClass {
+  public async getMetaData(): Promise<EntityClass> {
     if (!this._metadata) {
-      const metadata = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, EntityClass);
-      metadata?.toJSON();
-      //this._metadata = metadata! as EntityClass;
+      this._metadata = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
     }
 
     if(!this._metadata) {

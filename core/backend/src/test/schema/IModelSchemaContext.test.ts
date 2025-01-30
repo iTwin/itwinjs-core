@@ -32,11 +32,8 @@ describe("IModel Schema Context", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
-      const ecClass = el.getMetaData();
+      const ecClass = await el.getMetaData();
       assert.exists(ecClass);
-      if (undefined === ecClass)
-        return;
-
       assert.equal(ecClass.schema.name, el.schemaName);
       assert.equal(ecClass.name, el.className);
 
@@ -67,7 +64,7 @@ describe("IModel Schema Context", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
-      const metaData = el2.getMetaData();
+      const metaData = await el2.getMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
         return;
