@@ -1867,7 +1867,7 @@ describe("ECSqlStatement", () => {
         });
       });
 
-      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
         let idSet: Id64String[] = [];
         stmt.bindIdSet(1, idSet);
         let result = stmt.step();
@@ -1926,7 +1926,7 @@ describe("ECSqlStatement", () => {
         });
       });
 
-      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
         let idSet: Id64String[] = [];
         stmt.bindIdSet(1, idSet);
         let result = stmt.step();
