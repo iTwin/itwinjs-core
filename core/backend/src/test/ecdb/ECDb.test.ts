@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DbResult, Id64, Id64String, Logger, using } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -87,6 +87,7 @@ describe("ECDb", () => {
     ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
     assert.isTrue(ecdb.isOpen);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, id);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -203,6 +204,7 @@ describe("ECDb", () => {
 
     const expectedLabels = [undefined, "m", "", "mm"];
     let index = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
       for (let i: number = 1; i <= 4; i++) {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -231,6 +233,7 @@ describe("ECDb", () => {
 
     const expectedLabelsUpdated = ["", "m", undefined, "mm"];
     index = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
       for (let i: number = 1; i <= 4; i++) {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);

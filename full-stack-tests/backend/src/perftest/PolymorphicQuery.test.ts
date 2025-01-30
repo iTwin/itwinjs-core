@@ -46,6 +46,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -227,6 +228,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         try {
           let sql = "SELECT * from ";
           sql = `${sql}tps.Child${i.toString()}`;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
               const row = stmt.getRow();
@@ -260,6 +262,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         if (i === 0)
           sql = `${sql}ONLY `;
         sql = `${sql}tps.TestElement`;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             const row = stmt.getRow();

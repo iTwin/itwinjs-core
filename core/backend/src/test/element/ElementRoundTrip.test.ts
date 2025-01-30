@@ -580,6 +580,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
@@ -587,6 +588,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // Verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("select ECInstanceId, ECClassId, Model from ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElement, expectedSystemProperty);
@@ -626,6 +628,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
@@ -633,6 +636,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // Verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("select ECInstanceId, ECClassId, Model from ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElement, expectedSystemProperty);
@@ -665,6 +669,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // Verify via an ECSql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await iModel.withPreparedStatement("SELECT * FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementAspect;
@@ -690,6 +695,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.isFalse(await reader.step());
 
     // Verify via an ECSql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId, Element FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElementAspect, expectedSystemProperty);
@@ -796,6 +802,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
@@ -826,6 +833,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.isFalse(await reader.step());
 
     // verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElementRefersToElements, expectedSystemProperties);
@@ -857,6 +865,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
@@ -875,6 +884,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.isFalse(await reader.step());
 
     // verify system properties via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       verifySystemProperty(stmt.getRow() as TestElementRefersToElements, expectedSystemProperties);

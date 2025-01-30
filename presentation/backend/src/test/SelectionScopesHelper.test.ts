@@ -38,14 +38,17 @@ describe("SelectionScopesHelper", () => {
       // this mock simulates the element key query returning a single row with results for the given key (`getElementKey` in Utils.ts)
       imodelMock
         .setup((x) =>
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           x.withPreparedStatement(
             moq.It.is((q) => typeof q === "string" && q.includes("SELECT ECClassId FROM")),
             moq.It.isAny(),
           ),
         )
         .callback((_q, cb) => {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const valueMock = moq.Mock.ofType<ECSqlValue>();
           valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const stmtMock = moq.Mock.ofType<ECSqlStatement>();
           stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
           stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
@@ -57,12 +60,14 @@ describe("SelectionScopesHelper", () => {
       // this mock simulates trying to bind an invalid id to the element key query (`getElementKey` in Utils.ts)
       imodelMock
         .setup((x) =>
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           x.withPreparedStatement(
             moq.It.is((q) => typeof q === "string" && q.includes("SELECT ECClassId FROM")),
             moq.It.isAny(),
           ),
         )
         .callback((_q, cb) => {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const stmtMock = moq.Mock.ofType<ECSqlStatement>();
           stmtMock.setup((x) => x.bindId(moq.It.isAnyNumber(), moq.It.isAny())).throws(new IModelError(DbResult.BE_SQLITE_ERROR, "Error binding Id"));
           stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ERROR);
@@ -73,8 +78,10 @@ describe("SelectionScopesHelper", () => {
     const setupIModelForNoResultStatement = () => {
       // this mock simulates any kind of query returning no results
       imodelMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
         .callback((_q, cb) => {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const stmtMock = moq.Mock.ofType<ECSqlStatement>();
           stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
           cb(stmtMock.object);
@@ -120,12 +127,14 @@ describe("SelectionScopesHelper", () => {
       const functionalKeyQueryIdentifier = "SELECT funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId";
       imodelMock
         .setup((x) =>
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           x.withPreparedStatement(
             moq.It.is((q) => typeof q === "string" && q.includes(functionalKeyQueryIdentifier)),
             moq.It.isAny(),
           ),
         )
         .returns((_q, cb) => {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const stmtMock = moq.Mock.ofType<ECSqlStatement>();
           stmtMock.setup((x) => x.step()).returns(() => props.stepResult ?? DbResult.BE_SQLITE_ROW);
           stmtMock
@@ -149,12 +158,14 @@ describe("SelectionScopesHelper", () => {
       const classDerivesFromQueryIdentifier = "SELECT 1";
       imodelMock
         .setup((x) =>
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           x.withPreparedStatement(
             moq.It.is((q) => typeof q === "string" && q.includes(classDerivesFromQueryIdentifier)),
             moq.It.isAny(),
           ),
         )
         .returns((_q, cb) => {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const stmtMock = moq.Mock.ofType<ECSqlStatement>();
           stmtMock.setup((x) => x.step()).returns(() => (doesDeriveFromSuppliedClass ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE));
           return cb(stmtMock.object);

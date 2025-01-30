@@ -220,8 +220,10 @@ export class QueryOptionsBuilder {
    * If set ECClassId, SourceECClassId and TargetECClassId system properties will return qualified name of class instead of a @typedef Id64String.
    * @param val A boolean value.
    * @returns @type QueryOptionsBuilder for fluent interface.
+   * @deprecated in 4.10 Use ecsql function ec_classname to get class name instead.
    */
   public setConvertClassIdsToNames(val: boolean) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._options.convertClassIdsToClassNames = val;
     return this;
   }

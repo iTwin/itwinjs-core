@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -415,8 +415,10 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
    *
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getValue(columnIx: number): ECSqlValue {
     assert(undefined !== this._stmt);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new ECSqlValue(this._stmt.getValue(columnIx));
   }
 }
@@ -440,15 +442,18 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
  * @public
  */
-export class ECSqlWriteStatement implements IDisposable {
+export class ECSqlWriteStatement {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _stmt: ECSqlStatement;
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(stmt?: ECSqlStatement) {
     if (stmt)
       this._stmt = stmt;
-    else
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._stmt = new ECSqlStatement();
+    }
   }
 
   public get sql() { return this._stmt.sql; }
@@ -460,6 +465,7 @@ export class ECSqlWriteStatement implements IDisposable {
    * @param
    * @internal
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get stmt(): ECSqlStatement { return this._stmt; }
 
   /** Prepare this statement prior to first use.
@@ -495,23 +501,6 @@ export class ECSqlWriteStatement implements IDisposable {
    */
   public getNativeSql(): string {
     return this._stmt.getNativeSql();
-  }
-
-  /** Call this function when finished with this statement. This releases the native resources held by the statement.
-   *
-   * > Do not call this method directly on a statement that is being managed by a statement cache.
-   */
-  public [Symbol.dispose](): void {
-    if (this._stmt) {
-      this._stmt.dispose(); // free native statement;
-    }
-  }
-  /** Call this function when finished with this statement. This releases the native resources held by the statement.
-   *
-   * > Do not call this method directly on a statement that is being managed by a statement cache.
-   */
-  public dispose(): void {
-    this._stmt.dispose(); // free native statement
   }
 
   /** Binds the specified value to the specified ECSQL parameter.
@@ -867,6 +856,7 @@ export class ECSqlValue {
   public constructor(val: IModelJsNative.ECSqlValue) { this._val = val; }
 
   /** Get information about the query result's column this value refers to. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
 
   /** Get the value of this ECSQL value */
@@ -913,18 +903,21 @@ export class ECSqlValue {
    *  @return ECEnumeration value(s) or undefined if the ECSqlValue does not represent an ECEnumeration.
    *  or is not a strict match of an ECEnumerator or a combination of them.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getEnum(): ECEnumValue[] | undefined { return this._val.getEnum(); }
 
   /** Get the value as [NavigationValue]($common) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }
 
   /** Get an iterator for iterating the struct members of this struct value. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getStructIterator(): ECSqlValueIterator { return new ECSqlValueIterator(this._val.getStructIterator()); }
 
   /** Get this struct value's content as object literal */
   public getStruct(): any { return ECSqlValueHelper.getStruct(this); }
 
   /** Get an iterator for iterating the array elements of this array value. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getArrayIterator(): ECSqlValueIterator { return new ECSqlValueIterator(this._val.getArrayIterator()); }
 
   /** Get this array value as JavaScript array */
@@ -942,13 +935,15 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   /** @internal */
   public constructor(it: IModelJsNative.ECSqlValueIterator) { this._it = it; }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public next(): IteratorResult<ECSqlValue> {
-    if (this._it.moveNext())
+    if (this._it.moveNext()) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
-
+    }
     return { done: true, value: undefined };
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public [Symbol.iterator](): IterableIterator<ECSqlValue> { return this; }
 }
 
