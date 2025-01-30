@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { Frustum, ImageBuffer } from "@itwin/core-common";
-import { Point2d, XAndY } from "@itwin/core-geometry";
+import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
@@ -75,7 +75,7 @@ export interface RenderTargetDebugControl {
  * Application code never interacts directly with a `RenderTarget` - it interacts with the `Viewport`'s API which forwards requests to the `RenderTarget`.
  * @public
  */
-export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderTarget implements Disposable, RenderMemory.Consumer {
   /** @internal */
   protected abstract readonly [_implementationProhibited]: unknown;
 
@@ -139,7 +139,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   }
 
   /** @internal */
-  public dispose(): void { }
+  public [Symbol.dispose](): void { }
   /** @internal */
   public reset(): void { }
   /** @internal */
@@ -169,10 +169,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
-  /** @deprecated in 3.x. use readImageBuffer
-   * @internal
-   */
-  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   /** @internal */
