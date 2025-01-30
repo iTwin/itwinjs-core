@@ -56,7 +56,7 @@ export class Contours implements WebGLDisposable {
   private _initialize(map: RenderFeatureTable) {
     assert(0 < map.numFeatures);
     this._numFeatures = map.numFeatures;
-    const dims = computeDimensions(this._numFeatures, 1/8, 0, System.instance.maxTextureSize);
+    const dims = computeDimensions(this._numFeatures, 1 / 8, 0, System.instance.maxTextureSize);
     const width = dims.width;
     const height = dims.height;
     assert(width * height * 8 >= this._numFeatures);
@@ -96,7 +96,7 @@ export class Contours implements WebGLDisposable {
     let byteOut = 0;
     let dataIndex = 0;
     for (const feature of map.iterable(scratchPackedFeature)) {
-      dataIndex = Math.floor (feature.index * 0.5);
+      dataIndex = Math.floor(feature.index * 0.5);
       even = (feature.index & 1) === 0;
       const terrainNdx = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper) ?? defaultNdx;
       if (even)
@@ -120,7 +120,7 @@ export class Contours implements WebGLDisposable {
 
   public get isDisposed(): boolean { return undefined === this._lut; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._lut = dispose(this._lut);
     return undefined;
   }

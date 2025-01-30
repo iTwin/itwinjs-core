@@ -54,9 +54,8 @@ describe("Viewport", () => {
       function test(ctor: (typeof ScreenVp | typeof OffScreenVp)): void {
         const iModel = createBlankConnection();
         const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
-        const vp = ctor.createVp(view);
+        using vp = ctor.createVp(view);
         expect(vp.initialized).toBe(true);
-        vp.dispose();
       }
 
       test(ScreenVp);
@@ -205,7 +204,7 @@ describe("Viewport", () => {
       viewport.view.displayStyle = new DisplayStyle3dState({} as any, viewport.iModel);
       expectBackgroundMap(false);
       expectTerrain(false);
-      viewport.dispose();
+      viewport[Symbol.dispose]();
     });
 
     it("updates when display style is assigned to", () => {
@@ -355,35 +354,6 @@ describe("Viewport", () => {
         cyan, purple, yellow,
       ],
     };
-
-    describe("readImage", () => {
-      it("reads image upside down by default (BUG)", () => {
-        test(rgbw2, (viewport) => {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const image = viewport.readImage()!;
-          expect(image).toBeDefined();
-          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
-        });
-      });
-
-      it("flips image vertically if specified", () => {
-        test(rgbw2, (viewport) => {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const image = viewport.readImage(undefined, undefined, true)!;
-          expect(image).toBeDefined();
-          expectColors(image, rgbw2.image);
-        });
-      });
-
-      it("inverts view rect y (BUG)", () => {
-        test(rgbwp1, (viewport) => {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
-          expect(image).toBeDefined();
-          expectColors(image, [ColorDef.blue, ColorDef.white]);
-        });
-      });
-    });
 
     describe("readImageBuffer", () => {
       it("reads image right-side up by default", () => {
@@ -566,13 +536,13 @@ describe("Viewport", () => {
 
         // BlankViewport.dispose also closes the iModel and removes the viewport's div from the DOM.
         // We don't want that until the test completes.
-        const dispose = vp.dispose; // eslint-disable-line @typescript-eslint/unbound-method
-        vp.dispose = ScreenViewport.prototype.dispose; // eslint-disable-line @typescript-eslint/unbound-method
-        vp.dispose();
+        const dispose = vp[Symbol.dispose];
+        vp[Symbol.dispose] = ScreenViewport.prototype[Symbol.dispose];
+        vp[Symbol.dispose]();
 
         vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).toBeUndefined());
 
-        vp.dispose = dispose;
+        vp[Symbol.dispose] = dispose;
       });
     });
 
@@ -711,7 +681,7 @@ describe("Viewport", () => {
         const stub = vi.spyOn(Viewport.prototype, "mapLayerFromIds").mockImplementation(function (_mapTreeId: Id64String, _layerTreeId: Id64String) {
           return [];
         });
-        const fakePixelData = {modelId: "123", elementId: "456"};
+        const fakePixelData = { modelId: "123", elementId: "456" };
         expect(vp.isPixelSelectable(fakePixelData as any)).toBe(true);
         stub.mockRestore();
       });

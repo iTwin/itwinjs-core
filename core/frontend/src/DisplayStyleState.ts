@@ -59,6 +59,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @deprecated in 3.x. use [[onScheduleScriptChanged]].
    */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
@@ -255,17 +256,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityModel((model) => {
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    for (const model of this.realityModels) {
       if (!model.invisible) {
-        func(model.treeRef);
+        yield model.treeRef;
       }
-    });
-  }
-
-  /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityTileTreeRef(func);
+    }
   }
 
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.

@@ -14,12 +14,9 @@ export const ITWINJS_CORE_VERSION = packageJson.version as string;
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import {
-  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
-} from "@itwin/core-common";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { TelemetryManager } from "@itwin/core-telemetry";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -126,11 +123,13 @@ export interface IModelAppOptions {
    *  @internal
    */
   noRender?: boolean;
-  /**
+
+   /**
    * @deprecated in 3.7. Specify desired RPC interfaces in the platform-specific RPC manager call instead.
    * See [[MobileRpcManager.initializeClient]], [[ElectronRpcManager.initializeFrontend]], [[BentleyCloudRpcManager.initializeClient]].
    */
-  rpcInterfaces?: RpcInterfaceDefinition[];
+   rpcInterfaces?: RpcInterfaceDefinition[];
+
   /** @beta */
   realityDataAccess?: RealityDataAccess;
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
@@ -293,11 +292,6 @@ export class IModelApp {
    * The path should always end with a trailing `/`.
    */
   public static get publicPath() { return this._publicPath; }
-
-  /** The [[TelemetryManager]] for this session
-   * @internal
-   */
-  public static readonly telemetry: TelemetryManager = new TelemetryManager();
 
   /** @alpha */
   public static readonly extensionAdmin = this._createExtensionAdmin();

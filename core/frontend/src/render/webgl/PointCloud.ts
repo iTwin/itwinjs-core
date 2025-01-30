@@ -41,7 +41,7 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
   public override get supportsThematicDisplay() { return true; }
   public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (!this.noDispose) {
       dispose(this.buffers);
       dispose(this._vertices);

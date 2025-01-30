@@ -163,7 +163,7 @@ class Bundle implements WebGLDisposable {
       && this.evsmGeom.isDisposed;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this.depthTexture);
     dispose(this.shadowMapTexture);
     dispose(this.fbo);
@@ -266,14 +266,14 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
   public get isDisposed(): boolean { return undefined === this._bundle && 0 === this._graphics.length; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._bundle = dispose(this._bundle);
     this.clearGraphics(true);
   }
 
   private clearGraphics(notify: boolean) {
     for (const graphic of this._graphics)
-      graphic.dispose();
+      graphic[Symbol.dispose]();
 
     this._graphics.length = 0;
     if (notify)
@@ -324,7 +324,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     // Limit the map to only displayed models.
     const viewTileRange = Range3d.createNull();
-    view.forEachTileTreeRef((ref) => {
+    for (const ref of view.getTileTreeRefs()) {
       if (ref.castsShadows) {
         if (ref.isGlobal) {
           // A shadow-casting tile tree that spans the globe. Limit its range to the viewed extents.
@@ -339,7 +339,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
           ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
         }
       }
-    });
+    }
 
     if (!viewTileRange.isNull)
       viewTileRange.clone(shadowRange);
@@ -374,7 +374,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     const tileRange = Range3d.createNull();
     scratchFrustumPlanes.init(this._shadowFrustum);
-    view.forEachTileTreeRef(((ref) => {
+    for (const ref of view.getTileTreeRefs()) {
       if (!ref.castsShadows)
         return;
 
@@ -388,7 +388,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
       drawArgs.tree.draw(drawArgs);
-    }));
+    }
 
     if (tileRange.isNull) {
       this.clearGraphics(true);
