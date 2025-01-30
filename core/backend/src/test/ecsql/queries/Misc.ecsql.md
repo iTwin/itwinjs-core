@@ -1027,6 +1027,22 @@ WHERE
 | ------- | ---------- | ---- | ---------- | ------ | --------- | ---- |
 | gravity | 3.721 m/s² | text | 3.721 m/s² | 0      | $.gravity | $    |
 
+# Testing json_tree with empty schema name
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT
+  *
+FROM
+  .json_tree(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
 # Testing json_each without schema name
 
 - dataset: AllProperties.bim
@@ -1084,6 +1100,22 @@ WHERE
 | key     | value      | type | atom       | fullkey   | path |
 | ------- | ---------- | ---- | ---------- | --------- | ---- |
 | gravity | 3.721 m/s² | text | 3.721 m/s² | $.gravity | $    |
+
+# Testing json_each with schema name as space
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT
+  *
+FROM
+    .json_each(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
 
 # Select ECDb schemas from ECDbMeta without schema name
 

@@ -710,3 +710,43 @@ SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENAB
 ```sql
 SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId
 ```
+
+# Testing Abstract syntax with IdSet with space as schema name
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM  .IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+# Testing Abstract syntax with IdSet with empty schema name
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM .IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+# Testing Abstract syntax with IdSet with no arg list
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM IdSet OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+# Testing Abstract syntax with IdSet with schema name but with no arg list
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM ECVLib.IdSet OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
