@@ -33,6 +33,13 @@ function checkFile(filePath, currentBranch) {
 function main() {
   const filePath = path.normalize("./common/config/azure-pipelines/templates/gather-docs.yaml")
   const currentBranch = process.env.CURRENT_BRANCH;
+
+  const textToFind = /refs\/heads\/release\/\d+\.\d+\.x/gi;
+  if (!currentBranch.match(textToFind)) {
+    console.error("Invalid branch name.");
+    process.exit(1);
+  }
+
   checkFile(filePath, currentBranch);
 }
 main();

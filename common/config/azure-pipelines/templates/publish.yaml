@@ -38,3 +38,14 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)/imodeljs/packages'
     ArtifactName: packages
   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
+
+- script: |
+    node common/scripts/check_gather_docs.mjs
+    git add .
+    git commit -m "Update gather-docs.yaml"
+    git push --set-upstream https://$(GH_TOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName)
+  displayName: 'Check gather-docs.yaml branch'
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
+  env:
+    GITHUB_TOKEN: $(GH_TOKEN)
+    CURRENT_BRANCH: $(Build.SourceBranch)
