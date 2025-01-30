@@ -5,7 +5,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 - dataset: AllProperties.bim
 
 ```sql
-SELECT id from ECVLib.IdSet(?) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT id from IdSet(?) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 - bindIdSet 1, [0x15, 0x18, 0x19]
@@ -25,7 +25,7 @@ SELECT id from ECVLib.IdSet(?) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 - dataset: AllProperties.bim
 
 ```sql
-SELECT id a from ECVLib.IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT id a from IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 - bindIdSet 1, [0x15, 0x18, 0x19]
@@ -33,6 +33,132 @@ SELECT id a from ECVLib.IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
 |           | a            | true      | 0     | a        | a    | Id           | long     | Id   | id                 |
+
+| a    |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
+# Testing one level subquery with IdSet for ConcurrentQuery
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | a            | true      | 0     | a        | a    | Id           | long     | Id   | id                 |
+
+| a    |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
+# Testing one level subquery with IdSet for Statement
+
+- dataset: AllProperties.bim
+- mode: Statement
+
+```sql
+SELECT * FROM (SELECT id a from IdSet(?)) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | a            | true      | 0     | a        | a    | Id           | long     | Id   | undefined          |
+
+| a    |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
+# Testing TWO level subquery with IdSet for ConcurrentQuery
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | a            | true      | 0     | a        | a    | Id           | long     | Id   | id                 |
+
+| a    |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
+# Testing TWO level subquery with IdSet for Statement
+
+- dataset: AllProperties.bim
+- mode: Statement
+
+```sql
+SELECT * FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | a            | true      | 0     | a        | a    | Id           | long     | Id   | undefined          |
+
+| a    |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
+# Testing TWO level subquery with IdSet with column alias for Concurrent Query
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+SELECT a FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | a            | true      | 0     | a        | a    | Id           | long     | Id   | id                 |
+
+| a    |
+| ---- |
+| 0x15 |
+| 0x18 |
+| 0x19 |
+
+# Testing TWO level subquery with IdSet with column alias for Statement
+
+- dataset: AllProperties.bim
+- mode: Statement
+
+```sql
+SELECT a FROM (SELECT * FROM (SELECT id a from IdSet(?))) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+- bindIdSet 1, [0x15, 0x18, 0x19]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | a            | true      | 0     | a        | a    | id           | long     | Id   | undefined          |
 
 | a    |
 | ---- |
@@ -63,7 +189,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet('["0x15", "0x18", "0x19"]') where id 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = TRUE
+SELECT i FROM aps.TestElement,IdSet('[21, 24, "25"]') where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = TRUE
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -82,7 +208,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet('[21, 24, "25"]') where id = ECInstan
 - bindIdSet 1, [0x15, 0x18, 0x19]
 
 ```sql
-SELECT e.i FROM aps.TestElement e INNER JOIN ECVLib.IdSet(?) v ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = 1
+SELECT e.i FROM aps.TestElement e INNER JOIN IdSet(?) v ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = 1
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -106,7 +232,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  INNER JOIN ECVLib.IdSet (?) v ON v.id = e.ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = true
+  INNER JOIN IdSet (?) v ON v.id = e.ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = true
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -132,7 +258,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+  JOIN IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
@@ -158,7 +284,7 @@ SELECT
   e.i,
   v.id
 FROM
-  ECVLib.IdSet (?) v
+  IdSet (?) v
   LEFT OUTER JOIN aps.TestElement e ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
@@ -186,7 +312,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  LEFT OUTER JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+  LEFT OUTER JOIN IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
@@ -220,7 +346,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  CROSS JOIN ECVLib.IdSet (?) v ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+  CROSS JOIN IdSet (?) v ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
@@ -274,7 +400,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  FULL JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES = TRUE
+  FULL JOIN IdSet (?) v ON e.ECInstanceId = v.id OPTIONS ENABLE_EXPERIMENTAL_FEATURES = TRUE
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
@@ -303,7 +429,7 @@ FROM
 - errorDuringPrepare: true
 
 ```sql
-SELECT e.S, e.i, v.id FROM aps.TestElement e NATURAL JOIN ECVLib.IdSet(?) v ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = True
+SELECT e.S, e.i, v.id FROM aps.TestElement e NATURAL JOIN IdSet(?) v ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = True
 ```
 
 # Testing JOIN
@@ -318,7 +444,7 @@ SELECT
   v.id
 FROM
   aps.TestElement e
-  JOIN ECVLib.IdSet (?) v ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+  JOIN IdSet (?) v ON e.ECInstanceId = v.id ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
@@ -339,7 +465,7 @@ FROM
 - bindIdSet 1, [0x15, 0x18, 0x19]
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -359,7 +485,7 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIO
 - mode: Statement
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
@@ -405,7 +531,7 @@ FROM
       cte (a, b) AS (
         SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
   ),
-  ECVLib.IdSet (?)
+  IdSet (?)
 WHERE
   id = a ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
@@ -429,7 +555,7 @@ WHERE
 SELECT
   b
 FROM
-ECVLib.IdSet (?),
+IdSet (?),
   (
     WITH
       cte (a, b) AS (
@@ -492,7 +618,7 @@ FROM
       cte (a, b) AS (
         SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
   )),
-ECVLib.IdSet (?)
+IdSet (?)
 WHERE
   id = a ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
@@ -521,7 +647,7 @@ FROM
       cte AS (
         SELECT ECInstanceId, i FROM aps.TestElement )  SELECT * FROM cte
   )),
-ECVLib.IdSet (?)
+IdSet (?)
 WHERE
   id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
@@ -545,7 +671,7 @@ WHERE
 SELECT
   i
 FROM
-ECVLib.IdSet (?),
+IdSet (?),
 (
     WITH
       cte AS (
@@ -572,7 +698,7 @@ WHERE
 - errorDuringPrepare: true
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = False
+SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES = False
 ```
 
 # Testing IdSet without ENABLE_EXPERIMENTAL_FEATURES
@@ -582,5 +708,45 @@ SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId ECSQLOPTIO
 - errorDuringPrepare: true
 
 ```sql
-SELECT i FROM aps.TestElement,ECVLib.IdSet(?) where id = ECInstanceId
+SELECT i FROM aps.TestElement,IdSet(?) where id = ECInstanceId
+```
+
+# Testing Abstract syntax with IdSet with space as schema name
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM  .IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+# Testing Abstract syntax with IdSet with empty schema name
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM .IdSet(?) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+# Testing Abstract syntax with IdSet with no arg list
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM IdSet OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+# Testing Abstract syntax with IdSet with schema name but with no arg list
+
+- dataset: AllProperties.bim
+- bindIdSet 1, [0x15, 0x18, 0x19]
+- errorDuringPrepare: true
+
+```sql
+SELECT id FROM ECVLib.IdSet OPTIONS ENABLE_EXPERIMENTAL_FEATURES
 ```
