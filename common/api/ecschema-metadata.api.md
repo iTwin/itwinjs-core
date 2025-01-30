@@ -1730,29 +1730,19 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     getClasses(): IterableIterator<ECClass>;
     getConstant(name: string): Promise<Constant | undefined>;
-    getConstantSync(name: string): Constant | undefined;
     getCustomAttributeClass(name: string): Promise<CustomAttributeClass | undefined>;
-    getCustomAttributeClassSync(name: string): CustomAttributeClass | undefined;
     getEntityClass(name: string): Promise<EntityClass | undefined>;
-    getEntityClassSync(name: string): EntityClass | undefined;
     getEnumeration(name: string): Promise<Enumeration | undefined>;
-    getEnumerationSync(name: string): Enumeration | undefined;
     getFormat(name: string): Promise<Format | undefined>;
-    getFormatSync(name: string): Format | undefined;
     getInvertedUnit(name: string): Promise<InvertedUnit | undefined>;
-    getInvertedUnitSync(name: string): InvertedUnit | undefined;
     getItem<T extends SchemaItem>(name: string, itemConstructor?: SchemaItemConstructor<T>): Promise<T | undefined>;
     // (undocumented)
     getItems<T extends AnySchemaItem>(): IterableIterator<T>;
     getItemSync<T extends SchemaItem>(name: string, itemConstructor?: SchemaItemConstructor<T>): T | undefined;
     getKindOfQuantity(name: string): Promise<KindOfQuantity | undefined>;
-    getKindOfQuantitySync(name: string): KindOfQuantity | undefined;
     getMixin(name: string): Promise<Mixin | undefined>;
-    getMixinSync(name: string): Mixin | undefined;
     getPhenomenon(name: string): Promise<Phenomenon | undefined>;
-    getPhenomenonSync(name: string): Phenomenon | undefined;
     getPropertyCategory(name: string): Promise<PropertyCategory | undefined>;
-    getPropertyCategorySync(name: string): PropertyCategory | undefined;
     // (undocumented)
     getReference(refSchemaName: string): Promise<Schema | undefined>;
     // (undocumented)
@@ -1760,14 +1750,10 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     getReferenceSync(refSchemaName: string): Schema | undefined;
     getRelationshipClass(name: string): Promise<RelationshipClass | undefined>;
-    getRelationshipClassSync(name: string): RelationshipClass | undefined;
     getSchemaItemKey(fullName: string): SchemaItemKey;
     getStructClass(name: string): Promise<StructClass | undefined>;
-    getStructClassSync(name: string): StructClass | undefined;
     getUnit(name: string): Promise<Unit | undefined>;
-    getUnitSync(name: string): Unit | undefined;
     getUnitSystem(name: string): Promise<UnitSystem | undefined>;
-    getUnitSystemSync(name: string): UnitSystem | undefined;
     // @internal (undocumented)
     static isSchema(object: any): object is Schema;
     // (undocumented)
