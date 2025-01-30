@@ -116,7 +116,7 @@ describe("PresentationManager", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch {}
+      } catch { }
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -129,10 +129,13 @@ describe("PresentationManager", () => {
 
   const setupIModelForElementKey = (imodelMock: moq.IMock<IModelDb>, key: InstanceKey) => {
     imodelMock
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .callback((_q, cb) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const valueMock = moq.Mock.ofType<ECSqlValue>();
         valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const stmtMock = moq.Mock.ofType<ECSqlStatement>();
         stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
         stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
@@ -142,8 +145,10 @@ describe("PresentationManager", () => {
 
   const setupIModelForNoResultStatement = (imodelMock: moq.IMock<IModelDb>) => {
     imodelMock
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
       .callback((_q, cb) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const stmtMock = moq.Mock.ofType<ECSqlStatement>();
         stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
         cb(stmtMock.object);
@@ -824,7 +829,7 @@ describe("PresentationManager", () => {
       });
       sinon.stub(manager.getDetail(), "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
         }),
       );
     }
@@ -2565,6 +2570,7 @@ describe("PresentationManager", () => {
       });
 
       function setupIModelForBatchedElementIdsQuery(imodel: moq.IMock<IModelDb>, ids: Id64String[]) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ids.length);
         imodel
           .setup((x) => x.createQueryReader(moq.It.is((query) => query.startsWith("SELECT IdToHex(ECInstanceId)"))))
@@ -3425,7 +3431,7 @@ describe("PresentationManager", () => {
         manager = new PresentationManager({ addon: nativePlatformMock.object, getLocalizedString: getLocalizedStringSpy });
         sinon.stub(manager.getDetail(), "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
-            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
+            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
           }),
         );
         // what the addon returns

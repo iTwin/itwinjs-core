@@ -160,7 +160,7 @@ export class ECDb implements IDisposable {
    * @see [[withWriteStatement]]
    * @beta
    */
-    public withCachedWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors = true): T {
+  public withCachedWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors = true): T {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
@@ -206,13 +206,13 @@ export class ECDb implements IDisposable {
     }
   }
 
-   /** Prepare an ECSQL statement.
-   * @param ecsql The ECSQL statement to prepare
-   * @param logErrors Determines if error will be logged if statement fail to prepare
-   * @throws [IModelError]($common) if there is a problem preparing the statement.
-   * @beta
-   */
-   public prepareWriteStatement(ecsql: string, logErrors = true): ECSqlWriteStatement {
+  /** Prepare an ECSQL statement.
+  * @param ecsql The ECSQL statement to prepare
+  * @param logErrors Determines if error will be logged if statement fail to prepare
+  * @throws [IModelError]($common) if there is a problem preparing the statement.
+  * @beta
+  */
+  public prepareWriteStatement(ecsql: string, logErrors = true): ECSqlWriteStatement {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new ECSqlWriteStatement(this.prepareStatement(ecsql, logErrors));
   }

@@ -169,6 +169,7 @@ export abstract class IModelDb extends IModel {
   /** @beta */
   public readonly channels: ChannelControl = createChannelControl(this);
   private _relationships?: Relationships;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
@@ -416,7 +417,9 @@ export abstract class IModelDb extends IModel {
    * @public
    * @deprecated in 4.10.  Use [[createQueryReader]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
@@ -445,7 +448,9 @@ export abstract class IModelDb extends IModel {
    * @public
    * @deprecated in 4.10.  Use [[createQueryReader]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt.dispose();
     try {
@@ -694,6 +699,7 @@ export abstract class IModelDb extends IModel {
       sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.withPreparedStatement(sql, (stmt) => {
       if (params.bindings)
         stmt.bindValues(params.bindings);
@@ -1046,8 +1052,11 @@ export abstract class IModelDb extends IModel {
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
+   * @deprecated in 4.10.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = new ECSqlStatement();
     stmt.prepare(this[_nativeDb], sql, logErrors);
     return stmt;
@@ -1056,8 +1065,11 @@ export abstract class IModelDb extends IModel {
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @returns `undefined` if there is a problem preparing the statement.
+   * @deprecated in 4.10.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const statement = new ECSqlStatement();
     const result = statement.tryPrepare(this[_nativeDb], sql);
     return DbResult.BE_SQLITE_OK === result.status ? statement : undefined;
@@ -1186,6 +1198,7 @@ export abstract class IModelDb extends IModel {
    */
   public querySchemaVersion(schemaName: string): string | undefined {
     const sql = `SELECT VersionMajor,VersionWrite,VersionMinor FROM ECDbMeta.ECSchemaDef WHERE Name=:schemaName LIMIT 1`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
       statement.bindString("schemaName", schemaName);
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1518,6 +1531,7 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement) => {
         statement.bindId("modelId", modelId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1853,7 +1867,7 @@ export namespace IModelDb {
 
       if (code.value === undefined)
         throw new IModelError(IModelStatus.InvalidCode, "Invalid Code");
-
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
         stmt.bindId(2, Id64.fromString(code.scope));
@@ -1871,6 +1885,7 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(elementId: Id64String): string {
       const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
         statement.bindId("elementId", elementId);
         if (DbResult.BE_SQLITE_ROW === statement.step())
@@ -2031,6 +2046,7 @@ export namespace IModelDb {
      */
     public queryChildren(elementId: Id64String): Id64String[] {
       const sql = "SELECT ECInstanceId FROM BisCore:Element WHERE Parent.Id=:elementId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
         statement.bindId("elementId", elementId);
         const childIds: Id64String[] = [];
@@ -2047,6 +2063,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element does not exist
      */
     public queryParent(elementId: Id64String): Id64String | undefined {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (stmt) => {
         stmt.bindId(1, elementId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
@@ -2065,6 +2082,7 @@ export namespace IModelDb {
 
       // A sub-model will have the same Id value as the element it is describing
       const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
         statement.bindId("elementId", elementId);
         return DbResult.BE_SQLITE_ROW === statement.step();
@@ -2081,6 +2099,7 @@ export namespace IModelDb {
      */
     public _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[] { // eslint-disable-line @typescript-eslint/naming-convention
       const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
@@ -2100,6 +2119,7 @@ export namespace IModelDb {
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
       const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const aspect: ElementAspectProps | undefined = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspectProps | undefined => {
         statement.bindId("aspectInstanceId", aspectInstanceId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -2121,6 +2141,7 @@ export namespace IModelDb {
      */
     public getAspect(aspectInstanceId: Id64String): ElementAspect {
       const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
         statement.bindId("aspectInstanceId", aspectInstanceId);
         return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
@@ -2134,6 +2155,7 @@ export namespace IModelDb {
     private static classMap = new Map<string, string>();
 
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
@@ -2184,11 +2206,14 @@ export namespace IModelDb {
       let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
       if (classIdList === undefined) {
         const classIds: string[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         this._iModel.withPreparedStatement(`select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name='${fullClassName[1]}'
-        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`, (statement: ECSqlStatement) => {
-          while (statement.step() === DbResult.BE_SQLITE_ROW)
-            classIds.push(statement.getValue(0).getId());
-        });
+        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`,
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          (statement: ECSqlStatement) => {
+            while (statement.step() === DbResult.BE_SQLITE_ROW)
+              classIds.push(statement.getValue(0).getId());
+          });
         if (classIds.length > 0) {
           classIdList = classIds.join(",");
           IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);

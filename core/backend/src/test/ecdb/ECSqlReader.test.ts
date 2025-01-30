@@ -5,9 +5,8 @@ import { assert } from "chai";
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, using } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { SnapshotDb } from "../../core-backend";
-import { ECDb } from "../../ECDb";
-import { ECSqlStatement, ECSqlWriteStatement } from "../../ECSqlStatement";
+import { ECDb, SnapshotDb } from "../../core-backend";
+import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";

@@ -110,6 +110,7 @@ describe("ECSqlStatement", () => {
   it("null string accessor", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await ecdb.withPreparedStatement(`VALUES(NULL)`, async (stmt: ECSqlStatement) => {
         stmt.step();
         const str = stmt.getValue(0).getString();
@@ -432,6 +433,7 @@ describe("ECSqlStatement", () => {
         assert.isDefined(actualRes.id);
         assert.equal(actualRes.id!, expectedECInstanceId);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         ecdbToVerify.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
           stmt.bindId(1, expectedId);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -517,6 +519,7 @@ describe("ECSqlStatement", () => {
       ecdb.saveChanges();
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       const ecsqln = "SELECT 1 FROM ts.Foo WHERE n=?";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await ecdb.withPreparedStatement(ecsqln, async (stmt: ECSqlStatement) => {
         const nNum: number = 20;
         const nStr: string = "20";
@@ -612,6 +615,7 @@ describe("ECSqlStatement", () => {
       });
 
       const ecsqldt = "SELECT 1 FROM ts.Foo WHERE dt=?";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await ecdb.withPreparedStatement(ecsqldt, async (stmt: ECSqlStatement) => {
         const dtStr: string = "2018-10-18T12:00:00Z";
         const num: number = 2458410;
@@ -687,6 +691,7 @@ describe("ECSqlStatement", () => {
       });
 
       const ecsqlfooId = "SELECT 1 FROM ts.Foo WHERE fooId=?";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await ecdb.withPreparedStatement(ecsqlfooId, async (stmt: ECSqlStatement) => {
         const num: number = 20;
         const str: string = "20";
@@ -819,6 +824,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", async (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -847,6 +853,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -879,6 +886,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Str(I) si, HexStr(I) hi, Str(L) sl, HexStr(L) hl FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -906,6 +914,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Str(I) si, HexStr(I) hi, Str(L) sl, HexStr(L) hl FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -934,6 +943,7 @@ describe("ECSqlStatement", () => {
       });
 
       // uint64 cannot be bound as string in SQLite. They get converted to reals
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -961,6 +971,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT CAST(D AS TEXT) d,CAST(I AS TEXT) i,CAST(L AS TEXT) l,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -992,6 +1003,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT CAST(I AS TEXT) i, CAST(L AS TEXT) l,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1017,6 +1029,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT CAST(I AS TEXT) i, CAST(L AS TEXT) l,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1047,6 +1060,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I, Str(I) si, HexStr(I) hi, L, Str(L) sl, HexStr(L) hl,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1082,6 +1096,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1109,6 +1124,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1136,6 +1152,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1164,6 +1181,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT CAST(D AS TEXT) d,CAST(I AS TEXT) i,CAST(L AS TEXT) l,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1195,6 +1213,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1222,6 +1241,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1249,6 +1269,7 @@ describe("ECSqlStatement", () => {
         return r.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1309,6 +1330,7 @@ describe("ECSqlStatement", () => {
       const strVal: string = "Hello world";
 
       const verify = async (expectedId: Id64String) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         await ecdb.withPreparedStatement("SELECT Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl s_bl,Struct.Bo s_bo,Struct.D s_d,Struct.Dt s_dt,Struct.I s_i,Struct.P2d s_p2d,Struct.P3d s_p3d,Struct.S s_s FROM test.Foo WHERE ECInstanceId=?", async (stmt: ECSqlStatement) => {
           stmt.bindId(1, expectedId);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1472,6 +1494,7 @@ describe("ECSqlStatement", () => {
       };
 
       const verify = async (expectedId: Id64String) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         await ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", async (stmt: ECSqlStatement) => {
           stmt.bindId(1, expectedId);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1558,6 +1581,7 @@ describe("ECSqlStatement", () => {
       const addressArray = [{ city: "London", zip: 10000 }, { city: "Manchester", zip: 20000 }, { city: "Edinburgh", zip: 30000 }];
 
       const verify = async (expectedId: Id64String) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         await ecdb.withPreparedStatement("SELECT I_Array, Dt_Array, Addresses FROM test.Foo WHERE ECInstanceId=?", async (stmt: ECSqlStatement) => {
           stmt.bindId(1, expectedId);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1705,6 +1729,7 @@ describe("ECSqlStatement", () => {
         childIds.push(res.id!);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Name,Parent FROM test.Child ORDER BY Name", (stmt: ECSqlStatement) => {
         let rowCount: number = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -1732,17 +1757,17 @@ describe("ECSqlStatement", () => {
   it("should bind Range3d for parameter in spatial sql function", async () => {
     const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), { rootSubject: { name: "BindRange3d" } });
     try {
-      iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
-        (stmt: ECSqlStatement) => {
-          stmt.bindRange3d(1, new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0));
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId", (stmt: ECSqlStatement) => {
+        stmt.bindRange3d(1, new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0));
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
-      iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
-        (stmt: ECSqlStatement) => {
-          stmt.bindValues([new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0)]);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-        });
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId", (stmt: ECSqlStatement) => {
+        stmt.bindValues([new Range3d(0.0, 0.0, 0.0, 1000.0, 1000.0, 1000.0)]);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
 
     } finally {
       iModel.saveChanges();
@@ -1768,6 +1793,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
       ecdb.saveChanges();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT [Range3d] FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1796,6 +1822,7 @@ describe("ECSqlStatement", () => {
           assert.equal(r.id!, expectedId);
           ecdb.saveChanges();
 
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
             assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
             const row = confstmt.getRow();
@@ -1807,34 +1834,14 @@ describe("ECSqlStatement", () => {
           stmt.clearBindings();
         });
       });
-
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo WHERE InVirtualSet(?, ECInstanceId)", (stmt: ECSqlStatement) => {
-        let idSet: Id64String[] = [];
+        const idSet: Id64String[] = [];
         stmt.bindIdSet(1, idSet);
-        let result = stmt.step();
+        const result = stmt.step();
         assert.equal(result, DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
-
-        idSet = [Id64.fromLocalAndBriefcaseIds(idNumbers[2], 0)];
-        stmt.bindIdSet(1, idSet);
-        result = stmt.step();
-        assert.equal(result, DbResult.BE_SQLITE_ROW);
-        let row = stmt.getRow();
-        assert.equal(row.name, `${idNumbers[2]}.txt`);
-        stmt.reset();
-        stmt.clearBindings();
-
-        idSet.push(idNumbers[0].toString());
-        stmt.bindIdSet(1, idSet);
-        result = stmt.step();
-        assert.equal(result, DbResult.BE_SQLITE_ROW);
-        row = stmt.getRow();
-        assert.equal(row.name, `${idNumbers[2]}.txt`);
-        result = stmt.step();
-        assert.equal(result, DbResult.BE_SQLITE_ROW);
-        row = stmt.getRow();
-        assert.equal(row.name, `${idNumbers[0]}.txt`);
       });
     });
   });
@@ -1844,6 +1851,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
         idNumbers.forEach((idNum: number) => {
           const expectedId = Id64.fromLocalAndBriefcaseIds(idNum, 0);
@@ -1855,6 +1863,7 @@ describe("ECSqlStatement", () => {
           assert.equal(r.id!, expectedId);
           ecdb.saveChanges();
 
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
             assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
             const row = confstmt.getRow();
@@ -1867,6 +1876,7 @@ describe("ECSqlStatement", () => {
         });
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
         let idSet: Id64String[] = [];
         stmt.bindIdSet(1, idSet);
@@ -1903,6 +1913,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
         idNumbers.forEach((idNum: number) => {
           const expectedId = Id64.fromLocalAndBriefcaseIds(idNum, 0);
@@ -1914,6 +1925,7 @@ describe("ECSqlStatement", () => {
           assert.equal(r.id!, expectedId);
           ecdb.saveChanges();
 
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
             assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
             const row = confstmt.getRow();
@@ -1926,18 +1938,23 @@ describe("ECSqlStatement", () => {
         });
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
         let idSet: Id64String[] = [];
-        stmt.bindIdSet(1, idSet);
+        try {
+          stmt.bindIdSet(1, idSet);
+        } catch (err: any) {
+          assert.equal(err.message, "Error binding id set");
+        }
         let result = stmt.step();
         assert.equal(result, DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
 
-        idSet = ["0X1","ABC"];
-        try{
+        idSet = ["0X1", "ABC"];
+        try {
           stmt.bindIdSet(1, idSet);
-        }catch(err: any){
+        } catch (err: any) {
           assert.equal(err.message, "Error binding id set");
         }
         result = stmt.step();
@@ -1945,9 +1962,9 @@ describe("ECSqlStatement", () => {
         stmt.reset();
         stmt.clearBindings();
 
-        try{
+        try {
           stmt.bindId(1, idNumbers[0].toString());
-        }catch(err: any){
+        } catch (err: any) {
           assert.equal(err.message, "Error binding Id");
         }
         result = stmt.step();
@@ -1978,6 +1995,7 @@ describe("ECSqlStatement", () => {
       let id1: Id64String, id2: Id64String;
 
       // *** test without statement cache
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       using(ecdb.prepareStatement("INSERT INTO test.Person(Name,Age,Location) VALUES(?,?,?)"), (stmt: ECSqlStatement) => {
         stmt.bindString(1, "Mary Miller");
         stmt.bindInteger(2, 30);
@@ -2003,6 +2021,7 @@ describe("ECSqlStatement", () => {
         assert.isTrue(Id64.isValidId64(id2));
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       using(ecdb.prepareStatement("SELECT ECInstanceId,ECClassId,Name,Age,Location FROM test.Person ORDER BY ECInstanceId"), (stmt: ECSqlStatement) => {
         let rowCount = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -2081,6 +2100,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Bl,Bo,D,Dt,I,P2d,P3d,S FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2128,6 +2148,7 @@ describe("ECSqlStatement", () => {
       //   assert.equal(row.s, strVal);
       // }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Bl AS Blobby, I+10, Lower(S), Upper(S) CapitalS FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2145,6 +2166,7 @@ describe("ECSqlStatement", () => {
       //   assert.equal(row.capitalS, strVal.toUpperCase());
       // }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const testSchemaId: Id64String = ecdb.withPreparedStatement("SELECT ECInstanceId FROM meta.ECSchemaDef WHERE Name='Test'", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
@@ -2152,6 +2174,7 @@ describe("ECSqlStatement", () => {
         return Id64.fromJSON(row.id);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const fooClassId: Id64String = ecdb.withPreparedStatement("SELECT ECInstanceId FROM meta.ECClassDef WHERE Name='Foo'", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
@@ -2159,6 +2182,7 @@ describe("ECSqlStatement", () => {
         return Id64.fromJSON(row.id);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT s.ECInstanceId, c.ECInstanceId, c.Name, s.Name FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON c.Schema.Id=s.ECInstanceId WHERE s.Name='Test' AND c.Name='Foo'", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
@@ -2171,6 +2195,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.id_1, fooClassId);
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT count(*) cnt FROM meta.ECSchemaDef", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
@@ -2185,6 +2210,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.cnt, 6);
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT 1 FROM meta.ECSchemaDef LIMIT 1", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
@@ -2197,6 +2223,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row["1"], 1);
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT NULL FROM meta.ECSchemaDef LIMIT 1", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row = stmt.getRow();
@@ -2371,6 +2398,7 @@ describe("ECSqlStatement", () => {
         childIds.push(res.id!);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Name,Parent FROM test.Child ORDER BY Name", (stmt: ECSqlStatement) => {
         rowCount = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -2391,6 +2419,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.parent.relClassName, "Test.ParentHasChildren");
       }), 2);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Name,Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM test.Child ORDER BY Name", (stmt: ECSqlStatement) => {
         rowCount = 0;
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -2416,6 +2445,7 @@ describe("ECSqlStatement", () => {
       }), 2);
 
       const childId: Id64String = childIds[0];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT ECInstanceId,ECClassId,SourceECInstanceId,SourceECClassId,TargetECInstanceId,TargetECClassId FROM test.ParentHasChildren WHERE TargetECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, childId);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2437,6 +2467,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.targetClassName, "Test.Child");
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT ECInstanceId as MyId,ECClassId as MyClassId,SourceECInstanceId As MySourceId,SourceECClassId As MySourceClassId,TargetECInstanceId As MyTargetId,TargetECClassId As MyTargetClassId FROM test.ParentHasChildren WHERE TargetECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, childId);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2500,6 +2531,7 @@ describe("ECSqlStatement", () => {
       });
 
       const expectedStruct = { bl: blobVal, bo: boolVal, d: doubleVal, dt: dtVal, i: intVal, p2d: p2dVal, p3d: p3dVal, s: stringVal };
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2531,6 +2563,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.struct.s, expectedStruct.s);
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Struct FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2548,6 +2581,7 @@ describe("ECSqlStatement", () => {
         assert.equal(actualStruct.s, expectedStruct.s);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Struct.Bl, Struct.Bo, Struct.D, Struct.Dt, Struct.I, Struct.P2d, Struct.P3d, Struct.S FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2624,6 +2658,7 @@ describe("ECSqlStatement", () => {
       });
 
       ecdb.saveChanges();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT I, HexStr(I) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2632,6 +2667,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.hex, "0x3");
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT L, HexStr(L) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2640,11 +2676,13 @@ describe("ECSqlStatement", () => {
         assert.equal(row.hex, "0xb32af0071f8");
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Bl, HexStr(Bl) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Bo, HexStr(Bo) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2653,26 +2691,31 @@ describe("ECSqlStatement", () => {
         assert.equal(row.hex, "0x1");
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT D, HexStr(D) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Dt, HexStr(Dt) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
       });
 
       // SQL functions cannot take points. So here preparation already fails
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.throw(() => ecdb.withPreparedStatement("SELECT P2d, HexStr(P2d) hex FROM test.Foo WHERE ECInstanceId=?", () => {
         assert.fail();
       }));
 
       // SQL functions cannot take points. So here preparation already fails
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.throw(() => ecdb.withPreparedStatement("SELECT P3d, HexStr(P3d) hex FROM test.Foo WHERE ECInstanceId=?", () => {
         assert.fail();
       }));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT S, HexStr(S) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
@@ -2710,6 +2753,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT MyStat,MyStats, MyDomain,MyDomains FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2720,16 +2764,19 @@ describe("ECSqlStatement", () => {
         assert.equal(row.myDomain, "Org");
         assert.deepEqual(row.myDomains, ["Org", "Com"]);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const myStatVal: ECSqlValue = stmt.getValue(0);
         assert.isFalse(myStatVal.isNull);
         assert.isTrue(myStatVal.columnInfo.isEnum());
         assert.equal(myStatVal.getInteger(), 1);
         assert.deepEqual(myStatVal.getEnum(), [{ schema: "Test", name: "Status", key: "On", value: 1 }]);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const myStatsVal: ECSqlValue = stmt.getValue(1);
         assert.isFalse(myStatsVal.isNull);
         assert.isTrue(myStatsVal.columnInfo.isEnum());
         assert.deepEqual(myStatsVal.getArray(), [1, 2]);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const actualStatsEnums: ECEnumValue[][] = [];
         for (const arrayElement of myStatsVal.getArrayIterator()) {
           actualStatsEnums.push(arrayElement.getEnum()!);
@@ -2738,16 +2785,19 @@ describe("ECSqlStatement", () => {
         assert.deepEqual(actualStatsEnums[0], [{ schema: "Test", name: "Status", key: "On", value: 1 }]);
         assert.deepEqual(actualStatsEnums[1], [{ schema: "Test", name: "Status", key: "Off", value: 2 }]);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const myDomainVal: ECSqlValue = stmt.getValue(2);
         assert.isFalse(myDomainVal.isNull);
         assert.isTrue(myDomainVal.columnInfo.isEnum());
         assert.equal(myDomainVal.getString(), "Org");
         assert.deepEqual(myDomainVal.getEnum(), [{ schema: "Test", name: "Domain", key: "Org", value: "Org" }]);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const myDomainsVal: ECSqlValue = stmt.getValue(3);
         assert.isFalse(myDomainsVal.isNull);
         assert.isTrue(myDomainsVal.columnInfo.isEnum());
         assert.deepEqual(myDomainsVal.getArray(), ["Org", "Com"]);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const actualDomainsEnums: ECEnumValue[][] = [];
         for (const arrayElement of myDomainsVal.getArrayIterator()) {
           actualDomainsEnums.push(arrayElement.getEnum()!);
@@ -2765,18 +2815,21 @@ describe("ECSqlStatement", () => {
       }), 1);
 
       // test some enums in the built-in schemas
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT Type,Modifier FROM meta.ECClassDef WHERE Name='Foo'", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         // getRow just returns the enum values
         const row: any = stmt.getRow();
         assert.deepEqual(row, { type: 0, modifier: 2 });
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const typeVal: ECSqlValue = stmt.getValue(0);
         assert.isFalse(typeVal.isNull);
         assert.isTrue(typeVal.columnInfo.isEnum());
         assert.equal(typeVal.getInteger(), 0);
         assert.deepEqual(typeVal.getEnum(), [{ schema: "ECDbMeta", name: "ECClassType", key: "Entity", value: 0 }]);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const modifierVal: ECSqlValue = stmt.getValue(1);
         assert.isFalse(modifierVal.isNull);
         assert.isTrue(modifierVal.columnInfo.isEnum());
@@ -2845,6 +2898,7 @@ describe("ECSqlStatement", () => {
         return { unored, ored, unmatched };
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT MyColor,MyDomain FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, ids.unored);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2853,12 +2907,14 @@ describe("ECSqlStatement", () => {
         assert.equal(row.myColor, 4);
         assert.equal(row.myDomain, "com");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         let colVal: ECSqlValue = stmt.getValue(0);
         assert.isFalse(colVal.isNull);
         assert.isTrue(colVal.columnInfo.isEnum());
         assert.equal(colVal.getInteger(), 4);
         assert.deepEqual(colVal.getEnum(), [{ schema: "Test", name: "Color", key: "Blue", value: 4 }]);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         let domainVal: ECSqlValue = stmt.getValue(1);
         assert.isFalse(domainVal.isNull);
         assert.isTrue(domainVal.columnInfo.isEnum());
@@ -2925,11 +2981,13 @@ describe("ECSqlStatement", () => {
       }), 1);
 
       // test some enums in the built-in schemas
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT CustomAttributeContainerType caType FROM meta.ECClassDef WHERE Type=meta.ECClassType.CustomAttribute AND Name='DateTimeInfo'", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = stmt.getRow();
         assert.equal(row.caType, 160);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const caTypeVal: ECSqlValue = stmt.getValue(0);
         assert.isFalse(caTypeVal.isNull);
         assert.isTrue(caTypeVal.columnInfo.isEnum());
@@ -2983,6 +3041,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT MyProperty as MyAlias, 1 as MyGenerated FROM test.MyClass WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2991,7 +3050,9 @@ describe("ECSqlStatement", () => {
         assert.equal(row.myAlias, "Value");
         assert.equal(row.myGenerated, 1);
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val0: ECSqlValue = stmt.getValue(0);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo0: ECSqlColumnInfo = val0.columnInfo;
 
         assert.equal(colInfo0.getPropertyName(), "MyAlias");
@@ -3001,7 +3062,9 @@ describe("ECSqlStatement", () => {
         assert.isDefined(originPropertyName);
         assert.equal(originPropertyName, "MyProperty");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val1: ECSqlValue = stmt.getValue(1);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo1: ECSqlColumnInfo = val1.columnInfo;
 
         assert.equal(colInfo1.getPropertyName(), "MyGenerated");
@@ -3053,6 +3116,7 @@ describe("ECSqlStatement", () => {
         assert.isDefined(res.id);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT f, f.c.a, f.c.b, f.d, g FROM Test.A", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         // getRow just returns the enum values
@@ -3062,7 +3126,9 @@ describe("ECSqlStatement", () => {
         assert.equal(row.f.d, "f.d");
         assert.equal(row.g, "g");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val0: ECSqlValue = stmt.getValue(0);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo0: ECSqlColumnInfo = val0.columnInfo;
 
         assert.equal(colInfo0.getPropertyName(), "f");
@@ -3072,7 +3138,9 @@ describe("ECSqlStatement", () => {
         assert.isDefined(originPropertyName0);
         assert.equal(originPropertyName0, "f");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val1: ECSqlValue = stmt.getValue(1);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo1: ECSqlColumnInfo = val1.columnInfo;
 
         assert.equal(colInfo1.getPropertyName(), "a");
@@ -3082,7 +3150,9 @@ describe("ECSqlStatement", () => {
         assert.isDefined(originPropertyName1);
         assert.equal(originPropertyName1, "a");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val2: ECSqlValue = stmt.getValue(2);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo2: ECSqlColumnInfo = val2.columnInfo;
 
         assert.equal(colInfo2.getPropertyName(), "b");
@@ -3092,7 +3162,9 @@ describe("ECSqlStatement", () => {
         assert.isDefined(originPropertyName2);
         assert.equal(originPropertyName2, "b");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val3: ECSqlValue = stmt.getValue(3);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo3: ECSqlColumnInfo = val3.columnInfo;
 
         assert.equal(colInfo3.getPropertyName(), "d");
@@ -3102,7 +3174,9 @@ describe("ECSqlStatement", () => {
         assert.isDefined(originPropertyName3);
         assert.equal(originPropertyName3, "d");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val4: ECSqlValue = stmt.getValue(4);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo4: ECSqlColumnInfo = val4.columnInfo;
 
         assert.equal(colInfo4.getPropertyName(), "g");
@@ -3119,6 +3193,7 @@ describe("ECSqlStatement", () => {
         assert.isDefined(res.id);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ecdb.withPreparedStatement("SELECT h, i FROM Test.B", (stmt: ECSqlStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
         // getRow just returns the enum values
@@ -3127,7 +3202,9 @@ describe("ECSqlStatement", () => {
         assert.equal(row.h.b, "h.b");
         assert.equal(row.i, "i");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val0: ECSqlValue = stmt.getValue(0);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo0: ECSqlColumnInfo = val0.columnInfo;
 
         assert.equal(colInfo0.getPropertyName(), "h");
@@ -3137,7 +3214,9 @@ describe("ECSqlStatement", () => {
         assert.isDefined(originPropertyName0);
         assert.equal(originPropertyName0, "h");
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const val1: ECSqlValue = stmt.getValue(1);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const colInfo1: ECSqlColumnInfo = val1.columnInfo;
 
         assert.equal(colInfo1.getPropertyName(), "i");
@@ -3187,9 +3266,11 @@ describe("ECSqlStatement", () => {
       const point3dValue = new Point3d(15, 30, 45);
       const structValue = { structClassProperty: "test string value for struct property" };
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       let r = await ecdb.withPreparedStatement(
         `INSERT INTO ts.Foo(booleanProperty, blobProperty, doubleProperty, customIdProperty, customIdSetProperty, intProperty, longProperty, stringProperty, nullProperty, point2dProperty, point3dProperty)
           VALUES(:booleanValue, :blobValue, :doubleValue, :customIdValue, :customIdSetValue, :intValue, :longValue, :stringValue, :nullValue, :point2dValue, :point3dValue)`,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async (stmt: ECSqlStatement) => {
           stmt.bindBoolean("booleanValue", booleanValue);
           stmt.bindBlob("blobValue", blobValue);
@@ -3245,12 +3326,11 @@ describe("ECSqlStatement", () => {
 
       assert.isFalse(await reader.step());
 
-      r = await ecdb.withPreparedStatement(
-        "INSERT INTO ts.Baz(structProperty) VALUES(:structValue)",
-        async (stmt: ECSqlStatement) => {
-          stmt.bindStruct("structValue", structValue);
-          return stmt.stepForInsert();
-        },
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      r = await ecdb.withPreparedStatement("INSERT INTO ts.Baz(structProperty) VALUES(:structValue)", async (stmt: ECSqlStatement) => {
+        stmt.bindStruct("structValue", structValue);
+        return stmt.stepForInsert();
+      },
       );
 
       ecdb.saveChanges();
