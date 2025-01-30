@@ -56,7 +56,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
   private [_scriptReference]?: InternalScriptReference;
-  private _scheduleScriptEvents = new InternalScheduleScriptEvents();
+  public _scheduleScriptEvents = new InternalScheduleScriptEvents();
 
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
