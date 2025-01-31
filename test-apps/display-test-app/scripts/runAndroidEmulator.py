@@ -106,7 +106,7 @@ class Emulator:
     __avd_home: str
     __jdk_home: str
     __emulator_dir: str
-    __debug_log = False
+    __debug_log = True
 
     def __init__(self, avd_name: str, avd_home: str, jdk_home: str, emulator_dir: str):
         self.__process = None
