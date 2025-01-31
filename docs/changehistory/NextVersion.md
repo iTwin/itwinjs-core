@@ -233,7 +233,7 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`                          |
 | `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`                          |
 | `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString`                    |
-| `TerrainProviderName`                          | N/A                                                  |
+| `TerrainProviderName`                          | `string`                                             |
 | `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
 | `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
 
