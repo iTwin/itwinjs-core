@@ -11,7 +11,9 @@ import {
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  BackgroundMapSettings,
+  BaseLayerSettings,
+  Cartographic, ColorDef, DefaultSupportedTypes, GeoCoordStatus, MapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -26,11 +28,12 @@ import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
-  TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, GeometryTileTreeReference,
+  getGcsConverterAvailable, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { SpatialClassifiersState } from "../SpatialClassifiersState";
+import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -530,15 +533,50 @@ class RealityModelTileLoader extends RealityTileLoader {
 /** @internal */
 export type RealityModelSource = ViewState | DisplayStyleState;
 
+// ###TODO this is a duplicate from MapTileTree.ts!
+/** Utility interface that ties an imagery tile tree to its corresponding map-layer settings object.
+ * @internal
+ */
+interface MapLayerTreeSetting {
+  tree: ImageryMapTileTree;
+  settings: MapLayerSettings;
+  baseImageryLayer: boolean;
+}
+
 /** @internal */
 export class RealityModelTileTree extends RealityTileTree {
   private readonly _isContentUnbounded: boolean;
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+  private _layerSettings = new Map<Id64String, MapLayerSettings>();
+  private _imageryTreeState = new Map<Id64String, ImageryTileTreeState>();
+  private _modelIdToIndex = new Map<Id64String, number>();
+  /** @internal */
+  public layerClassifiers = new Map<number, RenderPlanarClassifier>();
+
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
   }
   public override get isContentUnbounded() { return this._isContentUnbounded; }
+
+  /** Add a new imagery tile tree / map-layer settings pair and initialize the imagery tile tree state.
+   * @internal
+   */
+  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean) {
+    this.layerImageryTrees.push({ tree, settings, baseImageryLayer });
+    this._layerSettings.set(tree.modelId, settings);
+    if (!this._imageryTreeState.has(tree.modelId))
+      this._imageryTreeState.set(tree.modelId, new ImageryTileTreeState());
+    this._modelIdToIndex.set(tree.modelId, index);
+  }
+
+  /** @internal */
+  public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
+    const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
+    if (classifier)
+      this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
+  }
 }
 
 /** @internal */
@@ -553,6 +591,9 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
+    mapSettings?: BackgroundMapSettings;
+    backgroundBase?: BaseLayerSettings;
+    backgroundLayers?: MapLayerSettings[];
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {
@@ -566,11 +607,17 @@ export namespace RealityModelTileTree {
     protected _transform?: Transform;
     protected _iModel: IModelConnection;
     private _isGlobal?: boolean;
+    private readonly _layerTrees = new Array<MapLayerTileTreeReference | undefined>();
+    private _baseImageryLayerIncluded = false;
     protected readonly _source: RealityModelSource;
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
+    private _baseLayerSettings: BaseLayerSettings | undefined;
+    private _baseTransparent = false;
+    private _baseColor?: ColorDef;
+    private _bgMapSettings?: BackgroundMapSettings;
 
     public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -610,6 +657,37 @@ export namespace RealityModelTileTree {
 
       if (undefined !== props.classifiers)
         this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
+
+      this._baseLayerSettings = props.backgroundBase;
+      const isOverlay = false; // ###TODO
+
+      let tree;
+      if (!isOverlay && this._baseLayerSettings !== undefined) {
+        if (this._baseLayerSettings instanceof MapLayerSettings) {
+          tree = createMapLayerTreeReference(this._baseLayerSettings, 0, this._iModel);
+          this._baseTransparent = this._baseLayerSettings.transparency > 0;
+        } else {
+          this._baseColor = this._baseLayerSettings;
+          this._baseTransparent = this._baseColor?.getTransparency() > 0;
+        }
+      }
+
+      if (this._baseImageryLayerIncluded = (undefined !== tree))
+        this._layerTrees.push(tree);
+
+      const layerSettings = props.backgroundLayers;
+
+      if (undefined !== layerSettings) { // ###TODO should this always be true?
+        for (let i = 0; i < layerSettings.length; i++)
+          if (undefined !== (tree = createMapLayerTreeReference(layerSettings[i], i + 1, this._iModel)))
+            this._layerTrees.push(tree);
+      }
+
+      this._bgMapSettings = props.mapSettings;
+      if (this._bgMapSettings) { // ###TODO should this always be true?
+        if (this._bgMapSettings.planarClipMask && this._bgMapSettings.planarClipMask.isValid)
+          this._planarClipMask = PlanarClipMaskState.create(this._bgMapSettings.planarClipMask);
+      }
     }
 
     public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
@@ -629,7 +707,63 @@ export namespace RealityModelTileTree {
       return this._isGlobal === undefined ? false : this._isGlobal;
     }
 
+    public initializeLayers(context: SceneContext): boolean {
+      let hasLoadedTileTree = false;
+      const tree = this.treeOwner.load() as RealityModelTileTree;
+      if (undefined === tree) {
+        return hasLoadedTileTree;     // Not loaded yet.
+      }
+
+      tree.layerImageryTrees.length = 0;
+      if (0 === this._layerTrees.length) {
+        // return !this.isOverlay;
+        // ###TODO
+        return false;
+      }
+
+      let treeIndex = this._layerTrees.length - 1;
+      // Start displaying at the highest completely opaque layer...
+      for (; treeIndex >= 1; treeIndex--) {
+        const layerTreeRef = this._layerTrees[treeIndex];
+        if (layerTreeRef?.isOpaque)
+          break;    // This layer is completely opaque and will obscure all others so ignore lower ones.
+      }
+
+      for (; treeIndex < this._layerTrees.length; treeIndex++) {
+        const layerTreeRef = this._layerTrees[treeIndex];
+        const hasValidTileTree = layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus;
+        const isImageryMapLayer = layerTreeRef instanceof ImageryMapLayerTreeReference;
+        const isLayerVisible = (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef?.layerSettings.visible));
+        // Load tile tree for each configured layer.
+        // Note: Non-visible imagery layer are always added to allow proper tile tree scale range visibility reporting.
+        if (hasValidTileTree
+          && isLayerVisible
+          && !layerTreeRef.layerSettings.allSubLayersInvisible) {
+          const layerTree = layerTreeRef.treeOwner.load();
+          if (layerTree !== undefined) {
+            hasLoadedTileTree = true;
+          } else {
+            // Let's continue, there might be loaded tile tree in the list
+            continue;
+          }
+
+          // Add loaded TileTree
+          const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex === 0);
+          if (layerTree instanceof ImageryMapTileTree) {
+            tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
+          } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
+            tree.addModelLayer(layerTreeRef, context);
+        }
+      }
+
+      return hasLoadedTileTree;
+    }
+
     public override addToScene(context: SceneContext): void {
+      const tree = this.treeOwner.load() as RealityModelTileTree;
+      if (undefined === tree || !this.initializeLayers(context))
+        return;     // Not loaded yet.
+
       // NB: The classifier must be added first, so we can find it when adding our own tiles.
       if (this._classifier && this._classifier.activeClassifier)
         this._classifier.addToScene(context);

@@ -122,6 +122,10 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
+
+      const mapSettings = view.displayStyle.backgroundMapSettings;
+      const mapImagery = view.displayStyle.settings.mapImagery;
+
       const treeRef = (!useOrbitGtTileTreeReference) ?
         createRealityTileTreeReference({
           rdSourceKey,
@@ -131,6 +135,9 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
           getDisplaySettings,
+          mapSettings,
+          backgroundBase: mapImagery.backgroundBase,
+          backgroundLayers: mapImagery.backgroundLayers
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
