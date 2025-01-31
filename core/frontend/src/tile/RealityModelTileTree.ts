@@ -707,6 +707,7 @@ export namespace RealityModelTileTree {
       return this._isGlobal === undefined ? false : this._isGlobal;
     }
 
+    // ###TODO lifted from MapTileTree.ts - should be refactored
     public initializeLayers(context: SceneContext): boolean {
       let hasLoadedTileTree = false;
       const tree = this.treeOwner.load() as RealityModelTileTree;
