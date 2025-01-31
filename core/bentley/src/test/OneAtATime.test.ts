@@ -9,8 +9,10 @@ import { BeDuration } from "../Time";
 describe("OneAtATime test", () => {
 
   it("OneAtATime", async () => {
-    const unhandledRejectionHandler = (_reason: any) => {
-      expect(_reason).toBeInstanceOf(Error);
+    expect.assertions(17); // 9 expects from outside the operation, 6 from successful operations, and 2 cancelled unhandledRejection assertions
+
+    const unhandledRejectionHandler = (reason: Error) => {
+      expect(reason.toString()).toContain("cancelled");
     };
 
     process.on("unhandledRejection", unhandledRejectionHandler);
@@ -28,8 +30,8 @@ describe("OneAtATime test", () => {
     const abandonedError = new AbandonedError("testAbandon");
     const cancelled = new AbandonedError("cancelled");
 
+    void expect(operation.request(200, "hello")).resolves; // is started immediately, and will complete
     void expect(operation.request(200, "hello")).rejects.with.toBeInstanceOf(AbandonedError); // becomes pending, doesn't abort previous because its already started
-
     void expect(operation.request(200, "hello")).rejects.with.toBeInstanceOf(AbandonedError); // aborts previous, becomes pending
     let count = await operation.request(200, "hello"); // aborts previous, becomes pending, eventually is run
     expect(count).toBe(2); // only the first and last complete
