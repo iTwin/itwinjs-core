@@ -18,6 +18,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
   private _decorator: GoogleMapsDecorator;
   private _hadUnrecoverableError = false;
+  private _tileSize = 256
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._decorator = new GoogleMapsDecorator();
@@ -38,6 +39,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       return undefined;
     }
   }
+  public override get tileSize(): number { return this._tileSize; }
 
   public override async initialize(): Promise<void> {
 
@@ -57,6 +59,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       Logger.logError(loggerCategory, msg);
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
+    this._tileSize = session.tileWidth; // assuming here tiles are square
 
     const isActivated = await this._decorator.activate(this._settings.properties!.mapType as MapTypesType);
     if (!isActivated) {
