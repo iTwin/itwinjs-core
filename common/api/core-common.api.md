@@ -468,10 +468,10 @@ export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData);
 }
 
-// @public @deprecated (undocumented)
+// @internal @deprecated (undocumented)
 export type BackendReadable = Readable;
 
-// @public @deprecated (undocumented)
+// @internal @deprecated (undocumented)
 export type BackendWritable = Writable;
 
 // @public
