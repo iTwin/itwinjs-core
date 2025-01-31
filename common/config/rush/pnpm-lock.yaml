@@ -16,8 +16,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.0.44
-        version: 5.0.44
+        specifier: 5.0.47
+        version: 5.0.47
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -1310,45 +1310,24 @@ importers:
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
         version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.0
       '@types/glob':
         specifier: ^5.0.35
         version: 5.0.35
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
-      '@types/sinon':
-        specifier: ^17.0.2
-        version: 17.0.2
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.3.10)
+      '@vitest/coverage-v8':
+        specifier: ^2.1.0
+        version: 2.1.0(@vitest/browser@2.1.0)(vitest@2.1.0)
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
-      nyc:
-        specifier: ^15.1.0
-        version: 15.1.0
       rimraf:
         specifier: ^3.0.2
         version: 3.0.2
-      sinon:
-        specifier: ^17.0.2
-        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.0(@types/node@20.17.12)(@vitest/browser@2.1.0)(jsdom@19.0.0)(msw@2.7.0(@types/node@20.17.12)(typescript@5.6.2))(terser@5.37.0)
 
   ../../core/webgl-compatibility:
     dependencies:
@@ -4664,8 +4643,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.0.44':
-    resolution: {integrity: sha512-cJQ+YReRBSacH2aBoalyCf27g4XE5RcC7eppUTTUB9AoQsaaFfoYrahiGK8+Pbo6qvXzptzR1RH5HsEtM4iNcQ==}
+  '@bentley/imodeljs-native@5.0.47':
+    resolution: {integrity: sha512-6FcYKNKTc7t2zfRgPB0fzhNMG6BnO0CWgs6TvnyH41qlRjj5Cbg7ZlZOkXgF+Gn5SnyI/hD9GoqIc5he/O4O+Q==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11091,7 +11070,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.0.44': {}
+  '@bentley/imodeljs-native@5.0.47': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
