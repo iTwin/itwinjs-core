@@ -19,7 +19,7 @@ class Env:
 
     # Constants: Edit these to change the versions of the Android SDK, AVD, and Open JDK.
     # Note: these are upack version strings.
-    avd_ver = '34.0.0-1'
+    avd_ver = '34.0.0-3'
     '''The version of the avd to use.'''
     sdk_ver = '34.0.0-0'
     '''The version of the Android SDK to use.'''
@@ -126,7 +126,7 @@ class Emulator:
                 newline = f'path={self.__avd_home}/{self.__avd_name}.avd\n'
             sys.stdout.write(newline)
         config_path = f'{self.__avd_home}/{self.__avd_name}.avd/config.ini'
-        skin_path = f'{Path.home()}/Library/Android/sdk/skins/pixel_6'
+        skin_path = f'{self.__avd_home}/skins/pixel_6'
         for line in fileinput.input(config_path, inplace=True):
             newline = line
             if line.startswith('skin.path='):
