@@ -192,7 +192,7 @@ def start_emulator() -> Emulator:
     Start the Android emulator and return an object representing it.
     '''
     emulator = Emulator(env.avd_name, env.avd_dir, env.jdk_dir, env.emulator_dir)
-    log('Fixing path setting in emulator\'s ini file...')
+    log('Fixing path setting in emulator\'s ini files...')
     emulator.fix_ini_paths()
     log('Starting Android emulator...')
     emulator.start()
@@ -244,11 +244,11 @@ def run_app() -> bool:
     '''
     Run the app and return True on success of False on failure. Since the app often fails on the
     first run, this will run it a second time in the event of a failure on the first run.
-    Note: first run waits for 1 minute; second run waits for 3 minutes.
+    Note: first run waits for 1 minute; second run waits for 5 minutes.
     '''
     for i in range(2):
         start_app()
-        if wait_for_first_render(i * 2.0 + 1.0):
+        if wait_for_first_render(i * 4.0 + 1.0):
             return True
     return False
 
