@@ -7,10 +7,10 @@ import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { UnitProps } from "../Interfaces";
-import { ParseError, Parser } from "../Parser";
+import { ParsedQuantity, ParseError, Parser } from "../Parser";
 import { ParserSpec } from "../ParserSpec";
 import { Quantity } from "../Quantity";
-import { BadUnit } from "../Unit";
+import { BadUnit, BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 const logTestOutput = false;
@@ -29,7 +29,42 @@ describe("Parsing tests:", () => {
     expect(noUnitQty.magnitude).toEqual(0);
     expect(noUnitQty.isValid).to.be.false;
   });
-
+  it("can parse formatted strings with a spacer that matches a mathematical operator", async () => {
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "-",
+        units: [
+          {
+            label: "'",
+            name: "Units.FT",
+          },
+          {
+            label: `"`,
+            name: "Units.IN",
+          },
+        ],
+      },
+      decimalSeparator: ".",
+      formatTraits: [
+        "KeepSingleZero",
+        "ShowUnitLabel",
+      ],
+      precision: 8,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      type: "Fractional",
+      uomSeparator: "",
+    };
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
+    const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
+    const result = parserSpec.parseToQuantityValue(`20'-6"`);
+    expect(result.ok).to.be.true;
+    expect((result as ParsedQuantity).value).toEqual(6.2484);
+  });
   it("Quantity convert Meters to inches", async () => {
     const unitsProvider = new TestUnitsProvider();
     const inchUnit = await unitsProvider.findUnit("in", "Units.LENGTH");

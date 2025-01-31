@@ -339,8 +339,10 @@ export class Parser {
               tokens.push(new ParseToken(wipToken));
               wipToken = "";
             }
+            const newToken = new ParseToken(str[i]);
+            if (charCode === format.spacerOrDefault.charCodeAt(0)) newToken.isOperator = false; // If the operator is also a spacer, we don't want to treat it as an operator.
 
-            tokens.push(new ParseToken(str[i])); // Push an Operator Token in the list.
+            tokens.push(newToken); // Push an Operator Token in the list.
             continue;
           }
 

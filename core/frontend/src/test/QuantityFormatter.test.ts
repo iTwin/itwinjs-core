@@ -6,7 +6,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
-import { Parser, UnitProps } from "@itwin/core-quantity";
+import { ParsedQuantity, Parser, QuantityParseResult, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
@@ -79,6 +79,19 @@ describe("Quantity formatter", async () => {
     expect(actual).toBe(expected);
   });
 
+  it("Length default parser should handle format", async () => {
+    const numericVal = 6.2484; // 20'-6" in meters
+
+    await quantityFormatter.setActiveUnitSystem("imperial");
+    expect(quantityFormatter.activeUnitSystem).toBe("imperial");
+    const imperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length);
+    const imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+    const stringVal = quantityFormatter.formatQuantity(numericVal, imperialFormatSpec);
+    expect(stringVal).toBe(`20'-6"`);
+    const parsedVal = quantityFormatter.parseToQuantityValue(`20'-6"`, imperialParserSpec);
+    expect(parsedVal.ok).toBe(true);
+    expect(withinTolerance((parsedVal as ParsedQuantity).value, numericVal)).toBe(true);
+  });
   it("Save overrides to localStorage", async () => {
     const overrideLengthAndCoordinateEntry = {
       metric: {
