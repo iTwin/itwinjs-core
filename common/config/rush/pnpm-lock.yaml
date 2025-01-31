@@ -70,9 +70,6 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../geometry
-      '@itwin/ecschema-locaters':
-        specifier: workspace:*
-        version: link:../ecschema-locaters
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../ecschema-metadata
