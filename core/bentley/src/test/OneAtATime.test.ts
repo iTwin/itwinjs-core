@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, onTestFinished } from "vitest";
 import { AbandonedError, OneAtATimeAction } from "../OneAtATimeAction";
 import { BeDuration } from "../Time";
 
@@ -42,6 +42,8 @@ describe("OneAtATime test", () => {
     void expect(operation.request(200, "hello")).rejects.with.toEqual(abandonedError); // aborts previous, becomes pending
     count = await operation.request(200, "hello");
     expect(count).toBe(3);
-    process.removeListener("unhandledRejection", unhandledRejectionHandler);
+    onTestFinished(() => {
+      process.removeListener("unhandledRejection", unhandledRejectionHandler)
+    });
   });
 });
