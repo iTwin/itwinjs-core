@@ -460,10 +460,19 @@ export class B3dmHeader extends TileHeader {
     readonly length: number;
 }
 
+// @internal @deprecated (undocumented)
+export type BackendBuffer = Buffer_2;
+
 // @public (undocumented)
 export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData);
 }
+
+// @public @deprecated (undocumented)
+export type BackendReadable = Readable;
+
+// @public @deprecated (undocumented)
+export type BackendWritable = Writable;
 
 // @public
 export enum BackgroundFill {
@@ -7625,8 +7634,6 @@ export interface RenderFeatureTable {
     readonly type: BatchType;
 }
 
-// Warning: (ae-internal-mixed-release-tag) Mixed release tags are not allowed for "RenderMaterial" because one of its declarations is marked as @internal
-//
 // @public
 export abstract class RenderMaterial {
     protected constructor(params: {
@@ -7640,8 +7647,9 @@ export abstract class RenderMaterial {
     readonly textureMapping?: TextureMapping;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export namespace RenderMaterial {
+    // @internal
     export class Params {
         constructor(key?: string);
         get alpha(): number | undefined;

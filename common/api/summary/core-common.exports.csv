@@ -28,7 +28,13 @@ public;interface;AuxCoordSystemProps
 public;type;AxisAlignedBox3d
 public;type;AxisAlignedBox3dProps
 internal;class;B3dmHeader
+internal;type;BackendBuffer
+deprecated;type;BackendBuffer
 public;class;BackendError
+public;type;BackendReadable
+deprecated;type;BackendReadable
+public;type;BackendWritable
+deprecated;type;BackendWritable
 public;enum;BackgroundFill
 public;interface;BackgroundMapProps
 public;class;BackgroundMapProvider
@@ -669,7 +675,8 @@ internal;interface;RelTypeInfo
 public;type;RemoveFunction
 public;interface;RenderFeatureTable
 public;class;RenderMaterial
-internal;namespace;RenderMaterial
+public;namespace;RenderMaterial
+internal;class;Params
 public;interface;RenderMaterialAssetMapsProps
 public;interface;RenderMaterialAssetProps
 public;interface;RenderMaterialProps
