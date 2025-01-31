@@ -1238,7 +1238,7 @@ describe("Schema", () => {
 
       it("should throw an error for current version, when encountered an unknown type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-            <ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion}">
+            <ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECStructClass typeName="PrimStruct">
             <ECProperty propertyName="p2d" typeName="Point2d" />
             <ECProperty propertyName="p3d" typeName="Point3d" />
