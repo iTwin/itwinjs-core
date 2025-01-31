@@ -20,8 +20,8 @@ export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" |
 export type SubLayerId = string | number;
 
 /** @public */
-export type  PropertyBagArrayProperty = Array<number|string|boolean>;
-export interface PropertyBag { [key: string]: number | string | boolean | PropertyBagArrayProperty };
+export type  MapLayerProviderArrayProperty = Array<number|string|boolean>;
+export interface MapLayerProviderProperties { [key: string]: number | string | boolean | MapLayerProviderArrayProperty };
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
  * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
@@ -173,10 +173,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   */
   queryParams?: { [key: string]: string };
 
-  /** Data specific to each imagery format.
+  /** Data specific to each map layer provider.
    * @beta
   */
-  properties?: PropertyBag;
+  properties?: MapLayerProviderProperties;
 
 }
 
@@ -310,7 +310,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   /** TODO
    * @beta
   */
-  public readonly properties?: PropertyBag;
+  public readonly properties?: MapLayerProviderProperties;
 
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }

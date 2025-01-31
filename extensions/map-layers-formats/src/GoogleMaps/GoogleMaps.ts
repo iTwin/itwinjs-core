@@ -1,4 +1,4 @@
-import { BackgroundMapType, BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, PropertyBag } from "@itwin/core-common";
+import { ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
 import { IModelApp, MapCartoRectangle } from "@itwin/core-frontend";
 import { GoogleMapsMapLayerFormat } from "./GoogleMapsImageryFormat";
 import { Angle } from "@itwin/core-geometry";
@@ -135,12 +135,12 @@ export const GoogleMaps = {
   },
 
   /**
- * Converts the session options to a property bag.
+ * Converts the session options to provider properties
  * @param opts Options to create the session
  * @beta
 */
-  createPropertyBagFromSessionOptions: (opts: CreateGoogleMapsSessionOptions) => {
-    const properties: PropertyBag = {
+  createPropertiesFromSessionOptions: (opts: CreateGoogleMapsSessionOptions): MapLayerProviderProperties => {
+    const properties: MapLayerProviderProperties = {
       mapType: opts.mapType,
       language: opts.mapType,
     }
@@ -178,7 +178,7 @@ export const GoogleMaps = {
       formatId: GoogleMapsMapLayerFormat.formatId,
       url: "",
       name,
-      properties: GoogleMaps.createPropertyBagFromSessionOptions(opts ?? {mapType: "satellite", language: "en-US", region: "US:", layerTypes: ["layerRoadmap"]}),
+      properties: GoogleMaps.createPropertiesFromSessionOptions(opts ?? {mapType: "satellite", language: "en-US", region: "US:", layerTypes: ["layerRoadmap"]}),
     };
   },
 

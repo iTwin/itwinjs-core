@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, comparePrimitiveArrays, comparePrimitives, compareStrings, compareStringsOrUndefined, dispose, Logger, PrimitiveType} from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, Logger,} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, PropertyBagArrayProperty, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -275,6 +275,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     await this._imageryProvider.addAttributions(cards, vp);
   }
+
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
@@ -355,11 +356,11 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
                     break;
                   }
                   if (Array.isArray(lhsProp)) {
-                    cmp = comparePrimitiveArrays(lhsProp, rhsProp as PropertyBagArrayProperty);
+                    cmp = compareSimpleArrays(lhsProp, rhsProp as (number | string | boolean)[]);
                     if (0 !== cmp)
                       break;
                   } else {
-                    cmp = comparePrimitives(lhsProp as PrimitiveType, rhsProp as PrimitiveType);
+                    cmp = compareSimpleTypes(lhsProp as number | string | boolean, rhsProp as number | string | boolean);
                     if (0 !== cmp)
                       break;
                   }

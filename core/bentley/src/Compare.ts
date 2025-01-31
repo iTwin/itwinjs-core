@@ -93,8 +93,7 @@ export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefin
     return areEqual(t, u);
 }
 
-export type PrimitiveType = number | string | boolean;
-export function comparePrimitives(lhs: PrimitiveType, rhs: PrimitiveType): number {
+export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number {
   // Make sure the types are the same
   if (typeof lhs !== typeof rhs) {
     return 1;
@@ -116,7 +115,7 @@ export function comparePrimitives(lhs: PrimitiveType, rhs: PrimitiveType): numbe
   return cmp;
 }
 
-export function comparePrimitiveArrays (lhs?: Array<number|string|boolean>, rhs?: Array<number|string|boolean> ) {
+export function compareSimpleArrays (lhs?: Array<number | string | boolean>, rhs?: Array<number | string | boolean> ) {
   if (undefined === lhs)
     return undefined === rhs ? 0 : -1;
   else if (undefined === rhs)
@@ -129,7 +128,7 @@ export function comparePrimitiveArrays (lhs?: Array<number|string|boolean>, rhs?
 
   let cmp = 0;
   for (let i = 0; i < lhs.length; i++) {
-    cmp = comparePrimitives(lhs[i], rhs[i]);
+    cmp = compareSimpleTypes(lhs[i], rhs[i]);
     if (cmp !== 0) {
       break;
     }
