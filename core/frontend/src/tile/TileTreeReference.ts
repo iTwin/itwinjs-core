@@ -261,8 +261,13 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   public get planarClipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
 
-  /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
+
+  /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div.
+   * @beta
+  */
+  public async addAttributions(_cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> { }
 
   /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
    * Return `undefined` if geometry collection is not supported.

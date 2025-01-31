@@ -208,8 +208,15 @@ export class ImageryMapTileTree extends RealityTileTree {
     this._rootTile = new ImageryMapTile(params.rootTile, this, rootQuadId, this.getTileRectangle(rootQuadId));
   }
   public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
+
+    /** @deprecated in 5.0 Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryLoader.addLogoCards(cards, vp);
+  }
+
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    return this._imageryLoader.addAttributions(cards, vp);
   }
 
   public getTileRectangle(quadId: QuadId): MapCartoRectangle {
@@ -258,10 +265,16 @@ class ImageryTileLoader extends RealityTileLoader {
   public get maxDepth(): number { return this._imageryProvider.maximumZoomLevel; }
   public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
+
+    /** @deprecated in 5.0 Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryProvider.addLogoCards(cards, vp);
   }
 
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    await this._imageryProvider.addAttributions(cards, vp);
+  }
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }

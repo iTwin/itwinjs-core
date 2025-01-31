@@ -96,6 +96,25 @@ export interface GoogleMapsViewportInfo {
   maxZoomRects: GoogleMapsMaxZoomRect[];
 }
 
+/**
+ * Request parameters for the getViewportInfo method.
+ * @beta
+*/
+export interface ViewportInfoRequestParams {
+  /** Bounding rectangle */
+  rectangle: MapCartoRectangle;
+
+  /** Session token */
+  session: string;
+
+  /** The Google Cloud API key */
+  key: string;
+
+  /** Zoom level of the viewport */
+  zoom: number;
+}
+
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const GoogleMaps = {
 /**
@@ -166,12 +185,11 @@ export const GoogleMaps = {
   /**
   * Retrieves the maximum zoom level available within a bounding rectangle.
   * @param rectangle The bounding rectangle
-  * @param session The session token
-  * @param key The Google Cloud API key
   * @returns The maximum zoom level available within the bounding rectangle.
    * @beta
   */
-  getViewportInfo: async (rectangle: MapCartoRectangle, zoom: number, session: string, key: string): Promise<GoogleMapsViewportInfo | undefined>=> {
+  getViewportInfo: async (params: ViewportInfoRequestParams): Promise<GoogleMapsViewportInfo | undefined>=> {
+    const {rectangle, session, key, zoom} = params;
     const north = Angle.radiansToDegrees(rectangle.north);
     const south = Angle.radiansToDegrees(rectangle.south);
     const east = Angle.radiansToDegrees(rectangle.east);

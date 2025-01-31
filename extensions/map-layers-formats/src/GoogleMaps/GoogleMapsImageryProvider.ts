@@ -1,6 +1,6 @@
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, ScreenViewport, TileUrlImageryProvider } from "@itwin/core-frontend";
-import { CreateGoogleMapsSessionOptions, GoogleMaps, LayerTypesType, MapTypesType } from "./GoogleMaps";
+import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile, TileUrlImageryProvider } from "@itwin/core-frontend";
+import { CreateGoogleMapsSessionOptions, GoogleMaps, GoogleMapsSession, LayerTypesType, MapTypesType } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
@@ -26,16 +26,16 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
   }
 
-  protected async createSession() : Promise<boolean> {
+  protected async createSession() : Promise<GoogleMapsSession|undefined> {
     const sessionOptions = this.createCreateSessionOptions();
     if (this._settings.accessKey ) {
       // Create session and store in query parameters
       const sessionObj = await GoogleMaps.createSession(this._settings.accessKey.value, sessionOptions);
       this._settings.unsavedQueryParams = {session: sessionObj.session};
-      return true;
+      return sessionObj;
     } else {
-      Logger.logError(loggerCategory, `Missing GoogleMaps api key/`);
-      return false;
+      Logger.logError(loggerCategory, `Missing GoogleMaps api key`);
+      return undefined;
     }
   }
 
@@ -51,8 +51,8 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
 
-    const isSessionCreated = await this.createSession();
-    if (!isSessionCreated) {
+    const session = await this.createSession();
+    if (!session) {
       const msg = `Failed to create session`;
       Logger.logError(loggerCategory, msg);
       throw new BentleyError(BentleyStatus.ERROR, msg);
@@ -103,28 +103,43 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     return this.appendCustomParams(obj.toString());
   }
 
-  private async getAttributions(row: number, column: number, zoomLevel: number): Promise<string[]> {
-    let attributions: string[] = [];
-    const session = this._settings.collectQueryParams().session;
-    const key = this._settings.accessKey?.value;
-    if (!session || !key) {
-      return attributions;
-    }
+  private async fetchAttributions(tiles: Set<Tile>): Promise<string[]> {
+    const zooms = new Set<number>();
+    const matchingAttributions: string[] = [];
 
-    const extent = this.getEPSG4326Extent(row, column, zoomLevel);
-    const range = MapCartoRectangle.fromDegrees(extent.longitudeLeft, extent.latitudeBottom, extent.longitudeRight, extent.latitudeTop);
+          // Viewport info requests must be made for a specific zoom level
+    tiles.forEach((tile) => zooms.add(tile.depth));
+    for (const zoom of zooms) {
 
-    try {
-      const viewportInfo = await GoogleMaps.getViewportInfo(range, zoomLevel, session, key);
-      if (viewportInfo) {
-        attributions = viewportInfo.copyright.split(",");
+      let cartoRect: MapCartoRectangle|undefined;
+      for (const tile of tiles) {
+        if (tile.depth === zoom && tile instanceof MapTile) {
+          const extent = this.getEPSG4326Extent(tile.quadId.row, tile.quadId.column, tile.depth);
+          const rect = MapCartoRectangle.fromDegrees(extent.longitudeLeft, extent.latitudeBottom, extent.longitudeRight, extent.latitudeTop)
+          if (cartoRect)
+            cartoRect.union(rect);
+          else
+            cartoRect = rect;
+        }
       }
-    } catch {
-
+      if (cartoRect) {
+        try {
+          const viewportInfo = await GoogleMaps.getViewportInfo({
+            rectangle: cartoRect,
+            session: this._settings.collectQueryParams().session,
+            key: this._settings.accessKey!.value,
+            zoom});
+          if (viewportInfo?.copyright) {
+            matchingAttributions.push(viewportInfo.copyright);
+          }
+        } catch (error:any) {
+          Logger.logError(loggerCategory, `Error while loading viewport info: ${error?.message??"Unknown error"}`);
+        }
+      }
     }
-    return attributions;
-  }
 
+    return matchingAttributions;
+  }
   private async logJsonError(tileResponse: Response) {
     try {
       const error = await tileResponse.json();
@@ -180,15 +195,27 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     this._decorator.decorate(context);
   }
 
-  public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
-    const attributions: string[] = [];
+  public override async addAttributions (cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     let copyrightMsg = "";
-    for (let i = 0; i < attributions.length; ++i) {
-      if (i > 0)
-        copyrightMsg += "<br>";
-      copyrightMsg += attributions[i];
+    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
+    if (tiles) {
+      try {
+        const attrList = await this.fetchAttributions(tiles);
+        for (const attr of attrList) {
+          attr.split(",").forEach((line) => {
+            copyrightMsg += `${copyrightMsg.length===0 ? "": "<br"}${line}`;
+        });
+        }
+      }
+      catch (error: any) {
+        Logger.logError(loggerCategory, `Error while loading attributions: ${error?.message??"Unknown error"}`);
+      }
     }
 
-    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/google_on_white_hdpi.png`, heading: "Google Maps", notice: copyrightMsg }));
+    cards.appendChild(IModelApp.makeLogoCard({
+      iconSrc: `${IModelApp.publicPath}images/google_on_white_hdpi.png`,
+      heading: "Google Maps",
+      notice: copyrightMsg }));
   }
+
 }

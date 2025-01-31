@@ -1227,18 +1227,38 @@ export class MapTileTreeReference extends TileTreeReference {
     return info;
   }
 
-  /** Add logo cards to logo div. */
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (tree) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       tree.mapLoader.terrainProvider.addLogoCards(cards, vp);
       for (const imageryTreeRef of this._layerTrees) {
         if (imageryTreeRef?.layerSettings.visible) {
           const imageryTree = imageryTreeRef.treeOwner.tileTree;
           if (imageryTree instanceof ImageryMapTileTree)
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             imageryTree.addLogoCards(cards, vp);
         }
       }
+    }
+  }
+
+    /** Add logo cards to logo div. */
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+
+    if (tree) {
+      const promises = [tree.mapLoader.terrainProvider.addAttributions(cards, vp)];
+
+      for (const imageryTreeRef of this._layerTrees) {
+        if (imageryTreeRef?.layerSettings.visible) {
+          const imageryTree = imageryTreeRef.treeOwner.tileTree;
+          if (imageryTree instanceof ImageryMapTileTree)
+            promises.push(imageryTree.addAttributions(cards, vp));
+        }
+      }
+      await Promise.all(promises);
     }
   }
 
