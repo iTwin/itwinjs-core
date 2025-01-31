@@ -16,6 +16,10 @@ describe("OneAtATime test", () => {
     };
 
     process.on("unhandledRejection", unhandledRejectionHandler);
+    onTestFinished(() => {
+      process.removeListener("unhandledRejection", unhandledRejectionHandler)
+    });
+
     let calls = 0;
     const operation = new OneAtATimeAction(async (a: number, b: string) => {
       if (a === 10)
@@ -42,8 +46,5 @@ describe("OneAtATime test", () => {
     void expect(operation.request(200, "hello")).rejects.with.toEqual(abandonedError); // aborts previous, becomes pending
     count = await operation.request(200, "hello");
     expect(count).toBe(3);
-    onTestFinished(() => {
-      process.removeListener("unhandledRejection", unhandledRejectionHandler)
-    });
   });
 });
