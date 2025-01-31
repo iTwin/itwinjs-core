@@ -13,7 +13,6 @@ import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
 import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
@@ -25,7 +24,9 @@ export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: 
 
 // @public
 export class ArrayPropertiesField extends PropertiesField {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, itemsField: PropertiesField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    // @deprecated
+    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, itemsField: PropertiesField, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    constructor(props: ArrayPropertiesFieldProps);
     // (undocumented)
     clone(): ArrayPropertiesField;
     static fromCompressedJSON(json: ArrayPropertiesFieldJSON<Id64String>, classesMap: {
@@ -67,7 +68,7 @@ export class AsyncTasksTracker {
     // (undocumented)
     get pendingAsyncs(): Set<string>;
     // (undocumented)
-    trackAsyncTask(): IDisposable;
+    trackAsyncTask(): Disposable;
 }
 
 // @public
@@ -987,9 +988,11 @@ export interface ExtendedDataRule extends RuleBase {
 
 // @public
 export class Field {
+    // @deprecated
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription, renderer?: RendererDescription, extendedData?: {
         [key: string]: unknown;
     });
+    constructor(props: FieldProps);
     category: CategoryDescription;
     // (undocumented)
     clone(): Field;
@@ -1498,9 +1501,11 @@ export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent 
 
 // @public
 export class Item {
+    // @deprecated
     constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: {
         [key: string]: any;
     });
+    constructor(props: ItemProps);
     classInfo?: ClassInfo;
     displayValues: ValuesDictionary<DisplayValue>;
     extendedData?: {
@@ -1815,7 +1820,9 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
+    // @deprecated
+    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean, renderer?: RendererDescription);
+    constructor(props: NestedContentFieldProps);
     actualPrimaryClassIds: Id64String[];
     autoExpand?: boolean;
     // (undocumented)
@@ -1823,7 +1830,7 @@ export class NestedContentField extends Field {
     contentClassInfo: ClassInfo;
     static fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
-    }, categories: CategoryDescription[]): any;
+    }, categories: CategoryDescription[]): NestedContentField;
     // @deprecated
     static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
@@ -2331,7 +2338,9 @@ export interface ProcessPrimitiveValueProps {
 
 // @public
 export class PropertiesField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    // @deprecated
+    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    constructor(props: PropertiesFieldProps);
     // (undocumented)
     clone(): PropertiesField;
     static fromCompressedJSON(json: PropertiesFieldJSON<Id64String>, classesMap: {
@@ -2583,8 +2592,10 @@ export enum QuerySpecificationTypes {
 }
 
 // @public
-export class RegisteredRuleset implements IDisposable, Ruleset {
+export class RegisteredRuleset implements Disposable, Ruleset {
+    [Symbol.dispose](): void;
     constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void);
+    // @deprecated (undocumented)
     dispose(): void;
     // (undocumented)
     get id(): string;
@@ -3185,7 +3196,9 @@ export interface StructFieldMemberDescription {
 
 // @public
 export class StructPropertiesField extends PropertiesField {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, memberFields: PropertiesField[], isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    // @deprecated
+    constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, memberFields: PropertiesField[], isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
+    constructor(props: StructPropertiesFieldProps);
     // (undocumented)
     clone(): StructPropertiesField;
     static fromCompressedJSON(json: StructPropertiesFieldJSON<Id64String>, classesMap: {

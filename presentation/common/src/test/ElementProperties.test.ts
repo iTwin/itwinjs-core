@@ -97,7 +97,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Parent Category"]: {
           type: "category",
@@ -150,7 +150,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -194,7 +194,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {},
     });
   });
@@ -221,7 +221,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -291,7 +291,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -350,7 +350,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",
@@ -424,7 +424,7 @@ describe("buildElementProperties", () => {
     ).to.deep.eq({
       class: "",
       id: "0x1",
-      label: "",
+      label: "test display value",
       items: {
         ["Test Category"]: {
           type: "category",

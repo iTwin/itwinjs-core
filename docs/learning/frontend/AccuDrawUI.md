@@ -17,14 +17,21 @@ Applications can choose between a vertical or horizontal layout as well as wheth
     - [Explaining Focus](#explaining-focus)
     - [Moving Focus](#moving-focus)
     - [Entering New Value](#entering-new-value)
+    - [Expression Support](#expression-support)
     - [Accepting New Value](#accepting-new-value)
     - [Choosing a Previous Value](#choosing-a-previous-value)
     - [Nearest Snap Behavior](#nearest-snap-behavior)
   - [Application Support](#application-support)
     - [Initial Setup](#initial-setup)
     - [Configuration Options](#configuration-options)
+    - [User Preferences and Settings](#user-preferences-and-settings)
+      - [Unit Round Off](#unit-round-off)
+      - [Notable Settings](#notable-settings)
     - [Keyboard Shortcuts](#keyboard-shortcuts)
     - [Known Issues](#known-issues)
+      - [AccuDrawKeyboardShortcuts](#accudrawkeyboardshortcuts)
+      - [Other Popups](#other-popups)
+      - [Touch Input](#touch-input)
 
 > NOTE: When referencing shortcuts a description will be used, ex. *Set Origin*, as specific keys and availability is application dependent.
 
@@ -129,6 +136,13 @@ When a non-letter key is pressed the value of the currently focused field is rep
 
 > When entering angles and directions, the "^" and ";" keys will be replaced by "°" for easier entry.
 
+### Expression Support
+
+Simple expressions using +, -, \*, and / can be written when entering values. For + and - the characters after the operator are treated as a quantity value, and for \* and / are treated as a real number.
+To use an expression, first enter a space before the desired operator. This avoids any ambiguity with entering a formatted quantity value such as 20'-6 1/2". The space is not required before entering \* or / when the text insertion cursor is not present. The space is always required for + or - as they can be used to specify the sign of a new quantity value.
+
+![accudraw expressions](./accudraw-expressions.png "Showing how to choose a point halfway between 2 points")
+
 ### Accepting New Value
 
 After entering a new value it can be accepted as follows:
@@ -202,13 +216,51 @@ iModelApp: {
 
 For applications that wish to include a settings dialog for the user, a helper method [AccuDrawViewportUI.refreshControls]($frontend) is provided which will update the currently displayed controls after changes have been made to settings.
 
+### User Preferences and Settings
+
+#### Unit Round Off
+
+Enabling unit round off allows dynamic distance and angle values to be rounded to the nearest increment of the specified units value(s). Rounding can also be configured to account for the current view zoom level, i.e. round distances to larger increment values as you zoom out. Applications should consider including a settings dialog for unit round off.
+
+- [AccuDraw.distanceRoundOff]($frontend) Settings for rounding distances.
+- [AccuDraw.angleRoundOff]($frontend) Settings for rounding angles.
+
+Example code showing how to enable both angle and distance round off:
+
+```ts
+  const accudraw = IModelApp.accuDraw;
+
+  // Enable rounding angles to 10° increments...
+  accuDraw.angleRoundOff.units.clear();
+  accuDraw.angleRoundOff.units.add(Angle.createDegrees(10).radians);
+  accuDraw.angleRoundOff.active = true;
+
+  // Enable rounding distances to 10cm, 1m, or 10m based on view zoom level...
+  accuDraw.distanceRoundOff.units.clear();
+  accuDraw.distanceRoundOff.units.add(0.1);
+  accuDraw.distanceRoundOff.units.add(1.0);
+  accuDraw.distanceRoundOff.units.add(10.0);
+  accuDraw.distanceRoundOff.active = true;
+```
+
+![accudraw distance round off](./accudraw-distance-roundoff.png "Example showing distance round off based on view zoom")
+
+1. Initial view showing dynamic distance value being rounded to nearest multiple of 10cm.
+2. Slightly zoomed out view showing dynamic distance value being rounded to nearest multiple of 1m.
+3. More zoomed out view showing dynamic distance value being rounded to nearest multiple of 10m.
+
+#### Notable Settings
+
+- [AccuDraw.stickyZLock]($frontend) When enabled, the z input field will remain locked with it's current value after a data button.
+- [AccuDraw.autoPointPlacement]($frontend) When enabled, fully specifying a point by entering both distance and angle in polar mode or XY in rectangular mode, automatically sends a data button event without needing to click the left mouse button to accept.
+
 ### Keyboard Shortcuts
 
 Keyboard shortcuts are essential to using AccuDraw effectively and efficiently. Refer [here](./AccuDrawShortcuts) for information regarding available shortcuts and what they do.
 
 When AccuDraw has input focus and does not handle a KeyboardEvent, the event will be propagated first to the active interactive tool, and then to [ToolAdmin.processShortcutKey]($frontend). This is where applications should test for and run their desired keyboard shortcuts.
 
-> NOTE: When using keyboard shortcuts from the appui package, they currently requires focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, applications should override the implementation of [ToolAdmin.processShortcutKey] from the appui package to remove the focus location check.
+> NOTE: When using keyboard shortcuts from the appui package, they currently require focus on Home and as such will not work out of the box with [AccuDrawViewportUI]($frontend) when AccuDraw has input focus. To work around this limitation in the appui package, applications should override the implementation of [ToolAdmin.processShortcutKey] from the appui package to remove the focus location check.
 
 ```ts
 export class MyToolAdmin extends FrameworkToolAdmin {
@@ -228,6 +280,19 @@ iModelApp: {
 
 ### Known Issues
 
-There is currently a conflict when using the cursor layout with the option to show the tool assistance prompt at the cursor, they overlap. For now it is recommended that you disable the cursor prompt when testing the AccuDraw cursor UI.
+#### AccuDrawKeyboardShortcuts
 
-Additional testing is required for touch input. Currently the touch cursor and AccuDraw cursor Ui don't interfere with each other, but more work needs to be done to evaluate if the cursor UI can have any benefit for touch input or should always be disabled.
+Using the keyboard shortcut utilities from the appui package isn't allowing shortcuts like *Set Origin* and *Rotate Axes* that can make use of a current AccuSnap to work as intended. Currently opening the popup menu is clearing the current AccuSnap (unless the shortcut is entered VERY quickly). Until this gets resolved it is recommended to use a Tentative snap with these shortcuts to avoid inconsistent behavior.
+
+The various lock shortcuts such as *Lock X* and *Lock Distance* have an erroneous compass mode check that is preventing the intended behavior of these shortcuts to automatically switch the current compass mode if necessary before enabling the corresponding lock.
+
+#### Other Popups
+
+There is currently a conflict when using the cursor layout with the option to show the tool assistance prompt at the cursor, they overlap. For now it is recommended that you disable the cursor prompt when testing the AccuDraw cursor UI. The following methods have been provided to allow for a popup management strategy that can better coordinate with the cursor layout.
+
+- [AccuDrawViewportUI.currentControlRect]($frontend)
+- [AccuDrawViewportUI.modifyControlRect]($frontend)
+
+#### Touch Input
+
+Additional evaluation is required for touch input. Currently the touch cursor doesn't interfere with the cursor layout, but a means of entering values and using shortcuts is necessary to fully support touch workflows requiring precision input beyond just using AccuSnap.

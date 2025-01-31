@@ -103,7 +103,7 @@ describe("TileAdmin", () => {
           stats.addTexture(this._size);
       }
 
-      public unionRange() {}
+      public unionRange() { }
     }
 
     class TestTile extends Tile {
@@ -176,7 +176,7 @@ describe("TileAdmin", () => {
       public get rootTile(): TestTile { return this._rootTile; }
       public get is3d() { return true; }
       public get maxDepth() { return undefined; }
-      public get viewFlagOverrides() { return { }; }
+      public get viewFlagOverrides() { return {}; }
 
       protected _selectTiles(args: TileDrawArgs): Tile[] {
         const tiles = [];
@@ -199,7 +199,7 @@ describe("TileAdmin", () => {
         args.drawGraphics();
       }
 
-      public prune() {}
+      public prune() { }
     }
 
     class Supplier implements TileTreeSupplier {
@@ -232,6 +232,8 @@ describe("TileAdmin", () => {
         for (const ref of this.refs)
           func(ref);
       }
+
+      public getReferences() { return this.refs; }
 
       public async loadAllTrees(): Promise<void> {
         let allLoaded = true;
@@ -282,8 +284,11 @@ describe("TileAdmin", () => {
 
     async function render(...viewports: Viewport[]): Promise<void> {
       const loadTrees = new Array<Promise<void>>();
-      for (const viewport of viewports)
-        viewport.forEachTiledGraphicsProvider((p) => loadTrees.push((p as Provider).loadAllTrees()));
+      for (const viewport of viewports) {
+        for (const p of viewport.tiledGraphicsProviders) {
+          loadTrees.push((p as Provider).loadAllTrees());
+        }
+      }
 
       await Promise.all(loadTrees);
 
@@ -377,7 +382,7 @@ describe("TileAdmin", () => {
       expect(isLinked(tiles[2])).toBe(false);
       expect(admin.totalTileContentBytes).toEqual(3);
 
-      trees[3].dispose();
+      trees[3][Symbol.dispose]();
       expect(isLinked(tiles[3])).toBe(false);
       expect(admin.totalTileContentBytes).toEqual(0);
     });
@@ -549,7 +554,7 @@ describe("TileAdmin", () => {
       expect(admin.totalTileContentBytes).toEqual(11);
 
       // Disposing the viewport marks all previously-selected tiles as no longer selected by it - but they remain in the LRU list.
-      vp1.dispose();
+      vp1[Symbol.dispose]();
       expect(isLinked(tile1)).toBe(true);
       expect(isLinked(tile2)).toBe(true);
       expect(admin.totalTileContentBytes).toEqual(11);
@@ -558,7 +563,7 @@ describe("TileAdmin", () => {
       expect(isLinked(tile2)).toBe(true);
       expect(admin.totalTileContentBytes).toEqual(10);
 
-      vp2.dispose();
+      vp2[Symbol.dispose]();
       expect(isLinked(tile2)).toBe(true);
       expect(admin.totalTileContentBytes).toEqual(10);
       admin.process();

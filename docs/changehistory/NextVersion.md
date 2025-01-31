@@ -12,6 +12,7 @@ Table of contents:
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
   - [API deprecations](#api-deprecations)
+    - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
     - [@itwin/core-frontend](#itwincore-frontend)
@@ -25,8 +26,10 @@ Table of contents:
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
-      - [@itwin/core-bentley](#itwincore-bentley)
+      - [@itwin/core-bentley](#itwincore-bentley-1)
       - [@itwin/core-electron](#itwincore-electron)
+      - [@itwin/core-frontend](#itwincore-frontend-1)
+      - [@itwin/core-geometry](#itwincore-geometry)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-1)
     - [Packages dropped](#packages-dropped)
@@ -70,6 +73,32 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 ## API deprecations
 
+### @itwin/core-bentley
+
+- The [IDisposable]($core-bentley) interface, along with related [isIDisposable]($core-bentley) and [using]($core-bentley) utilities, have been deprecated in favor of [TypeScript's built-in](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) `Disposable` type and `using` declarations (from the upcoming [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) feature in ECMAScript).
+
+  For example, the following:
+
+  ```typescript
+  import { using } from "@itwin/core-bentley";
+  export function doSomeWork() {
+    using(new SomethingDisposable(), (temp) => {
+      // do something with temp
+    });
+  }
+  ```
+
+  should now be rewritten as:
+
+  ```typescript
+  export function doSomeWork() {
+    using temp = new SomethingDisposable();
+    // do something with temp
+  }
+  ```
+
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+
 ### @itwin/core-common
 
 - [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
@@ -109,7 +138,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only the latest Electron release (Electron 34) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
@@ -123,50 +152,50 @@ The following previously-deprecated APIs have been removed:
 
 The following APIs have been removed in `@itwin/appui-abstract`.
 
-| **Removed**                     | **Replacement**                                           |
-|----------------------------------|-----------------------------------------------------------|
-| `AbstractStatusBarActionItem`    | Use `StatusBarActionItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarCustomItem`    | Use `StatusBarCustomItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarItem`          | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarItemUtilities` | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarLabelItem`     | Use `StatusBarLabelItem` in `@itwin/appui-react` instead. |
-| `AbstractWidgetProps`            | Use `Widget` in `@itwin/appui-react` instead.             |
-| `AllowedUiItemProviderOverrides` | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`. |
-| `BackstageActionItem`            | `BackstageActionItem` in `@itwin/appui-react`.            |
-| `BackstageItem`                  | `BackstageItem` in `@itwin/appui-react`.                  |
-| `BackstageItemType`              | Use Type Guard instead.                                   |
-| `BackstageItemsChangedArgs`      | N/A                                                       |
-| `BackstageItemsManager`          | N/A                                                       |
-| `BackstageItemUtilities`         | `BackstageItemUtilities` in `@itwin/appui-react`.         |
-| `BackstageStageLauncher`         | `BackstageStageLauncher` in `@itwin/appui-react`.         |
-| `BaseUiItemsProvider`            | `BaseUiItemsProvider` in `@itwin/appui-react`.            |
-| `CommonBackstageItem`            | `CommonBackstageItem` in `@itwin/appui-react`.            |
-| `CommonStatusBarItem`            | Use `StatusBarItem` in `@itwin/appui-react` instead.      |
-| `createSvgIconSpec`              | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
-| `EditorPosition.columnSpan`      | N/A                                                       |
-| `getSvgSource`                   | Use `IconSpecUtilities.getWebComponentSource()` instead.  |
-| `isAbstractStatusBarActionItem`  | Use `isStatusBarActionItem` in `@itwin/appui-react` instead. |
-| `isAbstractStatusBarCustomItem`  | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead. |
-| `isAbstractStatusBarLabelItem`   | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead. |
-| `isActionItem`                   | Use `isBackstageActionItem` in `@itwin/appui-react` instead. |
-| `isStageLauncher`                | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead. |
-| `ProvidedItem`                   | `ProvidedItem` in `@itwin/appui-react`.                   |
-| `StagePanelLocation`             | `StagePanelLocation` in `@itwin/appui-react`.             |
-| `StagePanelSection`              | `StagePanelSection` in `@itwin/appui-react`.              |
-| `StageUsage`                     | `StageUsage` in `@itwin/appui-react`.                     |
-| `StatusBarItemId`                | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
-| `StatusBarLabelSide`             | `StatusBarLabelSide` in `@itwin/appui-react`.             |
-| `StatusBarSection`               | `StatusBarSection` in `@itwin/appui-react`.               |
-| `ToolbarItemId`                  | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.  |
-| `ToolbarManager`                 | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
-| `ToolbarOrientation`             | `ToolbarOrientation` in `@itwin/appui-react`.            |
-| `ToolbarUsage`                   | `ToolbarUsage` in `@itwin/appui-react`.                   |
-| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`. |
-| `UiItemProviderOverrides`        | `UiItemProviderOverrides` in `@itwin/appui-react`.        |
-| `UiItemsApplicationAction`       | N/A                                                       |
-| `UiItemsManager`                 | `UiItemsManager` in `@itwin/appui-react`.                 |
-| `UiItemsProvider`                | `UiItemsProvider` in `@itwin/appui-react`.                |
-| `WidgetState`                    | `WidgetState` in `@itwin/appui-react`.
+| **Removed**                         | **Replacement**                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| `AbstractStatusBarActionItem`       | Use `StatusBarActionItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarCustomItem`       | Use `StatusBarCustomItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItem`             | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItemUtilities`    | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead.                          |
+| `AbstractStatusBarLabelItem`        | Use `StatusBarLabelItem` in `@itwin/appui-react` instead.                              |
+| `AbstractWidgetProps`               | Use `Widget` in `@itwin/appui-react` instead.                                          |
+| `AllowedUiItemProviderOverrides`    | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`.                              |
+| `BackstageActionItem`               | `BackstageActionItem` in `@itwin/appui-react`.                                         |
+| `BackstageItem`                     | `BackstageItem` in `@itwin/appui-react`.                                               |
+| `BackstageItemType`                 | Use Type Guard instead.                                                                |
+| `BackstageItemsChangedArgs`         | N/A                                                                                    |
+| `BackstageItemsManager`             | N/A                                                                                    |
+| `BackstageItemUtilities`            | `BackstageItemUtilities` in `@itwin/appui-react`.                                      |
+| `BackstageStageLauncher`            | `BackstageStageLauncher` in `@itwin/appui-react`.                                      |
+| `BaseUiItemsProvider`               | `BaseUiItemsProvider` in `@itwin/appui-react`.                                         |
+| `CommonBackstageItem`               | `CommonBackstageItem` in `@itwin/appui-react`.                                         |
+| `CommonStatusBarItem`               | Use `StatusBarItem` in `@itwin/appui-react` instead.                                   |
+| `createSvgIconSpec`                 | Use `IconSpecUtilities.createWebComponentIconSpec()` instead.                          |
+| `EditorPosition.columnSpan`         | N/A                                                                                    |
+| `getSvgSource`                      | Use `IconSpecUtilities.getWebComponentSource()` instead.                               |
+| `isAbstractStatusBarActionItem`     | Use `isStatusBarActionItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarCustomItem`     | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarLabelItem`      | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead.                            |
+| `isActionItem`                      | Use `isBackstageActionItem` in `@itwin/appui-react` instead.                           |
+| `isStageLauncher`                   | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead.                        |
+| `ProvidedItem`                      | `ProvidedItem` in `@itwin/appui-react`.                                                |
+| `StagePanelLocation`                | `StagePanelLocation` in `@itwin/appui-react`.                                          |
+| `StagePanelSection`                 | `StagePanelSection` in `@itwin/appui-react`.                                           |
+| `StageUsage`                        | `StageUsage` in `@itwin/appui-react`.                                                  |
+| `StatusBarItemId`                   | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `StatusBarLabelSide`                | `StatusBarLabelSide` in `@itwin/appui-react`.                                          |
+| `StatusBarSection`                  | `StatusBarSection` in `@itwin/appui-react`.                                            |
+| `ToolbarItemId`                     | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.                               |
+| `ToolbarManager`                    | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
+| `ToolbarOrientation`                | `ToolbarOrientation` in `@itwin/appui-react`.                                          |
+| `ToolbarUsage`                      | `ToolbarUsage` in `@itwin/appui-react`.                                                |
+| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`.                           |
+| `UiItemProviderOverrides`           | `UiItemProviderOverrides` in `@itwin/appui-react`.                                     |
+| `UiItemsApplicationAction`          | N/A                                                                                    |
+| `UiItemsManager`                    | `UiItemsManager` in `@itwin/appui-react`.                                              |
+| `UiItemsProvider`                   | `UiItemsProvider` in `@itwin/appui-react`.                                             |
+| `WidgetState`                       | `WidgetState` in `@itwin/appui-react`.                                                 |
 
 #### @itwin/core-backend
 
@@ -194,18 +223,47 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
 | `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
 
-#### @itwin/appui-abstract
-
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `EditorPosition.columnSpan` | N/A         |
-
 #### @itwin/core-electron
 
 | Removed                             | Replacement                                               |
 | ----------------------------------- | --------------------------------------------------------- |
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+
+
+#### @itwin/core-frontend
+
+| **Removed**                               | **Replacement**                                                                                              |
+|-------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `callIpcHost`                             | Use `appFunctionIpc` instead.                                                                                 |
+| `callNativeHost`                          | Use `nativeAppIpc` instead.                                                                                   |
+| `createMaterial`                          | Use `createRenderMaterial` instead.                                                                           |
+| `createTextureFromImage`                  | Use `createTexture` instead.                                                                                  |
+| `createTextureFromImageBuffer`            | Use `createTexture` instead.                                                                                  |
+| `createTextureFromImageSource`            | Use `RenderSystem.createTextureFromSource` instead.                                                           |
+| `displayStyleState.getThumbnail`          | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                                                     |
+| `GraphicBuilder.pickId`                   | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                 |
+| `getDisplayedExtents`                     | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
+| `IModelConnection.displayedExtents`       | N/A                                                                                                          |
+| `IModelConnection.expandDisplayedExtents` | Use `displayedExtents` instead.                                                                               |
+| `IModelConnection.query`                  | Use `createQueryReader` instead (same parameter).                                                           |
+| `IModelConnection.queryRowCount`          | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `IModelConnection.restartQuery`           | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`. |
+| `requestDownloadBriefcase(progress)`      | `progress` is removed, use `DownloadBriefcaseOptions.progressCallback` instead.                             |
+| `readImage`                               | Use `readImageBuffer` instead.                                                                                |
+| `setEventController`                      | Removed (was for internal use).                                                                               |
+| `PullChangesOptions.progressCallback`     | Use `downloadProgressCallback` instead.                                                                      |
+
+#### @itwin/core-geometry
+
+| Removed               | Replacement |
+| --------------------- | ----------- |
+| `PathFragment.childFractionTChainDistance`        | `PathFragment.childFractionToChainDistance` |
+| `GrowableXYArray.setXYZAtCheckedPointIndex`       | `GrowableXYArray.setXYAtCheckedPointIndex`  |
+| `PolyfaceBuilder.findOrAddPoint`                  | `PolyfaceBuilder.addPoint`                  |
+| `PolyfaceBuilder.findOrAddParamXY`                | `PolyfaceBuilder.addParamXY`                |
+| `PolyfaceBuilder.findOrAddParamInGrowableXYArray` | `PolyfaceBuilder.addParamInGrowableXYArray` |
+| `PolyfaceBuilder.findOrAddPointXYZ`               | `PolyfaceBuilder.addPointXYZ`               |
 
 ### API removals
 
@@ -231,24 +289,25 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                                                                                            |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
+| Removed                        | Replacement                                                                                                                                                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all.                                      |
+| `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client. |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                      |
 
 ### Change to pullMerge
 
-Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fastforward method for merging changes. This change is transparent to users and is enabled by default.
+Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
 
 #### No pending/local changes
 
-- Incomming changes are applied using "fast-forward" method.
+- Incoming changes are applied using "fast-forward" method.
 
 #### With pending/local changes
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.

@@ -55,8 +55,8 @@ export class BackgroundMapDrape extends TextureDrape {
 
   public override get isDisposed(): boolean { return super.isDisposed && undefined === this._fbo; }
 
-  public override dispose() {
-    super.dispose();
+  public override[Symbol.dispose]() {
+    super[Symbol.dispose]();
     this._fbo = dispose(this._fbo);
   }
 
@@ -85,7 +85,7 @@ export class BackgroundMapDrape extends TextureDrape {
     const requiredHeight = requiredWidth;
 
     if (requiredWidth !== this._width || requiredHeight !== this._height)
-      this.dispose();
+      this[Symbol.dispose]();
 
     this._width = requiredWidth;
     this._height = requiredHeight;
