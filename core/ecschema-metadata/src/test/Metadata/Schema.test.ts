@@ -1236,7 +1236,7 @@ describe("Schema", () => {
         await testSerialization(_schema, false, unsupportedVersionError);
       });
 
-      it("should throw an error for current version, when encountered an unknown type", async () => {
+      it("should throw an error for version V3_2, when encountered an unknown type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
             <ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECStructClass typeName="PrimStruct">
