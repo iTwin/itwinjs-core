@@ -25,7 +25,7 @@ import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { Triangle } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry, TileContent } from "./internal";
+import { BatchedTileIdMap, decodeMeshoptBuffer, RealityModelTileTree, RealityTile, RealityTileGeometry,TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/internal/render/DisplayParams";
@@ -512,12 +512,12 @@ export abstract class GltfReader {
     return transform;
   }
 
-  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
-    const result = this.readGltfAndCreateTemplate(isLeaf, featureTable, contentRange, true, transformToRoot, pseudoRtcBias, instances);
+  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams, tile?: RealityTile): GltfReaderResult {
+    const result = this.readGltfAndCreateTemplate(isLeaf, featureTable, contentRange, true, transformToRoot, pseudoRtcBias, instances, tile);
     return templateToGraphicResult(result, this._system);
   }
 
-  protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult {
+  protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams, tile?: RealityTile): GltfTemplateResult {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
 
@@ -544,7 +544,7 @@ export abstract class GltfReader {
     for (const nodeKey of this._sceneNodes) {
       assert(transformStack.isEmpty);
       const node = this._nodes[nodeKey];
-      if (node && TileReadStatus.Success !== (readStatus = this.readTemplateNodes(templateNodes, node, featureTable, transformStack, instances, pseudoRtcBias)))
+      if (node && TileReadStatus.Success !== (readStatus = this.readTemplateNodes(templateNodes, node, featureTable, transformStack, instances, pseudoRtcBias, tile)))
         return { readStatus, isLeaf };
     }
 
@@ -612,14 +612,21 @@ export abstract class GltfReader {
     return { polyfaces };
   }
 
-  private geometryFromMeshData(gltfMesh: GltfPrimitiveData, isInstanced: boolean): RenderGeometry | undefined {
+  private geometryFromMeshData(gltfMesh: GltfPrimitiveData, isInstanced: boolean, tile?:RealityTile): RenderGeometry | undefined {
     if ("pointcloud" === gltfMesh.type)
       return this._system.createPointCloudGeometry(gltfMesh);
 
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return this._system.createGeometryFromMesh(gltfMesh.primitive, undefined);
 
-    const realityMeshPrimitive = (this._vertexTableRequired || isInstanced) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
+    let realityMeshPrimitive = (this._vertexTableRequired || isInstanced) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
+    const tileTree = tile?.tree as RealityModelTileTree;
+    if (realityMeshPrimitive && tileTree?.layerClassifiers) {
+      realityMeshPrimitive = {
+        ...realityMeshPrimitive,
+        layerClassifiers: tileTree.layerClassifiers,
+      };
+    }
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMeshGeometry(realityMeshPrimitive);
       if (realityMesh)
@@ -794,6 +801,7 @@ export abstract class GltfReader {
     transformStack: TransformStack,
     batchInstances?: InstancedGraphicParams,
     pseudoRtcBias?: Vector3d,
+    tile?: RealityTile
   ): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
@@ -824,7 +832,7 @@ export abstract class GltfReader {
         if (0 !== meshes.length) {
           const thisList: RenderGeometry[] = [];
           for (const mesh of meshes) {
-            const geometry = this.geometryFromMeshData(mesh, !!batchInstances || !!nodeInstances);
+            const geometry = this.geometryFromMeshData(mesh, !!batchInstances || !!nodeInstances, tile);
             if (undefined !== geometry)
               thisList.push(geometry);
           }
