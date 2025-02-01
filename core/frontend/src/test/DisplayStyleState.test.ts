@@ -50,7 +50,7 @@ describe("DisplayStyleState", () => {
         super(props, iModel);
 
         this.eventPayloads = [];
-        this.onScheduleScriptReferenceChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line @typescript-eslint/no-deprecated
+        this._scheduleScriptEvents.onScheduleScriptReferenceChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line @typescript-eslint/no-deprecated
       }
 
       public expectScript(props: RenderSchedule.ScriptProps, sourceId: string): void {

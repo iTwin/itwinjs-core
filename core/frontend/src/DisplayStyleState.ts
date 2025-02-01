@@ -22,6 +22,8 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
+import { InternalScriptReference, InternalScheduleScriptEvents } from "./internal/scheduleScriptReference";
+import { _scriptReference } from './common/internal/Symbols';
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -48,17 +50,13 @@ export interface OsmBuildingDisplayOptions {
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   public static override get className() { return "DisplayStyle"; }
-  private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
-
-  /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
-   */
-  public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+  private [_scriptReference]?: InternalScriptReference;
+  public _scheduleScriptEvents = new InternalScheduleScriptEvents();
 
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
@@ -81,7 +79,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
 
     if (source)
-      this._scriptReference = source._scriptReference;
+      this[_scriptReference] = source[_scriptReference];
 
     if (styles) {
       // ###TODO Use DisplayStyleSettings.planarClipMasks
@@ -98,15 +96,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public async load(): Promise<void> {
     // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
     // Preserve it if still usable.
-    if (this._scriptReference) {
-      if (this.settings.renderTimeline === this._scriptReference.sourceId) {
+    if (this[_scriptReference]) {
+      if (this.settings.renderTimeline === this[_scriptReference].sourceId) {
         // The script came from the same RenderTimeline element. Keep it.
         return;
       }
 
       if (undefined === this.settings.renderTimeline) {
         // The script came from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
-        if (this.id === this._scriptReference.sourceId || !Id64.isValidId64(this.id))
+        if (this.id === this[_scriptReference].sourceId || !Id64.isValidId64(this.id))
           return;
       }
     }
@@ -128,10 +126,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       // schedule state is undefined.
     }
 
-    if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
+    if (newState !== this[_scriptReference]) {
+      this._scheduleScriptEvents.onScheduleScriptReferenceChanged.raiseEvent(newState);
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
-      this._scriptReference = newState;
+      this[_scriptReference] = newState;
     }
   }
 
@@ -157,10 +155,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     this._queryRenderTimelinePropsPromise = undefined;
-    if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
+    if (newState !== this[_scriptReference]) {
+      this._scheduleScriptEvents.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
-      this._scriptReference = newState;
+      this[_scriptReference] = newState;
     }
   }
 
@@ -296,7 +294,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[changeRenderTimeline]] to change the script.
    */
   public get scheduleScript(): RenderSchedule.Script | undefined {
-    return this._scriptReference?.script;
+    return this[_scriptReference]?.script;
   }
 
   public set scheduleScript(script: RenderSchedule.Script | undefined) {
@@ -305,9 +303,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line @typescript-eslint/no-deprecated
+      this._scheduleScriptEvents.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line @typescript-eslint/no-deprecated
       this.onScheduleScriptChanged.raiseEvent(script);
-      this._scriptReference = scriptRef;
+      this[_scriptReference] = scriptRef;
 
       this._assigningScript = true;
       this.settings.scheduleScriptProps = script?.toJSON();
@@ -321,10 +319,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated in 3.x. Use [[scheduleScript]].
+   * @internal
    */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this._scriptReference;
+  public get scheduleScriptReference(): InternalScriptReference {
+    return this[_scriptReference];
   }
 
   /** Attach a [ContextRealityModel]($common) to this display style.

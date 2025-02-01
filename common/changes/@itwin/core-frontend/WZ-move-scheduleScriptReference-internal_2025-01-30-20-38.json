@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "made scheduleScriptReference API internal",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
