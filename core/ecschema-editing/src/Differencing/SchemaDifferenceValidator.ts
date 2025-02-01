@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
 import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
@@ -495,12 +495,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     };
 
     const targetUnit = targetFormat.units[0][0];
-    const targetPhenomenon = targetUnit.schemaItemType === SchemaItemType.InvertedUnit
+    const targetPhenomenon = InvertedUnit.isInvertedUnit(targetUnit)
       ? (await targetUnit.invertsUnit)?.phenomenon
       : targetUnit.phenomenon;
 
     const sourceUnit = await this._sourceSchema.lookupItem(entry.difference[0].name) as Unit | InvertedUnit;
-    const sourcePhenomenon = sourceUnit.schemaItemType === SchemaItemType.InvertedUnit
+    const sourcePhenomenon = InvertedUnit.isInvertedUnit(sourceUnit)
       ? (await sourceUnit.invertsUnit)?.phenomenon
       : sourceUnit.phenomenon;
 

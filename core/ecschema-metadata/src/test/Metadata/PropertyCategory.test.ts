@@ -31,6 +31,49 @@ describe("PropertyCategory", () => {
     expect(testPropCategory!.fullName).eq("TestSchema.TestPropertyCategory");
   });
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestPropertyCategory: {
+        schemaItemType: "PropertyCategory",
+        label: "Test Property Category",
+        description: "Used for testing",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on PropertyCategory", async () => {
+      const testPropertyCategory = await ecSchema.getItem("TestPropertyCategory");
+      assert.isDefined(testPropertyCategory);
+      expect(PropertyCategory.isPropertyCategory(testPropertyCategory)).to.be.true;
+      expect(() => PropertyCategory.assertIsPropertyCategory(testPropertyCategory)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(PropertyCategory.isPropertyCategory(testPhenomenon)).to.be.false;
+      expect(() => PropertyCategory.assertIsPropertyCategory(testPhenomenon)).to.throw();
+    });
+
+    it("PropertyCategory type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPropertyCategory")).to.be.instanceof(PropertyCategory);
+      expect(ecSchema.getItemSync("TestPropertyCategory")).to.be.instanceof(PropertyCategory);
+    });
+
+    it("PropertyCategory type should reject for other item types on getItem/Sync", async () => {
+      await expect(ecSchema.getItem("TestPhenomenon", PropertyCategory)).to.be.rejected;
+      expect(() => ecSchema.getItemSync("TestPhenomenon", PropertyCategory)).to.throw();
+    });
+  });
+
   describe("deserialization", () => {
     it("fully defined ", async () => {
       const testSchema = createSchemaJsonWithItems({

@@ -11,19 +11,21 @@ import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedMixin } from "../Interfaces";
+import { HasMixins, LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
+import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECEntityClass.
  * @beta
  */
-export class EntityClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.EntityClass;
+export class EntityClass extends ECClass implements HasMixins {
+  public override readonly schemaItemType = EntityClass.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.EntityClass; }
   protected _mixins?: LazyLoadedMixin[];
 
   public get mixins(): LazyLoadedMixin[] {
@@ -207,6 +209,28 @@ export class EntityClass extends ECClass {
           }));
       }
     }
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type EntityClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is an EntityClass, false otherwise.
+   */
+  public static isEntityClass(item?: SchemaItem): item is EntityClass {
+    if (item && item.schemaItemType === SchemaItemType.EntityClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type EntityClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to EntityClass if it is an EntityClass, undefined otherwise.
+   */
+  public static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass {
+    if(!this.isEntityClass(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.EntityClass}' (EntityClass)`);
   }
 }
 

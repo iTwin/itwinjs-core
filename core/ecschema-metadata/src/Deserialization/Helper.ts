@@ -7,7 +7,7 @@ import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
-import { ECClass, MutableClass } from "../Metadata/Class";
+import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass";
@@ -68,13 +68,13 @@ export class SchemaReadHelper<T = unknown> {
    * @param schema The Schema to populate
    * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public async readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo> {
+  public async readSchemaInfo(schema: Schema, rawSchema: T): Promise<SchemaInfo> {
     // Ensure context matches schema context
     if (schema.context) {
       if (this._context !== schema.context)
         throw new ECObjectsError(ECObjectsStatus.DifferentSchemaContexts, "The SchemaContext of the schema must be the same SchemaContext held by the SchemaReadHelper.");
     } else {
-      (schema as Schema as MutableSchema).setContext(this._context);
+      (schema as MutableSchema).setContext(this._context);
     }
 
     this._parser = new this._parserType(rawSchema);
@@ -104,12 +104,12 @@ export class SchemaReadHelper<T = unknown> {
    * @param schema The Schema to populate
    * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public async readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+  public async readSchema(schema: Schema, rawSchema: T): Promise<Schema> {
     if (!this._schemaInfo) {
       await this.readSchemaInfo(schema, rawSchema);
     }
 
-    const cachedSchema = await this._context.getCachedSchema<U>(this._schemaInfo!.schemaKey, SchemaMatchType.Latest);
+    const cachedSchema = await this._context.getCachedSchema(this._schemaInfo!.schemaKey, SchemaMatchType.Latest);
     if (undefined === cachedSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Could not load schema ${schema.schemaKey.toString()}`);
 
@@ -117,7 +117,7 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /* Finish loading the rest of the schema */
-  private async loadSchema<U extends Schema>(schemaInfo: SchemaInfo, schema: U): Promise<U> {
+  private async loadSchema(schemaInfo: SchemaInfo, schema: Schema): Promise<Schema> {
     // Verify that there are no schema reference cycles, this will start schema loading by loading their headers
     (await SchemaGraph.generateGraph(schemaInfo, this._context)).throwIfCycles();
 
@@ -154,7 +154,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param schema The Schema to populate
    * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U {
+  public readSchemaSync(schema: Schema, rawSchema: T): Schema {
     this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object
@@ -278,45 +278,45 @@ export class SchemaReadHelper<T = unknown> {
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = await (schema as MutableSchema).createEntityClass(name);
-        await this.loadEntityClass(schemaItem, schemaItemObject);
+        await this.loadEntityClass(schemaItem as EntityClass, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
         schemaItem = await (schema as MutableSchema).createStructClass(name);
         const structProps = this._parser.parseStructClass(schemaItemObject);
-        await this.loadClass(schemaItem, structProps, schemaItemObject);
+        await this.loadClass(schemaItem as StructClass, structProps, schemaItemObject);
         break;
       case SchemaItemType.Mixin:
         schemaItem = await (schema as MutableSchema).createMixinClass(name);
-        await this.loadMixin(schemaItem, schemaItemObject);
+        await this.loadMixin(schemaItem as Mixin, schemaItemObject);
         break;
       case SchemaItemType.CustomAttributeClass:
         schemaItem = await (schema as MutableSchema).createCustomAttributeClass(name);
         const caClassProps = this._parser.parseCustomAttributeClass(schemaItemObject);
-        await this.loadClass(schemaItem, caClassProps, schemaItemObject);
+        await this.loadClass(schemaItem as CustomAttributeClass, caClassProps, schemaItemObject);
         break;
       case SchemaItemType.RelationshipClass:
         schemaItem = await (schema as MutableSchema).createRelationshipClass(name);
-        await this.loadRelationshipClass(schemaItem, schemaItemObject);
+        await this.loadRelationshipClass(schemaItem as RelationshipClass, schemaItemObject);
         break;
       case SchemaItemType.KindOfQuantity:
         schemaItem = await (schema as MutableSchema).createKindOfQuantity(name);
-        await this.loadKindOfQuantity(schemaItem, schemaItemObject);
+        await this.loadKindOfQuantity(schemaItem as KindOfQuantity, schemaItemObject);
         break;
       case SchemaItemType.Unit:
         schemaItem = await (schema as MutableSchema).createUnit(name);
-        await this.loadUnit(schemaItem, schemaItemObject);
+        await this.loadUnit(schemaItem as Unit, schemaItemObject);
         break;
       case SchemaItemType.Constant:
         schemaItem = await (schema as MutableSchema).createConstant(name);
-        await this.loadConstant(schemaItem, schemaItemObject);
+        await this.loadConstant(schemaItem as Constant, schemaItemObject);
         break;
       case SchemaItemType.InvertedUnit:
         schemaItem = await (schema as MutableSchema).createInvertedUnit(name);
-        await this.loadInvertedUnit(schemaItem, schemaItemObject);
+        await this.loadInvertedUnit(schemaItem as InvertedUnit, schemaItemObject);
         break;
       case SchemaItemType.Format:
         schemaItem = await (schema as MutableSchema).createFormat(name);
-        await this.loadFormat(schemaItem, schemaItemObject);
+        await this.loadFormat(schemaItem as Format, schemaItemObject);
         break;
       case SchemaItemType.Phenomenon:
         schemaItem = await (schema as MutableSchema).createPhenomenon(name);
@@ -356,45 +356,45 @@ export class SchemaReadHelper<T = unknown> {
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = (schema as MutableSchema).createEntityClassSync(name);
-        this.loadEntityClassSync(schemaItem, schemaItemObject);
+        this.loadEntityClassSync(schemaItem as EntityClass, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
         schemaItem = (schema as MutableSchema).createStructClassSync(name);
         const structProps = this._parser.parseStructClass(schemaItemObject);
-        this.loadClassSync(schemaItem, structProps, schemaItemObject);
+        this.loadClassSync(schemaItem as StructClass, structProps, schemaItemObject);
         break;
       case SchemaItemType.Mixin:
         schemaItem = (schema as MutableSchema).createMixinClassSync(name);
-        this.loadMixinSync(schemaItem, schemaItemObject);
+        this.loadMixinSync(schemaItem as Mixin, schemaItemObject);
         break;
       case SchemaItemType.CustomAttributeClass:
         schemaItem = (schema as MutableSchema).createCustomAttributeClassSync(name);
         const caClassProps = this._parser.parseCustomAttributeClass(schemaItemObject);
-        this.loadClassSync(schemaItem, caClassProps, schemaItemObject);
+        this.loadClassSync(schemaItem as CustomAttributeClass, caClassProps, schemaItemObject);
         break;
       case SchemaItemType.RelationshipClass:
         schemaItem = (schema as MutableSchema).createRelationshipClassSync(name);
-        this.loadRelationshipClassSync(schemaItem, schemaItemObject);
+        this.loadRelationshipClassSync(schemaItem as RelationshipClass, schemaItemObject);
         break;
       case SchemaItemType.KindOfQuantity:
         schemaItem = (schema as MutableSchema).createKindOfQuantitySync(name);
-        this.loadKindOfQuantitySync(schemaItem, schemaItemObject);
+        this.loadKindOfQuantitySync(schemaItem as KindOfQuantity, schemaItemObject);
         break;
       case SchemaItemType.Unit:
         schemaItem = (schema as MutableSchema).createUnitSync(name);
-        this.loadUnitSync(schemaItem, schemaItemObject);
+        this.loadUnitSync(schemaItem as Unit, schemaItemObject);
         break;
       case SchemaItemType.Constant:
         schemaItem = (schema as MutableSchema).createConstantSync(name);
-        this.loadConstantSync(schemaItem, schemaItemObject);
+        this.loadConstantSync(schemaItem as Constant, schemaItemObject);
         break;
       case SchemaItemType.InvertedUnit:
         schemaItem = (schema as MutableSchema).createInvertedUnitSync(name);
-        this.loadInvertedUnitSync(schemaItem, schemaItemObject);
+        this.loadInvertedUnitSync(schemaItem as InvertedUnit, schemaItemObject);
         break;
       case SchemaItemType.Format:
         schemaItem = (schema as MutableSchema).createFormatSync(name);
-        this.loadFormatSync(schemaItem, schemaItemObject);
+        this.loadFormatSync(schemaItem as Format, schemaItemObject);
         break;
       case SchemaItemType.Phenomenon:
         schemaItem = (schema as MutableSchema).createPhenomenonSync(name);

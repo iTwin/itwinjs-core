@@ -19,7 +19,8 @@ const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
  * @beta
  */
 export abstract class SchemaItem {
-  public readonly schemaItemType!: SchemaItemType; // allow the derived classes to define their own schemaItemType
+  public static get schemaItemType(): SchemaItemType { throw new Error(`you must override static schemaName in ${this.name}`); }
+  public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
   protected _key: SchemaItemKey;
   protected _description?: string;
@@ -172,3 +173,4 @@ export abstract class SchemaItem {
     this._description = description;
   }
 }
+

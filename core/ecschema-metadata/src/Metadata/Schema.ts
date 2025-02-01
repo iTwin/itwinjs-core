@@ -12,7 +12,7 @@ import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlParser } from "../Deserialization/XmlParser";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, PrimitiveType } from "../ECObjects";
+import { ECClassModifier, PrimitiveType, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -444,21 +444,126 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
+   * Shortcut for calling getItem with EntityClass.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested EntityClass or undefined if not found.
+   */
+  public async getEntityClass(name: string): Promise<EntityClass | undefined> { return this.getItem(name, EntityClass); }
+
+  /**
+   * Shortcut for calling getItem with Mixin.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested Mixin or undefined if not found.
+   */
+  public async getMixin(name: string): Promise<Mixin | undefined> { return this.getItem(name, Mixin); }
+
+  /**
+   * Shortcut for calling getItem with StructClass.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested StructClass or undefined if not found.
+   */
+  public async getStructClass(name: string): Promise<StructClass | undefined> { return this.getItem(name, StructClass); }
+
+  /**
+   * Shortcut for calling getItem with CustomAttributeClass.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested CustomAttributeClass or undefined if not found.
+   */
+  public async getCustomAttributeClass(name: string): Promise<CustomAttributeClass | undefined> { return this.getItem(name, CustomAttributeClass); }
+
+  /**
+   * Shortcut for calling getItem with RelationshipClass.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested RelationshipClass or undefined if not found.
+   */
+  public async getRelationshipClass(name: string): Promise<RelationshipClass | undefined> { return this.getItem(name, RelationshipClass); }
+
+  /**
+   * Shortcut for calling getItem with Enumeration.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested Enumeration or undefined if not found.
+   */
+  public async getEnumeration(name: string): Promise<Enumeration | undefined> { return this.getItem(name, Enumeration); }
+
+  /**
+   * Shortcut for calling getItem with KindOfQuantity.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested KindOfQuantity or undefined if not found.
+   */
+  public async getKindOfQuantity(name: string): Promise<KindOfQuantity | undefined> { return this.getItem(name, KindOfQuantity); }
+
+  /**
+   * Shortcut for calling getItem with PropertyCategory.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested PropertyCategory or undefined if not found.
+   */
+  public async getPropertyCategory(name: string): Promise<PropertyCategory | undefined> { return this.getItem(name, PropertyCategory); }
+
+  /**
+   * Shortcut for calling getItem with Unit.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested Unit or undefined if not found.
+   */
+  public async getUnit(name: string): Promise<Unit | undefined> { return this.getItem(name, Unit); }
+
+  /**
+   * Shortcut for calling getItem with InvertedUnit.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested InvertedUnit or undefined if not found.
+   */
+  public async getInvertedUnit(name: string): Promise<InvertedUnit | undefined> { return this.getItem(name, InvertedUnit); }
+
+  /**
+   * Shortcut for calling getItem with Constant.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested Constant or undefined if not found.
+   */
+  public async getConstant(name: string): Promise<Constant | undefined> { return this.getItem(name, Constant); }
+
+  /**
+   * Shortcut for calling getItem with Phenomenon.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested Phenomenon or undefined if not found.
+   */
+  public async getPhenomenon(name: string): Promise<Phenomenon | undefined> { return this.getItem(name, Phenomenon); }
+
+  /**
+   * Shortcut for calling getItem with UnitSystem.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested UnitSystem or undefined if not found.
+   */
+  public async getUnitSystem(name: string): Promise<UnitSystem | undefined> { return this.getItem(name, UnitSystem); }
+
+  /**
+   * Shortcut for calling getItem with Format.
+   * @param name The local (unqualified) name of the item to return.
+   * @returns The requested Format or undefined if not found.
+   */
+  public async getFormat(name: string): Promise<Format | undefined> { return this.getItem(name, Format); }
+  /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
    * @param key the local (unqualified) name, lookup is case-insensitive
+   * @param itemConstructor optional, the constructor of the item to return. If missing, the returned value cannot be type checked.
    */
-  public async getItem<T extends SchemaItem>(name: string): Promise<T | undefined> {
+  public async getItem<T extends SchemaItem>(name: string, itemConstructor?: SchemaItemConstructor<T>): Promise<T | undefined> {
     // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
-    return this.getItemSync<T>(name);
+    return this.getItemSync<T>(name, itemConstructor);
   }
 
   /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
    * @param key the local (unqualified) name, lookup is case-insensitive
+   * @param itemConstructor optional, the constructor of the item to return. If missing, the returned value cannot be type checked.
    */
-  public getItemSync<T extends SchemaItem>(name: string): T | undefined {
-    // Case-insensitive search
-    return this._items.get(name.toUpperCase()) as T;
+  public getItemSync<T extends SchemaItem>(name: string, itemConstructor?: SchemaItemConstructor<T>): T | undefined {
+    const value = this._items.get(name.toUpperCase());
+    if (value === undefined)
+      return value;
+
+    if (itemConstructor !== undefined && (value.schemaItemType !== itemConstructor.schemaItemType))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `The item ${name} is of type ${value.schemaItemType}, but ${itemConstructor.schemaItemType} was expected.`);
+
+    return value as T;
   }
 
   /**
@@ -523,11 +628,11 @@ export class Schema implements CustomAttributeContainerProps {
     }
   }
 
-  public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
+  public async getReference(refSchemaName: string): Promise<Schema | undefined> {
     if (this.references.length === 0)
       return undefined;
 
-    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase());
   }
 
   public getReferenceNameByAlias(alias: string): string | undefined {
@@ -538,11 +643,11 @@ export class Schema implements CustomAttributeContainerProps {
     return schema ? schema.name : undefined;
   }
 
-  public getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined {
+  public getReferenceSync(refSchemaName: string): Schema | undefined {
     if (this.references.length === 0)
       return undefined;
 
-    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
+    return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase());
   }
 
   /**
@@ -823,4 +928,9 @@ export abstract class MutableSchema extends Schema {
   public abstract override deleteSchemaItem(name: string): Promise<void>;
   public abstract override deleteSchemaItemSync(name: string): void;
   public abstract override setAlias(alias: string): void;
+}
+
+export interface SchemaItemConstructor<T extends SchemaItem> {
+  new (...args: any[]): T;
+  schemaItemType: SchemaItemType;
 }

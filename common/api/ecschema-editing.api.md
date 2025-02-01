@@ -2424,7 +2424,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
 // @internal
 export class SchemaWalker {
     constructor(visitor: ISchemaPartVisitor);
-    traverseSchema<T extends Schema>(schema: T): Promise<T>;
+    traverseSchema(schema: Schema): Promise<Schema>;
 }
 
 // @alpha
