@@ -36,6 +36,7 @@ Table of contents:
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
+    - [TypeScript configuration changes](#typescript-configuration-changes)
 
 ## Selection set
 
@@ -323,3 +324,55 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
+
+### TypeScript configuration changes
+
+There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
+
+#### `target`
+
+[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
+
+#### `useDefineForClassFields`
+
+Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
+
+This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
+```ts
+interface MyElementProps extends ElementProps {
+  property: string;
+}
+
+class MyElement extends Element {
+  public property!: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+  }
+}
+
+const myElement = new MyElement({ property: "value" });
+console.log(myElement.property); // undefined
+```
+
+To fix this, you can either initialize your properties in your class constructor:
+
+```ts
+class MyElement extends Element {
+  public property: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+    property = props.property;
+  }
+}
+```
+
+or just define your properties using `declare` keyword:
+
+```ts
+class MyElement extends Element {
+  declare public property: string;
+  ...
+}
+```
