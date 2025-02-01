@@ -15,6 +15,7 @@ import { ScreenViewport } from "../../Viewport";
 import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
+import { DecorateContext } from "../../ViewContext";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -131,13 +132,16 @@ export abstract class MapLayerImageryProvider {
 
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
 
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+
   /**
    * Add attribution logo cards for the data supplied by this provider to the [[Viewport]]'s logo div.
    * @param _cards Logo cards HTML element that may contain custom data attributes.
    * @param _viewport Viewport to add logo cards to.
    * @beta
    */
-  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+  public async addAttributions(_cards: HTMLTableElement, _viewport: ScreenViewport): Promise<void> { }
 
   /** @internal */
   protected _missingTileData?: Uint8Array;
@@ -194,6 +198,11 @@ export abstract class MapLayerImageryProvider {
     // default implementation; simply return an empty feature info
     featureInfos.push({ layerName: this._settings.name });
   }
+
+  /** @internal */
+  public  decorate(_context: DecorateContext): void {
+    console.log ("MapLayerImageryProvider.Decorate called");
+    }
 
   /** @internal */
   protected async getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {

@@ -9,6 +9,7 @@
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
+import { ScreenViewport } from "../../../Viewport";
 
 /** @internal */
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
@@ -21,7 +22,15 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     return `${this._settings.url}&${this._settings.accessKey.key}=${this._settings.accessKey.value}&api-version=2.0&zoom=${zoom}&x=${x}&y=${y}`;
   }
 
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
+    if (!cards.dataset.azureMapsLogoCard) {
+      cards.dataset.azureMapsLogoCard = "true";
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") }));
+    }
+  }
+
+  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
     if (!cards.dataset.azureMapsLogoCard) {
       cards.dataset.azureMapsLogoCard = "true";
       cards.appendChild(IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") }));

@@ -18,6 +18,7 @@ import {
   GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
   TerrainMeshProviderOptions, Tile, TileAvailability,
 } from "../internal";
+import { ScreenViewport } from "../../Viewport";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -199,6 +200,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (cards.dataset.cesiumIonLogoCard)
       return;
@@ -211,6 +213,20 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
     cards.appendChild(card);
   }
+
+  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
+    if (cards.dataset.cesiumIonLogoCard)
+      return;
+
+    cards.dataset.cesiumIonLogoCard = "true";
+    let notice = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
+    if (this._assetId === CesiumTerrainAssetId.Bathymetry)
+      notice = `${notice}\n${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumBathymetryAttribution")}`;
+
+    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
+    cards.appendChild(card);
+  }
+
 
   public get maxDepth(): number { return this._maxDepth; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }

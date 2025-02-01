@@ -92,3 +92,46 @@ export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefin
   else
     return areEqual(t, u);
 }
+
+export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number {
+  // Make sure the types are the same
+  if (typeof lhs !== typeof rhs) {
+    return 1;
+  }
+
+  let cmp = 0;
+  // Compare actual values
+  switch (typeof lhs) {
+    case "number":
+      cmp = compareNumbers(lhs, rhs as number);
+      break;
+    case "string":
+      cmp = compareStrings(lhs, rhs as string);
+      break;
+    case "boolean":
+      cmp = compareBooleans(lhs, rhs as boolean);
+      break;
+  }
+  return cmp;
+}
+
+export function compareSimpleArrays (lhs?: Array<number | string | boolean>, rhs?: Array<number | string | boolean> ) {
+  if (undefined === lhs)
+    return undefined === rhs ? 0 : -1;
+  else if (undefined === rhs)
+    return 1;
+  else if (lhs.length === 0 && rhs.length === 0) {
+    return 0;
+  } else if (lhs.length !== rhs.length) {
+    return lhs.length - rhs.length;
+  }
+
+  let cmp = 0;
+  for (let i = 0; i < lhs.length; i++) {
+    cmp = compareSimpleTypes(lhs[i], rhs[i]);
+    if (cmp !== 0) {
+      break;
+    }
+  }
+  return cmp;
+}

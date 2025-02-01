@@ -9,6 +9,7 @@
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
+import { ScreenViewport } from "../../../Viewport";
 
 /** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
  * @internal
@@ -45,7 +46,15 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     return url;
   }
 
+   /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
+    if (!cards.dataset.mapboxLogoCard) {
+      cards.dataset.mapboxLogoCard = "true";
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") }));
+    }
+  }
+
+  public override async addAttributions (cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
     if (!cards.dataset.mapboxLogoCard) {
       cards.dataset.mapboxLogoCard = "true";
       cards.appendChild(IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") }));

@@ -16,6 +16,7 @@ import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
 import { IModelStatus, Logger } from "@itwin/core-bentley";
 import { HitDetail } from "../../../HitDetail";
+import { ScreenViewport } from "../../../Viewport";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 
@@ -316,7 +317,15 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   }
 
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
+    if (!cards.dataset.arcGisLogoCard) {
+      cards.dataset.arcGisLogoCard = "true";
+      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText }));
+    }
+  }
+
+  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
     if (!cards.dataset.arcGisLogoCard) {
       cards.dataset.arcGisLogoCard = "true";
       cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText }));
