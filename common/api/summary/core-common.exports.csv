@@ -31,9 +31,9 @@ internal;class;B3dmHeader
 internal;type;BackendBuffer
 deprecated;type;BackendBuffer
 public;class;BackendError
-public;type;BackendReadable
+internal;type;BackendReadable
 deprecated;type;BackendReadable
-public;type;BackendWritable
+internal;type;BackendWritable
 deprecated;type;BackendWritable
 public;enum;BackgroundFill
 public;interface;BackgroundMapProps
@@ -676,6 +676,7 @@ public;type;RemoveFunction
 public;interface;RenderFeatureTable
 public;class;RenderMaterial
 public;namespace;RenderMaterial
+internal;class;Params
 public;interface;RenderMaterialAssetMapsProps
 public;interface;RenderMaterialAssetProps
 public;interface;RenderMaterialProps
@@ -684,6 +685,7 @@ public;namespace;RenderSchedule
 internal;class;Interval
 public;class;RenderTexture
 public;namespace;RenderTexture
+internal;class;Params
 public;interface;RenderTimelineLoadProps
 public;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
@@ -829,8 +831,6 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
-public;type;TerrainProviderName
-deprecated;type;TerrainProviderName
 public;class;TerrainSettings
 internal;class;TestRpcManager
 beta;class;TextAnnotation

@@ -8,14 +8,6 @@
 
 import { BackgroundMapProps } from "./BackgroundMapSettings";
 
-/** Identifies a [TerrainProvider]($frontend).
- * @see [[TerrainSettings.providerName]] and [[TerrainProps.providerName]].
- * @public
- * @extensions
- * @deprecated in 3.x. Use string instead.
- */
-export type TerrainProviderName = string;
-
 /** Ids of [Cesium ION assets](https://cesium.com/platform/cesium-ion/content/) providing global terrain data.
  * These values are appropriate to use with [[TerrainSettings.dataSource]] when [[TerrainSettings.providerName]] is set to "CesiumWorldTerrain".
  * You may alternatively use the Id of any ION asset to which you have access.

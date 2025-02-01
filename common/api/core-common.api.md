@@ -468,10 +468,10 @@ export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, getMetaData?: LoggingMetaData);
 }
 
-// @public @deprecated (undocumented)
+// @internal @deprecated (undocumented)
 export type BackendReadable = Readable;
 
-// @public @deprecated (undocumented)
+// @internal @deprecated (undocumented)
 export type BackendWritable = Writable;
 
 // @public
@@ -1290,9 +1290,6 @@ export class CodeSpec {
     iModel: IModel;
     // (undocumented)
     get isExternal(): boolean;
-    // @deprecated
-    get isManagedWithIModel(): boolean;
-    set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
     name: string;
     // @internal
@@ -3344,12 +3341,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     readonly neverDrawnAnimationNodes: Set<number>;
     override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
-    // @deprecated
-    overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
-    // @deprecated
-    overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
-    // @deprecated
-    overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     protected _patterns: boolean;
     setAlwaysDrawn(id: Id64String): void;
     setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory?: boolean): void;
@@ -4652,8 +4643,6 @@ export interface HydrateViewStateRequestProps {
     acsId?: string;
     // (undocumented)
     baseModelId?: Id64String;
-    // @deprecated (undocumented)
-    notLoadedCategoryIds?: CompressedId64Set;
     // (undocumented)
     notLoadedModelSelectorStateModels?: CompressedId64Set;
     // (undocumented)
@@ -4670,8 +4659,6 @@ export interface HydrateViewStateResponseProps {
     acsElementProps?: ElementProps;
     // (undocumented)
     baseModelProps?: ModelProps;
-    // @deprecated (undocumented)
-    categoryIdsResult?: SubCategoryResultRow[];
     // (undocumented)
     modelSelectorStateModels?: ModelProps[];
     // (undocumented)
@@ -5678,8 +5665,6 @@ export interface Localization {
     getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: TranslationOptions): string;
-    // @deprecated
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;
@@ -7664,7 +7649,7 @@ export abstract class RenderMaterial {
 
 // @public (undocumented)
 export namespace RenderMaterial {
-    // @deprecated (undocumented)
+    // @internal
     export class Params {
         constructor(key?: string);
         get alpha(): number | undefined;
@@ -8093,7 +8078,7 @@ export abstract class RenderTexture implements Disposable {
 
 // @public (undocumented)
 export namespace RenderTexture {
-    // @deprecated
+    // @internal
     export class Params {
         constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
         // (undocumented)
@@ -9634,9 +9619,6 @@ export interface TerrainProps {
     nonLocatable?: boolean;
     providerName?: string;
 }
-
-// @public @deprecated
-export type TerrainProviderName = string;
 
 // @public
 export class TerrainSettings {

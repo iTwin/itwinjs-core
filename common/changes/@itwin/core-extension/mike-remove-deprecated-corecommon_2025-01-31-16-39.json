@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-extension",
+      "comment": "Remove 3.x Deprecated APIs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-extension"
+}

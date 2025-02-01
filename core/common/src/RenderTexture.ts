@@ -75,8 +75,8 @@ export namespace RenderTexture {
   }
 
   /** Parameters used to construct a [[RenderTexture]].
-   * @deprecated in 3.x. use RenderSystem.createTexture and CreateTextureArgs.
-   * @public
+   *  Use RenderSystem.createTexture and CreateTextureArgs.
+   *  @internal
    */
   export class Params {
     /** A string uniquely identifying this texture within the context of an [[IModel]]. Typically this is the element Id of the corresponding [Texture]($backend) element.
