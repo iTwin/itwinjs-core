@@ -329,6 +329,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
    * @deprecated in 3.x - Use queryViewThumbnail instead
    */
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
+    // TODO: Remove this method as part of a repo wide RPC cleanup later in 5.x
     const iModelDb = await getIModelForRpc(tokenProps);
     const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
