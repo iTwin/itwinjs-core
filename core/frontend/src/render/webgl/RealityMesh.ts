@@ -286,6 +286,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
 
   public static createForTerrain(mesh: RealityMeshParams, transform: Transform | undefined, disableTextureDisposal = false) {
     const params = RealityMeshGeometryParams.fromRealityMesh(mesh);
+    const layerClassifiers = mesh.layerClassifiers;
+
+    // TODO
+
     if (!params)
       return undefined;
 
