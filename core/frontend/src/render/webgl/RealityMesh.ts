@@ -286,9 +286,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
 
   public static createForTerrain(mesh: RealityMeshParams, transform: Transform | undefined, disableTextureDisposal = false) {
     const params = RealityMeshGeometryParams.fromRealityMesh(mesh);
-    const layerClassifiers = mesh.layerClassifiers;
-
-    // TODO
 
     if (!params)
       return undefined;
@@ -304,6 +301,11 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
 
   public static createFromRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {
     const params = RealityMeshGeometryParams.fromRealityMesh(realityMesh);
+
+    const layerClassifiers = realityMesh.layerClassifiers;
+
+    // TODO
+
     if (!params)
       return undefined;
     const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
