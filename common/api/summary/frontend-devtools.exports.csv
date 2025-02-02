@@ -169,6 +169,7 @@ beta;class;SetModelLineCodeTool
 beta;class;SetModelLineWeightTool
 beta;class;SetModelLocateTool
 beta;class;SetModelTransparencyTool
+beta;class;SetRealityModelBackgroundDrapeTool
 beta;class;SetRealityModelColorTool
 beta;class;SetRealityModelEmphasizedTool
 beta;class;SetRealityModelLocateTool

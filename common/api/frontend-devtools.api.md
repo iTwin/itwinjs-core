@@ -1927,6 +1927,20 @@ export class SetModelTransparencyTool extends Tool {
 }
 
 // @beta
+export class SetRealityModelBackgroundDrapeTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    run(bgDrape: boolean, index: number): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class SetRealityModelColorTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
