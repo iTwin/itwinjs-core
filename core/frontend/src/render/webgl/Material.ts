@@ -6,9 +6,10 @@
  * @module WebGL
  */
 
-import { ColorDef, RenderMaterial } from "@itwin/core-common";
+import { ColorDef, RenderMaterial, TextureMapping } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
 import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/render/SurfaceParams";
+import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 
 /** Parameters describing a single material. The parameters used are:
  *  - diffuse color rgb (vec3).
@@ -39,8 +40,6 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/ren
  * @internal
  */
 export class Material extends RenderMaterial {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas = false as const;
@@ -52,41 +51,62 @@ export class Material extends RenderMaterial {
   public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
 
   /** Strictly for testing. */
-  public static preserveParams = false;
+  public static preserveArgs = false;
   /** Strictly for testing. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public params?: RenderMaterial.Params;
+  public args?: CreateRenderMaterialArgs;
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public constructor(params: RenderMaterial.Params) {
-    super(params);
+  public constructor(args: CreateRenderMaterialArgs) {
+    const textureMapping = args.textureMapping ?
+     new TextureMapping(args.textureMapping.texture, new TextureMapping.Params({
+      textureMat2x3: args.textureMapping.transform,
+      mapMode: args.textureMapping.mode,
+      textureWeight: args.textureMapping.weight,
+      worldMapping: args.textureMapping.worldMapping,
+      useConstantLod: args.textureMapping.useConstantLod,
+      constantLodProps: args.textureMapping.constantLodProps,
+    }))
+    : undefined;
+    super({ ...args, textureMapping });
 
-    if (Material.preserveParams) {
-      this.params = params;
+    if (Material.preserveArgs) {
+      this.args = args;
     }
 
-    if (undefined !== params.diffuseColor) {
-      const rgb = FloatRgb.fromColorDef(params.diffuseColor);
+    if (args.diffuse?.color !== undefined) {
+      if ( args.diffuse.color instanceof ColorDef ) {
+      const rgb = FloatRgb.fromColorDef(args.diffuse.color);
       this.rgba[0] = rgb.red;
       this.rgba[1] = rgb.green;
       this.rgba[2] = rgb.blue;
+      } else {
+        this.rgba[0] = args.diffuse.color.r;
+        this.rgba[1] = args.diffuse.color.g;
+        this.rgba[2] = args.diffuse.color.b;
+      }
     } else {
       this.rgba[0] = this.rgba[1] = this.rgba[2] = -1;
     }
 
-    const alpha = undefined !== params.alpha ? params.alpha : -1;
+    const alpha = args.alpha ?? -1;
     this.rgba[3] = alpha;
 
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
-    this.setInteger(scale(params.diffuse), scale(params.specular), 0);
 
-    const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
-    const specularRgb = undefined !== params.specularColor ? params.specularColor : ColorDef.white;
-    const specularColors = specularRgb.colors;
-    this.setInteger(scale(textureWeight), specularColors.r, 1);
-    this.setInteger(specularColors.g, specularColors.b, 2);
+    const diffuseWeight = args.diffuse?.weight ?? 0.6;
+    const specularWeight = args.specular?.weight ?? 0.4;
+    this.setInteger(scale(diffuseWeight), scale(specularWeight), 0);
 
-    this.fragUniforms[3] = params.specularExponent;
+    const textureWeight = this.textureMapping !== undefined ? this.textureMapping.params.weight : 1.0;
+
+    const specularRgb = args.specular?.color ?? ColorDef.white;
+    if ( specularRgb instanceof ColorDef ) {
+      this.setInteger(scale(textureWeight), specularRgb.colors.r, 1);
+      this.setInteger(specularRgb.colors.g, specularRgb.colors.b, 2);
+    } else {
+      this.setInteger(scale(textureWeight), specularRgb.r, 1);
+      this.setInteger(specularRgb.g, specularRgb.b, 2);
+    }
+    this.fragUniforms[3] = args.specular?.exponent ?? 13.5;
   }
 
   private setInteger(loByte: number, hiByte: number, index: number): void {
@@ -98,8 +118,6 @@ export class Material extends RenderMaterial {
     this.fragUniforms[index] = loByte + hiByte * 256;
   }
 }
-
-Object.freeze(Material.default);
 
 /** Describes the material associated with a surface.
  * @internal
