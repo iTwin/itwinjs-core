@@ -10,3 +10,4 @@ export {
 export {
   MultiModelPackedFeatureTable, PackedFeatureModelTable, PackedFeatureTable
 } from "./PackedFeatureTable";
+export { BackendReadable, BackendWritable, BackendBuffer } from "./BackendTypes";
