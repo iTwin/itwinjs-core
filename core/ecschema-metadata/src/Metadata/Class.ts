@@ -123,7 +123,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       return undefined;
     }
 
-    return this.schema.lookupItemSync<ECClass>(this.baseClass);
+    const item = this.schema.lookupItemSync(this.baseClass);
+    if(ECClass.isECClass(item)) {
+      return item;
+    }
+
+    return undefined;
   }
 
   /**
@@ -314,7 +319,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = await schema.lookupItem<StructClass>(structType);
+      correctType = await schema.lookupTypedItem(structType, StructClass);
     } else
       correctType = structType;
 
@@ -327,7 +332,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = schema.lookupItemSync<StructClass>(structType);
+      correctType = schema.lookupTypedItemSync(structType, StructClass);
     } else
       correctType = structType;
 
@@ -344,7 +349,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = await schema.lookupItem<Enumeration>(primitiveType);
+        resolvedType = await schema.lookupTypedItem(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)
@@ -367,7 +372,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = schema.lookupItemSync<Enumeration>(primitiveType);
+        resolvedType = schema.lookupTypedItemSync(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)
@@ -461,8 +466,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       if (!baseClass) {
         lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
           async () => {
-            const baseItem = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
-            if (undefined === baseItem)
+            const baseItem = await this.schema.lookupItem(ecClassSchemaItemKey);
+            if (undefined === baseItem || !ECClass.isECClass(baseItem))
               throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
             return baseItem;
           });

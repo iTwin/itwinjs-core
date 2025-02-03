@@ -104,8 +104,8 @@ export class Format extends SchemaItem {
 
     // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
     for (const unit of formatProps.composite.units) {
-      const newUnit = this.schema.lookupItemSync<Unit | InvertedUnit>(unit.name);
-      if (undefined === newUnit)
+      const newUnit = this.schema.lookupItemSync(unit.name);
+      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       this.addUnit(newUnit, unit.label);
     }
@@ -119,8 +119,8 @@ export class Format extends SchemaItem {
 
     // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
     for (const unit of formatProps.composite.units) {
-      const newUnit = await this.schema.lookupItem<Unit | InvertedUnit>(unit.name);
-      if (undefined === newUnit)
+      const newUnit = await this.schema.lookupItem(unit.name);
+      if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       this.addUnit(newUnit, unit.label);
     }

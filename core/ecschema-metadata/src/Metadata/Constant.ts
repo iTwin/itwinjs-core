@@ -84,7 +84,7 @@ export class Constant extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey,
       async () => {
-        const phenom = await this.schema.lookupItem<Phenomenon>(schemaItemKey);
+        const phenom = await this.schema.lookupTypedItem(schemaItemKey, Phenomenon);
         if (undefined === phenom)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
         return phenom;
