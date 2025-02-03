@@ -503,7 +503,7 @@ class DifferenceSchemaComparer extends SchemaComparer {
 
   public override async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
     const classKey = this.nameMappings.resolveItemKey(item.key);
-    return lookupSchema.lookupItem<TItem>(classKey.name);
+    return lookupSchema.lookupTypedItem(classKey.name, TItem);
   }
 
   public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {

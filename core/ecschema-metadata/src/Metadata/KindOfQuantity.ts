@@ -71,7 +71,7 @@ export class KindOfQuantity extends SchemaItem {
     for (const formatString of presUnitsArr) {
       const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = await this.schema.lookupItem<Format>(presFormatOverride.name);
+      const format = await this.schema.lookupTypedItem(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
@@ -87,7 +87,7 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = await this.schema.lookupItem<Unit | InvertedUnit>(unitOverride[0]);
+          const unit = await this.schema.lookupTypedItem(unitOverride[0], Unit | InvertedUnit);
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
@@ -105,7 +105,7 @@ export class KindOfQuantity extends SchemaItem {
     for (const formatString of presUnitsArr) {
       const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = this.schema.lookupItemSync<Format>(presFormatOverride.name);
+      const format = this.schema.lookupTypedItemSync(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
@@ -121,7 +121,7 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = this.schema.lookupItemSync<Unit | InvertedUnit>(unitOverride[0]);
+          const unit = this.schema.lookupTypedItemSync(unitOverride[0], Unit | InvertedUnit);
           if (undefined === unit)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
@@ -175,7 +175,7 @@ export class KindOfQuantity extends SchemaItem {
     super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = this.schema.lookupItemSync<Unit>(kindOfQuantityProps.persistenceUnit);
+    const persistenceUnit = this.schema.lookupTypedItemSync(kindOfQuantityProps.persistenceUnit, Unit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
@@ -192,7 +192,7 @@ export class KindOfQuantity extends SchemaItem {
     await super.fromJSON(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = await this.schema.lookupItem<Unit>(kindOfQuantityProps.persistenceUnit);
+    const persistenceUnit = await this.schema.lookupTypedItem(kindOfQuantityProps.persistenceUnit, Unit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 

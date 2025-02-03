@@ -22,7 +22,7 @@ describe("StructClass", () => {
 
     const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(ecSchema);
-    const structClass = await ecSchema.getItem<StructClass>("testStruct");
+    const structClass = await ecSchema.getTypedItem("testStruct", StructClass);
     assert.isDefined(structClass);
     expect(structClass!.fullName).eq("TestSchema.testStruct");
   });

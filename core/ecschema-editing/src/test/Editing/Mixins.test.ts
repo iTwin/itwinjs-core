@@ -87,7 +87,7 @@ describe("Mixins tests", () => {
     const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
     const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel", baseClassRes);
 
-    const testMixin = await testEditor.schemaContext.getSchemaItem<Mixin>(mixinResult);
+    const testMixin = await testEditor.schemaContext.getTypedSchemaItem(mixinResult, Mixin);
     expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes));
 
     const newBaseClassRes = await testEditor.mixins.create(testKey, "newBaseClass", entityKey, "newLabel",baseClassRes);
@@ -99,7 +99,7 @@ describe("Mixins tests", () => {
     const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
     const mixinResult = await testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel", baseClassRes);
 
-    const testMixin = await testEditor.schemaContext.getSchemaItem<Mixin>(mixinResult);
+    const testMixin = await testEditor.schemaContext.getTypedSchemaItem(mixinResult, Mixin);
     expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes));
 
     await testEditor.mixins.setBaseClass(mixinResult, undefined);
@@ -152,8 +152,8 @@ describe("Mixins tests", () => {
     const baseClassRes = await testEditor.mixins.create(testKey, "testBaseClass", entityKey);
     const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel",baseClassRes);
 
-    const testMixin = await testEditor.schemaContext.getSchemaItem<Mixin>(mixinRes);
-    expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<Mixin>(baseClassRes));
+    const testMixin = await testEditor.schemaContext.getTypedSchemaItem(mixinRes, Mixin);
+    expect(await testMixin?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, Mixin));
 
     const newBaseClassRes = await testEditor.mixins.create(testKey, "newBaseClass", entityKey);
 

@@ -27,7 +27,7 @@ describe("CustomAttributeClass", () => {
     });
 
     const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-    const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
+    const testCAClass = await ecschema.getTypedItem("TestCAClass", CustomAttributeClass);
     expect(testCAClass).to.exist;
     expect(testCAClass!.fullName).eq("TestSchema.TestCAClass");
   });
@@ -97,7 +97,7 @@ describe("CustomAttributeClass", () => {
 
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
 
-      const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
+      const testCAClass = await ecschema.getTypedItem("TestCAClass", CustomAttributeClass);
       expect(testCAClass).to.exist;
 
       expect(testCAClass!.name).to.equal("TestCAClass");

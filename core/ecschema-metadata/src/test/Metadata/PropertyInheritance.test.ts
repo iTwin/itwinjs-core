@@ -54,7 +54,7 @@ describe("Property Inheritance", () => {
 
     it("async iteration", async () => {
       const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
-      const testClass = await schema.getItem<ECClass>("TestClass");
+      const testClass = await schema.getTypedItem("TestClass", ECClass);
       const props = await testClass!.getProperties();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
@@ -110,7 +110,7 @@ describe("Property Inheritance", () => {
 
     it("async iteration", async () => {
       const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
-      const testClass = await schema.getItem<ECClass>("TestClass");
+      const testClass = await schema.getTypedItem("TestClass", ECClass);
       const props = await testClass!.getProperties();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
@@ -357,7 +357,7 @@ describe("Property Inheritance", () => {
       const schema = await Schema.fromJson(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
 
-      const testClass = await schema.getItem<ECClass>("H");
+      const testClass = await schema.getTypedItem("H", ECClass);
       expect(testClass).to.exist;
       const result = await testClass!.getProperties();
       const names = result.map((p) => `${p.name}(${p.class.name})`);

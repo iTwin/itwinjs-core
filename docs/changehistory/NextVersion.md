@@ -301,6 +301,12 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 - Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
 - Removed existing generic getItem() methods from schemaItemLocater, schemaContext and Schema as it suggested type safety when there was none
 
+Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted Either into
+`context.getTypedSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
+A regex can be used to do bulk renaming:
+`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getTypedSchemaItem($2, $1)`
+This applies to SchemaContext.getSchemaItem/Sync, Schema.getItem/Sync and Schema.lookupItem/Sync
+
 ### Packages dropped
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:

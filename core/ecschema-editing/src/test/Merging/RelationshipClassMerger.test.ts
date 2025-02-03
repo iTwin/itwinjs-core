@@ -197,7 +197,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+    const mergedEntity = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON()).deep.equals({
       description: "Description of TestRelationship",
       modifier: "None",
@@ -274,7 +274,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
+    const mergedEntity = await mergedSchema.getTypedItem("BaseRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON()).deep.equals({
       description: "Description of TestRelationship",
       modifier: "None",
@@ -371,7 +371,7 @@ describe("Relationship Class merger tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getItem<RelationshipClass>("ChildRelationship");
+    const mergedItem = await mergedSchema.getTypedItem("ChildRelationship", RelationshipClass);
     expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestRelationship");
   });
 
@@ -451,7 +451,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+    const mergedEntity = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON()).deep.equals({
       description: "Changes of TestRelationship",
       modifier: "None",
@@ -550,7 +550,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
+    const mergedEntity = await mergedSchema.getTypedItem("BaseRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON().source.constraintClasses).deep.equals([
       "TestSchema.SourceEntity",
       "TargetSchema.SourceEntity",
@@ -616,7 +616,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getItem<RelationshipClass>("BaseRelationship");
+    const mergedEntity = await mergedSchema.getTypedItem("BaseRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON().source.constraintClasses).deep.equals([
       "TestSchema.SourceEntity",
       "TestSchema.SourceChildEntity",
@@ -1109,17 +1109,17 @@ describe("Relationship Class merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
-        items: {               
+        items: {
           testItem: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "any",
           },
         },
       }, targetContext);
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -1129,14 +1129,14 @@ describe("Relationship Class merger tests", () => {
         expect(conflict).to.have.a.property("target", "CustomAttributeClass");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
       schemaEdits.items.rename(testItem, "mergedRelationship");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("testItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
@@ -1177,10 +1177,10 @@ describe("Relationship Class merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
-        items: {         
+        items: {
           testEntity: {
             schemaItemType: "StructClass",
           },
@@ -1199,7 +1199,7 @@ describe("Relationship Class merger tests", () => {
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.EntityClass);
@@ -1252,15 +1252,15 @@ describe("Relationship Class merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
-        items: {   
+        items: {
           testEntity: {
             schemaItemType: "EntityClass",
           },
           mergedRelationship: {
-            schemaItemType: "RelationshipClass",            
+            schemaItemType: "RelationshipClass",
             modifier: "Sealed",
             label: "Link",
             description: "Link Relationship",
@@ -1282,21 +1282,21 @@ describe("Relationship Class merger tests", () => {
                 "TargetSchema.testEntity",
               ],
             },
-          },            
+          },
           testItem: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "any",
           },
         },
       }, targetContext);
-    
+
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
       schemaEdits.items.rename(testItem, "mergedRelationship");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
         .then((ecClass: RelationshipClass) => {
           expect(ecClass).to.have.a.property("modifier").to.equal(ECClassModifier.None);
@@ -1318,7 +1318,7 @@ describe("Relationship Class merger tests", () => {
     it("should add constraint classes to re-mapped relationship class", async() => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
-        items: {          
+        items: {
           testEntity: {
             schemaItemType: "EntityClass",
             baseClass: "SourceSchema.baseEntity",
@@ -1351,10 +1351,10 @@ describe("Relationship Class merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
-        items: {   
+        items: {
           baseEntity: {
             schemaItemType: "EntityClass",
           },
@@ -1380,21 +1380,21 @@ describe("Relationship Class merger tests", () => {
                 "TargetSchema.baseEntity",
               ],
             },
-          },            
+          },
           testItem: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "any",
           },
         },
       }, targetContext);
-    
+
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
       schemaEdits.items.rename(testItem, "mergedRelationship");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
         .then((ecClass: RelationshipClass) => {
           expect(ecClass).to.have.a.property("source").to.satisfy((source: RelationshipConstraint) => {
@@ -1413,7 +1413,7 @@ describe("Relationship Class merger tests", () => {
     it("should add re-mapped constraint classes to re-mapped relationship class", async() => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
-        items: {          
+        items: {
           testEntity: {
             schemaItemType: "EntityClass",
             baseClass: "SourceSchema.baseEntity",
@@ -1446,7 +1446,7 @@ describe("Relationship Class merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -1478,18 +1478,18 @@ describe("Relationship Class merger tests", () => {
                 "TargetSchema.baseEntity",
               ],
             },
-          },            
+          },
           testItem: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "any",
           },
         },
       }, targetContext);
-    
+
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
       schemaEdits.items.rename(testItem, "mergedRelationship");
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -1505,7 +1505,7 @@ describe("Relationship Class merger tests", () => {
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
         .then((ecClass: RelationshipClass) => {
           expect(ecClass).to.have.a.property("source").to.satisfy((source: RelationshipConstraint) => {

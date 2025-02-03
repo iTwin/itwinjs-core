@@ -174,10 +174,10 @@ describe("EntityClass", () => {
       });
 
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const testClass = await ecschema.getItem<ECClass>("TestEntityClass");
+      const testClass = await ecschema.getTypedItem("TestEntityClass", ECClass);
       assert.isDefined(testClass);
 
-      const testEntity = await ecschema.getItem<EntityClass>("TestEntityClass");
+      const testEntity = await ecschema.getTypedItem("TestEntityClass", EntityClass);
       assert.isDefined(testEntity);
 
       expect(testEntity!.name).equal("TestEntityClass");
@@ -206,7 +206,7 @@ describe("EntityClass", () => {
       assert.isTrue(testClass?.schemaItemType === SchemaItemType.EntityClass);
       const entityClass = testClass as EntityClass;
 
-      const mixinClass = await ecschema.getItem<Mixin>("testMixin");
+      const mixinClass = await ecschema.getTypedItem("testMixin", Mixin);
       assert.isDefined(mixinClass);
 
       assert.isDefined(entityClass.mixins);
@@ -275,10 +275,10 @@ describe("EntityClass", () => {
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = await ecSchema.getItem<EntityClass>("testClass");
+      const testEntity = await ecSchema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testEntity);
 
-      const testBaseEntity = await ecSchema.getItem<EntityClass>("baseClass");
+      const testBaseEntity = await ecSchema.getTypedItem("baseClass", EntityClass);
       assert.isDefined(testBaseEntity);
 
       assert.isDefined(await testEntity!.baseClass);
@@ -329,13 +329,13 @@ describe("EntityClass", () => {
       const schema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const entityClass = await schema.getItem<EntityClass>("TestEntityClass");
+      const entityClass = await schema.getTypedItem("TestEntityClass", EntityClass);
       assert.isDefined(entityClass);
 
       const navProp = await entityClass!.getProperty("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = await schema.getItem<RelationshipClass>("NavPropRelationship");
+        const relClass = await schema.getTypedItem("NavPropRelationship", RelationshipClass);
         assert.isTrue(await navProp.relationshipClass === relClass);  // << For some reason type guard was failing..?
       } else {
         assert.fail();
@@ -645,7 +645,7 @@ describe("EntityClass", () => {
     it("should properly serialize", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
-      const testClass = await ecschema.getItem<EntityClass>("testClass");
+      const testClass = await ecschema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = await testClass!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECEntityClass");

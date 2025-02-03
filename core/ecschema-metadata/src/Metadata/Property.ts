@@ -221,7 +221,7 @@ export abstract class Property implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
       this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey,
         async () => {
-          const category = await this.class.schema.lookupItem<PropertyCategory>(propertyCategorySchemaItemKey);
+          const category = await this.class.schema.lookupTypedItem(propertyCategorySchemaItemKey, PropertyCategory);
           if (undefined === category)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
           return category;
@@ -234,7 +234,7 @@ export abstract class Property implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
       this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey,
         async () => {
-          const koq = await this.class.schema.lookupItem<KindOfQuantity>(koqSchemaItemKey);
+          const koq = await this.class.schema.lookupTypedItem(koqSchemaItemKey, KindOfQuantity);
           if (undefined === koq)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
           return koq;
@@ -521,7 +521,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
       this._enumeration = new DelayedPromiseWithProps<SchemaItemKey, Enumeration>(enumSchemaItemKey,
         async () => {
-          const enumeration = await this.class.schema.lookupItem<Enumeration>(enumSchemaItemKey);
+          const enumeration = await this.class.schema.lookupTypedItem(enumSchemaItemKey, Enumeration);
           if (undefined === enumeration)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
           return enumeration;

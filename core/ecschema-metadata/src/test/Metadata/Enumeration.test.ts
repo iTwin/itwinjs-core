@@ -34,7 +34,7 @@ describe("Enumeration", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const testEnum = await schema.getItem<Enumeration>("testEnum");
+    const testEnum = await schema.getTypedItem("testEnum", Enumeration);
     assert.isDefined(testEnum);
     expect(testEnum!.fullName).eq("TestSchema.testEnum");
   });
@@ -142,7 +142,7 @@ describe("Enumeration", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
+      const testEnum = await ecSchema.getTypedItem("testEnum", Enumeration);
       assert.isDefined(testEnum);
 
       if (!testEnum)
@@ -169,7 +169,7 @@ describe("Enumeration", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
+      const testEnum = await ecSchema.getTypedItem("testEnum", Enumeration);
       assert.isDefined(testEnum);
     });
   });

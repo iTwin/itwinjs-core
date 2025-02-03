@@ -419,7 +419,7 @@ describe("Property", () => {
       await context.addSchema(refSchema);
       const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
       await (testSchema as MutableSchema).addReference(refSchema);
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
       property.addCustomAttribute({ className: "RefSchema.TestCustomAttribute" });
       const serialized = await property.toXml(newDom);
@@ -436,7 +436,7 @@ describe("Property", () => {
         },
       };
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
       property.addCustomAttribute({ className: "TestCustomAttribute" });
       const serialized = await property.toXml(newDom);
@@ -511,7 +511,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const nowTicks = Date.now();
@@ -574,7 +574,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const ca = {
@@ -624,7 +624,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const ca = {
@@ -676,7 +676,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const ca = {

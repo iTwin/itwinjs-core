@@ -40,7 +40,7 @@ describe("UnitSystem tests", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const unitSystem = await schema.getItem<UnitSystem>("testUnitSystem");
+    const unitSystem = await schema.getTypedItem("testUnitSystem", UnitSystem);
     assert.isDefined(unitSystem);
     expect(unitSystem!.fullName).eq("TestSchema.testUnitSystem");
   });

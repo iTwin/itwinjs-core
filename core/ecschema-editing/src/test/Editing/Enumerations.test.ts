@@ -53,7 +53,7 @@ describe("Enumerations tests", () => {
     };
 
     const result = await testEditor.enumerations.createFromProps(testKey, enumerationProps);
-    const testEnumeration = await testEditor.schemaContext.getSchemaItem<Enumeration>(result) as Enumeration;
+    const testEnumeration = await testEditor.schemaContext.getTypedSchemaItem(result, Enumeration) as Enumeration;
     expect(testEnumeration.name).to.eql("testEnumeration");
     const enumerator = testEnumeration.getEnumeratorByName("testEnumerator");
     expect(enumerator).to.not.be.undefined;

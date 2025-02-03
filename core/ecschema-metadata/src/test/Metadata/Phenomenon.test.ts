@@ -32,7 +32,7 @@ describe("Phenomenon tests", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const phenomenon = await schema.getItem<Phenomenon>("testPhenomenon");
+    const phenomenon = await schema.getTypedItem("testPhenomenon", Phenomenon);
     assert.isDefined(phenomenon);
     expect(phenomenon!.fullName).eq("TestSchema.testPhenomenon");
   });

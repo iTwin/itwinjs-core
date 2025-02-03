@@ -66,7 +66,7 @@ export async function modifyConstant(context: SchemaMergeContext, change: Consta
   }
   if (change.difference.phenomenon !== undefined) {
     const lookupKey = await updateSchemaItemKey(context, change.difference.phenomenon);
-    const phenomenon = await context.editor.schemaContext.getSchemaItem<Phenomenon>(lookupKey);
+    const phenomenon = await context.editor.schemaContext.getTypedSchemaItem(lookupKey, Phenomenon);
     if (phenomenon === undefined) {
       throw new Error(`Could not find phenomenon ${lookupKey.fullName} in the current context`);
     }

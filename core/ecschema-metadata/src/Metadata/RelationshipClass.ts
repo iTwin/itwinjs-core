@@ -348,7 +348,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
       this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
         async () => {
-          const tempAbstractConstraint = await relClassSchema.lookupItem<AnyConstraintClass>(relationshipConstraintProps.abstractConstraint!);
+          const tempAbstractConstraint = await relClassSchema.lookupTypedItem(relationshipConstraintProps.abstractConstraint!, AnyConstraintClass);
           if (undefined === tempAbstractConstraint)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
 
@@ -357,7 +357,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     }
 
     const loadEachConstraint = (constraintClassName: any) => {
-      const tempConstraintClass = relClassSchema.lookupItemSync<AnyConstraintClass>(constraintClassName);
+      const tempConstraintClass = relClassSchema.lookupTypedItemSync(constraintClassName, AnyConstraintClass);
       if (!tempConstraintClass)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       return tempConstraintClass;

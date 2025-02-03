@@ -87,7 +87,7 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
 export async function getClassEditor(context: SchemaMergeContext, ecClass: ECClass | SchemaItemKey): Promise<ECClasses> {
   const schemaItemType = ECClass.isECClass(ecClass)
     ? ecClass.schemaItemType
-    : (await context.editor.schemaContext.getSchemaItem<ECClass>(ecClass))?.schemaItemType;
+    : (await context.editor.schemaContext.getTypedSchemaItem(ecClass, ECClass))?.schemaItemType;
 
   switch(schemaItemType) {
     case SchemaItemType.EntityClass:

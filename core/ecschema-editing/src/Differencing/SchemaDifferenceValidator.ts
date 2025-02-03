@@ -53,10 +53,10 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     this.conflicts.push(conflict);
   }
 
-  private async getTargetSchemaItem<T extends SchemaItem>(name: string): Promise<T | undefined> {
+  private async getTargetTypedSchemaItem(name: string, T extends SchemaItem): Promise<T | undefined> {
     const itemKey = new SchemaItemKey(name, this._sourceSchema.schemaKey);
     const mappedKey = this._nameMappings.resolveItemKey(itemKey);
-    return this._targetSchema.getItem<T>(mappedKey.name);
+    return this._targetSchema.getTypedItem(mappedKey.name, T);
   }
 
   private getTargetProperty(itemName: string, propertyName: string): PropertyKey {
@@ -168,7 +168,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * Shared validation for all types of ClassItemDifference union.
    */
   private async visitClassDifference(entry: AnyClassItemDifference) {
-    const targetClassItem = await this.getTargetSchemaItem<ECClass>(entry.itemName);
+    const targetClassItem = await this.getTargetTypedSchemaItem(entry.itemName, ECClass);
     if (!await this.visitSchemaItemDifference(entry, targetClassItem)) {
       return;
     }
@@ -256,7 +256,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEnumerationDifference(entry: EnumerationDifference) {
-    const enumeration = await this.getTargetSchemaItem<Enumeration>(entry.itemName);
+    const enumeration = await this.getTargetTypedSchemaItem(entry.itemName, Enumeration);
     if (!await this.visitSchemaItemDifference(entry, enumeration)) {
       return;
     }
@@ -321,7 +321,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitKindOfQuantityDifference(entry: KindOfQuantityDifference) {
-    const kindOfQuantity = await this.getTargetSchemaItem<KindOfQuantity>(entry.itemName);
+    const kindOfQuantity = await this.getTargetTypedSchemaItem(entry.itemName, KindOfQuantity);
     if (!await this.visitSchemaItemDifference(entry, kindOfQuantity)) {
       return;
     }

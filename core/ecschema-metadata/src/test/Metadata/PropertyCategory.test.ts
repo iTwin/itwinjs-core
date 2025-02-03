@@ -26,7 +26,7 @@ describe("PropertyCategory", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const testPropCategory = await schema.getItem<PropertyCategory>("TestPropertyCategory");
+    const testPropCategory = await schema.getTypedItem("TestPropertyCategory", PropertyCategory);
     assert.isDefined(testPropCategory);
     expect(testPropCategory!.fullName).eq("TestSchema.TestPropertyCategory");
   });
@@ -88,7 +88,7 @@ describe("PropertyCategory", () => {
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const item = await ecSchema.getItem<PropertyCategory>("TestPropertyCategory");
+      const item = await ecSchema.getTypedItem("TestPropertyCategory", PropertyCategory);
       assert.isDefined(item);
       assert.isTrue(item?.schemaItemType === SchemaItemType.PropertyCategory);
 
@@ -166,7 +166,7 @@ describe("PropertyCategory", () => {
     it("should serialize properly", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
-      const testPropCategory = await ecschema.getItem<PropertyCategory>("TestPropertyCategory");
+      const testPropCategory = await ecschema.getTypedItem("TestPropertyCategory", PropertyCategory);
       assert.isDefined(testPropCategory);
 
       const serialized = await testPropCategory!.toXml(newDom);

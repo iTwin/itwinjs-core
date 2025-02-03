@@ -31,10 +31,10 @@ describe("ECClass tests", () => {
 
   it("should change name of class using SchemaEditor", async () => {
     const result1 = await testEditor.entities.create(testKey, "testEntity1", ECClassModifier.None);
-    let testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
+    let testEntity = await testEditor.schemaContext.getTypedSchemaItem(result1, EntityClass);
     await testEditor.entities.setName(result1, "testEntity2");
     const newItemKey = new SchemaItemKey("testEntity2", testKey);
-    testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(newItemKey);
+    testEntity = await testEditor.schemaContext.getTypedSchemaItem(newItemKey, EntityClass);
     expect(testEntity, "renamed EntityClass could not be found in schema").to.not.be.undefined;
     expect(testEntity?.name).to.eql("testEntity2");
   });
@@ -47,7 +47,7 @@ describe("ECClass tests", () => {
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidECName);
     });
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
+    const testEntity = await testEditor.schemaContext.getTypedSchemaItem(result1, EntityClass);
     expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
   });
 
@@ -60,7 +60,7 @@ describe("ECClass tests", () => {
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
 
-    const testEntity = await testEditor.schemaContext.getSchemaItem<EntityClass>(result1);
+    const testEntity = await testEditor.schemaContext.getTypedSchemaItem(result1, EntityClass);
     expect(testEntity, "originally named EntityClass should exist in the schema").to.not.be.undefined;
   });
 
@@ -434,7 +434,7 @@ describe("ECClass tests", () => {
       context = new SchemaContext();
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await testSchema.getItem<EntityClass>("testEntity");
+      const testClass = await testSchema.getTypedItem("testEntity", EntityClass);
 
       await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" });
       expect(testClass!.customAttributes && testClass!.customAttributes.has("testCustomAttribute")).to.be.true;
@@ -476,7 +476,7 @@ describe("ECClass tests", () => {
       await Schema.fromJson(schemaBJson, context);
       const schemaA = await Schema.fromJson(schemaAJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await schemaA.getItem<EntityClass>("testEntity");
+      const testClass = await schemaA.getTypedItem("testEntity", EntityClass);
 
       await testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "SchemaB.testCustomAttribute" });
       expect(testClass!.customAttributes && testClass!.customAttributes.has("SchemaB.testCustomAttribute")).to.be.true;
@@ -531,7 +531,7 @@ describe("ECClass tests", () => {
       context = new SchemaContext();
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await testSchema.getItem<UnitSystem>("testUnitSystem");
+      const testClass = await testSchema.getTypedItem("testUnitSystem", UnitSystem);
 
       await expect(testEditor.entities.addCustomAttribute(testClass?.key as SchemaItemKey, { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);

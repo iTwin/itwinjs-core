@@ -109,7 +109,7 @@ export async function modifyFormatUnit(context: SchemaMergeContext, change: Form
   const units: [Unit | InvertedUnit, string | undefined][] = [];
   for (const { name, label } of change.difference) {
     const lookupKey = await updateSchemaItemKey(context, name);
-    const formatUnit = await context.editor.schemaContext.getSchemaItem<Unit | InvertedUnit>(lookupKey);
+    const formatUnit = await context.editor.schemaContext.getTypedSchemaItem(lookupKey, Unit | InvertedUnit);
     if (formatUnit === undefined) {
       throw new Error(`Could not find format unit ${lookupKey.fullName} in the current context`);
     }

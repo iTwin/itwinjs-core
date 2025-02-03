@@ -235,7 +235,7 @@ export class ECClasses extends SchemaItems{
   public async delete(classKey: SchemaItemKey): Promise<void> {
     try {
       const schema = await this.getSchema(classKey.schemaKey);
-      const ecClass = await schema.getItem<ECClass>(classKey.name);
+      const ecClass = await schema.getTypedItem(classKey.name, ECClass);
       if (ecClass === undefined)
         return;
 
@@ -278,7 +278,7 @@ export class ECClasses extends SchemaItems{
    */
   public async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
     try {
-      const classItem = await this.getSchemaItem<ECClass>(itemKey);
+      const classItem = await this.getTypedSchemaItem(itemKey, ECClass);
       if (!baseClassKey) {
         await (classItem as MutableClass).setBaseClass(undefined);
         return;
@@ -298,7 +298,7 @@ export class ECClasses extends SchemaItems{
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this.getSchema(classKey.schemaKey);
 
-    const ecClass = await schema.getItem<MutableClass>(classKey.name);
+    const ecClass = await schema.getTypedItem(classKey.name, MutableClass);
     if (ecClass === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new ClassId(this.schemaItemType, classKey));
 

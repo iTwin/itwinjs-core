@@ -102,7 +102,7 @@ describe("RelationshipClass", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+    const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
     assert.isDefined(relClass);
     expect(relClass!.fullName).eq("TestSchema.TestRelationship");
   });
@@ -234,16 +234,16 @@ describe("RelationshipClass", () => {
       const schema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const sourceBaseEntity = await schema.getItem<EntityClass>("SourceBaseEntity");
+      const sourceBaseEntity = await schema.getTypedItem("SourceBaseEntity", EntityClass);
       assert.isDefined(sourceBaseEntity);
-      const targetBaseEntity = await schema.getItem<EntityClass>("TargetBaseEntity");
+      const targetBaseEntity = await schema.getTypedItem("TargetBaseEntity", EntityClass);
       assert.isDefined(targetBaseEntity);
-      const sourceEntity = await schema.getItem<EntityClass>("TestSourceEntity");
+      const sourceEntity = await schema.getTypedItem("TestSourceEntity", EntityClass);
       assert.isDefined(sourceEntity);
-      const targetEntity = await schema.getItem<EntityClass>("TestTargetEntity");
+      const targetEntity = await schema.getTypedItem("TestTargetEntity", EntityClass);
       assert.isDefined(targetEntity);
 
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       assert.isDefined(relClass);
       expect(relClass!.strength).equal(StrengthType.Embedding);
       expect(relClass!.strengthDirection).equal(StrengthDirection.Backward);
@@ -303,7 +303,7 @@ describe("RelationshipClass", () => {
       const schema = await Schema.fromJson(json, new SchemaContext());
       assert.isDefined(schema);
 
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       assert.isDefined(relClass);
 
       const navProp = await relClass!.getProperty("testNavProp");
@@ -503,7 +503,7 @@ describe("RelationshipClass", () => {
 
     it("async - Serialization of fully defined relationship", async () => {
       const schema = await Schema.fromJson(createSchemaJson(validRelationshipJson), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       const expectedJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
         name: "TestRelationship",
@@ -518,7 +518,7 @@ describe("RelationshipClass", () => {
 
     it("async - JSON stringify serialization of fully defined relationship", async () => {
       const schema = await Schema.fromJson(createSchemaJson(validRelationshipJson), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       const expectedJson = {
         schemaItemType: "RelationshipClass",
         ...validRelationshipJson,
@@ -531,28 +531,28 @@ describe("RelationshipClass", () => {
 
     it("should include modifier if 'None'", async () => {
       const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "None" }), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       expect(relClass!.toJSON(true, true)).to.include({ modifier: "None" });
     });
 
     it("should include modifier if 'Abstract'", async () => {
       const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "Abstract" }), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       expect(relClass!.toJSON(true, true)).to.include({ modifier: "Abstract" });
     });
 
     it("should include modifier if 'Sealed'", async () => {
       const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, modifier: "Sealed" }), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       expect(relClass!.toJSON(true, true)).to.include({ modifier: "Sealed" });
     });
 
     it("should omit customAttributes if empty", async () => {
       const schema = await Schema.fromJson(createSchemaJson({ ...validRelationshipJson, customAttributes: [] }), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       expect(relClass!.toJSON(true, true)).to.not.have.property("customAttributes");
     });
@@ -571,7 +571,7 @@ describe("RelationshipClass", () => {
         },
       };
       const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       const actualJson = relClass!.toJSON(true, true);
       expect(actualJson).to.not.have.property("customAttributes");
@@ -592,7 +592,7 @@ describe("RelationshipClass", () => {
         },
       };
       const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       const actualJson = relClass!.toJSON(true, true);
       expect(actualJson.source).to.not.have.property("abstractConstraint");
@@ -612,7 +612,7 @@ describe("RelationshipClass", () => {
         },
       };
       const schema = await Schema.fromJson(createSchemaJson(relClassJson), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       const actualJson = relClass!.toJSON(true, true);
       expect(actualJson.source).to.include({ abstractConstraint: "TestSchema.TestSourceEntity" });
@@ -737,7 +737,7 @@ describe("RelationshipClass", () => {
 
     it("should properly serialize", async () => {
       const schema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
-      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      const relClass = await schema.getTypedItem("TestRelationship", RelationshipClass);
       expect(relClass).to.exist;
       const serialized = await relClass!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECRelationshipClass");
@@ -776,7 +776,7 @@ describe("RelationshipClass", () => {
       await context.addSchema(refSchema);
       const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
       await (testSchema as MutableSchema).addReference(refSchema);
-      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const relClass = await testSchema.getTypedItem("TestRelationship", RelationshipClass) as RelationshipClass;
       const constraint = relClass.source as MutableRelationshipConstraint;
       constraint.addCustomAttribute({ className: "RefSchema.TestCustomAttribute" });
       const serialized = await constraint.toXml(newDom);
@@ -793,7 +793,7 @@ describe("RelationshipClass", () => {
         },
       };
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const relClass = await testSchema.getTypedItem("TestRelationship", RelationshipClass) as RelationshipClass;
       const constraint = relClass.source as MutableRelationshipConstraint;
       constraint.addCustomAttribute({ className: "TestCustomAttribute" });
       const serialized = await constraint.toXml(newDom);
@@ -863,7 +863,7 @@ describe("RelationshipClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const relClass = await testSchema.getTypedItem("TestRelationship", RelationshipClass) as RelationshipClass;
       const constraint = relClass.source as MutableRelationshipConstraint;
 
       const nowTicks = Date.now();
@@ -922,7 +922,7 @@ describe("RelationshipClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const relClass = await testSchema.getTypedItem("TestRelationship", RelationshipClass) as RelationshipClass;
       const constraint = relClass.source as MutableRelationshipConstraint;
 
       const ca = {
@@ -972,7 +972,7 @@ describe("RelationshipClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const relClass = await testSchema.getTypedItem("TestRelationship", RelationshipClass) as RelationshipClass;
       const constraint = relClass.source as MutableRelationshipConstraint;
 
       const ca = {
@@ -1024,7 +1024,7 @@ describe("RelationshipClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const relClass = await testSchema.getTypedItem("TestRelationship", RelationshipClass) as RelationshipClass;
       const constraint = relClass.source as MutableRelationshipConstraint;
 
       const ca = {

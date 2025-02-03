@@ -45,7 +45,7 @@ export class PropertyCategories extends SchemaItems {
 
   public async setPriority(propCategoryKey: SchemaItemKey, priority: number): Promise<void> {
     try {
-      const propertyCategory = await this.getSchemaItem<MutablePropertyCategory>(propCategoryKey);
+      const propertyCategory = await this.getTypedSchemaItem(propCategoryKey, MutablePropertyCategory);
       propertyCategory.setPriority(priority);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyCategoryPriority, new SchemaItemId(this.schemaItemType, propCategoryKey), e);

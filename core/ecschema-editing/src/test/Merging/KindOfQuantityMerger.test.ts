@@ -129,7 +129,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -179,7 +179,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       schemaItemType: "KindOfQuantity",
       label: "Test",
@@ -220,7 +220,7 @@ describe("KindOfQuantity merge tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -289,7 +289,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.eq({
       schemaItemType: "KindOfQuantity",
       label: "Test",
@@ -344,7 +344,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -391,7 +391,7 @@ describe("KindOfQuantity merge tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+      const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
       expect(mergedItem!.toJSON()).deep.equals({
         schemaItemType: "KindOfQuantity",
         relativeError: 0.01264587,
@@ -466,7 +466,7 @@ describe("KindOfQuantity merge tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+      const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
       expect(mergedItem!.toJSON()).deep.equals({
         schemaItemType: "KindOfQuantity",
         relativeError: 0.0001,
@@ -545,16 +545,16 @@ describe("KindOfQuantity merge tests", () => {
           },
         },
       }, sourceContext);
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -564,14 +564,14 @@ describe("KindOfQuantity merge tests", () => {
         expect(conflict).to.have.a.property("target", "StructClass");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedKOQ")).to.be.eventually.fulfilled.then(async (schemaItem) => {
         expect(schemaItem).to.exist;
         expect(schemaItem).to.have.property("schemaItemType").equals(SchemaItemType.KindOfQuantity);
@@ -618,17 +618,17 @@ describe("KindOfQuantity merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("mergedKOQ")).to.be.eventually.not.undefined
         .then((koq: KindOfQuantity) => {
           expect(koq).to.have.a.property("label").to.equal("Changed Power");
@@ -678,12 +678,12 @@ describe("KindOfQuantity merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
       const merger = new SchemaMerger(targetContext);
@@ -732,7 +732,7 @@ describe("KindOfQuantity merge tests", () => {
         ],
         items: {
           testStruct: {
-            schemaItemType: "StructClass",            
+            schemaItemType: "StructClass",
           },
           mergedKOQ: {
             schemaItemType: "KindOfQuantity",
@@ -741,12 +741,12 @@ describe("KindOfQuantity merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
       const merger = new SchemaMerger(targetContext);
@@ -809,12 +809,12 @@ describe("KindOfQuantity merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
       const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
@@ -879,12 +879,12 @@ describe("KindOfQuantity merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
       const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
@@ -955,12 +955,12 @@ describe("KindOfQuantity merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
       const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
@@ -968,7 +968,7 @@ describe("KindOfQuantity merge tests", () => {
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
         expect(conflict).to.exist;
         expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyKindOfQuantityUnit);
-        expect(conflict).to.have.a.property("source", "SourceSchema.testKoq");        
+        expect(conflict).to.have.a.property("source", "SourceSchema.testKoq");
         expect(conflict).to.have.a.property("target", "TargetSchema.mergedKOQ");
         expect(conflict).to.have.a.property("description", "The property has different kind of quantities with conflicting units.");
         expect(conflict).to.have.a.nested.property("difference.schemaType", "Property");
@@ -1008,12 +1008,12 @@ describe("KindOfQuantity merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
       const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
@@ -1021,7 +1021,7 @@ describe("KindOfQuantity merge tests", () => {
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
         expect(conflict).to.exist;
         expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPersistenceUnit);
-        expect(conflict).to.have.a.property("source", "ReferenceSchema.KILOTU");        
+        expect(conflict).to.have.a.property("source", "ReferenceSchema.KILOTU");
         expect(conflict).to.have.a.property("target", "ReferenceSchema.TU");
         expect(conflict).to.have.a.property("description", "Kind of Quantity has a different persistence unit.");
         expect(conflict).to.have.a.nested.property("difference.schemaType", "KindOfQuantity");

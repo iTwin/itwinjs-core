@@ -507,11 +507,11 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
       assert.isDefined(await testClass!.baseClass);
 
-      const baseClass = await schema.getItem<EntityClass>("testBaseClass");
+      const baseClass = await schema.getTypedItem("testBaseClass", EntityClass);
       assert.isDefined(baseClass);
       assert.isTrue(baseClass === await testClass!.baseClass);
       const derivedClasses = await baseClass?.getDerivedClasses();
@@ -547,7 +547,7 @@ describe("ECClass", () => {
 
       schema = await Schema.fromJson(schemaJson, context);
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
 
       assert.isDefined(testClass);
       assert.isDefined(await testClass!.baseClass);
@@ -596,7 +596,7 @@ describe("ECClass", () => {
 
       schema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClass"));
@@ -635,7 +635,7 @@ describe("ECClass", () => {
 
       schema = await Schema.fromJson(twoCustomAttributesJson, new SchemaContext());
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClassA"));
@@ -750,7 +750,7 @@ describe("ECClass", () => {
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = await ecSchema.getItem<EntityClass>("testClass");
+      const testEntity = await ecSchema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testEntity);
 
       const testPrimProp = await testEntity!.getProperty("testPrimProp");
@@ -934,7 +934,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(schemaJsonOne, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
       expect(testClass).to.exist;
       const serialized = testClass!.toJSON(true, true);
@@ -952,7 +952,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(schemaJsonOne, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
       expect(testClass).to.exist;
       const json = JSON.stringify(testClass);
@@ -965,28 +965,28 @@ describe("ECClass", () => {
 
     it("should omit modifier if 'None'", async () => {
       schema = await Schema.fromJson(getTestSchemaJson({ modifier: "None" }), new SchemaContext());
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       expect(testClass).to.exist;
       expect(testClass!.toJSON(true, true)).to.not.have.property("modifier");
     });
 
     it("should include modifier if 'Abstract'", async () => {
       schema = await Schema.fromJson(getTestSchemaJson({ modifier: "Abstract" }), new SchemaContext());
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       expect(testClass).to.exist;
       expect(testClass!.toJSON(true, true)).to.include({ modifier: "Abstract" });
     });
 
     it("should include modifier if 'Sealed'", async () => {
       schema = await Schema.fromJson(getTestSchemaJson({ modifier: "Sealed" }), new SchemaContext());
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       expect(testClass).to.exist;
       expect(testClass!.toJSON(true, true)).to.include({ modifier: "Sealed" });
     });
 
     it("should omit customAttributes if empty", async () => {
       schema = await Schema.fromJson(getTestSchemaJson({ customAttributes: [] }), new SchemaContext());
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       expect(testClass).to.exist;
       expect(testClass!.toJSON(true, true)).to.not.have.property("customAttributes");
     });
@@ -1068,7 +1068,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(schemaJsonFive, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = testClass!.toJSON(true, true);
       assert.isTrue(serialized.properties![0].customAttributes![0].ShowClasses);
@@ -1126,7 +1126,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(schemaJsonSix, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = testClass!.toJSON(true, true);
       assert.strictEqual(serialized.properties![0].name, "A");
@@ -1211,7 +1211,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = await schema.getItem<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
 
       const serialized = await testClass!.toXml(newDom);
@@ -1269,7 +1269,7 @@ describe("ECClass", () => {
       await context.addSchema(refSchema);
       const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
       await (testSchema as MutableSchema).addReference(refSchema);
-      const testClass = await testSchema.getItem<EntityClass>("testClass") as ECClass as MutableClass;
+      const testClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass as MutableClass;
       testClass.addCustomAttribute({ className: "RefSchema.TestCustomAttribute" });
       const serialized = await testClass.toXml(newDom);
 
@@ -1285,7 +1285,7 @@ describe("ECClass", () => {
         },
       };
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const testClass = await testSchema.getItem<EntityClass>("testClass") as ECClass as MutableClass;
+      const testClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass as MutableClass;
       testClass.addCustomAttribute({ className: "TestCustomAttribute" });
       const serialized = await testClass.toXml(newDom);
 
@@ -1359,7 +1359,7 @@ describe("ECClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const testClass = await testSchema.getItem<EntityClass>("testClass") as ECClass as MutableClass;
+      const testClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass as MutableClass;
 
       const nowTicks = Date.now();
       const ca = {
@@ -1421,7 +1421,7 @@ describe("ECClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const testClass = await testSchema.getItem<EntityClass>("testClass") as ECClass as MutableClass;
+      const testClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass as MutableClass;
 
       const ca = {
         className: "TestCustomAttribute",
@@ -1470,7 +1470,7 @@ describe("ECClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const testClass = await testSchema.getItem<EntityClass>("testClass") as ECClass as MutableClass;
+      const testClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass as MutableClass;
 
       const ca = {
         className: "TestCustomAttribute",
@@ -1521,7 +1521,7 @@ describe("ECClass", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const testClass = await testSchema.getItem<EntityClass>("testClass") as ECClass as MutableClass;
+      const testClass = await testSchema.getTypedItem("testClass", EntityClass) as ECClass as MutableClass;
 
       const ca = {
         className: "TestCustomAttribute",
@@ -1629,7 +1629,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
 
-      const testClass = await schema.getItem<ECClass>("H");
+      const testClass = await schema.getTypedItem("H", ECClass);
       expect(testClass).to.exist;
       for await (const baseClass of testClass!.getAllBaseClasses()) {
         actualNames.push(baseClass.name);
@@ -1662,7 +1662,7 @@ describe("ECClass", () => {
       schema = await Schema.fromJson(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
 
-      const testClass = await schema.getItem<ECClass>("H");
+      const testClass = await schema.getTypedItem("H", ECClass);
       expect(testClass).to.exist;
 
       await testClass!.traverseBaseClasses((ecClass, arg) => {
@@ -1694,14 +1694,14 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
 
-      const aClass = await schema.getItem<ECClass>("A");
-      const bClass = await schema.getItem<ECClass>("B");
-      const cClass = await schema.getItem<ECClass>("C");
-      const dClass = await schema.getItem<ECClass>("D");
-      const eClass = await schema.getItem<ECClass>("E");
-      const fClass = await schema.getItem<ECClass>("F");
-      const gClass = await schema.getItem<ECClass>("G");
-      const hClass = await schema.getItem<ECClass>("H");
+      const aClass = await schema.getTypedItem("A", ECClass);
+      const bClass = await schema.getTypedItem("B", ECClass);
+      const cClass = await schema.getTypedItem("C", ECClass);
+      const dClass = await schema.getTypedItem("D", ECClass);
+      const eClass = await schema.getTypedItem("E", ECClass);
+      const fClass = await schema.getTypedItem("F", ECClass);
+      const gClass = await schema.getTypedItem("G", ECClass);
+      const hClass = await schema.getTypedItem("H", ECClass);
 
       expect(await hClass!.is(gClass!)).to.be.true;
       expect(await hClass!.is(aClass!)).to.be.true;
@@ -1722,16 +1722,16 @@ describe("ECClass", () => {
       const childSchema = await Schema.fromJson(childSchemaJson, context);
       const grandChildSchema = await Schema.fromJson(grandChildSchemaJson, context);
 
-      const aClass = await schema.getItem<ECClass>("A");
-      const bClass = await schema.getItem<ECClass>("B");
-      const cClass = await schema.getItem<ECClass>("C");
-      const dClass = await schema.getItem<ECClass>("D");
-      const eClass = await schema.getItem<ECClass>("E");
-      const fClass = await schema.getItem<ECClass>("F");
-      const gClass = await schema.getItem<ECClass>("G");
-      const hClass = await schema.getItem<ECClass>("H");
-      const iClass = await childSchema.getItem<ECClass>("I");
-      const jClass = await grandChildSchema.getItem<ECClass>("J");
+      const aClass = await schema.getTypedItem("A", ECClass);
+      const bClass = await schema.getTypedItem("B", ECClass);
+      const cClass = await schema.getTypedItem("C", ECClass);
+      const dClass = await schema.getTypedItem("D", ECClass);
+      const eClass = await schema.getTypedItem("E", ECClass);
+      const fClass = await schema.getTypedItem("F", ECClass);
+      const gClass = await schema.getTypedItem("G", ECClass);
+      const hClass = await schema.getTypedItem("H", ECClass);
+      const iClass = await childSchema.getTypedItem("I", ECClass);
+      const jClass = await grandChildSchema.getTypedItem("J", ECClass);
 
       expect(await iClass!.is(gClass!)).to.be.true;
       expect(await iClass!.is(aClass!)).to.be.true;
@@ -1927,21 +1927,21 @@ describe("ECClass", () => {
     it("should return true if object is of ECClass type", async () => {
       const schemaClass = await Schema.fromJson(testSchema, new SchemaContext());
       expect(schemaClass).to.exist;
-      const testMixin = await schemaClass.getItem<Mixin>("TestMixin");
+      const testMixin = await schemaClass.getTypedItem("TestMixin", Mixin);
       expect(ECClass.isECClass(testMixin)).to.be.true;
-      const testEntity = await schemaClass.getItem<EntityClass>("TestEntity");
+      const testEntity = await schemaClass.getTypedItem("TestEntity", EntityClass);
       expect(ECClass.isECClass(testEntity)).to.be.true;
-      const testStruct = await schemaClass.getItem<StructClass>("TestStruct");
+      const testStruct = await schemaClass.getTypedItem("TestStruct", StructClass);
       expect(ECClass.isECClass(testStruct)).to.be.true;
-      const testCustomAttribute = await schemaClass.getItem<CustomAttributeClass>("TestCustomAttribute");
+      const testCustomAttribute = await schemaClass.getTypedItem("TestCustomAttribute", CustomAttributeClass);
       expect(ECClass.isECClass(testCustomAttribute)).to.be.true;
-      const testRelationship = await schemaClass.getItem<RelationshipClass>("TestRelationship");
+      const testRelationship = await schemaClass.getTypedItem("TestRelationship", RelationshipClass);
       expect(ECClass.isECClass(testRelationship)).to.be.true;
     });
 
     it("should return false if object is not of ECClass type", async () => {
       const schemaClass = await Schema.fromJson(testSchema, new SchemaContext());
-      const testEntity = await schemaClass.getItem<EntityClass>("TestEntity");
+      const testEntity = await schemaClass.getTypedItem("TestEntity", EntityClass);
       const testStructProp = await testEntity!.getProperty("testStructProp");
       assert.isDefined(testStructProp);
       expect(ECClass.isECClass(testSchema)).to.be.false;

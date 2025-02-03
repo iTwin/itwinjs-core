@@ -498,7 +498,7 @@ describe("Inverted Unit tests", () => {
     it("should properly serialize", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
-      const testInvUnit = await ecschema.getItem<InvertedUnit>("HORIZONTAL_PER_VERTICAL");
+      const testInvUnit = await ecschema.getTypedItem("HORIZONTAL_PER_VERTICAL", InvertedUnit);
       assert.isDefined(testInvUnit);
 
       const serialized = await testInvUnit!.toXml(newDom);

@@ -49,7 +49,7 @@ describe("Format", () => {
 
     const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(ecSchema);
-    const format = await ecSchema.getItem<Format>("TestFormat");
+    const format = await ecSchema.getTypedItem("TestFormat", Format);
     assert.isDefined(format);
     expect(format!.fullName).eq("TestSchema.TestFormat");
   });
@@ -801,7 +801,7 @@ describe("Format", () => {
       it("async - ", async () => {
         const testSchema = await Schema.fromJson(createSchemaJson(validComposite), context);
         assert.isDefined(testSchema);
-        const format = await testSchema.getItem<Format>("TestFormat");
+        const format = await testSchema.getTypedItem("TestFormat", Format);
         validateTestFormat(format);
       });
     }); // composite

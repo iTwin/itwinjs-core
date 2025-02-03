@@ -185,7 +185,7 @@ export class SchemaContextEditor {
       schemaOrKey = schemaOrKey.schemaKey;
     }
 
-    const schemaItem = await this.schemaContext.getSchemaItem<T>(schemaItemKey);
+    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, T);
     if (schemaItem === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
 
@@ -196,8 +196,8 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
-    const schemaItem = await this.schemaContext.getSchemaItem<T>(schemaItemKey);
+  public async getTypedSchemaItem(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType, T extends SchemaItem): Promise<T> {
+    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, T);
     if (!schemaItem) {
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
     }
