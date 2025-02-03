@@ -328,7 +328,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
 
     const chordHeight = corners[0].distance(corners[3]) / 2;
 
-    // TODO
     const realityPlanarTilePatch = new PlanarTilePatch(corners, normal, chordHeight);
     const realityProjection = new PlanarProjection(realityPlanarTilePatch);
 
@@ -424,7 +423,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     const branch = new GraphicBranch(true);
     for (const mesh of meshes) {
       const primitive = Primitive.create(mesh);
-      branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
+      branch.add(system.createBatch(primitive!, featureTable!, mesh.getRange(), { tileId }));
     }
 
     return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity(), { disableClipStyle: params.disableClipStyle });
