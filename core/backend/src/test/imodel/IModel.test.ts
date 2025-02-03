@@ -10,8 +10,8 @@ import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, Ope
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
-  FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
-  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
+  FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometricModel3dProps, GeometryParams, GeometryStreamBuilder,
+  ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, InformationPartitionElementProps, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, PrimitiveTypeCode, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
@@ -26,7 +26,7 @@ import {
   Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
-  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
 import { HubMock } from "../../HubMock";
@@ -2904,5 +2904,35 @@ describe("iModel", () => {
     expect(() => imodel.relationships.insertInstance(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
 
     imodel.close();
+  });
+
+  it.only("should throw channel error", () => {
+    const imdodelPath = IModelTestUtils.prepareOutputFile("IModel", "channelError.bim");
+    const iModel = StandaloneDb.createEmpty(imdodelPath, { rootSubject: { name: "channelError" } });
+
+    const channelKey = "channelKey";
+    iModel.channels.insertChannelSubject({ channelKey, subjectName: "SubjectName" });
+    iModel.saveChanges();
+
+    const subjectId = iModel.channels.queryChannelRoot(channelKey)!;
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(subjectId),
+      code: Code.createEmpty(),
+    };
+
+    const partitionId: Id64String = iModel.elements.insertElement(partitionProps);
+    const modelProps: GeometricModel3dProps = {
+      classFullName: PhysicalModel.classFullName,
+      modeledElement: { id: partitionId },
+    };
+
+    try {
+      iModel.models.insertModel(modelProps);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
   });
 });
