@@ -625,6 +625,7 @@ export abstract class GltfReader {
       realityMeshPrimitive = {
         ...realityMeshPrimitive,
         layerClassifiers: tileTree.layerClassifiers,
+        tile
       };
     }
     if (realityMeshPrimitive) {

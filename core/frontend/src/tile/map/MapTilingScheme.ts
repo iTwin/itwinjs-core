@@ -201,7 +201,7 @@ export abstract class MapTilingScheme {
 
     const projectCenter = Point3d.create(iModel.projectExtents.center.x, iModel.projectExtents.center.y, bimElevationOffset);
     const projectEast = projectCenter.plusXYZ(1, 0, 0);
-    const projectNorth = projectCenter.plusXYZ(0, 1, 0);
+    const projectNorth = projectCenter.plusXZY(0, 1, 0);
 
     const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter), applyTerrain);
     const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast), applyTerrain);
