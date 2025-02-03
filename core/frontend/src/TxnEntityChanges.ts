@@ -76,7 +76,8 @@ export interface TxnEntityChangesFilterOptions {
 /** Describes a set of elements or models that were modified as part of a transaction in a [[BriefcaseConnection]],
  * serving as the payload for the [[BriefcaseTxns.onElementsChanged]] and [[BriefcaseTxns.onModelsChanged]] events.
  * The [[inserted]], [[deleted]], and [[updated]] compressed Id sets can be awkward to work with.
- * Iterating over individual [[TxnEntityChange]]s can be more convenient, especially if you need to [[filter]] out certain changes.
+ * It can be more convenient to iterate over the individual [[TxnEntityChange]]s, especially if you wish to [[filter]] out some
+ * changes.
  * @public
  * @extensions
  */
