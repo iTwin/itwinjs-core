@@ -19,8 +19,12 @@ export class ECVersion {
   private _write: number = 0;
   private _minor: number = 0;
 
-  // Define a static global instance representing zero
-  public static readonly ZERO = new ECVersion(0, 0, 0);
+  /**
+   * Using a version with all zero is invalid
+   * for a schema, but it can be used to indicate
+   * "no version has been specified" when locating things
+   */
+  public static readonly NO_VERSION = new ECVersion(0, 0, 0);
 
   /**
    * The constructor will throw an ECObjectsError if any of the parameters below are above the threshold.

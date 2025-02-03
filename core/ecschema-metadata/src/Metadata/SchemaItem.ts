@@ -19,7 +19,16 @@ const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
  * @beta
  */
 export abstract class SchemaItem {
+  /**
+   * Get the type of item represented by this class
+   * @beta
+   */
   public static get schemaItemType(): SchemaItemType { throw new Error(`you must override static schemaName in ${this.name}`); }
+
+  /**
+   * Get the type of item represented by this instance
+   * @beta
+   */
   public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
   protected _key: SchemaItemKey;

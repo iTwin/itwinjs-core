@@ -87,7 +87,7 @@ export interface WithSchemaKey {
   schemaKey: Readonly<SchemaKey>;
 }
 
-/** This is needed to break a circular depependency between Class and EntityClass.
+/** This is needed to break a circular dependency between Class and EntityClass.
  * @beta
  */
 export interface HasMixins {

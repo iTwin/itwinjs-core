@@ -521,7 +521,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = (ecClass: AnyClass) => {
-      if (ecClass.schemaItemType === SchemaItemType.EntityClass) {
+      if (ecClass.schemaItemType === SchemaItemType.EntityClass) { // cannot use EntityClass typeguard because of circular reference
         for (const m of Array.from((ecClass as HasMixins).getMixinsSync()).reverse()) {
           baseClasses.push(m);
         }
@@ -779,7 +779,16 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
+  /**
+   * Get the type of item represented by this instance
+   * @beta
+   */
   public override readonly schemaItemType = StructClass.schemaItemType;
+
+  /**
+   * Get the type of item represented by this class
+   * @beta
+   */
   public static override get schemaItemType() { return SchemaItemType.StructClass; }
   /**
    * Type guard to check if the SchemaItem is of type StructClass.

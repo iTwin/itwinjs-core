@@ -6,7 +6,7 @@
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaInfo } from "./Interfaces";
-import { MutableSchema, Schema, SchemaItemConstructor } from "./Metadata/Schema";
+import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
@@ -67,21 +67,37 @@ export interface ISchemaLocater {
 export interface ISchemaItemLocater {
   /**
    * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
-   * Will await a partially loaded schema then look in it for the requested item
+   * Will await a partially loaded schema then look in it for the requested item.
    * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
-   * @param itemConstructor optional, when provided the item's type can be verified, otherwise the item is cast without verification
-   * @returns The requested schema item
+   * @returns The requested schema item.
    */
-  getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): Promise<T | undefined>;
+  getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
 
   /**
    * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
-   * Will skip a partially loaded schema and return undefined if the item belongs to that schema.  Use the async method to await partially loaded schemas.
+   * Will skip a partially loaded schema and return undefined if the item belongs to that schema. Use the async method to await partially loaded schemas.
    * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
-   * @param itemConstructor optional, when provided the item's type can be verified, otherwise the item is cast without verification
-   * @returns The requested schema item
+   * @returns The requested schema item.
    */
-  getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): T | undefined;
+  getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
+
+  /**
+   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+   * Will await a partially loaded schema then look in it for the requested item.
+   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
+   * @param itemConstructor The constructor of the item to return.
+   * @returns The requested schema item.
+   */
+  getTypedSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
+
+  /**
+   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+   * Will skip a partially loaded schema and return undefined if the item belongs to that schema. Use the async method to await partially loaded schemas.
+   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
+   * @param itemConstructor The constructor of the item to return.
+   * @returns The requested schema item.
+   */
+  getTypedSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
 }
 
 /**
@@ -428,33 +444,59 @@ export class SchemaContext implements ISchemaItemLocater {
     return this._knownSchemas.getSchemaSync(schemaKey, matchType);
   }
 
-  /**
-   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
-   * Will await a partially loaded schema then look in it for the requested item
-   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
-   * @param itemConstructor optional, when provided the item's type can be verified, otherwise the item is cast without verification
-   * @returns The requested schema item
-   */
-  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): Promise<T | undefined> {
-    const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
-    if (undefined === schema)
-      return undefined;
-    return schema.getItem<T>(schemaItemKey.name, itemConstructor);
-  }
+/**
+ * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+ * Will await a partially loaded schema then look in it for the requested item
+ * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
+ * @returns The requested schema item
+ */
+public async getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined> {
+  const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
+  if (undefined === schema)
+    return undefined;
+  return schema.getItem(schemaItemKey.name);
+}
 
-  /**
-   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
-   * Will return undefined if the cached schema is partially loaded. Use [[getSchemaItem]] to await until the schema is completely loaded.
-   * @param schemaItemKey The SchemaItemKey identifying the item to return. SchemaMatchType.Latest is used to match the schema.
-   * @param itemConstructor optional, when provided the item's type can be verified, otherwise the item is cast without verification
-   * @returns The requested schema item
-   */
-  public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): T | undefined {
-    const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
-    if (undefined === schema)
-      return undefined;
-    return schema.getItemSync<T>(schemaItemKey.name, itemConstructor);
-  }
+/**
+ * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+ * Will return undefined if the cached schema is partially loaded. Use [[getSchemaItem]] to await until the schema is completely loaded.
+ * @param schemaItemKey The SchemaItemKey identifying the item to return. SchemaMatchType.Latest is used to match the schema.
+ * @returns The requested schema item
+ */
+public getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined {
+  const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
+  if (undefined === schema)
+    return undefined;
+  return schema.getItemSync(schemaItemKey.name);
+}
+
+/**
+ * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+ * Will await a partially loaded schema then look in it for the requested item.
+ * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
+ * @param itemConstructor The constructor of the item to return.
+ * @returns The requested schema item.
+ */
+public async getTypedSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined> {
+  const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
+  if (undefined === schema)
+    return undefined;
+  return schema.getTypedItem(schemaItemKey.name, itemConstructor);
+}
+
+/**
+ * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
+ * Will return undefined if the cached schema is partially loaded. Use [[getSchemaItem]] to await until the schema is completely loaded.
+ * @param schemaItemKey The SchemaItemKey identifying the item to return. SchemaMatchType.Latest is used to match the schema.
+ * @param itemConstructor The constructor of the item to return.
+ * @returns The requested schema item.
+ */
+public getTypedSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined {
+  const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
+  if (undefined === schema)
+    return undefined;
+  return schema.getTypedItemSync(schemaItemKey.name, itemConstructor);
+}
 
   /**
    * Iterates through the items of each schema known to the context.  This includes schemas added to the

@@ -37,7 +37,7 @@ export class Entity {
   private static _schemaItemKey?: SchemaItemKey;
 
   /** Serves as a unique identifier for this class. Typed variant of [[classFullName]].
-   * @internal
+   * @beta
    */
   public static get schemaItemKey(): SchemaItemKey {
     if (!this._schemaItemKey) {
@@ -107,12 +107,16 @@ export class Entity {
 
   /** Get the full BIS class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this._ctor.classFullName; }
-
+  /**
+   * Get the item key used by the ecschema-metadata package to identify this entity class
+   * @beta
+   */
   public get schemaItemKey(): SchemaItemKey { return this._ctor.schemaItemKey; }
 
   /** query metadata for this entity class from the iModel's schema
    * @throws [[IModelError]] if there is a problem querying the schema
    * @returns The metadata for the current entity
+   * @beta
    */
   public async getMetaData(): Promise<EntityClass> {
     if (!this._metadata) {
