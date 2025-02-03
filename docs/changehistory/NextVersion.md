@@ -16,6 +16,7 @@ Table of contents:
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
     - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/ecschema-metadata](#itwincore-ecschema-metadata)
     - [@itwin/presentation-common](#itwinpresentation-common)
   - [Breaking Changes](#breaking-changes)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
@@ -32,6 +33,7 @@ Table of contents:
       - [@itwin/core-geometry](#itwincore-geometry)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-1)
+      - [@itwin/core-ecschema-metadata](#itwincore-ecschema-metadata-1)
     - [Packages dropped](#packages-dropped)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
@@ -106,6 +108,7 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 ### @itwin/core-backend
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
+- Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
 
 ### @itwin/core-frontend
 
@@ -117,6 +120,15 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
+
+### @itwin/core-ecschema-metadata
+
+Split the ISchemaItemLocater and Schema classes' APIs into getSchemaItem and getTypedSchemaItem.
+The first no longer takes a generic type parameter, because it was never type-safe like it suggested. It just returns
+any schema item found.
+The second takes a SchemaItem subclass' constructor as a parameter and performs strict type checking.
+
+Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. EntityClass.isEntityClass())
 
 ### @itwin/presentation-common
 
@@ -230,7 +242,6 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
 
-
 #### @itwin/core-frontend
 
 | **Removed**                               | **Replacement**                                                                                              |
@@ -284,6 +295,11 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 | `GetMetaDataFunction` |
 | `LogFunction`         |
 | `LoggingMetaData`     |
+
+#### @itwin/core-ecschema-metadata-1
+
+- Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
+- Removed existing generic getItem() methods from schemaItemLocater, schemaContext and Schema as it suggested type safety when there was none
 
 ### Packages dropped
 
