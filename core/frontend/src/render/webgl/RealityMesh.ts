@@ -307,7 +307,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     const { layerClassifiers, tile, texture: meshTexture, featureID } = realityMesh;
     const texture = meshTexture ? new TerrainTexture(meshTexture, featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
-    if (!layerClassifiers || !tile) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
+    if (!layerClassifiers?.size || !tile) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
 
     const transformECEF = tile.tree.iModel.getEcefTransform();
     if (!transformECEF || !tile.range) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
@@ -324,8 +324,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
 
     const corners = tile.range.corners();
 
-    const normal = Vector3d.createCrossProductToPoints(corners[0], corners[1], corners[2]);
-
+    const normal = Vector3d.createCrossProductToPoints(corners[0], corners[1], corners[2])?.normalize();
+    if (!normal) {
+      return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
+    }
     const chordHeight = corners[0].distance(corners[3]) / 2;
 
     const realityPlanarTilePatch = new PlanarTilePatch(corners, normal, chordHeight);
