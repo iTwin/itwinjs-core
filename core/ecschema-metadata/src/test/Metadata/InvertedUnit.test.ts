@@ -64,13 +64,13 @@ describe("Inverted Unit tests", () => {
     });
 
     it("InvertedUnit type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestInvertedUnit")).to.be.instanceof(InvertedUnit);
-      expect(ecSchema.getItemSync("TestInvertedUnit")).to.be.instanceof(InvertedUnit);
+      expect(await ecSchema.getTypedItem("TestInvertedUnit", InvertedUnit)).to.be.instanceof(InvertedUnit);
+      expect(ecSchema.getTypedItemSync("TestInvertedUnit", InvertedUnit)).to.be.instanceof(InvertedUnit);
     });
 
     it("InvertedUnit type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", InvertedUnit)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", InvertedUnit)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", InvertedUnit)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", InvertedUnit)).to.be.undefined;
     });
   });
 

@@ -118,7 +118,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       return undefined;
     }
 
-    return this.class.schema.lookupItemSync(this._category);
+    return this.class.schema.lookupTypedItemSync(this._category, PropertyCategory);
   }
 
   public getKindOfQuantitySync(): KindOfQuantity | undefined {
@@ -131,7 +131,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       return undefined;
     }
 
-    return this.class.schema.lookupItemSync(this._kindOfQuantity);
+    return this.class.schema.lookupTypedItemSync(this._kindOfQuantity, KindOfQuantity);
   }
 
   /**
@@ -596,7 +596,7 @@ export class NavigationProperty extends Property {
     if (!this._relationshipClass) // eslint-disable-line @typescript-eslint/no-misused-promises
       return undefined;
 
-    return this.class.schema.lookupItemSync(this._relationshipClass);
+    return this.class.schema.lookupTypedItemSync(this._relationshipClass, RelationshipClass);
   }
 
   public get direction() { return this._direction; }

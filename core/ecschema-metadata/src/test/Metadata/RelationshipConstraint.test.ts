@@ -112,7 +112,7 @@ describe("RelationshipConstraint", () => {
     });
     it("sync - Deserialize One Custom Attribute", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
@@ -144,7 +144,7 @@ describe("RelationshipConstraint", () => {
     });
     it("sync - Deserialize Two Custom Attributes", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")).to.exist;
@@ -169,7 +169,7 @@ describe("RelationshipConstraint", () => {
         ],
       };
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       assert.isFalse(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")!.ShowClasses);
@@ -265,7 +265,7 @@ describe("RelationshipConstraint", () => {
         ],
       };
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       const constraintProps = testConstraint.toJSON();
       expect(constraintProps.customAttributes![0].ShowClasses).to.be.false;

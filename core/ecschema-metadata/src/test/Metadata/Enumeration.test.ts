@@ -77,13 +77,13 @@ describe("Enumeration", () => {
     });
 
     it("Enumeration type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestEnumeration")).to.be.instanceof(Enumeration);
-      expect(ecSchema.getItemSync("TestEnumeration")).to.be.instanceof(Enumeration);
+      expect(await ecSchema.getTypedItem("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
+      expect(ecSchema.getTypedItemSync("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
     });
 
     it("Enumeration type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", Enumeration)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", Enumeration)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", Enumeration)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", Enumeration)).to.be.undefined;
     });
   });
 

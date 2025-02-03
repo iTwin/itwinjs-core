@@ -61,13 +61,13 @@ describe("StructClass", () => {
     });
 
     it("StructClass type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestStructClass")).to.be.instanceof(StructClass);
-      expect(ecSchema.getItemSync("TestStructClass")).to.be.instanceof(StructClass);
+      expect(await ecSchema.getTypedItem("TestStructClass", StructClass)).to.be.instanceof(StructClass);
+      expect(ecSchema.getTypedItemSync("TestStructClass", StructClass)).to.be.instanceof(StructClass);
     });
 
     it("StructClass type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", StructClass)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", StructClass)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", StructClass)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", StructClass)).to.be.undefined;
     });
   });
 });

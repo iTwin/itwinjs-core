@@ -64,13 +64,13 @@ describe("PropertyCategory", () => {
     });
 
     it("PropertyCategory type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestPropertyCategory")).to.be.instanceof(PropertyCategory);
-      expect(ecSchema.getItemSync("TestPropertyCategory")).to.be.instanceof(PropertyCategory);
+      expect(await ecSchema.getTypedItem("TestPropertyCategory", PropertyCategory)).to.be.instanceof(PropertyCategory);
+      expect(ecSchema.getTypedItemSync("TestPropertyCategory", PropertyCategory)).to.be.instanceof(PropertyCategory);
     });
 
     it("PropertyCategory type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", PropertyCategory)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", PropertyCategory)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", PropertyCategory)).to.be.undefined;
+      expect(() => ecSchema.getTypedItemSync("TestPhenomenon", PropertyCategory)).to.be.undefined;
     });
   });
 

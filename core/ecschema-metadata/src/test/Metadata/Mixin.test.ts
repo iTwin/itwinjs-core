@@ -114,13 +114,13 @@ describe("Mixin", () => {
     });
 
     it("Mixin type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestMixin")).to.be.instanceof(Mixin);
-      expect(ecSchema.getItemSync("TestMixin")).to.be.instanceof(Mixin);
+      expect(await ecSchema.getTypedItem("TestMixin", Mixin)).to.be.instanceof(Mixin);
+      expect(ecSchema.getTypedItemSync("TestMixin", Mixin)).to.be.instanceof(Mixin);
     });
 
     it("Mixin type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", Mixin)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", Mixin)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", Mixin)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", Mixin)).to.be.undefined;
     });
   });
 
@@ -197,7 +197,7 @@ describe("Mixin", () => {
       const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
-      const mixin = schema.getItemSync<Mixin>("TestMixin");
+      const mixin = schema.getTypedItemSync("TestMixin", Mixin);
       expect(mixin).to.exist;
 
       const navProp = mixin!.getPropertySync("testNavProp", false) as NavigationProperty;
@@ -229,10 +229,10 @@ describe("Mixin", () => {
       const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
-      const mixin = schema.getItemSync<Mixin>("TestMixin");
+      const mixin = schema.getTypedItemSync("TestMixin", Mixin);
       expect(mixin).to.exist;
 
-      const validEntity = schema.getItemSync<EntityClass>("TestEntity");
+      const validEntity = schema.getTypedItemSync("TestEntity", EntityClass);
       expect(validEntity).to.exist;
 
       const invalidEntity = new EntityClass(schema, "TestEntityB");
@@ -319,10 +319,10 @@ describe("Mixin", () => {
       const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
-      const mixin = schema.getItemSync<Mixin>("TestMixin");
+      const mixin = schema.getTypedItemSync("TestMixin", Mixin);
       expect(mixin).to.exist;
 
-      const validEntity = schema.getItemSync<EntityClass>("TestEntity");
+      const validEntity = schema.getTypedItemSync("TestEntity", EntityClass);
       expect(validEntity).to.exist;
 
       const invalidEntity = new EntityClass(schema, "TestEntityB");

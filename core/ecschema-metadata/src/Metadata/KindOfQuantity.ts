@@ -87,11 +87,11 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = await this.schema.lookupTypedItem(unitOverride[0], Unit | InvertedUnit);
-          if (undefined === unit)
+          const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
+          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 
@@ -121,11 +121,11 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = this.schema.lookupTypedItemSync(unitOverride[0], Unit | InvertedUnit);
-          if (undefined === unit)
+          const unitOrInverted = this.schema.lookupItemSync(unitOverride[0]);
+          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 

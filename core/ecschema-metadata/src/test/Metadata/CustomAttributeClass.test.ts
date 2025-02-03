@@ -67,13 +67,13 @@ describe("CustomAttributeClass", () => {
     });
 
     it("CustomAttributeClass type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestCAClass")).to.be.instanceof(CustomAttributeClass);
-      expect(ecSchema.getItemSync("TestCAClass")).to.be.instanceof(CustomAttributeClass);
+      expect(await ecSchema.getTypedItem("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
+      expect(ecSchema.getTypedItemSync("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
     });
 
     it("CustomAttributeClass type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", CustomAttributeClass)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", CustomAttributeClass)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
     });
   });
 
@@ -318,7 +318,7 @@ describe("CustomAttributeClass", () => {
       const ecschema = Schema.fromJsonSync(createCustomAttributeJson({}), new SchemaContext());
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      const testCustomAttribute = ecschema.getTypedItemSync("testCustomAttribute", CustomAttributeClass);
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");
@@ -338,7 +338,7 @@ describe("CustomAttributeClass", () => {
       const ecschema = Schema.fromJsonSync(createCustomAttributeJson(propertyJson), new SchemaContext());
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      const testCustomAttribute = ecschema.getTypedItemSync("testCustomAttribute", CustomAttributeClass);
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");

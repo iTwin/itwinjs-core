@@ -605,7 +605,7 @@ describe("ECClass", () => {
     it("sync - Deserialize One Custom Attribute", () => {
       schema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClass"));
@@ -644,7 +644,7 @@ describe("ECClass", () => {
     it("sync - Deserialize Two Custom Attributes", () => {
       schema = Schema.fromJsonSync(twoCustomAttributesJson, new SchemaContext());
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClassA"));
@@ -697,7 +697,7 @@ describe("ECClass", () => {
       };
       schema = Schema.fromJsonSync(classJson, new SchemaContext());
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClassA"));
@@ -788,15 +788,15 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
       assert.isDefined(testClass);
       assert.isDefined(testClass!.getBaseClassSync());
 
-      const testClass2 = schema.getItemSync<EntityClass>("testClass2");
+      const testClass2 = schema.getTypedItemSync("testClass2", EntityClass);
       assert.isDefined(testClass2);
       assert.isDefined(testClass2!.getBaseClassSync());
 
-      const baseClass = schema.getItemSync<EntityClass>("testBaseClass");
+      const baseClass = schema.getTypedItemSync("testBaseClass", EntityClass);
       assert.isDefined(baseClass);
       assert.isTrue(baseClass === testClass!.getBaseClassSync());
       const derivedClasses = await baseClass?.getDerivedClasses();
@@ -833,7 +833,7 @@ describe("ECClass", () => {
 
       schema = Schema.fromJsonSync(schemaJson, context);
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
 
       assert.isDefined(testClass);
       assert.isDefined(testClass!.getBaseClassSync());
@@ -885,7 +885,7 @@ describe("ECClass", () => {
       const ecSchema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getItemSync<EntityClass>("testClass");
+      const testEntity = ecSchema.getTypedItemSync("testClass", EntityClass);
       assert.isDefined(testEntity);
 
       const testPrimProp = testEntity!.getPropertySync("testPrimProp");
@@ -995,7 +995,7 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(schemaJsonOne, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = testClass!.toJSON(true, true);
       const expectedJson = {
@@ -1008,11 +1008,11 @@ describe("ECClass", () => {
       expect(serialized).eql(expectedJson);
     });
 
-    it("sync - JSON stringify serialization", () => {
+    it("sync - JSON stringify serialization", async () => {
       schema = Schema.fromJsonSync(schemaJsonOne, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = await schema.getTypedItem("testClass", EntityClass);
       assert.isDefined(testClass);
       const json = JSON.stringify(testClass);
       const serialized = JSON.parse(json);
@@ -1079,7 +1079,7 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(schemaJsonFive, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = testClass!.toJSON(true, true);
       assert.isTrue(serialized.properties![0].customAttributes![0].ShowClasses);
@@ -1138,7 +1138,7 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(schemaJsonSix, new SchemaContext());
       assert.isDefined(schema);
 
-      const testClass = schema.getItemSync<EntityClass>("testClass");
+      const testClass = schema.getTypedItemSync("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = testClass!.toJSON(true, true);
       assert.strictEqual(serialized.properties![0].name, "A");
@@ -1641,7 +1641,7 @@ describe("ECClass", () => {
     it("getAllBaseClassesSync, should correctly traverse a complex inheritance hierarchy synchronously", () => {
       schema = Schema.fromJsonSync(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
-      const testClass = schema.getItemSync<ECClass>("H");
+      const testClass = schema.getTypedItemSync("H", ECClass);
       expect(testClass).to.exist;
 
       const syncActualNames: string[] = [];
@@ -1679,10 +1679,12 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
 
-      const testClass = schema.getItemSync<ECClass>("H");
+      const testClass = schema.getItemSync("H");
       expect(testClass).to.exist;
+      if(!ECClass.isECClass(testClass))
+        assert.fail("Expected ECClass");
 
-      testClass!.traverseBaseClassesSync((ecClass, arg) => {
+      testClass.traverseBaseClassesSync((ecClass, arg) => {
         result.push({ name: ecClass.name, arg });
         return false;
       }, "testArg");
@@ -1760,26 +1762,36 @@ describe("ECClass", () => {
       schema = Schema.fromJsonSync(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
 
-      const aClass = schema.getItemSync<ECClass>("A");
-      const bClass = schema.getItemSync<ECClass>("B");
-      const cClass = schema.getItemSync<ECClass>("C");
-      const dClass = schema.getItemSync<ECClass>("D");
-      const eClass = schema.getItemSync<ECClass>("E");
-      const fClass = schema.getItemSync<ECClass>("F");
-      const gClass = schema.getItemSync<ECClass>("G");
-      const hClass = schema.getItemSync<ECClass>("H");
+      const aClass = schema.getTypedItemSync("A", ECClass);
+      const bClass = schema.getTypedItemSync("B", ECClass);
+      const cClass = schema.getTypedItemSync("C", ECClass);
+      const dClass = schema.getTypedItemSync("D", ECClass);
+      const eClass = schema.getTypedItemSync("E", ECClass);
+      const fClass = schema.getTypedItemSync("F", ECClass);
+      const gClass = schema.getTypedItemSync("G", ECClass);
+      const hClass = schema.getTypedItemSync("H", ECClass);
 
-      expect(hClass!.isSync(gClass!)).to.be.true;
-      expect(hClass!.isSync(aClass!)).to.be.true;
-      expect(hClass!.isSync(bClass!)).to.be.true;
-      expect(hClass!.isSync(eClass!)).to.be.true;
-      expect(hClass!.isSync(cClass!)).to.be.true;
-      expect(hClass!.isSync(fClass!)).to.be.true;
-      expect(hClass!.isSync(dClass!)).to.be.true;
+      if(aClass === undefined ||
+        bClass === undefined ||
+        cClass === undefined ||
+        dClass === undefined ||
+        eClass === undefined ||
+        fClass === undefined ||
+        gClass === undefined ||
+        hClass === undefined)
+        assert.fail("Expected classes");
 
-      expect(gClass!.isSync(eClass!)).to.be.false;
-      expect(gClass!.isSync(dClass!)).to.be.false;
-      expect(gClass!.isSync(hClass!)).to.be.false;
+      expect(hClass.isSync(gClass)).to.be.true;
+      expect(hClass.isSync(aClass)).to.be.true;
+      expect(hClass.isSync(bClass)).to.be.true;
+      expect(hClass.isSync(eClass)).to.be.true;
+      expect(hClass.isSync(cClass)).to.be.true;
+      expect(hClass.isSync(fClass)).to.be.true;
+      expect(hClass.isSync(dClass)).to.be.true;
+
+      expect(gClass.isSync(eClass)).to.be.false;
+      expect(gClass.isSync(dClass)).to.be.false;
+      expect(gClass.isSync(hClass)).to.be.false;
     });
   });
 

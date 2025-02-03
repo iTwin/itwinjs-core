@@ -53,13 +53,13 @@ describe("EntityClass", () => {
     });
 
     it("EntityClass type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestEntityClass")).to.be.instanceof(EntityClass);
-      expect(ecSchema.getItemSync("TestEntityClass")).to.be.instanceof(EntityClass);
+      expect(await ecSchema.getTypedItem("TestEntityClass", EntityClass)).to.be.instanceof(EntityClass);
+      expect(ecSchema.getTypedItemSync("TestEntityClass", EntityClass)).to.be.instanceof(EntityClass);
     });
 
     it("EntityClass type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", EntityClass)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", EntityClass)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", EntityClass)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", EntityClass)).to.be.undefined;
     });
   });
 
@@ -301,10 +301,10 @@ describe("EntityClass", () => {
       const ecSchema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getItemSync<EntityClass>("testClass");
+      const testEntity = ecSchema.getTypedItemSync("testClass", EntityClass);
       assert.isDefined(testEntity);
 
-      const testBaseEntity = ecSchema.getItemSync<EntityClass>("baseClass");
+      const testBaseEntity = ecSchema.getTypedItemSync("baseClass", EntityClass);
       assert.isDefined(testBaseEntity);
 
       const baseClass = testEntity!.getBaseClassSync();
@@ -357,13 +357,13 @@ describe("EntityClass", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const entityClass = schema.getItemSync<EntityClass>("TestEntityClass");
+      const entityClass = schema.getTypedItemSync("TestEntityClass", EntityClass);
       assert.isDefined(entityClass);
 
       const navProp = entityClass!.getPropertySync("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = schema.getItemSync<RelationshipClass>("NavPropRelationship");
+        const relClass = schema.getTypedItemSync("NavPropRelationship", RelationshipClass);
         assert.isTrue(navProp.getRelationshipClassSync() === relClass);
       } else {
         assert.fail();

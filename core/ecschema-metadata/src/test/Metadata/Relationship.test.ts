@@ -166,13 +166,13 @@ describe("RelationshipClass", () => {
     });
 
     it("RelationshipClass type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestRelationshipClass")).to.be.instanceof(RelationshipClass);
-      expect(ecSchema.getItemSync("TestRelationshipClass")).to.be.instanceof(RelationshipClass);
+      expect(await ecSchema.getTypedItem("TestRelationshipClass", RelationshipClass)).to.be.instanceof(RelationshipClass);
+      expect(ecSchema.getTypedItemSync("TestRelationshipClass", RelationshipClass)).to.be.instanceof(RelationshipClass);
     });
 
     it("RelationshipClass type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", RelationshipClass)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", RelationshipClass)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", RelationshipClass)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", RelationshipClass)).to.be.undefined;
     });
   });
 
@@ -349,7 +349,7 @@ describe("RelationshipClass", () => {
       const schema = Schema.fromJsonSync(json, new SchemaContext());
       assert.isDefined(schema);
 
-      const relClass = schema.getItemSync<RelationshipClass>("TestRelationship");
+      const relClass = schema.getTypedItemSync("TestRelationship", RelationshipClass);
       assert.isDefined(relClass);
 
       const navProp = relClass!.getPropertySync("testNavProp");
@@ -623,7 +623,7 @@ describe("RelationshipClass", () => {
 
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
-      const relClass = schema.getItemSync<RelationshipClass>("TestRelationship");
+      const relClass = schema.getTypedItemSync("TestRelationship", RelationshipClass);
       assert.isDefined(relClass);
       const relClassJson = relClass!.toJSON(true, true);
       assert.isDefined(relClassJson);
@@ -647,7 +647,7 @@ describe("RelationshipClass", () => {
 
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
-      const relClass = schema.getItemSync<RelationshipClass>("TestRelationship");
+      const relClass = schema.getTypedItemSync("TestRelationship", RelationshipClass);
       assert.isDefined(relClass);
       const json = JSON.stringify(relClass);
       const relClassJson = JSON.parse(json);

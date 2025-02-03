@@ -71,13 +71,13 @@ describe("Phenomenon tests", () => {
     });
 
     it("Phenomenon type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestPhenomenon")).to.be.instanceof(Phenomenon);
-      expect(ecSchema.getItemSync("TestPhenomenon")).to.be.instanceof(Phenomenon);
+      expect(await ecSchema.getTypedItem("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
     });
 
     it("Phenomenon type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestEntityClass", Phenomenon)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestEntityClass", Phenomenon)).to.throw();
+      expect(await ecSchema.getTypedItem("TestEntityClass", Phenomenon)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestEntityClass", Phenomenon)).to.be.undefined;
     });
   });
 

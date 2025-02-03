@@ -94,13 +94,13 @@ describe("KindOfQuantity", () => {
     });
 
     it("KindOfQuantity type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getItem("TestKindOfQuantity")).to.be.instanceof(KindOfQuantity);
-      expect(ecSchema.getItemSync("TestKindOfQuantity")).to.be.instanceof(KindOfQuantity);
+      expect(await ecSchema.getTypedItem("TestKindOfQuantity", KindOfQuantity)).to.be.instanceof(KindOfQuantity);
+      expect(ecSchema.getTypedItemSync("TestKindOfQuantity", KindOfQuantity)).to.be.instanceof(KindOfQuantity);
     });
 
     it("KindOfQuantity type should reject for other item types on getItem/Sync", async () => {
-      await expect(ecSchema.getItem("TestPhenomenon", KindOfQuantity)).to.be.rejected;
-      expect(() => ecSchema.getItemSync("TestPhenomenon", KindOfQuantity)).to.throw();
+      expect(await ecSchema.getTypedItem("TestPhenomenon", KindOfQuantity)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", KindOfQuantity)).to.be.undefined;
     });
   });
 
@@ -249,7 +249,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, await schema.lookupTypedItem((defaultFormat as OverrideFormat, Format).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, await schema.lookupTypedItem((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -281,7 +281,7 @@ describe("KindOfQuantity", () => {
     });
     it("sync - precision override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(precisionOverride), context);
-      const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = schema.getTypedItemSync("TestKindOfQuantity", KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.presentationFormats.length).to.eq(3);
@@ -289,7 +289,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, schema.lookupTypedItemSync((defaultFormat as OverrideFormat, Format).parent.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, schema.lookupTypedItemSync((defaultFormat as OverrideFormat).parent.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -364,14 +364,14 @@ describe("KindOfQuantity", () => {
     });
     it("sync - single unit override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitOverride), context);
-      const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = schema.getTypedItemSync("TestKindOfQuantity", KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.presentationFormats.length).to.eq(1);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
 
-      assert.notEqual(defaultFormat, schema.lookupTypedItemSync((defaultFormat as OverrideFormat, Format).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, schema.lookupTypedItemSync((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       assert.isDefined(defaultFormat!.units);
       expect(defaultFormat!.units!.length).to.eq(1);
@@ -431,7 +431,7 @@ describe("KindOfQuantity", () => {
     });
     it("sync - single unit label override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitLabelOverride), context);
-      const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = schema.getTypedItemSync("TestKindOfQuantity", KindOfQuantity);
 
       assert.isDefined(testKoq);
       expect(testKoq!.presentationFormats.length).to.eq(1);

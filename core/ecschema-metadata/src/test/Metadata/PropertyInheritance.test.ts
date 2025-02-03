@@ -62,7 +62,7 @@ describe("Property Inheritance", () => {
 
     it("sync iteration", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
-      const testClass = schema.getItemSync<ECClass>("TestClass");
+      const testClass = schema.getTypedItemSync("TestClass", ECClass);
       const props = testClass!.getPropertiesSync();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
@@ -118,7 +118,7 @@ describe("Property Inheritance", () => {
 
     it("sync iteration", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
-      const testClass = schema.getItemSync<ECClass>("TestClass");
+      const testClass = schema.getTypedItemSync("TestClass", ECClass);
       const props = testClass!.getPropertiesSync();
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
@@ -369,7 +369,7 @@ describe("Property Inheritance", () => {
       const schema = Schema.fromJsonSync(testSchemaJson, new SchemaContext());
       expect(schema).to.exist;
 
-      const testClass = schema.getItemSync<ECClass>("H");
+      const testClass = schema.getTypedItemSync("H", ECClass);
       expect(testClass).to.exist;
       const result = testClass!.getPropertiesSync();
       const names = result.map((p) => `${p.name}(${p.class.name})`);

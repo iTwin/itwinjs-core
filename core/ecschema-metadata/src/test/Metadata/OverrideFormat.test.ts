@@ -68,7 +68,7 @@ describe("OverrideFormat", () => {
     });
 
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getTypedItemSync("TestFormat", Format);
     assert.isDefined(format);
 
     const overrideFormat = new OverrideFormat(format!);
@@ -113,7 +113,7 @@ describe("OverrideFormat", () => {
       precision: 2,
     });
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getTypedItemSync("TestFormat", Format);
     assert.isDefined(format);
 
     const overrideFormat = new OverrideFormat(format!, FractionalPrecision.Eight);
@@ -139,7 +139,7 @@ describe("OverrideFormat", () => {
     });
 
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getTypedItemSync("TestFormat", Format);
     assert.isDefined(format);
 
     const mileU = schema.lookupTypedItemSync("Formats.MILE", Unit);
@@ -210,7 +210,7 @@ describe("OverrideFormat", () => {
     });
 
     const schema = Schema.fromJsonSync(schemaJson, context);
-    const format = schema.getItemSync<Format>("TestFormat");
+    const format = schema.getTypedItemSync("TestFormat", Format);
     assert.isDefined(format);
 
     const mileU = schema.lookupTypedItemSync("Formats.MILE", Unit);
