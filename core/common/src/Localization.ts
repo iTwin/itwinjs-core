@@ -117,7 +117,6 @@ export class EmptyLocalization implements Localization {
     // Namely, remove the leading namespace substring if there is one
     return key.split(":", 2).pop()!;
   }
-  public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
   public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
   public getLocalizedKeys(inputString: string): string { return inputString; }
   public async registerNamespace(): Promise<void> { }
