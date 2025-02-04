@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Code } from "@itwin/core-common";
+import { Code, ColorDef, ElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import {
   DefinitionElement, IModelDb,
+  IModelJsFs,
   RepositoryLink,
-  SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  SnapshotDb, SpatialCategory, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { Id64 } from "@itwin/core-bentley";
 
 describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;
@@ -113,5 +115,79 @@ describe("IModel Schema Context", () => {
     });
 
     assert.isDefined(expectedString);
+  });
+});
+
+describe("Performance Tests: IModel Schema Context", () => {
+  let imodel: SnapshotDb;
+
+  before(() => {
+    const testFileName = IModelTestUtils.prepareOutputFile("PerfTestIModelSchemaContext", "PerfTestIModelSchemaContext.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, IModelTestUtils.resolveAssetFile("test.bim"));
+    assert.exists(imodel);
+  });
+
+  after(() => {
+    imodel.abandonChanges();
+    imodel.close();
+  });
+
+  async function testGetMetadataPerformance(elementIds: string[], firstValue: number, subsequentValues: number) {
+    const perfMeasure: number[] = [];
+    for (const elementId of elementIds) {
+      const element = imodel.elements.getElement(elementId);
+      assert.exists(element);
+
+      const start = performance.now();
+      const metaData = await element.getMetaData()
+      const end = performance.now() - start;
+      assert.exists(metaData);
+      perfMeasure.push(end);
+    }
+
+    assert.isAtMost(perfMeasure[0], firstValue); // First retrieval will likely be slowest as the schema needs to be loaded
+
+    for (let i = 1; i < perfMeasure.length; ++i)
+      assert.isAtMost(perfMeasure[i], subsequentValues);  // Subsequent retrievals should be fast
+  }
+
+  it("test entityclass metadata retrieval performance", async () => {
+    // Data Setup
+    await imodel.importSchemas([path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml")]); // will throw an exception if import fails
+
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, "MySpatialCategory");
+    if (undefined === spatialCategoryId)
+      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    const idSet: string[] = [];
+    for (const className of ["PerfElement", "PerfElementSub1", "PerfElementSub2"]) {
+      const props = {
+        classFullName: `PerfTestDomain:${className}`,
+        model: newModelId,
+        code: Code.createEmpty(),
+        category: spatialCategoryId,
+        userLabel: `Test ${className}`,
+      } as ElementProps;
+
+      for (let i = 0; i < 6; i++) {
+        const element = imodel.elements.createElement(props);
+        const id = imodel.elements.insertElement(element.toJSON());
+        assert.isTrue(Id64.isValidId64(id), "insert successful");
+        idSet.push(id);
+      }
+    }
+
+    // Check the performance in seconds for a user defined schema for half the elements
+    await testGetMetadataPerformance(idSet.splice(0, idSet.length / 2), 1.5, 0.1);
+
+    // Check the performance in seconds for elements of BisCore schema
+    await testGetMetadataPerformance(["0xe", "0x10"], 1.1, 0.1);
+
+    // Check the performance in seconds for elements of Generic schema
+    await testGetMetadataPerformance(["0x38", "0x3b"], 1.1, 0.1);
+
+    // Test the remaining elements from the user defined schema
+    await testGetMetadataPerformance(idSet, 0.1, 0.1);
   });
 });
