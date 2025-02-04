@@ -143,7 +143,7 @@ export abstract class SchemaItem {
   public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey): boolean {
     if (!thatSchemaItemOrKey)
       return true;
-
+    SchemaItemType.EntityClass
     const key = SchemaItem.isSchemaItem(thatSchemaItemOrKey) ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
     return thisSchemaItem.key.matches(key);
   }

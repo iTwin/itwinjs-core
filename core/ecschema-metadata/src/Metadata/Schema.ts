@@ -579,8 +579,20 @@ export class Schema implements CustomAttributeContainerProps {
     if (value === undefined)
       return value;
 
-    if (value.schemaItemType !== itemConstructor.schemaItemType)
+    if (value.schemaItemType !== itemConstructor.schemaItemType) {
+      // There is one special case here: ECClass, where the item type can be any of the class types
+      if(itemConstructor.schemaItemType === SchemaItemType.Class && (
+        value.schemaItemType === SchemaItemType.EntityClass ||
+        value.schemaItemType === SchemaItemType.Mixin ||
+        value.schemaItemType === SchemaItemType.StructClass ||
+        value.schemaItemType === SchemaItemType.CustomAttributeClass ||
+        value.schemaItemType === SchemaItemType.RelationshipClass)) {
+          return value as InstanceType<T>;
+      }
+
       return undefined;
+    }
+
 
     return value as InstanceType<T>;
   }

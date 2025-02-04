@@ -17,6 +17,7 @@ import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { ECObjectsError } from "../../Exception";
 import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
+import { Enumeration } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -2821,7 +2822,7 @@ describe("XmlParser", () => {
 
           const testClass = await getTestCAClass(propertyJson);
           const providers = getCAProviders(itemXml);
-          sinon.stub(testClass!.schema, "lookupItemSync").withArgs("TestSchema.TestStringEnumeration").returns(undefined);
+          sinon.stub(testClass!.schema, "lookupTypedItemSync").withArgs("TestSchema.TestStringEnumeration", Enumeration).returns(undefined);
 
           expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, `The Enumeration class 'TestSchema.TestStringEnumeration' could not be found.`);
         });

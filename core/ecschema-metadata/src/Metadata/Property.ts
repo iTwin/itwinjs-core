@@ -12,7 +12,7 @@ import {
   PrimitivePropertyProps, PropertyProps, StructPropertyProps,
 } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
+import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, SchemaItemType, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes";
@@ -23,7 +23,7 @@ import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, ser
 import { Enumeration } from "./Enumeration";
 import { KindOfQuantity } from "./KindOfQuantity";
 import { PropertyCategory } from "./PropertyCategory";
-import { RelationshipClass } from "./RelationshipClass";
+import { type RelationshipClass } from "./RelationshipClass";
 import { Schema } from "./Schema";
 
 /**
@@ -596,7 +596,9 @@ export class NavigationProperty extends Property {
     if (!this._relationshipClass) // eslint-disable-line @typescript-eslint/no-misused-promises
       return undefined;
 
-    return this.class.schema.lookupTypedItemSync(this._relationshipClass, RelationshipClass);
+    // We cannot use the type guard here to avoid a circular dependency
+    const result = this.class.schema.lookupItemSync(this._relationshipClass);
+    return result?.schemaItemType === SchemaItemType.RelationshipClass ? result as RelationshipClass : undefined
   }
 
   public get direction() { return this._direction; }

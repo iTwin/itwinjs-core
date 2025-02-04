@@ -28,6 +28,7 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
  * @beta
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
+  public static override get schemaItemType() { return SchemaItemType.Class; } // need this so getTypedItem("name", ECClass) in schema works
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _derivedClasses?: Map<string, LazyLoadedECClass>;

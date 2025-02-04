@@ -175,14 +175,17 @@ export class KindOfQuantity extends SchemaItem {
     super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = this.schema.lookupTypedItemSync(kindOfQuantityProps.persistenceUnit, Unit);
+    const persistenceUnit = this.schema.lookupItemSync(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
-    if (persistenceUnit.schemaItemType !== SchemaItemType.Unit && persistenceUnit.schemaItemType !== SchemaItemType.InvertedUnit)
+    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    if(Unit.isUnit(persistenceUnit))
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    else
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
@@ -192,14 +195,18 @@ export class KindOfQuantity extends SchemaItem {
     await super.fromJSON(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = await this.schema.lookupTypedItem(kindOfQuantityProps.persistenceUnit, Unit);
+    const persistenceUnit = await this.schema.lookupItem(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
-    if (persistenceUnit.schemaItemType !== SchemaItemType.Unit && persistenceUnit.schemaItemType !== SchemaItemType.InvertedUnit)
+    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    if(Unit.isUnit(persistenceUnit))
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    else
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);

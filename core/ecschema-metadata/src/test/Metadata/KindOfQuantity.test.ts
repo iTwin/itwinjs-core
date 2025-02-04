@@ -209,9 +209,9 @@ describe("KindOfQuantity", () => {
       expect(testKoq!.persistenceUnit!.name).eq("HORIZONTAL_PER_VERTICAL");
     });
 
-    it("sync - should successfully deserialize with persistenceUnit having an InvertedUnit", async () => {
+    it("sync - should successfully deserialize with persistenceUnit having an InvertedUnit", () => {
       schema = Schema.fromJsonSync(createSchemaJson(persistenceUnitInvertedUnit), context);
-      const testKoq = await schema.getTypedItem(persistenceUnitInvertedUnit.name, KindOfQuantity);
+      const testKoq = schema.getTypedItemSync(persistenceUnitInvertedUnit.name, KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.persistenceUnit).exist;

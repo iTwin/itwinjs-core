@@ -70,7 +70,7 @@ describe("PropertyCategory", () => {
 
     it("PropertyCategory type should reject for other item types on getItem/Sync", async () => {
       expect(await ecSchema.getTypedItem("TestPhenomenon", PropertyCategory)).to.be.undefined;
-      expect(() => ecSchema.getTypedItemSync("TestPhenomenon", PropertyCategory)).to.be.undefined;
+      expect(ecSchema.getTypedItemSync("TestPhenomenon", PropertyCategory)).to.be.undefined;
     });
   });
 

@@ -29,7 +29,7 @@ export class Schema {
    */
   public static get schemaKey(): SchemaKey {
     if (!this._schemaKey) {
-      this._schemaKey = new SchemaKey(this.schemaName, ECVersion.ZERO); // backend cares little for versions right now, as only one version can exist in an imodel
+      this._schemaKey = new SchemaKey(this.schemaName, ECVersion.NO_VERSION); // backend cares little for versions right now, as only one version can exist in an imodel
     }
     return this._schemaKey;
   }
