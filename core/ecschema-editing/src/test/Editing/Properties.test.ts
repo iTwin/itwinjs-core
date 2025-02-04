@@ -1,4 +1,4 @@
-import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, KindOfQuantity, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
+import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, KindOfQuantity, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
@@ -403,7 +403,7 @@ describe("Properties editing tests", () => {
       context = new SchemaContext();
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await testSchema.getTypedItem("testEntity", UnitSystem);
+      const testClass = await testSchema.getTypedItem("testEntity", EntityClass);
 
       await expect(testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "badPropertyName", { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToProperty);
