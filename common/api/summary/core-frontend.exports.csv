@@ -662,7 +662,7 @@ alpha;type;ResolveManifestFunc
 internal;type;RootIModelTile
 public;class;RotateViewTool
 public;enum;RotationMode
-internal;class;RoundOff
+public;class;RoundOff
 internal;class;SavedState
 public;class;Scene
 public;class;SceneContext
