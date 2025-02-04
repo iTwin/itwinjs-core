@@ -7,7 +7,7 @@
  */
 
 import { parse as parseVersion } from "semver";
-import { Element, IModelDb } from "@itwin/core-backend";
+import { IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
   combineDiagnosticsSeverities,
@@ -40,15 +40,15 @@ export function getLocalizedStringEN(key: string) {
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
   let key: InstanceKey | undefined;
-  const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const query = `SELECT ECClassId FROM BisCore.Element e WHERE ECInstanceId = ?`;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(query, (stmt) => {
     try {
       stmt.bindId(1, id);
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
         key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
       }
-    } catch {}
+    } catch { }
   });
   return key;
 }

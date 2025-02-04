@@ -905,8 +905,6 @@ export class AccuDrawShortcuts {
     static lockZ(): void;
     // (undocumented)
     static processPendingHints(): void;
-    // @internal
-    static processShortcutKey(keyEvent: KeyboardEvent): Promise<boolean>;
     // (undocumented)
     static requestInputFocus(): void;
     // (undocumented)

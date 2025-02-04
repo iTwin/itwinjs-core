@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { GeometricElement, GeometricElement3d, IModelDb } from "@itwin/core-backend";
+import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   ComputeSelectionRequestOptions,
@@ -73,12 +73,10 @@ export class SelectionScopesHelper {
     const categoryKeys = new KeySet();
     ids.forEach(
       skipTransients((id) => {
-        const el = iModel.elements.tryGetElement(id);
-        if (el instanceof GeometricElement) {
-          const category = iModel.elements.tryGetElementProps(el.category);
-          if (category) {
-            categoryKeys.add({ className: category.classFullName, id: category.id! });
-          }
+        const el = iModel.elements.tryGetElement<GeometricElement>(id);
+        const category = el?.category ? iModel.elements.tryGetElementProps(el.category) : undefined;
+        if (category) {
+          categoryKeys.add({ className: category.classFullName, id: category.id! });
         }
       }),
     );
@@ -157,7 +155,7 @@ export class SelectionScopesHelper {
     const keys = new KeySet();
     ids.forEach(
       skipTransients((id): void => {
-        const is3d = this.elementClassDerivesFrom(iModel, id, GeometricElement3d.classFullName);
+        const is3d = this.elementClassDerivesFrom(iModel, id, "BisCore.GeometricElement3d");
         if (!is3d) {
           // if the input is not a 3d element, we try to find the first related functional element
           const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(iModel, id);
@@ -185,7 +183,7 @@ export class SelectionScopesHelper {
     ids.forEach(
       skipTransients((id): void => {
         let idToGetAssemblyFor = id;
-        const is3d = this.elementClassDerivesFrom(iModel, id, GeometricElement3d.classFullName);
+        const is3d = this.elementClassDerivesFrom(iModel, id, "BisCore.GeometricElement3d");
         if (!is3d) {
           // if the input is not a 3d element, we try to find the first related functional element
           const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(iModel, id);
@@ -214,7 +212,7 @@ export class SelectionScopesHelper {
     ids.forEach(
       skipTransients((id): void => {
         let idToGetAssemblyFor = id;
-        const is3d = this.elementClassDerivesFrom(iModel, id, GeometricElement3d.classFullName);
+        const is3d = this.elementClassDerivesFrom(iModel, id, "BisCore.GeometricElement3d");
         if (!is3d) {
           // if the input is not a 3d element, we try to find the first related functional element
           const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(iModel, id);
