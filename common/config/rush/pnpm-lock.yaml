@@ -16,8 +16,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.0.47
-        version: 5.0.47
+        specifier: 5.0.49
+        version: 5.0.49
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -3148,6 +3148,9 @@ importers:
       '@types/sinonjs__fake-timers':
         specifier: ^8.1.5
         version: 8.1.5
+      '@types/source-map-support':
+        specifier: ^0.4.0
+        version: 0.4.0
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -3386,6 +3389,9 @@ importers:
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.0
+      '@types/source-map-support':
+        specifier: ^0.4.0
+        version: 0.4.0
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -4640,8 +4646,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.0.47':
-    resolution: {integrity: sha512-6FcYKNKTc7t2zfRgPB0fzhNMG6BnO0CWgs6TvnyH41qlRjj5Cbg7ZlZOkXgF+Gn5SnyI/hD9GoqIc5he/O4O+Q==}
+  '@bentley/imodeljs-native@5.0.49':
+    resolution: {integrity: sha512-twAVqZ8kE8bZPWamw9Bc5yysLzDz6sp+iDV/34gC3IX6Vd7bTI7o10fMmfVXQDZ2h09EmVq2qmqYZiuiO70LJQ==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11045,7 +11051,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.0.47': {}
+  '@bentley/imodeljs-native@5.0.49': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
