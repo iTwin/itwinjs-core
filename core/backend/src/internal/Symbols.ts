@@ -21,3 +21,4 @@ export const _key = Symbol.for(sym("key"));
 export const _nativeDb = Symbol.for(sym("nativeDb"));
 export const _releaseAllLocks = Symbol.for(sym("releaseAllLocks"));
 export const _verifyChannel = Symbol.for(sym("verifyChannel"));
+export const _hubAccess = Symbol.for(sym("hubAccess"));
