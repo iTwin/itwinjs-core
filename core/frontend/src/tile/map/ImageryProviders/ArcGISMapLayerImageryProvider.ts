@@ -325,7 +325,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     }
   }
 
-  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     return Promise.resolve(this.addLogoCards(cards));
   }
