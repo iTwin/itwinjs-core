@@ -41,6 +41,8 @@ import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
  */
 export class Material extends RenderMaterial {
 
+  public static readonly default: Material = new Material({diffuse: { weight: 0.6 }, specular: { weight: 0.4, exponent: 13.5 }}); // Default material
+
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas = false as const;
   public readonly fragUniforms = new Float32Array(4);
