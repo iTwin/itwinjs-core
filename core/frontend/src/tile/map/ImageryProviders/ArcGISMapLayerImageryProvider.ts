@@ -325,11 +325,9 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     }
   }
 
-  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
-    if (!cards.dataset.arcGisLogoCard) {
-      cards.dataset.arcGisLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText }));
-    }
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
   }
 
   // Translates the provided Cartographic into a EPSG:3857 point, and retrieve information.

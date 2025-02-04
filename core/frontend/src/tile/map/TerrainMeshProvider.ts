@@ -96,7 +96,10 @@ export abstract class TerrainMeshProvider {
    * For example, a provider that produces meshes from [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/) would be required to
    * disclose any copyrighted data used in the production of those meshes.
    */
-  public async addAttributions(_cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {}
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      return Promise.resolve(this.addLogoCards(cards, vp));
+  }
 
   /** Return whether terrain data can be obtained for the [[MapTile]] specified by `quadId`. If it returns false, a terrain mesh will instead be produced for
    * that tile by up-sampling the terrain mesh provided by its parent tile.

@@ -949,10 +949,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override async addAttributions(cards: HTMLTableElement): Promise<void> {
-    if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset && !cards.dataset.openStreetMapLogoCard) {
-      cards.dataset.openStreetMapLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
-    }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
   }
 }
 

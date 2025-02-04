@@ -141,7 +141,10 @@ export abstract class MapLayerImageryProvider {
    * @param _viewport Viewport to add logo cards to.
    * @beta
    */
-  public async addAttributions(_cards: HTMLTableElement, _viewport: ScreenViewport): Promise<void> { }
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards, vp));
+  }
 
   /** @internal */
   protected _missingTileData?: Uint8Array;

@@ -31,9 +31,7 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
-    if (!cards.dataset.azureMapsLogoCard) {
-      cards.dataset.azureMapsLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") }));
-    }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
   }
 }

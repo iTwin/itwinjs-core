@@ -55,10 +55,8 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async addAttributions (cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
-    if (!cards.dataset.mapboxLogoCard) {
-      cards.dataset.mapboxLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") }));
-    }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
   }
 
   // no initialization needed for MapBoxImageryProvider.

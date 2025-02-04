@@ -267,7 +267,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div.
    * @beta
   */
-  public async addAttributions(_cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> { }
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards, vp));
+  }
 
   /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
    * Return `undefined` if geometry collection is not supported.

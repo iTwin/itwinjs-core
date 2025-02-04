@@ -215,16 +215,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
-    if (cards.dataset.cesiumIonLogoCard)
-      return;
-
-    cards.dataset.cesiumIonLogoCard = "true";
-    let notice = IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution");
-    if (this._assetId === CesiumTerrainAssetId.Bathymetry)
-      notice = `${notice}\n${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumBathymetryAttribution")}`;
-
-    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
-    cards.appendChild(card);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
   }
 
 

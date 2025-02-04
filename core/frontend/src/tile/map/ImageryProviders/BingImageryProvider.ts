@@ -167,20 +167,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
-    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
-    const matchingAttributions = this.getMatchingAttributions(tiles);
-    const copyrights: string[] = [];
-    for (const match of matchingAttributions)
-      copyrights.push(match.copyrightMessage);
-
-    let copyrightMsg = "";
-    for (let i = 0; i < copyrights.length; ++i) {
-      if (i > 0)
-        copyrightMsg += "<br>";
-      copyrightMsg += copyrights[i];
-    }
-
-    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg }));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards, vp));
   }
 
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.
