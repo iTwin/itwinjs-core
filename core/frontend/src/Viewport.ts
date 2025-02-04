@@ -3435,7 +3435,7 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      for (const ref of this.tiledGraphicsProviderRefs()) {
+      for (const ref of this.getTileTreeRefs()) {
         context.addFromDecorator(ref);
       }
 
