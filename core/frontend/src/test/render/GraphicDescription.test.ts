@@ -47,11 +47,11 @@ function createIModel(): IModelConnection {
 describe("GraphicDescriptionBuilder", () => {
   beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
-    Material.preserveParams = true;
+    Material.preserveArgs = true;
   });
 
   afterAll(async () => {
-    Material.preserveParams = false;
+    Material.preserveArgs = false;
     await IModelApp.shutdown();
   });
 
@@ -480,20 +480,19 @@ describe("GraphicDescriptionBuilder", () => {
     expect(context[_textures].size).toEqual(4);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   function expectMaterial(mat: Material, expected: Partial<RenderMaterial.Params>): void {
-    expect(mat.params).toBeDefined();
+    expect(mat.args).toBeDefined();
     const actual = {
-      ...mat.params,
+      ...mat.args,
       textureMapping: undefined,
-      alpha: mat.params!.alpha,
+      alpha: mat.args!.alpha,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       _alpha: undefined, // stupid class instead of interface
     };
     delete actual._alpha;
 
     expected = {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ...RenderMaterial.Params.defaults,
       diffuseColor: undefined,
       alpha: undefined,

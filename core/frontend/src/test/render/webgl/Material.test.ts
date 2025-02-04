@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ColorDef, RenderMaterial } from "@itwin/core-common";
+import { ColorDef } from "@itwin/core-common";
 import { Material } from "../../../render/webgl/Material";
+import { CreateRenderMaterialArgs } from "../../../core-frontend";
 
 // Equivalent to the glsl function used in glsl/Material.ts to unpack a vec3 material param from a packed float value.
 function unpackMaterialParam(f: number): XY {
@@ -91,8 +92,8 @@ function expectEqualFloats(expected: number, actual: number): void {
   expect(Math.abs(expected - actual)).to.be.at.most(epsilon, `Expected: ${expected} Actual: ${actual}`);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-function expectMaterialParams(expected: RenderMaterial.Params): void {
+
+function expectMaterialArgs(expected: CreateRenderMaterialArgs): void {
   const material = new Material(expected);
   const shaderParams = {
     x: material.fragUniforms[0],
@@ -103,45 +104,62 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
 
   const actual = decodeMaterialParams(shaderParams, material.rgba);
 
-  expectEqualFloats(expected.diffuse, actual.diffuse);
-  expectEqualFloats(actual.specularExponent, expected.specularExponent); // 64-bit => 32-bit
+  if (undefined === expected.diffuse?.weight)
+    expect(actual.diffuse).toBeUndefined();
+  else
+    expectEqualFloats(expected.diffuse.weight, actual.diffuse);
 
-  if (undefined === expected.diffuseColor) {
+  if (undefined === expected.specular?.weight)
+    expect(actual.specular).toBeUndefined();
+  else
+    expectEqualFloats(expected.specular.weight, actual.specular);
+
+  if (undefined === expected.specular?.exponent)
+    expect(actual.specularExponent).toBeUndefined();
+  else
+    expectEqualFloats(expected.specular.exponent, actual.specularExponent); // 64-bit => 32-bit
+
+
+  if (undefined === expected.diffuse?.color) {
     expect(actual.diffuseColor).toBeUndefined();
   } else {
     expect(actual.diffuseColor).toBeDefined();
-    expect(actual.diffuseColor!.tbgr).toEqual(expected.diffuseColor.tbgr);
+    expect(actual.diffuseColor!.tbgr).toEqual((expected.diffuse?.color as ColorDef).tbgr);
   }
 
   expect(actual.specularColor).toBeDefined();
-  if (undefined === expected.specularColor)
+  if (undefined === expected.specular?.color)
     expect(actual.specularColor!.tbgr).toEqual(0xffffff);
   else
-    expect(actual.specularColor!.tbgr).toEqual(expected.specularColor.tbgr);
+    expect(actual.specularColor!.tbgr).toEqual((expected.specular.color as ColorDef).tbgr);
 
-  expect(actual.rgbOverridden).toEqual(undefined !== expected.diffuseColor);
+  expect(actual.rgbOverridden).toEqual(undefined !== expected.diffuse?.color);
   expect(actual.alphaOverridden).toEqual(undefined !== expected.alpha);
 
   expect(actual.textureWeight).toEqual(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
-  expectEqualFloats(expected.specular, actual.specular);
   if (undefined !== expected.alpha)
     expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const params = RenderMaterial.Params.fromColors(undefined, input.diffuseColor, input.specularColor);
-  params.diffuse = input.diffuse;
-  params.alpha = 1.0 - input.transparency;
-  params.specular = input.specular;
-  params.specularExponent = input.specularExponent;
-  return params;
+function makeMaterialArgs(input: MaterialParams): CreateRenderMaterialArgs {
+  const args: CreateRenderMaterialArgs = {
+    diffuse: {
+      color: input.diffuseColor,
+      weight: input.diffuse,
+    },
+    specular: {
+      color: input.specularColor,
+      weight: input.specular,
+      exponent: input.specularExponent,
+    },
+    alpha: 1.0 - input.transparency,
+  }
+  return args;
 }
 
 describe("Material", () => {
   it("should pack and unpack parameters", () => {
-    expectMaterialParams(makeMaterialParams({
+    expectMaterialArgs(makeMaterialArgs({
       diffuseColor: ColorDef.black,
       diffuse: 0.0,
       transparency: 0.0,
@@ -150,7 +168,7 @@ describe("Material", () => {
       specularColor: ColorDef.black,
     }));
 
-    expectMaterialParams(makeMaterialParams({
+    expectMaterialArgs(makeMaterialArgs({
       diffuseColor: ColorDef.white,
       diffuse: 1.0,
       transparency: 1.0,
@@ -159,7 +177,7 @@ describe("Material", () => {
       specularColor: ColorDef.white,
     }));
 
-    expectMaterialParams(makeMaterialParams({
+    expectMaterialArgs(makeMaterialArgs({
       diffuseColor: ColorDef.red,
       diffuse: 0.95,
       transparency: 0.12,
@@ -168,7 +186,7 @@ describe("Material", () => {
       specularColor: ColorDef.blue,
     }));
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expectMaterialParams(RenderMaterial.Params.defaults);
+
+    expectMaterialArgs({diffuse: { weight: 0.6 }, specular: { weight: 0.4, exponent: 13.5 }}); // Default values
   });
 });
