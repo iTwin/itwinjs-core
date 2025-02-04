@@ -100,11 +100,7 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.11.15",
-=======
-    "@bentley/imodeljs-native": "5.0.42",
->>>>>>> 8683f7e430 (Added tests cases for IdSet VirtualTable (#7260))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.5",

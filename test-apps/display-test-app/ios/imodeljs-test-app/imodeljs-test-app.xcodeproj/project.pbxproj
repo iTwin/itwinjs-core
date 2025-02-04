@@ -453,11 +453,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-<<<<<<< HEAD
 				version = 4.11.15;
-=======
-				version = 5.0.42;
->>>>>>> 8683f7e430 (Added tests cases for IdSet VirtualTable (#7260))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
