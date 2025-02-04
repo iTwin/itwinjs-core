@@ -831,6 +831,7 @@ public;interface;TerrainProps
 public;type;TerrainProviderName
 deprecated;type;TerrainProviderName
 public;class;TerrainSettings
+internal;interface;TestingArgs
 internal;class;TestRpcManager
 beta;class;TextAnnotation
 public;interface;TextAnnotation2dProps
