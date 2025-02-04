@@ -167,7 +167,6 @@ describe("Schedule script (#integration)", () => {
     view.displayStyle.settings.scheduleScriptProps = json;
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
     expect(countTileTrees(view)).to.equal(3);
   });

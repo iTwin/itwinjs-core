@@ -25,3 +25,4 @@ export const _textures = Symbol.for(sym("textures"));
 export const _transformCenter = Symbol.for(sym("transformCenter"));
 export const _transforms = Symbol.for(sym("transforms"));
 export const _scriptReference = Symbol.for(sym("ScriptReference"));
+export const _onScheduleScriptReferenceChanged = Symbol("onScheduleScriptReferenceChanged");

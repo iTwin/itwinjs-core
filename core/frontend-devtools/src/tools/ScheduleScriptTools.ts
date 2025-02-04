@@ -33,7 +33,6 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
   public async parse(input: string[], vp: Viewport) {
     const args = parseArgs(input);
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._sourceId = args.get("i") ?? vp.displayStyle.scheduleScriptReference?.sourceId;
     if (!this._sourceId)
       return false;

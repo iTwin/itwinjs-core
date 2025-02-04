@@ -22,8 +22,8 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
-import { InternalScriptReference, InternalScheduleScriptEvents } from "./internal/scheduleScriptReference";
-import { _scriptReference } from './common/internal/Symbols';
+import { InternalScriptReference } from "./internal/scheduleScriptReference";
+import { _onScheduleScriptReferenceChanged, _scriptReference } from './common/internal/Symbols';
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -55,8 +55,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
-  private [_scriptReference]?: InternalScriptReference;
-  public _scheduleScriptEvents = new InternalScheduleScriptEvents();
+
+
+  /** Event raised just before the [[scheduleScriptReference]] property is changed.
+  * @internal in 3.x. use [[onScheduleScriptChanged]].
+  */
+  public readonly [_onScheduleScriptReferenceChanged] = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+
+  private _scriptReference?: InternalScriptReference;
 
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
@@ -127,7 +133,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (newState !== this[_scriptReference]) {
-      this._scheduleScriptEvents.onScheduleScriptReferenceChanged.raiseEvent(newState);
+      this[_onScheduleScriptReferenceChanged].raiseEvent(newState);
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this[_scriptReference] = newState;
     }
@@ -156,7 +162,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     this._queryRenderTimelinePropsPromise = undefined;
     if (newState !== this[_scriptReference]) {
-      this._scheduleScriptEvents.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line @typescript-eslint/no-deprecated
+      this[_onScheduleScriptReferenceChanged].raiseEvent(newState);
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this[_scriptReference] = newState;
     }
@@ -303,7 +309,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this._scheduleScriptEvents.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line @typescript-eslint/no-deprecated
+      this[_onScheduleScriptReferenceChanged].raiseEvent(scriptRef);
       this.onScheduleScriptChanged.raiseEvent(script);
       this[_scriptReference] = scriptRef;
 
