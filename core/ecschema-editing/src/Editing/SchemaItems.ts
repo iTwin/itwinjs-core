@@ -37,11 +37,11 @@ export abstract class SchemaItems {
   public async setName(itemKey: SchemaItemKey, name: string): Promise<SchemaItemKey> {
     try {
       const schema = await this.getSchema(itemKey.schemaKey);
-      const ecClass = await schema.getTypedItem(name, MutableSchemaItem);
+      const ecClass = await schema.getItem(name) as MutableSchemaItem;
       if (ecClass !== undefined)
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, new SchemaItemId(this.schemaItemType, name, schema.schemaKey));
 
-      const mutableItem = await this.getTypedSchemaItem(itemKey, MutableSchemaItem);
+      const mutableItem = await this.getSchemaItem(itemKey) as MutableSchemaItem;
 
       const existingName = itemKey.name;
       mutableItem.setName(name);
@@ -66,11 +66,11 @@ export abstract class SchemaItems {
    * @param description The new description to set.
    */
   public async setDescription(schemaItemKey: SchemaItemKey, description: string) {
-    const item = await this.getTypedSchemaItem(schemaItemKey, MutableSchemaItem)
+    const item = await this.getSchemaItem(schemaItemKey)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
-    item.setDescription(description);
+    (item as MutableSchemaItem).setDescription(description);
   }
 
   /**
@@ -79,11 +79,11 @@ export abstract class SchemaItems {
    * @param label The new label to set.
    */
   public async setDisplayLabel(schemaItemKey: SchemaItemKey, label: string) {
-    const item = await this.getTypedSchemaItem(schemaItemKey, MutableSchemaItem)
+    const item = await this.getSchemaItem(schemaItemKey)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
-    item.setDisplayLabel(label);
+    (item as MutableSchemaItem).setDisplayLabel(label);
   }
 
   protected async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
@@ -94,12 +94,22 @@ export abstract class SchemaItems {
     return schema;
   }
 
-  protected async getTypedSchemaItem(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType, T extends SchemaItem): Promise<T>{
+  protected async getTypedSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T, schemaItemType?: SchemaItemType): Promise<InstanceType<T>>{
     schemaItemType = schemaItemType ?? this.schemaItemType;
-    return this.schemaEditor.getTypedSchemaItem(schemaItemKey, schemaItemType, T);
+    return this.schemaEditor.getTypedSchemaItem(schemaItemKey, schemaItemType, itemConstructor);
   }
 
-  protected async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
+  protected async lookupTypedSchemaItem<T extends typeof SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, itemConstructor: T, schemaItemType?: SchemaItemType): Promise<InstanceType<T>>{
+    schemaItemType = schemaItemType ?? this.schemaItemType;
+    return this.schemaEditor.lookupTypedSchemaItem(schemaOrKey, schemaItemKey, schemaItemType, itemConstructor);
+  }
+
+  protected async getSchemaItem(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<SchemaItem>{
+    schemaItemType = schemaItemType ?? this.schemaItemType;
+    return this.schemaEditor.getSchemaItem(schemaItemKey, schemaItemType);
+  }
+
+  protected async lookupSchemaItem(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<SchemaItem>{
     schemaItemType = schemaItemType ?? this.schemaItemType;
     return this.schemaEditor.lookupSchemaItem(schemaOrKey, schemaItemKey, schemaItemType);
   }

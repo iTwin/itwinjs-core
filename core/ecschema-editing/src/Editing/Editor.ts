@@ -180,12 +180,12 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
+  public async lookupSchemaItem(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<SchemaItem> {
     if(Schema.isSchema(schemaOrKey)) {
       schemaOrKey = schemaOrKey.schemaKey;
     }
 
-    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, T);
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
     if (schemaItem === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
 
@@ -196,8 +196,38 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async getTypedSchemaItem(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType, T extends SchemaItem): Promise<T> {
-    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, T);
+  public async lookupTypedSchemaItem<T extends typeof SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType, itemConstructor: T): Promise<InstanceType<T>> {
+    if(Schema.isSchema(schemaOrKey)) {
+      schemaOrKey = schemaOrKey.schemaKey;
+    }
+
+    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, itemConstructor);
+    if (schemaItem === undefined)
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    if (schemaItemType !== schemaItem.schemaItemType)
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    return schemaItem;
+  }
+
+  /** @internal */
+  public async getTypedSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType, itemConstructor: T): Promise<InstanceType<T>> {
+    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, itemConstructor);
+    if (!schemaItem) {
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
+    }
+
+    if (schemaItemType !== schemaItem.schemaItemType)
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    return schemaItem;
+  }
+
+
+  /** @internal */
+  public async getSchemaItem(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<SchemaItem> {
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
     if (!schemaItem) {
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
     }

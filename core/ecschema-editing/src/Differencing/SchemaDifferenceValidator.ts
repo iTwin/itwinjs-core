@@ -53,10 +53,16 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     this.conflicts.push(conflict);
   }
 
-  private async getTargetTypedSchemaItem(name: string, T extends SchemaItem): Promise<T | undefined> {
+  private async getTargetSchemaItem(name: string): Promise<SchemaItem | undefined> {
     const itemKey = new SchemaItemKey(name, this._sourceSchema.schemaKey);
     const mappedKey = this._nameMappings.resolveItemKey(itemKey);
-    return this._targetSchema.getTypedItem(mappedKey.name, T);
+    return this._targetSchema.getItem(mappedKey.name);
+  }
+
+  private async getTargetTypedSchemaItem<T extends typeof SchemaItem>(name: string, itemConstructor: T): Promise<InstanceType<T> | undefined> {
+    const itemKey = new SchemaItemKey(name, this._sourceSchema.schemaKey);
+    const mappedKey = this._nameMappings.resolveItemKey(itemKey);
+    return this._targetSchema.getTypedItem(mappedKey.name, itemConstructor);
   }
 
   private getTargetProperty(itemName: string, propertyName: string): PropertyKey {
@@ -261,13 +267,13 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       return;
     }
 
-    if (entry.changeType === "modify" && enumeration !== undefined) {
+    if (entry.changeType === "modify" && enumeration !== undefined && enumeration.type !== undefined) {
       if (entry.difference.type) {
         this.addConflict({
           code: ConflictCode.ConflictingEnumerationType,
           difference: entry,
           source: entry.difference.type,
-          target: primitiveTypeToString(enumeration.type!),
+          target: primitiveTypeToString(enumeration.type),
           description: "Enumeration has a different primitive type.",
         });
       }
