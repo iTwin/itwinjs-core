@@ -72,8 +72,6 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
-import { ElementGeometryBuilderParams } from '@itwin/core-common';
-import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
@@ -2841,8 +2839,6 @@ export abstract class GeometricElement extends Element_2 {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -2941,8 +2937,6 @@ export class GeometryPart extends DefinitionElement {
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
     // (undocumented)
