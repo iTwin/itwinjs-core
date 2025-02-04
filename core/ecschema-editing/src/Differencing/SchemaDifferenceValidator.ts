@@ -59,12 +59,6 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     return this._targetSchema.getItem(mappedKey.name);
   }
 
-  private async getTargetTypedSchemaItem<T extends typeof SchemaItem>(name: string, itemConstructor: T): Promise<InstanceType<T> | undefined> {
-    const itemKey = new SchemaItemKey(name, this._sourceSchema.schemaKey);
-    const mappedKey = this._nameMappings.resolveItemKey(itemKey);
-    return this._targetSchema.getTypedItem(mappedKey.name, itemConstructor);
-  }
-
   private getTargetProperty(itemName: string, propertyName: string): PropertyKey {
     const classKey = new SchemaItemKey(itemName, this._sourceSchema.schemaKey);
     const propertyKey = new PropertyKey(propertyName, classKey);
@@ -174,12 +168,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * Shared validation for all types of ClassItemDifference union.
    */
   private async visitClassDifference(entry: AnyClassItemDifference) {
-    const targetClassItem = await this.getTargetTypedSchemaItem(entry.itemName, ECClass);
+    const targetClassItem = await this.getTargetSchemaItem(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, targetClassItem)) {
       return;
     }
 
-    if (entry.changeType === "modify" && targetClassItem !== undefined) {
+    if (entry.changeType === "modify" && ECClass.isECClass(targetClassItem)) {
       await this.visitClassModifierDifference(entry, targetClassItem);
       await this.visitBaseClassDifference(entry, targetClassItem);
     }
@@ -262,12 +256,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEnumerationDifference(entry: EnumerationDifference) {
-    const enumeration = await this.getTargetTypedSchemaItem(entry.itemName, Enumeration);
+    const enumeration = await this.getTargetSchemaItem(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, enumeration)) {
       return;
     }
 
-    if (entry.changeType === "modify" && enumeration !== undefined && enumeration.type !== undefined) {
+    if (entry.changeType === "modify" && Enumeration.isEnumeration(enumeration) && enumeration.type !== undefined) {
       if (entry.difference.type) {
         this.addConflict({
           code: ConflictCode.ConflictingEnumerationType,
@@ -327,12 +321,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitKindOfQuantityDifference(entry: KindOfQuantityDifference) {
-    const kindOfQuantity = await this.getTargetTypedSchemaItem(entry.itemName, KindOfQuantity);
+    const kindOfQuantity = await this.getTargetSchemaItem(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, kindOfQuantity)) {
       return;
     }
 
-    if (entry.changeType === "modify" && kindOfQuantity !== undefined) {
+    if (entry.changeType === "modify" && KindOfQuantity.isKindOfQuantity(kindOfQuantity)) {
       if (entry.difference.persistenceUnit) {
         this.addConflict({
           code: ConflictCode.ConflictingPersistenceUnit,

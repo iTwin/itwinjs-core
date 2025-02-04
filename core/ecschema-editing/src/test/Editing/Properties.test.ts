@@ -506,7 +506,10 @@ describe("Properties editing tests", () => {
 
     it("editing a primitive property attribute not belonging to the proper property type, rejected with error", async () =>  {
       const structClass = await testEditor.schemaContext.getTypedSchemaItem(structKey, StructClass);
-      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
+      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
       await expect(testEditor.entities.primitiveProperties.setMinValue(entityKey, "TestProperty", 1)).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetMinValue);
         expect(error).to.have.nested.property("innerError.message", `Expected property TestProperty to be of type PrimitiveProperty.`);
@@ -583,7 +586,10 @@ describe("Properties editing tests", () => {
 
     it("editing a enumeration property attribute not belonging to the proper property type, rejected with error", async () =>  {
       const structClass = await testEditor.schemaContext.getTypedSchemaItem(structKey, StructClass);
-      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
+      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
       await expect(testEditor.entities.enumerationProperties.setName(entityKey, "TestProperty", "testName")).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetPropertyName);
         expect(error).to.have.nested.property("innerError.message", `Expected property TestProperty to be of type EnumerationProperty.`);
@@ -595,7 +601,13 @@ describe("Properties editing tests", () => {
   describe("Navigation property editing tests", () => {
     it("editing a property through navigationProperties that is not a NavigationProperty, rejected with error", async () =>  {
       const structClass = await testEditor.schemaContext.getTypedSchemaItem(structKey, StructClass);
-      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
+      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
       await expect(testEditor.entities.navigationProperties.setName(entityKey, "TestProperty", "testName")).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetPropertyName);
         expect(error).to.have.nested.property("innerError.message", `Expected property TestProperty to be of type NavigationProperty.`);
