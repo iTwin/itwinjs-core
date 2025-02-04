@@ -3148,6 +3148,9 @@ importers:
       '@types/sinonjs__fake-timers':
         specifier: ^8.1.5
         version: 8.1.5
+      '@types/source-map-support':
+        specifier: ^0.4.0
+        version: 0.4.0
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -3386,6 +3389,9 @@ importers:
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.0
+      '@types/source-map-support':
+        specifier: ^0.4.0
+        version: 0.4.0
       chai:
         specifier: ^4.3.10
         version: 4.3.10
