@@ -1170,7 +1170,8 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getTypedItem("TestTargetEntity", RelationshipClass))?.getPropertySync("TestProperty") as AnyProperty;
+        const testRelationship = await testSchema.getTypedItem("TestTargetEntity", EntityClass);
+        const testProperty = testRelationship?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 

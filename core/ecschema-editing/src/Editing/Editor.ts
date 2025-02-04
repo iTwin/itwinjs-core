@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { AbstractSchemaItemType, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -201,11 +201,11 @@ export class SchemaContextEditor {
       schemaOrKey = schemaOrKey.schemaKey;
     }
 
-    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, itemConstructor);
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
     if (schemaItem === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
 
-    if (schemaItemType !== schemaItem.schemaItemType)
+    if (!isItemType(schemaItem, itemConstructor))
       throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
 
     return schemaItem;
@@ -213,12 +213,12 @@ export class SchemaContextEditor {
 
   /** @internal */
   public async getTypedSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType, itemConstructor: T): Promise<InstanceType<T>> {
-    const schemaItem = await this.schemaContext.getTypedSchemaItem(schemaItemKey, itemConstructor);
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
     if (!schemaItem) {
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
     }
 
-    if (schemaItemType !== schemaItem.schemaItemType)
+    if (!isItemType(schemaItem, itemConstructor))
       throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
 
     return schemaItem;
@@ -314,5 +314,14 @@ export class SchemaContextEditor {
       throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias,  new SchemaId(schemaKey), e);
     }
   }
+}
+
+function isItemType<T extends typeof SchemaItem>(schemaItem: SchemaItem, itemConstructor: T): schemaItem is InstanceType<T> {
+  if(itemConstructor.schemaItemType === AbstractSchemaItemType.SchemaItem)
+    return SchemaItem.isSchemaItem(schemaItem);
+  if(itemConstructor.schemaItemType === AbstractSchemaItemType.Class)
+    return ECClass.isECClass(schemaItem);
+
+  return schemaItem.schemaItemType === itemConstructor.schemaItemType;
 }
 

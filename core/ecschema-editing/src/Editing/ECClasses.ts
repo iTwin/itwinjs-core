@@ -11,7 +11,7 @@ import {
   CustomAttributeContainerProps,
   DelayedPromiseWithProps,
   ECClass, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
@@ -285,7 +285,7 @@ export class ECClasses extends SchemaItems{
       }
 
       const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : classItem.schema as MutableSchema;
-      const baseClassItem = await this.lookupTypedSchemaItem(baseClassSchema, baseClassKey, ECClass);
+      const baseClassItem = await this.lookupTypedSchemaItem(baseClassSchema, baseClassKey, classItem.constructor as typeof ECClass);
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
         throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 
@@ -298,20 +298,12 @@ export class ECClasses extends SchemaItems{
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this.getSchema(classKey.schemaKey);
 
-    const ecClass = await schema.getTypedItem(classKey.name, MutableClass);
+    const ecClass = await schema.getItem(classKey.name);
     if (ecClass === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new ClassId(this.schemaItemType, classKey));
 
-    switch (ecClass.schemaItemType) {
-      case SchemaItemType.EntityClass:
-      case SchemaItemType.Mixin:
-      case SchemaItemType.StructClass:
-      case SchemaItemType.CustomAttributeClass:
-      case SchemaItemType.RelationshipClass:
-        break;
-      default:
-        throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new ClassId(this.schemaItemType, classKey));
-    }
+    if(!isMutableClass(ecClass))
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new ClassId(this.schemaItemType, classKey));
 
     return ecClass;
   }
@@ -337,4 +329,8 @@ export class ECClasses extends SchemaItems{
 
     return derivedClasses;
   }
+}
+
+function isMutableClass(schemaItem: SchemaItem): schemaItem is MutableClass {
+  return ECClass.isECClass(schemaItem);
 }
