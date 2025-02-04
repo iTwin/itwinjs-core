@@ -18,6 +18,7 @@ trigger:
 
 variables:
   - group: Rush Build Cache SAS Token
+  - group: iTwin.js Docs Misc
 
 pr:
   drafts: false
