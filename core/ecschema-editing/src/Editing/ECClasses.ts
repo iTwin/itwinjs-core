@@ -70,7 +70,7 @@ export class ECClasses extends SchemaItems{
 
     if (baseClassKey !== undefined) {
       const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : newClass.schema as MutableSchema;
-      const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+      const baseClassItem = await this.lookupTypedSchemaItem(baseClassSchema, baseClassKey, ECClass);
       await (newClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T));
     }
 
@@ -285,7 +285,7 @@ export class ECClasses extends SchemaItems{
       }
 
       const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : classItem.schema as MutableSchema;
-      const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+      const baseClassItem = await this.lookupTypedSchemaItem(baseClassSchema, baseClassKey, ECClass);
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
         throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 

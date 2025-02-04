@@ -28,8 +28,8 @@ export class KindOfQuantities extends SchemaItems {
   public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     try {
       const koqItem = await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, (schema) => schema.createKindOfQuantity.bind(schema), name) as MutableKindOfQuantity;
-      const persistenceUnit = await koqItem.schema.lookupTypedItem(persistenceUnitKey, Unit | InvertedUnit);
-      if (persistenceUnit === undefined)
+      const persistenceUnit = await koqItem.schema.lookupItem(persistenceUnitKey);
+      if (persistenceUnit === undefined || (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit)))
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(SchemaItemType.Unit, persistenceUnitKey));
 
       if (Unit.isUnit(persistenceUnit)) {
@@ -68,7 +68,7 @@ export class KindOfQuantities extends SchemaItems {
   public async addPresentationFormat(koqKey: SchemaItemKey, format: SchemaItemKey, isDefault: boolean = false): Promise<void> {
     try {
       const kindOfQuantity = await this.getTypedSchemaItem(koqKey, MutableKindOfQuantity);
-      const presentationFormat = await this.getTypedSchemaItem(format, SchemaItemType.Format, Format);
+      const presentationFormat = await this.getTypedSchemaItem(format, Format, SchemaItemType.Format);
       kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddPresentationUnit, new SchemaItemId(this.schemaItemType, koqKey), e);
@@ -90,7 +90,7 @@ export class KindOfQuantities extends SchemaItems {
    */
   public async createFormatOverride(parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
     try {
-      const parentFormat = await this.getTypedSchemaItem(parent, SchemaItemType.Format, Format);
+      const parentFormat = await this.getTypedSchemaItem(parent, Format, SchemaItemType.Format);
       return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateFormatOverride, new SchemaItemId(this.schemaItemType, parent), e);

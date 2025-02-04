@@ -26,7 +26,7 @@ describe("ECClass tests", () => {
     testEditor = new SchemaContextEditor(context);
     testKey = await testEditor.createSchema("TestSchema", "test", 1, 0, 0);
     entityKey = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
-    entity = await testEditor.schemaContext.getSchemaItem(entityKey);
+    entity = await testEditor.schemaContext.getTypedSchemaItem(entityKey, EntityClass);
   });
 
   it("should change name of class using SchemaEditor", async () => {

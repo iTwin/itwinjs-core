@@ -27,10 +27,10 @@ export class InvertedUnits extends SchemaItems {
     try {
       const newUnit = await this.createSchemaItem<InvertedUnit>(schemaKey, this.schemaItemType, (schema) => schema.createInvertedUnit.bind(schema), name) as MutableInvertedUnit;
 
-      const invertsUnit = await this.lookupSchemaItem<Unit>(schemaKey, invertsUnitKey, SchemaItemType.Unit);
+      const invertsUnit = await this.lookupTypedSchemaItem(schemaKey, invertsUnitKey, Unit, SchemaItemType.Unit);
       newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
 
-      const unitSystem = await this.lookupSchemaItem<UnitSystem>(schemaKey, unitSystemKey, SchemaItemType.UnitSystem);
+      const unitSystem = await this.lookupTypedSchemaItem(schemaKey, unitSystemKey, UnitSystem, SchemaItemType.UnitSystem);
       newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
 
       if (displayLabel)
@@ -54,7 +54,7 @@ export class InvertedUnits extends SchemaItems {
   public async setInvertsUnit(invertedUnitKey: SchemaItemKey, invertsUnitKey: SchemaItemKey): Promise<void> {
     try {
       const invertedUnit = await this.getTypedSchemaItem(invertedUnitKey, MutableInvertedUnit);
-      const invertsUnit = await this.getTypedSchemaItem(invertedUnitKey, SchemaItemType.Unit, Unit);
+      const invertsUnit = await this.getTypedSchemaItem(invertedUnitKey, Unit, SchemaItemType.Unit);
       invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetInvertsUnit, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
@@ -64,7 +64,7 @@ export class InvertedUnits extends SchemaItems {
   public async setUnitSystem(invertedUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey): Promise<void> {
     try {
       const invertedUnit = await this.getTypedSchemaItem(invertedUnitKey, MutableInvertedUnit);
-      const unitSystem = await this.getTypedSchemaItem(unitSystemKey, SchemaItemType.UnitSystem, UnitSystem);
+      const unitSystem = await this.getTypedSchemaItem(unitSystemKey, UnitSystem, SchemaItemType.UnitSystem);
       invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetUnitSystem, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);

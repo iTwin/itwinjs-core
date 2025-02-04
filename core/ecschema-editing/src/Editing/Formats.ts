@@ -28,13 +28,14 @@ export class Formats extends SchemaItems {
 
       if (units !== undefined) {
         for (const unit of units) {
-          const unitItem =  await this.schemaEditor.schemaContext.getTypedSchemaItem(unit, Unit | InvertedUnit);
+          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem(unit);
           if (!unitItem) {
             throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
           }
 
-          if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
-            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key));
+          if (!Unit.isUnit(unitItem) && !InvertedUnit.isInvertedUnit(unitItem)) {
+            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId(unitItem.schemaItemType, unitItem.key));
+          }
 
           newFormat.addUnit(unitItem);
         }

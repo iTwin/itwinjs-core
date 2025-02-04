@@ -25,7 +25,7 @@ export class Constants extends SchemaItems {
     try {
       const newConstant = await this.createSchemaItem<Constant>(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), name) as MutableConstant;
 
-      const newPhenomenon = (await this.getTypedSchemaItem(phenomenon, SchemaItemType.Phenomenon, Phenomenon));
+      const newPhenomenon = (await this.getTypedSchemaItem(phenomenon, Phenomenon, SchemaItemType.Phenomenon));
       newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
 
       newConstant.setDefinition(definition);

@@ -135,7 +135,7 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetCategory, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const category = await this._schemaEditor.lookupSchemaItem<PropertyCategory>(property.class.schema, categoryKey, SchemaItemType.PropertyCategory)
+    const category = await this._schemaEditor.lookupTypedSchemaItem(property.class.schema, categoryKey, SchemaItemType.PropertyCategory, PropertyCategory)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetCategory, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
@@ -155,7 +155,7 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const koq = await this._schemaEditor.lookupSchemaItem<KindOfQuantity>(property.class.schema, kindOfQuantityKey, SchemaItemType.KindOfQuantity)
+    const koq = await this._schemaEditor.lookupTypedSchemaItem(property.class.schema, kindOfQuantityKey, SchemaItemType.KindOfQuantity, KindOfQuantity)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });

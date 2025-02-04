@@ -26,10 +26,10 @@ export class Units extends SchemaItems {
     try {
       const newUnit = await this.createSchemaItem<Unit>(schemaKey, this.schemaItemType, (schema) => schema.createUnit.bind(schema), name) as MutableUnit;
 
-      const phenomenonItem = await this.lookupSchemaItem<Phenomenon>(newUnit.schema.schemaKey, phenomenon, SchemaItemType.Phenomenon);
+      const phenomenonItem = await this.lookupTypedSchemaItem(newUnit.schema.schemaKey, phenomenon, Phenomenon, SchemaItemType.Phenomenon);
       await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
 
-      const unitSystemItem = await this.lookupSchemaItem<UnitSystem>(newUnit.schema.schemaKey, unitSystem, SchemaItemType.UnitSystem);
+      const unitSystemItem = await this.lookupTypedSchemaItem(newUnit.schema.schemaKey, unitSystem, UnitSystem, SchemaItemType.UnitSystem);
       await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
 
       await newUnit.setDefinition(definition);

@@ -501,9 +501,9 @@ class DifferenceSchemaComparer extends SchemaComparer {
     this.nameMappings = new NameMapping();
   }
 
-  public override async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
+  public override async resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined> {
     const classKey = this.nameMappings.resolveItemKey(item.key);
-    return lookupSchema.lookupTypedItem(classKey.name, TItem);
+    return lookupSchema.lookupTypedItem(classKey.name, itemConstructor);
   }
 
   public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {

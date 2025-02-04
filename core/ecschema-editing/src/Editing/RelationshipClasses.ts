@@ -117,7 +117,7 @@ export class RelationshipClasses extends ECClasses {
     await super.setBaseClass(itemKey, baseClassKey);
 
     try {
-      await this.validate(relClass);
+      await this.validate(relClass!);
     } catch(e: any) {
       await (relClass! as ECClass as MutableClass).setBaseClass(baseClass);
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), e);

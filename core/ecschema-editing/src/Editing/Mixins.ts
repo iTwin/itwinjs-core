@@ -34,7 +34,7 @@ export class Mixins extends ECClasses {
   public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
     try {
       const newClass = await this.createClass<Mixin>(schemaKey, this.schemaItemType, (schema) => schema.createMixinClass.bind(schema), name, baseClassKey) as MutableMixin;
-      const newAppliesTo = await this.getTypedSchemaItem(appliesTo, SchemaItemType.EntityClass, EntityClass);
+      const newAppliesTo = await this.getTypedSchemaItem(appliesTo, EntityClass, SchemaItemType.EntityClass);
       newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
 
       if (displayLabel)
@@ -62,9 +62,9 @@ export class Mixins extends ECClasses {
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
     try {
-      const entity = await this.getTypedSchemaItem(entityKey, SchemaItemType.EntityClass, MutableEntityClass);
+      const entity = await this.getTypedSchemaItem(entityKey, EntityClass, SchemaItemType.EntityClass);
       const mixin = await this.getTypedSchemaItem(mixinKey, Mixin);
-      entity.addMixin(mixin);
+      (entity as MutableEntityClass).addMixin(mixin);
     } catch(e: any){
       throw new SchemaEditingError(ECEditingStatus.AddMixin, new ClassId(SchemaItemType.EntityClass, entityKey), e);
     }

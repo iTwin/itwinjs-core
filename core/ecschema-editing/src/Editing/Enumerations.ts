@@ -61,7 +61,7 @@ export class Enumerations extends SchemaItems {
 
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {
     try {
-      const enumeration = await this.getTypedSchemaItem(enumerationKey, SchemaItemType.Enumeration, Enumeration);
+      const enumeration = await this.getTypedSchemaItem(enumerationKey, Enumeration, SchemaItemType.Enumeration);
 
       if (enumeration.isInt && typeof (enumerator.value) !== "number")
         throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumeratorId(enumerator, enumeration));
@@ -77,7 +77,7 @@ export class Enumerations extends SchemaItems {
 
   public async setEnumeratorLabel(enumerationKey: SchemaItemKey, enumeratorName: string, label: string | undefined): Promise<void> {
     try {
-      const enumeration = await this.getTypedSchemaItem(enumerationKey, SchemaItemType.Enumeration, Enumeration);
+      const enumeration = await this.getTypedSchemaItem(enumerationKey, Enumeration, SchemaItemType.Enumeration);
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)
@@ -91,7 +91,7 @@ export class Enumerations extends SchemaItems {
 
   public async setEnumeratorDescription(enumerationKey: SchemaItemKey, enumeratorName: string, description: string | undefined): Promise<void> {
     try {
-      const enumeration = await this.getTypedSchemaItem(enumerationKey, SchemaItemType.Enumeration, Enumeration);
+      const enumeration = await this.getTypedSchemaItem(enumerationKey, Enumeration, SchemaItemType.Enumeration);
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)
