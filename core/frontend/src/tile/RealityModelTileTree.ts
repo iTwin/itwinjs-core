@@ -719,7 +719,7 @@ export namespace RealityModelTileTree {
       if (0 === this._layerTrees.length) {
         // return !this.isOverlay;
         // ###TODO
-        return false;
+        return true;
       }
 
       let treeIndex = this._layerTrees.length - 1;
