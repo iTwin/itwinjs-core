@@ -120,7 +120,7 @@ export class Entity {
    */
   public async getMetaData(): Promise<EntityClass> {
     if (!this._metadata) {
-      this._metadata = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
+      this._metadata = await this.iModel.schemaContext.getTypedSchemaItem(this.schemaItemKey, EntityClass);
     }
 
     if(!this._metadata) {
