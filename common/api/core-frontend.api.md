@@ -2820,6 +2820,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
 // @public
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
+    // @internal
+    readonly [_onScheduleScriptReferenceChanged]: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
@@ -2912,8 +2914,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
     set scheduleScript(script: RenderSchedule.Script | undefined);
-    // (undocumented)
-    _scheduleScriptEvents: InternalScheduleScriptEvents;
     // @internal
     get scheduleScriptReference(): InternalScriptReference;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
