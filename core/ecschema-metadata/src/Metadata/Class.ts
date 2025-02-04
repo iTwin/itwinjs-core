@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
+import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -28,7 +28,7 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
  * @beta
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
-  public static override get schemaItemType() { return SchemaItemType.Class; } // need this so getTypedItem("name", ECClass) in schema works
+  public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getTypedItem("name", ECClass) in schema works
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _derivedClasses?: Map<string, LazyLoadedECClass>;

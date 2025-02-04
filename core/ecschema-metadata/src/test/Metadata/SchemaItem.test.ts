@@ -10,9 +10,9 @@ import { EntityClass } from "../../Metadata/EntityClass";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-import { SchemaItemType } from "../../ECObjects";
+import { AbstractSchemaItemType, SchemaItemType } from "../../ECObjects";
 import { Mixin } from "../../Metadata/Mixin";
-import { StructClass } from "../../Metadata/Class";
+import { ECClass, StructClass } from "../../Metadata/Class";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { Enumeration } from "../../Metadata/Enumeration";
@@ -233,8 +233,9 @@ describe("SchemaItemKey", () => {
   });
 
   describe("schemaItemType static property", () => {
-    it("should throw on base class", () => {
-      expect(() => SchemaItem.schemaItemType).to.throw("you must override static schemaName in SchemaItem");
+    it("should return correct value on Class", () => {
+      expect(SchemaItem.schemaItemType).to.equal(AbstractSchemaItemType.SchemaItem);
+      expect(ECClass.schemaItemType).to.equal(AbstractSchemaItemType.Class);
     });
 
     it("should return proper types for known classes", () => {

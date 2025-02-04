@@ -7,7 +7,7 @@
  */
 
 import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToXmlString } from "../ECObjects";
+import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
@@ -23,7 +23,7 @@ export abstract class SchemaItem {
    * Get the type of item represented by this class
    * @beta
    */
-  public static get schemaItemType(): SchemaItemType { throw new Error(`you must override static schemaName in ${this.name}`); }
+  public static get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.SchemaItem }
 
   /**
    * Get the type of item represented by this instance

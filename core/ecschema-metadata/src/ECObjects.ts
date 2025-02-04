@@ -27,26 +27,9 @@ export enum ECClassModifier {
  * An enumeration that has all the schema item type names as values
  *
  * @enum {string}
- *
- * @property {string} Class - An abstract entry used only internally.
- * @property {string} EntityClass - Represents an entity class.
- * @property {string} Mixin - Represents a mixin class.
- * @property {string} StructClass - Represents a struct class.
- * @property {string} CustomAttributeClass - Represents a custom attribute class.
- * @property {string} RelationshipClass - Represents a relationship class.
- * @property {string} Enumeration - Represents an enumeration.
- * @property {string} KindOfQuantity - Represents a kind of quantity.
- * @property {string} PropertyCategory - Represents a property category.
- * @property {string} Unit - Represents a unit.
- * @property {string} InvertedUnit - Represents an inverted unit.
- * @property {string} Constant - Represents a constant.
- * @property {string} Phenomenon - Represents a phenomenon.
- * @property {string} UnitSystem - Represents a unit system.
- * @property {string} Format - Represents a format.
  * @beta
  */
 export enum SchemaItemType {
-  Class = "Class",
   EntityClass = "EntityClass",
   Mixin = "Mixin",
   StructClass = "StructClass",
@@ -61,8 +44,22 @@ export enum SchemaItemType {
   Phenomenon = "Phenomenon",
   UnitSystem = "UnitSystem",
   Format = "Format",
-
 }
+
+/**
+ * Additional Schema Item Types which define classes of item types
+ * @beta
+ */
+export enum AbstractSchemaItemType {
+  Class = "Class",
+  SchemaItem = "SchemaItem"
+}
+
+/**
+ * Defines types of items that may be provided to identify supported items
+ * @beta
+ */
+export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
 
 /**
  * Primitive data types for ECProperties.
