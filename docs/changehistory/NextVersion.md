@@ -242,6 +242,7 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `createTextureFromImage`                  | Use `createTexture` instead.                                                                                  |
 | `createTextureFromImageBuffer`            | Use `createTexture` instead.                                                                                  |
 | `createTextureFromImageSource`            | Use `RenderSystem.createTextureFromSource` instead.                                                           |
+| `displayStyleState.getThumbnail`          | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                                                     |
 | `GraphicBuilder.pickId`                   | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                 |
 | `getDisplayedExtents`                     | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
 | `IModelConnection.displayedExtents`       | N/A                                                                                                          |
