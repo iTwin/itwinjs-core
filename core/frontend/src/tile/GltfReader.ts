@@ -2180,7 +2180,8 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
  */
 export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<GltfTemplate | undefined> {
   const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
-  const props = GltfReaderProps.create(args.gltf, args.yAxisUp, baseUrl); // glTF supports exactly one coordinate system with y axis up.
+  const yAxisUp = args.yAxisUp ?? true; // default to true
+  const props = GltfReaderProps.create(args.gltf, yAxisUp, baseUrl); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader)
     return undefined;
