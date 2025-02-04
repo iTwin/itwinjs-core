@@ -9041,6 +9041,7 @@ export interface ReadGltfGraphicsArgs {
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)
     transform?: Transform;
+    yAxisUp?: boolean;
 }
 
 // @beta
