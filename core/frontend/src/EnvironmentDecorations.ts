@@ -8,7 +8,7 @@
 
 import { assert, Id64 } from "@itwin/core-bentley";
 import {
-  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, RenderTextureParams, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import { tryImageElementFromUrl } from "./common/ImageUtil";
@@ -223,8 +223,8 @@ export class EnvironmentDecorations {
               idToImage.set(spec, image);
           }
 
-           
-          const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
+
+          const params = new RenderTextureParams(key, RenderTexture.Type.SkyBox);
           const txImgs = [
             idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
             idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
