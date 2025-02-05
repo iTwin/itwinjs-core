@@ -243,8 +243,8 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `createTextureFromImageBuffer`            | Use `createTexture` instead.                                                                                  |
 | `createTextureFromImageSource`            | Use `RenderSystem.createTextureFromSource` instead.                                                           |
 | `displayStyleState.getThumbnail`          | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                                                     |
-| `displayStyleState.onScheduleScriptReferenceChanged`                 | use `onScheduleScriptChanged` instead           |
-| `displayStyleState.scheduleScriptReference`                 | Use `scheduleScript` instead           |
+| `displayStyleState.onScheduleScriptReferenceChanged`                 | Marked as internal, use symbol [_onScheduleScriptReferenceChanged] instead           |
+| `displayStyleState.scheduleScriptReference`                 | Marked as internal, please avoid future usage           |
 | `GraphicBuilder.pickId`                   | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                 |
 | `getDisplayedExtents`                     | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
 | `IModelConnection.displayedExtents`       | N/A                                                                                                          |
