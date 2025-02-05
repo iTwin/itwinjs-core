@@ -6,6 +6,7 @@ settings:
 
 overrides:
   cross-spawn: ^7.0.5
+  rollup-plugin-copy>globby: ^11.0.0
 
 pnpmfileChecksum: avk5jcsa6uxo2n5cahoirjiuw4
 
@@ -5688,9 +5689,6 @@ packages:
   '@types/glob@5.0.35':
     resolution: {integrity: sha512-wc+VveszMLyMWFvXLkloixT4n0harUIVZjnpzztaZ0nKLuul7Z32iMt2fUFGAaZ4y1XWjFRMtCI5ewvyh4aIeg==}
 
-  '@types/glob@7.2.0':
-    resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
-
   '@types/google-protobuf@3.15.6':
     resolution: {integrity: sha512-pYVNNJ+winC4aek+lZp93sIKxnXt5qMkuKmaqS3WGuTq0Bw1ZDYNBgzG5kkdtwcv+GmYJGo3yEg6z2cKKAiEdw==}
 
@@ -7610,10 +7608,6 @@ packages:
   globalthis@1.0.4:
     resolution: {integrity: sha512-DpLKbNU4WylpxJykQujfCcwYWiV/Jhm50Goo0wrVILAv5jOr9d+H+UR3PhSCD2rCCEIg0uc+G+muBTwD54JhDQ==}
     engines: {node: '>= 0.4'}
-
-  globby@10.0.1:
-    resolution: {integrity: sha512-sSs4inE1FB2YQiymcmTv6NWENryABjUNPeWhOvmn4SjtKybglsyPZxFB3U1/+L1bYi0rNZDqCLlHyLYDl1Pq5A==}
-    engines: {node: '>=8'}
 
   globby@11.1.0:
     resolution: {integrity: sha512-jhIXaOzy1sb8IyocaruWSn1TjmnBVs8Ayhcy83rmxNJ8q2uWKCAj3CnJY+KpGSXCueAPc0i05kVvVKtP1t9S3g==}
@@ -12001,11 +11995,6 @@ snapshots:
       '@types/minimatch': 5.1.2
       '@types/node': 20.17.0
 
-  '@types/glob@7.2.0':
-    dependencies:
-      '@types/minimatch': 5.1.2
-      '@types/node': 20.17.0
-
   '@types/google-protobuf@3.15.6': {}
 
   '@types/hast@3.0.4':
@@ -14374,17 +14363,6 @@ snapshots:
       define-properties: 1.2.1
       gopd: 1.2.0
 
-  globby@10.0.1:
-    dependencies:
-      '@types/glob': 7.2.0
-      array-union: 2.1.0
-      dir-glob: 3.0.1
-      fast-glob: 3.3.2
-      glob: 7.2.3
-      ignore: 5.3.2
-      merge2: 1.4.1
-      slash: 3.0.0
-
   globby@11.1.0:
     dependencies:
       array-union: 2.1.0
@@ -16277,7 +16255,7 @@ snapshots:
       '@types/fs-extra': 8.1.5
       colorette: 1.4.0
       fs-extra: 8.1.0
-      globby: 10.0.1
+      globby: 11.1.0
       is-plain-object: 3.0.1
 
   rollup-plugin-external-globals@0.11.0(rollup@4.28.1):
