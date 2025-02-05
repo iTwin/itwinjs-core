@@ -145,7 +145,7 @@ export interface QueryOptions extends BaseReaderOptions {
   /**
    * Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
    * When true, XXXXClassId property will be returned as className.
-   * @deprecated in 4.10 Use ecsql function ec_classname to get class name instead.
+   * @deprecated in 4.11 Use ecsql function ec_classname to get class name instead.
    * */
   convertClassIdsToClassNames?: boolean;
   /**
