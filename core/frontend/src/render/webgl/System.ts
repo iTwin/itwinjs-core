@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../IModelApp";
@@ -153,14 +153,15 @@ export class IdMap implements WebGLDisposable {
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
-  public getMaterial(params: CreateRenderMaterialArgs): RenderMaterial {
-    if (!params.source?.id || !Id64.isValidId64(params.source?.id))   // Only cache persistent materials.
+   
+  public getMaterial(params: RenderMaterial.Params): RenderMaterial {
+    if (!params.key || !Id64.isValidId64(params.key))   // Only cache persistent materials.
       return new Material(params);
 
-    let material = this.materials.get(params.source?.id);
+    let material = this.materials.get(params.key);
     if (!material) {
       material = new Material(params);
-      this.materials.set(params.source?.id, material);
+      this.materials.set(params.key, material);
     }
     return material;
   }
@@ -174,7 +175,7 @@ export class IdMap implements WebGLDisposable {
       return this.findGradient(key);
   }
 
-
+   
   public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
@@ -233,7 +234,7 @@ export class IdMap implements WebGLDisposable {
     }
   }
 
-
+   
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
@@ -272,6 +273,13 @@ const enum VertexAttribState {
 interface TextureCacheInfo {
   idMap: IdMap;
   key: TextureCacheKey;
+}
+
+function getMaterialColor(color: ColorDef | RgbColorProps | undefined): ColorDef | undefined {
+  if (color instanceof ColorDef)
+    return color;
+
+  return color ? ColorDef.from(color.r, color.g, color.b) : undefined;
 }
 
 /** @internal */
@@ -650,10 +658,42 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       const cached = this.findMaterial(args.source.id, args.source.iModel);
       if (cached)
         return cached;
-      else
-        return this.getIdMap(args.source.iModel).getMaterial(args);
+    }
+
+     
+    const params = new RenderMaterial.Params();
+    params.alpha = args.alpha;
+    if (undefined !== args.diffuse?.weight)
+      params.diffuse = args.diffuse.weight;
+
+    params.diffuseColor = getMaterialColor(args.diffuse?.color);
+
+    if (args.specular) {
+      params.specularColor = getMaterialColor(args.specular?.color);
+      if (undefined !== args.specular.weight)
+        params.specular = args.specular.weight;
+
+      if (undefined !== args.specular.exponent)
+        params.specularExponent = args.specular.exponent;
+    }
+
+    if (args.textureMapping) {
+      params.textureMapping = new TextureMapping(args.textureMapping.texture, new TextureMapping.Params({
+        textureMat2x3: args.textureMapping.transform,
+        mapMode: args.textureMapping.mode,
+        textureWeight: args.textureMapping.weight,
+        worldMapping: args.textureMapping.worldMapping,
+        useConstantLod: args.textureMapping.useConstantLod,
+        constantLodProps: args.textureMapping.constantLodProps,
+      }));
+      params.textureMapping.normalMapParams = args.textureMapping.normalMapParams;
+    }
+
+    if (args.source) {
+      params.key = args.source.id;
+      return this.getIdMap(args.source.iModel).getMaterial(params);
     } else {
-      return new Material(args);
+      return new Material(params);
     }
   }
 
@@ -706,12 +746,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(args, args.ownership.key);
   }
 
-
+   
   public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
-
+   
   public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
