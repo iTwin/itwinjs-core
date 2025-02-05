@@ -8303,7 +8303,7 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined;
     // (undocumented)
-    readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement;
+    readImageToCanvas(options?: ReadImageToCanvasOptions, overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement;
     // (undocumented)
     setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
@@ -10333,7 +10333,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined;
     // @internal (undocumented)
-    readImageToCanvas(_options?: ReadImageToCanvasOptions): HTMLCanvasElement;
+    readImageToCanvas(_options?: ReadImageToCanvasOptions, _overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement;
     // @internal (undocumented)
     abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
     // @internal (undocumented)
@@ -11590,7 +11590,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     computeEdgeWeight(pass: RenderPass, baseWeight: number): number;
     // (undocumented)
-    copyImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement;
+    copyImageToCanvas(options?: ReadImageToCanvasOptions, overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement;
     // (undocumented)
     createPlanarClassifier(properties?: ActiveSpatialClassifier): PlanarClassifier;
     // (undocumented)

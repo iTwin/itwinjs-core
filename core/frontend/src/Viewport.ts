@@ -2735,9 +2735,9 @@ export abstract class Viewport implements Disposable, TileUser {
   * @internal
   */
   public readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
-    return this.target.readImageToCanvas(options);
+    const canvas = (this instanceof ScreenViewport && !options?.omitCanvasDecorations) ? this.canvas : undefined;
+    return this.target.readImageToCanvas(options, canvas);
   }
-
 
   /** Used internally by `waitForSceneCompletion`.
    * @internal
@@ -3212,7 +3212,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== IModelApp.applicationLogoCard) {
         logos.appendChild(IModelApp.applicationLogoCard());
       }
-      
+
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
       for (const ref of this.getTileTreeRefs()) {
         ref.addLogoCards(logos, this);

@@ -172,7 +172,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
   /** @internal */
-  public readImageToCanvas(_options?: ReadImageToCanvasOptions): HTMLCanvasElement { return document.createElement("canvas"); }
+  public readImageToCanvas(_options?: ReadImageToCanvasOptions, _overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement { return document.createElement("canvas"); }
   /** @internal */
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
 
