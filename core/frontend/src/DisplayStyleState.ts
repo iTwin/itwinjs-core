@@ -22,8 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
-import { InternalScriptReference } from "./internal/scheduleScriptReference";
-import { _onScheduleScriptReferenceChanged } from './common/internal/Symbols';
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -327,7 +326,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
    * @internal
    */
-  public get scheduleScriptReference(): InternalScriptReference {
+  public get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
   }
 
