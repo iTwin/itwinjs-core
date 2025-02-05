@@ -1096,10 +1096,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public copyImageToCanvas(options?: ReadImageToCanvasOptions, overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
-      return document.createElement("canvas");
-
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
