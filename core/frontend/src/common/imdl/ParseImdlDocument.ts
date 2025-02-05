@@ -10,8 +10,8 @@ import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString 
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
-  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
-  TileHeader, TileReadStatus,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderSchedule, RenderTexture, RgbColor,
+  TextureMapping, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import {
@@ -171,7 +171,7 @@ class Material extends RenderMaterial {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public constructor(params: RenderMaterial.Params, imdl?: Imdl.SurfaceMaterialParams) {
+  public constructor(params: RenderMaterialParams, imdl?: Imdl.SurfaceMaterialParams) {
     super(params);
 
     this.materialParams = imdl ?? {
@@ -190,7 +190,7 @@ class Material extends RenderMaterial {
 
   public static create(args: MaterialParams): Material {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const params = new RenderMaterial.Params();
+    const params = new RenderMaterialParams();
     params.alpha = args.alpha;
     if (args.diffuse) {
       if (undefined !== args.diffuse.weight)
@@ -1157,7 +1157,7 @@ class Parser {
       return undefined;
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const materialParams = new RenderMaterial.Params(key);
+    const materialParams = new RenderMaterialParams(key);
     materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
     if (materialJson.diffuse !== undefined)
       materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);

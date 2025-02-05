@@ -9,7 +9,7 @@
 import { assert, Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
+  ColorDef, Gradient, ImageSource, RenderMaterial, RenderMaterialParams, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
 import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
 import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
@@ -196,7 +196,7 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
   }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const params = new RenderMaterial.Params(mat);
+  const params = new RenderMaterialParams(mat);
   params.diffuseColor = colorDefFromJson(json.diffuseColor);
   if (json.diffuse !== undefined)
     params.diffuse = JsonUtils.asDouble(json.diffuse);
