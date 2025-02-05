@@ -120,11 +120,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const rdSourceKey = this.jsonProperties.rdSourceKey;
     const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
 
+    const mapSettings = view.displayStyle.backgroundMapSettings;
+    const mapImagery = view.displayStyle.settings.mapImagery;
+
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
-
-      const mapSettings = view.displayStyle.backgroundMapSettings;
-      const mapImagery = view.displayStyle.settings.mapImagery;
 
       const treeRef = (!useOrbitGtTileTreeReference) ?
         createRealityTileTreeReference({
@@ -191,7 +191,10 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
         getDisplaySettings,
-      });
+        mapSettings,
+        backgroundBase: mapImagery.backgroundBase,
+        backgroundLayers: mapImagery.backgroundLayers
+    });
     }
 
     return createPrimaryTileTreeReference(view, this);
