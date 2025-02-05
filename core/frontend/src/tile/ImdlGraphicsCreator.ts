@@ -200,7 +200,33 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
   if (json.diffuse !== undefined)
     params.diffuse = JsonUtils.asDouble(json.diffuse);
 
-  return options.system.createRenderMaterial(params);;
+  params.specularColor = colorDefFromJson(json.specularColor);
+  if (json.specular !== undefined)
+    params.specular = JsonUtils.asDouble(json.specular);
+
+  params.reflectColor = colorDefFromJson(json.reflectColor);
+  if (json.reflect !== undefined)
+    params.reflect = JsonUtils.asDouble(json.reflect);
+
+  if (json.specularExponent !== undefined)
+    params.specularExponent = json.specularExponent;
+
+  if (undefined !== json.transparency)
+    params.alpha = 1.0 - json.transparency;
+
+  params.refract = JsonUtils.asDouble(json.refract);
+  params.shadows = JsonUtils.asBool(json.shadows);
+  params.ambient = JsonUtils.asDouble(json.ambient);
+
+  if (undefined !== json.textureMapping)
+    params.textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
+
+  return options.system.createRenderMaterial({
+    diffuse: {color: params.diffuseColor, weight: params.diffuse},
+    specular: {color: params.specularColor, weight: params.specular, exponent: params.specularExponent},
+    alpha: params.alpha,
+    textureMapping: params.textureMapping
+   });;
 }
 
 function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {
