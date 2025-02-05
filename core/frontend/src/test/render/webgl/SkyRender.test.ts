@@ -13,7 +13,7 @@ import { BeDuration } from "@itwin/core-bentley";
 import { EnvironmentDecorations } from "../../../EnvironmentDecorations";
 import { imageElementFromImageSource } from "../../../common/ImageUtil";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Texture2DHandle, TextureCubeHandle } from "../../../webgl";
+import { Texture2DHandle, TextureCubeHandle } from "../../../internal/render/webgl/Texture";
 
 describe("Sky rendering", () => {
   let iModel: IModelConnection;
