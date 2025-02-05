@@ -83,7 +83,7 @@ export class InvertedUnit extends SchemaItem {
     const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
     this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey,
       async () => {
-        const invertsUnit = await this.schema.lookupTypedItem(unitSchemaItemKey, Unit);
+        const invertsUnit = await this.schema.lookupItem(unitSchemaItemKey, Unit);
         if (undefined === invertsUnit)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
         return invertsUnit;
@@ -94,7 +94,7 @@ export class InvertedUnit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
-        const unitSystem = await this.schema.lookupTypedItem(unitSystemSchemaItemKey, UnitSystem);
+        const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
         if (undefined === unitSystem)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
         return unitSystem;

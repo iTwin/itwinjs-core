@@ -142,10 +142,10 @@ describe("OverrideFormat", () => {
     const format = schema.getItemSync("TestFormat", Format);
     assert.isDefined(format);
 
-    const mileU = schema.lookupTypedItemSync("Formats.MILE", Unit);
+    const mileU = schema.lookupItemSync("Formats.MILE", Unit);
     assert.isDefined(mileU);
 
-    const yrdU = schema.lookupTypedItemSync("Formats.YRD", Unit);
+    const yrdU = schema.lookupItemSync("Formats.YRD", Unit);
     assert.isDefined(yrdU);
 
     const unitListMile = new Array<[Unit | InvertedUnit, string | undefined]>();
@@ -213,7 +213,7 @@ describe("OverrideFormat", () => {
     const format = schema.getItemSync("TestFormat", Format);
     assert.isDefined(format);
 
-    const mileU = schema.lookupTypedItemSync("Formats.MILE", Unit);
+    const mileU = schema.lookupItemSync("Formats.MILE", Unit);
     assert.isDefined(mileU);
 
     const unitListMile = new Array<[Unit | InvertedUnit, string | undefined]>();

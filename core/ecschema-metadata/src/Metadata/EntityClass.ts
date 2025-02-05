@@ -39,7 +39,7 @@ export class EntityClass extends ECClass implements HasMixins {
       return function* (): Iterable<Mixin> { }(); // empty iterable
 
     for (const mixin of this._mixins) {
-      const mObj = this.schema.lookupTypedItemSync(mixin, Mixin);
+      const mObj = this.schema.lookupItemSync(mixin, Mixin);
       if (mObj) {
         yield mObj;
       }
@@ -202,7 +202,7 @@ export class EntityClass extends ECClass implements HasMixins {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
         this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
           async () => {
-            const mixin = await this.schema.lookupTypedItem(mixinSchemaItemKey, Mixin);
+            const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
             if (undefined === mixin)
               throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
             return mixin;
@@ -252,7 +252,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
-    resolvedRelationship = await ecClass.schema.lookupTypedItem(relationship, RelationshipClass);
+    resolvedRelationship = await ecClass.schema.lookupItem(relationship, RelationshipClass);
   } else
     resolvedRelationship = relationship;
 
@@ -277,7 +277,7 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
-    resolvedRelationship = ecClass.schema.lookupTypedItemSync(relationship, RelationshipClass);
+    resolvedRelationship = ecClass.schema.lookupItemSync(relationship, RelationshipClass);
   } else
     resolvedRelationship = relationship;
 

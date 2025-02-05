@@ -320,7 +320,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = await schema.lookupTypedItem(structType, StructClass);
+      correctType = await schema.lookupItem(structType, StructClass);
     } else
       correctType = structType;
 
@@ -333,7 +333,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = schema.lookupTypedItemSync(structType, StructClass);
+      correctType = schema.lookupItemSync(structType, StructClass);
     } else
       correctType = structType;
 
@@ -350,7 +350,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = await schema.lookupTypedItem(primitiveType, Enumeration);
+        resolvedType = await schema.lookupItem(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)
@@ -373,7 +373,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = schema.lookupTypedItemSync(primitiveType, Enumeration);
+        resolvedType = schema.lookupItemSync(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)

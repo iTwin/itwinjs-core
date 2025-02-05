@@ -593,7 +593,9 @@ export class Schema implements CustomAttributeContainerProps {
    * Attempts to find a schema item within this schema or a (directly) referenced schema
    * @param key The full name or a SchemaItemKey identifying the desired item.
    */
-  public async lookupItem(key: Readonly<SchemaItemKey> | string): Promise<SchemaItem | undefined> {
+  public async lookupItem(key: Readonly<SchemaItemKey> | string): Promise<SchemaItem | undefined>;
+  public async lookupItem<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
+  public async lookupItem<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
     let schemaName, itemName: string;
     if (typeof (key) === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
@@ -603,22 +605,27 @@ export class Schema implements CustomAttributeContainerProps {
     }
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
-      return this.getItem(itemName);
+      return itemConstructor
+        ? this.getItem(itemName, itemConstructor)
+        : this.getItem(itemName);
     }
 
     const refSchema = await this.getReference(schemaName);
     if (!refSchema)
       return undefined;
 
-    return refSchema.getItem(itemName);
+    return itemConstructor
+        ? refSchema.getItem(itemName, itemConstructor)
+        : refSchema.getItem(itemName);
   }
 
   /**
    * Attempts to find a schema item within this schema or a (directly) referenced schema
    * @param key The full name or a SchemaItemKey identifying the desired item.
-   * @param itemConstructor The constructor of the item to return.
    */
-  public async lookupTypedItem<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor: T): Promise<InstanceType<T> | undefined> {
+  public lookupItemSync(key: Readonly<SchemaItemKey> | string): SchemaItem | undefined;
+  public lookupItemSync<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor: T): InstanceType<T> | undefined;
+  public lookupItemSync<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor?: T): SchemaItem | InstanceType<T> | undefined {
     let schemaName, itemName: string;
     if (typeof (key) === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
@@ -628,63 +635,18 @@ export class Schema implements CustomAttributeContainerProps {
     }
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
-      return this.getItem<T>(itemName, itemConstructor);
-    }
-
-    const refSchema = await this.getReference(schemaName);
-    if (!refSchema)
-      return undefined;
-
-    return refSchema.getItem<T>(itemName, itemConstructor);
-  }
-
-  /**
-   * Attempts to find a schema item within this schema or a (directly) referenced schema
-   * @param key The full name or a SchemaItemKey identifying the desired item.
-   */
-  public lookupItemSync(key: Readonly<SchemaItemKey> | string): SchemaItem | undefined {
-    let schemaName, itemName: string;
-    if (typeof (key) === "string") {
-      [schemaName, itemName] = SchemaItem.parseFullName(key);
-    } else {
-      itemName = key.name;
-      schemaName = key.schemaName;
-    }
-
-    if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
-      return this.getItemSync(itemName);
+      return itemConstructor
+        ? this.getItemSync(itemName, itemConstructor)
+        : this.getItemSync(itemName);
     }
 
     const refSchema = this.getReferenceSync(schemaName);
     if (!refSchema)
       return undefined;
 
-    return refSchema.getItemSync(itemName);
-  }
-
-  /**
-   * Attempts to find a schema item within this schema or a (directly) referenced schema
-   * @param key The full name or a SchemaItemKey identifying the desired item.
-   * @param itemConstructor The constructor of the item to return.
-   */
-  public lookupTypedItemSync<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor: T): InstanceType<T> | undefined {
-    let schemaName, itemName: string;
-    if (typeof (key) === "string") {
-      [schemaName, itemName] = SchemaItem.parseFullName(key);
-    } else {
-      itemName = key.name;
-      schemaName = key.schemaName;
-    }
-
-    if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
-      return this.getItemSync<T>(itemName, itemConstructor);
-    }
-
-    const refSchema = this.getReferenceSync(schemaName);
-    if (!refSchema)
-      return undefined;
-
-    return refSchema.getItemSync<T>(itemName, itemConstructor);
+    return itemConstructor
+        ? refSchema.getItemSync(itemName, itemConstructor)
+        : refSchema.getItemSync(itemName);
   }
 
   /**

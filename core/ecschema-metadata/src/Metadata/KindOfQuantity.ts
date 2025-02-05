@@ -71,7 +71,7 @@ export class KindOfQuantity extends SchemaItem {
     for (const formatString of presUnitsArr) {
       const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = await this.schema.lookupTypedItem(presFormatOverride.name, Format);
+      const format = await this.schema.lookupItem(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
@@ -105,7 +105,7 @@ export class KindOfQuantity extends SchemaItem {
     for (const formatString of presUnitsArr) {
       const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = this.schema.lookupTypedItemSync(presFormatOverride.name, Format);
+      const format = this.schema.lookupItemSync(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 

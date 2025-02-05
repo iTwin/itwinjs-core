@@ -118,7 +118,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       return undefined;
     }
 
-    return this.class.schema.lookupTypedItemSync(this._category, PropertyCategory);
+    return this.class.schema.lookupItemSync(this._category, PropertyCategory);
   }
 
   public getKindOfQuantitySync(): KindOfQuantity | undefined {
@@ -131,7 +131,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       return undefined;
     }
 
-    return this.class.schema.lookupTypedItemSync(this._kindOfQuantity, KindOfQuantity);
+    return this.class.schema.lookupItemSync(this._kindOfQuantity, KindOfQuantity);
   }
 
   /**
@@ -221,7 +221,7 @@ export abstract class Property implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
       this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey,
         async () => {
-          const category = await this.class.schema.lookupTypedItem(propertyCategorySchemaItemKey, PropertyCategory);
+          const category = await this.class.schema.lookupItem(propertyCategorySchemaItemKey, PropertyCategory);
           if (undefined === category)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
           return category;
@@ -234,7 +234,7 @@ export abstract class Property implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
       this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey,
         async () => {
-          const koq = await this.class.schema.lookupTypedItem(koqSchemaItemKey, KindOfQuantity);
+          const koq = await this.class.schema.lookupItem(koqSchemaItemKey, KindOfQuantity);
           if (undefined === koq)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
           return koq;
@@ -521,7 +521,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
       this._enumeration = new DelayedPromiseWithProps<SchemaItemKey, Enumeration>(enumSchemaItemKey,
         async () => {
-          const enumeration = await this.class.schema.lookupTypedItem(enumSchemaItemKey, Enumeration);
+          const enumeration = await this.class.schema.lookupItem(enumSchemaItemKey, Enumeration);
           if (undefined === enumeration)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
           return enumeration;

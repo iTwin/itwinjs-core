@@ -90,7 +90,7 @@ export class SchemaComparer {
    * @internal
    */
   public async resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined> {
-    return lookupSchema.lookupTypedItem(item.name, itemConstructor);
+    return lookupSchema.lookupItem(item.name, itemConstructor);
   }
 
   /**

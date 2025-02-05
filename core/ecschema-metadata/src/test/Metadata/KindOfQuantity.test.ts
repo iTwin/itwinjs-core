@@ -249,7 +249,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, await schema.lookupTypedItem((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, await schema.lookupItem((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -289,7 +289,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, schema.lookupTypedItemSync((defaultFormat as OverrideFormat).parent.fullName, Format), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, schema.lookupItemSync((defaultFormat as OverrideFormat).parent.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -339,7 +339,7 @@ describe("KindOfQuantity", () => {
       const defaultOverrideFormat: OverrideFormat = defaultFormat as OverrideFormat;
       assert.isDefined(defaultFormat);
 
-      const testFormat = await schema.lookupTypedItem(defaultOverrideFormat.parent.fullName, Format);
+      const testFormat = await schema.lookupItem(defaultOverrideFormat.parent.fullName, Format);
       assert.notEqual(defaultFormat, testFormat, "The format in the KOQ should be different than the one in the schema");
 
       assert.isDefined(defaultFormat!.units);
@@ -371,7 +371,7 @@ describe("KindOfQuantity", () => {
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
 
-      assert.notEqual(defaultFormat, schema.lookupTypedItemSync((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, schema.lookupItemSync((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       assert.isDefined(defaultFormat!.units);
       expect(defaultFormat!.units!.length).to.eq(1);
