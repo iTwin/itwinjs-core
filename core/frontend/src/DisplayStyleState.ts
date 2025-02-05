@@ -22,7 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
-import { _scheduleScriptReference, _onScheduleScriptReferenceChanged } from './common/internal/Symbols';
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
 
 /** @internal */
 export class TerrainDisplayOverrides {
