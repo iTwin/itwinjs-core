@@ -47,11 +47,11 @@ function createIModel(): IModelConnection {
 describe("GraphicDescriptionBuilder", () => {
   beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
-    Material.preserveArgs = true;
+    Material.preserveParams = true;
   });
 
   afterAll(async () => {
-    Material.preserveArgs = false;
+    Material.preserveParams = false;
     await IModelApp.shutdown();
   });
 
@@ -482,11 +482,11 @@ describe("GraphicDescriptionBuilder", () => {
 
 
   function expectMaterial(mat: Material, expected: Partial<RenderMaterialParams>): void {
-    expect(mat.args).toBeDefined();
+    expect(mat.params).toBeDefined();
     const actual = {
-      ...mat.args,
+      ...mat.params,
       textureMapping: undefined,
-      alpha: mat.args!.alpha,
+      alpha: mat.params!.alpha,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       _alpha: undefined, // stupid class instead of interface
     };
@@ -633,19 +633,15 @@ describe("GraphicDescriptionBuilder", () => {
       switch (i) {
         case 0:
           expectMaterial(mat, {
-            diffuse: {
-              color: ColorDef.blue,
-              weight: 0.5,
-            }
+            diffuseColor: ColorDef.blue,
+            diffuse: 0.5,
           });
           break;
         case 1:
           expectMaterial(mat, {
-            specular: {
-              color: ColorDef.red,
-              weight: 0.25,
-              exponent: 10,
-            }
+            specularColor: ColorDef.red,
+            specular: 0.25,
+            specularExponent: 10,
           });
           break;
         case 2:
