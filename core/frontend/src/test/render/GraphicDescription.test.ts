@@ -20,6 +20,7 @@ import { WorkerTexture } from "../../common/internal/render/GraphicDescriptionCo
 import { _textures } from "../../common/internal/Symbols";
 import { Material } from "../../render/webgl/Material";
 import { IModelConnection } from "../../IModelConnection";
+import { CreateRenderMaterialArgs } from "../../core-frontend";
 
 function expectRange(range: Readonly<Range3d>, translation: XYAndZ | undefined, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   if (!translation) {
@@ -481,7 +482,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
 
-  function expectMaterial(mat: Material, expected: Partial<RenderMaterial.Params>): void {
+  function expectMaterial(mat: Material, expected: Partial<CreateRenderMaterialArgs>): void {
     expect(mat.args).toBeDefined();
     const actual = {
       ...mat.args,
@@ -493,8 +494,7 @@ describe("GraphicDescriptionBuilder", () => {
     delete actual._alpha;
 
     expected = {
-      ...RenderMaterial.Params.defaults,
-      diffuseColor: undefined,
+      ...{diffuse: { weight: 0.6, color: undefined }, specular: { weight: 0.4, exponent: 13.5 }},
       alpha: undefined,
       ...expected,
       textureMapping: undefined,
@@ -633,15 +633,19 @@ describe("GraphicDescriptionBuilder", () => {
       switch (i) {
         case 0:
           expectMaterial(mat, {
-            diffuseColor: ColorDef.blue,
-            diffuse: 0.5,
+            diffuse: {
+              color: ColorDef.blue,
+              weight: 0.5,
+            }
           });
           break;
         case 1:
           expectMaterial(mat, {
-            specularColor: ColorDef.red,
-            specular: 0.25,
-            specularExponent: 10,
+            specular: {
+              color: ColorDef.red,
+              weight: 0.25,
+              exponent: 10,
+            }
           });
           break;
         case 2:
