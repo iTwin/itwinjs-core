@@ -94,6 +94,7 @@ export class Material extends RenderMaterial {
 
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
 
+    // By default, diffuse contributes 60% to the final color and the other 40% from specular.
     const diffuseWeight = args.diffuse?.weight ?? 0.6;
     const specularWeight = args.specular?.weight ?? 0.4;
     this.setInteger(scale(diffuseWeight), scale(specularWeight), 0);
