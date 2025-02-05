@@ -11,3 +11,4 @@ export {
   MultiModelPackedFeatureTable, PackedFeatureModelTable, PackedFeatureTable
 } from "./PackedFeatureTable";
 export type { BackendReadable, BackendWritable, BackendBuffer } from "./BackendTypes";
+export { RenderMaterialParams } from "./RenderMaterialParams";
