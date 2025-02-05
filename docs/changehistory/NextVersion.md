@@ -37,7 +37,7 @@ Table of contents:
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
     - [TypeScript configuration changes](#typescript-configuration-changes)
-
+  - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
 ## Selection set
 
 There are two similar selection-related concepts in `@itwin/core-frontend` - [SelectionSet]($core-frontend) and [HiliteSet]($core-frontend). The former is generally used by interactive tools (e.g. the "Move element" tool), so it contains what tools think is selected. The latter is used by the graphics system to know what elements to highlight, so it contains what users think is selected. Generally, we want the two sets to be in sync to avoid confusion why tools act on different elements than what users think are selected. Keeping them in sync was not always possible, because `HiliteSet` may store Model and SubCategory ids, but `SelectionSet` could only store Element ids. So we could end up in situations where a Model id is added to `HiliteSet` and `SelectionSet` is empty, making users think that all elements in that model are selected, but tools not knowing anything about it.
@@ -376,3 +376,14 @@ class MyElement extends Element {
   ...
 }
 ```
+## Deprecated ECSqlStatement
+
+`ECSqlStatement` is deprecated in 4.11 Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend)
+
+Following are related classes to ECSqlStatement that are also mark depercate
+  * `ECEnumValue`
+  * `ECSqlValue`
+  * `ECSqlValueIterator`
+  * `ECSqlColumnInfo`
+
+  In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
