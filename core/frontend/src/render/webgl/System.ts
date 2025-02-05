@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../IModelApp";
@@ -176,7 +176,7 @@ export class IdMap implements WebGLDisposable {
   }
 
 
-  public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+  public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTextureParams, format: ImageSourceFormat): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
       return tex;
@@ -235,7 +235,7 @@ export class IdMap implements WebGLDisposable {
   }
 
 
-  public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
+  public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTextureParams): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
       return tex;
@@ -747,12 +747,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
 
-  public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+  public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTextureParams, format: ImageSourceFormat): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
 
-  public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+  public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTextureParams): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
 
