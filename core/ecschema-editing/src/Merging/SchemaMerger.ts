@@ -86,7 +86,7 @@ export class SchemaMerger {
     }
 
     const schema = await editor.getSchema(targetSchemaKey).catch((error: Error) => {
-      if (error instanceof SchemaEditingError && error.errorNumber === ECEditingStatus.SchemaNotFound) {
+      if (error instanceof SchemaEditingError && error.errorStatus === ECEditingStatus.SchemaNotFound) {
         throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
       }
       throw error;

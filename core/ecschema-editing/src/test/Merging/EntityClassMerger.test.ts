@@ -9,6 +9,7 @@ import { ECEditingStatus } from "../../Editing/Exception";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 import { AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing";
+import { SchemaEditType } from "../../Editing/SchemaEditType";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -444,7 +445,7 @@ describe("EntityClass merger tests", () => {
     });
 
     await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("errorNumber", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
@@ -477,7 +478,7 @@ describe("EntityClass merger tests", () => {
     });
 
     await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.AddMixin);
+      expect(error).to.have.property("errorNumber", SchemaEditType.AddMixin);
       expect(error).to.have.nested.property("innerError.message", `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
@@ -527,7 +528,7 @@ describe("EntityClass merger tests", () => {
     });
 
     await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.property("errorNumber", SchemaEditType.SetBaseClass);
       expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
