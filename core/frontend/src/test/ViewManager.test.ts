@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { OnScreenTarget } from "../core-frontend";
+import { OnScreenTarget } from "../internal/render/webgl/Target";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
