@@ -664,6 +664,7 @@ internal;class;SavedState
 public;class;Scene
 public;class;SceneContext
 internal;interface;SceneVolumeClassifier
+internal;const;_scheduleScriptReference
 public;interface;ScreenSpaceEffectBuilder
 public;interface;ScreenSpaceEffectBuilderParams
 public;interface;ScreenSpaceEffectContext

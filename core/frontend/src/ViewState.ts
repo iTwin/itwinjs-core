@@ -42,6 +42,7 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
+import { _scheduleScriptReference } from "./common/internal/Symbols";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -335,8 +336,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
+  public get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined {
+    return this.displayStyle[_scheduleScriptReference];
   }
 
   /** Get the globe projection mode.
