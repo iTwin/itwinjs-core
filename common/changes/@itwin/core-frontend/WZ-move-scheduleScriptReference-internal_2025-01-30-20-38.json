@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "made scheduleScriptReference API internal",
+      "comment": "Removed deprecated scheduleScriptReference and onScheduleScriptReferencedChanged from DisplayStyleState.",
       "type": "none"
     }
   ],
