@@ -28,6 +28,7 @@ import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionCo
 import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../render/GraphicTemplate";
+import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -78,7 +79,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return options.system.createTextureFromElement(name, options.iModel, params, namedTex.format);
   } catch {
@@ -195,39 +196,14 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return col ? ColorDef.from(col[0] * 255 + 0.5, col[1] * 255 + 0.5, col[2] * 255 + 0.5) : undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const params = new RenderMaterial.Params(mat);
-  params.diffuseColor = colorDefFromJson(json.diffuseColor);
-  if (json.diffuse !== undefined)
-    params.diffuse = JsonUtils.asDouble(json.diffuse);
+  const params: CreateRenderMaterialArgs = {
+    diffuse: { color: colorDefFromJson(json.diffuseColor), weight: json.diffuse },
+    specular: { color: colorDefFromJson(json.specularColor), weight: json.specular, exponent: json.specularExponent },
+    alpha: json.transparency ? 1.0 - json.transparency : undefined,
+    textureMapping: json.textureMapping ? textureMappingFromJson(json.textureMapping.texture, options) : undefined,
+  };
 
-  params.specularColor = colorDefFromJson(json.specularColor);
-  if (json.specular !== undefined)
-    params.specular = JsonUtils.asDouble(json.specular);
-
-  params.reflectColor = colorDefFromJson(json.reflectColor);
-  if (json.reflect !== undefined)
-    params.reflect = JsonUtils.asDouble(json.reflect);
-
-  if (json.specularExponent !== undefined)
-    params.specularExponent = json.specularExponent;
-
-  if (undefined !== json.transparency)
-    params.alpha = 1.0 - json.transparency;
-
-  params.refract = JsonUtils.asDouble(json.refract);
-  params.shadows = JsonUtils.asBool(json.shadows);
-  params.ambient = JsonUtils.asDouble(json.ambient);
-
-  if (undefined !== json.textureMapping)
-    params.textureMapping = textureMappingFromJson(json.textureMapping.texture, options);
-
-  return options.system.createRenderMaterial({
-    diffuse: {color: params.diffuseColor, weight: params.diffuse},
-    specular: {color: params.specularColor, weight: params.specular, exponent: params.specularExponent},
-    alpha: params.alpha,
-    textureMapping: params.textureMapping
-   });;
+  return options.system.createRenderMaterial(params);;
 }
 
 function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instances?: InstancedGraphicParams } {
