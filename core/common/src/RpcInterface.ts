@@ -122,7 +122,7 @@ export abstract class RpcInterface {
   }
 
   /** @internal */
-  public configurationSupplier: RpcConfigurationSupplier | undefined;
+  declare public configurationSupplier: RpcConfigurationSupplier | undefined;
 }
 
 RpcInterface.prototype.configurationSupplier = undefined;
