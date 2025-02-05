@@ -1,12 +1,12 @@
 {
   "require": [
-    "../scripts/copy-test-setup.js",
-    "source-map-support/register"
+    "source-map-support/register",
+    "./lib/cjs/test/setup.js"
   ],
   "checkLeaks": true,
   "timeout": 60000,
-  "file": [
-    "lib/cjs/test/setup.js"
+  "spec": [
+    "lib/cjs/test/**/*.test.js"
   ],
   "exclude": [
     "lib/cjs/test/coverage/**/*"
