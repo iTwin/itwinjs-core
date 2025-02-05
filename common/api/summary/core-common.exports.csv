@@ -684,7 +684,7 @@ public;namespace;RenderSchedule
 internal;class;Interval
 public;class;RenderTexture
 public;namespace;RenderTexture
-internal;class;Params
+internal;class;RenderTextureParams
 public;interface;RenderTimelineLoadProps
 public;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps

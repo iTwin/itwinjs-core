@@ -8088,19 +8088,6 @@ export abstract class RenderTexture implements Disposable {
 
 // @public (undocumented)
 export namespace RenderTexture {
-    // @internal
-    export class Params {
-        constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
-        // (undocumented)
-        get isGlyph(): boolean;
-        readonly isOwned: boolean;
-        // (undocumented)
-        get isSkyBox(): boolean;
-        // (undocumented)
-        get isTileSection(): boolean;
-        readonly key?: string;
-        readonly type: RenderTexture.Type;
-    }
     export enum Type {
         FilteredTileSection = 4,
         Glyph = 1,
@@ -8109,6 +8096,20 @@ export namespace RenderTexture {
         ThematicGradient = 5,
         TileSection = 2
     }
+}
+
+// @internal
+export class RenderTextureParams {
+    constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
+    // (undocumented)
+    get isGlyph(): boolean;
+    readonly isOwned: boolean;
+    // (undocumented)
+    get isSkyBox(): boolean;
+    // (undocumented)
+    get isTileSection(): boolean;
+    readonly key?: string;
+    readonly type: RenderTexture.Type;
 }
 
 // @public
