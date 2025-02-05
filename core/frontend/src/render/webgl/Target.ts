@@ -1095,12 +1095,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(options?: ReadImageToCanvasOptions, overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
+  public copyImageToCanvas(overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
 
-    if (overlayCanvas && (options !== undefined) && (!options.omitCanvasDecorations)) {
+    if (overlayCanvas) {
       const ctx = retCanvas.getContext("2d")!;
       ctx.drawImage(overlayCanvas, 0, 0);
     }
@@ -1437,8 +1437,8 @@ export class OnScreenTarget extends Target {
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
-  public override readImageToCanvas(options?: ReadImageToCanvasOptions, overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
-    return this._usingWebGLCanvas || options?.omitCanvasDecorations ? this.copyImageToCanvas(options, overlayCanvas) : this._2dCanvas.canvas;
+  public override readImageToCanvas(overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
+    return this._usingWebGLCanvas || !overlayCanvas ? this.copyImageToCanvas(overlayCanvas) : this._2dCanvas.canvas;
   }
 }
 /** @internal */
@@ -1480,8 +1480,8 @@ export class OffScreenTarget extends Target {
     this.renderSystem.frameBufferStack.pop();
   }
 
-  public override readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
-    return this.copyImageToCanvas(options);
+  public override readImageToCanvas(): HTMLCanvasElement {
+    return this.copyImageToCanvas();
   }
 }
 

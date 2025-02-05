@@ -2736,7 +2736,7 @@ export abstract class Viewport implements Disposable, TileUser {
   */
   public readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
     const canvas = (this instanceof ScreenViewport && !options?.omitCanvasDecorations) ? this.canvas : undefined;
-    return this.target.readImageToCanvas(options, canvas);
+    return this.target.readImageToCanvas(canvas);
   }
 
   /** Used internally by `waitForSceneCompletion`.
