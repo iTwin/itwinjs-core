@@ -1,4 +1,3 @@
-import { _onScheduleScriptReferenceChanged } from './../common/internal/Symbols';
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -10,6 +9,7 @@ import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createBlankConnection } from "./createBlankConnection";
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './../common/internal/Symbols';
 
 describe("DisplayStyleState", () => {
   describe("schedule script state", () => {
@@ -56,7 +56,7 @@ describe("DisplayStyleState", () => {
 
       public expectScript(props: RenderSchedule.ScriptProps, sourceId: string): void {
         expect(this.scheduleScript).toBeDefined();
-        expect(this.scheduleScriptReference!.sourceId).toEqual(sourceId);
+        expect(this[_scheduleScriptReference]!.sourceId).toEqual(sourceId);
         expect(this.scheduleScript!.modelTimelines[0].modelId).toEqual(props[0].modelId);
       }
 
@@ -180,7 +180,7 @@ describe("DisplayStyleState", () => {
 
       function pushExpected(expectNonNull = true) {
         expect(style.scheduleScript !== undefined).toEqual(expectNonNull);
-        expected.push(style.scheduleScriptReference);
+        expected.push(style[_scheduleScriptReference]);
         expectPayloads();
       }
 
@@ -222,7 +222,7 @@ describe("DisplayStyleState", () => {
       expect(style.isLoading).toBe(false);
 
       style.expectScript(script2, "0x2");
-      expect(style.eventPayloads).toEqual([style.scheduleScriptReference]);
+      expect(style.eventPayloads).toEqual([style[_scheduleScriptReference]]);
     });
 
     it("is set to undefined if loadScheduleScriptReference produces an exception", async () => {
@@ -231,7 +231,7 @@ describe("DisplayStyleState", () => {
       style.expectScript(script1, "0x1");
 
       await style.changeRenderTimeline("0x3");
-      expect(style.scheduleScriptReference).toBeUndefined();
+      expect(style[_scheduleScriptReference]).toBeUndefined();
     });
   });
 });
