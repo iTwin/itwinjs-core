@@ -9,12 +9,13 @@ import {
   ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
-  Batch, GeometricModelState, GraphicsArray, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MeshGraphic, MockRender,
-  PolylineGeometry, Primitive, RenderGraphic, RenderOrder, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
+  RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";

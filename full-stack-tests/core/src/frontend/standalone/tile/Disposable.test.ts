@@ -6,10 +6,11 @@ import { assert, expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList } from "@itwin/core-common";
 import {
-  Batch, Decorations, FrameBuffer, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, OnScreenTarget, PlanarClassifierMap, PlanarClassifierTarget,
-  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, Target, TextureDrapeMap, TextureHandle,
-  TileTreeReference, WorldDecorations,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
+  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
+  TileTreeReference,
 } from "@itwin/core-frontend";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";

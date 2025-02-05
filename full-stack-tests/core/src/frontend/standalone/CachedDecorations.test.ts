@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, Graphic, GraphicOwner, GraphicType, IModelApp, IModelConnection, ScreenViewport,
+  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport,
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
+import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Cached decorations", () => {
