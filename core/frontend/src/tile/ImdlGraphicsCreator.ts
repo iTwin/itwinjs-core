@@ -9,7 +9,7 @@
 import { assert, Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, Gradient, ImageSource, RenderMaterial, RenderMaterialParams, RenderTexture, TextureMapping,
+  ColorDef, Gradient, ImageSource, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, TextureMapping,
 } from "@itwin/core-common";
 import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
 import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
@@ -78,8 +78,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
-
-    const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
+    const params = new RenderTextureParams(cacheable ? name : undefined, textureType);
     return options.system.createTextureFromElement(name, options.iModel, params, namedTex.format);
   } catch {
     return undefined;
