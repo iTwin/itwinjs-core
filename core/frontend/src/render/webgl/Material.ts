@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef, RenderMaterial } from "@itwin/core-common";
+import { ColorDef, RenderMaterial, RenderMaterialParams } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
 import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/render/SurfaceParams";
 
@@ -39,10 +39,8 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/ren
  * @internal
  */
 export class Material extends RenderMaterial {
-   
-  public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
-  public static readonly default: Material = new Material({diffuse: { weight: 0.6 }, specular: { weight: 0.4, exponent: 13.5 }}); // Default material
+  public static readonly default: Material = new Material(RenderMaterialParams.defaults);
 
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas = false as const;
@@ -56,11 +54,11 @@ export class Material extends RenderMaterial {
   /** Strictly for testing. */
   public static preserveParams = false;
   /** Strictly for testing. */
-   
-  public params?: RenderMaterial.Params;
 
-   
-  public constructor(params: RenderMaterial.Params) {
+  public params?: RenderMaterialParams;
+
+
+  public constructor(params: RenderMaterialParams) {
     super(params);
 
     if (Material.preserveParams) {
