@@ -4911,20 +4911,6 @@ export interface GroupMark {
 // @internal
 export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean;
 
-// @internal (undocumented)
-export interface Hilites {
-    // (undocumented)
-    readonly elements: Id64.Uint32Set;
-    // (undocumented)
-    readonly isEmpty: boolean;
-    // (undocumented)
-    readonly models: Id64.Uint32Set;
-    // (undocumented)
-    readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
-    // (undocumented)
-    readonly subcategories: Id64.Uint32Set;
-}
-
 // @public
 export class HiliteSet {
     constructor(iModel: IModelConnection, syncWithSelectionSet?: boolean);
@@ -8205,25 +8191,6 @@ export class NullTarget extends RenderTarget {
     get viewRect(): ViewRect;
     // (undocumented)
     get wantInvertBlackBackground(): boolean;
-}
-
-// @internal (undocumented)
-export class OffScreenTarget extends Target {
-    constructor(rect: ViewRect);
-    // (undocumented)
-    protected _assignDC(): boolean;
-    // (undocumented)
-    protected _beginPaint(fbo: FrameBuffer): void;
-    // (undocumented)
-    protected _endPaint(): void;
-    // (undocumented)
-    onResized(): void;
-    // (undocumented)
-    readImageToCanvas(): HTMLCanvasElement;
-    // (undocumented)
-    setViewRect(rect: ViewRect, temporary: boolean): void;
-    // (undocumented)
-    updateViewRect(): boolean;
 }
 
 // @public
