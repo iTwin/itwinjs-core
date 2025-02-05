@@ -15,7 +15,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshRenderGeometry } from "../../render/webgl/Mesh";
+import { MeshRenderGeometry } from "../../internal/render/webgl/Mesh";
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 import { MeshArgs } from "../../render/MeshArgs";

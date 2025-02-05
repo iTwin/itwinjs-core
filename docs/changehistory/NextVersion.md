@@ -247,26 +247,28 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 
 #### @itwin/core-frontend
 
-| **Removed**                               | **Replacement**                                                                                                   |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `callIpcHost`                             | Use `appFunctionIpc` instead.                                                                                     |
-| `callNativeHost`                          | Use `nativeAppIpc` instead.                                                                                       |
-| `createMaterial`                          | Use `createRenderMaterial` instead.                                                                               |
-| `createTextureFromImage`                  | Use `createTexture` instead.                                                                                      |
-| `createTextureFromImageBuffer`            | Use `createTexture` instead.                                                                                      |
-| `createTextureFromImageSource`            | Use `RenderSystem.createTextureFromSource` instead.                                                               |
-| `displayStyleState.getThumbnail`          | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                    |
-| `GraphicBuilder.pickId`                   | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                     |
-| `getDisplayedExtents`                     | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
-| `IModelConnection.displayedExtents`       | N/A                                                                                                               |
-| `IModelConnection.expandDisplayedExtents` | Use `displayedExtents` instead.                                                                                   |
-| `IModelConnection.query`                  | Use `createQueryReader` instead (same parameter).                                                                 |
-| `IModelConnection.queryRowCount`          | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`.    |
-| `IModelConnection.restartQuery`           | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.      |
-| `requestDownloadBriefcase(progress)`      | `progress` is removed, use `DownloadBriefcaseOptions.progressCallback` instead.                                   |
-| `readImage`                               | Use `readImageBuffer` instead.                                                                                    |
-| `setEventController`                      | Removed (was for internal use).                                                                                   |
-| `PullChangesOptions.progressCallback`     | Use `downloadProgressCallback` instead.                                                                           |
+| **Removed**                                          | **Replacement**                                                                                                   |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `callIpcHost`                                        | Use `appFunctionIpc` instead.                                                                                     |
+| `callNativeHost`                                     | Use `nativeAppIpc` instead.                                                                                       |
+| `createMaterial`                                     | Use `createRenderMaterial` instead.                                                                               |
+| `createTextureFromImage`                             | Use `createTexture` instead.                                                                                      |
+| `createTextureFromImageBuffer`                       | Use `createTexture` instead.                                                                                      |
+| `createTextureFromImageSource`                       | Use `RenderSystem.createTextureFromSource` instead.                                                               |
+| `displayStyleState.getThumbnail`                     | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                    |
+| `displayStyleState.onScheduleScriptReferenceChanged` | Use [DisplayStyleState.onScheduleScriptChanged]($frontend) instead                                                |
+| `displayStyleState.scheduleScriptReference`          | Use [DisplayStyleState.scheduleScript]($frontend) instead                                                         |
+| `GraphicBuilder.pickId`                              | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                     |
+| `getDisplayedExtents`                                | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
+| `IModelConnection.displayedExtents`                  | N/A                                                                                                               |
+| `IModelConnection.expandDisplayedExtents`            | Use `displayedExtents` instead.                                                                                   |
+| `IModelConnection.query`                             | Use `createQueryReader` instead (same parameter).                                                                 |
+| `IModelConnection.queryRowCount`                     | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`.    |
+| `IModelConnection.restartQuery`                      | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.      |
+| `requestDownloadBriefcase(progress)`                 | `progress` is removed, use `DownloadBriefcaseOptions.progressCallback` instead.                                   |
+| `readImage`                                          | Use `readImageBuffer` instead.                                                                                    |
+| `setEventController`                                 | Removed (was for internal use).                                                                                   |
+| `PullChangesOptions.progressCallback`                | Use `downloadProgressCallback` instead.                                                                           |
 
 #### @itwin/core-geometry
 
@@ -351,6 +353,7 @@ There are number of changes made to base TypeScript configuration available in `
 Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
 
 This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
+
 ```ts
 interface MyElementProps extends ElementProps {
   property: string;
