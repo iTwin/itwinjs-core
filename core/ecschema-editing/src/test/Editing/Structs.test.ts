@@ -52,8 +52,8 @@ describe("Structs tests", () => {
 
     await testEditor.structs.setBaseClass(structRes, baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getTypedSchemaItem(structRes, StructClass);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, StructClass));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
   });
 
   it("should change struct base class with class from superset of base class", async () => {
@@ -61,11 +61,11 @@ describe("Structs tests", () => {
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes);
     const newBaseClassRes = await testEditor.structs.create(testKey, "newBaseClass", "newLabel", baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getTypedSchemaItem(structRes, StructClass);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, StructClass));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
 
     await testEditor.structs.setBaseClass(structRes, newBaseClassRes);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(newBaseClassRes, StructClass));
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(newBaseClassRes, StructClass));
   });
 
   it("should change struct base class with different base class from a different schema", async () => {
@@ -94,20 +94,20 @@ describe("Structs tests", () => {
     const firstBaseClassKey = new SchemaItemKey("testStructBase1", refSchema.schemaKey);
     const structResult = await testEditor.structs.create(testKey, "testStruct", "testLabel", firstBaseClassKey);
 
-    const testStruct = await testEditor.schemaContext.getTypedSchemaItem(structResult, StructClass);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(firstBaseClassKey, StructClass));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structResult, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(firstBaseClassKey, StructClass));
 
     const newBaseClassKey = new SchemaItemKey("testStructBase2", refSchema.schemaKey);
     await testEditor.structs.setBaseClass(structResult, newBaseClassKey);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(newBaseClassKey, StructClass));
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(newBaseClassKey, StructClass));
   });
 
   it("should remove a base class from struct class", async () => {
     const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getTypedSchemaItem(structRes, StructClass);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, StructClass));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
 
     await testEditor.structs.setBaseClass(structRes, undefined);
     expect(await testStruct?.baseClass).to.eql(undefined);
@@ -162,8 +162,8 @@ describe("Structs tests", () => {
     const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getTypedSchemaItem(structRes, StructClass);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, StructClass));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
 
     const newBaseClassRes = await testEditor.structs.create(testKey, "newBaseClass");
     await expect(testEditor.structs.setBaseClass(structRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {

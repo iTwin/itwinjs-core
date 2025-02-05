@@ -47,7 +47,7 @@ describe("Unit", () => {
 
     const ecSchema = await Schema.fromJson(fullyDefinedUnit, new SchemaContext());
     assert.isDefined(ecSchema);
-    const unit = await ecSchema.getTypedItem("TestUnit", Unit);
+    const unit = await ecSchema.getItem("TestUnit", Unit);
     assert.isDefined(unit);
     expect(unit!.fullName).eq("TestSchema.TestUnit");
   });
@@ -93,13 +93,13 @@ describe("Unit", () => {
     });
 
     it("Unit type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestUnit", Unit)).to.be.instanceof(Unit);
-      expect(ecSchema.getTypedItemSync("TestUnit", Unit)).to.be.instanceof(Unit);
+      expect(await ecSchema.getItem("TestUnit", Unit)).to.be.instanceof(Unit);
+      expect(ecSchema.getItemSync("TestUnit", Unit)).to.be.instanceof(Unit);
     });
 
     it("Unit type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", Unit)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", Unit)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", Unit)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Unit)).to.be.undefined;
     });
   });
 
@@ -117,14 +117,14 @@ describe("Unit", () => {
 
     it("async - should succeed with fully defined", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedUnit, new SchemaContext());
-      const unit = await ecSchema.getTypedItem("TestUnit", Unit);
+      const unit = await ecSchema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
 
-      const phen = await ecSchema.getTypedItem("TestPhenomenon", Phenomenon);
+      const phen = await ecSchema.getItem("TestPhenomenon", Phenomenon);
       assert.isDefined(phen);
       assert.isTrue((await unit!.phenomenon) === phen);
 
-      const unitSystem = await ecSchema.getTypedItem("TestUnitSystem", UnitSystem);
+      const unitSystem = await ecSchema.getItem("TestUnitSystem", UnitSystem);
       assert.isDefined(unitSystem);
       assert.isTrue((await unit!.unitSystem) === unitSystem);
 
@@ -136,16 +136,16 @@ describe("Unit", () => {
 
     it("sync - should succeed with fully defined", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedUnit, new SchemaContext());
-      const unit = ecSchema.getTypedItemSync("TestUnit", Unit);
+      const unit = ecSchema.getItemSync("TestUnit", Unit);
       assert.isDefined(unit);
 
-      const phen = ecSchema.getTypedItemSync("TestPhenomenon", Phenomenon);
+      const phen = ecSchema.getItemSync("TestPhenomenon", Phenomenon);
       assert.isDefined(phen);
-      assert.strictEqual(phen, ecSchema.getTypedItemSync(unit!.phenomenon!.name, Phenomenon));
+      assert.strictEqual(phen, ecSchema.getItemSync(unit!.phenomenon!.name, Phenomenon));
 
-      const unitSystem = ecSchema.getTypedItemSync("TestUnitSystem", UnitSystem);
+      const unitSystem = ecSchema.getItemSync("TestUnitSystem", UnitSystem);
       assert.isDefined(unitSystem);
-      assert.strictEqual(unitSystem, ecSchema.getTypedItemSync(unit!.unitSystem!.name, UnitSystem));
+      assert.strictEqual(unitSystem, ecSchema.getItemSync(unit!.unitSystem!.name, UnitSystem));
 
       expect(unit!.definition).to.eql("[MILLI]*Units.MM");
       expect(unit!.denominator).to.equal(1);
@@ -174,17 +174,17 @@ describe("Unit", () => {
     it("async - order shouldn't matter", async () => {
       const ecSchema = await Schema.fromJson(reverseOrderJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      assert.isDefined(await ecSchema.getTypedItem("Length", Phenomenon));
-      assert.isDefined(await ecSchema.getTypedItem("Metric", UnitSystem));
-      assert.isDefined(await ecSchema.getTypedItem("M", Unit));
+      assert.isDefined(await ecSchema.getItem("Length", Phenomenon));
+      assert.isDefined(await ecSchema.getItem("Metric", UnitSystem));
+      assert.isDefined(await ecSchema.getItem("M", Unit));
     });
 
     it("sync - should succeed with dependency order", () => {
       const ecSchema = Schema.fromJsonSync(reverseOrderJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      assert.isDefined(ecSchema.getTypedItemSync("Length", Phenomenon));
-      assert.isDefined(ecSchema.getTypedItemSync("Metric", UnitSystem));
-      assert.isDefined(ecSchema.getTypedItemSync("M", Unit));
+      assert.isDefined(ecSchema.getItemSync("Length", Phenomenon));
+      assert.isDefined(ecSchema.getItemSync("Metric", UnitSystem));
+      assert.isDefined(ecSchema.getItemSync("M", Unit));
     });
 
     // Missing phenomenon
@@ -319,7 +319,7 @@ describe("Unit", () => {
 
     it("async - should succeed with fully defined", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedUnit, new SchemaContext());
-      const unit = await ecSchema.getTypedItem("TestUnit", Unit);
+      const unit = await ecSchema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
@@ -333,7 +333,7 @@ describe("Unit", () => {
 
     it("sync - should succeed with fully defined", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedUnit, new SchemaContext());
-      const unit = ecSchema.getTypedItemSync("TestUnit", Unit);
+      const unit = ecSchema.getItemSync("TestUnit", Unit);
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
@@ -347,7 +347,7 @@ describe("Unit", () => {
 
     it("async - JSON stringify serialization, should succeed with fully defined", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedUnit, new SchemaContext());
-      const unit = await ecSchema.getTypedItem("TestUnit", Unit);
+      const unit = await ecSchema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
       const json = JSON.stringify(unit);
       const unitSerialization = JSON.parse(json);
@@ -362,7 +362,7 @@ describe("Unit", () => {
 
     it("sync - JSON stringify serialization, should succeed with fully defined", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedUnit, new SchemaContext());
-      const unit = ecSchema.getTypedItemSync("TestUnit", Unit);
+      const unit = ecSchema.getItemSync("TestUnit", Unit);
       assert.isDefined(unit);
       const json = JSON.stringify(unit);
       const unitSerialization = JSON.parse(json);
@@ -396,7 +396,7 @@ describe("Unit", () => {
     it("async - order shouldn't matter", async () => {
       const ecSchema = await Schema.fromJson(reverseOrderJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const unit = await ecSchema.getTypedItem("M", Unit);
+      const unit = await ecSchema.getItem("M", Unit);
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
@@ -408,7 +408,7 @@ describe("Unit", () => {
     it("sync - should succeed with dependency order", () => {
       const ecSchema = Schema.fromJsonSync(reverseOrderJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const unit = ecSchema.getTypedItemSync("M", Unit);
+      const unit = ecSchema.getItemSync("M", Unit);
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
@@ -428,7 +428,7 @@ describe("Unit", () => {
       });
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const unit = await ecSchema.getTypedItem("TestUnit", Unit);
+      const unit = await ecSchema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
@@ -449,7 +449,7 @@ describe("Unit", () => {
       });
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const unit = await ecSchema.getTypedItem("TestUnit", Unit);
+      const unit = await ecSchema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
@@ -474,7 +474,7 @@ describe("Unit", () => {
 
     it("should properly serialize with all defined", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const unit = await ecschema.getTypedItem("TestUnit", Unit);
+      const unit = await ecschema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
       expect(serialized.nodeName).to.eql("Unit");
@@ -498,7 +498,7 @@ describe("Unit", () => {
       });
 
       const ecschema = await Schema.fromJson(testSchemaJson, new SchemaContext());
-      const unit = await ecschema.getTypedItem("TestUnit", Unit);
+      const unit = await ecschema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
 
@@ -519,7 +519,7 @@ describe("Unit", () => {
       });
 
       const ecschema = await Schema.fromJson(testSchemaJson, new SchemaContext());
-      const unit = await ecschema.getTypedItem("TestUnit", Unit);
+      const unit = await ecschema.getItem("TestUnit", Unit);
       assert.isDefined(unit);
       const serialized = await unit!.toXml(newDom);
 

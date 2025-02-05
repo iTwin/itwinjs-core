@@ -105,14 +105,14 @@ describe("RelationshipConstraint", () => {
     };
     it("async - Deserialize One Custom Attribute", async () => {
       const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
-      testConstraint = (await schema.getTypedItem("TestRelationship", RelationshipClass))!.source;
+      testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
     });
     it("sync - Deserialize One Custom Attribute", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
+      testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
@@ -137,14 +137,14 @@ describe("RelationshipConstraint", () => {
     };
     it("async - Deserialize Two Custom Attributes", async () => {
       const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
-      testConstraint = (await schema.getTypedItem("TestRelationship", RelationshipClass))!.source;
+      testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint!.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
       expect(testConstraint!.customAttributes!.get("TestSchema.TestCAClassB")).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
+      testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")).to.exist;
       expect(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")).to.exist;
@@ -169,7 +169,7 @@ describe("RelationshipConstraint", () => {
         ],
       };
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
+      testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       assert.isFalse(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")!.ShowClasses);
@@ -211,7 +211,7 @@ describe("RelationshipConstraint", () => {
 
     it("Serialize One Custom Attribute", async () => {
       const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
-      testConstraint = (await schema.getTypedItem("TestRelationship", RelationshipClass))!.source;
+      testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
       expect(testConstraint).to.exist;
       const constraintProps = testConstraint.toJSON();
       assert.isTrue(constraintProps.customAttributes![0].ShowClasses);
@@ -238,7 +238,7 @@ describe("RelationshipConstraint", () => {
 
     it("Serialize Two Custom Attributes", async () => {
       const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
-      testConstraint = (await schema.getTypedItem("TestRelationship", RelationshipClass))!.source;
+      testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
       expect(testConstraint).to.exist;
       const constraintProps = testConstraint.toJSON();
       expect(constraintProps.customAttributes![0].className).to.equal("TestSchema.TestCAClassA");
@@ -265,7 +265,7 @@ describe("RelationshipConstraint", () => {
         ],
       };
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
-      testConstraint = schema.getTypedItemSync("TestRelationship", RelationshipClass)!.source;
+      testConstraint = schema.getItemSync("TestRelationship", RelationshipClass)!.source;
       expect(testConstraint).to.exist;
       const constraintProps = testConstraint.toJSON();
       expect(constraintProps.customAttributes![0].ShowClasses).to.be.false;
@@ -309,7 +309,7 @@ describe("RelationshipConstraint", () => {
 
     it("Serialize One Custom Attribute", async () => {
       const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
-      testConstraint = (await schema.getTypedItem("TestRelationship", RelationshipClass))!.source;
+      testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
       expect(testConstraint).to.exist;
       const serialized = await testConstraint.toXml(newDom);
       expect(serialized.nodeName).to.eql("Source");
@@ -351,7 +351,7 @@ describe("RelationshipConstraint", () => {
 
     it("Serialize Two Custom Attributes", async () => {
       const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
-      testConstraint = (await schema.getTypedItem("TestRelationship", RelationshipClass))!.source;
+      testConstraint = (await schema.getItem("TestRelationship", RelationshipClass))!.source;
       expect(testConstraint).to.exist;
       const serialized = await testConstraint.toXml(newDom);
 

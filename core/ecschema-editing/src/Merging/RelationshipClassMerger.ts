@@ -99,7 +99,7 @@ export async function mergeRelationshipConstraint(context: SchemaMergeContext, c
   }
   if(change.difference.abstractConstraint !== undefined) {
     const itemKey = await updateSchemaItemKey(context, change.difference.abstractConstraint);
-    const abstractConstraint = await context.editor.schemaContext.getTypedSchemaItem(itemKey, ECClass);
+    const abstractConstraint = await context.editor.schemaContext.getSchemaItem(itemKey, ECClass);
     if (abstractConstraint === undefined || (!EntityClass.isEntityClass(abstractConstraint) && !Mixin.isMixin(abstractConstraint) && !RelationshipClass.isRelationshipClass(abstractConstraint))) {
       throw new Error(`Unable to locate the abstract constraint class ${change.difference.abstractConstraint} in the context schema.`);
     }
@@ -121,7 +121,7 @@ export async function mergeRelationshipClassConstraint(context: SchemaMergeConte
   const constraint = item[parseConstraint(change.path)];
   for(const constraintName of change.difference) {
     const constraintClassKey = await updateSchemaItemKey(context, constraintName);
-    const constraintClass = await context.editor.schemaContext.getTypedSchemaItem(constraintClassKey, ECClass);
+    const constraintClass = await context.editor.schemaContext.getSchemaItem(constraintClassKey, ECClass);
     if(constraintClass === undefined || (!EntityClass.isEntityClass(constraintClass) && !Mixin.isMixin(constraintClass) && !RelationshipClass.isRelationshipClass(constraintClass))) {
       throw new Error(`Could not locate relationship constraint class ${constraintClassKey.name}`);
     }

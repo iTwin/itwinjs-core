@@ -74,7 +74,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getTypedItem("ExampleEntity", EntityClass);
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON(true, true);
       expect(testClass).to.exist;
@@ -100,7 +100,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getTypedItem("ExampleEntity", EntityClass);
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON();
       expect(testClass).to.exist;
@@ -127,7 +127,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getTypedItem("ExampleEntity", EntityClass);
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClassString = JSON.stringify(testEntity);
       const testClass = JSON.parse(testClassString);

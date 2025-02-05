@@ -108,7 +108,7 @@ describe("Class items merging order tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getTypedItem("testClass", EntityClass);
+    const mergedItem = await mergedSchema.getItem("testClass", EntityClass);
     const classMixins = mergedItem?.mixins;
     if (classMixins) {
       expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
@@ -155,7 +155,7 @@ describe("Class items merging order tests", () => {
       conflicts: undefined,
     });
 
-    const mergedItem = await mergedSchema.getTypedItem("mixinA", Mixin);
+    const mergedItem = await mergedSchema.getItem("mixinA", Mixin);
     expect(mergedItem?.appliesTo?.fullName).to.deep.equal("TargetSchema.testClass");
     expect(mergedItem?.baseClass?.fullName).to.deep.equal("TargetSchema.testBaseMixinClass");
   });

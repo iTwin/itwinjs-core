@@ -147,7 +147,7 @@ describe("CustomAttributeClass merger tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getTypedItem("TestCAClass", CustomAttributeClass);
+    const mergedItem = await mergedSchema.getItem("TestCAClass", CustomAttributeClass);
     expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
   });
 

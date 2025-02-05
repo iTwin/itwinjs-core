@@ -34,7 +34,7 @@ describe("Enumeration", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const testEnum = await schema.getTypedItem("testEnum", Enumeration);
+    const testEnum = await schema.getItem("testEnum", Enumeration);
     assert.isDefined(testEnum);
     expect(testEnum!.fullName).eq("TestSchema.testEnum");
   });
@@ -77,13 +77,13 @@ describe("Enumeration", () => {
     });
 
     it("Enumeration type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
-      expect(ecSchema.getTypedItemSync("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
+      expect(await ecSchema.getItem("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
+      expect(ecSchema.getItemSync("TestEnumeration", Enumeration)).to.be.instanceof(Enumeration);
     });
 
     it("Enumeration type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", Enumeration)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", Enumeration)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", Enumeration)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Enumeration)).to.be.undefined;
     });
   });
 
@@ -142,7 +142,7 @@ describe("Enumeration", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      const testEnum = await ecSchema.getTypedItem("testEnum", Enumeration);
+      const testEnum = await ecSchema.getItem("testEnum", Enumeration);
       assert.isDefined(testEnum);
 
       if (!testEnum)
@@ -169,7 +169,7 @@ describe("Enumeration", () => {
       });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
-      const testEnum = await ecSchema.getTypedItem("testEnum", Enumeration);
+      const testEnum = await ecSchema.getItem("testEnum", Enumeration);
       assert.isDefined(testEnum);
     });
   });

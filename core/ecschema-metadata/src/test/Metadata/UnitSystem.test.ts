@@ -40,7 +40,7 @@ describe("UnitSystem tests", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const unitSystem = await schema.getTypedItem("testUnitSystem", UnitSystem);
+    const unitSystem = await schema.getItem("testUnitSystem", UnitSystem);
     assert.isDefined(unitSystem);
     expect(unitSystem!.fullName).eq("TestSchema.testUnitSystem");
   });
@@ -78,13 +78,13 @@ describe("UnitSystem tests", () => {
     });
 
     it("UnitSystem type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestUnitSystem", UnitSystem)).to.be.instanceof(UnitSystem);
-      expect(ecSchema.getTypedItemSync("TestUnitSystem", UnitSystem)).to.be.instanceof(UnitSystem);
+      expect(await ecSchema.getItem("TestUnitSystem", UnitSystem)).to.be.instanceof(UnitSystem);
+      expect(ecSchema.getItemSync("TestUnitSystem", UnitSystem)).to.be.instanceof(UnitSystem);
     });
 
     it("UnitSystem type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", UnitSystem)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", UnitSystem)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", UnitSystem)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", UnitSystem)).to.be.undefined;
     });
   });
 

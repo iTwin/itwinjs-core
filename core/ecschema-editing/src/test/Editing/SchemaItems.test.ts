@@ -17,7 +17,7 @@ describe("Properties editing tests", () => {
 
   it("should successfully set SchemaItem description", async () => {
     const key = await testEditor.unitSystems.create(testKey, "TestUnitSystem");
-    const item = await testEditor.schemaContext.getTypedSchemaItem(key, UnitSystem) as UnitSystem;
+    const item = await testEditor.schemaContext.getSchemaItem(key, UnitSystem) as UnitSystem;
     expect(item.description).to.eql(undefined);
     await testEditor.unitSystems.setDescription(key, "test description");
     expect(item.description).to.eql("test description");
@@ -25,7 +25,7 @@ describe("Properties editing tests", () => {
 
   it("should successfully set SchemaItem displayLabel", async () => {
     const key = await testEditor.unitSystems.create(testKey, "TestUnitSystem");
-    const item = await testEditor.schemaContext.getTypedSchemaItem(key, UnitSystem) as UnitSystem;
+    const item = await testEditor.schemaContext.getSchemaItem(key, UnitSystem) as UnitSystem;
     expect(item.label).to.eql(undefined);
     await testEditor.unitSystems.setDisplayLabel(key, "TestLabel");
     expect(item.label).to.eql("TestLabel");

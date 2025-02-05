@@ -136,11 +136,15 @@ class MergingSchemaContext extends SchemaContext {
     return this._internalContext.getSchema(schemaKey, matchType);
   }
 
-  public override async getTypedSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined> {
+  public override async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
     const mappedKey = this._nameMappings.resolveItemKey(schemaItemKey);
     if(mappedKey !== undefined) {
       schemaItemKey = mappedKey as SchemaItemKey;
     }
-    return this._internalContext.getTypedSchemaItem(schemaItemKey, itemConstructor);
+
+    if(itemConstructor === undefined)
+      return this._internalContext.getSchemaItem(schemaItemKey);
+
+    return this._internalContext.getSchemaItem(schemaItemKey, itemConstructor);
   }
 }

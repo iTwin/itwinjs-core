@@ -665,19 +665,19 @@ describe("Rename change tests", () => {
       expect(mergedSchema.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
       expect(mergedSchema.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
 
-      const mergedBaseCA = await mergedSchema.getTypedItem("MergedBaseCA", CustomAttributeClass);
+      const mergedBaseCA = await mergedSchema.getItem("MergedBaseCA", CustomAttributeClass);
       expect(mergedBaseCA).to.be.not.undefined;
-      const mergedCA = await mergedSchema.getTypedItem("MergedCA", CustomAttributeClass);
+      const mergedCA = await mergedSchema.getItem("MergedCA", CustomAttributeClass);
       expect(mergedCA).to.be.not.undefined;
       expect(await mergedCA?.baseClass).to.eq(mergedBaseCA);
 
-      const mergedRelationship = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
+      const mergedRelationship = await mergedSchema.getItem("TestRelationship", RelationshipClass);
       expect(mergedRelationship?.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
       expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
       expect((await mergedRelationship?.getProperty("DoubleProperty"))?.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
       // expect(mergedRelationship?.source.customAttributes?.get("TargetSchema.MergedCA")).to.be.not.undefined;
 
-      const mergedEntity = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedEntity?.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
       expect((await mergedEntity?.getProperty("StringProperty"))?.customAttributes?.get("SourceSchema.MergedCA")).to.be.not.undefined;
       expect((await mergedEntity?.getProperty("IntArrayProperty"))?.customAttributes?.get("SourceSchema.MergedBaseCA")).to.be.not.undefined;
@@ -1153,13 +1153,13 @@ describe("Rename change tests", () => {
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedCategory = await mergedSchema.getTypedItem("MergedCategory", PropertyCategory);
+      const mergedCategory = await mergedSchema.getItem("MergedCategory", PropertyCategory);
       expect(mergedCategory).to.be.not.undefined;
 
-      const mergedEntity = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(await (await mergedEntity?.getProperty("DoubleProperty"))?.category).to.eq(mergedCategory);
 
-      const mergedCA = await mergedSchema.getTypedItem("TestCA", CustomAttributeClass);
+      const mergedCA = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(await (await mergedCA?.getProperty("IntProperty"))?.category).to.eq(mergedCategory);
       expect(await (await mergedCA?.getProperty("StringProperty"))?.category).to.eq(mergedCategory);
     });
@@ -1212,7 +1212,7 @@ describe("Rename change tests", () => {
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedEntity = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       const mergedProperty = await mergedEntity?.getProperty("MergedProperty");
       expect(mergedProperty?.toJSON()).to.deep.eq({
         name: "MergedProperty",
@@ -1268,7 +1268,7 @@ describe("Rename change tests", () => {
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedEntity = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       const mergedProperty = await mergedEntity?.getProperty("MergedProperty");
       expect(mergedProperty?.toJSON()).to.deep.eq({
         name: "MergedProperty",
@@ -1322,7 +1322,7 @@ describe("Rename change tests", () => {
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
 
-      const mergedEntity = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       const mergedProperty = await mergedEntity?.getProperty("MergedProperty");
       expect(mergedProperty?.toJSON()).to.deep.eq({
         name: "MergedProperty",

@@ -68,8 +68,8 @@ describe("Mixin", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const baseMixin = await schema.getTypedItem("BaseMixin", Mixin);
-    const mixin = await schema.getTypedItem("TestMixin", Mixin);
+    const baseMixin = await schema.getItem("BaseMixin", Mixin);
+    const mixin = await schema.getItem("TestMixin", Mixin);
     expect(baseMixin!.fullName).eq("TestSchema.BaseMixin");
     expect(mixin!.fullName).eq("TestSchema.TestMixin");
   });
@@ -114,13 +114,13 @@ describe("Mixin", () => {
     });
 
     it("Mixin type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestMixin", Mixin)).to.be.instanceof(Mixin);
-      expect(ecSchema.getTypedItemSync("TestMixin", Mixin)).to.be.instanceof(Mixin);
+      expect(await ecSchema.getItem("TestMixin", Mixin)).to.be.instanceof(Mixin);
+      expect(ecSchema.getItemSync("TestMixin", Mixin)).to.be.instanceof(Mixin);
     });
 
     it("Mixin type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", Mixin)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", Mixin)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", Mixin)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Mixin)).to.be.undefined;
     });
   });
 
@@ -144,10 +144,10 @@ describe("Mixin", () => {
       const schema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(schema);
 
-      const entity = await schema.getTypedItem("TestEntity", EntityClass);
-      const baseMixin = await schema.getTypedItem("BaseMixin", Mixin);
+      const entity = await schema.getItem("TestEntity", EntityClass);
+      const baseMixin = await schema.getItem("BaseMixin", Mixin);
 
-      const mixin = await schema.getTypedItem("TestMixin", Mixin);
+      const mixin = await schema.getItem("TestMixin", Mixin);
       assert.isDefined(mixin);
 
       assert.isDefined(await mixin!.appliesTo);
@@ -172,7 +172,7 @@ describe("Mixin", () => {
       const schema = await Schema.fromJson(json, new SchemaContext());
       expect(schema).to.exist;
 
-      const mixin = await schema.getTypedItem("TestMixin", Mixin);
+      const mixin = await schema.getItem("TestMixin", Mixin);
       expect(mixin).to.exist;
 
       const navProp = await mixin!.getProperty("testNavProp", false) as NavigationProperty;
@@ -197,7 +197,7 @@ describe("Mixin", () => {
       const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
-      const mixin = schema.getTypedItemSync("TestMixin", Mixin);
+      const mixin = schema.getItemSync("TestMixin", Mixin);
       expect(mixin).to.exist;
 
       const navProp = mixin!.getPropertySync("testNavProp", false) as NavigationProperty;
@@ -229,10 +229,10 @@ describe("Mixin", () => {
       const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
-      const mixin = schema.getTypedItemSync("TestMixin", Mixin);
+      const mixin = schema.getItemSync("TestMixin", Mixin);
       expect(mixin).to.exist;
 
-      const validEntity = schema.getTypedItemSync("TestEntity", EntityClass);
+      const validEntity = schema.getItemSync("TestEntity", EntityClass);
       expect(validEntity).to.exist;
 
       const invalidEntity = new EntityClass(schema, "TestEntityB");
@@ -319,10 +319,10 @@ describe("Mixin", () => {
       const schema = Schema.fromJsonSync(json, new SchemaContext());
       expect(schema).to.exist;
 
-      const mixin = schema.getTypedItemSync("TestMixin", Mixin);
+      const mixin = schema.getItemSync("TestMixin", Mixin);
       expect(mixin).to.exist;
 
-      const validEntity = schema.getTypedItemSync("TestEntity", EntityClass);
+      const validEntity = schema.getItemSync("TestEntity", EntityClass);
       expect(validEntity).to.exist;
 
       const invalidEntity = new EntityClass(schema, "TestEntityB");
@@ -364,14 +364,14 @@ describe("Mixin", () => {
 
       const schemaA = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(schemaA);
-      const mixinA = await schemaA.getTypedItem("TestMixin", Mixin);
+      const mixinA = await schemaA.getItem("TestMixin", Mixin);
       expect(mixinA).to.exist;
       expect(mixinA!.toJSON(true, true)).to.not.have.property("modifier");
 
       testSchema.items.TestMixin.modifier = "Abstract";
       const schemaB = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(schemaB);
-      const mixinB = await schemaB.getTypedItem("TestMixin", Mixin);
+      const mixinB = await schemaB.getItem("TestMixin", Mixin);
       expect(mixinB).to.exist;
       expect(mixinB!.toJSON(true, true)).to.not.have.property("modifier");
     });
@@ -389,7 +389,7 @@ describe("Mixin", () => {
 
       const schemaA = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(schemaA);
-      const mixinA = await schemaA.getTypedItem("TestMixin", Mixin);
+      const mixinA = await schemaA.getItem("TestMixin", Mixin);
       expect(mixinA).to.exist;
       const jsonA = JSON.stringify(mixinA);
       const serializedA = JSON.parse(jsonA);
@@ -400,7 +400,7 @@ describe("Mixin", () => {
       testSchema.items.TestMixin.modifier = "Abstract";
       const schemaB = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(schemaB);
-      const mixinB = await schemaB.getTypedItem("TestMixin", Mixin);
+      const mixinB = await schemaB.getItem("TestMixin", Mixin);
       expect(mixinB).to.exist;
       const jsonB = JSON.stringify(mixinA);
       const serializedB = JSON.parse(jsonB);
@@ -426,7 +426,7 @@ describe("Mixin", () => {
     it("should properly serialize", async () => {
       const schema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(schema);
-      const mixin = await schema.getTypedItem("TestMixin", Mixin);
+      const mixin = await schema.getItem("TestMixin", Mixin);
       expect(mixin).to.exist;
       const serialized = await mixin!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECEntityClass");

@@ -139,7 +139,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedEntity = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedEntity!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -190,7 +190,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedStruct = await mergedSchema.getTypedItem("TestStruct", StructClass);
+      const mergedStruct = await mergedSchema.getItem("TestStruct", StructClass);
       expect(mergedStruct!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -241,7 +241,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedCA = await mergedSchema.getTypedItem("TestCA", CustomAttributeClass);
+      const mergedCA = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(mergedCA!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -334,7 +334,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedRel = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
+      const mergedRel = await mergedSchema.getItem("TestRelationship", RelationshipClass);
       expect(mergedRel!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -423,7 +423,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedEntity = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedEntity!.toJSON().properties).deep.eq(
         [
           {
@@ -504,7 +504,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedCA = await mergedSchema.getTypedItem("TestCA", CustomAttributeClass);
+      const mergedCA = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(mergedCA!.toJSON().properties).deep.eq(
         [
           {
@@ -592,7 +592,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedStruct = await mergedSchema.getTypedItem("TestStruct", StructClass);
+      const mergedStruct = await mergedSchema.getItem("TestStruct", StructClass);
       expect(mergedStruct!.toJSON().properties).deep.eq(
         [
           {
@@ -682,7 +682,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedRel = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
+      const mergedRel = await mergedSchema.getItem("TestRelationship", RelationshipClass);
       expect(mergedRel!.toJSON().properties).deep.eq(
         [
           {
@@ -868,7 +868,7 @@ describe("Custom Attribute merge", () => {
       ],
     });
 
-    const mergedRelationship = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
+    const mergedRelationship = await mergedSchema.getItem("TestRelationship", RelationshipClass);
     expect(mergedRelationship!.toJSON().source).deep.eq({
       customAttributes: [
         {
@@ -999,13 +999,13 @@ describe("Custom Attribute merge", () => {
       conflicts: undefined,
     });
 
-    const testClassItem = await mergedSchema.getTypedItem("TestClass", EntityClass);
+    const testClassItem = await mergedSchema.getItem("TestClass", EntityClass);
     expect(testClassItem!.toJSON()).deep.eq({
       schemaItemType: "EntityClass",
       label: "TestClass",
       customAttributes: [{ className: "TargetSchema.TestCAClass" }, { className: "TargetSchema.AnotherCAClass" }],
     });
-    const anotherClassItem = await mergedSchema.getTypedItem("AnotherTestClass", EntityClass);
+    const anotherClassItem = await mergedSchema.getItem("AnotherTestClass", EntityClass);
     expect(anotherClassItem!.toJSON()).deep.eq({
       schemaItemType: "EntityClass",
       label: "TestClass",

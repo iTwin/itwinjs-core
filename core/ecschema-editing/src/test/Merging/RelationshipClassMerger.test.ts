@@ -197,7 +197,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
+    const mergedEntity = await mergedSchema.getItem("TestRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON()).deep.equals({
       description: "Description of TestRelationship",
       modifier: "None",
@@ -274,7 +274,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getTypedItem("BaseRelationship", RelationshipClass);
+    const mergedEntity = await mergedSchema.getItem("BaseRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON()).deep.equals({
       description: "Description of TestRelationship",
       modifier: "None",
@@ -371,7 +371,7 @@ describe("Relationship Class merger tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getTypedItem("ChildRelationship", RelationshipClass);
+    const mergedItem = await mergedSchema.getItem("ChildRelationship", RelationshipClass);
     expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestRelationship");
   });
 
@@ -451,7 +451,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getTypedItem("TestRelationship", RelationshipClass);
+    const mergedEntity = await mergedSchema.getItem("TestRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON()).deep.equals({
       description: "Changes of TestRelationship",
       modifier: "None",
@@ -550,7 +550,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getTypedItem("BaseRelationship", RelationshipClass);
+    const mergedEntity = await mergedSchema.getItem("BaseRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON().source.constraintClasses).deep.equals([
       "TestSchema.SourceEntity",
       "TargetSchema.SourceEntity",
@@ -616,7 +616,7 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    const mergedEntity = await mergedSchema.getTypedItem("BaseRelationship", RelationshipClass);
+    const mergedEntity = await mergedSchema.getItem("BaseRelationship", RelationshipClass);
     expect(mergedEntity!.toJSON().source.constraintClasses).deep.equals([
       "TestSchema.SourceEntity",
       "TestSchema.SourceChildEntity",

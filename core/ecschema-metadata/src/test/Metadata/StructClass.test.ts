@@ -22,7 +22,7 @@ describe("StructClass", () => {
 
     const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(ecSchema);
-    const structClass = await ecSchema.getTypedItem("testStruct", StructClass);
+    const structClass = await ecSchema.getItem("testStruct", StructClass);
     assert.isDefined(structClass);
     expect(structClass!.fullName).eq("TestSchema.testStruct");
   });
@@ -61,13 +61,13 @@ describe("StructClass", () => {
     });
 
     it("StructClass type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestStructClass", StructClass)).to.be.instanceof(StructClass);
-      expect(ecSchema.getTypedItemSync("TestStructClass", StructClass)).to.be.instanceof(StructClass);
+      expect(await ecSchema.getItem("TestStructClass", StructClass)).to.be.instanceof(StructClass);
+      expect(ecSchema.getItemSync("TestStructClass", StructClass)).to.be.instanceof(StructClass);
     });
 
     it("StructClass type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", StructClass)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", StructClass)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", StructClass)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", StructClass)).to.be.undefined;
     });
   });
 });

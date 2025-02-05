@@ -67,8 +67,8 @@ export class KindOfQuantities extends SchemaItems {
    */
   public async addPresentationFormat(koqKey: SchemaItemKey, format: SchemaItemKey, isDefault: boolean = false): Promise<void> {
     try {
-      const kindOfQuantity = await this.getTypedSchemaItem(koqKey, MutableKindOfQuantity);
-      const presentationFormat = await this.getTypedSchemaItem(format, Format, SchemaItemType.Format);
+      const kindOfQuantity = await this.getSchemaItem(koqKey, MutableKindOfQuantity);
+      const presentationFormat = await this.getSchemaItem(format, Format);
       kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddPresentationUnit, new SchemaItemId(this.schemaItemType, koqKey), e);
@@ -77,7 +77,7 @@ export class KindOfQuantities extends SchemaItems {
 
   public async addPresentationOverrideFormat(koqKey: SchemaItemKey, overrideFormat: OverrideFormat, isDefault: boolean = false): Promise<void> {
     try {
-      const kindOfQuantity = await this.getTypedSchemaItem(koqKey, MutableKindOfQuantity);
+      const kindOfQuantity = await this.getSchemaItem(koqKey, MutableKindOfQuantity);
       kindOfQuantity.addPresentationFormat(overrideFormat, isDefault);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
@@ -90,7 +90,7 @@ export class KindOfQuantities extends SchemaItems {
    */
   public async createFormatOverride(parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
     try {
-      const parentFormat = await this.getTypedSchemaItem(parent, Format, SchemaItemType.Format);
+      const parentFormat = await this.getSchemaItem(parent, Format);
       return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateFormatOverride, new SchemaItemId(this.schemaItemType, parent), e);

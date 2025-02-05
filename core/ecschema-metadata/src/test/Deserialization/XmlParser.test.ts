@@ -1771,7 +1771,7 @@ describe("XmlParser", () => {
     async function getTestCAClass(propertyJson: any): Promise<CustomAttributeClass | undefined> {
       const schemaJson = createSchemaJson(propertyJson);
       const schema = await Schema.fromJson(schemaJson, new SchemaContext());
-      return schema.getTypedItem("TestCustomAttribute", CustomAttributeClass);
+      return schema.getItem("TestCustomAttribute", CustomAttributeClass);
     }
 
     function getCAProviders(itemXml: string, expectedProviders: number = 1): CAProviderTuple[] {

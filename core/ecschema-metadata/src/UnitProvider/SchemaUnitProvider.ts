@@ -53,11 +53,11 @@ export class SchemaUnitProvider implements UnitsProvider {
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const unit = await this._context.getTypedSchemaItem(itemKey, Unit);
+    const unit = await this._context.getSchemaItem(itemKey, Unit);
     if (unit && unit.schemaItemType === SchemaItemType.Unit)
       return this.getUnitsProps(unit);
 
-    const invertedUnit = await this._context.getTypedSchemaItem(itemKey, InvertedUnit);
+    const invertedUnit = await this._context.getSchemaItem(itemKey, InvertedUnit);
     if (invertedUnit && invertedUnit.schemaItemType === SchemaItemType.InvertedUnit) {
       return this.getUnitsProps(invertedUnit);
     }
@@ -202,7 +202,7 @@ export class SchemaUnitProvider implements UnitsProvider {
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const invertedUnit = await context.getTypedSchemaItem(itemKey, InvertedUnit);
+    const invertedUnit = await context.getSchemaItem(itemKey, InvertedUnit);
     // Check if we found an item, the item is an inverted unit, and it has its invertsUnit property set
     if (invertedUnit && InvertedUnit.isInvertedUnit(invertedUnit) && invertedUnit.invertsUnit) {
       return { unitName: invertedUnit.invertsUnit.fullName, isInverted: true };

@@ -123,7 +123,7 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 ### @itwin/core-ecschema-metadata
 
-Split the ISchemaItemLocater and Schema classes' APIs into getSchemaItem and getTypedSchemaItem.
+Split the ISchemaItemLocater and Schema classes' APIs into getSchemaItem and getSchemaItem.
 The first no longer takes a generic type parameter, because it was never type-safe like it suggested. It just returns
 any schema item found.
 The second takes a SchemaItem subclass' constructor as a parameter and performs strict type checking.
@@ -302,9 +302,9 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 - Removed existing generic getItem() methods from schemaItemLocater, schemaContext and Schema as it suggested type safety when there was none
 
 Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted Either into
-`context.getTypedSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
+`context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
 A regex can be used to do bulk renaming:
-`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getTypedSchemaItem($2, $1)`
+`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
 This applies to SchemaContext.getSchemaItem/Sync, Schema.getItem/Sync and Schema.lookupItem/Sync
 
 ### Packages dropped

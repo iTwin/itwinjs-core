@@ -49,7 +49,7 @@ describe("Format", () => {
 
     const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(ecSchema);
-    const format = await ecSchema.getTypedItem("TestFormat", Format);
+    const format = await ecSchema.getItem("TestFormat", Format);
     assert.isDefined(format);
     expect(format!.fullName).eq("TestSchema.TestFormat");
   });
@@ -89,13 +89,13 @@ describe("Format", () => {
     });
 
     it("Format type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestFormat", Format)).to.be.instanceof(Format);
-      expect(ecSchema.getTypedItemSync("TestFormat", Format)).to.be.instanceof(Format);
+      expect(await ecSchema.getItem("TestFormat", Format)).to.be.instanceof(Format);
+      expect(ecSchema.getItemSync("TestFormat", Format)).to.be.instanceof(Format);
     });
 
     it("Format type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", Format)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", Format)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", Format)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Format)).to.be.undefined;
     });
   });
 
@@ -795,13 +795,13 @@ describe("Format", () => {
       it("sync - ", () => {
         const testSchema = Schema.fromJsonSync(createSchemaJson(validComposite), context);
         assert.isDefined(testSchema);
-        const format = testSchema.getTypedItemSync("TestFormat", Format);
+        const format = testSchema.getItemSync("TestFormat", Format);
         validateTestFormat(format);
       });
       it("async - ", async () => {
         const testSchema = await Schema.fromJson(createSchemaJson(validComposite), context);
         assert.isDefined(testSchema);
-        const format = await testSchema.getTypedItem("TestFormat", Format);
+        const format = await testSchema.getItem("TestFormat", Format);
         validateTestFormat(format);
       });
     }); // composite
@@ -833,7 +833,7 @@ describe("Format", () => {
       };
       const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecSchema);
-      const format = ecSchema.getTypedItemSync("TestFormat", Format);
+      const format = ecSchema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
       const formatSerialization = format!.toJSON(false, true);
       expect(formatSerialization).to.deep.equal(testFormatJson);
@@ -857,7 +857,7 @@ describe("Format", () => {
       };
       const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecSchema);
-      const format = ecSchema.getTypedItemSync("TestFormat", Format);
+      const format = ecSchema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
       const json = JSON.stringify(format);
       const formatSerialization = JSON.parse(json);
@@ -906,7 +906,7 @@ describe("Format", () => {
 
       const ecschema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecschema);
-      const format = ecschema.getTypedItemSync("TestFormat", Format);
+      const format = ecschema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
 
       const serialized = await format!.toXml(newDom);

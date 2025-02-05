@@ -27,7 +27,7 @@ describe("CustomAttributeClass", () => {
     });
 
     const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-    const testCAClass = await ecschema.getTypedItem("TestCAClass", CustomAttributeClass);
+    const testCAClass = await ecschema.getItem("TestCAClass", CustomAttributeClass);
     expect(testCAClass).to.exist;
     expect(testCAClass!.fullName).eq("TestSchema.TestCAClass");
   });
@@ -67,13 +67,13 @@ describe("CustomAttributeClass", () => {
     });
 
     it("CustomAttributeClass type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
-      expect(ecSchema.getTypedItemSync("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
+      expect(await ecSchema.getItem("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
+      expect(ecSchema.getItemSync("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
     });
 
     it("CustomAttributeClass type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
     });
   });
 
@@ -97,7 +97,7 @@ describe("CustomAttributeClass", () => {
 
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
 
-      const testCAClass = await ecschema.getTypedItem("TestCAClass", CustomAttributeClass);
+      const testCAClass = await ecschema.getItem("TestCAClass", CustomAttributeClass);
       expect(testCAClass).to.exist;
 
       expect(testCAClass!.name).to.equal("TestCAClass");
@@ -318,7 +318,7 @@ describe("CustomAttributeClass", () => {
       const ecschema = Schema.fromJsonSync(createCustomAttributeJson({}), new SchemaContext());
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getTypedItemSync("testCustomAttribute", CustomAttributeClass);
+      const testCustomAttribute = ecschema.getItemSync("testCustomAttribute", CustomAttributeClass);
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");
@@ -338,7 +338,7 @@ describe("CustomAttributeClass", () => {
       const ecschema = Schema.fromJsonSync(createCustomAttributeJson(propertyJson), new SchemaContext());
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getTypedItemSync("testCustomAttribute", CustomAttributeClass);
+      const testCustomAttribute = ecschema.getItemSync("testCustomAttribute", CustomAttributeClass);
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");

@@ -40,8 +40,8 @@ describe("CustomAttribute tests", () => {
 
     await testEditor.customAttributes.setBaseClass(caRes,baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getTypedSchemaItem(caRes, CustomAttributeClass);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, CustomAttributeClass));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
   });
 
   it("should change custom attribute base class with class derived from", async () => {
@@ -49,19 +49,19 @@ describe("CustomAttribute tests", () => {
     const caRes = await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.AnyProperty, "testLabel",baseClassRes);
     const newBaseClassRes = await testEditor.customAttributes.create(testKey, "newBaseClass", CustomAttributeContainerType.AnyProperty, "newLabel",baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getTypedSchemaItem(caRes, CustomAttributeClass);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, CustomAttributeClass));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
 
     await testEditor.customAttributes.setBaseClass(caRes, newBaseClassRes);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(newBaseClassRes, CustomAttributeClass));
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(newBaseClassRes, CustomAttributeClass));
   });
 
   it("should remove a base class from custom attribute class", async () => {
     const baseClassRes = await testEditor.customAttributes.create(testKey, "testBaseClass", CustomAttributeContainerType.AnyRelationshipConstraint);
     const caRes = await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.AnyRelationshipConstraint, "testLabel",baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getTypedSchemaItem(caRes, CustomAttributeClass);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, CustomAttributeClass));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
 
     await testEditor.customAttributes.setBaseClass(caRes, undefined);
     expect(await testCA?.baseClass).to.eql(undefined);
@@ -126,8 +126,8 @@ describe("CustomAttribute tests", () => {
     const baseClassRes = await testEditor.customAttributes.create(testKey, "testBaseClass", CustomAttributeContainerType.TargetRelationshipConstraint);
     const caRes = await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.TargetRelationshipConstraint, "testLabel",baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getTypedSchemaItem(caRes, CustomAttributeClass);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getTypedSchemaItem(baseClassRes, CustomAttributeClass));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
 
     const newBaseClassRes = await testEditor.customAttributes.create(testKey, "newBaseClass", CustomAttributeContainerType.TargetRelationshipConstraint);
     await expect(testEditor.customAttributes.setBaseClass(caRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {

@@ -18,7 +18,7 @@ describe("Properties editing tests", () => {
     testEditor = new SchemaContextEditor(context);
     testKey = await testEditor.createSchema("TestSchema", "test", 1, 0, 0);
     entityKey = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
-    entity = await testEditor.schemaContext.getTypedSchemaItem(entityKey, EntityClass);
+    entity = await testEditor.schemaContext.getSchemaItem(entityKey, EntityClass);
     structKey = await testEditor.structs.create(testKey, "testStruct");
   });
 
@@ -58,8 +58,8 @@ describe("Properties editing tests", () => {
       await testEditor.entities.createPrimitiveProperty(childResult, "TestPropertyName", PrimitiveType.Double);
       await testEditor.entities.createPrimitiveProperty(grandChildResult, "TestPropertyName", PrimitiveType.Double);
 
-      const childEntity = await (await testEditor.getSchema(testKey)).getTypedItem("testEntityChild", EntityClass);
-      const grandChildEntity = await (await testEditor.getSchema(testKey)).getTypedItem("testEntityGrandChild", EntityClass);
+      const childEntity = await (await testEditor.getSchema(testKey)).getItem("testEntityChild", EntityClass);
+      const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem("testEntityGrandChild", EntityClass);
 
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
@@ -281,7 +281,7 @@ describe("Properties editing tests", () => {
       context = new SchemaContext();
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await testSchema.getTypedItem("testEntity", EntityClass);
+      const testClass = await testSchema.getItem("testEntity", EntityClass);
       const property = await testClass?.getProperty("testProperty");
 
       await testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "testProperty", { className: "testCustomAttribute" });
@@ -332,7 +332,7 @@ describe("Properties editing tests", () => {
       await Schema.fromJson(schemaBJson, context);
       const schemaA = await Schema.fromJson(schemaAJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await schemaA.getTypedItem("testEntity", EntityClass);
+      const testClass = await schemaA.getItem("testEntity", EntityClass);
       const property = await testClass?.getProperty("testProperty");
 
       await testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "testProperty", { className: "SchemaB.testCustomAttribute" });
@@ -403,7 +403,7 @@ describe("Properties editing tests", () => {
       context = new SchemaContext();
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await testSchema.getTypedItem("testEntity", EntityClass);
+      const testClass = await testSchema.getItem("testEntity", EntityClass);
 
       await expect(testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "badPropertyName", { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToProperty);
@@ -505,7 +505,7 @@ describe("Properties editing tests", () => {
     });
 
     it("editing a primitive property attribute not belonging to the proper property type, rejected with error", async () =>  {
-      const structClass = await testEditor.schemaContext.getTypedSchemaItem(structKey, StructClass);
+      const structClass = await testEditor.schemaContext.getSchemaItem(structKey, StructClass);
       if(structClass === undefined) {
         throw new Error("Expected StructClass to be defined.");
       }
@@ -585,7 +585,7 @@ describe("Properties editing tests", () => {
     });
 
     it("editing a enumeration property attribute not belonging to the proper property type, rejected with error", async () =>  {
-      const structClass = await testEditor.schemaContext.getTypedSchemaItem(structKey, StructClass);
+      const structClass = await testEditor.schemaContext.getSchemaItem(structKey, StructClass);
       if(structClass === undefined) {
         throw new Error("Expected StructClass to be defined.");
       }
@@ -600,7 +600,7 @@ describe("Properties editing tests", () => {
 
   describe("Navigation property editing tests", () => {
     it("editing a property through navigationProperties that is not a NavigationProperty, rejected with error", async () =>  {
-      const structClass = await testEditor.schemaContext.getTypedSchemaItem(structKey, StructClass);
+      const structClass = await testEditor.schemaContext.getSchemaItem(structKey, StructClass);
       if(structClass === undefined) {
         throw new Error("Expected StructClass to be defined.");
       }

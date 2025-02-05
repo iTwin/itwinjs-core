@@ -152,7 +152,7 @@ async function getKoq(schemaLocater: SchemaContext, fullName: string) {
   if (!schema) {
     return undefined;
   }
-  return schema.getTypedItem(propKoqName, KindOfQuantity);
+  return schema.getItem(propKoqName, KindOfQuantity);
 }
 
 async function getKoqFormatProps(

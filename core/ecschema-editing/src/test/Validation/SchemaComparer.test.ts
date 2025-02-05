@@ -303,8 +303,8 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getTypedItem("TestClassA", StructClass);
-      const itemB = await schemaB.getTypedItem("TestClassB", StructClass);
+      const itemA = await schemaA.getItem("TestClassA", StructClass);
+      const itemB = await schemaB.getItem("TestClassB", StructClass);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -480,7 +480,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getTypedItem("TestClassA", EntityClass);
+      const itemA = await schemaA.getItem("TestClassA", EntityClass);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -696,7 +696,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const classA = await schemaA.getTypedItem("TestClassA", EntityClass);
+      const classA = await schemaA.getItem("TestClassA", EntityClass);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -2771,8 +2771,8 @@ describe("Schema comparison tests", () => {
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
 
-      const entityA = await schemaA.getTypedItem("TestClassA", EntityClass);
-      const mixinA = await schemaA.getTypedItem("MixinA", Mixin);
+      const entityA = await schemaA.getItem("TestClassA", EntityClass);
+      const mixinA = await schemaA.getItem("MixinA", Mixin);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -2903,7 +2903,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getTypedItem("MixinB", Mixin);
+      const itemA = await schemaA.getItem("MixinB", Mixin);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -2957,7 +2957,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getTypedItem("TestRelationship", RelationshipClass);
+      const itemA = await schemaA.getItem("TestRelationship", RelationshipClass);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -3286,7 +3286,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const relationship = await schemaA.getTypedItem("TestRelationship", RelationshipClass);
+      const relationship = await schemaA.getItem("TestRelationship", RelationshipClass);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -3707,7 +3707,7 @@ describe("Schema comparison tests", () => {
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      const itemA = await schemaA.getTypedItem("TestCustomAttribute", CustomAttributeClass);
+      const itemA = await schemaA.getItem("TestCustomAttribute", CustomAttributeClass);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
       expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.SchemaItemMissing && d.ecDefinition === itemA)).to.not.be.undefined;
@@ -4265,7 +4265,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, {});
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const enumeration = await schemaA.getTypedItem("TestEnumeration", Enumeration);
+      const enumeration = await schemaA.getItem("TestEnumeration", Enumeration);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -4586,7 +4586,7 @@ describe("Schema comparison tests", () => {
       const bJson = getItemJsonWithUnits(bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const koq = await schemaA.getTypedItem("KoqA", KindOfQuantity);
+      const koq = await schemaA.getItem("KoqA", KindOfQuantity);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -4738,7 +4738,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, {});
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const category = await schemaA.getTypedItem("CategoryA", PropertyCategory);
+      const category = await schemaA.getItem("CategoryA", PropertyCategory);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -4794,7 +4794,7 @@ describe("Schema comparison tests", () => {
       const bJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const format = await schemaA.getTypedItem("FormatA", Format);
+      const format = await schemaA.getItem("FormatA", Format);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -5406,7 +5406,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const unit = await schemaA.getTypedItem("UnitA", Unit);
+      const unit = await schemaA.getItem("UnitA", Unit);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -5531,7 +5531,7 @@ describe("Schema comparison tests", () => {
       const bJson = getItemJsonWithUnits({});
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getTypedItem("InvertedUnitA", InvertedUnit);
+      const itemA = await schemaA.getItem("InvertedUnitA", InvertedUnit);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -5611,7 +5611,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, {});
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getTypedItem("PhenomenonA", Phenomenon);
+      const itemA = await schemaA.getItem("PhenomenonA", Phenomenon);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
@@ -5671,7 +5671,7 @@ describe("Schema comparison tests", () => {
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
       const schemaB = await Schema.fromJson(bJson, contextB);
-      const itemA = await schemaA.getTypedItem("ConstantA", Constant);
+      const itemA = await schemaA.getItem("ConstantA", Constant);
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);

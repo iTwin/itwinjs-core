@@ -62,7 +62,7 @@ export class RelationshipClasses extends ECClasses {
    * @param source The RelationshipConstraint to add.
    */
   public async setSourceConstraint(relationshipKey: SchemaItemKey, source: RelationshipConstraint): Promise<void> {
-    const relationship = await this.getTypedSchemaItem(relationshipKey, MutableRelationshipClass)
+    const relationship = await this.getSchemaItem(relationshipKey, MutableRelationshipClass)
       .catch((e) => {
         throw new SchemaEditingError(ECEditingStatus.SetSourceConstraint, new ClassId(this.schemaItemType, relationshipKey), e);
       });
@@ -76,7 +76,7 @@ export class RelationshipClasses extends ECClasses {
    * @param target The RelationshipConstraint to add.
    */
   public async setTargetConstraint(relationshipKey: SchemaItemKey, target: RelationshipConstraint): Promise<void> {
-    const relationship = await this.getTypedSchemaItem(relationshipKey, MutableRelationshipClass)
+    const relationship = await this.getSchemaItem(relationshipKey, MutableRelationshipClass)
       .catch((e) => {
         throw new SchemaEditingError(ECEditingStatus.SetTargetConstraint, new ClassId(this.schemaItemType, relationshipKey), e);
       });
@@ -108,7 +108,7 @@ export class RelationshipClasses extends ECClasses {
    * @param baseClassKey The SchemaItemKey of the base class. Specifying 'undefined' removes the base class.
    */
   public override async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
-    const relClass = await this.schemaEditor.schemaContext.getTypedSchemaItem(itemKey, RelationshipClass)
+    const relClass = await this.schemaEditor.schemaContext.getSchemaItem(itemKey, RelationshipClass)
       .catch((e) => {
         throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(this.schemaItemType, itemKey), e);
       });
@@ -126,7 +126,7 @@ export class RelationshipClasses extends ECClasses {
 
   public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<void> {
     try {
-      const relationshipClass = await this.getTypedSchemaItem(relationshipKey, MutableRelationshipClass);
+      const relationshipClass = await this.getSchemaItem(relationshipKey, MutableRelationshipClass);
       await relationshipClass.createNavigationProperty(name, relationship, direction);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationProperty, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), e);
@@ -140,7 +140,7 @@ export class RelationshipClasses extends ECClasses {
    */
   public async createNavigationPropertyFromProps(relationshipKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<void> {
     try {
-      const relationshipClass = await this.getTypedSchemaItem(relationshipKey, MutableRelationshipClass);
+      const relationshipClass = await this.getSchemaItem(relationshipKey, MutableRelationshipClass);
       const property = await relationshipClass.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
       await property.fromJSON(navigationProps);
     } catch(e: any) {

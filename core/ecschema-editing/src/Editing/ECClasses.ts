@@ -22,7 +22,6 @@ import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties
 import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, SchemaEditingError, SchemaItemId } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
-import { MutableSchema } from "./Mutable/MutableSchema";
 
 export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 
@@ -69,8 +68,7 @@ export class ECClasses extends SchemaItems{
     const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);
 
     if (baseClassKey !== undefined) {
-      const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : newClass.schema as MutableSchema;
-      const baseClassItem = await this.lookupTypedSchemaItem(baseClassSchema, baseClassKey, ECClass);
+      const baseClassItem = await this.getSchemaItem(baseClassKey, ECClass);
       await (newClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T));
     }
 
@@ -235,7 +233,7 @@ export class ECClasses extends SchemaItems{
   public async delete(classKey: SchemaItemKey): Promise<void> {
     try {
       const schema = await this.getSchema(classKey.schemaKey);
-      const ecClass = await schema.getTypedItem(classKey.name, ECClass);
+      const ecClass = await schema.getItem(classKey.name, ECClass);
       if (ecClass === undefined)
         return;
 
@@ -278,14 +276,13 @@ export class ECClasses extends SchemaItems{
    */
   public async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
     try {
-      const classItem = await this.getTypedSchemaItem(itemKey, ECClass);
+      const classItem = await this.getSchemaItem(itemKey, ECClass);
       if (!baseClassKey) {
         await (classItem as MutableClass).setBaseClass(undefined);
         return;
       }
 
-      const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : classItem.schema as MutableSchema;
-      const baseClassItem = await this.lookupTypedSchemaItem(baseClassSchema, baseClassKey, classItem.constructor as typeof ECClass);
+      const baseClassItem = await this.getSchemaItem(baseClassKey, classItem.constructor as typeof ECClass);
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
         throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 

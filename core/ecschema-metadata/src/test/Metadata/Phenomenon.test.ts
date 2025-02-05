@@ -32,7 +32,7 @@ describe("Phenomenon tests", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const phenomenon = await schema.getTypedItem("testPhenomenon", Phenomenon);
+    const phenomenon = await schema.getItem("testPhenomenon", Phenomenon);
     assert.isDefined(phenomenon);
     expect(phenomenon!.fullName).eq("TestSchema.testPhenomenon");
   });
@@ -71,13 +71,13 @@ describe("Phenomenon tests", () => {
     });
 
     it("Phenomenon type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
+      expect(await ecSchema.getItem("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
+      expect(ecSchema.getItemSync("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
     });
 
     it("Phenomenon type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestEntityClass", Phenomenon)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestEntityClass", Phenomenon)).to.be.undefined;
+      expect(await ecSchema.getItem("TestEntityClass", Phenomenon)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestEntityClass", Phenomenon)).to.be.undefined;
     });
   });
 

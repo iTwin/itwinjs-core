@@ -129,7 +129,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
+    const mergedItem = await mergedSchema.getItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -179,7 +179,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
+    const mergedItem = await mergedSchema.getItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       schemaItemType: "KindOfQuantity",
       label: "Test",
@@ -220,7 +220,7 @@ describe("KindOfQuantity merge tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
+    const mergedItem = await mergedSchema.getItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -289,7 +289,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
+    const mergedItem = await mergedSchema.getItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.eq({
       schemaItemType: "KindOfQuantity",
       label: "Test",
@@ -344,7 +344,7 @@ describe("KindOfQuantity merge tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
+    const mergedItem = await mergedSchema.getItem("TestKoq", KindOfQuantity);
     expect(mergedItem!.toJSON()).deep.equals({
       description: "Description of koq",
       label: "Test",
@@ -391,7 +391,7 @@ describe("KindOfQuantity merge tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
+      const mergedItem = await mergedSchema.getItem("TestKoq", KindOfQuantity);
       expect(mergedItem!.toJSON()).deep.equals({
         schemaItemType: "KindOfQuantity",
         relativeError: 0.01264587,
@@ -466,7 +466,7 @@ describe("KindOfQuantity merge tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestKoq", KindOfQuantity);
+      const mergedItem = await mergedSchema.getItem("TestKoq", KindOfQuantity);
       expect(mergedItem!.toJSON()).deep.equals({
         schemaItemType: "KindOfQuantity",
         relativeError: 0.0001,

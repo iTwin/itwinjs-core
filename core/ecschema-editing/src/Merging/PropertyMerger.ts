@@ -157,7 +157,7 @@ const enumerationProperty: PropertyMerger<EnumerationPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const enumerationKey = await updateSchemaItemKey(context, property.typeName);
-    const enumerationType = await context.editor.schemaContext.getTypedSchemaItem(enumerationKey, Enumeration);
+    const enumerationType = await context.editor.schemaContext.getSchemaItem(enumerationKey, Enumeration);
     if (enumerationType === undefined) {
       throw new Error(`Unable to locate the enumeration class ${enumerationKey.name} in the context schema.`);
     }
@@ -184,7 +184,7 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const relationshipKey = await updateSchemaItemKey(context, property.relationshipName);
-    const relationshipType = await context.editor.schemaContext.getTypedSchemaItem(relationshipKey, RelationshipClass);
+    const relationshipType = await context.editor.schemaContext.getSchemaItem(relationshipKey, RelationshipClass);
     if (relationshipType === undefined) {
       throw new Error(`Unable to locate the relationship class ${relationshipKey.name} in the context schema.`);
     }
@@ -255,7 +255,7 @@ const structProperty: PropertyMerger<StructPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const structKey = await updateSchemaItemKey(context, property.typeName);
-    const structType = await context.editor.schemaContext.getTypedSchemaItem(structKey, StructClass);
+    const structType = await context.editor.schemaContext.getSchemaItem(structKey, StructClass);
     if (structType === undefined) {
       throw new Error(`Unable to locate the struct ${structKey.name} in the context schema.`);
     }

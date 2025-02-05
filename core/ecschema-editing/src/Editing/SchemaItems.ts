@@ -94,24 +94,13 @@ export abstract class SchemaItems {
     return schema;
   }
 
-  protected async getTypedSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T, schemaItemType?: SchemaItemType): Promise<InstanceType<T>>{
-    schemaItemType = schemaItemType ?? this.schemaItemType;
-    return this.schemaEditor.getTypedSchemaItem(schemaItemKey, schemaItemType, itemConstructor);
-  }
+  protected async getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem>
+  protected async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>>
+  protected async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: T): Promise<SchemaItem | InstanceType<T>>{
+    if(itemConstructor === undefined)
+      return this.schemaEditor.getSchemaItem(schemaItemKey);
 
-  protected async lookupTypedSchemaItem<T extends typeof SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, itemConstructor: T, schemaItemType?: SchemaItemType): Promise<InstanceType<T>>{
-    schemaItemType = schemaItemType ?? this.schemaItemType;
-    return this.schemaEditor.lookupTypedSchemaItem(schemaOrKey, schemaItemKey, schemaItemType, itemConstructor);
-  }
-
-  protected async getSchemaItem(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<SchemaItem>{
-    schemaItemType = schemaItemType ?? this.schemaItemType;
-    return this.schemaEditor.getSchemaItem(schemaItemKey, schemaItemType);
-  }
-
-  protected async lookupSchemaItem(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<SchemaItem>{
-    schemaItemType = schemaItemType ?? this.schemaItemType;
-    return this.schemaEditor.lookupSchemaItem(schemaOrKey, schemaItemKey, schemaItemType);
+    return this.schemaEditor.getSchemaItem(schemaItemKey, itemConstructor);
   }
 
   protected async createSchemaItem<T extends SchemaItem>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, ...args: any[]): Promise<T> {

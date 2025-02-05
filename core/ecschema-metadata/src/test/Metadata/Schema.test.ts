@@ -115,7 +115,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
     });
 
     it("should succeed for mixin class", async () => {
@@ -123,7 +123,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
     });
 
     it("should succeed for struct class", async () => {
@@ -131,7 +131,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createStructClass("TestStruct");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
     });
 
     it("should succeed for non-class schema items", async () => {
@@ -184,7 +184,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
       expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
@@ -198,7 +198,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
       expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
@@ -214,13 +214,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem1");
       expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
@@ -239,13 +239,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem1");
       expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
@@ -270,31 +270,31 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
+      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
+      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
+      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestConstant");
       expect(await testSchema.getItem("TestConstant")).to.be.undefined;
@@ -337,31 +337,31 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
+      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
+      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
+      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestConstant");
       expect(await testSchema.getItem("TestConstant")).to.be.undefined;
@@ -414,7 +414,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;
@@ -428,7 +428,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;
@@ -444,13 +444,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity1");
       expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
@@ -469,13 +469,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity1");
       expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
@@ -496,19 +496,19 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;
@@ -535,19 +535,19 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
-      expect((await testSchema.getTypedItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;

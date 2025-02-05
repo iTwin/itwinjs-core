@@ -45,7 +45,7 @@ describe("Constant", () => {
 
     const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
     assert.isDefined(ecSchema);
-    const testConst = await ecSchema.getTypedItem("TestConstant", Constant);
+    const testConst = await ecSchema.getItem("TestConstant", Constant);
     assert.isDefined(testConst);
     expect(testConst!.fullName).eq("TestSchema.TestConstant");
   });
@@ -80,13 +80,13 @@ describe("Constant", () => {
     });
 
     it("Constant type should work with getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestConstant", Constant)).to.be.instanceof(Constant);
-      expect(ecSchema.getTypedItemSync("TestConstant", Constant)).to.be.instanceof(Constant);
+      expect(await ecSchema.getItem("TestConstant", Constant)).to.be.instanceof(Constant);
+      expect(ecSchema.getItemSync("TestConstant", Constant)).to.be.instanceof(Constant);
     });
 
     it("Constant type should reject for other item types on getItem/Sync", async () => {
-      expect(await ecSchema.getTypedItem("TestPhenomenon", Constant)).to.be.undefined;
-      expect(ecSchema.getTypedItemSync("TestPhenomenon", Constant)).to.be.undefined;
+      expect(await ecSchema.getItem("TestPhenomenon", Constant)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Constant)).to.be.undefined;
     });
   });
 
@@ -104,7 +104,7 @@ describe("Constant", () => {
     it("async - should succeed with fully defined", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testItem = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -120,13 +120,13 @@ describe("Constant", () => {
 
       assert.strictEqual(testConst.definition, "PI");
       assert.isDefined(testConst.phenomenon);
-      expect(await testConst.phenomenon).eql(await ecSchema.getTypedItem(testConst.phenomenon!.name, Phenomenon));
+      expect(await testConst.phenomenon).eql(await ecSchema.getItem(testConst.phenomenon!.name, Phenomenon));
     });
 
     it("sync - should succeed with fully defined", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = ecSchema.getTypedItemSync("TestConstant", Constant);
+      const testItem = ecSchema.getItemSync("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -155,7 +155,7 @@ describe("Constant", () => {
     it("async - should succeed with defaults with minimum required properties provided", async () => {
       const ecSchema = await Schema.fromJson(minimumRequired, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testItem = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testItem);
 
       expect(testItem!.numerator).eql(1);
@@ -165,7 +165,7 @@ describe("Constant", () => {
     it("sync - should succeed with defaults with minimum required properties provided", () => {
       const ecSchema = Schema.fromJsonSync(minimumRequired, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = ecSchema.getTypedItemSync("TestConstant", Constant);
+      const testItem = ecSchema.getItemSync("TestConstant", Constant);
       assert.isDefined(testItem);
 
       expect(testItem!.numerator).eql(1);
@@ -245,7 +245,7 @@ describe("Constant", () => {
     it("async - should succeed with fully defined with standalone", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testItem = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -270,7 +270,7 @@ describe("Constant", () => {
     it("sync - should succeed with fully defined with standalone", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = ecSchema.getTypedItemSync("TestConstant", Constant);
+      const testItem = ecSchema.getItemSync("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -295,7 +295,7 @@ describe("Constant", () => {
     it("async - should succeed with fully defined without standalone", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testItem = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -315,7 +315,7 @@ describe("Constant", () => {
     it("async - JSON stringify, should succeed with fully defined", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testItem = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -336,7 +336,7 @@ describe("Constant", () => {
     it("sync - should succeed with fully defined without standalone", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = ecSchema.getTypedItemSync("TestConstant", Constant);
+      const testItem = ecSchema.getItemSync("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -356,7 +356,7 @@ describe("Constant", () => {
     it("sync - JSON stringify, should succeed with fully defined", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = ecSchema.getTypedItemSync("TestConstant", Constant);
+      const testItem = ecSchema.getItemSync("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -385,7 +385,7 @@ describe("Constant", () => {
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testItem = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -407,7 +407,7 @@ describe("Constant", () => {
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testItem = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testItem = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testItem);
       assert.isTrue(testItem?.schemaItemType === SchemaItemType.Constant);
       const testConst: Constant = testItem as Constant;
@@ -433,7 +433,7 @@ describe("Constant", () => {
     it("should properly serialize with all defined", async () => {
       const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testConstant = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testConstant = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testConstant);
       const serialized = await testConstant!.toXml(newDom);
       expect(serialized.nodeName).to.eql("Constant");
@@ -454,7 +454,7 @@ describe("Constant", () => {
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testConstant = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testConstant = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testConstant);
       const serialized = await testConstant!.toXml(newDom);
 
@@ -473,7 +473,7 @@ describe("Constant", () => {
 
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
-      const testConstant = await ecSchema.getTypedItem("TestConstant", Constant);
+      const testConstant = await ecSchema.getItem("TestConstant", Constant);
       assert.isDefined(testConstant);
       const serialized = await testConstant!.toXml(newDom);
 

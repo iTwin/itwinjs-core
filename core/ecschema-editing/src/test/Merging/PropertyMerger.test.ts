@@ -183,7 +183,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "StringProp",
         type: "PrimitiveProperty",
@@ -228,7 +228,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestStruct", StructClass);
+      const mergedItem = await mergedSchema.getItem("TestStruct", StructClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "IntArrayProp",
         type: "PrimitiveArrayProperty",
@@ -285,7 +285,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      const mergedItem = await mergedSchema.getTypedItem("TestCA", CustomAttributeClass);
+      const mergedItem = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "EnumProp",
         type: "PrimitiveProperty",
@@ -339,7 +339,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestCA", CustomAttributeClass);
+      const mergedItem = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "EnumArrayProp",
         type: "PrimitiveArrayProperty",
@@ -405,7 +405,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestStruct", StructClass);
+      const mergedItem = await mergedSchema.getItem("TestStruct", StructClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "BoolProp",
         type: "PrimitiveProperty",
@@ -463,7 +463,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "StructArrayProp",
         type: "StructArrayProperty",
@@ -515,7 +515,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "NavigationProp",
         type: "NavigationProperty",
@@ -568,7 +568,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestMixin", Mixin);
+      const mergedItem = await mergedSchema.getItem("TestMixin", Mixin);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "NavigationProp",
         type: "NavigationProperty",
@@ -631,7 +631,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "StringProp",
         type: "PrimitiveProperty",
@@ -687,7 +687,7 @@ describe("Property merger tests", () => {
         conflicts: undefined,
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "IntArrayProp",
         type: "PrimitiveArrayProperty",
@@ -750,7 +750,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestStruct", StructClass);
+      const mergedItem = await mergedSchema.getItem("TestStruct", StructClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "EnumProp",
         type: "PrimitiveProperty",
@@ -808,7 +808,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "EnumArrayProp",
         type: "PrimitiveArrayProperty",
@@ -859,7 +859,7 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "StructProp",
         type: "StructProperty",
@@ -922,7 +922,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestCA", CustomAttributeClass);
+      const mergedItem = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "StructArrayProp",
         type: "StructArrayProperty",
@@ -981,7 +981,7 @@ describe("Property merger tests", () => {
         ],
       });
 
-      const mergedItem = await mergedSchema.getTypedItem("TestEntity", EntityClass);
+      const mergedItem = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedItem!.toJSON().properties).deep.eq([{
         name: "NavProp",
         type: "NavigationProperty",
