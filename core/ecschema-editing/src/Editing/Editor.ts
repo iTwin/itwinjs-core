@@ -58,9 +58,9 @@ export class SchemaContextEditor {
   }
 
   /** Allows you to get schema classes and items through regular SchemaContext methods. */
-  public get schemaContext(): SchemaContext { return this._schemaContext; }
-
-  protected get classType(): typeof ECClass { return ECClass; }
+  public get schemaContext(): SchemaContext {
+    return this._schemaContext;
+  }
 
   public async finish(): Promise<SchemaContext> {
     return this._schemaContext;

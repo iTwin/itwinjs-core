@@ -19,7 +19,7 @@ import { SchemaContextEditor } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties";
-import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, SchemaEditingError, SchemaItemId } from "./Exception";
+import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
 
@@ -42,7 +42,15 @@ export class ECClasses extends SchemaItems{
   }
 
   protected override schemaItemType: ECClassSchemaItems;
-  protected override get itemTypeClass(): typeof ECClass { return ECClass; }
+
+  /**
+   * Allows access for the editors itemType class instance.
+   * It returns ECClass here, but editors for subclasses will override this to return the
+   * appropriate subclass.
+   */
+  protected override get itemTypeClass(): typeof ECClass {
+    return ECClass;
+  }
 
   /**
    * Allows access for editing of base Property attributes.
@@ -69,6 +77,10 @@ export class ECClasses extends SchemaItems{
     const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);
 
     if (baseClassKey !== undefined) {
+      if(!await this.schemaEditor.schemaContext.getSchema(baseClassKey.schemaKey)) {
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(baseClassKey.schemaKey));
+      }
+
       const baseClassItem = await this.getSchemaItem(baseClassKey, this.itemTypeClass);
       await (newClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T));
     }
@@ -281,6 +293,10 @@ export class ECClasses extends SchemaItems{
       if (!baseClassKey) {
         await (classItem as MutableClass).setBaseClass(undefined);
         return;
+      }
+
+      if(!await this.schemaEditor.schemaContext.getSchema(baseClassKey.schemaKey)) {
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(baseClassKey.schemaKey));
       }
 
       const baseClassItem = await this.getSchemaItem(baseClassKey, this.itemTypeClass);
