@@ -22,10 +22,8 @@ sourceMapSupport.install({
   environment: "node",
 });
 
-// Do not log JSDOM errors into console
-require("jsdom-global")(undefined, {
-  virtualConsole: new jsdom.VirtualConsole().sendTo(console, { omitJSDOMErrors: true }),
-});
+// FIXME: This goes against jsdom best practices. https://github.com/jsdom/jsdom/wiki/Don%27t-stuff-jsdom-globals-onto-the-Node-global
+globalThis.window = new jsdom.JSDOM().window;
 
 chai.use(chaiJestSnapshot);
 chai.use(chaiAsPromised);

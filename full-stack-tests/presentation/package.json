@@ -75,7 +75,6 @@
     "eslint-config-prettier": "^9.1.0",
     "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
-    "jsdom-global": "3.0.2",
     "prettier": "^3.2.5",
     "sanitize-filename": "^1.6.3",
     "typescript": "~5.6.2",
@@ -84,8 +83,7 @@
   "mocha": {
     "require": [
       "scripts/copy-test-setup.js",
-      "source-map-support/register",
-      "jsdom-global/register"
+      "source-map-support/register"
     ],
     "checkLeaks": true,
     "globals": [

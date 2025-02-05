@@ -508,8 +508,6 @@
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "-r",
-        "jsdom-global/register",
         "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
