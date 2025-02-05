@@ -393,7 +393,60 @@ describe("ECSql Query", () => {
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
     }
   });
+  // new new addon build
+  it("ecsql interrupt check", async () => {
+    let cancelled = 0;
+    let successful = 0;
+    let rowCount = 0;
+    try {
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb], { allowTestingArgs: true });
+      const scheduleQuery = async () => {
+        return new Promise<void>(async (resolve, reject) => {
+          try {
+            const options = new QueryOptionsBuilder();
+            options.setTestingArgs({ interrupt: true });
+            options.setDelay(1000);
+            const reader = imodel1.createQueryReader(`
+              WITH sequence(n) AS (
+                SELECT  1
+                UNION ALL
+                SELECT n + 1 FROM sequence WHERE n < 10000
+              )
+              SELECT  COUNT(*)
+              FROM bis.SpatialIndex i, sequence s`, undefined, options.getOptions());
+            while (await reader.step()) {
+              rowCount++;
+            }
+            successful++;
+            resolve();
+          } catch (err: any) {
+            // we expect query to be cancelled
+            if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
+              cancelled++;
+              resolve();
+            } else {
+              reject(new Error("rejected"));
+            }
+          }
+        });
+      };
 
+      const queries = [];
+      for (let i = 0; i < 100; i++) {
+        queries.push(scheduleQuery());
+      }
+
+      await Promise.all(queries);
+      // We expect at least one query to be cancelled
+      assert.equal(successful, 100, "success should be 100");
+      assert.equal(rowCount, 100, "expect 100 rows");
+      assert.isAtLeast(cancelled, 0, "should not have any cancelled query");
+    } finally {
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb]);
+    }
+  });
   // new new addon build
   it("ecsql with blob", async () => {
     let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");

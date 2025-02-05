@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
@@ -20,7 +20,6 @@ import { WorkerTexture } from "../../common/internal/render/GraphicDescriptionCo
 import { _textures } from "../../common/internal/Symbols";
 import { Material } from "../../render/webgl/Material";
 import { IModelConnection } from "../../IModelConnection";
-import { CreateRenderMaterialArgs } from "../../core-frontend";
 
 function expectRange(range: Readonly<Range3d>, translation: XYAndZ | undefined, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
   if (!translation) {
@@ -482,7 +481,7 @@ describe("GraphicDescriptionBuilder", () => {
   });
 
 
-  function expectMaterial(mat: Material, expected: Partial<CreateRenderMaterialArgs>): void {
+  function expectMaterial(mat: Material, expected: Partial<RenderMaterialParams>): void {
     expect(mat.args).toBeDefined();
     const actual = {
       ...mat.args,
@@ -494,7 +493,8 @@ describe("GraphicDescriptionBuilder", () => {
     delete actual._alpha;
 
     expected = {
-      ...{diffuse: { weight: 0.6, color: undefined }, specular: { weight: 0.4, exponent: 13.5 }},
+      ...RenderMaterialParams.defaults,
+      diffuseColor: undefined,
       alpha: undefined,
       ...expected,
       textureMapping: undefined,

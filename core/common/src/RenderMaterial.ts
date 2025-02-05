@@ -7,7 +7,6 @@
  */
 
 import { compareStrings, Guid, GuidString } from "@itwin/core-bentley";
-import { ColorDef } from "./ColorDef";
 import { TextureMapping } from "./TextureMapping";
 
 /** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on.

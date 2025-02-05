@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Changed `Model.parentModel`, `LightLocation.enabled` and some of the `AuxCoordSystem` properties to be optional",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

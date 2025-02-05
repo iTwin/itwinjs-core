@@ -9,7 +9,7 @@
 import { assert, Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
+  ColorDef, Gradient, ImageSource, RenderMaterial, RenderMaterialParams, RenderTexture, TextureMapping,
 } from "@itwin/core-common";
 import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
 import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
@@ -28,7 +28,6 @@ import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionCo
 import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../render/GraphicTemplate";
-import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -79,7 +78,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
-     
+
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return options.system.createTextureFromElement(name, options.iModel, params, namedTex.format);
   } catch {
@@ -196,12 +195,10 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return col ? ColorDef.from(col[0] * 255 + 0.5, col[1] * 255 + 0.5, col[2] * 255 + 0.5) : undefined;
   }
 
-  const params: CreateRenderMaterialArgs = {
-    diffuse: { color: colorDefFromJson(json.diffuseColor), weight: json.diffuse },
-    specular: { color: colorDefFromJson(json.specularColor), weight: json.specular, exponent: json.specularExponent },
-    alpha: json.transparency ? 1.0 - json.transparency : undefined,
-    textureMapping: json.textureMapping ? textureMappingFromJson(json.textureMapping.texture, options) : undefined,
-  };
+  const params = new RenderMaterialParams(mat);
+  params.diffuseColor = colorDefFromJson(json.diffuseColor);
+  if (json.diffuse !== undefined)
+    params.diffuse = JsonUtils.asDouble(json.diffuse);
 
   return options.system.createRenderMaterial(params);;
 }

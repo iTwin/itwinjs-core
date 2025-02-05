@@ -10,8 +10,8 @@ import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString 
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
-  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
-  TileHeader, TileReadStatus,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderSchedule, RenderTexture, RgbColor,
+  TextureMapping, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
 import { ImdlModel as Imdl } from "./ImdlModel";
 import {
@@ -171,11 +171,8 @@ class Material extends RenderMaterial {
     return { isAtlas: false, material };
   }
 
-  public constructor(params: CreateRenderMaterialArgs, imdl?: Imdl.SurfaceMaterialParams) {
-    super({
-      key: params.source?.id,
-      textureMapping: params.textureMapping ? new TextureMapping(params.textureMapping.texture, new TextureMapping.Params(params.textureMapping)) : undefined,
-    });
+  public constructor(params: RenderMaterialParams, imdl?: Imdl.SurfaceMaterialParams) {
+    super(params);
 
     this.materialParams = imdl ?? {
       alpha: params.alpha,
@@ -192,7 +189,28 @@ class Material extends RenderMaterial {
   }
 
   public static create(args: MaterialParams): Material {
-    return new Material(args);
+    const params = new RenderMaterialParams();
+    params.alpha = args.alpha;
+    if (args.diffuse) {
+      if (undefined !== args.diffuse.weight)
+        params.diffuse = args.diffuse?.weight;
+
+      if (args.diffuse?.color)
+        params.diffuseColor = args.diffuse.color instanceof ColorDef ? args.diffuse.color : RgbColor.fromJSON(args.diffuse.color).toColorDef();
+    }
+
+    if (args.specular) {
+      if (undefined !== args.specular.weight)
+        params.specular = args.specular.weight;
+
+      if (undefined !== args.specular.exponent)
+        params.specularExponent = args.specular.exponent;
+
+      if (args.specular.color)
+        params.specularColor = args.specular.color instanceof ColorDef ? args.specular.color : RgbColor.fromJSON(args.specular.color).toColorDef();
+    }
+
+    return new Material(params);
   }
 }
 
@@ -1137,21 +1155,12 @@ class Parser {
     if (!materialJson)
       return undefined;
 
-    const materialArgs: CreateRenderMaterialArgs = {
-      diffuse: {
-        color: this.colorDefFromMaterialJson(materialJson.diffuseColor),
-        weight: materialJson.diffuse ?? undefined,
-      },
-      specular: {
-        color: this.colorDefFromMaterialJson(materialJson.specularColor),
-        weight: materialJson.specular ?? undefined,
-        exponent: materialJson.specularExponent ?? undefined,
-      },
-      alpha: materialJson.transparency ? 1.0 - materialJson.transparency : undefined,
-      textureMapping: materialJson.textureMapping ? this.textureMappingFromJson(materialJson.textureMapping.texture) : undefined
-     };
+    const materialParams = new RenderMaterialParams(key);
+    materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
+    if (materialJson.diffuse !== undefined)
+      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
 
-    return new Material(materialArgs);
+    return new Material(materialParams);
   }
 
   private parseNamedTexture(namedTex: ImdlNamedTexture, name: string): RenderTexture | undefined {

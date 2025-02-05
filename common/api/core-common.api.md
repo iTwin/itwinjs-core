@@ -613,6 +613,8 @@ export interface BaseReaderOptions {
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
+    // @internal (undocumented)
+    testingArgs?: TestingArgs;
     usePrimaryConn?: boolean;
 }
 
@@ -1984,15 +1986,19 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
+    allowTestingArgs?: boolean;
+    autoShutdowWhenIdlelForSeconds?: number;
+    // (undocumented)
+    doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
-    // (undocumented)
     ignoreDelay?: boolean;
-    // (undocumented)
     ignorePriority?: boolean;
+    memoryMapFileSize?: number;
     // (undocumented)
+    monitorPollInterval?: number;
     requestQueueSize?: number;
-    // (undocumented)
+    statementCacheSizePerWorker?: number;
     workerThreads?: number;
 }
 
@@ -2031,6 +2037,8 @@ export interface DbQueryResponse extends DbResponse {
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
     kind?: DbRequestKind;
+    // (undocumented)
+    testingArgs?: TestingArgs;
 }
 
 // @internal (undocumented)
@@ -2082,17 +2090,19 @@ export enum DbResponseStatus {
     // (undocumented)
     Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
     // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  generic error*/
+    Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
     // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  ecsql prepared failed*/
+    Error_ECSql_PreparedFailed = 101,/*  generic error*/
     // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql step failed*/
+    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
     // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql failed to serialized row to json.*/
+    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
     // (undocumented)
-    Partial = 3,/*  ecsql binding failed.*/
+    Partial = 3,/*  ecsql failed to serialized row to json.*/
     // (undocumented)
-    QueueFull = 5,/*  class or property or instance specified was not found or property as not of type blob.*/
+    QueueFull = 5,/*  ecsql binding failed.*/
+    // (undocumented)
+    ShuttingDown = 6,/*  class or property or instance specified was not found or property as not of type blob.*/
     // (undocumented)
     Timeout = 4
 }
@@ -2105,6 +2115,8 @@ export interface DbRuntimeStats {
     memLimit: number;
     // (undocumented)
     memUsed: number;
+    // (undocumented)
+    prepareTime: number;
     // (undocumented)
     timeLimit: number;
     // (undocumented)
@@ -3017,8 +3029,6 @@ export class EmptyLocalization implements Localization {
     getLocalizedKeys(inputString: string): string;
     // (undocumented)
     getLocalizedString(key: string | string[]): string;
-    // (undocumented)
-    getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
     // (undocumented)
     getNamespacePromise(): Promise<void> | undefined;
     // (undocumented)
@@ -7397,6 +7407,8 @@ export class QueryOptionsBuilder {
     setRestartToken(val: string): this;
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
+    // @internal
+    setTestingArgs(val: TestingArgs): this;
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -7470,6 +7482,7 @@ export interface QueryStats {
     backendMemUsed: number;
     backendRowsReturned: number;
     backendTotalTime: number;
+    prepareTime: number;
     retryCount: number;
     totalTime: number;
 }
@@ -7647,38 +7660,6 @@ export abstract class RenderMaterial {
     readonly textureMapping?: TextureMapping;
 }
 
-// @public (undocumented)
-export namespace RenderMaterial {
-    // @internal
-    export class Params {
-        constructor(key?: string);
-        get alpha(): number | undefined;
-        set alpha(alpha: number | undefined);
-        // @alpha
-        ambient: number;
-        static readonly defaults: Params;
-        diffuse: number;
-        diffuseColor?: ColorDef;
-        // @alpha
-        emissiveColor?: ColorDef;
-        static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params;
-        key?: string;
-        // @alpha
-        reflect: number;
-        // @alpha
-        reflectColor?: ColorDef;
-        // @alpha
-        refract: number;
-        // @alpha
-        shadows: boolean;
-        specular: number;
-        specularColor?: ColorDef;
-        // (undocumented)
-        specularExponent: number;
-        textureMapping?: TextureMapping;
-    }
-}
-
 // @public
 export interface RenderMaterialAssetMapsProps {
     Bump?: TextureMapProps;
@@ -7714,6 +7695,35 @@ export interface RenderMaterialAssetProps {
     specular?: number;
     specular_color?: RgbFactorProps;
     transmit?: number;
+}
+
+// @internal
+export class RenderMaterialParams {
+    constructor(key?: string);
+    get alpha(): number | undefined;
+    set alpha(alpha: number | undefined);
+    // @alpha
+    ambient: number;
+    static readonly defaults: RenderMaterialParams;
+    diffuse: number;
+    diffuseColor?: ColorDef;
+    // @alpha
+    emissiveColor?: ColorDef;
+    static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): RenderMaterialParams;
+    key?: string;
+    // @alpha
+    reflect: number;
+    // @alpha
+    reflectColor?: ColorDef;
+    // @alpha
+    refract: number;
+    // @alpha
+    shadows: boolean;
+    specular: number;
+    specularColor?: ColorDef;
+    // (undocumented)
+    specularExponent: number;
+    textureMapping?: TextureMapping;
 }
 
 // @public
@@ -9642,6 +9652,12 @@ export class TerrainSettings {
     readonly providerName: string;
     // (undocumented)
     toJSON(): TerrainProps;
+}
+
+// @internal (undocumented)
+export interface TestingArgs {
+    // (undocumented)
+    interrupt?: boolean;
 }
 
 // @internal

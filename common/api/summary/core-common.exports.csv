@@ -675,10 +675,9 @@ internal;interface;RelTypeInfo
 public;type;RemoveFunction
 public;interface;RenderFeatureTable
 public;class;RenderMaterial
-public;namespace;RenderMaterial
-internal;class;Params
 public;interface;RenderMaterialAssetMapsProps
 public;interface;RenderMaterialAssetProps
+internal;class;RenderMaterialParams
 public;interface;RenderMaterialProps
 public;enum;RenderMode
 public;namespace;RenderSchedule
@@ -832,6 +831,7 @@ public;enum;SyncMode
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings
+internal;interface;TestingArgs
 internal;class;TestRpcManager
 beta;class;TextAnnotation
 public;interface;TextAnnotation2dProps
