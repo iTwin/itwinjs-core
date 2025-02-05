@@ -26,8 +26,10 @@ Table of contents:
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
-      - [@itwin/core-bentley](#itwincore-bentley)
+      - [@itwin/core-bentley](#itwincore-bentley-1)
       - [@itwin/core-electron](#itwincore-electron)
+      - [@itwin/core-frontend](#itwincore-frontend-1)
+      - [@itwin/core-geometry](#itwincore-geometry)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-1)
     - [Packages dropped](#packages-dropped)
@@ -136,7 +138,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only the latest Electron release (Electron 34) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
@@ -227,6 +229,41 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | ----------------------------------- | --------------------------------------------------------- |
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+
+
+#### @itwin/core-frontend
+
+| **Removed**                               | **Replacement**                                                                                              |
+|-------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `callIpcHost`                             | Use `appFunctionIpc` instead.                                                                                 |
+| `callNativeHost`                          | Use `nativeAppIpc` instead.                                                                                   |
+| `createMaterial`                          | Use `createRenderMaterial` instead.                                                                           |
+| `createTextureFromImage`                  | Use `createTexture` instead.                                                                                  |
+| `createTextureFromImageBuffer`            | Use `createTexture` instead.                                                                                  |
+| `createTextureFromImageSource`            | Use `RenderSystem.createTextureFromSource` instead.                                                           |
+| `displayStyleState.getThumbnail`          | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                                                     |
+| `GraphicBuilder.pickId`                   | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                 |
+| `getDisplayedExtents`                     | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
+| `IModelConnection.displayedExtents`       | N/A                                                                                                          |
+| `IModelConnection.expandDisplayedExtents` | Use `displayedExtents` instead.                                                                               |
+| `IModelConnection.query`                  | Use `createQueryReader` instead (same parameter).                                                           |
+| `IModelConnection.queryRowCount`          | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `IModelConnection.restartQuery`           | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`. |
+| `requestDownloadBriefcase(progress)`      | `progress` is removed, use `DownloadBriefcaseOptions.progressCallback` instead.                             |
+| `readImage`                               | Use `readImageBuffer` instead.                                                                                |
+| `setEventController`                      | Removed (was for internal use).                                                                               |
+| `PullChangesOptions.progressCallback`     | Use `downloadProgressCallback` instead.                                                                      |
+
+#### @itwin/core-geometry
+
+| Removed               | Replacement |
+| --------------------- | ----------- |
+| `PathFragment.childFractionTChainDistance`        | `PathFragment.childFractionToChainDistance` |
+| `GrowableXYArray.setXYZAtCheckedPointIndex`       | `GrowableXYArray.setXYAtCheckedPointIndex`  |
+| `PolyfaceBuilder.findOrAddPoint`                  | `PolyfaceBuilder.addPoint`                  |
+| `PolyfaceBuilder.findOrAddParamXY`                | `PolyfaceBuilder.addParamXY`                |
+| `PolyfaceBuilder.findOrAddParamInGrowableXYArray` | `PolyfaceBuilder.addParamInGrowableXYArray` |
+| `PolyfaceBuilder.findOrAddPointXYZ`               | `PolyfaceBuilder.addPointXYZ`               |
 
 ### API removals
 

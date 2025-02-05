@@ -7,19 +7,19 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, DbResult, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
-  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
+  Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, Placement, Placement2d,
+  Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
+  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -89,14 +89,7 @@ export abstract class IModelConnection extends IModel {
   public get noGcsDefined(): boolean { return this._gcsDisabled || undefined === this.geographicCoordinateSystem; }
   /** @internal */
   public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
-  /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
-   * [[expandDisplayedExtents]], but never smaller, to accommodate data sources like reality models that may exceed the project extents.
-   * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
-   * @deprecated in 3.6. These extents are still computed, but no longer used to determine the viewed extents of a [[SpatialViewState]]. It is not useful to
-   * perpetually expand the iModel's extents.
-   */
-  public readonly displayedExtents: AxisAlignedBox3d;
-  private readonly _extentsExpansion = Range3d.createNull();
+
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
@@ -230,14 +223,6 @@ export abstract class IModelConnection extends IModel {
 
     this.tiles = new Tiles(this);
     this.geoServices = GeoServices.createForIModel(this);
-    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
-    this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-
-    this.onProjectExtentsChanged.addListener(() => {
-      // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
-      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
-      this.expandDisplayedExtents(this._extentsExpansion);
-    });
 
     this.hilited.onModelSubCategoryModeChanged.addListener(() => {
       IModelApp.viewManager.onSelectionSetChanged(this);
@@ -297,72 +282,6 @@ export abstract class IModelConnection extends IModel {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryAllUsedSpatialSubCategories(this.getRpcProps());
   }
 
-  /** Execute a query and stream its results
-   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param options Allow to specify certain flags which control how query is executed.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
-   */
-  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    const builder = new QueryOptionsBuilder(options);
-    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
-    while (await reader.step())
-      yield reader.formatCurrentRow();
-  }
-
-  /** Compute number of rows that would be returned by the ECSQL.
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param params The values to bind to the parameters (if the ECSQL has any).
-   * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @returns Return row count.
-   * @throws [IModelError]($common) If the statement is invalid
-   * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
-   */
-
-  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) {
-      return row[0] as number;
-    }
-    throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
-  }
-  /** Cancel any previous query with same token and run execute the current specified query.
-   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/frontend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/frontend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
-   * exception which user code must handle.
-   * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param options Allow to specify certain flags which control how query is executed.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
-   */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
-      yield row;
-    }
-  }
   /** Query for a set of element ids that satisfy the supplied query params
    * @param params The query parameters. The `limit` and `offset` members should be used to page results.
    * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
@@ -636,19 +555,6 @@ export abstract class IModelConnection extends IModel {
           throw new IModelError(mapToGeoServiceStatus(coord.s), "Error converting cartographic to spatial");
       }
     });
-  }
-
-  /** Expand this iModel's [[displayedExtents]] to include the specified range.
-   * This is done automatically when reality models are added to a spatial view. In some cases a [[TiledGraphicsProvider]] may wish to expand
-   * the extents explicitly to include its geometry.
-   * @deprecated in 3.6. See [[displayedExtents]].
-   */
-  public expandDisplayedExtents(range: Range3d): void {
-    this._extentsExpansion.extendRange(range);
-    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
-    this.displayedExtents.setFrom(this.projectExtents);
-    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
-    this.displayedExtents.extendRange(this._extentsExpansion);
   }
 
   /** @internal */
@@ -1301,23 +1207,6 @@ export namespace IModelConnection {
       await viewState.load(); // loads models for ModelSelector
 
       return viewState;
-    }
-
-    /** Get a thumbnail for a view.
-     * @param viewId The id of the view of the thumbnail.
-     * @returns A Promise of the ThumbnailProps.
-     * @throws "No content" error if invalid thumbnail.
-     * @deprecated in 3.x use ViewStore apis
-     */
-    public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
-      const intValues = new Uint32Array(val.buffer, 0, 4);
-
-      if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
-        throw new NoContentError();
-
-      return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }
   }
 

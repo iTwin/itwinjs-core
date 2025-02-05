@@ -67,6 +67,9 @@ export default defineConfig(() => {
     envPrefix: "IMJS_",
     publicDir: ".static-assets",
     logLevel: process.env.VITE_CI ? "error" : "warn",
+    esbuild: {
+      target: "es2022",
+    },
     build: {
       outDir: "./lib",
       sourcemap: !process.env.VITE_CI, // append to the resulting output file if not running in CI.

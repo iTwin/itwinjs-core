@@ -1711,4 +1711,162 @@ describe("Schema Difference Conflicts", () => {
       });
     });
   });
+
+  describe("Format unit conflicts", () => {
+    const unitItems = {
+      Metric: {
+        schemaItemType: "UnitSystem",
+        label: "Metric",
+      },
+      Length: {
+        schemaItemType: "Phenomenon",
+        label: "Length",
+        definition: "LENGTH",
+      },
+      Currency: {
+        schemaItemType: "Phenomenon",
+        definition: "CURRENCY",
+      },
+      CM: {
+        schemaItemType: "Unit",
+        label: "cm",
+        phenomenon: "ConflictSchema.Length",
+        unitSystem: "ConflictSchema.Metric",
+        definition: "[CENTI]*M",
+      },
+      Dollar: {
+        schemaItemType: "Unit",
+        label: "$",
+        phenomenon: "ConflictSchema.Currency",
+        unitSystem: "ConflictSchema.Metric",
+        definition: "US_DOLLAR",
+      },
+    };
+
+    it("should find a conflict if unit is not set on target format", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          ConflictFormat: {
+            schemaItemType: "Format",
+            type: "Fractional",
+            precision: 8,
+            formatTraits: [
+              "KeepSingleZero",
+              "ShowUnitLabel",
+            ],
+            decimalSeparator: ",",
+            thousandSeparator: " ",
+            uomSeparator: "",
+            composite: {
+              spacer: "",
+              units: [
+                {
+                  name: "ConflictSchema.Dollar",
+                  label: "$",
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          ConflictFormat: {
+            schemaItemType: "Format",
+            type: "Fractional",
+            precision: 8,
+            formatTraits: [
+              "KeepSingleZero",
+              "ShowUnitLabel",
+            ],
+            decimalSeparator: ",",
+            thousandSeparator: " ",
+            uomSeparator: "",
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "ConflictFormat")).to.eventually.exist.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingFormatUnit);
+        expect(conflict).to.have.a.property("source", "ConflictSchema.Dollar");
+        expect(conflict).to.have.a.property("target", null);
+        expect(conflict).to.have.a.property("description", "The unit cannot be assiged if the format did not have a unit before.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "FormatUnit");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "ConflictFormat");
+      });
+    });  
+
+    it("should find a conflict if format unit phenomenon differs", async () => {
+      const sourceSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          ConflictFormat: {
+            schemaItemType: "Format",
+            type: "Fractional",
+            precision: 8,
+            formatTraits: [
+              "KeepSingleZero",
+              "ShowUnitLabel",
+            ],
+            decimalSeparator: ",",
+            thousandSeparator: " ",
+            uomSeparator: "",
+            composite: {
+              spacer: "",
+              units: [
+                {
+                  name: "ConflictSchema.CM",
+                  label: "CM",
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const targetSchema = {
+        ...schemaHeader,
+        items: {
+          ...unitItems,
+          ConflictFormat: {
+            schemaItemType: "Format",
+            type: "Fractional",
+            precision: 8,
+            formatTraits: [
+              "KeepSingleZero",
+              "ShowUnitLabel",
+            ],
+            decimalSeparator: ",",
+            thousandSeparator: " ",
+            uomSeparator: "",
+            composite: {
+              spacer: "",
+              units: [
+                {
+                  name: "ConflictSchema.Dollar",
+                  label: "$",
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const differences = await runDifferences(sourceSchema, targetSchema);
+      await expect(findConflictItem(differences, "ConflictFormat")).to.eventually.exist.then((conflict) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingFormatUnitPhenomenon);
+        expect(conflict).to.have.a.property("source", "ConflictSchema.CM");
+        expect(conflict).to.have.a.property("target", "ConflictSchema.Dollar");
+        expect(conflict).to.have.a.property("description", "Format units has a different phenomenon.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "FormatUnit");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "ConflictFormat");
+      });
+    });
+  });
 });

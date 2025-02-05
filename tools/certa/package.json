@@ -1,6 +1,6 @@
 {
   "name": "@itwin/certa",
-  "version": "5.0.0-dev.46",
+  "version": "5.0.0-dev.56",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -34,7 +34,7 @@
   "dependencies": {
     "canonical-path": "^1.0.0",
     "detect-port": "~1.3.0",
-    "express": "^4.20.0",
+    "express": "^4.21.2",
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.17.21",
     "mocha": "^10.2.0",
@@ -52,14 +52,14 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "@types/yargs": "17.0.19",
-    "electron": "^33.0.0",
+    "electron": "^34.0.0",
     "eslint": "^9.13.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "peerDependencies": {
-    "electron": "^33.0.0"
+    "electron": "^34.0.0"
   },
   "peerDependenciesMeta": {
     "electron": {
