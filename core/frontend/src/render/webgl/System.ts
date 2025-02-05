@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import { ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../IModelApp";

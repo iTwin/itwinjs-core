@@ -751,7 +751,7 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+   
   public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
     return undefined;
   }
@@ -763,7 +763,7 @@ export abstract class RenderSystem implements Disposable {
   /** Create a new texture from a cube of HTML images.
    * @internal
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+   
   public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined {
     return undefined;
   }

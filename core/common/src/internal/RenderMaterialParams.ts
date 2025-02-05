@@ -6,7 +6,6 @@
  * @module Rendering
  */
 
-import { compareStrings, Guid, GuidString } from "@itwin/core-bentley";
 import { ColorDef } from "../ColorDef";
 import { TextureMapping } from "../TextureMapping";
 

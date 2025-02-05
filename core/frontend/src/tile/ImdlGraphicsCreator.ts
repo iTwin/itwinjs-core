@@ -78,7 +78,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
     return options.system.createTextureFromElement(name, options.iModel, params, namedTex.format);
   } catch {
@@ -195,7 +195,7 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return col ? ColorDef.from(col[0] * 255 + 0.5, col[1] * 255 + 0.5, col[2] * 255 + 0.5) : undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+   
   const params = new RenderMaterialParams(mat);
   params.diffuseColor = colorDefFromJson(json.diffuseColor);
   if (json.diffuse !== undefined)
