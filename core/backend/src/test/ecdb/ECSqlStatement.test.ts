@@ -1840,7 +1840,7 @@ describe("ECSqlStatement", () => {
   });
 
   it("should bind IdSets to IdSet Virtual Table", async () => {
-    using ecdb = ECDbTestHelper.createECDb(outDir, "bindids.ecdb");
+    await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
       const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
@@ -1895,10 +1895,11 @@ describe("ECSqlStatement", () => {
         row = stmt.getRow();
         assert.equal(row.name, `${idNumbers[0]}.txt`);
       });
+    });
   });
 
   it("Error Checking For binding to IdSet statements", async () => {
-    using ecdb = ECDbTestHelper.createECDb(outDir, "bindids.ecdb");
+    await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
       const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
@@ -1952,6 +1953,7 @@ describe("ECSqlStatement", () => {
         result = stmt.step();
         assert.equal(result, DbResult.BE_SQLITE_DONE);
       });
+    });
   });
 
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
