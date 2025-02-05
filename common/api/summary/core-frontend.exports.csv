@@ -328,7 +328,6 @@ public;enum;GraphicType
 internal;interface;GroundPlaneDecorations
 public;interface;GroupMark
 internal;function;headersIncludeAuthMethod
-internal;interface;Hilites
 public;class;HiliteSet
 public;class;HitDetail
 public;interface;HitDetailProps
@@ -508,7 +507,6 @@ public;class;NotificationManager
 public;class;NotifyMessageDetails
 internal;class;NullRenderSystem
 internal;class;NullTarget
-internal;class;OffScreenTarget
 public;class;OffScreenViewport
 public;interface;OffScreenViewportOptions
 internal;interface;OldTextureImage

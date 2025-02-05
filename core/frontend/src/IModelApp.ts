@@ -34,7 +34,7 @@ import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
-import { System } from "./render/webgl/System";
+import { System } from "./internal/render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
