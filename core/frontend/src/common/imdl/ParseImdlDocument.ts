@@ -31,7 +31,6 @@ import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
 import { getMeshoptDecoder, MeshoptDecoder } from "../../tile/internal";
-import { CreateRenderMaterialArgs } from "../../render/CreateRenderMaterialArgs";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -177,13 +176,13 @@ class Material extends RenderMaterial {
     this.materialParams = imdl ?? {
       alpha: params.alpha,
       diffuse: {
-        color: params.diffuse?.color instanceof ColorDef ? params.diffuse.color.toJSON() : RgbColor.fromJSON(params.diffuse?.color).toColorDef().toJSON(),
-        weight: params.diffuse?.weight,
+        color: params.diffuseColor?.toJSON(),
+        weight: params.diffuse,
       },
       specular: {
-        color: params.specular?.color instanceof ColorDef ? params.specular.color.toJSON() : RgbColor.fromJSON(params.specular?.color).toColorDef().toJSON(),
-        weight: params.specular?.weight,
-        exponent: params.specular?.exponent,
+        color: params.specularColor?.toJSON(),
+        weight: params.specular,
+        exponent: params.specularExponent,
       },
     };
   }
@@ -1160,6 +1159,26 @@ class Parser {
     if (materialJson.diffuse !== undefined)
       materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
 
+    materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
+    if (materialJson.specular !== undefined)
+      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
+
+    materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
+    if (materialJson.reflect !== undefined)
+      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+
+    if (materialJson.specularExponent !== undefined)
+      materialParams.specularExponent = materialJson.specularExponent;
+
+    if (undefined !== materialJson.transparency)
+      materialParams.alpha = 1.0 - materialJson.transparency;
+
+    materialParams.refract = JsonUtils.asDouble(materialJson.refract);
+    materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
+    materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
+
+    if (undefined !== materialJson.textureMapping)
+      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
     return new Material(materialParams);
   }
 
