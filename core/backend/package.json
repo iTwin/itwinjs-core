@@ -86,7 +86,7 @@
     "eslint": "^9.13.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
-    "mocha": "^10.2.0",
+    "mocha": "^11.1.0",
     "node-simctl": "~7.6.1",
     "null-loader": "^4.0.1",
     "nyc": "^17.1.0",

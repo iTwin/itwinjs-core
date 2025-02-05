@@ -57,7 +57,7 @@
     "ignore-styles": "^5.0.1",
     "jsdom": "^26.0.0",
     "jsdom-global": "3.0.2",
-    "mocha": "^10.2.0",
+    "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "sinon": "^18.0.1",
