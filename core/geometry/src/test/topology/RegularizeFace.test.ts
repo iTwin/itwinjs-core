@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -107,7 +107,7 @@ describe("Regularize", () => {
       data.validateCounts(ck, context);
 
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("RegularizeA", () => {
@@ -140,7 +140,7 @@ describe("Regularize", () => {
       outputX0 += outputStepX;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeA");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("RegularizeB", () => {
     const ck = new Checker();
@@ -174,7 +174,7 @@ describe("Regularize", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeB");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   /**
    * Lots of regularization tests ..
@@ -267,7 +267,7 @@ describe("Regularize", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeC");
     ck.testExactNumber(0, hardLoops.length, `See RegularizationC.HardLoops for ${hardLoops.length} regularization failure cases `);
     GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   /**
    * This test is used to do finer debugging of a single failing case from that fail RegularizeC.
@@ -302,7 +302,7 @@ describe("Regularize", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeD");
     // GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeD.HardLoops");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   /**
@@ -338,7 +338,7 @@ describe("Regularize", () => {
       dx += 10 * axMax;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeFractals");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -546,7 +546,7 @@ it("RegularizeSpiralBand", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeSpiralBand");
   ck.testExactNumber(0, hardLoops.length, `See RegularizationSpiralBand.HardLoops for ${hardLoops.length} regularization failure cases `);
   GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 /**
  *
@@ -594,7 +594,7 @@ function testStars(method: number, filename: string) {
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", filename);
   // GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeD.HardLoops");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 /**
@@ -676,7 +676,7 @@ it("SingleFaceTriangulation", () => {
     dy = 0.0;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "SingleFaceTriangulation");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 /**
@@ -826,5 +826,5 @@ it("SingleFaceTriangulation", () => {
     }
   */
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "HoleInLargeFacet");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

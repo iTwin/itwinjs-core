@@ -214,11 +214,11 @@ export class SchemaContextEditor {
 
   /** @internal */
   public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
-    const schema = Schema.isSchema(schemaOrKey)
-      ? schemaOrKey
-      : await this.getSchema(schemaOrKey);
+    if(Schema.isSchema(schemaOrKey)) {
+      schemaOrKey = schemaOrKey.schemaKey;
+    }
 
-    const schemaItem = await schema.lookupItem<T>(schemaItemKey);
+    const schemaItem = await this.schemaContext.getSchemaItem<T>(schemaItemKey);
     if (schemaItem === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
 

@@ -30,7 +30,7 @@ describe("PropertyRule tests", () => {
     testBaseClass = await mutable.createEntityClass("TestBaseClass");
     testKindOfQuantity = await mutable.createKindOfQuantity("TestKoQ");
     testBaseKindOfQuantity = await mutable.createKindOfQuantity("TestBaseKoQ");
-    testClass.baseClass = new DelayedPromiseWithProps(testBaseClass.key, async () => testBaseClass);
+    await (testClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(testBaseClass.key, async () => testBaseClass));
   });
 
   describe("IncompatibleValueTypePropertyOverride Tests", () => {
@@ -59,7 +59,7 @@ describe("PropertyRule tests", () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (testClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
 
       const properties = [...testClass.properties!];
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
@@ -155,7 +155,7 @@ describe("PropertyRule tests", () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (testBaseClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
 
       const properties = [...testClass.properties!];
       const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
@@ -257,7 +257,7 @@ describe("PropertyRule tests", () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (testBaseClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
 
       const basePropJson = {
         name: "TestProperty",

@@ -12,7 +12,7 @@ import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
 import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
-import { Quantity } from "./Quantity";
+import { applyConversion, Quantity } from "./Quantity";
 
 /** Possible parser errors
  * @beta
@@ -55,7 +55,7 @@ enum Operator {
 
 function isOperator(char: number | string): boolean {
   if(typeof char === "number"){
-    // Convert the charcode to string.
+    // Convert the CharCode to string.
     char = String.fromCharCode(char);
   }
   return Object.values(Operator).includes(char as Operator);
@@ -85,6 +85,10 @@ class ParseToken {
 
   public get isString(): boolean { return !this.isOperator && typeof this.value === "string"; }
   public get isNumber(): boolean { return typeof this.value === "number"; }
+  public get isSpecialCharacter(): boolean {
+    const format = /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/;
+    return this.isString && this.value.toString().match(format) !== null;
+  }
 }
 
 /** A ScientificToken holds an index and string representing the exponent.
@@ -226,7 +230,6 @@ export class Parser {
       skipCodes.push(uomSeparatorToIgnore);
     }
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < str.length; i++) {
       const charCode = str.charCodeAt(i);
       if (Parser.isDigitOrDecimalSeparator(charCode, format)) {
@@ -342,7 +345,7 @@ export class Parser {
           }
 
           if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
-            // Dont add space when the wip token is empty.
+            // Don't add space when the wip token is empty.
             continue;
           }
 
@@ -357,7 +360,11 @@ export class Parser {
         if (signToken.length > 0) {
           wipToken = signToken + wipToken;
         }
-        tokens.push(new ParseToken(parseFloat(wipToken)));
+        if (isNaN(Number(wipToken))) {
+          tokens.push(new ParseToken(NaN));
+        } else {
+          tokens.push(new ParseToken(parseFloat(wipToken)));
+        }
       } else {
         tokens.push(new ParseToken(wipToken));
       }
@@ -469,8 +476,6 @@ export class Parser {
    */
   public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0 || (!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)))
-      return new Quantity();
 
     return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
   }
@@ -573,6 +578,19 @@ export class Parser {
    * Accumulate the given list of tokens into a single quantity value. Formatting the tokens along the way.
    */
   private static getQuantityValueFromParseTokens(tokens: ParseToken[], format: Format, unitsConversions: UnitConversionSpec[], defaultUnitConversion?: UnitConversionProps ): QuantityParseResult {
+    if (tokens.length === 0)
+      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
+
+    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens))
+      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+
+    if (
+      tokens.some((token) => token.isNumber && isNaN(token.value as number)) ||
+      tokens.every((token) => token.isSpecialCharacter)
+    ) {
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+    }
+
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
     defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
 
@@ -583,6 +601,8 @@ export class Parser {
     let sign: 1 | -1 = 1;
 
     let compositeUnitIndex = 0;
+
+
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
       if(!tokenPair || tokenPair.length === 0){
@@ -622,7 +642,7 @@ export class Parser {
           }
         }
         if (conversion) {
-          value = (value * conversion.factor) + conversion.offset;
+          value = applyConversion(value, conversion);
         }
         mag = mag + value;
         compositeUnitIndex++;
@@ -635,6 +655,7 @@ export class Parser {
         }
       }
     }
+
     return { ok: true, value: mag };
   }
 
@@ -663,6 +684,10 @@ export class Parser {
       return this.parseAzimuthFormat(inString, parserSpec);
     }
 
+    if (parserSpec.format.type === FormatType.Ratio) {
+      return this.parseRatioFormat(inString, parserSpec);
+    }
+
     return this.parseAndProcessTokens(inString, parserSpec.format, parserSpec.unitConversions);
   }
 
@@ -670,6 +695,7 @@ export class Parser {
    *  @param inString A string that contains text represent a quantity.
    *  @param format   Defines the likely format of inString. Primary unit serves as a default unit if no unit label found in string.
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
+   *  @deprecated in 4.10. Check [[Parser.parseQuantityString]] for replacements.
    */
   public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     // TODO: This method is not able to do bearing and azimuth formatting and is overlapping with parseQuantityString.
@@ -688,15 +714,26 @@ export class Parser {
       });
     }
 
-    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth) {
+    if(format.type === FormatType.Bearing || format.type === FormatType.Azimuth || format.type === FormatType.Ratio) {
       // throw error indicating to call parseQuantityString instead
-      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing and Azimuth format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Bearing, Azimuth or Ratio format must be parsed using a ParserSpec. Call parseQuantityString instead.`);
     }
 
     return this.parseAndProcessTokens(inString, format, unitsConversions);
   }
 
   private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
+    const specialDirections: Record<string, number> = {
+      n: 0,
+      ne: 45,
+      e: 90,
+      se: 135,
+      s: 180,
+      sw: 225,
+      w: 270,
+      nw: 315,
+    };
+
     // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
     enum DirectionLabel {
       North = "N",
@@ -708,29 +745,38 @@ export class Parser {
     let matchedSuffix: DirectionLabel | null = null;
 
     // check if input string begins with northLabel or southLabel and strip it off
-    if (inString.startsWith(DirectionLabel.North)) {
+    if (inString.toUpperCase().startsWith(DirectionLabel.North)) {
       inString = inString.substring(DirectionLabel.North.length);
       matchedPrefix = DirectionLabel.North;
-    } else if (inString.startsWith(DirectionLabel.South)) {
+    } else if (inString.toUpperCase().startsWith(DirectionLabel.South)) {
       inString = inString.substring(DirectionLabel.South.length);
       matchedPrefix = DirectionLabel.South;
     }
 
-    // check if input string ends with eastLabel or westLabel and strip it off
-    if (inString.endsWith(DirectionLabel.East)) {
+    // check if input string ends with eastLabel or westLabel (case-insensitive) and strip it off
+    if (inString.toUpperCase().endsWith(DirectionLabel.East)) {
       inString = inString.substring(0, inString.length - DirectionLabel.East.length);
       matchedSuffix = DirectionLabel.East;
-    } else if (inString.endsWith(DirectionLabel.West)) {
+    } else if (inString.toUpperCase().endsWith(DirectionLabel.West)) {
       inString = inString.substring(0, inString.length - DirectionLabel.West.length);
       matchedSuffix = DirectionLabel.West;
     }
 
-    if (matchedPrefix === null && matchedSuffix === null) {
+    // check if the remaining string is a special direction
+    if (inString.trim() === "") {
+      const prefix = matchedPrefix?.toLowerCase() || "";
+      const suffix = matchedSuffix?.toLowerCase() || "";
+      const specialDirection = specialDirections[`${prefix}${suffix}`];
+      if (specialDirection !== undefined)
+        return { ok: true, value: specialDirection };
+    }
+
+    if (matchedPrefix === null || matchedSuffix === null) {
       return { ok: false, error: ParseError.BearingPrefixOrSuffixMissing };
     }
 
     const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
-    if(this.isParseError(parsedResult) || !parsedResult.ok) {
+    if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
 
@@ -741,15 +787,13 @@ export class Parser {
     // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
     if (matchedPrefix === DirectionLabel.North) {
       if (matchedSuffix === DirectionLabel.West) {
-        magnitude = quarterRevolution + magnitude;
-      } else if (matchedSuffix === DirectionLabel.East) {
-        magnitude = quarterRevolution - magnitude;
+        magnitude = revolution - magnitude;
       }
     } else if (matchedPrefix === DirectionLabel.South) {
       if (matchedSuffix === DirectionLabel.West) {
-        magnitude = (3 * quarterRevolution) - magnitude;
+        magnitude = (2 * quarterRevolution) + magnitude;
       } else if (matchedSuffix === DirectionLabel.East) {
-        magnitude = (3 * quarterRevolution) + magnitude;
+        magnitude = (2 * quarterRevolution) - magnitude;
       }
     }
 
@@ -758,7 +802,7 @@ export class Parser {
 
   private static parseAzimuthFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     const parsedResult = this.parseAndProcessTokens(inString, spec.format, spec.unitConversions);
-    if(this.isParseError(parsedResult) || !parsedResult.ok) {
+    if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
 
@@ -766,8 +810,7 @@ export class Parser {
 
     const revolution = this.getRevolution(spec);
     magnitude = this.normalizeAngle(magnitude, revolution);
-    const quarterRevolution = revolution / 4;
-    let azimuthBase = quarterRevolution;
+    let azimuthBase = 0.0;
     if (spec.format.azimuthBase !== undefined) {
       if (spec.azimuthBaseConversion === undefined) {
         throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.format.name}'s azimuth base.`);
@@ -779,14 +822,14 @@ export class Parser {
       }
       azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
     }
-    const azimuthCounterClockwise = spec.format.azimuthCounterClockwiseOrDefault;
+    const inputIsClockwise = spec.format.azimuthClockwiseOrDefault;
 
-    if(azimuthCounterClockwise && azimuthBase === 0) {
+    if(inputIsClockwise && azimuthBase === 0) {
       // parsed result already has the same base and orientation as our desired output
       return parsedResult;
     }
 
-    if (azimuthCounterClockwise)
+    if (inputIsClockwise)
       magnitude = azimuthBase + magnitude;
     else
       magnitude = azimuthBase - magnitude;
@@ -794,6 +837,63 @@ export class Parser {
     magnitude = this.normalizeAngle(magnitude, revolution);
 
     return { ok: true, value: magnitude };
+  }
+
+  private static parseRatioFormat(inString: string, spec: ParserSpec): QuantityParseResult {
+    if (!inString)
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+
+    const parts = inString.split(":");
+    if (parts.length > 2)
+      return { ok: false, error: ParseError.UnableToConvertParseTokensToQuantity };
+
+    const numerator = parseFloat(parts[0]);
+    let denominator;
+    if (parts.length === 1) {
+      denominator = 1.0;
+    } else {
+      denominator = parseFloat(parts[1]);
+    }
+
+    if (isNaN(numerator) || isNaN(denominator))
+      return { ok: false, error: ParseError.NoValueOrUnitFoundInString };
+
+    const defaultUnit = spec.format.units && spec.format.units.length > 0 ? spec.format.units[0][0] : undefined;
+    const unitConversion = defaultUnit ? Parser.tryFindUnitConversion(defaultUnit.label, spec.unitConversions, defaultUnit) : undefined;
+
+    if (!unitConversion) {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing input unit or unit conversion for interpreting ${spec.format.name}.`);
+    }
+
+    if (denominator === 0){
+      if (unitConversion.inversion && numerator === 1)
+        return { ok: true, value: 0.0 };
+      else
+        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+    }
+
+    let quantity: Quantity;
+    if (spec.format.units && spec.outUnit) {
+      quantity = new Quantity(spec.format.units[0][0], numerator / denominator);
+    } else {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, "Missing presentation unit or persistence unit for ratio format.");
+    }
+
+    let converted: Quantity | undefined;
+    try {
+      converted = quantity.convertTo(spec.outUnit, unitConversion);
+    } catch (err){
+      // for input of "0:N" with reversed unit
+      if (err instanceof QuantityError && err.errorNumber === QuantityStatus.InvertingZero){
+        return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
+      }
+    }
+
+    if (converted === undefined || !converted.isValid) {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert from ${spec.format.units[0][0].name} to ${spec.outUnit.name} On format ${spec.format.name}.`);
+    }
+
+    return { ok: true, value: converted.magnitude };
   }
 
   // TODO: The following two methods are redundant with Formatter. We should consider consolidating them.
@@ -822,13 +922,6 @@ export class Parser {
 
   private static parseAndProcessTokens(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
-    if (tokens.length === 0)
-      return { ok: false, error: ParseError.UnableToGenerateParseTokens };
-
-    if(!format.allowMathematicOperations && Parser.isMathematicOperation(tokens)){
-      return { ok: false, error: ParseError.MathematicOperationFoundButIsNotAllowed };
-    }
-
     if (Parser._log) {
       // eslint-disable-next-line no-console
       console.log(`Parse tokens`);

@@ -31,7 +31,7 @@ export class AssignmentExpr extends Expr {
 
 // @alpha
 export class BetweenExpr extends BooleanExpr {
-    constructor(lhsExpr: ValueExpr, lowerBoundExpr: ValueExpr, upperBoundExpr: ValueExpr, not?: "NOT" | undefined);
+    constructor(lhsExpr: ValueExpr, lowerBoundExpr: ValueExpr, upperBoundExpr: ValueExpr, not?: UnaryBooleanOp | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
@@ -41,7 +41,7 @@ export class BetweenExpr extends BooleanExpr {
     // (undocumented)
     readonly lowerBoundExpr: ValueExpr;
     // (undocumented)
-    readonly not?: "NOT" | undefined;
+    readonly not?: UnaryBooleanOp | undefined;
     // (undocumented)
     static parseOp(op: string): boolean[];
     // (undocumented)
@@ -54,7 +54,7 @@ export class BetweenExpr extends BooleanExpr {
 
 // @alpha
 export class BinaryBooleanExpr extends BooleanExpr {
-    constructor(op: BinaryBooleanOp, lhsExpr: ComputedExpr, rhsExpr: ComputedExpr, not?: "NOT" | undefined);
+    constructor(op: BinaryBooleanOp, lhsExpr: ComputedExpr, rhsExpr: ComputedExpr, not?: UnaryBooleanOp | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
@@ -62,7 +62,7 @@ export class BinaryBooleanExpr extends BooleanExpr {
     // (undocumented)
     readonly lhsExpr: ComputedExpr;
     // (undocumented)
-    readonly not?: "NOT" | undefined;
+    readonly not?: UnaryBooleanOp | undefined;
     // (undocumented)
     readonly op: BinaryBooleanOp;
     // (undocumented)
@@ -205,7 +205,7 @@ export class CteBlockRefExpr extends ClassRefExpr {
 
 // @alpha
 export class CteExpr extends StatementExpr {
-    constructor(cteBlocks: CteBlockExpr[], query: SelectStatementExpr, recursive?: "RECURSIVE" | undefined);
+    constructor(cteBlocks: CteBlockExpr[], query: SelectStatementExpr, recursive?: RecursiveCte | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
@@ -215,7 +215,7 @@ export class CteExpr extends StatementExpr {
     // (undocumented)
     readonly query: SelectStatementExpr;
     // (undocumented)
-    readonly recursive?: "RECURSIVE" | undefined;
+    readonly recursive?: RecursiveCte | undefined;
     // (undocumented)
     static readonly type = ExprType.Cte;
     // (undocumented)
@@ -622,7 +622,7 @@ export class IIFExpr extends ValueExpr {
 
 // @alpha
 export class InExpr extends BooleanExpr {
-    constructor(lhsExpr: ValueExpr, rhsExpr: ValueExpr[] | SubqueryExpr, not?: "NOT" | undefined);
+    constructor(lhsExpr: ValueExpr, rhsExpr: ValueExpr[] | SubqueryExpr, not?: UnaryBooleanOp | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
@@ -630,7 +630,7 @@ export class InExpr extends BooleanExpr {
     // (undocumented)
     readonly lhsExpr: ValueExpr;
     // (undocumented)
-    readonly not?: "NOT" | undefined;
+    readonly not?: UnaryBooleanOp | undefined;
     // (undocumented)
     static parseOp(op: string): boolean[];
     // (undocumented)
@@ -662,13 +662,13 @@ export class InsertStatementExpr extends StatementExpr {
 
 // @alpha
 export class IsNullExpr extends BooleanExpr {
-    constructor(operandExpr: ValueExpr, not?: "NOT" | undefined);
+    constructor(operandExpr: ValueExpr, not?: UnaryBooleanOp | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
     static deserialize(node: NativeECSqlParseNode): IsNullExpr;
     // (undocumented)
-    readonly not?: "NOT" | undefined;
+    readonly not?: UnaryBooleanOp | undefined;
     // (undocumented)
     readonly operandExpr: ValueExpr;
     // (undocumented)
@@ -681,7 +681,7 @@ export class IsNullExpr extends BooleanExpr {
 
 // @alpha
 export class IsOfTypeExpr extends BooleanExpr {
-    constructor(lhsExpr: ValueExpr, typeNames: ClassNameExpr[], not?: "NOT" | undefined);
+    constructor(lhsExpr: ValueExpr, typeNames: ClassNameExpr[], not?: UnaryBooleanOp | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
@@ -689,7 +689,7 @@ export class IsOfTypeExpr extends BooleanExpr {
     // (undocumented)
     readonly lhsExpr: ValueExpr;
     // (undocumented)
-    readonly not?: "NOT" | undefined;
+    readonly not?: UnaryBooleanOp | undefined;
     // (undocumented)
     static parseOp(node: NativeECSqlParseNode): boolean[];
     // (undocumented)
@@ -723,7 +723,7 @@ export type Keywords = "ALL" | "AND" | "AS" | "ASC" | "BACKWARD" | "BETWEEN" | "
 
 // @alpha
 export class LikeExpr extends BooleanExpr {
-    constructor(lhsExpr: ValueExpr, patternExpr: ValueExpr, escapeExpr?: ValueExpr | undefined, not?: "NOT" | undefined);
+    constructor(lhsExpr: ValueExpr, patternExpr: ValueExpr, escapeExpr?: ValueExpr | undefined, not?: UnaryBooleanOp | undefined);
     // (undocumented)
     get children(): Expr[];
     // (undocumented)
@@ -733,7 +733,7 @@ export class LikeExpr extends BooleanExpr {
     // (undocumented)
     readonly lhsExpr: ValueExpr;
     // (undocumented)
-    readonly not?: "NOT" | undefined;
+    readonly not?: UnaryBooleanOp | undefined;
     // (undocumented)
     static parseOp(op: string): boolean[];
     // (undocumented)

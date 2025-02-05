@@ -6,15 +6,15 @@
  * @module Merging
  */
 
-import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { type AnySchemaDifference, getSchemaDifferences, type SchemaDifference, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
-import { type SchemaEdits } from "./Edits/SchemaEdits";
-import { mergeCustomAttribute } from "./CustomAttributeMerger";
-import { mergeSchemaItems } from "./SchemaItemMerger";
-import { mergeSchemaReferences } from "./SchemaReferenceMerger";
-import * as Utils from "../Differencing/Utils";
+import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { SchemaMergingVisitor } from "./SchemaMergingVisitor";
+import { SchemaMergingWalker } from "./SchemaMergingWalker";
+import { SchemaEdits } from "./Edits/SchemaEdits";
+import { ECEditingStatus, SchemaEditingError } from "../Editing/Exception";
+import { NameMapping } from "./Edits/NameMapping";
 
 /**
  * Defines the context of a Schema merging run.
@@ -25,6 +25,7 @@ export interface SchemaMergeContext {
   readonly targetSchemaKey: SchemaKey;
   readonly sourceSchemaKey: SchemaKey;
   readonly editor: SchemaContextEditor;
+  readonly nameMapping: NameMapping;
 }
 
 /**
@@ -34,14 +35,14 @@ export interface SchemaMergeContext {
  */
 export class SchemaMerger {
 
-  private readonly _editor: SchemaContextEditor;
+  private readonly _editingContext: SchemaContext;
 
   /**
    * Constructs a new instance of the SchemaMerger object.
    * @param editingContext  The schema contexts that holds the schema to be edited.
    */
   constructor(editingContext: SchemaContext) {
-    this._editor = new SchemaContextEditor(editingContext);
+    this._editingContext = editingContext;
   }
 
   /**
@@ -53,7 +54,7 @@ export class SchemaMerger {
    * @alpha
    */
   public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema> {
-    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema), edits);
+    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema, edits), edits);
   }
 
   /**
@@ -66,10 +67,13 @@ export class SchemaMerger {
     const targetSchemaKey = SchemaKey.parseString(differenceResult.targetSchemaName);
     const sourceSchemaKey = SchemaKey.parseString(differenceResult.sourceSchemaName);
 
+    const nameMapping = new NameMapping();
+    const editor = new SchemaContextEditor(new MergingSchemaContext(this._editingContext, nameMapping));
+
     // If schema changes were provided, they'll get applied and a new SchemaDifferenceResult is returned
     // to prevent altering the differenceResult the caller passed in.
     if (edits) {
-      await edits.applyTo(differenceResult = { ...differenceResult });
+      await edits.applyTo(differenceResult = { ...differenceResult }, nameMapping);
     }
 
     if (differenceResult.conflicts && differenceResult.conflicts.length > 0) {
@@ -81,60 +85,62 @@ export class SchemaMerger {
       );
     }
 
-    const schema = await this._editor.getSchema(targetSchemaKey);
-    if (schema === undefined) {
-      throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+    const schema = await editor.getSchema(targetSchemaKey).catch((error: Error) => {
+      if (error instanceof SchemaEditingError && error.errorNumber === ECEditingStatus.SchemaNotFound) {
+        throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+      }
+      throw error;
+    });
+
+    if (!schema.customAttributes || !schema.customAttributes.has("CoreCustomAttributes.DynamicSchema")) {
+      throw new Error(`The target schema '${targetSchemaKey.name}' is not dynamic. Only dynamic schemas are supported for merging.`);
     }
 
-    const context: SchemaMergeContext = {
-      editor: this._editor,
+    const visitor = new SchemaMergingVisitor({
+      editor,
       targetSchema: schema,
       targetSchemaKey,
       sourceSchemaKey,
-    };
+      nameMapping,
+    });
 
-    await mergeSchemaDifferences(context, differenceResult.differences);
+    const walker = new SchemaMergingWalker(visitor);
+    await walker.traverse(differenceResult.differences, "add");
+    await walker.traverse(differenceResult.differences, "modify");
 
     return schema;
   }
 }
 
 /**
- * Merges the schema differences in the target schema.
- * @param context       The current merging context.
- * @param differences   The differences between a source schema and the target schema.
+ * SchemaContext implementation that overrides certain methods to allow to apply name mappings
+ * for certain schema elements during the schema merging process.
+ *
  * @internal
  */
-async function mergeSchemaDifferences(context: SchemaMergeContext, differences: AnySchemaDifference[]): Promise<void> {
-  for (const referenceDifference of differences.filter(Utils.isSchemaReferenceDifference)) {
-    await mergeSchemaReferences(context, referenceDifference);
+class MergingSchemaContext extends SchemaContext {
+  private _internalContext: SchemaContext;
+  private _nameMappings: NameMapping;
+
+  public constructor(internalContext: SchemaContext, nameMapping: NameMapping) {
+    super();
+    this._internalContext = internalContext;
+    this._nameMappings = nameMapping;
   }
 
-  for (const schemaDifference of differences.filter(Utils.isSchemaDifference)) {
-    await mergeSchemaProperties(context, schemaDifference);
+  public override async getCachedSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined> {
+    return this._internalContext.getCachedSchema<T>(schemaKey, matchType);
   }
 
-  // Filter a list of possible schema item changes. This list gets filtered and order in the
-  // mergeSchemaItems method.
-  for await (const _mergeResult of mergeSchemaItems(context, differences)) {
+  public override async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined> {
+    return this._internalContext.getSchema<T>(schemaKey, matchType);
   }
 
-  // At last the custom attributes gets merged because it could be that the CustomAttributes
-  // depend on classes that has to get merged in as items before.
-  for (const customAttributeDifference of differences.filter(Utils.isCustomAttributeDifference)) {
-    await mergeCustomAttribute(context, customAttributeDifference);
-  }
-}
-
-/**
- * Sets the editable properties of a Schema.
- * @internal
- */
-async function mergeSchemaProperties(context: SchemaMergeContext, { difference }: SchemaDifference) {
-  if (difference.label !== undefined) {
-    await context.editor.setDisplayLabel(context.targetSchemaKey, difference.label);
-  }
-  if (difference.description !== undefined) {
-    await context.editor.setDescription(context.targetSchemaKey, difference.description);
+  public override async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
+    const mappedKey = this._nameMappings.resolveItemKey(schemaItemKey);
+    if(mappedKey !== undefined) {
+      schemaItemKey = mappedKey as SchemaItemKey;
+    }
+    return this._internalContext.getSchemaItem<T>(schemaItemKey);
   }
 }

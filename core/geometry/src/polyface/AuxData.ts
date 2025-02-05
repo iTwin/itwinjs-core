@@ -8,7 +8,6 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -33,8 +32,8 @@ export enum AuxChannelDataType {
    * When the host Polyface is transformed the displacements are rotated and scaled accordingly.
    */
   Vector = 2,
-  /** (X, Y, Z) normal vectors that replace the host [[Polyface]]'s own normals.
-   * When the Polyface is transformed the normals are rotated accordingly.
+  /** (X, Y, Z) unit normal vectors that replace the host [[Polyface]]'s own normals.
+   * When the Polyface is transformed the normals are rotated and renormalized accordingly.
    */
   Normal = 3,
 }
@@ -273,7 +272,15 @@ export class PolyfaceAuxData {
             if (!inverseRot)
                 return false;
 
-            transformPoints(data.values, (point) => inverseRot!.multiplyTransposeVectorInPlace(point));
+            transformPoints(data.values, (point) => {
+              inverseRot!.multiplyTransposeVectorInPlace(point);
+              const dot = point.magnitudeSquared();
+              const tol = 1.0e-15; // cf. GrowableXYZArray.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace
+              if (dot > tol && Math.abs(dot - 1.0) > tol ) { // only renormalize if magnitude is not near 0 or 1
+                const mag = 1.0 / Math.sqrt(dot);
+                point.scaleInPlace(mag);
+              }
+            });
             break;
           }
           case AuxChannelDataType.Vector: {

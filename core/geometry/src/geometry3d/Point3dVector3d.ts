@@ -87,7 +87,7 @@ export class XYZ implements XYAndZ {
     return defaultValue;
   }
   /**
-   * Look for (in order) an x coordinate present as:
+   * Look for (in order) a y coordinate present as:
    * * arg.y
    * * arg[1]
    */
@@ -99,7 +99,7 @@ export class XYZ implements XYAndZ {
     return defaultValue;
   }
   /**
-   * Look for (in order) an x coordinate present as:
+   * Look for (in order) a z coordinate present as:
    * * arg.z
    * * arg[2]
    */
@@ -1091,8 +1091,8 @@ export class Vector3d extends XYZ {
    * the plane of this vector and the target vector.
    * @param target Second vector which defines the plane of rotation.
    * @param result optional preallocated vector for result.
-   * @returns rotated vector, or undefined if the cross product of this and
-   *          the the target cannot be normalized (i.e. if the target and this are colinear)
+   * @returns rotated vector, or undefined if the cross product of this and the target
+   * cannot be normalized (i.e. if the target and this are colinear).
    */
   public rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined {
     const normal = this.crossProduct(target).normalize();
@@ -1111,10 +1111,10 @@ export class Vector3d extends XYZ {
     return unitNormal ? unitNormal.crossProduct(this).plusScaled(unitNormal, unitNormal.dotProduct(this), result) : undefined;
   }
   /**
-   * Return a vector computed at fractional position between this vector and vectorB
-   * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
-   *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
-   * @param vectorB second vector
+   * Return a vector computed at fractional position between this vector and vectorB.
+   * @param fraction fractional position. 0 is at `this`. 1 is at `vectorB`. True fractions are "between",
+   * negatives are "before this", beyond 1 is "beyond vectorB".
+   * @param vectorB second vector.
    * @param result optional preallocated result.
    */
   public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
@@ -1243,7 +1243,8 @@ export class Vector3d extends XYZ {
     return this.crossProduct(vectorB, result).normalize(result);
   }
   /**
-   * Compute the cross product of this vector with `vectorB`. Normalize it, using given xyz as default if length is zero.
+   * Compute the cross product of this vector with `vectorB` and normalize it.
+   * * If length is zero, return the vector given by x, y, z.
    * @param vectorB second vector of cross product
    * @param x x value for default result
    * @param y y value for default result
@@ -1572,8 +1573,8 @@ export class Vector3d extends XYZ {
    * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
    * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison
-   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel
-   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel. Default false.
+   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value. Default false.
    * @param options optional radian and distance tolerances.
    */
   public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,

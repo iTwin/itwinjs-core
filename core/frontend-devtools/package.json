@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-devtools",
-  "version": "4.9.0-dev.26",
+  "version": "5.0.0-dev.56",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/cjs/frontend-devtools.js",
   "module": "lib/esm/frontend-devtools.js",
@@ -9,12 +9,12 @@
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "copy:public": "cpx \"./public/**/*\" ./lib/public",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
     "extract-api": "betools extract-api --entry=frontend-devtools",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
   },
@@ -43,11 +43,11 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/file-saver": "^2.0.1",
     "cpx2": "^3.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2"
   }
 }

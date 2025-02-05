@@ -1338,7 +1338,7 @@ export class FormatUnitChange extends BaseSchemaChange {
 
   /** Gets a string representation of the change. */
   public toString(): string {
-    return `Unit: ${this.changeKey}`;
+    return `Unit: ${this.changeKey}, label: ${this.getStringFromArgument(1)}`;
   }
 
   private get _isInvertedUnit(): boolean {

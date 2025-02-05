@@ -3,27 +3,21 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Logger} from "@itwin/core-bentley";
-import { loggerCategory} from "../LoggerCategory";
+import { AccessToken, Logger } from "@itwin/core-bentley";
+import { loggerCategory } from "../LoggerCategory";
 import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
 
 /** The expected format of the Graphic Representation
  * @beta
  */
-/* eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents */
-export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL" | string;
 
 /** Graphic representations are generated from Data Sources.
  * The status of a Graphic Representation indicates the progress of that generation process.
  * @beta
  */
-// ###TODO this needs to be expanded to include more statuses, and/or "failed" needs to be replaced with "invalid".
-export enum GraphicRepresentationStatus {
-  InProgress = "In progress",
-  Complete = "Complete",
-  NotStarted = "Not started",
-  Failed = "Failed",
-}
+export type GraphicRepresentationStatus = "Complete" | "InProgress" | "Invalid" | "NotStarted";
 
 /**
  * Represents a data source for a graphic representation.
@@ -51,7 +45,7 @@ export interface DataSource {
  * @see [[queryGraphicRepresentations]] for its construction as a representation of the data produced by a query of data sources.
  * @beta
  */
-export type GraphicRepresentation = {
+export interface GraphicRepresentation {
   /** The display name of the Graphic Representation */
   displayName: string;
   /** The unique identifier for the Graphic Representation */
@@ -63,27 +57,25 @@ export type GraphicRepresentation = {
   /** The expected format of the Graphic Representation
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
   /** The data source that the representation originates from.
    * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
    */
   dataSource: DataSource;
   /** The url of the graphic representation
    * @note The url can only be guaranteed to be valid if the status is complete.
-   * Therefore, the url is optional if the status is not complete, and required if the status is complete.
    */
-} & ({
-  status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
-  url?: string;
-} | {
-  status: GraphicRepresentationStatus.Complete;
-  url: string;
-});
+  url: string | undefined;
+}
 
-/** Creates a URL used to query for Graphic Representations */
-function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
+/** Creates a URL used to query for Graphic Representations
+ * @internal
+ */
+export function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean, numExports?: number }): string {
   const prefix = args.urlPrefix ?? "";
-  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
+  const numExports = args.numExports ?? 5;
+  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc&$top=${numExports}`;
+
   if (args.changeId)
     url = `${url}&changesetId=${args.changeId}`;
 
@@ -94,6 +86,41 @@ function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceTy
   url = `${url}&tileVersion=${tileVersion}&iTwinJS=${ITWINJS_CORE_VERSION}&exportType=${args.sourceType}`;
 
   return url;
+}
+
+/** Represents an export object from a response from the Mesh Export Service.
+ * @internal
+ */
+interface ServiceJsonResponse {
+  id: string;
+  displayName: string;
+  status: GraphicRepresentationStatus;
+  request: {
+    iModelId: string;
+    changesetId: string;
+    exportType: string;
+  };
+
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
+  _links?: {
+    mesh: {
+      href: string;
+    };
+  };
+}
+
+/** Represents a response from the Mesh Export Service.
+ * @internal
+ */
+interface ServiceJsonResponses {
+  exports: ServiceJsonResponse[];
+
+  /* eslint-disable-next-line @typescript-eslint/naming-convention */
+  _links: {
+    next?: {
+      href: string;
+    };
+  };
 }
 
 /** Arguments supplied to [[queryGraphicRepresentations]].
@@ -111,50 +138,21 @@ export interface QueryGraphicRepresentationsArgs {
   /** The expected format of the graphic representations
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
   /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results */
   includeIncomplete?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
+  /** Number of exports to query */
+  numExports?: number;
 }
 
 /** Query Graphic Representations matching the specified criteria, sorted from most-recently- to least-recently-produced.
  * @beta
  */
 export async function* queryGraphicRepresentations(args: QueryGraphicRepresentationsArgs): AsyncIterableIterator<GraphicRepresentation> {
-  interface ServiceJsonResponse {
-    id: string;
-    displayName: string;
-    status: GraphicRepresentationStatus;
-    request: {
-      iModelId: string;
-      changesetId: string;
-      exportType: string;
-      geometryOptions: any;
-      viewDefinitionFilter: any;
-    };
-
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    _links?: {
-      mesh: {
-        href: string;
-      };
-    };
-  }
-
-  interface ServiceJsonResponses {
-    exports: ServiceJsonResponse[];
-
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    _links: {
-      next?: {
-        href: string;
-      };
-    };
-  }
-
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     Authorization: args.accessToken,
@@ -166,7 +164,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     SessionId: args.sessionId,
   };
 
-  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
+  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN, numExports: args.numExports });
   while (url) {
     let result;
     try {
@@ -178,7 +176,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
       break;
     }
 
-    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
+    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === "Complete"));
     for (const foundSource of foundSources) {
       const graphicRepresentation: GraphicRepresentation = {
         displayName: foundSource.displayName,
@@ -216,7 +214,7 @@ export interface ObtainGraphicRepresentationUrlArgs {
   /** The expected format of the graphic representations
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
   /** If true, only data produced for a specific data source version will be considered;

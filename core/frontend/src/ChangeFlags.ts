@@ -28,7 +28,7 @@ export enum ChangeFlag {
   /** See [[ChangeFlags.viewedCategoriesPerModel]]. */
   ViewedCategoriesPerModel = 1 << 6,
   /** See [[ChangeFlags.viewState]]. */
-  ViewState = 1 << 7, // eslint-disable-line no-shadow
+  ViewState = 1 << 7,
   /** A bitmask indicating all aspects of the viewport's state have changed. */
   All = 0x0fffffff,
   /** A bitmask indicating all aspects of the viewport's state related to symbology overrides have changed. */

@@ -27,6 +27,7 @@ beta;interface;ChangedECInstance
 internal;class;ChangedElementsDb
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstanceKey
+internal;class;ChangeMergeManager
 beta;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
@@ -67,6 +68,8 @@ beta;function;convertEC2SchemasToEC3Schemas
 internal;interface;CrashReportingConfig
 internal;interface;CrashReportingConfigNameValuePair
 beta;interface;CreateChangeSummaryArgs
+alpha;interface;CreateFontFileFromRscBlobArgs
+beta;interface;CreateFontFileFromShxBlobArgs
 public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
@@ -143,6 +146,7 @@ beta;class;ElementTreeWalkerScope
 public;class;ElementUniqueAspect
 public;class;ElevationCallout
 public;class;EmbeddedFileLink
+beta;interface;EmbedFontFileArgs
 public;class;Entity
 public;type;EntityClassType
 alpha;namespace;EntityReferences
@@ -165,6 +169,7 @@ public;interface;ExportPartInfo
 public;interface;ExportPartInstanceInfo
 public;type;ExportPartLinesFunction
 public;interface;ExportPartLinesInfo
+beta;interface;ExportSchemaArgs
 beta;class;ExternalSource
 public;class;ExternalSourceAspect
 public;namespace;ExternalSourceAspect
@@ -175,8 +180,12 @@ beta;class;ExternalSourceGroupGroupsSources
 beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
 public;class;FileNameResolver
+deprecated;class;FileNameResolver
 beta;class;FolderContainsRepositories
 alpha;class;FolderLink
+beta;interface;FontFile
+beta;namespace;FontFile
+alpha;function;createFromRscFontBlob
 public;class;FunctionalBreakdownElement
 public;class;FunctionalComponentElement
 public;class;FunctionalComposite
@@ -232,6 +241,7 @@ public;class;IModelDb
 public;namespace;IModelDb
 internal;enum;TileContentState
 internal;class;Tiles
+beta;interface;IModelDbFonts
 beta;class;IModelElementCloneContext
 public;class;IModelHost
 public;class;IModelHostConfiguration
@@ -249,6 +259,8 @@ public;class;InformationRecordModel
 public;class;InformationRecordPartition
 public;class;InformationReferenceElement
 internal;function;initializeTracing
+beta;interface;InlineGeometryPartsResult
+public;interface;InsertElementOptions
 beta;interface;InstanceChange
 public;class;IpcHandler
 public;class;IpcHost
@@ -322,6 +334,7 @@ beta;namespace;PropertyStore
 public;type;PullChangesArgs
 public;interface;PushChangesArgs
 beta;interface;QueryLocalChangesArgs
+beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
 beta;class;RecipeDefinitionElement
@@ -335,6 +348,7 @@ public;class;RenderTimeline
 public;class;RepositoryLink
 public;class;RepositoryModel
 public;interface;RequestNewBriefcaseArg
+public;type;RevertChangesArgs
 public;class;RoleElement
 public;class;RoleModel
 public;class;RpcTrace
@@ -364,9 +378,24 @@ beta;namespace;SettingsPriority
 beta;interface;SettingsSchemas
 public;class;Sheet
 public;class;SheetBorderTemplate
+beta;class;SheetIndex
+beta;class;SheetIndexEntry
+beta;interface;SheetIndexEntryCreateArgs
+beta;class;SheetIndexFolder
+beta;class;SheetIndexFolderOwnsEntries
+beta;class;SheetIndexModel
+beta;class;SheetIndexOwnsEntries
+beta;class;SheetIndexPartition
+beta;class;SheetIndexReference
+beta;interface;SheetIndexReferenceCreateArgs
+beta;class;SheetIndexReferenceRefersToSheetIndex
 public;class;SheetModel
+beta;class;SheetReference
+beta;interface;SheetReferenceCreateArgs
+beta;class;SheetReferenceRefersToSheet
 public;class;SheetTemplate
 public;class;SheetViewDefinition
+beta;interface;SimplifyElementGeometryArgs
 public;class;SnapshotDb
 public;type;SnapshotDbOpenArgs
 public;class;SpatialCategory

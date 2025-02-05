@@ -27,6 +27,7 @@ import { TextureDrape } from "./TextureDrape";
 import { ThematicSensors } from "./ThematicSensors";
 import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../common/render/BatchOptions";
+import { Contours } from "./Contours";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -51,7 +52,7 @@ export class GraphicOwner extends Graphic {
   public get isDisposed(): boolean { return this._isDisposed; }
   public dispose(): void { this._isDisposed = true; }
   public disposeGraphic(): void {
-    this.graphic.dispose();
+    this.graphic[Symbol.dispose]();
   }
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
@@ -81,21 +82,25 @@ export class GraphicOwner extends Graphic {
 export interface BatchContext {
   batchId: number;
   iModel?: IModelConnection;
+  transformFromIModel?: Transform;
   viewAttachmentId?: Id64String;
+  inSectionDrawingAttachment?: boolean;
 }
 
 /** @internal exported strictly for tests. */
 export class PerTargetBatchData {
   public readonly target: Target;
   protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
+  protected _contours?: Contours;
   protected _thematicSensors?: ThematicSensors;
 
   public constructor(target: Target) {
     this.target = target;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._thematicSensors = dispose(this._thematicSensors);
+    this._contours = this._contours?.[Symbol.dispose]();
     for (const value of this._featureOverrides.values())
       dispose(value);
 
@@ -126,12 +131,28 @@ export class PerTargetBatchData {
     return ovrs;
   }
 
+  public getContours(batch: Batch): Contours {
+    if (this._contours && !this._contours.matchesTargetAndFeatureCount(this.target, batch.featureTable))
+      this._contours = this._contours[Symbol.dispose]();
+
+    if (!this._contours) {
+      this._contours = Contours.createFromTarget(this.target, batch.options);
+      this._contours.initFromMap(batch.featureTable);
+    } else {
+      this._contours.update(batch.featureTable);
+    }
+    return this._contours;
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (this._thematicSensors)
       stats.addThematicTexture(this._thematicSensors.bytesUsed);
 
     for (const ovrs of this._featureOverrides.values())
       stats.addFeatureOverrides(ovrs.byteLength);
+
+    if (this._contours)
+      stats.addContours(this._contours.byteLength);
   }
 
   /** Exposed strictly for tests. */
@@ -141,7 +162,7 @@ export class PerTargetBatchData {
     const ovrs = this._featureOverrides.get(source);
     if (ovrs) {
       this._featureOverrides.delete(source);
-      ovrs.dispose();
+      ovrs[Symbol.dispose]();
     }
   }
 }
@@ -155,10 +176,10 @@ export class PerTargetData {
     this._batch = batch;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const data of this._data) {
       data.target.onBatchDisposed(this._batch);
-      data.dispose();
+      data[Symbol.dispose]();
     }
 
     this._data.length = 0;
@@ -177,7 +198,7 @@ export class PerTargetData {
       return;
 
     const data = this._data[index];
-    data.dispose();
+    data[Symbol.dispose]();
     this._data.splice(index, 1);
   }
 
@@ -192,6 +213,10 @@ export class PerTargetData {
 
   public getFeatureOverrides(target: Target): FeatureOverrides {
     return this.getBatchData(target).getFeatureOverrides(this._batch);
+  }
+
+  public getContours(target: Target): Contours {
+    return this.getBatchData(target).getContours(this._batch);
   }
 
   private getBatchData(target: Target): PerTargetBatchData {
@@ -227,18 +252,24 @@ export class Batch extends Graphic {
   /** The following are valid only during a draw and reset afterward. */
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
+  public get transformFromBatchIModel() { return this._context.transformFromIModel; }
   public get viewAttachmentId() { return this._context.viewAttachmentId; }
+  public get inSectionDrawingAttachment() { return this._context.inSectionDrawingAttachment; }
 
   public setContext(batchId: number, branch: BranchState) {
     this._context.batchId = batchId;
     this._context.iModel = branch.iModel;
+    this._context.transformFromIModel = branch.transformFromIModel;
     this._context.viewAttachmentId = branch.viewAttachmentId;
+    this._context.inSectionDrawingAttachment = branch.inSectionDrawingAttachment;
   }
 
   public resetContext() {
     this._context.batchId = 0;
     this._context.iModel = undefined;
+    this._context.transformFromIModel = undefined;
     this._context.viewAttachmentId = undefined;
+    this._context.inSectionDrawingAttachment = undefined;
   }
 
   public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
@@ -258,7 +289,7 @@ export class Batch extends Graphic {
   public dispose() {
     dispose(this.graphic);
 
-    this.perTargetData.dispose();
+    this.perTargetData[Symbol.dispose]();
     this._isDisposed = true;
   }
 
@@ -292,6 +323,10 @@ export class Batch extends Graphic {
     return this.perTargetData.getFeatureOverrides(target);
   }
 
+  public getContours(target: Target): Contours {
+    return this.perTargetData.getContours(target);
+  }
+
   public onTargetDisposed(target: Target) {
     this.perTargetData.onTargetDisposed(target);
   }
@@ -311,6 +346,9 @@ export class Branch extends Graphic {
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
   public readonly viewAttachmentId?: Id64String;
+  public readonly inSectionDrawingAttachment?: boolean;
+  public disableClipStyle?: true;
+  public readonly transformFromExternalIModel?: Transform;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -328,6 +366,9 @@ export class Branch extends Graphic {
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
+    this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;
+    this.disableClipStyle = opts.disableClipStyle;
+    this.transformFromExternalIModel = opts.transformFromIModel;
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);
@@ -351,7 +392,7 @@ export class Branch extends Graphic {
   }
 
   public dispose() {
-    this.branch.dispose();
+    this.branch[Symbol.dispose]();
   }
 
   public override get isPickable(): boolean {
@@ -404,7 +445,7 @@ export class AnimationTransformBranch extends Graphic {
   }
 
   public override dispose() {
-    this.graphic.dispose();
+    this.graphic[Symbol.dispose]();
   }
 
   public override get isDisposed() {

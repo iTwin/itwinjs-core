@@ -9,8 +9,6 @@
 import { BeEvent } from "./BeEvent";
 import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
-import { IDisposable } from "./Disposable";
-import { staticLoggerMetadata } from "./internal/staticLoggerMetadata";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -49,6 +47,23 @@ export interface LoggerLevelsConfig {
   categoryLevels?: LoggerCategoryAndLevel[];
 }
 
+/** A global set of metadata that should be included with every log message.
+ * You can provide an object representing the metadata, or a function to be invoked to obtain the metadata object each
+ * time a message is logged.
+ * Each key-value pair of the object will be stringified and combined with the log message's per-call metadata.
+ * The keys you provide to each method is used solely to identify your entries so that you can later update or delete them - these keys
+ * are **not** included in log messages. Don't modify or remove metadata associated with keys that belong to someone else.
+ * @note Each extra bit of metadata adds cost and overhead to the logging system. Avoid adding unnecessary or unnecessarily verbose metadata.
+ * @see [[Logger.staticMetaData]] to access the global metadata.
+ * @beta
+ */
+export interface StaticLoggerMetaData {
+  /** Add or update some metadata to be included with every logged message. */
+  set(key: string, metadata: LoggingMetaData): void;
+  /** Remove metadata previously [[set]] using the specified `key`, so it will no longer be included with every logged message. */
+  delete(key: string): void;
+}
+
 /** Logger allows libraries and apps to report potentially useful information about operations, and it allows apps and users to control
  * how or if the logged information is displayed or collected. See [Learning about Logging]($docs/learning/common/Logging.md).
  * @public
@@ -60,6 +75,7 @@ export class Logger {
   protected static _logTrace: LogFunction | undefined;
 
   private static _onLogLevelChanged: BeEvent<() => void> | undefined;
+  private static _staticMetaData = new Map<string, LoggingMetaData>();
 
   /** An event raised whenever [[setLevel]] or [[setLevelDefault]] is called. */
   public static get onLogLevelChanged(): BeEvent<() => void> {
@@ -71,13 +87,13 @@ export class Logger {
     return Logger._onLogLevelChanged;
   }
 
-  private static _categoryFilter: {[categoryName: string]: LogLevel | undefined} = {};
+  private static _categoryFilter: { [categoryName: string]: LogLevel | undefined } = {};
 
   /** Maps category names to the least severe level at which messages in that category should be displayed,
    * or `undefined` if a minimum has not been defined.
    * @see [[setLevel]] to change the minimum logging level for a category.
    */
-  public static get categoryFilter(): Readonly<{[categoryName: string]: LogLevel | undefined}> {
+  public static get categoryFilter(): Readonly<{ [categoryName: string]: LogLevel | undefined }> {
     // NOTE: this property is accessed by native code.
     return this._categoryFilter;
   }
@@ -95,6 +111,13 @@ export class Logger {
 
   /** Should the call stack be included when an exception is logged?  */
   public static logExceptionCallstacks = false;
+
+  /** Contains metadata that should be included with every logged message.
+   * @beta
+   */
+  public static get staticMetaData(): StaticLoggerMetaData {
+    return this._staticMetaData;
+  }
 
   /** Initialize the logger streams. Should be called at application initialization time. */
   public static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void {
@@ -117,7 +140,7 @@ export class Logger {
   /** merge the supplied metadata with all static metadata into one object */
   public static getMetaData(metaData?: LoggingMetaData): object {
     const metaObj = {};
-    for (const meta of staticLoggerMetadata) {
+    for (const meta of this._staticMetaData) {
       const val = BentleyError.getMetaData(meta[1]);
       if (val)
         Object.assign(metaObj, val);
@@ -263,7 +286,7 @@ export class Logger {
    */
   public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>"};
+      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>" };
     });
   }
 
@@ -307,7 +330,7 @@ export class Logger {
  * Enable those, if you want to capture timings.
  * @public
  */
-export class PerfLogger implements IDisposable {
+export class PerfLogger implements Disposable {
   private static _severity: LogLevel = LogLevel.Info;
 
   private _operation: string;
@@ -340,8 +363,13 @@ export class PerfLogger implements IDisposable {
     });
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.logMessage();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 }
 

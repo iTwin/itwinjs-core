@@ -12,10 +12,10 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
-import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess } from "./BackendHubAccess";
@@ -31,7 +31,6 @@ import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
@@ -196,6 +195,7 @@ export interface IModelHostOptions {
    * Will be changed to default to `false` in 5.0.
    */
   allowSharedChannel?: boolean;
+
 }
 
 /** Configuration of core-backend.
@@ -207,7 +207,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
-
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
@@ -289,13 +288,6 @@ export class IModelHost {
   private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
 
-  /** Provides access to the entirely internal, low-level, unstable APIs provided by @bentley/imodel-native.
-   * Should not be used outside of @itwin/core-backend, and certainly not outside of the itwinjs-core repository
-   * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelHost's public API instead.
-   * @internal
-   */
-  public static get platform(): typeof IModelJsNative { return IModelNative.platform; }
-
   public static configuration?: IModelHostOptions;
 
   /**
@@ -365,8 +357,10 @@ export class IModelHost {
    */
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
-  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
-  public static snapshotFileNameResolver?: FileNameResolver;
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
+   * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   */
+  public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Get the current access token for this IModelHost, or a blank string if none is available.
    * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
@@ -378,7 +372,7 @@ export class IModelHost {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }
@@ -475,7 +469,7 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
-    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);
 
     this.loadNative(options);
@@ -487,8 +481,7 @@ export class IModelHost {
     [
       IModelReadRpcImpl,
       IModelTileRpcImpl,
-      SnapshotIModelRpcImpl,
-      WipRpcImpl,
+      SnapshotIModelRpcImpl, // eslint-disable-line @typescript-eslint/no-deprecated
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
@@ -691,6 +684,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
+ * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

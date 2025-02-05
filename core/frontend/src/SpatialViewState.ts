@@ -109,7 +109,6 @@ export class SpatialViewState extends ViewState3d {
     this._treeRefs = SpatialTileTreeReferences.create(this);
   }
 
-  /** @internal */
   public override isSpatialView(): this is SpatialViewState { return true; }
 
   public override equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
@@ -120,17 +119,6 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public markModelSelectorChanged(): void {
     this._treeRefs.update();
-  }
-
-  /** Get world-space viewed extents based on the iModel's project extents.
-   * @deprecated in 3.6. These extents are based on [[IModelConnection.displayedExtents]], which is deprecated. Consider using [[computeFitRange]] or [[getViewedExtents]] instead.
-   */
-  protected getDisplayedExtents(): AxisAlignedBox3d {
-    /* eslint-disable-next-line deprecation/deprecation */
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
-    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
-    extents.extendRange(this.getGroundExtents());
-    return extents;
   }
 
   private computeBaseExtents(): AxisAlignedBox3d {
@@ -157,9 +145,9 @@ export class SpatialViewState extends ViewState3d {
   public computeFitRange(options?: ComputeSpatialViewFitRangeOptions): AxisAlignedBox3d {
     // Fit to the union of the ranges of all loaded tile trees.
     const range = options?.baseExtents?.clone() ?? new Range3d();
-    this.forEachTileTreeRef((ref) => {
+    for (const ref of this.getTileTreeRefs()) {
       ref.unionFitRange(range);
-    });
+    }
 
     // Fall back to the project extents if necessary.
     if (range.isNull)
@@ -219,9 +207,10 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public override forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    for (const ref of this._treeRefs)
-      func(ref);
+  public override * getModelTreeRefs(): Iterable<TileTreeReference> {
+    for (const ref of this._treeRefs) {
+      yield ref;
+    }
   }
 
   /** @internal */

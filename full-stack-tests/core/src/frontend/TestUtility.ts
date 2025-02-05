@@ -43,7 +43,8 @@ export class TestUtility {
   public static async getTestITwinId(): Promise<GuidString> {
     if (undefined !== TestUtility.iTwinId)
       return TestUtility.iTwinId;
-    return TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    TestUtility.iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    return TestUtility.iTwinId;
   }
 
   public static iTwinPlatformEnv: ITwinPlatformAbstraction;
@@ -67,7 +68,7 @@ export class TestUtility {
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
       authorizationClient = new ElectronRendererAuthorization(
-        {clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!},
+        { clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID! },
       );
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);

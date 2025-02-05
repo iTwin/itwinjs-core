@@ -7,11 +7,11 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
-  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
+  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d,
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
 import {
@@ -242,6 +242,26 @@ export interface MapLayerScaleRangeVisibility {
   visibility: MapTileTreeScaleRangeVisibility;
 }
 
+/** Arguments supplied to [[Viewport.readPixels]].
+ * @public
+ * @extensions
+ */
+export interface ReadPixelsArgs {
+  /** The function that will be invoked to process the captured pixel data. */
+  receiver: Pixel.Receiver;
+  /** The region of the viewport's contents to read. If the area is empty or not contained within the [[Viewport.viewRect]],
+   * no pixels will be read.
+   * If omitted, the viewport's entire contents will be read.
+   */
+  rect?: ViewRect;
+  /** Specifies which aspects of each pixel to read. By default, all aspects are read. */
+  selector?: Pixel.Selector;
+  /** If true, geometry with the "non-locatable" flag set will not be drawn, potentially revealing locatable geometry it would otherwise obscure. */
+  excludeNonLocatable?: boolean;
+  /** An optional set of Ids of elements that should not be drawn, potentially revealing other geometry they would otherwise obscure. */
+  excludedElements?: Iterable<Id64String>;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -268,7 +288,7 @@ export interface MapLayerScaleRangeVisibility {
  * @public
  * @extensions
  */
-export abstract class Viewport implements IDisposable, TileUser {
+export abstract class Viewport implements Disposable, TileUser {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
    * otherwise, avoid performing excessive computations in response to this event.
@@ -1047,24 +1067,11 @@ export abstract class Viewport implements IDisposable, TileUser {
   */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
-    this.view.forEachTileTreeRef((ref) => {
+    for (const ref of this.getTileTreeRefs()) {
       const promise = ref.getToolTipPromise(hit);
-      if (promise)
+      if (promise) {
         promises.push(promise);
-    });
-
-    this.forEachMapTreeRef((ref) => {
-      const promise = ref.getToolTipPromise(hit);
-      if (promise)
-        promises.push(promise);
-    });
-
-    for (const provider of this.tiledGraphicsProviders) {
-      provider.forEachTileTreeRef(this, (ref) => {
-        const promise = ref.getToolTipPromise(hit);
-        if (promise)
-          promises.push(promise);
-      });
+      }
     }
 
     const results = await Promise.all(promises);
@@ -1081,7 +1088,10 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
     // so that we get still get results even though a tree has failed.
-    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit, options).catch(() => undefined)));
+    for (const tree of this.mapTileTreeRefs) {
+      promises.push(tree.getMapFeatureInfo(hit, options).catch(() => undefined));
+    }
+
     const featureInfo: MapFeatureInfo = {};
 
     const worldPoint = hit.hitPoint.clone();
@@ -1128,15 +1138,20 @@ export abstract class Viewport implements IDisposable, TileUser {
     IModelApp.tileAdmin.registerUser(this);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this.isDisposed)
       return;
 
     this._target = dispose(this._target);
-    this.subcategories.dispose();
+    this.subcategories[Symbol.dispose]();
     IModelApp.tileAdmin.forgetUser(this);
     this.onDisposed.raiseEvent(this);
     this.detachFromView();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   private setView(view: ViewState): void {
@@ -1215,6 +1230,11 @@ export abstract class Viewport implements IDisposable, TileUser {
       this._changeFlags.setDisplayStyle();
     };
 
+    const invalidateControllerAndDisplayStyleChanged = () => {
+      this.invalidateController();
+      this._changeFlags.setDisplayStyle();
+    };
+
     const styleAndOverridesChanged = () => {
       displayStyleChanged();
       this.setFeatureOverrideProviderChanged();
@@ -1231,6 +1251,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onInvisibleChanged.addListener(invalidateControllerAndDisplayStyleChanged));
     removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
@@ -1542,28 +1563,40 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** @internal */
-  public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
-    for (const provider of this._tiledGraphicsProviders)
-      func(provider);
+  protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
+    for (const provider of this.tiledGraphicsProviders) {
+      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
+    }
   }
 
-  /** @internal */
-  protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void {
-    for (const provider of this._tiledGraphicsProviders)
-      provider.forEachTileTreeRef(this, (ref) => func(ref));
-  }
-
-  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport. */
+  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
+   * @deprecated in 5.0. Use [[mapTileTreeRefs]] instead.
+   */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
-  /** Apply a function to every [[TileTreeReference]] displayed by this viewport. */
+  /** Obtain an iterator over the tile tree references used to render map imagery in this viewport, if any. */
+  public get mapTileTreeRefs(): Iterable<TileTreeReference> {
+    return this._mapTiledGraphicsProvider?.getReferences(this) ?? [];
+  };
+
+
+  /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
+   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
+   */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.view.forEachTileTreeRef(func);
-    this.forEachTiledGraphicsProviderTree(func);
-    this.forEachMapTreeRef(func);
+    for (const ref of this.getTileTreeRefs()) {
+      func(ref);
+    }
+  }
+
+  /** Iterate over every [[TileTreeReference]] displayed by this viewport. */
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    yield * this.view.getTileTreeRefs();
+    yield * this.mapTileTreeRefs;
+    yield * this.tiledGraphicsProviderRefs();
   }
 
   /**
@@ -1587,8 +1620,14 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @internal
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
-    this.forEachMapTreeRef((ref) => trees.disclose(ref));
+    for (const ref of this.tiledGraphicsProviderRefs()) {
+      trees.disclose(ref);
+    }
+
+    for (const ref of this.mapTileTreeRefs) {
+      trees.disclose(ref);
+    }
+
     trees.disclose(this.view);
   }
 
@@ -1626,9 +1665,14 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public getTerrainHeightRange(): Range1d {
     const heightRange = Range1d.createNull();
-    this.forEachTileTreeRef((ref) => ref.getTerrainHeight(heightRange));
+
+    for (const ref of this.mapTileTreeRefs) {
+      ref.getTerrainHeight(heightRange);
+    }
+
     return heightRange;
   }
+
   /** @internal */
   public setViewedCategoriesPerModelChanged(): void {
     this._changeFlags.setViewedCategoriesPerModel();
@@ -2190,9 +2234,11 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Compute the range of all geometry to be displayed in this viewport. */
   public computeViewRange(): Range3d {
     const fitRange = this.view.computeFitRange();
-    this.forEachTiledGraphicsProviderTree((ref) => {
+
+    for (const ref of this.tiledGraphicsProviderRefs()) {
       ref.unionFitRange(fitRange);
-    });
+    }
+
     return fitRange;
   }
 
@@ -2600,19 +2646,45 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   protected addDecorations(_decorations: Decorations): void { }
 
-  /** Read selected data about each pixel within a rectangular region of this Viewport.
+  /** Capture selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
    * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport has been disposed, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    */
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
-    const viewRect = this.viewRect;
-    if (this.isDisposed || rect.isNull || !rect.isContained(viewRect))
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
+
+  /** Capture selected data about each pixel within a rectangular region of this viewport.
+   * @note The [[Pixel.Buffer]] supplied to [[ReadPixelsArgs.receiver]] becomes invalid once that function exits. Do not store a reference to it.
+   */
+  public readPixels(args: ReadPixelsArgs): void;
+
+  /** @internal */
+  public readPixels(arg0: ViewRect | ReadPixelsArgs, selector?: Pixel.Selector, receiver?: Pixel.Receiver, excludeNonLocatable?: boolean): void {
+    if (arg0 instanceof ViewRect) {
+      assert(undefined !== selector && undefined !== receiver);
+      return this._readPixels(arg0, selector, receiver, excludeNonLocatable);
+    }
+
+    // { rect, receiver, selector, excludeNonLocatable, excludedElements } = arg0;
+    // this._readPixels(rect ?? this.viewRect, receiver, selector ?? Pixel.Selector.All, excludeNonLocatable, excludedElements);
+    this._readPixels(
+      arg0.rect ?? this.viewRect,
+      arg0.selector ?? Pixel.Selector.All,
+      arg0.receiver,
+      arg0.excludeNonLocatable,
+      arg0.excludedElements,
+    );
+  }
+
+  private _readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean, excludedElements?: Iterable<Id64String>): void {
+    if (this.isDisposed || rect.isNull || !rect.isContained(this.viewRect)) {
       receiver(undefined);
-    else
-      this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
+      return;
+    }
+
+    this.target.readPixels(rect, selector, receiver, excludeNonLocatable ?? false, excludedElements);
   }
 
   /** @internal */
@@ -2624,19 +2696,6 @@ export abstract class Viewport implements IDisposable, TileUser {
       return false;    // Reality Models not selectable
 
     return (0 === this.mapLayerFromIds(pixel.modelId, pixel.elementId).length);  // Maps no selectable.
-  }
-
-  /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.
-   * @param rect The area of the view to read. The origin of a viewRect must specify the upper left corner.
-   * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
-   * @param flipVertically If true, the image is flipped along the x-axis.
-   * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
-   * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
-   * @deprecated in 3.x. Use readImageBuffer.
-   */
-  public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
-    // eslint-disable-next-line deprecation/deprecation
-    return this.target.readImage(rect, targetSize, flipVertically);
   }
 
   /** Capture the image currently rendered in this viewport, or a subset thereof.
@@ -2753,6 +2812,7 @@ export abstract class Viewport implements IDisposable, TileUser {
             modelId,
             elementId: pixel.feature?.elementId,
             viewAttachmentId: pixel.viewAttachmentId,
+            inSectionDrawingAttachment: pixel.inSectionDrawingAttachment,
           });
           transform?.multiplyInversePoint3d(npc, npc);
         }
@@ -3033,8 +3093,8 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public override dispose(): void {
-    super.dispose();
+  public override[Symbol.dispose](): void {
+    super[Symbol.dispose]();
     this._decorationCache.clear();
   }
 
@@ -3123,12 +3183,19 @@ export class ScreenViewport extends Viewport {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true, rootDiv: this.vpDiv.ownerDocument.body }).modal;
       aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
-      if (undefined !== IModelApp.applicationLogoCard)
+
+      if (undefined !== IModelApp.applicationLogoCard) {
         logos.appendChild(IModelApp.applicationLogoCard());
+      }
+      
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
-      this.forEachTileTreeRef((ref) => ref.addLogoCards(logos, this));
+      for (const ref of this.getTileTreeRefs()) {
+        ref.addLogoCards(logos, this);
+      }
+
       ev.stopPropagation();
     };
+
     logo.onclick = showLogos;
     logo.addEventListener("touchstart", showLogos);
     logo.onmousemove = logo.onmousedown = logo.onmouseup = (ev) => ev.stopPropagation();
@@ -3149,7 +3216,6 @@ export class ScreenViewport extends Viewport {
     this.target.updateViewRect();
 
     // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
@@ -3175,16 +3241,6 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   public mouseMovementFromEvent(ev: MouseEvent): XAndY {
     return { x: ev.movementX, y: ev.movementY };
-  }
-
-  /** Set the event controller for this Viewport. Destroys previous controller, if one was defined.
-   * @deprecated in 3.x. this was intended for internal use only.
-   */
-  public setEventController(controller?: EventController) {
-    if (this._evController)
-      this._evController.destroy();
-
-    this._evController = controller;
   }
 
   /** Invoked by ViewManager.addViewport.
@@ -3370,7 +3426,6 @@ export class ScreenViewport extends Viewport {
   /** Populate a set of decoration graphics to be displayed in this viewport. */
   protected override addDecorations(decorations: Decorations): void {
     // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
     const context = new DecorateContext(this, decorations, this._decorationCache);
     try {
@@ -3379,12 +3434,13 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
+      for (const ref of this.tiledGraphicsProviderRefs()) {
+        context.addFromDecorator(ref);
+      }
 
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
 
-      // eslint-disable-next-line deprecation/deprecation
       ScreenViewport.removeMarkedChildren(this.decorationDiv);
     } finally {
       this._decorationCache.prohibitRemoval = false;

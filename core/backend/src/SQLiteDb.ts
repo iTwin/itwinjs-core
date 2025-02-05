@@ -27,11 +27,6 @@ import { _nativeDb } from "./internal/Symbols";
  * @public
  */
 export class SQLiteDb {
-  /** @internal
-   * @deprecated in 4.8. This internal API will be removed in 5.0. Use SQLiteDb's public API instead.
-   */
-  public get nativeDb(): IModelJsNative.SQLiteDb { return this[_nativeDb]; }
-
   /** @internal */
   public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -144,6 +139,18 @@ export class SQLiteDb {
     }
   }
 
+  /** The cloud container backing this SQLite database, if any.
+   * @beta
+   */
+  public get cloudContainer(): CloudSqlite.CloudContainer | undefined {
+    return this[_nativeDb].cloudContainer;
+  }
+
+  /** Returns the Id of the most-recently-inserted row in this database, per [sqlite3_last_insert_rowid](https://www.sqlite.org/c3ref/last_insert_rowid.html). */
+  public getLastInsertRowId(): number {
+    return this[_nativeDb].getLastInsertRowId();
+  }
+
   /**
    * Perform an operation on a database in a CloudContainer with the write lock held.
    *
@@ -211,7 +218,7 @@ export class SQLiteDb {
    */
   public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
     const stmt = this.prepareSqliteStatement(sql);
-    const release = () => stmt.dispose();
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val = callback(stmt);
       val instanceof Promise ? val.then(release, release) : release();
@@ -254,12 +261,8 @@ export class SQLiteDb {
 
   /** execute an SQL statement */
   public executeSQL(sql: string): DbResult {
-    const stmt = this.prepareSqliteStatement(sql);
-    try {
-      return stmt.step();
-    } finally {
-      stmt.dispose();
-    }
+    using stmt = this.prepareSqliteStatement(sql);
+    return stmt.step();
   }
 }
 

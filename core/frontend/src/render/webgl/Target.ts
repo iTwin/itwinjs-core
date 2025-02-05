@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
@@ -104,8 +104,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _worldDecorations?: WorldDecorations;
+  private _currPickExclusions = new Id64.Uint32Set();
+  private _swapPickExclusions = new Id64.Uint32Set();
+  public readonly pickExclusionsSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _hilites: Hilites = new EmptyHiliteSet();
-  private _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
+  private readonly _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
   private _flashedId = Id64.invalid;
   private _flashIntensity: number = 0;
@@ -189,6 +192,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get hilites(): Hilites { return this._hilites; }
   public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
+
+  public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
 
   public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
   public get flashedId(): Id64String { return this._flashedId; }
@@ -290,14 +295,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     const depth = System.instance.createDepthBuffer(rect.width, rect.height, 1);
     if (undefined === depth) {
-      color.dispose();
+      color[Symbol.dispose]();
       return undefined;
     }
 
     this._fbo = FrameBuffer.create([color], depth);
     if (undefined === this._fbo) {
-      color.dispose();
-      depth.dispose();
+      color[Symbol.dispose]();
+      depth[Symbol.dispose]();
       return undefined;
     }
 
@@ -321,7 +326,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     dispose(db);
   }
 
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this.reset();
     this.disposeFbo();
     dispose(this._compositor);
@@ -436,11 +441,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     });
   }
 
-  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<String, T> | undefined, newMap: Map<String, T> | undefined): void {
+  private changeDrapesOrClassifiers<T extends Disposable>(oldMap: Map<string, T> | undefined, newMap: Map<string, T> | undefined): void {
     if (undefined === newMap) {
       if (undefined !== oldMap)
         for (const value of oldMap.values())
-          value.dispose();
+          value[Symbol.dispose]();
 
       return;
     }
@@ -448,7 +453,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (undefined !== oldMap) {
       for (const entry of oldMap)
         if (newMap.get(entry[0]) !== entry[1])
-          entry[1].dispose();
+          entry[1][Symbol.dispose]();
     }
   }
   public changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined) {
@@ -526,6 +531,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.uniforms.thematic.update(this);
 
+    this.uniforms.contours.update(this);
+
     this.uniforms.atmosphere.update(this);
 
     // NB: This must be done after changeFrustum() as some of the uniforms depend on the frustum.
@@ -550,7 +557,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
   public override reset(): void {
-    this.graphics.dispose();
+    this.graphics[Symbol.dispose]();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
 
@@ -743,7 +750,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return true;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void {
     if (!this.assignDC())
       return;
 
@@ -768,9 +775,30 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let result: Pixel.Buffer | undefined;
 
     this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      let updatedExclusions = false;
+      if (excludedElements) {
+        const swap = this._swapPickExclusions;
+        swap.clear();
+        for (const exclusion of excludedElements) {
+          swap.addId(exclusion);
+        }
+
+        if (!this._currPickExclusions.equals(swap)) {
+          this._swapPickExclusions = this._currPickExclusions;
+          this._currPickExclusions = swap;
+          updatedExclusions = true;
+          desync(this.pickExclusionsSyncTarget);
+        }
+      }
+
       this._drawNonLocatable = !excludeNonLocatable;
       result = this.readPixelsFromFbo(rect, selector);
       this._drawNonLocatable = true;
+
+      if (updatedExclusions) {
+        this._currPickExclusions.clear();
+        desync(this.pickExclusionsSyncTarget);
+      }
     });
 
     this.disposeOrReuseReadPixelResources(resources);
@@ -973,7 +1001,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.renderSystem.frameBufferStack.execute(this._fbo, true, false, () => {
       try {
         context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
-      } catch (e) {
+      } catch {
         didSucceed = false;
       }
     });
@@ -989,90 +1017,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const heightRatio = maxSize.y / curSize.y;
     const bestRatio = Math.min(widthRatio, heightRatio);
     return new Point2d(curSize.x * bestRatio, curSize.y * bestRatio);
-  }
-
-  /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
-   * If wantRect is null, that means "read the entire image".
-   */
-  public override readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
-    if (!this.assignDC())
-      return undefined;
-
-    // Determine capture rect and validate
-    const actualViewRect = this.renderRect; // already has device pixel ratio applied
-    const wantRect = wantRectIn.isNull ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
-    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
-    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
-      return undefined;
-
-    // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
-    const bytesPerPixel = 4;
-    const imageData = new Uint8Array(bytesPerPixel * wantRect.width * wantRect.height);
-    const isValidImageData = this.readImagePixels(imageData, wantRect.left, wantRect.top, wantRect.width, wantRect.height);
-    if (!isValidImageData)
-      return undefined;
-
-    let image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, wantRect.width);
-    if (!image)
-      return undefined;
-
-    const targetSize = targetSizeIn.clone();
-    if (targetSize.x === 0 || targetSize.y === 0) { // Indicates image should have same dimensions as rect (no scaling)
-      targetSize.x = wantRect.width;
-      targetSize.y = wantRect.height;
-    }
-
-    if (targetSize.x === wantRect.width && targetSize.y === wantRect.height) {
-      // No need to scale image.
-      // Some callers want background pixels to be treated as fully-transparent
-      // They indicate this by supplying a background color with full transparency
-      // Any other pixels are treated as fully-opaque as alpha has already been blended
-      // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
-      const preserveBGAlpha = 0.0 === this.uniforms.style.backgroundAlpha;
-
-      // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
-      let isEmptyImage = true;
-      for (let i = 3; i < image.data.length; i += 4) {
-        const a = image.data[i];
-        if (!preserveBGAlpha || 0 < a) {
-          image.data[i] = 0xff;
-          isEmptyImage = false;
-        }
-      }
-      if (isEmptyImage)
-        return undefined;
-    } else {
-      // Need to scale image.
-      const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
-      if (undefined === canvas)
-        return undefined;
-
-      const adjustedTargetSize = Target._applyAspectRatioCorrection(new Point2d(wantRect.width, wantRect.height), targetSize);
-      const resizedCanvas = canvasToResizedCanvasWithBars(canvas, adjustedTargetSize, new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y), this.uniforms.style.backgroundHexString);
-
-      const resizedImage = canvasToImageBuffer(resizedCanvas);
-      if (undefined !== resizedImage)
-        image = resizedImage;
-    }
-
-    if (flipVertically) {
-      const halfHeight = Math.floor(image.height / 2);
-      const numBytesPerRow = image.width * 4;
-      for (let loY = 0; loY < halfHeight; loY++) {
-        for (let x = 0; x < image.width; x++) {
-          const hiY = (image.height - 1) - loY;
-          const loIdx = loY * numBytesPerRow + x * 4;
-          const hiIdx = hiY * numBytesPerRow + x * 4;
-
-          swapImageByte(image, loIdx, hiIdx);
-          swapImageByte(image, loIdx + 1, hiIdx + 1);
-          swapImageByte(image, loIdx + 2, hiIdx + 2);
-          swapImageByte(image, loIdx + 3, hiIdx + 3);
-        }
-      }
-    }
-
-    return image;
   }
 
   public override readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined {
@@ -1303,11 +1247,11 @@ export class OnScreenTarget extends Target {
       && super.isDisposed;
   }
 
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this._blitGeom = dispose(this._blitGeom);
     this._scratchProgParams = undefined;
     this._scratchDrawParams = undefined;
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   public override collectStatistics(stats: RenderMemory.Statistics): void {

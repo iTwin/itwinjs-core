@@ -5,7 +5,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { BeEvent, IDisposable, Logger } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content,
@@ -36,9 +36,7 @@ import {
   NodePathElement,
   Paged,
   PagedResponse,
-  PresentationError,
   PresentationIpcEvents,
-  PresentationStatus,
   Prioritized,
   Ruleset,
   RulesetVariable,
@@ -62,7 +60,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
 
 /** @internal */
-export class PresentationManagerDetail implements IDisposable {
+export class PresentationManagerDetail implements Disposable {
   private _disposed: boolean;
   private _nativePlatform: NativePlatformDefinition | undefined;
   private _onManagerUsed: (() => void) | undefined;
@@ -93,12 +91,12 @@ export class PresentationManagerDetail implements IDisposable {
     this._diagnosticsOptions = params.diagnostics;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._disposed) {
       return;
     }
 
-    this.getNativePlatform().dispose();
+    this.getNativePlatform()[Symbol.dispose]();
     this._nativePlatform = undefined;
 
     this._disposed = true;
@@ -106,9 +104,8 @@ export class PresentationManagerDetail implements IDisposable {
 
   public getNativePlatform(): NativePlatformDefinition {
     if (this._disposed) {
-      throw new PresentationError(PresentationStatus.NotInitialized, "Attempting to use Presentation manager after disposal");
+      throw new Error("Attempting to use Presentation manager after disposal");
     }
-
     return this._nativePlatform!;
   }
 
@@ -269,7 +266,7 @@ export class PresentationManagerDetail implements IDisposable {
       return key === ""
         ? {
             total: value.total,
-            // eslint-disable-next-line deprecation/deprecation
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             items: value.items.map(DisplayValueGroup.fromJSON),
           }
         : value;
@@ -386,15 +383,15 @@ interface RequestParams {
 }
 
 function setupRulesets(nativePlatform: NativePlatformDefinition, supplementalRulesetDirectories: string[], primaryRulesetDirectories: string[]): void {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const elementPropertiesRuleset: Ruleset = require("./primary-presentation-rules/ElementProperties.PresentationRuleSet.json");
   nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const bisSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/BisCore.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(bisSupplementalRuleset));
 
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const funcSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/Functional.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(funcSupplementalRuleset));
 

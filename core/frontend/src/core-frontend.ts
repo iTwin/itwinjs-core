@@ -86,6 +86,7 @@ export * from "./render/FeatureSymbology";
 export * from "./render/FrameStats";
 export * from "./render/GraphicBranch";
 export * from "./render/GraphicBuilder";
+export * from "./render/GraphicTemplate";
 export * from "./render/MeshArgs";
 export * from "./render/MockRender";
 export * from "./render/ParticleCollectionBuilder";
@@ -117,6 +118,7 @@ export type {
 } from "./TxnEntityChanges";
 export * from "./tile/internal";
 export * from "./tools/AccuDrawTool";
+export * from "./tools/AccuDrawViewportUI";
 export * from "./tools/ClipViewTool";
 export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";

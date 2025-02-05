@@ -5,7 +5,7 @@
 
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
+import { queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
 import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider";
 
@@ -73,6 +73,8 @@ export interface QueryMeshExportsArgs {
   includeIncomplete?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
+  /** Number of exports to query */
+  numExports?: number;
 }
 
 /** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
@@ -81,7 +83,7 @@ export interface QueryMeshExportsArgs {
  * @beta
  */
 export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
-  const graphicsArgs = {
+  const graphicsArgs: QueryGraphicRepresentationsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
@@ -90,10 +92,11 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: "IMDL",
+    format: "IMODEL",
     urlPrefix: args.urlPrefix,
     includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
+    numExports: args.numExports,
   };
 
   for await (const data of queryGraphicRepresentations(graphicsArgs)) {

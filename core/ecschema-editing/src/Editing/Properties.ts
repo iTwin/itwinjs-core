@@ -206,6 +206,11 @@ export class Properties {
         throw new SchemaEditingError(SchemaEditType.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
+    const currentKoq = await property.kindOfQuantity;
+    if(currentKoq && currentKoq.persistenceUnit && koq.persistenceUnit && !currentKoq.persistenceUnit.matchesFullName(koq.persistenceUnit.fullName)) {
+      throw new SchemaEditingError(SchemaEditType.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), undefined, undefined, "KindOfQuantity can only be changed if it has the same persistence unit as the property.");
+    }
+
     property.setKindOfQuantity(new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(kindOfQuantityKey, async () => koq));
   }
 
@@ -290,13 +295,26 @@ export class Properties {
         property.setName(new ECName(renameChangeInfo.newPropertyName))
       }
     }
-
     if (!renameChangeInfo.isLocalChange && renameChangeInfo.changeDerived && renameChangeInfo.derivedProperties) {
       for (const propertyToRename of renameChangeInfo.derivedProperties) {
         const property = await this.getPropertyFromId(propertyToRename);
         property.setName(new ECName(renameChangeInfo.newPropertyName))
       }
     }
+  }
+
+  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
+    const derivedClasses: Array<MutableClass> = [];
+
+    for (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
+      if(ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
+        if (!mutableClass.key.matches(schemaItem.key)) {
+          derivedClasses.push(schemaItem as MutableClass);
+        }
+      }
+    }
+
+    return derivedClasses;
   }
 
   private async getPropertyFromId(propertyId: PropertyId): Promise<MutableProperty> {
@@ -405,10 +423,10 @@ class PrimitiveOrEnumProperties extends Properties {
   }
 
   /**
-   * Sets the extendTypeName attribute value.
+   * Sets the extendedTypeName attribute value.
    * @param classKey The SchemaItemKey of the class.
    * @param propertyName The name of the property.
-   * @param extendTypeName The extended type name of the property.
+   * @param extendedTypeName The extended type name of the property.
    */
   public async setExtendedTypeName(classKey: SchemaItemKey, propertyName: string, extendedTypeName: string) {
     const property = await this.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName)

@@ -61,7 +61,7 @@ export interface ClipPrimitivePlanesProps {
   planes?: {
     /** The set of clip planes. */
     clips?: UnionOfConvexClipPlaneSetsProps;
-    /** `true` if the primitive is a hole. */
+    /** `true` if the primitive is invisible. */
     invisible?: boolean;
   };
 }
@@ -73,15 +73,15 @@ export interface ClipPrimitivePlanesProps {
 export interface ClipPrimitiveShapeProps {
   /** The clip polygon. */
   shape?: {
-    /** The points describing the polygon. */
+    /** Points of the polygon, in the xy plane of the local coordinate system. */
     points?: XYZProps[];
-    /** Transform applied to the polygon. */
+    /** Transform from local to world. */
     trans?: TransformProps;
-    /** Lower bound on Z. */
+    /** Lower bound on z (in local coordinates). */
     zlow?: number;
-    /** Upper bound on Z. */
+    /** Upper bound on z (in local coordinates). */
     zhigh?: number;
-    /** `true` if this shape is a mask. */
+    /** `true` if this shape is considered a hole (keep geometry outside of the polygon). */
     mask?: boolean;
     /** `true` if this shape is invisible. */
     invisible?: boolean;
@@ -104,7 +104,7 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
  *     * At discretion of derived classes, plane construction can be done at construction time or "on demand when" queries
  * call `ensurePlaneSets ()`
  * * ClipPrimitive can be constructed directly with planes (and no derived class).
- * * That the prevailing use is via a ClipShape derived class.
+ * * The prevailing use is via a ClipShape derived class.
  *    * The ClipShape has an "isMask" property
  *       * isMask === false means the plane sets should cover the inside of its polygon.
  *       * isMask === true means the plane sets should cover the outside of its polygon.

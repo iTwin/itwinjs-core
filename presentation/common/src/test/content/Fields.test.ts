@@ -580,8 +580,9 @@ describe("NestedContentField", () => {
       const json = createTestNestedContentField({
         category,
         nestedFields: [createTestSimpleContentField({ category })],
+        autoExpand: true,
       }).toJSON();
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const field = NestedContentField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
@@ -593,13 +594,13 @@ describe("NestedContentField", () => {
         nestedFields: [createTestSimpleContentField({ category })],
         relationshipMeaning: RelationshipMeaning.SameInstance,
       }).toJSON();
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const field = NestedContentField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
 
     it("returns undefined for undefined JSON", () => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const item = NestedContentField.fromJSON(undefined, []);
       expect(item).to.be.undefined;
     });

@@ -2,20 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/unbound-method */
 
-import { expect } from "chai";
-import { IDisposable } from "@itwin/core-bentley";
+
+import { describe, expect, it } from "vitest";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 
-function addIsDisposed(disposable: IDisposable): void {
+function addIsDisposed(disposable: Disposable): void {
   (disposable as any).isDisposed = false;
-  const dispose = disposable.dispose;
-  disposable.dispose = () => {
+  const dispose = disposable[Symbol.dispose];
+  disposable[Symbol.dispose] = () => {
     (disposable as any).isDisposed = true;
     dispose.call(disposable);
   };
@@ -28,9 +27,9 @@ class Branch extends GraphicBranch {
     super(ownsEntries);
   }
 
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this.isDisposed = true;
-    super.dispose();
+    super[Symbol.dispose]();
   }
 }
 
@@ -67,7 +66,7 @@ class System extends MockRender.System {
 }
 
 function isDisposed(disposable: any): boolean {
-  expect(disposable.isDisposed).not.to.be.undefined;
+  expect(disposable.isDisposed).toBeDefined();
   return disposable.isDisposed;
 }
 
@@ -78,15 +77,15 @@ describe("RenderGraphic", () => {
     const owned = system.makeGraphic();
     const owner = system.createGraphicOwner(owned);
 
-    unowned.dispose();
-    owner.dispose();
+    unowned[Symbol.dispose]();
+    owner[Symbol.dispose]();
 
-    expect(isDisposed(unowned)).to.be.true;
-    expect(isDisposed(owner)).to.be.true;
-    expect(isDisposed(owned)).to.be.false;
+    expect(isDisposed(unowned)).toBe(true);
+    expect(isDisposed(owner)).toBe(true);
+    expect(isDisposed(owned)).toBe(false);
 
     owner.disposeGraphic();
-    expect(isDisposed(owned)).to.be.true;
+    expect(isDisposed(owned)).toBe(true);
   });
 });
 
@@ -101,15 +100,15 @@ describe("GraphicBranch", () => {
     const branch = new Branch(false);
     branch.add(unowned);
 
-    owningBranch.dispose();
-    expect(isDisposed(owningBranch)).to.be.true;
-    expect(isDisposed(owned)).to.be.true;
-    expect(owningBranch.entries.length).to.equal(0);
+    owningBranch[Symbol.dispose]();
+    expect(isDisposed(owningBranch)).toBe(true);
+    expect(isDisposed(owned)).toBe(true);
+    expect(owningBranch.entries.length).toBe(0);
 
-    branch.dispose();
-    expect(isDisposed(branch)).to.be.true;
-    expect(isDisposed(unowned)).to.be.false;
-    expect(branch.entries.length).to.equal(0);
+    branch[Symbol.dispose]();
+    expect(isDisposed(branch)).toBe(true);
+    expect(isDisposed(unowned)).toBe(false);
+    expect(branch.entries.length).toBe(0);
   });
 
   it("should not dispose of graphics owned by a graphic owner", () => {
@@ -122,11 +121,11 @@ describe("GraphicBranch", () => {
     branch.add(owner);
     branch.add(unowned);
 
-    branch.dispose();
-    expect(isDisposed(branch)).to.be.true;
-    expect(branch.entries.length).to.equal(0);
-    expect(isDisposed(owner)).to.be.true;
-    expect(isDisposed(unowned)).to.be.true;
-    expect(isDisposed(owned)).to.be.false;
+    branch[Symbol.dispose]();
+    expect(isDisposed(branch)).toBe(true);
+    expect(branch.entries.length).toBe(0);
+    expect(isDisposed(owner)).toBe(true);
+    expect(isDisposed(unowned)).toBe(true);
+    expect(isDisposed(owned)).toBe(false);
   });
 });

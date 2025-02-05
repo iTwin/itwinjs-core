@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { compareStrings, Guid, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
+import { compareStrings, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
 /** Identifies an image to be used to produce a [[RenderTexture]] for a given purpose - for example,
  * as part of a [[SkyBox]]. If the string is a valid `Id64String`, it refers to a persistent [Texture]($backend) element stored in an iModel.
@@ -18,11 +18,11 @@ export type TextureImageSpec = Id64String | string;
 
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].
- * @see [RenderSystem.createTextureFromImage]($frontend) to obtain a texture from an HTML image.
+ * @see [RenderSystem.createTexture]($frontend) to obtain a texture.
  * @see [RenderSystem.createTextureFromElement]($frontend) to obtain a texture from a [Texture]($backend) element.
  * @public
  */
-export abstract class RenderTexture implements IDisposable {
+export abstract class RenderTexture implements Disposable {
   /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
   /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */
@@ -43,7 +43,12 @@ export abstract class RenderTexture implements IDisposable {
    * the caller is responsible for invoking this method when it is finished using the texture; otherwise, the [RenderSystem]($frontend) will handle
    * its disposal.
    */
-  public abstract dispose(): void;
+  public [Symbol.dispose]() {
+    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+  }
+
+  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** An [OrderedComparator]($bentley) that compares this texture against `other`. */
   public compare(other: RenderTexture): number {
@@ -52,7 +57,7 @@ export abstract class RenderTexture implements IDisposable {
 }
 
 /** @public */
-export namespace RenderTexture { // eslint-disable-line no-redeclare
+export namespace RenderTexture {
   /** The types of [[RenderTexture]]s that can be created by a [RenderSystem]($frontend). */
   export enum Type {
     /** An image applied to a surface, with support for mip-mapping and repetition. */

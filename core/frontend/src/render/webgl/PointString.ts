@@ -21,9 +21,13 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
-export class PointStringGeometry extends LUTGeometry {
+export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "point-string" = "point-string" as const;
+  public readonly isInstanceable: boolean;
+  public noDispose = false;
   public readonly buffers: BuffersContainer;
   public readonly vertexParams: QParams3d;
   private readonly _hasFeatures: boolean;
@@ -36,6 +40,7 @@ export class PointStringGeometry extends LUTGeometry {
 
   private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, hasFeatures: boolean, viOrigin: Point3d | undefined) {
     super(viOrigin);
+    this.isInstanceable = undefined === viOrigin;
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointString, false);
     assert(undefined !== attrPos);
@@ -84,10 +89,12 @@ export class PointStringGeometry extends LUTGeometry {
       && this.indices.isDisposed;
   }
 
-  public dispose() {
-    dispose(this.buffers);
-    dispose(this.lut);
-    dispose(this.indices);
+  public [Symbol.dispose]() {
+    if (!this.noDispose) {
+      dispose(this.buffers);
+      dispose(this.lut);
+      dispose(this.indices);
+    }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

@@ -139,7 +139,9 @@ alpha;enum;ConcreteEntityTypes
 alpha;namespace;ConcreteEntityTypes
 internal;function;toBisCoreRootClassFullName
 public;interface;ConflictingLock
+deprecated;interface;ConflictingLock
 public;class;ConflictingLocksError
+deprecated;class;ConflictingLocksError
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -148,6 +150,18 @@ public;namespace;ContextRealityModelProps
 public;class;ContextRealityModels
 public;interface;ContextRealityModelsArgs
 public;interface;ContextRealityModelsContainer
+public;class;Contour
+public;class;ContourDisplay
+public;type;ContourDisplayProperties
+public;interface;ContourDisplayProps
+public;class;ContourGroup
+public;type;ContourGroupProperties
+public;interface;ContourGroupProps
+public;type;ContourProperties
+public;interface;ContourProps
+public;class;ContourStyle
+public;type;ContourStyleProperties
+public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 internal;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
@@ -223,6 +237,9 @@ public;interface;ElementAspectProps
 beta;namespace;ElementGeometry
 public;interface;ElementGeometryBuilderParams
 public;interface;ElementGeometryBuilderParamsForPart
+beta;interface;ElementGeometryCacheOperationRequestProps
+beta;interface;ElementGeometryCacheRequestProps
+beta;interface;ElementGeometryCacheResponseProps
 public;type;ElementGeometryChange
 public;namespace;ElementGeometryChange
 public;interface;ElementGeometryDataEntry
@@ -272,9 +289,13 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
+public;interface;FontFamilyDescriptor
+beta;interface;FontFamilySelector
 public;type;FontId
 public;class;FontMap
+deprecated;class;FontMap
 public;interface;FontMapProps
+deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;interface;FormDataCommon
@@ -402,8 +423,6 @@ public;class;IModel
 public;type;IModelConnectionProps
 beta;interface;IModelCoordinatesRequestProps
 beta;interface;IModelCoordinatesResponseProps
-public;interface;IModelEncryptionProps
-deprecated;interface;IModelEncryptionProps
 public;class;IModelError
 public;type;IModelErrorNumber
 public;class;IModelNotFoundResponse
@@ -424,6 +443,9 @@ internal;interface;InterceptedRpcRequest
 beta;enum;InternetConnectivityStatus
 public;const;Interpolation
 public;type;InterpolationFunction
+beta;interface;InUseLock
+beta;interface;InUseLocksError
+beta;namespace;InUseLocksError
 internal;const;ipcAppChannels
 internal;interface;IpcAppFunctions
 internal;interface;IpcAppNotifications
@@ -444,8 +466,10 @@ internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
 public;function;isPowerOfTwo
-internal;function;isValidImageSourceFormat
+public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
+beta;interface;ITwinError
+beta;namespace;ITwinError
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps
@@ -482,7 +506,7 @@ public;interface;MaterialProps
 internal;class;MeshEdge
 internal;class;MeshEdges
 internal;class;MeshPolyline
-internal;class;MeshPolylineList
+internal;type;MeshPolylineList
 public;class;ModelClipGroup
 public;interface;ModelClipGroupProps
 public;class;ModelClipGroups
@@ -617,9 +641,6 @@ public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
 public;namespace;Quantization
-internal;function;isInRange
-internal;function;isQuantizable
-internal;function;isQuantized
 public;class;QueryBinder
 public;interface;QueryLimit
 public;interface;QueryOptions
@@ -739,6 +760,7 @@ beta;class;RpcRoutingToken
 internal;interface;RpcSerializedValue
 internal;namespace;RpcSerializedValue
 internal;class;RpcSessionInvocation
+alpha;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
@@ -755,7 +777,11 @@ public;class;ServerError
 public;class;ServerTimeoutError
 public;interface;SessionProps
 beta;interface;SheetBorderTemplateProps
+beta;interface;SheetIndexEntryProps
+beta;type;SheetIndexFolderProps
+beta;interface;SheetIndexReferenceProps
 public;interface;SheetProps
+beta;interface;SheetReferenceProps
 beta;interface;SheetTemplateProps
 internal;class;SilhouetteEdgeArgs
 public;class;SkyBox
@@ -772,6 +798,7 @@ public;interface;SkySphereImageProps
 internal;interface;SnapRequestProps
 internal;interface;SnapResponseProps
 internal;class;SnapshotIModelRpcInterface
+deprecated;class;SnapshotIModelRpcInterface
 public;interface;SnapshotOpenOptions
 public;class;SolarLight
 public;interface;SolarLightProps
@@ -805,6 +832,7 @@ public;interface;TerrainProps
 public;type;TerrainProviderName
 deprecated;type;TerrainProviderName
 public;class;TerrainSettings
+internal;interface;TestingArgs
 internal;class;TestRpcManager
 beta;class;TextAnnotation
 public;interface;TextAnnotation2dProps
@@ -887,7 +915,6 @@ public;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
-public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 public;class;VerticalCRS
@@ -917,6 +944,5 @@ internal;class;WebAppRpcProtocol
 internal;class;WebAppRpcRequest
 public;interface;WhiteOnWhiteReversalProps
 public;class;WhiteOnWhiteReversalSettings
-internal;class;WipRpcInterface
 public;class;XyzRotation
 public;interface;XyzRotationProps

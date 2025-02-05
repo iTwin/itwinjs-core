@@ -11,7 +11,7 @@ import * as path from "path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
-  ElementProps, Environment, ExternalSourceProps, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
+  ElementProps, Environment, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
   GeometryStreamProps, ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName,
   PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager,
   RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
@@ -174,10 +174,10 @@ export class HubWrappers {
     assert.isTrue(this.hubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
     while (true) {
       try {
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
+        if (!(error instanceof RpcPendingResponse))
           throw error;
       }
     }
@@ -219,7 +219,7 @@ export class HubWrappers {
       try {
         return (await RpcBriefcaseUtility.open(openArgs));
       } catch (error) {
-        if (!(error instanceof RpcPendingResponse)) // eslint-disable-line deprecation/deprecation
+        if (!(error instanceof RpcPendingResponse))
           throw error;
       }
     }
@@ -296,6 +296,15 @@ export class IModelTestUtils {
     const assetFile = path.join(this.knownTestLocations.assetsDir, assetName);
     assert.isTrue(IModelJsFs.existsSync(assetFile));
     return assetFile;
+  }
+
+  public static resolveFontFile(fontName: string): LocalFileName {
+    const subDirs = ["Karla", "DejaVu", "Sitka"];
+    const fontSubDirectory = subDirs.find((x) => fontName.startsWith(x));
+
+    fontName = fontSubDirectory ? path.join(fontSubDirectory, fontName) : fontName;
+    const assetName = path.join("Fonts", fontName);
+    return this.resolveAssetFile(assetName);
   }
 
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
@@ -716,11 +725,11 @@ export class ExtensiveTestScenario {
     FunctionalSchema.registerSchema();
   }
 
-  public static populateDb(sourceDb: IModelDb): void {
-
+  public static async populateDb(sourceDb: IModelDb): Promise<void> {
     // make sure Arial is in the font table
-    sourceDb.addNewFont("Arial");
-    assert.exists(sourceDb.fontMap.getFont("Arial"));
+    const arialFontId = await sourceDb.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+    expect(arialFontId).not.to.be.undefined;
+    expect(arialFontId).greaterThan(0);
 
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
@@ -995,7 +1004,7 @@ export class ExtensiveTestScenario {
     const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
-    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, PlanProjectionSettings.fromJSON({ elevation: 10.0 }));
     displayStyle3d.settings.environment = Environment.fromJSON({
       sky: {
         image: {

@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { createGraphicRepresentationsQueryUrl, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -31,7 +31,7 @@ interface TestJsonResponse {
   };
 }
 
-interface TestJsonResponses{
+interface TestJsonResponses {
   exports: TestJsonResponse[];
 
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -81,15 +81,14 @@ function makeSource(props: SourceProps): TestJsonResponse {
       iModelId: "",
       changesetId: props.changesetId ?? "",
       exportType: "srcType",
-      geometryOptions: { },
-      viewDefinitionFilter: { },
+      geometryOptions: {},
+      viewDefinitionFilter: {},
     },
   };
 
   // Ensure _links is only defined if a url is provided through props.
   // We need to properly test cases where _links is undefined, because it may be undefined in the mesh export service response.
   if (props.href) {
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
     source._links = { mesh: { href: props.href } };
   }
   return source;
@@ -113,6 +112,7 @@ function makeSources(props: SourcesProps): TestJsonResponses {
 async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
+
 const testArgs = {
   accessToken: "this-is-a-fake-access-token",
   sessionId: "testSession",
@@ -122,7 +122,7 @@ const testArgs = {
     changeId: undefined,
     type: "srcType",
   },
-  format: "IMDL",
+  format: "IMODEL",
 };
 
 describe("queryGraphicRepresentations", () => {
@@ -144,7 +144,11 @@ describe("queryGraphicRepresentations", () => {
 
   it("produces one set of results", async () => {
     await mockFetch(
-      async () => makeSourcesResponse({ exports: [{ id: "a" }, { id: "b" }, { id: "c" }] }),
+      async () => makeSourcesResponse({ exports: [
+        { id: "a", href: "http://tiles.com/a" },
+        { id: "b", href: "http://tiles.com/b" },
+        { id: "c", href: "http://tiles.com/c" }
+      ] }),
       async () => expectSources(["a", "b", "c"], testArgs),
     );
   });
@@ -155,9 +159,17 @@ describe("queryGraphicRepresentations", () => {
       async () => {
         if (!fetchedFirst) {
           fetchedFirst = true;
-          return makeSourcesResponse({ exports: [{ id: "a" }, { id: "b" }], next: "next.org" });
+          return makeSourcesResponse({ exports: [
+              { id: "a", href: "http://tiles.com/a" },
+              { id: "b", href: "http://tiles.com/b" },
+            ],
+            next: "next.org"
+          });
         } else {
-          return makeSourcesResponse({ exports: [{ id: "c" }, { id: "d" }] });
+          return makeSourcesResponse({ exports: [
+            { id: "c", href: "http://tiles.com/c" },
+            { id: "d", href: "http://tiles.com/d" }
+          ] });
         }
       },
       async () => expectSources(["a", "b", "c", "d"], testArgs));
@@ -165,10 +177,14 @@ describe("queryGraphicRepresentations", () => {
 
   it("includes only completed Data Sources unless otherwise specified", async () => {
     await mockFetch(
-      async () => makeSourcesResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
+      async () => makeSourcesResponse({ exports: [
+        { id: "a", status: "Complete", href: "http://tiles.com/a" },
+        { id: "b", status: "InProgress" },
+        { id: "c", status: "Invalid" }
+      ] }),
       async () => {
         await expectSources(["a"], testArgs);
-        await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
+        await expectSources(["a", "b", "c"], { ...testArgs, includeIncomplete: true }),
         await expectSources(["a"], { ...testArgs, includeIncomplete: false });
       },
     );
@@ -179,7 +195,7 @@ describe("obtainGraphicRepresentationUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
-  async function fetchSources(resource: RequestInfo | URL): Promise<Response> {
+  async function fetchSources(resource: URL | RequestInfo): Promise<Response> {
     expect(typeof resource).to.equal("string");
     const url = resource as string;
 
@@ -216,7 +232,7 @@ describe("obtainGraphicRepresentationUrl", () => {
             changeId: args.versionId,
             type: "srcType",
           },
-          format: "IMDL",
+          format: "IMODEL",
           requireExactVersion: args.exact,
         });
 
@@ -238,5 +254,27 @@ describe("obtainGraphicRepresentationUrl", () => {
 
   it("returns undefined if no Data Source matches the source version Id and caller requires an exact version match", async () => {
     await expectUrl(undefined, { versionId: "bbbbbb", exact: true });
+  });
+});
+
+describe("createGraphicRepresentationsQueryUrl", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
+  it("creates the expected url to query the default number of exports", async () => {
+    const url = createGraphicRepresentationsQueryUrl({
+      sourceId: testArgs.dataSource.id,
+      sourceType: testArgs.dataSource.type
+    });
+    expect(url).to.contain("$top=5");
+  });
+
+  it("creates the expected url to query a specific number of exports", async () => {
+    const url = createGraphicRepresentationsQueryUrl({
+      sourceId: testArgs.dataSource.id,
+      sourceType: testArgs.dataSource.type,
+      numExports: 50
+    });
+    expect(url).to.contain("$top=50");
   });
 });

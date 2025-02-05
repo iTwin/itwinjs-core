@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
 

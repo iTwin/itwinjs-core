@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
 import { AngleProps } from '@itwin/core-geometry';
@@ -28,19 +26,16 @@ import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
-import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
-import { LogFunction } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -618,6 +613,8 @@ export interface BaseReaderOptions {
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
+    // @internal (undocumented)
+    testingArgs?: TestingArgs;
     usePrimaryConn?: boolean;
 }
 
@@ -674,10 +671,6 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 }
 
-export { BentleyError }
-
-export { BentleyStatus }
-
 // @public
 export enum BisCodeSpec {
     // @internal (undocumented)
@@ -708,6 +701,8 @@ export enum BisCodeSpec {
     physicalType = "bis:PhysicalType",
     renderMaterial = "bis:RenderMaterial",
     sheet = "bis:Sheet",
+    sheetIndex = "bis:SheetIndex",
+    sheetIndexEntry = "bis:SheetIndexEntry",
     spatialCategory = "bis:SpatialCategory",
     spatialLocationType = "bis:SpatialLocationType",
     subCategory = "bis:SubCategory",
@@ -873,8 +868,6 @@ export interface BriefcaseProps {
     readonly briefcaseId: BriefcaseId;
     readonly iModelId: GuidString;
 }
-
-export { BriefcaseStatus }
 
 // @public
 export function calculateSolarAngles(date: Date, location: Cartographic): {
@@ -1157,8 +1150,6 @@ export interface ChangesetRange {
     end?: ChangesetIndex;
     first: ChangesetIndex;
 }
-
-export { ChangeSetStatus }
 
 // @public
 export enum ChangesetType {
@@ -1635,14 +1626,14 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
-// @public
+// @public @deprecated
 export interface ConflictingLock {
     briefcaseIds: number[];
     objectId: string;
     state: LockState;
 }
 
-// @public
+// @public @deprecated
 export class ConflictingLocksError extends IModelError {
     constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
     // (undocumented)
@@ -1703,11 +1694,16 @@ export class ContextRealityModel {
     set displaySettings(settings: RealityModelDisplaySettings);
     // @beta (undocumented)
     protected _displaySettings: RealityModelDisplaySettings;
+    // @beta
+    get invisible(): boolean;
+    set invisible(invisible: boolean);
     matchesNameAndUrl(name: string, url: string): boolean;
     readonly name: string;
     readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(invisible: boolean, model: ContextRealityModel) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
     readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -1731,6 +1727,8 @@ export interface ContextRealityModelProps {
     description?: string;
     // @beta
     displaySettings?: RealityModelDisplayProps;
+    // @beta
+    invisible?: boolean;
     name?: string;
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
@@ -1758,6 +1756,8 @@ export class ContextRealityModels {
     readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(model: ContextRealityModel, invisible: boolean) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
     populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
@@ -1779,6 +1779,113 @@ export interface ContextRealityModelsContainer {
 }
 
 // @public
+export class Contour {
+    clone(changedProps?: Partial<ContourProperties>): Contour;
+    static compare(lhs: Contour, rhs: Contour): number;
+    static create(props?: Partial<ContourProperties>): Contour;
+    // (undocumented)
+    static readonly defaults: Contour;
+    // (undocumented)
+    equals(other: Contour): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourProps): Contour;
+    readonly majorIntervalCount: number;
+    readonly majorStyle: ContourStyle;
+    readonly minorInterval: number;
+    readonly minorStyle: ContourStyle;
+    readonly showGeometry: boolean;
+    // (undocumented)
+    toJSON(): ContourProps;
+}
+
+// @public
+export class ContourDisplay {
+    clone(changedProps?: Partial<ContourDisplayProperties>): ContourDisplay;
+    static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
+    readonly displayContours: boolean;
+    equals(other: ContourDisplay): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourDisplayProps): ContourDisplay;
+    readonly groups: ContourGroup[];
+    static readonly maxContourGroups = 5;
+    // (undocumented)
+    toJSON(): ContourDisplayProps;
+    withDisplayContours(displayContours: boolean): ContourDisplay;
+}
+
+// @public
+export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
+
+// @public
+export interface ContourDisplayProps {
+    displayContours?: boolean;
+    groups?: ContourGroupProps[];
+}
+
+// @public
+export class ContourGroup {
+    clone(changedProps?: Partial<ContourGroupProperties>): ContourGroup;
+    readonly contourDef: Contour;
+    static create(props?: Partial<ContourGroupProperties>): ContourGroup;
+    equals(other: ContourGroup | undefined): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourGroupProps): ContourGroup;
+    get isDefaultGroup(): boolean;
+    readonly name: string;
+    get subCategories(): OrderedId64Iterable;
+    subCategoriesEqual(other: ContourGroup): boolean;
+    // (undocumented)
+    toJSON(): ContourGroupProps;
+}
+
+// @public
+export type ContourGroupProperties = NonFunctionPropertiesOf<ContourGroup>;
+
+// @public
+export interface ContourGroupProps {
+    contourDef?: ContourProps;
+    name?: string;
+    subCategories?: CompressedId64Set;
+}
+
+// @public
+export type ContourProperties = NonFunctionPropertiesOf<Contour>;
+
+// @public
+export interface ContourProps {
+    majorIntervalCount?: number;
+    majorStyle?: ContourStyleProps;
+    minorInterval?: number;
+    minorStyle?: ContourStyleProps;
+    showGeometry?: boolean;
+}
+
+// @public
+export class ContourStyle {
+    clone(changedProps?: Partial<ContourStyleProperties>): ContourStyle;
+    readonly color: RgbColor;
+    static compare(lhs: ContourStyle, rhs: ContourStyle): number;
+    static create(props?: Partial<ContourStyleProperties>): ContourStyle;
+    equals(other: ContourStyle): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourStyleProps): ContourStyle;
+    readonly pattern: LinePixels;
+    readonly pixelWidth: number;
+    // (undocumented)
+    toJSON(): ContourStyleProps;
+}
+
+// @public
+export type ContourStyleProperties = NonFunctionPropertiesOf<ContourStyle>;
+
+// @public
+export interface ContourStyleProps {
+    color?: RgbColorProps;
+    pattern?: LinePixels;
+    pixelWidth?: number;
+}
+
+// @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
 // @internal
@@ -1793,12 +1900,12 @@ export interface CreateIModelProps extends IModelProps {
 }
 
 // @public
-export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
 }
 
 // @internal
-export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
+export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
 
@@ -1810,8 +1917,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2228224,
-    Major = 34,
+    Combined = 2359296,
+    Major = 36,
     Minor = 0
 }
 
@@ -1882,15 +1989,19 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
+    allowTestingArgs?: boolean;
+    autoShutdowWhenIdlelForSeconds?: number;
+    // (undocumented)
+    doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
-    // (undocumented)
     ignoreDelay?: boolean;
-    // (undocumented)
     ignorePriority?: boolean;
+    memoryMapFileSize?: number;
     // (undocumented)
+    monitorPollInterval?: number;
     requestQueueSize?: number;
-    // (undocumented)
+    statementCacheSizePerWorker?: number;
     workerThreads?: number;
 }
 
@@ -1929,6 +2040,8 @@ export interface DbQueryResponse extends DbResponse {
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
     kind?: DbRequestKind;
+    // (undocumented)
+    testingArgs?: TestingArgs;
 }
 
 // @internal (undocumented)
@@ -1980,22 +2093,22 @@ export enum DbResponseStatus {
     // (undocumented)
     Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
     // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  generic error*/
+    Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
     // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  ecsql prepared failed*/
+    Error_ECSql_PreparedFailed = 101,/*  generic error*/
     // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql step failed*/
+    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
     // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql failed to serialized row to json.*/
+    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
     // (undocumented)
-    Partial = 3,/*  ecsql binding failed.*/
+    Partial = 3,/*  ecsql failed to serialized row to json.*/
     // (undocumented)
-    QueueFull = 5,/*  class or property or instance specified was not found or property as not of type blob.*/
+    QueueFull = 5,/*  ecsql binding failed.*/
+    // (undocumented)
+    ShuttingDown = 6,/*  class or property or instance specified was not found or property as not of type blob.*/
     // (undocumented)
     Timeout = 4
 }
-
-export { DbResult }
 
 // @beta (undocumented)
 export interface DbRuntimeStats {
@@ -2005,6 +2118,8 @@ export interface DbRuntimeStats {
     memLimit: number;
     // (undocumented)
     memUsed: number;
+    // (undocumented)
+    prepareTime: number;
     // (undocumented)
     timeLimit: number;
     // (undocumented)
@@ -2123,6 +2238,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
+    get contours(): ContourDisplay;
+    set contours(contours: ContourDisplay);
     get environment(): Environment;
     set environment(environment: Environment);
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
@@ -2152,6 +2269,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     ao?: AmbientOcclusion.Props;
+    contours?: ContourDisplayProps;
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
     lights?: LightSettingsProps;
@@ -2255,6 +2373,7 @@ export class DisplayStyleSettings {
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
+    readonly onContoursChanged: BeEvent<(newContours: ContourDisplay) => void>;
     readonly onEnvironmentChanged: BeEvent<(newEnv: Readonly<Environment>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
@@ -2743,6 +2862,30 @@ export interface ElementGeometryBuilderParamsForPart {
     is2dPart?: boolean;
 }
 
+// @beta
+export interface ElementGeometryCacheOperationRequestProps {
+    id: Id64String;
+    onGeometry?: ElementGeometryFunction;
+    op: number;
+    params?: any;
+}
+
+// @beta
+export interface ElementGeometryCacheRequestProps {
+    id?: Id64String;
+}
+
+// @beta
+export interface ElementGeometryCacheResponseProps {
+    numCurve?: number;
+    numGeom?: number;
+    numOther?: number;
+    numPart?: number;
+    numSolid?: number;
+    numSurface?: number;
+    status: BentleyStatus;
+}
+
 // @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
@@ -2849,9 +2992,9 @@ export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     elementIds: Iterable<Id64String>;
     exclude?: boolean;
     modelIds?: Iterable<Id64String>;
-    // @internal (undocumented)
+    // (undocumented)
     priority?: never;
-    // @internal (undocumented)
+    // (undocumented)
     subCategoryIds?: never;
 }
 
@@ -3103,10 +3246,14 @@ export class FeatureAppearance {
     static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
     static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
+    getLineRgb(): RgbColor | undefined;
+    getLineTransparency(): number | undefined;
     readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
     readonly linePixels?: LinePixels;
+    readonly lineRgb?: RgbColor | false;
+    readonly lineTransparency?: number | false;
     get matchesDefaults(): boolean;
     readonly nonLocatable?: true;
     // (undocumented)
@@ -3134,6 +3281,8 @@ export interface FeatureAppearanceProps {
     emphasized?: true;
     ignoresMaterial?: true;
     linePixels?: LinePixels;
+    lineRgb?: RgbColorProps | false;
+    lineTransparency?: number | false;
     nonLocatable?: true;
     rgb?: RgbColorProps;
     transparency?: number;
@@ -3177,66 +3326,33 @@ export enum FeatureIndexType {
 // @public
 export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
-    // @internal
     addInvisibleElementOverridesToNeverDrawn(): void;
     get alwaysDrawn(): Id64.Uint32Set;
-    // @internal
-    protected readonly _alwaysDrawn: Id64.Uint32Set;
     alwaysDrawnIgnoresSubCategory: boolean;
     // @internal
     readonly animationNodeOverrides: Map<number, FeatureAppearance>;
-    // @internal
     protected _constructions: boolean;
     get defaultOverrides(): FeatureAppearance;
-    // @internal
-    protected _defaultOverrides: FeatureAppearance;
-    // @internal
     protected _dimensions: boolean;
-    // @internal
     protected readonly _elementOverrides: Id64.Uint32Map<FeatureAppearance>;
     getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
-    // @internal
-    protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined;
-    // @internal (undocumented)
-    protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined;
     getElementOverridesById(id: Id64String): FeatureAppearance | undefined;
     getFeatureAppearance(feature: Feature, modelId: Id64String, type?: BatchType, animationNodeId?: number): FeatureAppearance | undefined;
-    // @internal (undocumented)
-    protected getModelOverrides(idLo: number, idHi: number): FeatureAppearance | undefined;
     getModelOverridesById(id: Id64String): FeatureAppearance | undefined;
-    // @internal (undocumented)
-    protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined;
     getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined;
-    // @internal
     getSubCategoryPriority(idLo: number, idHi: number): number;
     ignoreAnimationOverrides(ignore: IgnoreAnimationOverrides): void;
-    // @internal (undocumented)
-    protected readonly _ignoreAnimationOverrides: IgnoreAnimationOverrides[];
-    // @internal
     ignoreSubCategory: boolean;
-    // @internal (undocumented)
-    protected isAlwaysDrawn(idLo: number, idHi: number): boolean;
     isAlwaysDrawnExclusive: boolean;
     isClassVisible(geomClass: GeometryClass): boolean;
     isFeatureVisible(feature: Feature): boolean;
-    // @internal (undocumented)
-    protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean;
     isSubCategoryIdVisible(id: Id64String): boolean;
-    // @internal
     isSubCategoryVisible(idLo: number, idHi: number): boolean;
-    // @internal (undocumented)
     isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean;
     get lineWeights(): boolean;
-    // @internal
     protected _lineWeights: boolean;
-    // @internal
-    protected readonly _modelOverrides: Id64.Uint32Map<FeatureAppearance>;
-    // @internal
     protected readonly _modelSubCategoryOverrides: Id64.Uint32Map<Id64.Uint32Set>;
     get neverDrawn(): Id64.Uint32Set;
-    // @internal
-    protected readonly _neverDrawn: Id64.Uint32Set;
-    // @internal
     readonly neverDrawnAnimationNodes: Set<number>;
     override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
@@ -3246,7 +3362,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     // @deprecated
     overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
-    // @internal
     protected _patterns: boolean;
     setAlwaysDrawn(id: Id64String): void;
     setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory?: boolean): void;
@@ -3255,11 +3370,8 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     setNeverDrawn(id: Id64String): void;
     setNeverDrawnSet(ids: Iterable<Id64String>): void;
     setVisibleSubCategory(id: Id64String): void;
-    // @internal
     protected readonly _subCategoryOverrides: Id64.Uint32Map<FeatureAppearance>;
-    // @internal
     protected readonly _subCategoryPriorities: Id64.Uint32Map<number>;
-    // @internal
     protected readonly _visibleSubCategories: Id64.Uint32Set;
 }
 
@@ -3273,12 +3385,9 @@ export enum FeatureOverrideType {
 // @public
 export class FeatureTable extends IndexMap<Feature> {
     constructor(maxFeatures: number, modelId?: Id64String, type?: BatchType);
-    // @internal (undocumented)
     get anyDefined(): boolean;
     findFeature(index: number): Feature | undefined;
-    // @internal (undocumented)
-    getArray(): Array<IndexedValue<Feature>>;
-    // @internal (undocumented)
+    getArray(): ReadonlyArray<IndexedValue<Feature>>;
     insertWithIndex(feature: Feature, index: number): void;
     get isPlanarClassifier(): boolean;
     get isUniform(): boolean;
@@ -3342,10 +3451,32 @@ export interface FlatBufferGeometryStream {
     format: "flatbuffer";
 }
 
+// @beta
+interface FontFace_2 {
+    familyName: string;
+    // (undocumented)
+    isBold: boolean;
+    // (undocumented)
+    isItalic: boolean;
+}
+export { FontFace_2 as FontFace }
+
+// @public
+export interface FontFamilyDescriptor {
+    name: string;
+    type: FontType;
+}
+
+// @beta
+export interface FontFamilySelector {
+    name: string;
+    type?: FontType;
+}
+
 // @public
 export type FontId = number;
 
-// @public
+// @public @deprecated
 export class FontMap {
     constructor(props?: FontMapProps);
     // (undocumented)
@@ -3357,26 +3488,21 @@ export class FontMap {
     toJSON(): FontMapProps;
 }
 
-// @public
+// @public @deprecated
 export interface FontMapProps {
     // (undocumented)
     fonts: FontProps[];
 }
 
 // @public
-export interface FontProps {
+export interface FontProps extends FontFamilyDescriptor {
     id: FontId;
-    name: string;
-    type: FontType;
 }
 
 // @public
 export enum FontType {
-    // (undocumented)
     Rsc = 2,
-    // (undocumented)
     Shx = 3,
-    // (undocumented)
     TrueType = 1
 }
 
@@ -4007,8 +4133,6 @@ export enum GeometrySummaryVerbosity {
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
-export { GetMetaDataFunction }
-
 // @internal
 export const getPullChangesIpcChannel: (iModelId: string) => string;
 
@@ -4114,7 +4238,6 @@ export namespace Gradient {
         flags: Flags;
         static fromJSON(json?: SymbProps): Symb;
         getImage(width: number, height: number): ImageBuffer;
-        // @internal
         getThematicImageForRenderer(maxDimension: number): ImageBuffer;
         // (undocumented)
         get hasTranslucency(): boolean;
@@ -4339,7 +4462,7 @@ export namespace HiddenLine {
         overrideColor(color: ColorDef | undefined): Style;
         overridePattern(pattern: LinePixels | undefined): Style;
         overrideWidth(width: number | undefined): Style;
-        // @internal (undocumented)
+        // (undocumented)
         get ovrColor(): boolean;
         readonly pattern?: LinePixels;
         // (undocumented)
@@ -4348,7 +4471,6 @@ export namespace HiddenLine {
     }
     export interface StyleProps {
         color?: ColorDefProps;
-        // @internal
         ovrColor?: boolean;
         pattern?: LinePixels;
         width?: number;
@@ -4606,17 +4728,11 @@ export interface IgnoreAnimationOverridesArgs {
 
 // @public
 export class ImageBuffer {
-    // @internal
-    protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number);
-    // @internal (undocumented)
-    protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number;
     static create(data: Uint8Array, format: ImageBufferFormat, width: number): ImageBuffer;
     readonly data: Uint8Array;
     readonly format: ImageBufferFormat;
     static getNumBytesPerPixel(format: ImageBufferFormat): number;
     get height(): number;
-    // @internal (undocumented)
-    protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean;
     get numBytesPerPixel(): number;
     readonly width: number;
 }
@@ -4876,11 +4992,6 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
-// @public @deprecated
-export interface IModelEncryptionProps {
-    readonly password?: string;
-}
-
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: IModelErrorNumber | number, message: string, getMetaData?: LoggingMetaData);
@@ -4992,8 +5103,6 @@ export interface IModelRpcOpenProps {
 export interface IModelRpcProps extends IModelRpcOpenProps {
     readonly key: string;
 }
-
-export { IModelStatus }
 
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
@@ -5126,6 +5235,29 @@ export const Interpolation: {
 // @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
+// @beta
+export interface InUseLock {
+    briefcaseIds: number[];
+    objectId: string;
+    state: LockState;
+}
+
+// @beta
+export interface InUseLocksError extends ITwinError {
+    // (undocumented)
+    errorKey: "in-use-locks";
+    // (undocumented)
+    inUseLocks: InUseLock[];
+    // (undocumented)
+    namespace: "itwinjs-core";
+}
+
+// @beta (undocumented)
+export namespace InUseLocksError {
+    export function isInUseLocksError(error: unknown): error is InUseLocksError;
+    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
+}
+
 // @internal (undocumented)
 export const ipcAppChannels: {
     readonly functions: "itwinjs-core/ipc-app";
@@ -5150,6 +5282,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
+    openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
@@ -5177,13 +5310,25 @@ export interface IpcAppNotifications {
 export type IpcInvokeReturn = {
     result: any;
     error?: never;
+    iTwinError?: never;
 } | {
     result?: never;
+    iTwinError?: never;
     error: {
         name: string;
         message: string;
         errorNumber: number;
         stack?: string;
+    };
+} | {
+    result?: never;
+    error?: never;
+    iTwinError: {
+        namespace: string;
+        errorKey: string;
+        message: string;
+        stack?: string;
+        [key: string]: any;
     };
 };
 
@@ -5324,11 +5469,26 @@ export function isPlacement3dProps(props: PlacementProps): props is Placement3dP
 // @public
 export function isPowerOfTwo(num: number): boolean;
 
-// @internal (undocumented)
-export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
+// @public
+export function isValidImageSourceFormat(format: number): format is ImageSourceFormat;
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface ITwinError {
+    errorKey: string;
+    message: string;
+    metadata?: LoggingMetaData;
+    namespace: string;
+    stack?: string;
+}
+
+// @beta (undocumented)
+export namespace ITwinError {
+    export function getMetaData(err: ITwinError): object | undefined;
+    export function isITwinError(error: unknown): error is ITwinError;
+}
 
 // @public
 export interface JsonGeometryStream {
@@ -5546,10 +5706,6 @@ export enum LockState {
     Shared = 1
 }
 
-export { LogFunction }
-
-export { LoggingMetaData }
-
 // @public
 export interface MapImageryProps {
     // (undocumented)
@@ -5764,9 +5920,7 @@ export class MeshPolyline {
 }
 
 // @internal (undocumented)
-export class MeshPolylineList extends Array<MeshPolyline> {
-    constructor(...args: MeshPolyline[]);
-}
+export type MeshPolylineList = MeshPolyline[];
 
 // @public
 export class ModelClipGroup {
@@ -5897,14 +6051,14 @@ export class ModelMapLayerSettings extends MapLayerSettings {
 
 // @public
 export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-    // @internal (undocumented)
+    // (undocumented)
     elementIds?: never;
-    // @internal (undocumented)
+    // (undocumented)
     exclude?: never;
     modelIds?: Iterable<Id64String>;
-    // @internal (undocumented)
+    // (undocumented)
     priority?: never;
-    // @internal (undocumented)
+    // (undocumented)
     subCategoryIds?: never;
 }
 
@@ -6302,7 +6456,7 @@ export interface OpenBriefcaseOptions {
 }
 
 // @public
-export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
+export interface OpenBriefcaseProps extends OpenDbKey {
     readonly fileName: LocalFileName;
     readonly readonly?: boolean;
     readonly watchForChanges?: boolean;
@@ -6355,9 +6509,9 @@ export enum OverriddenBy {
 // @public
 export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
     elementId: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     modelId?: never;
-    // @internal (undocumented)
+    // (undocumented)
     subCategoryId?: never;
 }
 
@@ -6372,18 +6526,18 @@ export interface OverrideFeatureAppearanceOptions {
 
 // @public
 export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
-    // @internal (undocumented)
+    // (undocumented)
     elementId?: never;
     modelId: Id64String;
-    // @internal (undocumented)
+    // (undocumented)
     subCategoryId?: never;
 }
 
 // @public
 export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
-    // @internal (undocumented)
+    // (undocumented)
     elementId?: never;
-    // @internal (undocumented)
+    // (undocumented)
     modelId?: never;
     subCategoryId: Id64String;
 }
@@ -6654,8 +6808,6 @@ export class PlanarClipMaskSettings {
 
 // @public
 export class PlanProjectionSettings {
-    // @internal
-    constructor(props: PlanProjectionSettingsProps);
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
     readonly elevation?: number;
     readonly enforceDisplayPriority?: boolean;
@@ -6841,11 +6993,11 @@ export enum PrimitiveTypeCode {
 
 // @public
 export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-    // @internal (undocumented)
+    // (undocumented)
     elementIds?: never;
-    // @internal (undocumented)
+    // (undocumented)
     exclude?: never;
-    // @internal (undocumented)
+    // (undocumented)
     modelIds?: never;
     priority: number;
 }
@@ -7039,7 +7191,6 @@ export class QParams2d {
     static fromZeroToOne(rangeScale?: number): QParams2d;
     isQuantizable(point: Point2d): boolean;
     readonly origin: Point2d;
-    // @internal (undocumented)
     get rangeDiagonal(): Vector2d;
     readonly scale: Point2d;
     setFromRange(range: Range2d, rangeScale?: number): void;
@@ -7069,7 +7220,6 @@ export class QParams3d {
     static fromZeroToOne(rangeScale?: number): QParams3d;
     isQuantizable(point: Point3d): boolean;
     readonly origin: Point3d;
-    // @internal (undocumented)
     get rangeDiagonal(): Vector3d;
     readonly scale: Point3d;
     setFromOriginAndScale(origin: Point3d, scale: Point3d): void;
@@ -7192,7 +7342,7 @@ export class QPoint3dBufferBuilder {
 
 // @public
 export class QPoint3dList {
-    [Symbol.iterator](): IterableIterator<QPoint3d>;
+    [Symbol.iterator](): ArrayIterator<QPoint3d>;
     constructor(params?: QParams3d);
     add(pt: Point3d): void;
     clear(): void;
@@ -7216,11 +7366,8 @@ export namespace Quantization {
     const // (undocumented)
     rangeScale8 = 255;
     export function computeScale(extent: number, rangeScale?: number): number;
-    // @internal (undocumented)
     export function isInRange(qpos: number, rangeScale?: number): boolean;
-    // @internal (undocumented)
     export function isQuantizable(pos: number, origin: number, scale: number, rangeScale?: number): boolean;
-    // @internal (undocumented)
     export function isQuantized(qpos: number): boolean;
     export function quantize(pos: number, origin: number, scale: number, rangeScale?: number): number;
     export function unquantize(qpos: number, origin: number, scale: number): number;
@@ -7277,6 +7424,8 @@ export class QueryOptionsBuilder {
     setRestartToken(val: string): this;
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
+    // @internal
+    setTestingArgs(val: TestingArgs): this;
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -7312,6 +7461,8 @@ export enum QueryParamType {
 export interface QueryPropertyMetaData {
     accessString?: string;
     className: string;
+    extendedType?: string;
+    // @deprecated
     extendType: string;
     generated: boolean;
     index: number;
@@ -7348,6 +7499,7 @@ export interface QueryStats {
     backendMemUsed: number;
     backendRowsReturned: number;
     backendTotalTime: number;
+    prepareTime: number;
     retryCount: number;
     totalTime: number;
 }
@@ -7937,11 +8089,13 @@ export namespace RenderSchedule {
 }
 
 // @public
-export abstract class RenderTexture implements IDisposable {
+export abstract class RenderTexture implements Disposable {
+    [Symbol.dispose](): void;
     protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
     compare(other: RenderTexture): number;
+    // @deprecated (undocumented)
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -8577,6 +8731,8 @@ export class RpcRegistry {
 
 // @internal
 export abstract class RpcRequest<TResponse = any> {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(client: RpcInterface, operation: string, parameters: any[]);
     static get activeRequests(): ReadonlyMap<string, RpcRequest>;
     static get aggregateLoad(): RpcOperationsProfile;
@@ -8587,8 +8743,6 @@ export abstract class RpcRequest<TResponse = any> {
     protected computeRetryAfter(attempts: number): number;
     get connecting(): boolean;
     static current(context: RpcInterface): RpcRequest;
-    // (undocumented)
-    dispose(): void;
     get elapsed(): number;
     static readonly events: BeEvent<RpcRequestEventHandler>;
     get extendedStatus(): string;
@@ -8726,7 +8880,7 @@ export enum RpcRequestStatus {
 // @public @deprecated (undocumented)
 export namespace RpcRequestStatus {
     // (undocumented)
-    export function isTransientError(status: RpcRequestStatus): boolean;
+    export function isTransientError(status: RpcRequestStatus): status is RpcRequestStatus.BadGateway | RpcRequestStatus.ServiceUnavailable | RpcRequestStatus.GatewayTimeout | RpcRequestStatus.RequestTimeout | RpcRequestStatus.TooManyRequests;
 }
 
 // @internal
@@ -8791,6 +8945,18 @@ export class RpcSessionInvocation extends RpcInvocation {
     static create(request: InterceptedRpcRequest): RpcSessionInvocation;
     // (undocumented)
     get rejected(): boolean;
+}
+
+// @alpha
+export interface RscFontEncodingProps {
+    // (undocumented)
+    codePage?: number;
+    // (undocumented)
+    degree?: number;
+    // (undocumented)
+    diameter?: number;
+    // (undocumented)
+    plusMinus?: number;
 }
 
 // @beta (undocumented)
@@ -8942,6 +9108,19 @@ export interface SheetBorderTemplateProps extends ElementProps {
     width?: number;
 }
 
+// @beta
+export interface SheetIndexEntryProps extends ElementProps {
+    entryPriority: number;
+}
+
+// @beta
+export type SheetIndexFolderProps = SheetIndexEntryProps;
+
+// @beta
+export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
+    sheetIndex?: RelatedElementProps;
+}
+
 // @public
 export interface SheetProps extends ElementProps {
     // (undocumented)
@@ -8954,6 +9133,11 @@ export interface SheetProps extends ElementProps {
     sheetTemplate?: Id64String;
     // (undocumented)
     width?: number;
+}
+
+// @beta
+export interface SheetReferenceProps extends SheetIndexEntryProps {
+    sheet?: RelatedElementProps;
 }
 
 // @beta
@@ -9110,6 +9294,7 @@ export interface SnapRequestProps {
     id: Id64String;
     // (undocumented)
     intersectCandidates?: Id64Array;
+    modelToWorld?: TransformProps;
     // (undocumented)
     snapAperture?: number;
     // (undocumented)
@@ -9152,22 +9337,22 @@ export interface SnapResponseProps {
     status: number;
 }
 
-// @internal
+// @internal @deprecated
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
-    // (undocumented)
+    // @deprecated (undocumented)
     close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
     static getClient(): SnapshotIModelRpcInterface;
     static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface;
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
-    // (undocumented)
+    // @deprecated (undocumented)
     openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 
 // @public
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
+export interface SnapshotOpenOptions extends OpenDbKey {
     // @internal
     readonly tempFileBase?: string;
 }
@@ -9396,12 +9581,12 @@ export class SubCategoryOverride {
 
 // @public
 export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
-    // @internal (undocumented)
+    // (undocumented)
     elementIds?: never;
-    // @internal (undocumented)
+    // (undocumented)
     exclude?: never;
     modelIds?: Iterable<Id64String>;
-    // @internal (undocumented)
+    // (undocumented)
     priority?: never;
     subCategoryIds: Iterable<Id64String>;
 }
@@ -9490,6 +9675,12 @@ export class TerrainSettings {
     readonly providerName: string;
     // (undocumented)
     toJSON(): TerrainProps;
+}
+
+// @internal (undocumented)
+export interface TestingArgs {
+    // (undocumented)
+    interrupt?: boolean;
 }
 
 // @internal
@@ -9807,8 +9998,7 @@ export interface TextureLoadProps {
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
     compare(other: TextureMapping): number;
-    // @internal (undocumented)
-    computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+    computeUVParams(visitor: PolyfaceVisitor, localToWorld?: Transform): Point2d[] | undefined;
     // @beta
     normalMapParams?: NormalMapParams;
     readonly params: TextureMapping.Params;
@@ -9830,15 +10020,11 @@ export namespace TextureMapping {
         repetitions: number;
     }
     export enum Mode {
-        // @internal (undocumented)
         Cubic = 4,
-        // @internal (undocumented)
         Cylindrical = 6,
-        // @internal (undocumented)
         DirectionalDrape = 3,
         // (undocumented)
         ElevationDrape = 1,
-        // @internal
         FrontProject = 8,
         // (undocumented)
         None = -1,
@@ -9846,9 +10032,7 @@ export namespace TextureMapping {
         Parametric = 0,
         // (undocumented)
         Planar = 2,
-        // @internal (undocumented)
         Solid = 7,
-        // @internal (undocumented)
         Spherical = 5
     }
     export interface ParamProps {
@@ -9857,20 +10041,19 @@ export namespace TextureMapping {
         textureMat2x3?: TextureMapping.Trans2x3;
         textureWeight?: number;
         useConstantLod?: boolean;
-        // @internal (undocumented)
+        // (undocumented)
         worldMapping?: boolean;
     }
     export class Params {
         constructor(props?: TextureMapping.ParamProps);
         compare(other: Params): number;
-        // @internal
-        computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
+        computeUVParams(visitor: IndexedPolyfaceVisitor, localToWorld?: Transform): Point2d[] | undefined;
         constantLodParams: ConstantLodParams;
         mode: TextureMapping.Mode;
         textureMatrix: TextureMapping.Trans2x3;
         useConstantLod: boolean;
         weight: number;
-        // @internal (undocumented)
+        // (undocumented)
         worldMapping: boolean;
     }
     export class Trans2x3 {
@@ -10443,7 +10626,7 @@ export class Tween {
     // (undocumented)
     onStop(callback: TweenCallback): this;
     // (undocumented)
-    onUpdate(callback: UpdateCallback): this;
+    onUpdate(callback: UpdateCallback_2): this;
     // (undocumented)
     pause(time: number): this;
     // (undocumented)
@@ -10476,7 +10659,7 @@ export class Tweens {
     create(from: any, opts?: {
         to: any;
         duration: number;
-        onUpdate: UpdateCallback;
+        onUpdate: UpdateCallback_2;
         onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
@@ -10575,7 +10758,8 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
-export type UpdateCallback = (obj: any, t: number) => void;
+type UpdateCallback_2 = (obj: any, t: number) => void;
+export { UpdateCallback_2 as UpdateCallback }
 
 // @beta
 export interface UpgradeOptions {
@@ -10780,7 +10964,6 @@ export class ViewFlags {
     readonly lighting: boolean;
     readonly materials: boolean;
     readonly monochrome: boolean;
-    // @internal
     normalize(): ViewFlags;
     override(overrides: Partial<ViewFlagsProperties>): ViewFlags;
     readonly patterns: boolean;
@@ -10841,7 +11024,7 @@ export interface ViewStateProps {
 // @beta
 export namespace ViewStoreRpc {
     const // @internal
-    version: "4.0.0";
+    version = "4.0.0";
     export interface AddViewArgs {
         readonly categorySelectorProps?: CategorySelectorProps;
         readonly displayStyleProps?: DisplayStyleProps;
@@ -11175,23 +11358,6 @@ export class WhiteOnWhiteReversalSettings {
     static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings;
     readonly ignoreBackgroundColor: boolean;
     toJSON(): WhiteOnWhiteReversalProps | undefined;
-}
-
-// @internal
-export abstract class WipRpcInterface extends RpcInterface {
-    // (undocumented)
-    attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
-    // (undocumented)
-    getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
-    static getClient(): WipRpcInterface;
-    static readonly interfaceName = "WipRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    isChangeCacheAttached(_iModelToken: IModelRpcProps): Promise<boolean>;
-    // (undocumented)
-    isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean>;
-    // (undocumented)
-    placeholder(_iModelToken: IModelRpcProps): Promise<string>;
 }
 
 // @public

@@ -58,7 +58,7 @@ export class EnvironmentDecorations {
       this.loadGround();
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._ground = undefined;
     this._sky.params = this._sky.promise = undefined;
 
@@ -223,7 +223,7 @@ export class EnvironmentDecorations {
               idToImage.set(spec, image);
           }
 
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
           const txImgs = [
             idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,

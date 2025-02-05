@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert, NSRS
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSExtent, HorizontalCRSExtentProps, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
 import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformPath, GeodeticTransformPathProps, GeodeticTransformProps } from "../geometry/GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";

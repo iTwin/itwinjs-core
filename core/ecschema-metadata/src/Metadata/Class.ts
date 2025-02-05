@@ -21,6 +21,7 @@ import {
 } from "./Property";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -29,13 +30,12 @@ import { SchemaItem } from "./SchemaItem";
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
+  protected _derivedClasses?: Map<string, LazyLoadedECClass>;
   protected _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
   public get modifier() { return this._modifier; }
-  public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
-  public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
   public get properties(): IterableIterator<Property> | undefined { return this._properties?.values(); }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
@@ -46,6 +46,37 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       this._modifier = modifier;
     else
       this._modifier = ECClassModifier.None;
+  }
+
+  /**
+   * Gets the base class if it exists, otherwise returns undefined.
+   */
+  public get baseClass(): LazyLoadedECClass | undefined {
+    return this._baseClass;
+  }
+
+  /**
+   * Sets the base class of the ECClass. Pass undefined to 'remove' the base class.
+   */
+  protected async setBaseClass(baseClass: LazyLoadedECClass | undefined) {
+    const oldBaseClass = this._baseClass;
+    this._baseClass = baseClass;
+
+    if (baseClass)
+      this.addDerivedClass(await baseClass, this);
+    else if (oldBaseClass)
+      this.removeDerivedClass(await oldBaseClass, this);
+  }
+
+  /**
+   * Gets the derived classes belonging to this class.
+   * @returns An array of ECClasses or undefined if no derived classes exist.
+   */
+  public async getDerivedClasses(): Promise<ECClass [] | undefined> {
+    if (!this._derivedClasses || this._derivedClasses.size === 0)
+      return undefined;
+
+    return Array.from(await Promise.all(this._derivedClasses.values()));
   }
 
   /**
@@ -419,22 +450,45 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     if (undefined !== classProps.modifier) {
       const modifier = parseClassModifier(classProps.modifier);
-      if (undefined === modifier)
-        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
-      this._modifier = modifier;
+      if (undefined === modifier) {
+        if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: classProps.originalECSpecMajorVersion, writeVersion: classProps.originalECSpecMinorVersion } as ECSpecVersion))
+          this._modifier = ECClassModifier.None;
+        else
+          throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
+      } else {
+        this._modifier = modifier;
+      }
     }
 
     if (undefined !== classProps.baseClass) {
       const ecClassSchemaItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
       if (!ecClassSchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
-        async () => {
-          const baseClass = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
-          if (undefined === baseClass)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-          return baseClass;
-        });
+
+      const baseClass = this.schema.lookupItemSync(ecClassSchemaItemKey);
+
+      let lazyBase: LazyLoadedECClass;
+      if (!baseClass) {
+        lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
+          async () => {
+            const baseItem = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
+            if (undefined === baseItem)
+              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+            return baseItem;
+          });
+      } else {
+        lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
+          async () => {
+            return baseClass as ECClass;
+          });
+      }
+
+      this._baseClass = lazyBase;
+
+      if (!baseClass)
+        return;
+
+      this.addDerivedClass(baseClass as ECClass, this);
     }
   }
 
@@ -592,9 +646,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return false;
 
       for (const [className, customAttribute] of ecClass.customAttributes) {
-        if (customAttributes!.has(className))
+        if (customAttributes.has(className))
           continue;
-        customAttributes!.set(className, customAttribute);
+        customAttributes.set(className, customAttribute);
       }
 
       return false;
@@ -724,6 +778,41 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
   }
+
+  /**
+   * Adds an ECClass to the derived class collection. This method is only intended to update the local
+   * cache of derived classes. For adding a class to the hierarchy, use the baseClass setter method.
+   * @param prop The property to add.
+   * @return The property that was added.
+   */
+  private addDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
+    if (!baseClass._derivedClasses)
+      baseClass._derivedClasses = new Map<string, LazyLoadedECClass>();
+
+    if (baseClass._derivedClasses.has(derivedClass.fullName))
+      return;
+
+    if (derivedClass.isSync(baseClass)) {
+      const promise = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(derivedClass.key, async () => derivedClass);
+      baseClass._derivedClasses.set(derivedClass.fullName, promise);
+    }
+  }
+
+  /**
+   * Removes an ECClass from the derived class collection. This method is only intended to update the local
+   * cache of derived classes. For updating the class hierarchy, use the baseClass setter method.
+   * @param prop The property to add.
+   * @return The property that was added.
+   */
+  private removeDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
+    if (!baseClass._derivedClasses)
+      return;
+
+    if (!baseClass._derivedClasses.has(derivedClass.fullName))
+      return;
+
+    baseClass._derivedClasses.delete(derivedClass.fullName);
+  }
 }
 
 /**
@@ -731,12 +820,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.StructClass; // eslint-disable-line
-
-  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
-    super(schema, name, modifier);
-    this.schemaItemType = SchemaItemType.StructClass;
-  }
+  public override readonly schemaItemType = SchemaItemType.StructClass;
 }
 
 /**
@@ -752,6 +836,7 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
+  public abstract override setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
   public abstract override setName(name: string): void;

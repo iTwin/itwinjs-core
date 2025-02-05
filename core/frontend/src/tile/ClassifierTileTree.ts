@@ -36,7 +36,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     tileTree: undefined,
     loadStatus: TileTreeLoadStatus.NotFound,
     load: () => undefined,
-    dispose: () => undefined,
+    [Symbol.dispose]: () => undefined,
     loadTree: async () => undefined,
     iModel: undefined as unknown as IModelConnection,
   };
@@ -194,7 +194,7 @@ function createClassifierId(classifier: SpatialClassifier | undefined, source: V
     return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
 
   const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
+  const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(classifier.modelId, source?.scheduleScriptReference); // eslint-disable-line @typescript-eslint/no-deprecated
   return {
     modelId: classifier.modelId,
     type,

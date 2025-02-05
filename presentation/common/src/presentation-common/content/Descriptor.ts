@@ -22,6 +22,7 @@ import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
 import { Ruleset } from "../rules/Ruleset";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields";
+import { omitUndefined } from "../Utils";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -51,7 +52,7 @@ export interface SelectClassInfo {
  * Serialized [[SelectClassInfo]] JSON representation
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
@@ -416,8 +417,8 @@ export class Descriptor implements DescriptorSource {
     this.fields = [...source.fields];
     this.sortingField = source.sortingField;
     this.sortDirection = source.sortDirection;
-    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
-    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
+    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
+    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
     this.instanceFilter = source.instanceFilter;
     this.ruleset = source.ruleset;
   }
@@ -427,27 +428,26 @@ export class Descriptor implements DescriptorSource {
     const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
     const selectClasses: SelectClassInfoJSON<string>[] = this.selectClasses.map((selectClass) => SelectClassInfo.toCompressedJSON(selectClass, classesMap));
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
-    return Object.assign(
-      {
-        displayType: this.displayType,
-        contentFlags: this.contentFlags,
-        categories: this.categories.map(CategoryDescription.toJSON),
-        fields,
-        selectClasses,
-        classesMap,
-      },
-      this.connectionId !== undefined && { connectionId: this.connectionId },
-      this.inputKeysHash !== undefined && { inputKeysHash: this.inputKeysHash },
-      // istanbul ignore next
-      this.contentOptions !== undefined && { contentOptions: this.contentOptions }, // eslint-disable-line deprecation/deprecation
-      this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
-      this.sortDirection !== undefined && { sortDirection: this.sortDirection },
-      this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line deprecation/deprecation
-      this.fieldsFilterExpression !== undefined && { fieldsFilterExpression: this.fieldsFilterExpression },
-      this.instanceFilter !== undefined && { instanceFilter: this.instanceFilter },
-      this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
-      this.ruleset !== undefined && { ruleset: this.ruleset },
-    );
+    return omitUndefined({
+      displayType: this.displayType,
+      contentFlags: this.contentFlags,
+      categories: this.categories.map(CategoryDescription.toJSON),
+      fields,
+      selectClasses,
+      classesMap,
+      connectionId: this.connectionId ?? "",
+      inputKeysHash: this.inputKeysHash ?? "",
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      contentOptions: this.contentOptions,
+      sortingFieldName: this.sortingField?.name,
+      sortDirection: this.sortDirection,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      filterExpression: this.filterExpression,
+      fieldsFilterExpression: this.fieldsFilterExpression,
+      instanceFilter: this.instanceFilter,
+      selectionInfo: this.selectionInfo,
+      ruleset: this.ruleset,
+    });
   }
 
   /** Deserialize [[Descriptor]] from JSON */
@@ -456,16 +456,27 @@ export class Descriptor implements DescriptorSource {
       return undefined;
     }
 
-    const { classesMap, ...leftOverJson } = json;
-    const categories = CategoryDescription.listFromJSON(json.categories);
-    const selectClasses = SelectClassInfo.listFromCompressedJSON(json.selectClasses, classesMap);
-    const fields = this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
+    const {
+      categories: jsonCategories,
+      selectClasses: jsonSelectClasses,
+      fields: jsonFields,
+      connectionId,
+      inputKeysHash,
+      classesMap,
+      sortingFieldName,
+      ...leftOverJson
+    } = json;
+    const categories = CategoryDescription.listFromJSON(jsonCategories);
+    const selectClasses = SelectClassInfo.listFromCompressedJSON(jsonSelectClasses, classesMap);
+    const fields = this.getFieldsFromJSON(jsonFields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
     return new Descriptor({
       ...leftOverJson,
+      ...(connectionId ? /* istanbul ignore next */ { connectionId } : undefined),
+      ...(inputKeysHash ? /* istanbul ignore next */ { inputKeysHash } : undefined),
       selectClasses,
       categories,
       fields,
-      sortingField: getFieldByName(fields, json.sortingFieldName, true),
+      sortingField: getFieldByName(fields, sortingFieldName, true),
     });
   }
 
@@ -509,9 +520,9 @@ export class Descriptor implements DescriptorSource {
     if (this.contentFlags !== 0) {
       overrides.contentFlags = this.contentFlags;
     }
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (this.filterExpression || this.fieldsFilterExpression) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression;
     }
     if (this.instanceFilter) {

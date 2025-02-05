@@ -5,7 +5,7 @@
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
+import { obtainGraphicRepresentationUrl, ObtainGraphicRepresentationUrlArgs } from "./GraphicRepresentationProvider";
 import { loggerCategory } from "../LoggerCategory";
 
 /** Arguments supplied  to [[obtainIModelTilesetUrl]].
@@ -37,7 +37,7 @@ export interface ObtainIModelTilesetUrlArgs {
  * @beta
  */
 export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs):
-Promise<URL|undefined> {
+  Promise<URL | undefined> {
   if (!args.iModelId) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iModelId");
     return undefined;
@@ -48,7 +48,7 @@ Promise<URL|undefined> {
     return undefined;
   }
 
-  const graphicsArgs = {
+  const graphicsArgs: ObtainGraphicRepresentationUrlArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
@@ -57,7 +57,7 @@ Promise<URL|undefined> {
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: "IMDL",
+    format: "IMODEL",
     urlPrefix: args.urlPrefix,
     requireExactVersion: args.requireExactChangeset,
     enableCDN: args.enableCDN,

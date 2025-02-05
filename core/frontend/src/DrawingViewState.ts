@@ -24,9 +24,9 @@ import { RenderGraphic } from "./render/RenderGraphic";
 import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
-import { OffScreenViewport } from "./Viewport";
+import { OffScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./common/ViewRect";
-import { AttachToViewportArgs, ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
+import { AttachToViewportArgs, ComputeDisplayTransformArgs, ExtentLimits, GetAttachmentViewportArgs, ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.
  * @internal
@@ -167,7 +167,7 @@ class SectionTarget extends MockRender.OffScreenTarget {
  */
 class SectionAttachment {
   private readonly _viewFlagOverrides: ViewFlagOverrides;
-  private readonly _toDrawing: Transform;
+  public readonly toDrawing: Transform;
   private readonly _fromDrawing: Transform;
   private readonly _viewRect = new ViewRect(0, 0, 1, 1);
   private readonly _originalFrustum = new Frustum();
@@ -187,13 +187,13 @@ class SectionAttachment {
   }
 
   public get drawingRange() {
-    const frustum3d = this._originalFrustum.transformBy(this._toDrawing);
+    const frustum3d = this._originalFrustum.transformBy(this.toDrawing);
     return frustum3d.toRange();
   }
 
   public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, toSheet: Transform | undefined) {
     // Save the input for clone(). Attach a copy to the viewport.
-    this._toDrawing = toDrawing;
+    this.toDrawing = toDrawing;
     this._fromDrawing = fromDrawing;
 
     this.viewport = OffScreenViewport.createViewport(view, new SectionTarget(this), true);
@@ -203,7 +203,7 @@ class SectionAttachment {
     let clip = this.view.getViewClip();
     if (clip) {
       clip = clip.clone();
-      const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this._toDrawing) : this._toDrawing;
+      const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this.toDrawing) : this.toDrawing;
       clip.transformInPlace(clipTransform);
       clipVolume = IModelApp.renderSystem.createClipVolume(clip);
     }
@@ -211,6 +211,7 @@ class SectionAttachment {
     this._branchOptions = {
       clipVolume,
       hline: view.getDisplayStyle3d().settings.hiddenLineSettings,
+      inSectionDrawingAttachment: true,
       frustum: {
         is3d: true,
         scale: { x: 1, y: 1 },
@@ -223,14 +224,14 @@ class SectionAttachment {
     this.viewport.setupFromView();
     this.viewport.viewingSpace.getFrustum(CoordSystem.World, true, this._originalFrustum);
 
-    const drawingFrustum = this._originalFrustum.transformBy(this._toDrawing);
+    const drawingFrustum = this._originalFrustum.transformBy(this.toDrawing);
     const drawingRange = drawingFrustum.toRange();
     this._drawingExtents = drawingRange.diagonal();
     this._drawingExtents.z = Math.abs(this._drawingExtents.z);
   }
 
-  public dispose(): void {
-    this.viewport.dispose();
+  public [Symbol.dispose](): void {
+    this.viewport[Symbol.dispose]();
   }
 
   public addToScene(context: SceneContext): void {
@@ -242,7 +243,7 @@ class SectionAttachment {
       return;
 
     // Adjust offscreen viewport's frustum based on intersection with drawing view frustum.
-    const frustum3d = this._originalFrustum.transformBy(this._toDrawing);
+    const frustum3d = this._originalFrustum.transformBy(this.toDrawing);
     const frustumRange3d = frustum3d.toRange();
     const frustum2d = context.viewport.getWorldFrustum();
     const frustumRange2d = frustum2d.toRange();
@@ -283,7 +284,7 @@ class SectionAttachment {
       for (const graphic of source)
         graphics.entries.push(graphic);
 
-      const branch = context.createGraphicBranch(graphics, this._toDrawing, this._branchOptions);
+      const branch = context.createGraphicBranch(graphics, this.toDrawing, this._branchOptions);
       context.outputGraphic(branch);
     };
 
@@ -336,7 +337,7 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** Strictly for testing. @internal */
-  public get attachment(): Object | undefined {
+  public get attachment(): object | undefined {
     return this._attachment;
   }
 
@@ -369,7 +370,6 @@ export class DrawingViewState extends ViewState2d {
     this._attachment = dispose(this._attachment);
   }
 
-  /** @internal */
   public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const props = await this.querySectionDrawingProps();
@@ -402,7 +402,7 @@ export class DrawingViewState extends ViewState2d {
 
         break;
       }
-    } catch (_ex) {
+    } catch {
       // The version of BisCore ECSchema in the iModel is probably too old to contain the SectionDrawing ECClass.
     }
 
@@ -456,7 +456,6 @@ export class DrawingViewState extends ViewState2d {
     };
   }
 
-  /** @internal */
   public override isDrawingView(): this is DrawingViewState { return true; }
 
   /** See [[ViewState.getOrigin]]. */
@@ -493,7 +492,6 @@ export class DrawingViewState extends ViewState2d {
       this._attachment.addToScene(context);
   }
 
-  /** @internal */
   public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
   }
@@ -501,5 +499,19 @@ export class DrawingViewState extends ViewState2d {
   /** @internal */
   public override get secondaryViewports() {
     return this._attachment ? [this._attachment.viewport] : super.secondaryViewports;
+  }
+
+  /** @internal */
+  public override getAttachmentViewport(args: GetAttachmentViewportArgs): Viewport | undefined {
+    const attach = args.inSectionDrawingAttachment ? this._attachment : undefined;
+    return attach?.viewport;
+  }
+
+  /** @beta */
+  public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
+    // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for drawings.
+    // Should probably call super or have super call us.
+    const attach = args.inSectionDrawingAttachment ? this._attachment : undefined;
+    return attach?.toDrawing.clone(args.output);
   }
 }

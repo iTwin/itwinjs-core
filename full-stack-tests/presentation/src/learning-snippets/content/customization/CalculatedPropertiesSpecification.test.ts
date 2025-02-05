@@ -3,19 +3,20 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
+import { TestIModelConnection } from "../../../IModelSetupUtils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -157,6 +158,56 @@ describe("Learning Snippets", () => {
             },
           },
         ]);
+      });
+
+      it("uses `extendedData` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Ruleset
+        // There's a content rule for returning content of given `bis.Subject` instance. The produced content is customized to
+        // additionally have a calculated "My Calculated Property" property that has extended data assigned.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [
+            {
+              ruleType: "Content",
+              specifications: [
+                {
+                  specType: "SelectedNodeInstances",
+                  calculatedProperties: [
+                    {
+                      label: "My Calculated Property",
+                      value: "123",
+                      extendedData: {
+                        extendedDataInt: "2*2",
+                        extendedDataStr: "\"xxx\""
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // __PUBLISH_EXTRACT_START__ Presentation.Content.Customization.CalculatedPropertiesSpecification.ExtendedData.Result
+        // Ensure that the calculated property field has `extendedData` items assigned to it.
+        const content = await Presentation.presentation.getContentIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:Subject", id: "0x1" }]),
+          descriptor: {},
+        });
+        expect(content!.descriptor.fields).to.containSubset([
+          {
+            label: "My Calculated Property",
+            extendedData: {
+              extendedDataInt: 4,
+              extendedDataStr: "xxx"
+            },
+          },
+        ]);
+        // __PUBLISH_EXTRACT_END__
       });
 
       it("uses `type` attribute", async () => {

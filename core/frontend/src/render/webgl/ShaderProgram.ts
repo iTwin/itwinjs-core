@@ -151,13 +151,18 @@ export class ShaderProgram implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this._glProgram === undefined; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this.isDisposed) {
       assert(!this._inUse);
       System.instance.context.deleteProgram(this._glProgram!);
       this._glProgram = undefined;
       this._status = CompileStatus.Uncompiled;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 
   public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
@@ -215,6 +220,32 @@ export class ShaderProgram implements WebGLDisposable {
       const validateLog = gl.getProgramInfoLog(this._glProgram);
       const msg = `Shader program failed to link. Link errors: ${linkLog} Validation errors: ${validateLog} Program description: ${this.description}`;
       throw new Error(msg);
+    }
+
+    // Debug output
+    const debugUniforms = false;
+    if (debugUniforms) {
+      const dbgLog = (x: string) => console.log(x); // eslint-disable-line no-console
+      const outSrc = false; // true for source out, false for just varying info
+      if (this._fragDescription) {
+        let tStr = "";
+        if (!outSrc) {
+          tStr = `${this._fragDescription}`;
+        }
+        const numUniforms = gl.getProgramParameter(this._glProgram, GL.ProgramParameter.ActiveUniforms);
+        const tStr2 = `Active Uniforms: ${numUniforms}`;
+        if (tStr2) {
+          if (outSrc) {
+            dbgLog("//===============================================================================================================");
+            dbgLog(this.vertSource);
+            dbgLog("//========= Num Active Uniforms =========");
+            dbgLog(`${tStr2}\n`);
+            dbgLog(this.fragSource);
+          } else {
+            dbgLog(`\n${tStr2}  ${tStr}\n`);
+          }
+        }
+      }
     }
 
     return true;
@@ -627,7 +658,7 @@ export class ShaderProgram implements WebGLDisposable {
 
 /** Context in which ShaderPrograms are executed. Avoids switching shaders unnecessarily.
  * Ensures shader programs are compiled before use and un-bound when scope is disposed.
- * This class must *only* be used inside a using() function!
+ * Instances of this class must *only* be declared with the `using` keyword!
  * @internal
  */
 export class ShaderProgramExecutor {
@@ -647,10 +678,15 @@ export class ShaderProgramExecutor {
   public get isDisposed(): boolean { return this._isDisposed; }
 
   /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
-  public dispose() {
+  public [Symbol.dispose]() {
     this.changeProgram(undefined);
     ShaderProgramExecutor.freeParams();
     this._isDisposed = true;
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add IModelDb methods for exporting ECSchemas.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

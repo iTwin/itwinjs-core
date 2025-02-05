@@ -40,7 +40,7 @@ export class NullTarget extends RenderTarget {
   public override setFlashed(): void { }
   public setViewRect(): void { }
   public override onResized(): void { }
-  public override dispose(): void { }
+  public override[Symbol.dispose](): void { }
   public updateViewRect(): boolean { return false; }
   public readPixels(): void { }
   public get screenSpaceEffects(): Iterable<string> { return []; }
@@ -64,6 +64,7 @@ export class NullRenderSystem extends RenderSystem {
   public dispose() { }
   public constructor() { super(); }
   public override createRenderGraphic() { return undefined; }
+  public override createGraphicFromTemplate() { return undefined as any; }
 }
 
 /** A utility class intended for applications (primarily test-runners) that run in environments that lack support for WebGL.

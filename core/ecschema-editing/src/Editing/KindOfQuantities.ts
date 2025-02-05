@@ -87,18 +87,15 @@ export class KindOfQuantities extends SchemaItems {
   }
 
   /**
-   * @param koqKey A schemaItemKey of the editing KindOfQuantity.
    * @param parent A SchemaItemKey of the parent Format.
    * @param unitLabelOverrides The list of Unit (or InvertedUnit) and label overrides. The length of list should be equal to the number of units in the parent Format.
    */
-  public async createFormatOverride(koqKey: SchemaItemKey, parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
+  public async createFormatOverride(parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
     try {
-      await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
-
       const parentFormat = await this.getSchemaItem<Format>(parent, SchemaItemType.Format);
       return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
-    } catch (e: any) {
-      throw new SchemaEditingError(SchemaEditType.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
+    } catch(e: any) {
+      throw new SchemaEditingError(SchemaEditType.CreateFormatOverride, new SchemaItemId(this.schemaItemType, parent), e);
     }
   }
 }

@@ -5,13 +5,13 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-
-import { BentleyStatus, IModelError } from "../../IModelError";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { IModelError } from "../../IModelError";
 import { BackendReadable } from "../../BackendTypes";
 import { RpcProtocol } from "./RpcProtocol";
 
 // cspell:ignore unmarshal
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 function isBuffer(val: any): boolean {
   return val && typeof (val.constructor) !== "undefined" && typeof (val.constructor.isBuffer) === "function" && val.constructor.isBuffer(val);

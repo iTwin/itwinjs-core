@@ -148,7 +148,7 @@ export class Mesh {
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
-    this._data = MeshPrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
+    this._data = MeshPrimitiveType.Mesh === type ? new TriangleList() : [];
     this.displayParams = displayParams;
     this.features = features ? new Mesh.Features(features) : undefined;
     this.type = type;
@@ -287,7 +287,7 @@ export class Mesh {
   }
 }
 
-export namespace Mesh { // eslint-disable-line no-redeclare
+export namespace Mesh {
   export class Features {
     public readonly table: FeatureTable;
     public indices: number[] = [];

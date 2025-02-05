@@ -87,9 +87,13 @@ export class BuffersContainer implements WebGLDisposable {
     this._vao = new VAOHandle(this._context);
   }
 
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
+  }
   // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
-  public dispose(): void {
-    this._vao.dispose();
+  public [Symbol.dispose](): void {
+    this._vao[Symbol.dispose]();
   }
 
   public get isDisposed(): boolean {
@@ -156,8 +160,13 @@ export class VAOHandle implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this._arrayObject === undefined; }
 
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
+  }
+
   /** Frees the WebGL vertex array object */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this.isDisposed) {
       this._context.deleteVertexArray(this._arrayObject!);
       this._arrayObject = undefined;
@@ -206,7 +215,7 @@ export class BufferHandle implements WebGLDisposable {
   public get bytesUsed(): number { return this._bytesUsed; }
 
   /** Frees the WebGL buffer */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this.isDisposed) {
       System.instance.context.deleteBuffer(this._glBuffer!);
       this._glBuffer = undefined;

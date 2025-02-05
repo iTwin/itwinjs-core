@@ -719,9 +719,9 @@ export class DetachRealityModelTool extends Tool {
 
 // @beta
 export class DiagnosticsPanel {
-    constructor(vp: Viewport, props?: DiagnosticsPanelProps);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(vp: Viewport, props?: DiagnosticsPanelProps);
     // (undocumented)
     get element(): HTMLElement;
     // (undocumented)
@@ -908,9 +908,9 @@ export function formatMemory(numBytes: number): string;
 
 // @beta
 export class FpsTracker {
-    constructor(parent: HTMLElement, viewport: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, viewport: Viewport);
 }
 
 // @beta
@@ -949,9 +949,9 @@ export class GaussianBlurEffect extends ConvolutionEffect {
 
 // @alpha (undocumented)
 export class GpuProfiler {
-    constructor(parent: HTMLElement);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement);
 }
 
 // @beta
@@ -1332,9 +1332,9 @@ export class MeasureTileLoadTimeTool extends Tool {
 
 // @beta
 export class MemoryTracker {
-    constructor(parent: HTMLElement, vp: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, vp: Viewport);
 }
 
 // @alpha (undocumented)
@@ -2105,10 +2105,10 @@ export interface SliderProps {
 
 // @beta
 export class SnowDecorator implements Decorator {
+    readonly [Symbol.dispose]: VoidFunction;
     configure(params: Partial<SnowParams>): void;
     // (undocumented)
     decorate(context: DecorateContext): void;
-    readonly dispose: VoidFunction;
     static toggle(viewport: Viewport, enable?: boolean): Promise<void>;
     readonly viewport: Viewport;
 }
@@ -2218,16 +2218,16 @@ export interface TextBoxProps {
 
 // @beta
 export class TileMemoryBreakdown {
-    constructor(parent: HTMLElement);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement);
 }
 
 // @beta
 export class TileStatisticsTracker {
-    constructor(parent: HTMLElement, vp: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, vp: Viewport);
 }
 
 // @beta
@@ -2567,9 +2567,9 @@ export interface ToolArgs {
 
 // @alpha
 export class ToolSettingsTracker {
-    constructor(parent: HTMLElement, _vp: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, _vp: Viewport);
 }
 
 // @beta
@@ -2609,6 +2609,9 @@ export class UnsharpenEffect extends ConvolutionEffect {
     // (undocumented)
     static toolId: string;
 }
+
+// @alpha (undocumented)
+export function updateSliderValue(sliderCtrl: Slider, value: string): void;
 
 // @beta
 export class ViewportAddRealityModel extends Tool {

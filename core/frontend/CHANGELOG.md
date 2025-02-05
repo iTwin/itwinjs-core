@@ -1,6 +1,104 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 13 Sep 2024 15:12:41 GMT and should not be manually modified.
+This log was last generated on Fri, 24 Jan 2025 08:05:17 GMT and should not be manually modified.
+
+## 4.10.6
+Fri, 24 Jan 2025 08:02:40 GMT
+
+_Version update only_
+
+## 4.10.5
+Tue, 21 Jan 2025 21:56:45 GMT
+
+_Version update only_
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+### Updates
+
+- Fix duplicate Bing map attributions.
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+_Version update only_
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Deprecate `SnapshotConnection.openRemote`
+- Fixed problem with zoom when background map is on and allow3dManipulations is on.
+- Fixed reading of KHR compressed meshes in GLTF reader.
+- When a inUseLocks error is thrown on the backend during an IPC call, it will also be thrown on the frontend.
+- Promote some overridden methods/properties from internal to public.
+- Fix WorkerReturnType for async implementations.
+- Add support for instancing to GraphicBuilder, GraphicDescriptionBuilder, and glTF.
+- Add support for snapping to secondary iModels within a viewport.
+- Permit FeatureAppearance to independently override line color and transparency.
+- Add option to temporarily hide specific elements for Viewport.readPixels.
+- Support snapping within section drawing attachments.
+- Allow context reality model visibility to be toggled on/off
+- Support ContourDisplay rendering.
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+_Version update only_
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:45 GMT
+
+_Version update only_
+
+## 4.9.5
+Tue, 22 Oct 2024 20:01:40 GMT
+
+_Version update only_
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+### Updates
+
+- Fix WorkerReturnType for async implementations.
+
+## 4.9.3
+Thu, 03 Oct 2024 19:15:45 GMT
+
+_Version update only_
+
+## 4.9.2
+Wed, 02 Oct 2024 15:14:43 GMT
+
+_Version update only_
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+_Version update only_
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- Fix range problem for elements during edit which sometimes made the dissappear.
+- Permit TiledGraphicsProviders to contribute to planar clip masks.
+- Fix incorrect bounding box for RenderGraphic created from GraphicDescription.
+- Change MapLayerImageryProvider.supportsMapFeatureInfo from alpha to public
 
 ## 4.8.7
 Fri, 13 Sep 2024 15:11:17 GMT

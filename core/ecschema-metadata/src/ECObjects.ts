@@ -89,15 +89,18 @@ export enum CustomAttributeContainerType {
  * @beta
  */
 export enum SchemaMatchType {
-  // Find exact VersionRead, VersionWrite, VersionMinor match as well as Data
+  /*
+  * Find exact VersionRead, VersionWrite, VersionMinor match as well as Data. NOTE data is not yet matched
+  * @deprecated in 4.10 Use Exact instead.
+  */
   Identical,
-  // Find exact VersionRead, VersionWrite, VersionMinor match.
+  /* Find exact VersionRead, VersionWrite, VersionMinor match. */
   Exact,
-  // Find latest version with matching VersionRead and VersionWrite
+  /* Find latest version with matching VersionRead and VersionWrite */
   LatestWriteCompatible,
-  // Find latest version.
+  /* Find latest version. */
   Latest,
-  // Find latest version with matching VersionRead
+  /* Find latest version with matching VersionRead */
   LatestReadCompatible,
 }
 

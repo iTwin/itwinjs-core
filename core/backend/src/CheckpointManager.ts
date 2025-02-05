@@ -199,6 +199,8 @@ export class V2CheckpointManager {
     try {
       const container = this.getContainer(v2props, checkpoint);
       const dbName = v2props.dbName;
+      // Use the new token from the recently queried v2 checkpoint just incase the one we currently have is expired.
+      container.accessToken = v2props.sasToken;
       if (!container.isConnected)
         container.connect(this.cloudCache);
       container.checkForChanges();
@@ -293,7 +295,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
@@ -429,7 +431,7 @@ export class CheckpointManager {
     const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.Readonly);
-    } catch (error) {
+    } catch {
       return false;
     }
 

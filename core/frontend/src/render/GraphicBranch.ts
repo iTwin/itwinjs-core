@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { disposeArray, Id64String, IDisposable } from "@itwin/core-bentley";
+import { disposeArray, Id64String } from "@itwin/core-bentley";
 import {
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, RenderSchedule, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
@@ -18,7 +18,7 @@ import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 
 /** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
@@ -40,7 +40,7 @@ export interface GraphicBranchFrustum {
  * @public
  * @extensions
  */
-export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ {
+export class GraphicBranch implements Disposable /* , RenderMemory.Consumer */ {
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
@@ -108,8 +108,13 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   }
 
   /** Disposes of all graphics in this branch, if and only if [[ownsEntries]] is true. */
-  public dispose() {
+  public [Symbol.dispose]() {
     this.clear();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** Returns true if this branch contains no graphics. */
@@ -145,6 +150,11 @@ export interface GraphicBranchOptions {
   hline?: HiddenLine.Settings;
   /** The iModel from which the graphics originate, if different than that associated with the view. */
   iModel?: IModelConnection;
+  /** An optional transform from the coordinate system of [[iModel]] to those of a different [[IModelConnection]].
+   * This is used by [[AccuSnap]] when displaying one iModel in the context of another iModel (i.e., the iModel associated
+   * with the [[Viewport]]).
+   */
+  transformFromIModel?: Transform;
   /** @internal */
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */
@@ -155,6 +165,12 @@ export interface GraphicBranchOptions {
    * @internal
    */
   viewAttachmentId?: Id64String;
+  /** @internal */
+  inSectionDrawingAttachment?: boolean;
+  /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
+   * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
+   */
+  disableClipStyle?: true;
 }
 
 /** Clip/Transform for a branch that are varied over time.

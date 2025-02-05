@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { describe, it } from "vitest";
 import { Geometry } from "../../Geometry";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
