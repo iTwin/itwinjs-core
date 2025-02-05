@@ -57,7 +57,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-  * @internal in 3.x. use [[onScheduleScriptChanged]].
+  * @internal as of 5.0, use [[onScheduleScriptChanged]].
   */
   public readonly [_onScheduleScriptReferenceChanged] = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
