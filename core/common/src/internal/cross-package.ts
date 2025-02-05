@@ -12,3 +12,4 @@ export {
 } from "./PackedFeatureTable";
 export type { BackendReadable, BackendWritable, BackendBuffer } from "./BackendTypes";
 export { RenderMaterialParams } from "./RenderMaterialParams";
+export { RenderTextureParams } from "./RenderTextureParams";
