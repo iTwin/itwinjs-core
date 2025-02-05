@@ -3030,8 +3030,6 @@ export class EmptyLocalization implements Localization {
     // (undocumented)
     getLocalizedString(key: string | string[]): string;
     // (undocumented)
-    getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
-    // (undocumented)
     getNamespacePromise(): Promise<void> | undefined;
     // (undocumented)
     initialize(): Promise<void>;
@@ -7662,38 +7660,6 @@ export abstract class RenderMaterial {
     readonly textureMapping?: TextureMapping;
 }
 
-// @public (undocumented)
-export namespace RenderMaterial {
-    // @internal
-    export class Params {
-        constructor(key?: string);
-        get alpha(): number | undefined;
-        set alpha(alpha: number | undefined);
-        // @alpha
-        ambient: number;
-        static readonly defaults: Params;
-        diffuse: number;
-        diffuseColor?: ColorDef;
-        // @alpha
-        emissiveColor?: ColorDef;
-        static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params;
-        key?: string;
-        // @alpha
-        reflect: number;
-        // @alpha
-        reflectColor?: ColorDef;
-        // @alpha
-        refract: number;
-        // @alpha
-        shadows: boolean;
-        specular: number;
-        specularColor?: ColorDef;
-        // (undocumented)
-        specularExponent: number;
-        textureMapping?: TextureMapping;
-    }
-}
-
 // @public
 export interface RenderMaterialAssetMapsProps {
     Bump?: TextureMapProps;
@@ -7729,6 +7695,35 @@ export interface RenderMaterialAssetProps {
     specular?: number;
     specular_color?: RgbFactorProps;
     transmit?: number;
+}
+
+// @internal
+export class RenderMaterialParams {
+    constructor(key?: string);
+    get alpha(): number | undefined;
+    set alpha(alpha: number | undefined);
+    // @alpha
+    ambient: number;
+    static readonly defaults: RenderMaterialParams;
+    diffuse: number;
+    diffuseColor?: ColorDef;
+    // @alpha
+    emissiveColor?: ColorDef;
+    static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): RenderMaterialParams;
+    key?: string;
+    // @alpha
+    reflect: number;
+    // @alpha
+    reflectColor?: ColorDef;
+    // @alpha
+    refract: number;
+    // @alpha
+    shadows: boolean;
+    specular: number;
+    specularColor?: ColorDef;
+    // (undocumented)
+    specularExponent: number;
+    textureMapping?: TextureMapping;
 }
 
 // @public

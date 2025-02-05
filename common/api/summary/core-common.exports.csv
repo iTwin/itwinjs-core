@@ -675,10 +675,9 @@ internal;interface;RelTypeInfo
 public;type;RemoveFunction
 public;interface;RenderFeatureTable
 public;class;RenderMaterial
-public;namespace;RenderMaterial
-internal;class;Params
 public;interface;RenderMaterialAssetMapsProps
 public;interface;RenderMaterialAssetProps
+internal;class;RenderMaterialParams
 public;interface;RenderMaterialProps
 public;enum;RenderMode
 public;namespace;RenderSchedule
