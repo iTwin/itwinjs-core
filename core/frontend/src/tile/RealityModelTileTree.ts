@@ -29,7 +29,7 @@ import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  getGcsConverterAvailable, GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { SpatialClassifiersState } from "../SpatialClassifiersState";
@@ -577,6 +577,17 @@ export class RealityModelTileTree extends RealityTileTree {
     if (classifier)
       this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
   }
+
+  /** @internal */
+    protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+      super.collectClassifierGraphics(args, selectedTiles);
+
+      this.layerClassifiers.forEach((layerClassifier: RenderPlanarClassifier) => {
+        // if (!(args instanceof GraphicsCollectorDrawArgs))
+        layerClassifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+
+      });
+    }
 }
 
 /** @internal */
