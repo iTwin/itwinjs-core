@@ -25,6 +25,10 @@ import { MutableClass } from "./Mutable/MutableClass";
  * A class extending ECClasses allowing you to create schema items of type RelationshipClass.
  */
 export class RelationshipClasses extends ECClasses {
+  protected override get itemTypeClass(): typeof RelationshipClass {
+    return RelationshipClass;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.RelationshipClass, schemaEditor);
   }

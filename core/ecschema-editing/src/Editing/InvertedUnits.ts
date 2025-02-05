@@ -20,6 +20,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Inverted Unit.
  */
 export class InvertedUnits extends SchemaItems {
+  protected override get itemTypeClass(): typeof InvertedUnit {
+    return InvertedUnit;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.InvertedUnit, schemaEditor);
   }

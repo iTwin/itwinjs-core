@@ -249,8 +249,8 @@ describe("Properties editing tests", () => {
       await expect(testEditor.entities.properties.setCategory(entityKey, "testProperty", unknownCategory)).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetCategory);
 
-        expect(error).to.have.nested.property("innerError.message", `PropertyCategory ${unknownCategory.fullName} could not be found in the schema ${testKey.name}.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+        expect(error).to.have.nested.property("innerError.message", `PropertyCategory ${unknownCategory.fullName} could not be found in the schema context.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
       });
     });
 
@@ -666,8 +666,8 @@ describe("Properties editing tests", () => {
       await expect(testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", unknownKOQ)).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetKindOfQuantity);
 
-        expect(error).to.have.nested.property("innerError.message", `KindOfQuantity ${unknownKOQ.fullName} could not be found in the schema ${testKey.name}.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+        expect(error).to.have.nested.property("innerError.message", `KindOfQuantity ${unknownKOQ.fullName} could not be found in the schema context.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
       });
     });
   });

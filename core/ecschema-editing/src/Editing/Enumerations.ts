@@ -21,6 +21,10 @@ type MutableEnumerator = {
  * A class allowing you to create schema items of type Enumeration.
  */
 export class Enumerations extends SchemaItems {
+  protected override get itemTypeClass(): typeof Enumeration {
+    return Enumeration;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Enumeration, schemaEditor);
   }

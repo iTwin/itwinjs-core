@@ -42,6 +42,7 @@ export class ECClasses extends SchemaItems{
   }
 
   protected override schemaItemType: ECClassSchemaItems;
+  protected override get itemTypeClass(): typeof ECClass { return ECClass; }
 
   /**
    * Allows access for editing of base Property attributes.
@@ -68,7 +69,7 @@ export class ECClasses extends SchemaItems{
     const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);
 
     if (baseClassKey !== undefined) {
-      const baseClassItem = await this.getSchemaItem(baseClassKey, ECClass);
+      const baseClassItem = await this.getSchemaItem(baseClassKey, this.itemTypeClass);
       await (newClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T));
     }
 
@@ -276,13 +277,13 @@ export class ECClasses extends SchemaItems{
    */
   public async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
     try {
-      const classItem = await this.getSchemaItem(itemKey, ECClass);
+      const classItem = await this.getSchemaItem(itemKey, this.itemTypeClass);
       if (!baseClassKey) {
         await (classItem as MutableClass).setBaseClass(undefined);
         return;
       }
 
-      const baseClassItem = await this.getSchemaItem(baseClassKey, classItem.constructor as typeof ECClass);
+      const baseClassItem = await this.getSchemaItem(baseClassKey, this.itemTypeClass);
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
         throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 

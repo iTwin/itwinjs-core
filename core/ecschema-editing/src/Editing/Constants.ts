@@ -17,6 +17,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Constant.
  */
 export class Constants extends SchemaItems {
+  protected override get itemTypeClass(): typeof Constant {
+    return Constant;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Constant, schemaEditor);
   }

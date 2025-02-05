@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { Format, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
@@ -18,6 +18,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Format.
  */
 export class Formats extends SchemaItems {
+  protected override get itemTypeClass(): typeof Format {
+    return Format;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Format, schemaEditor);
   }

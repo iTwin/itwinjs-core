@@ -796,8 +796,8 @@ describe("Relationship tests from an existing schema", () => {
 
     await expect(testEditor.relationships.setBaseClass(relRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -918,8 +918,8 @@ describe("Relationship tests from an existing schema", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.relationships.create(testKey, "TestRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 

@@ -23,6 +23,8 @@ export abstract class SchemaItems {
   protected schemaItemType: SchemaItemType;
   protected schemaEditor: SchemaContextEditor;
 
+  protected abstract get itemTypeClass(): typeof SchemaItem;
+
   public constructor(schemaItemType: SchemaItemType, schemaEditor: SchemaContextEditor) {
     this.schemaItemType = schemaItemType;
     this.schemaEditor = schemaEditor;
@@ -66,7 +68,7 @@ export abstract class SchemaItems {
    * @param description The new description to set.
    */
   public async setDescription(schemaItemKey: SchemaItemKey, description: string) {
-    const item = await this.getSchemaItem(schemaItemKey)
+    const item = await this.getSchemaItem(schemaItemKey, this.itemTypeClass)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
@@ -79,7 +81,7 @@ export abstract class SchemaItems {
    * @param label The new label to set.
    */
   public async setDisplayLabel(schemaItemKey: SchemaItemKey, label: string) {
-    const item = await this.getSchemaItem(schemaItemKey)
+    const item = await this.getSchemaItem(schemaItemKey, this.itemTypeClass)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });

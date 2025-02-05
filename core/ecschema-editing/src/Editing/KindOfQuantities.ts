@@ -21,6 +21,9 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type KindOfQuantity.
  */
 export class KindOfQuantities extends SchemaItems {
+  protected override get itemTypeClass(): typeof KindOfQuantity {
+    return KindOfQuantity;
+  }
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.KindOfQuantity, schemaEditor);
   }

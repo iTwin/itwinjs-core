@@ -21,6 +21,10 @@ import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
  * A class extending ECClasses allowing you to create schema items of type EntityClass.
  */
 export class Entities extends ECClasses {
+  protected override get itemTypeClass(): typeof EntityClass {
+    return EntityClass;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.EntityClass, schemaEditor);
   }

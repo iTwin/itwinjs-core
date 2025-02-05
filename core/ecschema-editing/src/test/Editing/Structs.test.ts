@@ -130,8 +130,8 @@ describe("Structs tests", () => {
 
     await expect(testEditor.structs.setBaseClass(structRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -186,8 +186,8 @@ describe("Structs tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 

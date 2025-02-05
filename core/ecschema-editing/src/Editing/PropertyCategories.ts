@@ -17,6 +17,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Property Category.
  */
 export class PropertyCategories extends SchemaItems {
+  protected override get itemTypeClass(): typeof PropertyCategory {
+    return PropertyCategory;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.PropertyCategory, schemaEditor);
   }

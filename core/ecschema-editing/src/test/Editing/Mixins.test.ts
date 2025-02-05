@@ -120,8 +120,8 @@ describe("Mixins tests", () => {
     const mixinRes = await testEditor.mixins.create(testKey, "testMixin", entityKey);
     await expect(testEditor.mixins.setBaseClass(mixinRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Mixin ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `Mixin ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -177,8 +177,8 @@ describe("Mixins tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.mixins.create(testKey, "testMixin", entityKey, "testLabel", baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Mixin ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `Mixin ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 

@@ -22,6 +22,10 @@ import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
  * A class extending ECClasses allowing you to create schema items of type Mixin.
  */
 export class Mixins extends ECClasses {
+  protected override get itemTypeClass(): typeof Mixin {
+    return Mixin;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Mixin, schemaEditor);
   }
