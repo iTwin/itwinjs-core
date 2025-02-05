@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, TextureTransparency,
-} from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
@@ -57,23 +55,19 @@ describe("GraphicDescriptionBuilder", () => {
     await IModelApp.shutdown();
   });
 
-  async function createContexts(): Promise<{ iModel: IModelConnection, workerContext: WorkerGraphicDescriptionContext, mainContext: GraphicDescriptionContext }>
-  
+  async function createContexts(): Promise<{ iModel: IModelConnection, workerContext: WorkerGraphicDescriptionContext, mainContext: GraphicDescriptionContext }> {
     const iModel = createIModel();
     const contextProps = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
     const workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
     const mainContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
-    return { iModel, workerContext, mainContext,
-    };
+    return { iModel, workerContext, mainContext };
   }
 
   const computeChordTolerance = () => 0;
   const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
 
-  function expectOption(workerContext: WorkerGraphicDescriptionContext, options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">, opt
-    on: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
-    const builder = GraphicDescriptionBuilder.create({ ...options, context: workerContext, computeChordTolerance,
-    });
+  function expectOption(workerContext: WorkerGraphicDescriptionContext, options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
+    const builder = GraphicDescriptionBuilder.create({ ...options, context: workerContext, computeChordTolerance });
     expect(builder[option]).toEqual(expected);
   }
 
