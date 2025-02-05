@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../IModelApp";
@@ -153,8 +153,8 @@ export class IdMap implements WebGLDisposable {
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
-   
-  public getMaterial(params: RenderMaterial.Params): RenderMaterial {
+
+  public getMaterial(params: RenderMaterialParams): RenderMaterial {
     if (!params.key || !Id64.isValidId64(params.key))   // Only cache persistent materials.
       return new Material(params);
 
@@ -175,7 +175,7 @@ export class IdMap implements WebGLDisposable {
       return this.findGradient(key);
   }
 
-   
+
   public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
@@ -234,7 +234,7 @@ export class IdMap implements WebGLDisposable {
     }
   }
 
-   
+
   public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
@@ -660,8 +660,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         return cached;
     }
 
-     
-    const params = new RenderMaterial.Params();
+
+    const params = new RenderMaterialParams();
     params.alpha = args.alpha;
     if (undefined !== args.diffuse?.weight)
       params.diffuse = args.diffuse.weight;
@@ -746,12 +746,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(args, args.ownership.key);
   }
 
-   
+
   public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
-   
+
   public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
