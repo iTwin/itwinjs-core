@@ -12,10 +12,10 @@ import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "./
 
 /** @internal */
 export interface RealityMeshGraphicParams {
-  readonly realityMesh: RenderTerrainGeometry;
+  readonly realityMesh?: RenderTerrainGeometry;
   readonly projection: MapTileProjection;
   readonly tileRectangle: MapCartoRectangle;
-  readonly featureTable: PackedFeatureTable;
+  readonly featureTable?: PackedFeatureTable;
   readonly tileId: string | undefined;
   readonly baseColor: ColorDef | undefined;
   readonly baseTransparent: boolean;

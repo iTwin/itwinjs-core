@@ -90,7 +90,7 @@ class EllipsoidProjection extends MapTileProjection {
 }
 
 /** @alpha */
-class PlanarProjection extends MapTileProjection {
+export class PlanarProjection extends MapTileProjection {
   private _bilinearPatch: BilinearPatch;
   public transformFromLocal: Transform;
   public localRange: Range3d;
