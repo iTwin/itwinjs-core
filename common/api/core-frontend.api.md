@@ -2818,6 +2818,10 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
 // @public
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
+    // @internal
+    readonly [_onScheduleScriptReferenceChanged]: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
+    // @internal
+    get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined;
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyleState);
     // @internal (undocumented)
     anyMapLayersVisible(overlay: boolean): boolean;
@@ -2898,8 +2902,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
-    // @deprecated
-    readonly onScheduleScriptReferenceChanged: BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
@@ -2912,8 +2914,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
     set scheduleScript(script: RenderSchedule.Script | undefined);
-    // @deprecated
-    get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
     // @internal
     setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
@@ -4910,20 +4910,6 @@ export interface GroupMark {
 
 // @internal
 export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean;
-
-// @internal (undocumented)
-export interface Hilites {
-    // (undocumented)
-    readonly elements: Id64.Uint32Set;
-    // (undocumented)
-    readonly isEmpty: boolean;
-    // (undocumented)
-    readonly models: Id64.Uint32Set;
-    // (undocumented)
-    readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
-    // (undocumented)
-    readonly subcategories: Id64.Uint32Set;
-}
 
 // @public
 export class HiliteSet {
@@ -8207,25 +8193,6 @@ export class NullTarget extends RenderTarget {
     get wantInvertBlackBackground(): boolean;
 }
 
-// @internal (undocumented)
-export class OffScreenTarget extends Target {
-    constructor(rect: ViewRect);
-    // (undocumented)
-    protected _assignDC(): boolean;
-    // (undocumented)
-    protected _beginPaint(fbo: FrameBuffer): void;
-    // (undocumented)
-    protected _endPaint(): void;
-    // (undocumented)
-    onResized(): void;
-    // (undocumented)
-    readImageToCanvas(): HTMLCanvasElement;
-    // (undocumented)
-    setViewRect(rect: ViewRect, temporary: boolean): void;
-    // (undocumented)
-    updateViewRect(): boolean;
-}
-
 // @public
 export class OffScreenViewport extends Viewport {
     protected constructor(target: RenderTarget);
@@ -10541,6 +10508,9 @@ export interface SceneVolumeClassifier {
     // (undocumented)
     modelId: Id64String;
 }
+
+// @internal (undocumented)
+export const _scheduleScriptReference: unique symbol;
 
 // @public
 export interface ScreenSpaceEffectBuilder {
@@ -14953,6 +14923,8 @@ export class ViewRedoTool extends ViewTool {
 
 // @public
 export abstract class ViewState extends ElementState {
+    // @internal (undocumented)
+    get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined;
     // @internal
     protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
     adjustAspectRatio(aspect: number): void;
@@ -15081,8 +15053,6 @@ export abstract class ViewState extends ElementState {
     resetExtentLimits(): void;
     abstract savePose(): ViewPose;
     get scheduleScript(): RenderSchedule.Script | undefined;
-    // @internal (undocumented)
-    get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
     // @internal
     get secondaryViewports(): Iterable<Viewport>;
     setAspectRatioSkew(val: number): void;
