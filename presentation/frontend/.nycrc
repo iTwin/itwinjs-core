@@ -4,9 +4,7 @@
   "functions": 100,
   "branches": 100,
   "lines": 100,
-  "require": [
-    "jsdom-global/register"
-  ],
+  "require": [],
   "exclude": [
     "src/presentation-frontend.ts",
     "src/test/**",

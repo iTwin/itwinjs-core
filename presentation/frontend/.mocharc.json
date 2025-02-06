@@ -1,7 +1,6 @@
 {
   "require": [
     "source-map-support/register",
-    "jsdom-global/register",
     "./lib/cjs/test/setup.js"
   ],
   "checkLeaks": true,
