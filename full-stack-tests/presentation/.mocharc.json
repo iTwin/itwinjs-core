@@ -1,6 +1,6 @@
 {
   "require": [
-    "jsdom-global/register",
+    "global-jsdom/register",
     "source-map-support/register",
     "./lib/setup.js"
   ],
