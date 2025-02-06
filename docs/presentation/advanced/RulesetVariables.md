@@ -7,7 +7,7 @@ the ruleset itself. The values of ruleset variables can be accessed using [ECExp
 
 - Rule conditions ([example](#using-variables-in-rule-condition)).
 - Instance filters ([example](#using-variables-in-instance-filter)).
-- ECExpressions-based values, like [LabelOverride.label]($presentation-common) ([example](#using-variables-in-ecexpression-based-value)).
+- ECExpressions-based values, like in [ExtendedData](../customization/ExtendedDataRule.md) rule ([example](#using-variables-in-ecexpression-based-value)).
 
 The advantages of using ruleset variables over values hardcoded into the ruleset are:
 
