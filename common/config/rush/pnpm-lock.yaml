@@ -2102,9 +2102,6 @@ importers:
       '@itwin/core-extension':
         specifier: workspace:*
         version: link:../../core/extension
-      buffer:
-        specifier: ^6.0.3
-        version: 6.0.3
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*

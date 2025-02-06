@@ -37,8 +37,7 @@
     "typescript": "~5.6.2"
   },
   "dependencies": {
-    "@itwin/core-extension": "workspace:*",
-    "buffer": "^6.0.3"
+    "@itwin/core-extension": "workspace:*"
   },
   "activationEvents": [
     "onStartup"
