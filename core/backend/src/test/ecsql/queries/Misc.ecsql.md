@@ -742,9 +742,9 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id  | parent | notused | detail                                                     |
-| --- | ------ | ------- | ---------------------------------------------------------- |
-| 3   | 0      | 0       | SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
+| detail                                                     |
+| ---------------------------------------------------------- |
+| SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
 
 # Trying PRAGMA explain_query with cte
 
@@ -761,11 +761,11 @@ PRAGMA explain_query (  [WITH    cnt (x,y) AS (      SELECT 100, 200    )  SELEC
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id  | parent | notused | detail            |
-| --- | ------ | ------- | ----------------- |
-| 2   | 0      | 0       | CO-ROUTINE cnt    |
-| 3   | 2      | 0       | SCAN CONSTANT ROW |
-| 8   | 0      | 0       | SCAN cnt          |
+| detail            |
+| ----------------- |
+| CO-ROUTINE cnt    |
+| SCAN CONSTANT ROW |
+| SCAN cnt          |
 
 # Trying PRAGMA explain_query with recursive cte
 
@@ -790,14 +790,14 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| notused | detail            |
-| ------- | ----------------- |
-| 0       | CO-ROUTINE cnt    |
-| 0       | SETUP             |
-| 0       | SCAN CONSTANT ROW |
-| 0       | RECURSIVE STEP    |
-| 0       | SCAN cnt          |
-| 0       | SCAN cnt          |
+| detail            |
+| ----------------- |
+| CO-ROUTINE cnt    |
+| SETUP             |
+| SCAN CONSTANT ROW |
+| RECURSIVE STEP    |
+| SCAN cnt          |
+| SCAN cnt          |
 
 # Using Scalar values in select clause with + operator
 
