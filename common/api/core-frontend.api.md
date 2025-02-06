@@ -1235,26 +1235,6 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
 }
 
 // @internal
-export interface AnimationBranchState {
-    // (undocumented)
-    readonly clip?: RenderClipVolume;
-    // (undocumented)
-    readonly omit?: boolean;
-}
-
-// @internal
-export interface AnimationBranchStates {
-    readonly branchStates: Map<string, AnimationBranchState>;
-    readonly transformNodeIds: ReadonlySet<number>;
-}
-
-// @internal (undocumented)
-export namespace AnimationBranchStates {
-    // (undocumented)
-    export function fromScript(script: RenderSchedule.Script, time: number): AnimationBranchStates | undefined;
-}
-
-// @internal
 export enum AnimationNodeId {
     // (undocumented)
     Untransformed = 4294967295
@@ -3698,9 +3678,6 @@ export class FlyViewTool extends ViewManip {
     // (undocumented)
     static toolId: string;
 }
-
-// @internal (undocumented)
-export function formatAnimationBranchId(modelId: Id64String, branchId: number): string;
 
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
@@ -7150,7 +7127,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): -1 | 0;
+    get rootLevel(): 0 | -1;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;

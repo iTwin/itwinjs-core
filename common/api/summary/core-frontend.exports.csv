@@ -41,9 +41,6 @@ internal;function;addRangeGraphic
 internal;class;AlternateUnitLabelsRegistry
 beta;class;AngleDescription
 internal;class;AnimatedTreeReference
-internal;interface;AnimationBranchState
-internal;interface;AnimationBranchStates
-internal;namespace;AnimationBranchStates
 internal;enum;AnimationNodeId
 public;interface;Animator
 internal;function;appendQueryParams
@@ -223,7 +220,6 @@ public;enum;FlashMode
 public;class;FlashSettings
 public;type;FlashSettingsOptions
 public;class;FlyViewTool
-internal;function;formatAnimationBranchId
 beta;class;FormattedQuantityDescription
 public;interface;FormatterParserSpecsProvider
 public;interface;FormattingUnitSystemChangedArgs

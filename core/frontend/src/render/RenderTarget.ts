@@ -18,7 +18,7 @@ import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { FrameStatsCollector } from "../internal/render/FrameStatsCollector";
-import { AnimationBranchStates } from "./GraphicBranch";
+import { AnimationBranchStates } from "../internal/render/AnimationBranchState";
 import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";

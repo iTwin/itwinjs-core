@@ -40,7 +40,7 @@ import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FrameStats } from "./render/FrameStats";
 import { FrameStatsCollector } from "./internal/render/FrameStatsCollector";
-import { AnimationBranchStates } from "./render/GraphicBranch";
+import { AnimationBranchStates } from "./internal/render/AnimationBranchState";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";

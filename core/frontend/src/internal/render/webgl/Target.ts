@@ -20,7 +20,7 @@ import { IModelConnection } from "../../../IModelConnection";
 import { CanvasDecoration } from "../../../render/CanvasDecoration";
 import { Decorations } from "../../../render/Decorations";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { AnimationBranchStates } from "../../../render/GraphicBranch";
+import { AnimationBranchStates } from "../AnimationBranchState";
 import { Pixel } from "../../../render/Pixel";
 import { GraphicList } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
