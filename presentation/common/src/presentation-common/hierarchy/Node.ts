@@ -20,6 +20,11 @@ export interface Node {
   label: LabelDefinition;
   /** Extensive description */
   description?: string;
+  /**
+   * Image ID
+   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
+  imageId?: string;
   /** Does this node have child nodes */
   hasChildren?: boolean;
   /** Is this node selectable */

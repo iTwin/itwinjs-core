@@ -504,6 +504,7 @@
           "type": "boolean"
         },
         "imageId": {
+          "deprecated": "in 5.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "Specifies node's image ID. If set, the ID is assigned to `Node.imageId` and it's\nup to the UI component to decide what to do with it.",
           "type": "string"
         },
@@ -1599,6 +1600,7 @@
           "type": "boolean"
         },
         "imageId": {
+          "deprecated": "in 5.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "Specifies grouping node's image ID. If set, the ID is assigned to `Node.imageId` and\nit's up to the UI component to decide what to do with it.",
           "minLength": 1,
           "type": "string"
@@ -1639,6 +1641,7 @@
           "type": "string"
         },
         "imageId": {
+          "deprecated": "in 5.x. Use `ExtendedDataRule` instead. See extended data usage page for more details.",
           "description": "ID of an image to use for the grouping node. Defaults to `PropertyGroup.imageId` specified in `PropertyGroup`.",
           "minLength": 1,
           "type": "string"

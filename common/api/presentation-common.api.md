@@ -447,6 +447,7 @@ export type CustomizationRule = InstanceLabelOverride | GroupingRule | SortingRu
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
     description?: string;
+    // @deprecated
     imageId?: string;
     label: string;
     specType: "CustomNode";
@@ -1603,6 +1604,8 @@ interface Node_2 {
         [key: string]: any;
     };
     hasChildren?: boolean;
+    // @deprecated
+    imageId?: string;
     isEditable?: boolean;
     isExpanded?: boolean;
     isSelectionDisabled?: boolean;
@@ -1990,6 +1993,7 @@ export interface PropertyEditorSpecification {
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
+    // @deprecated
     imageId?: string;
     propertyName: string;
     ranges?: PropertyRangeGroupSpecification[];
@@ -2053,6 +2057,7 @@ export interface PropertyOverrides {
 // @public
 export interface PropertyRangeGroupSpecification {
     fromValue: string;
+    // @deprecated
     imageId?: string;
     label?: string;
     toValue: string;
