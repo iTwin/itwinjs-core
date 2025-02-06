@@ -17,6 +17,7 @@ export interface AnimationBranchState {
   readonly omit?: boolean;
 }
 
+/** @internal */
 export function formatAnimationBranchId(modelId: Id64String, branchId: number): string {
   if (branchId < 0)
     return modelId;

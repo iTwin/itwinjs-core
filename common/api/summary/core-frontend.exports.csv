@@ -148,7 +148,6 @@ public;enum;CurrentState
 public;interface;CustomFormatPropEditorSpec
 public;interface;CustomGraphicBuilderOptions
 public;interface;CustomQuantityTypeDefinition
-internal;class;DebugShaderFile
 internal;function;decodeImdlGraphics
 internal;function;decodeMeshoptBuffer
 internal;interface;DecodeMeshoptBufferArgs
@@ -219,6 +218,7 @@ public;enum;FlashMode
 public;class;FlashSettings
 public;type;FlashSettingsOptions
 public;class;FlyViewTool
+internal;function;formatAnimationBranchId
 beta;class;FormattedQuantityDescription
 public;interface;FormatterParserSpecsProvider
 public;interface;FormattingUnitSystemChangedArgs
@@ -276,7 +276,6 @@ internal;class;GltfReaderProps
 internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
-internal;type;GLTimerResultCallback
 public;type;GpuMemoryLimit
 public;interface;GpuMemoryLimits
 public;class;GraphicalEditingScope
@@ -418,7 +417,6 @@ beta;interface;MapLayerAccessClient
 beta;interface;MapLayerAccessToken
 beta;interface;MapLayerAccessTokenParams
 beta;interface;MapLayerAuthenticationInfo
-internal;type;MapLayerClassifiers
 beta;interface;MapLayerFeature
 beta;interface;MapLayerFeatureAttribute
 beta;interface;MapLayerFeatureGeometry
@@ -497,7 +495,6 @@ internal;class;NullRenderSystem
 internal;class;NullTarget
 public;class;OffScreenViewport
 public;interface;OffScreenViewportOptions
-internal;interface;OldTextureImage
 public;type;OnDownloadProgress
 public;type;OnFlashedIdChangedEventArgs
 internal;class;OnScreenTarget
@@ -626,7 +623,7 @@ internal;interface;RenderSkyGradientParams
 internal;interface;RenderSkySphereParams
 public;class;RenderSystem
 public;namespace;RenderSystem
-beta;interface;RenderSystemDebugControl
+internal;interface;RenderSystemDebugControl
 public;class;RenderTarget
 internal;interface;RenderTargetDebugControl
 internal;class;RenderTerrainGeometry

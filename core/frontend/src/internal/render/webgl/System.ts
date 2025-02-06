@@ -31,9 +31,9 @@ import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialAr
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RealityMeshParams } from "../../../render/RealityMeshParams";
 import {
-  CreateGraphicFromTemplateArgs,
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderInstances, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
+  CreateGraphicFromTemplateArgs, PlanarGridProps, RenderAreaPattern, RenderInstances, RenderSkyBoxParams, RenderSystem,
 } from "../../../render/RenderSystem";
+import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystemDebugControl } from "../RenderSystemDebugControl";
 import { RenderTarget } from "../../../render/RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "../../../render/CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../../../render/ScreenSpaceEffectBuilder";
@@ -919,7 +919,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this.context.invalidateFramebuffer(this.context.FRAMEBUFFER, attachments);
   }
 
-  public override enableDiagnostics(enable: RenderDiagnostics): void {
+  public enableDiagnostics(enable: RenderDiagnostics | undefined): void {
+    enable = enable ?? RenderDiagnostics.All;
     Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
     Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
   }

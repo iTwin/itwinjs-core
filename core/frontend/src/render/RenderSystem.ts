@@ -36,7 +36,6 @@ import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { CreateRenderMaterialArgs } from "./CreateRenderMaterialArgs";
 import { RenderMemory } from "./RenderMemory";
-import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
@@ -52,6 +51,7 @@ import { PolylineArgs } from "./PolylineArgs";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
+import { RenderSystemDebugControl } from "../internal/render/RenderSystemDebugControl";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
@@ -69,73 +69,10 @@ export abstract class RenderTextureDrape implements Disposable {
 /** @internal */
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
-/** @internal */
-export enum RenderDiagnostics {
-  /** No diagnostics enabled. */
-  None = 0,
-  /** Debugging output to browser console enabled. */
-  DebugOutput = 1 << 1,
-  /** Potentially expensive checks of WebGL state enabled. */
-  WebGL = 1 << 2,
-  /** All diagnostics enabled. */
-  All = DebugOutput | WebGL,
-}
-
-/** @internal */
-export interface GLTimerResult {
-  /** Label from GLTimer.beginOperation */
-  label: string;
-  /** Time elapsed in nanoseconds, inclusive of child result times.
-   *  @note no-op queries seem to have 32ns of noise.
-   */
-  nanoseconds: number;
-  /** Child results if GLTimer.beginOperation calls were nested */
-  children?: GLTimerResult[];
-}
-
-/** @internal */
-export type GLTimerResultCallback = (result: GLTimerResult) => void;
-
 /** Default implementation of RenderGraphicOwner. */
 class GraphicOwner extends RenderGraphicOwner {
   public constructor(private readonly _graphic: RenderGraphic) { super(); }
   public get graphic(): RenderGraphic { return this._graphic; }
-}
-
-/** An interface optionally exposed by a RenderSystem that allows control of various debugging features.
- * @beta
- */
-export interface RenderSystemDebugControl {
-  /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
-  loseContext(): boolean;
-
-  /** Overrides [[RenderSystem.dpiAwareLOD]].
-   * @internal
-   */
-  dpiAwareLOD: boolean;
-
-  /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
-   * @internal
-   */
-  resultsCallback?: GLTimerResultCallback;
-
-  /** Returns true if the browser supports GPU profiling queries.
-   * @internal
-   */
-  readonly isGLTimerSupported: boolean;
-
-  /** Attempts to compile all shader programs and returns true if all were successful. May throw exceptions on errors.
-   * This is useful for debugging shader compilation on specific platforms - especially those which use neither ANGLE nor SwiftShader (e.g., linux, mac, iOS)
-   * because our unit tests which also compile all shaders run in software mode and therefore may not catch some "errors" (especially uniforms that have no effect on
-   * program output).
-   * @internal
-   */
-  compileAllShaders(): boolean;
-
-  /** Obtain accumulated debug info collected during shader compilation. See `RenderSystem.Options.debugShaders`.
-   * @internal
-   */
-  debugShaderFiles?: DebugShaderFile[];
 }
 
 /** @internal */
@@ -162,16 +99,7 @@ export class TerrainTexture {
     return new TerrainTexture(this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
   }
 }
-/** @internal */
-export class DebugShaderFile {
-  public constructor(
-    public readonly filename: string,
-    public readonly src: string,
-    public isVS: boolean,
-    public isGL: boolean,
-    public isUsed: boolean,
-  ) { }
-}
+
 /** Transparency settings for planar grid display.
  * @alpha
  */
@@ -758,13 +686,10 @@ export abstract class RenderSystem implements Disposable {
   public onInitialized(): void { }
 
   /** @internal */
-  public enableDiagnostics(_enable: RenderDiagnostics): void { }
-
-  /** @internal */
   public get supportsLogZBuffer(): boolean { return false !== this.options.logarithmicDepthBuffer; }
 
   /** Obtain an object that can be used to control various debugging features. Returns `undefined` if debugging features are unavailable for this `RenderSystem`.
-   * @beta
+   * @internal
    */
   public get debugControl(): RenderSystemDebugControl | undefined { return undefined; }
 

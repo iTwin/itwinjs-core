@@ -2548,21 +2548,6 @@ export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
 }
 
 // @internal (undocumented)
-export class DebugShaderFile {
-    constructor(filename: string, src: string, isVS: boolean, isGL: boolean, isUsed: boolean);
-    // (undocumented)
-    readonly filename: string;
-    // (undocumented)
-    isGL: boolean;
-    // (undocumented)
-    isUsed: boolean;
-    // (undocumented)
-    isVS: boolean;
-    // (undocumented)
-    readonly src: string;
-}
-
-// @internal (undocumented)
 export function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined>;
 
 // @internal (undocumented)
@@ -3671,6 +3656,9 @@ export class FlyViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @internal (undocumented)
+export function formatAnimationBranchId(modelId: Id64String, branchId: number): string;
+
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(name: string, displayLabel: string, iconSpec?: string);
@@ -4411,9 +4399,6 @@ export interface GLTimerResult {
     label: string;
     nanoseconds: number;
 }
-
-// @internal (undocumented)
-export type GLTimerResultCallback = (result: GLTimerResult) => void;
 
 // @public
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
@@ -6338,9 +6323,6 @@ export interface MapLayerAuthenticationInfo {
     tokenEndpoint?: MapLayerTokenEndpoint;
 }
 
-// @internal (undocumented)
-export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
-
 // @beta
 export interface MapLayerFeature {
     attributes: MapLayerFeatureAttribute[];
@@ -8129,12 +8111,6 @@ export interface OffScreenViewportOptions {
     lockAspectRatio?: boolean;
     view: ViewState;
     viewRect: ViewRect;
-}
-
-// @internal
-export interface OldTextureImage {
-    format: ImageSourceFormat;
-    image: HTMLImageElement;
 }
 
 // @public
@@ -9938,7 +9914,7 @@ export abstract class RenderSystem implements Disposable {
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @beta
     createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps;
-    // @beta
+    // @internal
     get debugControl(): RenderSystemDebugControl | undefined;
     // @deprecated (undocumented)
     abstract dispose(): void;
@@ -9946,8 +9922,6 @@ export abstract class RenderSystem implements Disposable {
     abstract doIdleWork(): boolean;
     // @internal (undocumented)
     get dpiAwareLOD(): boolean;
-    // @internal (undocumented)
-    enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined;
@@ -9959,7 +9933,10 @@ export abstract class RenderSystem implements Disposable {
     abstract get isValid(): boolean;
     loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
     // @internal
-    loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined>;
+    loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<{
+        image: HTMLImageElement;
+        format: ImageSourceFormat;
+    } | undefined>;
     // @internal (undocumented)
     get maxRealityImageryLayers(): number;
     get maxTextureSize(): number;
@@ -10001,18 +9978,14 @@ export namespace RenderSystem {
     }
 }
 
-// @beta
+// @internal
 export interface RenderSystemDebugControl {
-    // @internal
     compileAllShaders(): boolean;
-    // @internal
     debugShaderFiles?: DebugShaderFile[];
-    // @internal
     dpiAwareLOD: boolean;
-    // @internal
+    enableDiagnostics(_enable: RenderDiagnostics | undefined): void;
     readonly isGLTimerSupported: boolean;
     loseContext(): boolean;
-    // @internal
     resultsCallback?: GLTimerResultCallback;
 }
 

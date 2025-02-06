@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { DebugShaderFile } from "../../../render/RenderSystem";
+import { DebugShaderFile } from "../RenderSystemDebugControl";
 import { AttributeDetails } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
