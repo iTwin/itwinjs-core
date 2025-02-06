@@ -1933,7 +1933,7 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
