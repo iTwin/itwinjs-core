@@ -72,17 +72,6 @@ export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 /** @internal */
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
-/** Describes a texture loaded from an HTMLImageElement
- * ###TODO Replace with TextureImage from RenderTexture.ts after we start returning transparency info from the backend.
- * @internal
- */
-export interface OldTextureImage {
-  /** The HTMLImageElement containing the texture's image data */
-  image: HTMLImageElement;
-  /** The format of the texture's image data */
-  format: ImageSourceFormat;
-}
-
 /** @internal */
 export enum RenderDiagnostics {
   /** No diagnostics enabled. */
@@ -698,7 +687,7 @@ export abstract class RenderSystem implements Disposable {
    * @see [[RenderSystem.loadTexture]]
    * @internal
    */
-  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined> {
+  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<{ image: HTMLImageElement, format: ImageSourceFormat } | undefined> {
     const elemProps = await iModel.elements.getProps(id);
     if (1 !== elemProps.length)
       return undefined;
