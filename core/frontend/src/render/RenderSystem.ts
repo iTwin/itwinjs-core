@@ -70,9 +70,6 @@ export abstract class RenderTextureDrape implements Disposable {
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** @internal */
-export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
-
-/** @internal */
 export enum RenderDiagnostics {
   /** No diagnostics enabled. */
   None = 0,

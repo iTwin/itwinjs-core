@@ -8,7 +8,10 @@
 
 import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
 import { MapCartoRectangle, MapTileProjection } from "../../tile/internal";
-import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "../../render/RenderSystem";
+import { RenderTerrainGeometry, TerrainTexture } from "../../render/RenderSystem";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+
+export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
 export interface RealityMeshGraphicParams {
   readonly realityMesh: RenderTerrainGeometry;
