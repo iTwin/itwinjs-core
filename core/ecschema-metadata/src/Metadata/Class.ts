@@ -124,12 +124,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       return undefined;
     }
 
-    const item = this.schema.lookupItemSync(this.baseClass);
-    if(ECClass.isECClass(item)) {
-      return item;
-    }
-
-    return undefined;
+    return this.schema.lookupItemSync(this.baseClass, ECClass);
   }
 
   /**

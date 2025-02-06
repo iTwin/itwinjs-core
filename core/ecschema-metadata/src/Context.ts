@@ -61,6 +61,7 @@ export interface ISchemaLocater {
 }
 
 /**
+ * Base interface for types that allow location of items inside a schema
  * @beta
  */
 export interface ISchemaItemLocater {

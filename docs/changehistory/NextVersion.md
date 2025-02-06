@@ -123,10 +123,9 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 ### @itwin/core-ecschema-metadata
 
-Split the ISchemaItemLocater and Schema classes' APIs into getSchemaItem and getSchemaItem.
-The first no longer takes a generic type parameter, because it was never type-safe like it suggested. It just returns
-any schema item found.
-The second takes a SchemaItem subclass' constructor as a parameter and performs strict type checking.
+Reworked the ISchemaItemLocater and Schema classes' APIs so it's type-safe.
+The original was never type-safe like it suggested. It just returned any schema item found.
+The new safe overload takes a constructor of a schema item subclass to only return items of that type.
 
 Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. EntityClass.isEntityClass())
 
@@ -299,7 +298,7 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 #### @itwin/core-ecschema-metadata-1
 
 - Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
-- Removed existing generic getItem() methods from schemaItemLocater, schemaContext and Schema as it suggested type safety when there was none
+- Replaced existing generic getItem() methods from schemaItemLocater, schemaContext and Schema as it suggested type safety when there was none. The new overload requires either no generic type at all, or providing an additional ctor parameter of the desired schemaItem class.
 
 Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted Either into
 `context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
