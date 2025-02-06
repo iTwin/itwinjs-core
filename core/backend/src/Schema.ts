@@ -9,6 +9,7 @@
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "./ClassRegistry";
+import { ECVersion, SchemaKey } from "@itwin/ecschema-metadata";
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
  * @public
@@ -20,6 +21,18 @@ export class Schema {
    * be one JavaScript class for a given BIS schema (usually the errant schema will collide with its superclass.)
    */
   public static get schemaName(): string { throw new Error(`you must override static schemaName in ${this.name}`); }
+
+  private static _schemaKey?: SchemaKey;
+
+  /** Unique identifier for this schema, typed variant of [[schemaName]].
+   * @internal
+   */
+  public static get schemaKey(): SchemaKey {
+    if (!this._schemaKey) {
+      this._schemaKey = new SchemaKey(this.schemaName, ECVersion.NO_VERSION); // backend cares little for versions right now, as only one version can exist in an imodel
+    }
+    return this._schemaKey;
+  }
 
   /** if true, this Schema is a proxy for a missing Domain marked with the `BisCore.SchemaHasBehavior` customAttribute.
    * Classes generated for this Schema will disallow protected operations.

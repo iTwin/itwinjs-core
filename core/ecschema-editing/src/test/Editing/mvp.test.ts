@@ -197,7 +197,7 @@ describe("SchemaEditor tests", () => {
       beforeEach(async () => {
         const elementKey = new SchemaItemKey("Element", bisSchemaKey);
         entityKey = await testEditor.entities.create(testSchemaKey, "testElement", ECClassModifier.None, "test element", elementKey);
-        testEntity = await testSchema!.getItem("testElement");
+        testEntity = await testSchema!.getItem("testElement", EntityClass);
       });
 
       it("should successfully create a PrimitiveProperty of type double", async () => {

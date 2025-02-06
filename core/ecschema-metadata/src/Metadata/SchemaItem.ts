@@ -7,7 +7,7 @@
  */
 
 import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToXmlString } from "../ECObjects";
+import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
@@ -19,7 +19,17 @@ const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
  * @beta
  */
 export abstract class SchemaItem {
-  public readonly schemaItemType!: SchemaItemType; // allow the derived classes to define their own schemaItemType
+  /**
+   * Get the type of item represented by this class
+   * @beta
+   */
+  public static get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.SchemaItem }
+
+  /**
+   * Get the type of item represented by this instance
+   * @beta
+   */
+  public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
   protected _key: SchemaItemKey;
   protected _description?: string;
@@ -133,7 +143,7 @@ export abstract class SchemaItem {
   public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey): boolean {
     if (!thatSchemaItemOrKey)
       return true;
-
+    SchemaItemType.EntityClass
     const key = SchemaItem.isSchemaItem(thatSchemaItemOrKey) ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
     return thisSchemaItem.key.matches(key);
   }
@@ -172,3 +182,4 @@ export abstract class SchemaItem {
     this._description = description;
   }
 }
+

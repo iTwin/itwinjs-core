@@ -25,7 +25,10 @@ export enum ECClassModifier {
 
 /**
  * An enumeration that has all the schema item type names as values
- * @beta */
+ *
+ * @enum {string}
+ * @beta
+ */
 export enum SchemaItemType {
   EntityClass = "EntityClass",
   Mixin = "Mixin",
@@ -42,6 +45,21 @@ export enum SchemaItemType {
   UnitSystem = "UnitSystem",
   Format = "Format",
 }
+
+/**
+ * Additional Schema Item Types which define classes of item types
+ * @beta
+ */
+export enum AbstractSchemaItemType {
+  Class = "Class",
+  SchemaItem = "SchemaItem"
+}
+
+/**
+ * Defines types of items that may be provided to identify supported items
+ * @beta
+ */
+export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
 
 /**
  * Primitive data types for ECProperties.

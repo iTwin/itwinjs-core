@@ -23,7 +23,7 @@ describe("CustomAttributeClass merger tests", () => {
     ],
     customAttributes: [
       { className: "CoreCustomAttributes.DynamicSchema" },
-    ],    
+    ],
   };
 
   const sourceJson = {
@@ -147,7 +147,7 @@ describe("CustomAttributeClass merger tests", () => {
         },
       ],
     });
-    const mergedItem = await mergedSchema.getItem<CustomAttributeClass>("TestCAClass");
+    const mergedItem = await mergedSchema.getItem("TestCAClass", CustomAttributeClass);
     expect(mergedItem!.toJSON().baseClass).deep.eq("TargetSchema.TestBase");
   });
 
@@ -257,11 +257,11 @@ describe("CustomAttributeClass merger tests", () => {
           testItem: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "AnyClass",
-            baseClass: "SourceSchema.baseItem",            
+            baseClass: "SourceSchema.baseItem",
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -270,7 +270,7 @@ describe("CustomAttributeClass merger tests", () => {
           },
         },
       }, targetContext);
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -280,14 +280,14 @@ describe("CustomAttributeClass merger tests", () => {
         expect(conflict).to.have.a.property("target", "EntityClass");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
       const sourceItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(sourceItem, "mergedCustomAttribute");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
@@ -298,7 +298,7 @@ describe("CustomAttributeClass merger tests", () => {
     it("should merge changes to re-mapped custom attribute class", async() => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
-        items: {          
+        items: {
           testItem: {
             schemaItemType: "CustomAttributeClass",
             modifier: "None",
@@ -439,13 +439,13 @@ describe("CustomAttributeClass merger tests", () => {
         expect(conflict).to.have.a.property("target", "StructClass");
         return true;
       });
-  
+
       const baseItem = await sourceSchema.getItem("baseItem") as CustomAttributeClass;
       schemaEdits.items.rename(baseItem, "mergedBaseCustomAttribute");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedBaseCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
@@ -510,7 +510,7 @@ describe("CustomAttributeClass merger tests", () => {
         items: {
           testItem: {
             schemaItemType: "CustomAttributeClass",
-            modifier: "Sealed", 
+            modifier: "Sealed",
             appliesTo: "Any",
           },
         },
@@ -518,10 +518,10 @@ describe("CustomAttributeClass merger tests", () => {
 
       const targetSchema = await Schema.fromJson({
         ...targetJson,
-        items: {          
+        items: {
           mergedItem: {
             schemaItemType: "CustomAttributeClass",
-            modifier: "Abstract", 
+            modifier: "Abstract",
             appliesTo: "Any",
           },
           testItem: {

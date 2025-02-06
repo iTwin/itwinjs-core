@@ -21,6 +21,10 @@ import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
  * A class extending ECClasses allowing you to create schema items of type EntityClass.
  */
 export class Entities extends ECClasses {
+  protected override get itemTypeClass(): typeof EntityClass {
+    return EntityClass;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.EntityClass, schemaEditor);
   }
@@ -101,8 +105,8 @@ export class Entities extends ECClasses {
 
   public async addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void> {
     try {
-      const entity = await this.getSchemaItem<MutableEntityClass>(entityKey);
-      const mixin = await this.getSchemaItem<Mixin>(mixinKey, SchemaItemType.Mixin);
+      const entity = await this.getSchemaItem(entityKey, MutableEntityClass);
+      const mixin = await this.getSchemaItem(mixinKey, Mixin);
       entity.addMixin(mixin);
     } catch(e: any){
       throw new SchemaEditingError(ECEditingStatus.AddMixin, new ClassId(SchemaItemType.EntityClass, entityKey), e);
@@ -111,7 +115,7 @@ export class Entities extends ECClasses {
 
   public async createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<void> {
     try {
-      const entity = await this.getSchemaItem<MutableEntityClass>(entityKey);
+      const entity = await this.getSchemaItem(entityKey, MutableEntityClass);
       await entity.createNavigationProperty(name, relationship, direction);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationProperty, new ClassId(SchemaItemType.RelationshipClass, entityKey), e);
@@ -125,7 +129,7 @@ export class Entities extends ECClasses {
    */
   public async createNavigationPropertyFromProps(classKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<void> {
     try {
-      const entity = await this.getSchemaItem<MutableEntityClass>(classKey);
+      const entity = await this.getSchemaItem(classKey, MutableEntityClass);
       const property = await entity.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
       await property.fromJSON(navigationProps);
     } catch(e: any) {

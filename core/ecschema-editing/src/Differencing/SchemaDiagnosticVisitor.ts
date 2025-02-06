@@ -40,9 +40,9 @@ import {
 export class SchemaDiagnosticVisitor {
 
   public readonly schemaDifferences: Array<SchemaDifference | SchemaReferenceDifference>;
-  public readonly schemaItemDifferences: Array<AnySchemaItemDifference 
-    | EntityClassMixinDifference 
-    | KindOfQuantityPresentationFormatDifference 
+  public readonly schemaItemDifferences: Array<AnySchemaItemDifference
+    | EntityClassMixinDifference
+    | KindOfQuantityPresentationFormatDifference
     | FormatUnitDifference>;
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;

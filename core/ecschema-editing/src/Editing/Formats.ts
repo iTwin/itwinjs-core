@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { Format, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
@@ -18,6 +18,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Format.
  */
 export class Formats extends SchemaItems {
+  protected override get itemTypeClass(): typeof Format {
+    return Format;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Format, schemaEditor);
   }
@@ -28,13 +32,14 @@ export class Formats extends SchemaItems {
 
       if (units !== undefined) {
         for (const unit of units) {
-          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
+          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem(unit);
           if (!unitItem) {
             throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
           }
 
-          if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
-            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key));
+          if (!Unit.isUnit(unitItem) && !InvertedUnit.isInvertedUnit(unitItem)) {
+            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId(unitItem.schemaItemType, unitItem.key));
+          }
 
           newFormat.addUnit(unitItem);
         }

@@ -43,6 +43,67 @@ describe("KindOfQuantity", () => {
     description: "A really long description...",
   };
 
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestKindOfQuantity: {
+        schemaItemType: "KindOfQuantity",
+        label: "Test Kind Of Quantity",
+        description: "Used for testing",
+        relativeError: 0.1,
+        persistenceUnit: "TestSchema.M",
+        presentationUnits: ["TestSchema.TestFormat"],
+      },
+      TestFormat: {
+        schemaItemType: "Format",
+        type: "Decimal",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+      M: {
+        schemaItemType: "Unit",
+        phenomenon: "TestSchema.TestPhenomenon",
+        unitSystem: "TestSchema.TestUnitSystem",
+        definition: "M",
+      },
+      TestUnitSystem: {
+        schemaItemType: "UnitSystem",
+        label: "Metric",
+        description: "Metric system",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on KindOfQuantity", async () => {
+      const testKindOfQuantity = await ecSchema.getItem("TestKindOfQuantity");
+      assert.isDefined(testKindOfQuantity);
+      expect(KindOfQuantity.isKindOfQuantity(testKindOfQuantity)).to.be.true;
+      expect(() => KindOfQuantity.assertIsKindOfQuantity(testKindOfQuantity)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(KindOfQuantity.isKindOfQuantity(testPhenomenon)).to.be.false;
+      expect(() => KindOfQuantity.assertIsKindOfQuantity(testPhenomenon)).to.throw();
+    });
+
+    it("KindOfQuantity type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestKindOfQuantity", KindOfQuantity)).to.be.instanceof(KindOfQuantity);
+      expect(ecSchema.getItemSync("TestKindOfQuantity", KindOfQuantity)).to.be.instanceof(KindOfQuantity);
+    });
+
+    it("KindOfQuantity type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", KindOfQuantity)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", KindOfQuantity)).to.be.undefined;
+    });
+  });
+
   describe("deserialization", () => {
     let context: SchemaContext;
     let schema: Schema;
@@ -62,7 +123,7 @@ describe("KindOfQuantity", () => {
     };
     it("async - should successfully deserialize", async () => {
       schema = await Schema.fromJson(createSchemaJson(validFullKOQProps), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(validFullKOQProps.name);
+      const testKoq = await schema.getItem(validFullKOQProps.name, KindOfQuantity);
       assert.isDefined(testKoq);
       expect(testKoq!.name).eq("TestKindOfQuantity");
       expect(testKoq!.fullName).eq("TestSchema.TestKindOfQuantity");
@@ -85,7 +146,7 @@ describe("KindOfQuantity", () => {
     };
     it("async - should successfully deserialize without presentationUnits", async () => {
       schema = await Schema.fromJson(createSchemaJson(koqNoPresUnits), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqNoPresUnits.name);
+      const testKoq = await schema.getItem(koqNoPresUnits.name, KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.relativeError).eq(1.234);
@@ -141,16 +202,16 @@ describe("KindOfQuantity", () => {
     };
     it("async - should successfully deserialize with persistenceUnit having an InvertedUnit", async () => {
       schema = await Schema.fromJson(createSchemaJson(persistenceUnitInvertedUnit), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(persistenceUnitInvertedUnit.name);
+      const testKoq = await schema.getItem(persistenceUnitInvertedUnit.name, KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.persistenceUnit).exist;
       expect(testKoq!.persistenceUnit!.name).eq("HORIZONTAL_PER_VERTICAL");
     });
 
-    it("sync - should successfully deserialize with persistenceUnit having an InvertedUnit", async () => {
+    it("sync - should successfully deserialize with persistenceUnit having an InvertedUnit", () => {
       schema = Schema.fromJsonSync(createSchemaJson(persistenceUnitInvertedUnit), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(persistenceUnitInvertedUnit.name);
+      const testKoq = schema.getItemSync(persistenceUnitInvertedUnit.name, KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.persistenceUnit).exist;
@@ -180,7 +241,7 @@ describe("KindOfQuantity", () => {
     };
     it("async - precision override", async () => {
       schema = await Schema.fromJson(createSchemaJson(precisionOverride), context);
-      const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = await schema.getItem("TestKindOfQuantity", KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.presentationFormats.length).eq(3);
@@ -188,7 +249,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, await schema.lookupItem((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -220,7 +281,7 @@ describe("KindOfQuantity", () => {
     });
     it("sync - precision override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(precisionOverride), context);
-      const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = schema.getItemSync("TestKindOfQuantity", KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.presentationFormats.length).to.eq(3);
@@ -228,7 +289,7 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, schema.lookupItemSync((defaultFormat as OverrideFormat).parent.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -270,7 +331,7 @@ describe("KindOfQuantity", () => {
     };
     it("async - single unit override", async () => {
       schema = await Schema.fromJson(createSchemaJson(singleUnitOverride), context);
-      const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = await schema.getItem("TestKindOfQuantity", KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.presentationFormats.length).to.eq(1);
@@ -278,7 +339,7 @@ describe("KindOfQuantity", () => {
       const defaultOverrideFormat: OverrideFormat = defaultFormat as OverrideFormat;
       assert.isDefined(defaultFormat);
 
-      const testFormat = await schema.lookupItem<Format>(defaultOverrideFormat.parent.fullName);
+      const testFormat = await schema.lookupItem(defaultOverrideFormat.parent.fullName, Format);
       assert.notEqual(defaultFormat, testFormat, "The format in the KOQ should be different than the one in the schema");
 
       assert.isDefined(defaultFormat!.units);
@@ -303,14 +364,14 @@ describe("KindOfQuantity", () => {
     });
     it("sync - single unit override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitOverride), context);
-      const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = schema.getItemSync("TestKindOfQuantity", KindOfQuantity);
       assert.isDefined(testKoq);
 
       expect(testKoq!.presentationFormats.length).to.eq(1);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
 
-      assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, schema.lookupItemSync((defaultFormat as OverrideFormat).parent.key.fullName, Format), "The format in the KOQ should be different than the one in the schema");
 
       assert.isDefined(defaultFormat!.units);
       expect(defaultFormat!.units!.length).to.eq(1);
@@ -342,7 +403,7 @@ describe("KindOfQuantity", () => {
     };
     it("async - single unit label override", async () => {
       schema = await Schema.fromJson(createSchemaJson(singleUnitLabelOverride), context);
-      const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = await schema.getItem("TestKindOfQuantity", KindOfQuantity);
 
       assert.isDefined(testKoq);
       expect(testKoq!.presentationFormats.length).to.eq(1);
@@ -370,7 +431,7 @@ describe("KindOfQuantity", () => {
     });
     it("sync - single unit label override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitLabelOverride), context);
-      const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = schema.getItemSync("TestKindOfQuantity", KindOfQuantity);
 
       assert.isDefined(testKoq);
       expect(testKoq!.presentationFormats.length).to.eq(1);
@@ -418,7 +479,7 @@ describe("KindOfQuantity", () => {
     };
     it("async - null or empty unit label override", async () => {
       schema = await Schema.fromJson(createSchemaJson(nullOrEmptyUnitLabelOverride), context);
-      const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = await schema.getItem("TestKindOfQuantity", KindOfQuantity);
 
       assert.isDefined(testKoq);
       expect(testKoq!.presentationFormats.length).to.eq(1);
@@ -442,7 +503,7 @@ describe("KindOfQuantity", () => {
 
     it("sync - null or empty unit label override", async () => {
       schema = Schema.fromJsonSync(createSchemaJson(nullOrEmptyUnitLabelOverride), context);
-      const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
+      const testKoq = await schema.getItem("TestKindOfQuantity", KindOfQuantity);
 
       assert.isDefined(testKoq);
       expect(testKoq!.presentationFormats.length).to.eq(1);
@@ -514,7 +575,7 @@ describe("KindOfQuantity", () => {
         ],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
+      const testKoq = await schema.getItem(koqJson.name, KindOfQuantity);
       const expectedJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
         schema: "TestSchema",
@@ -535,7 +596,7 @@ describe("KindOfQuantity", () => {
         ],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
+      const testKoq = await schema.getItem(koqJson.name, KindOfQuantity);
       const expectedJson = {
         schemaItemType: "KindOfQuantity",
         label: "SomeDisplayLabel",
@@ -560,7 +621,7 @@ describe("KindOfQuantity", () => {
         presentationUnits: [],
       };
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
+      const testKoq = await schema.getItem(koqJson.name, KindOfQuantity);
       expect(testKoq!.toJSON(true, true)).to.not.have.property("presentationUnits");
     });
   });
@@ -588,7 +649,7 @@ describe("KindOfQuantity", () => {
 
     it("should properly serialize", async () => {
       schema = await Schema.fromJson(createSchemaJson(schemaJson), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(schemaJson.name);
+      const testKoq = await schema.getItem(schemaJson.name, KindOfQuantity);
 
       const serialized = await testKoq!.toXml(newDom);
       expect(serialized.nodeName).to.eq("KindOfQuantity");

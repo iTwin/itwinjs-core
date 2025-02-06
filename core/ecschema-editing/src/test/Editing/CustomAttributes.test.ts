@@ -40,8 +40,8 @@ describe("CustomAttribute tests", () => {
 
     await testEditor.customAttributes.setBaseClass(caRes,baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(caRes);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(baseClassRes));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
   });
 
   it("should change custom attribute base class with class derived from", async () => {
@@ -49,19 +49,19 @@ describe("CustomAttribute tests", () => {
     const caRes = await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.AnyProperty, "testLabel",baseClassRes);
     const newBaseClassRes = await testEditor.customAttributes.create(testKey, "newBaseClass", CustomAttributeContainerType.AnyProperty, "newLabel",baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(caRes);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(baseClassRes));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
 
     await testEditor.customAttributes.setBaseClass(caRes, newBaseClassRes);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(newBaseClassRes));
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(newBaseClassRes, CustomAttributeClass));
   });
 
   it("should remove a base class from custom attribute class", async () => {
     const baseClassRes = await testEditor.customAttributes.create(testKey, "testBaseClass", CustomAttributeContainerType.AnyRelationshipConstraint);
     const caRes = await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.AnyRelationshipConstraint, "testLabel",baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(caRes);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(baseClassRes));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
 
     await testEditor.customAttributes.setBaseClass(caRes, undefined);
     expect(await testCA?.baseClass).to.eql(undefined);
@@ -94,8 +94,8 @@ describe("CustomAttribute tests", () => {
     const caRes = await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.PrimitiveProperty);
     await expect(testEditor.customAttributes.setBaseClass(caRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `CustomAttributeClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `CustomAttributeClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -126,8 +126,8 @@ describe("CustomAttribute tests", () => {
     const baseClassRes = await testEditor.customAttributes.create(testKey, "testBaseClass", CustomAttributeContainerType.TargetRelationshipConstraint);
     const caRes = await testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.TargetRelationshipConstraint, "testLabel",baseClassRes);
 
-    const testCA = await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(caRes);
-    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<CustomAttributeClass>(baseClassRes));
+    const testCA = await testEditor.schemaContext.getSchemaItem(caRes, CustomAttributeClass);
+    expect(await testCA?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, CustomAttributeClass));
 
     const newBaseClassRes = await testEditor.customAttributes.create(testKey, "newBaseClass", CustomAttributeContainerType.TargetRelationshipConstraint);
     await expect(testEditor.customAttributes.setBaseClass(caRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {
@@ -150,8 +150,8 @@ describe("CustomAttribute tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.customAttributes.create(testKey, "testCustomAttribute", CustomAttributeContainerType.StructProperty, undefined, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `CustomAttributeClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `CustomAttributeClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
