@@ -1939,7 +1939,7 @@ export const SchemaCompareDiagnostics: {
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [Format | OverrideFormat] | undefined;
+            messageArgs?: [OverrideFormat | Format] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
