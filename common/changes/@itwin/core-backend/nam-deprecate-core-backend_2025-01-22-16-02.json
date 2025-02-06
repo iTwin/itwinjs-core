@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Elevate BackendHubAccess to public, remove deprecated 3.x APIs in core-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

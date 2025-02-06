@@ -181,23 +181,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /** @deprecated in 3.x. findAllBySource */
-  public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
-    const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
-    let elementId: Id64String | undefined;
-    let aspectId: Id64String | undefined;
-    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("scope", scope);
-      statement.bindString("kind", kind);
-      statement.bindString("identifier", identifier);
-      if (DbResult.BE_SQLITE_ROW === statement.step()) {
-        elementId = statement.getValue(0).getId();
-        aspectId = statement.getValue(1).getId();
-      }
-    });
-    return { elementId, aspectId };
-  }
-
   /** Look up the elements that contain one or more ExternalSourceAspect with the specified Scope, Kind, and Identifier.
    * The result of this function is an array of all of the ExternalSourceAspects that were found, each associated with the owning element.
    * A given element could have more than one ExternalSourceAspect with the given scope, kind, and identifier.
