@@ -12,6 +12,7 @@ import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat
 import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool";
 import { Localization } from "@itwin/core-common";
 import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat";
+import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat";
 
 /** Configuration options.
  * @beta
@@ -37,6 +38,7 @@ export class MapLayersFormats {
     if (IModelApp.initialized) {
       IModelApp.mapLayerFormatRegistry.register(ArcGisFeatureMapLayerFormat);
       IModelApp.mapLayerFormatRegistry.register(OgcApiFeaturesMapLayerFormat);
+      IModelApp.mapLayerFormatRegistry.register(GoogleMapsMapLayerFormat);
     }
 
     // register namespace containing localized strings for this package

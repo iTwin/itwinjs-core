@@ -12,6 +12,7 @@ import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
+import { DecorateContext } from "../../ViewContext";
 
 /**
  * A [[TileTreeReference]] to be used specifically for [[MapTileTree]]s.
@@ -83,6 +84,10 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
     return div;
+  }
+
+  public override decorate(_context: DecorateContext): void {
+    this.imageryProvider?.decorate(_context);
   }
 }
 

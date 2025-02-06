@@ -19,6 +19,10 @@ export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" |
 /** @public */
 export type SubLayerId = string | number;
 
+/** @public */
+export type  MapLayerProviderArrayProperty = Array<number|string|boolean>;
+export interface MapLayerProviderProperties { [key: string]: number | string | boolean | MapLayerProviderArrayProperty };
+
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
  * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
@@ -169,6 +173,11 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   */
   queryParams?: { [key: string]: string };
 
+  /** Data specific to each map layer provider.
+   * @beta
+  */
+  properties?: MapLayerProviderProperties;
+
 }
 
 /** JSON representation of a [[ModelMapLayerSettings]].
@@ -297,6 +306,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
    * @beta
   */
   public unsavedQueryParams?: { [key: string]: string };
+
+  /** TODO
+   * @beta
+  */
+  public readonly properties?: MapLayerProviderProperties;
+
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 
@@ -311,6 +326,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (props.queryParams) {
       this.savedQueryParams = {...props.queryParams};
     }
+
+    if (props.properties) {
+      this.properties = {...props.properties}
+    }
+
     this.subLayers = [];
     if (!props.subLayers)
       return;
@@ -338,6 +358,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (this.savedQueryParams)
       props.queryParams = {...this.savedQueryParams};
 
+    if (this.properties) {
+      props.properties = {...this.properties};
+    }
+
     return props;
   }
 
@@ -351,7 +375,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // Clone members not part of MapLayerProps
     clone.userName = this.userName;
     clone.password = this.password;
-    clone.accessKey = this.accessKey;
     if (this.unsavedQueryParams)
       clone.unsavedQueryParams = {...this.unsavedQueryParams};
     if (this.savedQueryParams)
@@ -374,6 +397,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.queryParams = {...this.savedQueryParams};
     }
 
+    if (changedProps.properties) {
+      props.properties = {...changedProps.properties}
+    } else  if (this.properties) {
+      props.properties = {...this.properties}
+    }
     return props;
   }
 

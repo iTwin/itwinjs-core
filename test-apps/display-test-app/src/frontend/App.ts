@@ -271,6 +271,9 @@ export class DisplayTestApp {
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
             : undefined,
+          GoogleMaps: configuration.googleMapsKey
+            ? { key: "key", value: configuration.googleMapsKey }
+            : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
