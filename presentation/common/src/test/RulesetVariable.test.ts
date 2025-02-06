@@ -6,18 +6,13 @@ import { expect } from "chai";
 import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BooleanRulesetVariable,
-  BooleanRulesetVariableJSON,
   Id64RulesetVariable,
-  Id64RulesetVariableJSON,
   Id64sRulesetVariable,
   Id64sRulesetVariableJSON,
   IntRulesetVariable,
-  IntRulesetVariableJSON,
   IntsRulesetVariable,
-  IntsRulesetVariableJSON,
   RulesetVariable,
   StringRulesetVariable,
-  StringRulesetVariableJSON,
   VariableValueTypes,
 } from "../presentation-common/RulesetVariables";
 import { createRandomId } from "./_helpers/random";
@@ -94,32 +89,28 @@ describe("RulesetVariable", () => {
     });
 
     it("returns non CompressedId64Set variables as is", () => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const boolVariable: BooleanRulesetVariableJSON = {
+      const boolVariable: BooleanRulesetVariable = {
         type: VariableValueTypes.Bool,
         id: "test",
         value: true,
       };
       expect(RulesetVariable.fromJSON(boolVariable)).to.eq(boolVariable);
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const intVariable: IntRulesetVariableJSON = {
+      const intVariable: IntRulesetVariable = {
         type: VariableValueTypes.Int,
         id: "test",
         value: 123,
       };
       expect(RulesetVariable.fromJSON(intVariable)).to.eq(intVariable);
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const intArrayVariable: IntsRulesetVariableJSON = {
+      const intArrayVariable: IntsRulesetVariable = {
         type: VariableValueTypes.IntArray,
         id: "test",
         value: [123, 456],
       };
       expect(RulesetVariable.fromJSON(intArrayVariable)).to.eq(intArrayVariable);
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const id64Variable: Id64RulesetVariableJSON = {
+      const id64Variable: Id64RulesetVariable = {
         type: VariableValueTypes.Id64,
         id: "test",
         value: "0x123",
@@ -133,8 +124,7 @@ describe("RulesetVariable", () => {
       };
       expect(RulesetVariable.fromJSON(id64ArrayVariable)).to.eq(id64ArrayVariable);
 
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const stringVariable: StringRulesetVariableJSON = {
+      const stringVariable: StringRulesetVariable = {
         type: VariableValueTypes.String,
         id: "test",
         value: "123",
