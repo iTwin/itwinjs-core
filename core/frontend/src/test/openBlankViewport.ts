@@ -90,10 +90,8 @@ export type TestBlankViewportAsyncOptions = BlankViewportOptions & { test: (vp: 
  */
 export async function testBlankViewportAsync(args: TestBlankViewportAsyncOptions | ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
   using vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  if (typeof args === "function")
-    return args(vp);
-  else
-    return args.test(vp);
+  const result = (typeof args === "function") ? args(vp) : args.test(vp);
+  return await result;
 }
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
