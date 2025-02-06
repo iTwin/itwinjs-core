@@ -59,10 +59,10 @@ import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import {
   createRandomECInstanceKey,
-  createRandomECInstancesNodeJSON,
+  createRandomECInstancesNode,
   createRandomECInstancesNodeKey,
   createRandomLabelDefinition,
-  createRandomNodePathElementJSON,
+  createRandomNodePathElement,
   createRandomSelectionScope,
 } from "./_helpers/random";
 
@@ -299,10 +299,9 @@ describe("RpcRequestsHandler", () => {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
         paging: { start: 1, size: 2 },
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
+        parentKey: handlerOptions.parentKey!,
       };
-      const result = { items: [createRandomECInstancesNodeJSON()], total: 1 };
+      const result = { items: [createRandomECInstancesNode()], total: 1 };
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedNodes(token, rpcOptions))
@@ -322,8 +321,7 @@ describe("RpcRequestsHandler", () => {
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           clientId,
           rulesetOrId: handlerOptions.rulesetOrId,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
+          parentKey: handlerOptions.parentKey!,
         };
         const result = createTestContentDescriptor({ fields: [] }).toJSON();
         return { handlerOptions, rpcOptions, result };
@@ -364,7 +362,7 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: handlerOptions.rulesetOrId,
         filterText,
       };
-      const result = [createRandomNodePathElementJSON()];
+      const result = [createRandomNodePathElement()];
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getFilteredNodePaths(token, rpcOptions))
@@ -389,7 +387,7 @@ describe("RpcRequestsHandler", () => {
         instancePaths: paths,
         markedIndex,
       };
-      const result = [createRandomNodePathElementJSON()];
+      const result = [createRandomNodePathElement()];
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodePaths(token, rpcOptions))

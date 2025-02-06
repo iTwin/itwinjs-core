@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ColorDef, RenderMaterial } from "@itwin/core-common";
+import { ColorDef, RenderMaterial, RenderMaterialParams } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
 import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../../common/internal/render/SurfaceParams";
 
@@ -39,8 +39,8 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../../common/internal/
  * @internal
  */
 export class Material extends RenderMaterial {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
+
+  public static readonly default: Material = new Material(RenderMaterialParams.defaults);
 
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas = false as const;
@@ -54,11 +54,11 @@ export class Material extends RenderMaterial {
   /** Strictly for testing. */
   public static preserveParams = false;
   /** Strictly for testing. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public params?: RenderMaterial.Params;
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public constructor(params: RenderMaterial.Params) {
+  public params?: RenderMaterialParams;
+
+
+  public constructor(params: RenderMaterialParams) {
     super(params);
 
     if (Material.preserveParams) {

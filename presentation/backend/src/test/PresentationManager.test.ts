@@ -35,10 +35,9 @@ import {
   FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions,
   HierarchyCompareInfo,
-  HierarchyCompareInfoJSON,
   HierarchyCompareOptions,
+  HierarchyLevel,
   HierarchyLevelDescriptorRequestOptions,
-  HierarchyLevelJSON,
   HierarchyRequestOptions,
   InstanceKey,
   IntRulesetVariable,
@@ -74,17 +73,18 @@ import {
 import {
   createRandomECClassInfo,
   createRandomECInstanceKey,
-  createRandomECInstancesNodeJSON,
+  createRandomECInstancesNode,
   createRandomECInstancesNodeKey,
   createRandomId,
   createRandomLabelDefinition,
-  createRandomNodePathElementJSON,
+  createRandomNodePathElement,
   createRandomRelationshipPath,
   createRandomRuleset,
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
   createTestECClassInfo,
+  createTestNodeKey,
   createTestPropertiesContentField,
   createTestPropertyInfo,
   createTestRelatedClassInfo,
@@ -835,54 +835,40 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const addonResponse: HierarchyLevelJSON = {
+
+        const addonResponse: HierarchyLevel = {
           nodes: [
             {
-              key: {
+              key: createTestNodeKey({
                 type: "type1",
                 pathFromRoot: ["p1", "p2", "p3"],
-              },
-              labelDefinition: LabelDefinition.fromLabelString("test1"),
+              }),
+              label: LabelDefinition.fromLabelString("test1"),
               description: "description1",
-              imageId: "img_1",
-              foreColor: "foreColor1",
-              backColor: "backColor1",
-              fontStyle: "fontStyle1",
               hasChildren: true,
               isSelectionDisabled: true,
               isEditable: true,
-              isChecked: true,
-              isCheckboxVisible: true,
-              isCheckboxEnabled: true,
               isExpanded: true,
             },
             {
-              key: {
+              key: createTestNodeKey({
                 type: StandardNodeTypes.ECInstancesNode,
                 pathFromRoot: ["p1"],
                 instanceKeys: [createRandomECInstanceKey()],
-              },
-              labelDefinition: LabelDefinition.fromLabelString("test2"),
+              }),
+              label: LabelDefinition.fromLabelString("test2"),
               description: "description2",
-              imageId: "",
-              foreColor: "",
-              backColor: "",
-              fontStyle: "",
               hasChildren: false,
               isSelectionDisabled: false,
               isEditable: false,
-              isChecked: false,
-              isCheckboxVisible: false,
-              isCheckboxEnabled: false,
               isExpanded: false,
             },
             {
-              key: {
+              key: createTestNodeKey({
                 type: "some node",
                 pathFromRoot: ["p1", "p3"],
-              },
-              labelDefinition: LabelDefinition.fromLabelString("test2"),
+              }),
+              label: LabelDefinition.fromLabelString("test2"),
             },
           ],
           supportsFiltering: true,
@@ -901,34 +887,34 @@ describe("PresentationManager", () => {
 
       it("returns child nodes", async () => {
         // what the addon receives
-        const parentNodeKeyJSON = createRandomECInstancesNodeKey();
+        const parentNodeKey = createRandomECInstancesNodeKey();
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetChildren,
           params: {
-            nodeKey: parentNodeKeyJSON,
+            nodeKey: parentNodeKey,
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
         };
 
         // what the addon returns
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const addonResponse: HierarchyLevelJSON = {
+
+        const addonResponse: HierarchyLevel = {
           nodes: [
             {
-              key: {
+              key: createTestNodeKey({
                 type: StandardNodeTypes.ECInstancesNode,
                 pathFromRoot: ["p1"],
                 instanceKeys: [createRandomECInstanceKey()],
-              },
-              labelDefinition: LabelDefinition.fromLabelString("test2"),
+              }),
+              label: LabelDefinition.fromLabelString("test2"),
             },
             {
-              key: {
+              key: createTestNodeKey({
                 type: "type 2",
                 pathFromRoot: ["p1", "p3"],
-              },
-              labelDefinition: LabelDefinition.fromLabelString("test3"),
+              }),
+              label: LabelDefinition.fromLabelString("test3"),
             },
           ],
           supportsFiltering: true,
@@ -940,8 +926,8 @@ describe("PresentationManager", () => {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
+
+          parentKey: parentNodeKey,
         };
         const result = await manager.getNodes(options);
         verifyWithSnapshot(result, expectedParams);
@@ -958,26 +944,19 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const addonResponse: HierarchyLevelJSON = {
+
+        const addonResponse: HierarchyLevel = {
           nodes: [
             {
-              key: {
+              key: createTestNodeKey({
                 type: "type1",
                 pathFromRoot: ["p1", "p2", "p3"],
-              },
-              labelDefinition: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
+              }),
+              label: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
               description: "description1",
-              imageId: "img_1",
-              foreColor: "foreColor1",
-              backColor: "backColor1",
-              fontStyle: "fontStyle1",
               hasChildren: true,
               isSelectionDisabled: true,
               isEditable: true,
-              isChecked: true,
-              isCheckboxVisible: true,
-              isCheckboxEnabled: true,
               isExpanded: true,
             },
           ],
@@ -1021,11 +1000,11 @@ describe("PresentationManager", () => {
 
       it("returns child nodes count", async () => {
         // what the addon receives
-        const parentNodeKeyJSON = createRandomECInstancesNodeKey();
+        const parentNodeKey = createRandomECInstancesNodeKey();
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetChildrenCount,
           params: {
-            nodeKey: parentNodeKeyJSON,
+            nodeKey: parentNodeKey,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
           },
         };
@@ -1038,8 +1017,7 @@ describe("PresentationManager", () => {
         const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
+          parentKey: parentNodeKey,
         };
         const result = await manager.getNodesCount(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
@@ -1109,7 +1087,7 @@ describe("PresentationManager", () => {
         };
 
         // what addon returns
-        const addonResponse = [createRandomNodePathElementJSON(0)];
+        const addonResponse = [createRandomNodePathElement(0)];
         setup(addonResponse);
 
         // test
@@ -1139,7 +1117,7 @@ describe("PresentationManager", () => {
         };
 
         // what addon returns
-        const addonResponse = [createRandomNodePathElementJSON(0)];
+        const addonResponse = [createRandomNodePathElement(0)];
         setup(addonResponse);
 
         // test
@@ -1173,13 +1151,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const unprocessedResponse: HierarchyCompareInfoJSON = {
+
+        const unprocessedResponse: HierarchyCompareInfo = {
           changes: [
             {
               type: "Insert",
               position: 1,
-              node: createRandomECInstancesNodeJSON(),
+              node: createRandomECInstancesNode(),
             },
           ],
         };
@@ -1197,8 +1175,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(options);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset changes", async () => {
@@ -1215,12 +1192,11 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const addonResponse: HierarchyCompareInfoJSON = {
+        const addonResponse: HierarchyCompareInfo = {
           changes: [
             {
               type: "Delete",
-              parent: createRandomECInstancesNodeJSON().key,
+              parent: createRandomECInstancesNode().key,
               position: 123,
             },
           ],
@@ -1236,8 +1212,7 @@ describe("PresentationManager", () => {
           rulesetOrId: "test",
         };
         const result = await manager.compareHierarchies(options);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset variables' changes", async () => {
@@ -1257,12 +1232,11 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const addonResponse: HierarchyCompareInfoJSON = {
+        const addonResponse: HierarchyCompareInfo = {
           changes: [
             {
               type: "Update",
-              target: createRandomECInstancesNodeJSON().key,
+              target: createRandomECInstancesNode().key,
               changes: {},
             },
           ],
@@ -1279,8 +1253,8 @@ describe("PresentationManager", () => {
           rulesetVariables: [var2],
         };
         const result = await manager.compareHierarchies(options);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
+
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
 
       it("returns empty result if neither ruleset nor ruleset variables changed", async () => {
@@ -1379,7 +1353,6 @@ describe("PresentationManager", () => {
         const addonResponse: DescriptorJSON = {
           connectionId: faker.random.uuid(),
           inputKeysHash: faker.random.uuid(),
-          contentOptions: faker.random.objectElement(),
           displayType: testData.displayType,
           classesMap,
           selectClasses: [
@@ -1633,7 +1606,6 @@ describe("PresentationManager", () => {
             primaryKeys: [createRandomECInstanceKey()],
             classInfo: createRandomECClassInfo(),
             labelDefinition: createRandomLabelDefinition(),
-            imageId: "image id",
             values: {
               [fieldName]: "test value",
             },
@@ -1692,7 +1664,6 @@ describe("PresentationManager", () => {
               rawValue: "@Presentation:label.notSpecified@",
               displayValue: "@Presentation:label.notSpecified@",
             },
-            imageId: "image id",
             values: {
               [fieldName]: "@Presentation:label.notSpecified@",
             },
@@ -1738,7 +1709,6 @@ describe("PresentationManager", () => {
             primaryKeys: [createRandomECInstanceKey()],
             classInfo: createRandomECClassInfo(),
             labelDefinition: createRandomLabelDefinition(),
-            imageId: "test image id",
             values: {
               [fieldName]: "test value",
             },
@@ -1783,7 +1753,6 @@ describe("PresentationManager", () => {
             primaryKeys: [createRandomECInstanceKey()],
             classInfo: createRandomECClassInfo(),
             labelDefinition: createRandomLabelDefinition(),
-            imageId: "test image id",
             values: {
               [fieldName]: "test value",
             },
@@ -1844,7 +1813,6 @@ describe("PresentationManager", () => {
             primaryKeys: [createRandomECInstanceKey()],
             classInfo: createRandomECClassInfo(),
             labelDefinition: createRandomLabelDefinition(),
-            imageId: "test image id",
             values: {
               [fieldName]: fieldValue,
             },
@@ -1903,7 +1871,6 @@ describe("PresentationManager", () => {
             primaryKeys: [createRandomECInstanceKey()],
             classInfo: createRandomECClassInfo(),
             labelDefinition: createRandomLabelDefinition(),
-            imageId: "test image id",
             values: {
               [fieldName]: fieldValue,
             },
@@ -3206,7 +3173,6 @@ describe("PresentationManager", () => {
               primaryKeys: [keys[index]],
               classInfo: createRandomECClassInfo(),
               labelDefinition: labels[index],
-              imageId: faker.random.uuid(),
               values: {},
               displayValues: {},
               mergedFieldNames: [],
@@ -3260,7 +3226,6 @@ describe("PresentationManager", () => {
               primaryKeys: [keys[index]],
               classInfo: createRandomECClassInfo(),
               labelDefinition: labels[index],
-              imageId: faker.random.uuid(),
               values: {},
               displayValues: {},
               mergedFieldNames: [],
@@ -3316,7 +3281,6 @@ describe("PresentationManager", () => {
               primaryKeys: [concreteClassKey],
               classInfo: createRandomECClassInfo(),
               labelDefinition: label,
-              imageId: faker.random.uuid(),
               values: {},
               displayValues: {},
               mergedFieldNames: [],
@@ -3357,7 +3321,6 @@ describe("PresentationManager", () => {
               primaryKeys: [createRandomECInstanceKey()], // different than input key
               classInfo: createRandomECClassInfo(),
               labelDefinition: createRandomLabelDefinition(),
-              imageId: faker.random.uuid(),
               values: {},
               displayValues: {},
               mergedFieldNames: [],
@@ -3423,15 +3386,14 @@ describe("PresentationManager", () => {
           }),
         );
         // what the addon returns
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const addonResponse: HierarchyLevelJSON = {
+        const addonResponse: HierarchyLevel = {
           nodes: [
             {
-              key: {
+              key: createTestNodeKey({
                 type: "type1",
                 pathFromRoot: ["p1", "p2", "p3"],
-              },
-              labelDefinition: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
+              }),
+              label: LabelDefinition.fromLabelString("@Presentation:label.notSpecified@"),
             },
           ],
           supportsFiltering: true,

@@ -9,7 +9,7 @@
 import { base64StringToUint8Array, Id64String } from "@itwin/core-bentley";
 import {
   ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, TextureProps, TextureTransparency,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, RenderTextureParams, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
@@ -598,8 +598,8 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
+
+  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTextureParams, _format: ImageSourceFormat): RenderTexture | undefined {
     return undefined;
   }
 
@@ -610,8 +610,8 @@ export abstract class RenderSystem implements Disposable {
   /** Create a new texture from a cube of HTML images.
    * @internal
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined {
+
+  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTextureParams): RenderTexture | undefined {
     return undefined;
   }
 
