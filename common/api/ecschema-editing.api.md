@@ -750,7 +750,7 @@ export enum DiagnosticType {
     // (undocumented)
     None = 0,
     // (undocumented)
-    Property = 3,
+    Property = 3,P
     // (undocumented)
     RelationshipConstraint = 5,
     // (undocumented)
@@ -760,7 +760,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "Property" | "RelationshipConstraint" | "SchemaItem" | "CustomAttributeContainer" | "None";
+export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
 
 // @alpha
 export type DifferenceType = "add" | "modify";
