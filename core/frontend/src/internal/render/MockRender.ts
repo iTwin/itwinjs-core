@@ -10,27 +10,27 @@
 import { dispose } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { MeshParams } from "../common/internal/render/MeshParams";
-import { PointStringParams } from "../common/internal/render/PointStringParams";
-import { PolylineParams } from "../common/internal/render/PolylineParams";
-import { ViewRect } from "../common/ViewRect";
-import { Decorations } from "./Decorations";
-import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { Pixel } from "./Pixel";
-import { PrimitiveBuilder } from "../internal/render/PrimitiveBuilder";
-import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
-import { GraphicList, RenderGraphic } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderPlan } from "../internal/render/RenderPlan";
-import { RenderSystem } from "./RenderSystem";
-import { RenderTarget } from "./RenderTarget";
-import { Scene } from "./Scene";
-import { _implementationProhibited } from "../common/internal/Symbols";
-import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
+import { IModelApp, IModelAppOptions } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { MeshParams } from "../../common/internal/render/MeshParams";
+import { PointStringParams } from "../../common/internal/render/PointStringParams";
+import { PolylineParams } from "../../common/internal/render/PolylineParams";
+import { ViewRect } from "../../common/ViewRect";
+import { Decorations } from "../../render/Decorations";
+import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
+import { Pixel } from "../../render/Pixel";
+import { PrimitiveBuilder } from "../../internal/render/PrimitiveBuilder";
+import { PointCloudArgs } from "../../common/internal/render/PointCloudPrimitive";
+import { GraphicList, RenderGraphic } from "../../render/RenderGraphic";
+import { RenderMemory } from "../../render/RenderMemory";
+import { RenderPlan } from "../../internal/render/RenderPlan";
+import { RenderSystem } from "../../render/RenderSystem";
+import { RenderTarget } from "../../render/RenderTarget";
+import { Scene } from "../../render/Scene";
+import { _implementationProhibited } from "../../common/internal/Symbols";
+import { RenderGeometry } from "./RenderGeometry";
+import { RenderAreaPattern } from "./RenderAreaPattern";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:

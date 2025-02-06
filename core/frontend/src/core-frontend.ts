@@ -88,7 +88,6 @@ export * from "./render/GraphicBranch";
 export * from "./render/GraphicBuilder";
 export * from "./render/GraphicTemplate";
 export * from "./render/MeshArgs";
-export * from "./render/MockRender";
 export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/PolylineArgs";
