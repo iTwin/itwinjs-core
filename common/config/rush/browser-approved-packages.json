@@ -715,6 +715,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "npm-run-all2",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "null-loader",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
