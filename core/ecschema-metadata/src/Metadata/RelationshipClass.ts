@@ -123,7 +123,7 @@ export class RelationshipClass extends ECClass {
 
     let strength = parseStrength(relationshipClassProps.strength);
     if (undefined === strength) {
-      if (SchemaReadHelper.isECSpecVersionNewer({readVersion: relationshipClassProps.originalECSpecMajorVersion, writeVersion: relationshipClassProps.originalECSpecMinorVersion} as ECSpecVersion))
+      if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: relationshipClassProps.originalECSpecMajorVersion, writeVersion: relationshipClassProps.originalECSpecMinorVersion } as ECSpecVersion))
         strength = StrengthType.Referencing;
       else
         throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
@@ -264,11 +264,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     if (undefined === this._constraintClasses)
       return;
 
-    this._constraintClasses.forEach( (item, index) => {
+    this._constraintClasses.forEach((item, index) => {
       const constraintName = item.fullName;
-      if(constraintName === constraint.fullName)
+      if (constraintName === constraint.fullName)
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._constraintClasses?.splice(index,1);
+        this._constraintClasses?.splice(index, 1);
     });
   }
 

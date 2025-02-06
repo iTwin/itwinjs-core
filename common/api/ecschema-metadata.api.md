@@ -1480,7 +1480,6 @@ export class RelationshipClass extends ECClass {
     fromJSON(relationshipClassProps: RelationshipClassProps): Promise<void>;
     // (undocumented)
     fromJSONSync(relationshipClassProps: RelationshipClassProps): void;
-    static isRelationshipClass(item?: SchemaItem): item is RelationshipClass;
     // (undocumented)
     readonly schema: Schema;
     // (undocumented)

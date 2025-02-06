@@ -72,8 +72,6 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
-import { ElementGeometryBuilderParams } from '@itwin/core-common';
-import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
@@ -293,14 +291,14 @@ export abstract class AuxCoordSystem extends DefinitionElement {
     // (undocumented)
     description?: string;
     // (undocumented)
-    type: number;
+    type?: number;
 }
 
 // @public
 export class AuxCoordSystem2d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
-    angle: number;
+    angle?: number;
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -317,11 +315,11 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
     // (undocumented)
     origin?: Point3d;
     // (undocumented)
-    pitch: number;
+    pitch?: number;
     // (undocumented)
-    roll: number;
+    roll?: number;
     // (undocumented)
-    yaw: number;
+    yaw?: number;
 }
 
 // @public
@@ -2850,8 +2848,6 @@ export abstract class GeometricElement extends Element_2 {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -2950,8 +2946,6 @@ export class GeometryPart extends DefinitionElement {
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
     // (undocumented)
@@ -3827,7 +3821,7 @@ export class LightLocation extends SpatialLocationElement {
     protected constructor(props: LightLocationProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    enabled: boolean;
+    enabled?: boolean;
 }
 
 // @public
@@ -4262,7 +4256,7 @@ export class Model extends Entity {
     // @beta
     protected static onUpdateElement(_arg: OnElementInModelPropsArg): void;
     // (undocumented)
-    readonly parentModel: Id64String;
+    readonly parentModel?: Id64String;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
