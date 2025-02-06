@@ -53,6 +53,8 @@ import { GraphicTemplate } from "./GraphicTemplate";
 import { RenderSystemDebugControl } from "../internal/render/RenderSystemDebugControl";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
+import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
+import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
@@ -92,13 +94,6 @@ export interface PlanarGridProps {
   transparency?: PlanarGridTransparency;
 }
 
-/** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
- * @internal
- */
-export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
-  readonly [_implementationProhibited]: "renderAreaPattern";
-}
-
 /** Contains the WebGL resources necessary to draw multiple [[Instance]]s of a [[GraphicTemplate]] using [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html).
  * Use [[RenderSystem.createRenderInstances]] to create one.
  * The instances may be associated with [Feature]($common)s, in which case those features override any defined in the template itself.
@@ -118,30 +113,6 @@ export interface RenderInstances {
   /** @internal */
   readonly [_featureTable]?: PackedFeatureTable;
 }
-
-/** @internal */
-export interface RenderSkyGradientParams {
-  type: "gradient";
-  gradient: SkyGradient;
-  zOffset: number;
-}
-
-/** @internal */
-export interface RenderSkySphereParams {
-  type: "sphere";
-  texture: RenderTexture;
-  rotation: number;
-  zOffset: number;
-}
-
-/** @internal */
-export interface RenderSkyCubeParams {
-  type: "cube";
-  texture: RenderTexture;
-}
-
-/** @internal */
-export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
 /** Arguments supplied to [[RenderSystem.createGraphicFromDescription]].
  * @beta

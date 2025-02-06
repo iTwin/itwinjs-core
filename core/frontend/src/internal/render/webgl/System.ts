@@ -31,7 +31,7 @@ import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialAr
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RealityMeshParams } from "../../../render/RealityMeshParams";
 import {
-  CreateGraphicFromTemplateArgs, PlanarGridProps, RenderAreaPattern, RenderInstances, RenderSkyBoxParams, RenderSystem,
+  CreateGraphicFromTemplateArgs, PlanarGridProps, RenderInstances, RenderSystem,
 } from "../../../render/RenderSystem";
 import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystemDebugControl } from "../RenderSystemDebugControl";
 import { RenderTarget } from "../../../render/RenderTarget";
@@ -70,6 +70,8 @@ import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../../common/render/RenderInstancesParams";
 import { _batch, _branch, _featureTable, _nodes } from "../../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
+import { RenderSkyBoxParams } from "../RenderSkyBoxParams";
+import { RenderAreaPattern } from "../RenderAreaPattern";
 
 /* eslint-disable no-restricted-syntax */
 

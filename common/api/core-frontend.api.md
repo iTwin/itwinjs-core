@@ -9493,12 +9493,6 @@ export interface RemoteExtensionProviderProps {
     manifestUrl: string;
 }
 
-// @internal
-export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
-    // (undocumented)
-    readonly [_implementationProhibited]: "renderAreaPattern";
-}
-
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -9786,39 +9780,6 @@ export namespace RenderMemory {
         // @internal (undocumented)
         get vertexTables(): Consumers;
     }
-}
-
-// @internal (undocumented)
-export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
-
-// @internal (undocumented)
-export interface RenderSkyCubeParams {
-    // (undocumented)
-    texture: RenderTexture;
-    // (undocumented)
-    type: "cube";
-}
-
-// @internal (undocumented)
-export interface RenderSkyGradientParams {
-    // (undocumented)
-    gradient: SkyGradient;
-    // (undocumented)
-    type: "gradient";
-    // (undocumented)
-    zOffset: number;
-}
-
-// @internal (undocumented)
-export interface RenderSkySphereParams {
-    // (undocumented)
-    rotation: number;
-    // (undocumented)
-    texture: RenderTexture;
-    // (undocumented)
-    type: "sphere";
-    // (undocumented)
-    zOffset: number;
 }
 
 // @public

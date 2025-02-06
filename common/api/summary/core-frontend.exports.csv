@@ -599,7 +599,6 @@ internal;class;RealityTreeReference
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
 alpha;interface;RemoteExtensionProviderProps
-internal;interface;RenderAreaPattern
 public;class;RenderClipVolume
 public;class;RenderContext
 internal;enum;RenderDiagnostics
@@ -617,10 +616,6 @@ internal;enum;BufferType
 internal;interface;Consumer
 internal;class;Consumers
 internal;enum;ConsumerType
-internal;type;RenderSkyBoxParams
-internal;interface;RenderSkyCubeParams
-internal;interface;RenderSkyGradientParams
-internal;interface;RenderSkySphereParams
 public;class;RenderSystem
 public;namespace;RenderSystem
 internal;interface;RenderSystemDebugControl
