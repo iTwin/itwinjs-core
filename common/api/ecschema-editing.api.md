@@ -750,7 +750,7 @@ export enum DiagnosticType {
     // (undocumented)
     None = 0,
     // (undocumented)
-    Property = 3,P
+    Property = 3,
     // (undocumented)
     RelationshipConstraint = 5,
     // (undocumented)
