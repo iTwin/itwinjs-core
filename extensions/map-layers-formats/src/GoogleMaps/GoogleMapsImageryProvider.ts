@@ -1,6 +1,6 @@
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile, TileUrlImageryProvider } from "@itwin/core-frontend";
-import { CreateGoogleMapsSessionOptions, GoogleMaps, GoogleMapsSession, LayerTypesType, MapTypesType } from "./GoogleMaps";
+import { CreateSessionOptions, GoogleMaps, GoogleMapsSession, LayerTypesType, MapTypesType } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
@@ -69,7 +69,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  private createCreateSessionOptions(): CreateGoogleMapsSessionOptions {
+  private createCreateSessionOptions(): CreateSessionOptions {
     const layerPropertyKeys = this._settings.properties ? Object.keys(this._settings.properties) : undefined;
     if (layerPropertyKeys === undefined ||
         !layerPropertyKeys.includes("mapType") ||
@@ -80,8 +80,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
 
-    const createSessionOptions: CreateGoogleMapsSessionOptions = {
-
+    const createSessionOptions: CreateSessionOptions = {
       mapType: this._settings.properties!.mapType as MapTypesType,
       region: this._settings.properties!.region as string,
       language: this._settings.properties!.language as string,

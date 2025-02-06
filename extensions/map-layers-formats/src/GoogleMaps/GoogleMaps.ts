@@ -13,7 +13,7 @@ export type ImageFormatsType = "jpeg" | "png";
 /**
 * Represents the options to create a Google Maps session.
 */
-export interface CreateGoogleMapsSessionOptions {
+export interface CreateSessionOptions {
     /**
    * The type of base map.
    *
@@ -76,7 +76,7 @@ export interface GoogleMapsSession {
  * Represents the maximum zoom level available within a bounding rectangle.
 * @beta
 */
-export interface GoogleMapsMaxZoomRect {
+export interface MaxZoomRectangle {
   maxZoom: number;
   north: number;
   south: number;
@@ -88,12 +88,12 @@ export interface GoogleMapsMaxZoomRect {
  * Indicate which areas of given viewport have imagery, and at which zoom levels.
  * @beta
 */
-export interface GoogleMapsViewportInfo {
+export interface ViewportInfo {
   /**  Attribution string that you must display on your map when you display roadmap and satellite tiles. */
   copyright: string;
 
   /** Array of bounding rectangles that overlap with the current viewport. Also contains the maximum zoom level available within each rectangle.. */
-  maxZoomRects: GoogleMapsMaxZoomRect[];
+  maxZoomRects: MaxZoomRectangle[];
 }
 
 /**
@@ -123,12 +123,12 @@ export const GoogleMaps = {
  * @param opts Options to create the session
  * @beta
 */
-  createSession: async (apiKey: string, opts: CreateGoogleMapsSessionOptions): Promise<GoogleMapsSession> => {
+  createSession: async (apiKey: string, opts: CreateSessionOptions): Promise<GoogleMapsSession> => {
     const url = `https://tile.googleapis.com/v1/createSession?key=${apiKey}`;
     const request = new Request(url, {method: "POST", body: JSON.stringify(opts)});
     const response = await fetch (request);
     if (!response.ok) {
-      throw new Error(`CreateSession request failed: ${response.status} -  ${response.statusText}`);
+      throw new Error(`CreateSession request failed: ${response.status} - ${response.statusText}`);
     }
     Logger.logInfo(loggerCategory, `Session created successfully`);
     return response.json();
@@ -139,18 +139,17 @@ export const GoogleMaps = {
  * @param opts Options to create the session
  * @beta
 */
-  createPropertiesFromSessionOptions: (opts: CreateGoogleMapsSessionOptions): MapLayerProviderProperties => {
+  createPropertiesFromSessionOptions: (opts: CreateSessionOptions): MapLayerProviderProperties => {
     const properties: MapLayerProviderProperties = {
       mapType: opts.mapType,
-      language: opts.mapType,
+      language: opts.language,
+      region: opts.region,
     }
 
     if (opts.layerTypes !== undefined) {
       properties.layerTypes = opts.layerTypes;
     }
-    if (opts.region !== undefined) {
-      properties.region = opts.region;
-    }
+
     return properties
   },
 
@@ -160,7 +159,7 @@ export const GoogleMaps = {
  * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
  * @beta
 */
-  createMapLayerSettings: (name?: string, opts?: CreateGoogleMapsSessionOptions): ImageMapLayerSettings => {
+  createMapLayerSettings: (name?: string, opts?: CreateSessionOptions): ImageMapLayerSettings => {
     return ImageMapLayerSettings.fromJSON(GoogleMaps.createMapLayerProps(name, opts));
   },
 
@@ -170,7 +169,7 @@ export const GoogleMaps = {
  * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
  * @beta
 */
-  createMapLayerProps: (name: string = "GoogleMaps", opts?: CreateGoogleMapsSessionOptions): ImageMapLayerProps => {
+  createMapLayerProps: (name: string = "GoogleMaps", opts?: CreateSessionOptions): ImageMapLayerProps => {
     if (!IModelApp.mapLayerFormatRegistry.isRegistered(GoogleMapsMapLayerFormat.formatId)) {
       IModelApp.mapLayerFormatRegistry.register(GoogleMapsMapLayerFormat);
     }
@@ -188,7 +187,7 @@ export const GoogleMaps = {
   * @returns The maximum zoom level available within the bounding rectangle.
    * @beta
   */
-  getViewportInfo: async (params: ViewportInfoRequestParams): Promise<GoogleMapsViewportInfo | undefined>=> {
+  getViewportInfo: async (params: ViewportInfoRequestParams): Promise<ViewportInfo | undefined>=> {
     const {rectangle, session, key, zoom} = params;
     const north = Angle.radiansToDegrees(rectangle.north);
     const south = Angle.radiansToDegrees(rectangle.south);
@@ -201,6 +200,6 @@ export const GoogleMaps = {
       return undefined;
     }
     const json = await response.json();
-    return json as GoogleMapsViewportInfo;;
+    return json as ViewportInfo;;
   },
 };

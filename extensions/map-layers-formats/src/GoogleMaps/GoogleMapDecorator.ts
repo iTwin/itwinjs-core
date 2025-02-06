@@ -72,7 +72,7 @@ class LogoDecoration implements CanvasDecoration {
 export class GoogleMapsDecorator implements Decorator {
   public readonly logo = new LogoDecoration();
 
-  /** Activate the logo with the given map type. */
+  /** Activate the logo based on the given map type. */
   public async activate(mapType: MapTypesType): Promise<boolean> {
     // Pick the logo that is the most visible on the background map
     const imageName = mapType === "roadmap" ?
