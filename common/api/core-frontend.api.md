@@ -2386,14 +2386,6 @@ export interface CreateGraphicFromTemplateArgs {
     template: GraphicTemplate;
 }
 
-// @internal
-export function createGraphicTemplate(args: {
-    nodes: GraphicTemplateNode[];
-    batch?: GraphicTemplateBatch;
-    noDispose: boolean;
-    branch?: GraphicTemplateBranch;
-}): GraphicTemplate;
-
 // @internal (undocumented)
 export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate;
 
@@ -4802,32 +4794,6 @@ export interface GraphicTemplate {
     // @internal (undocumented)
     readonly [_nodes]: GraphicTemplateNode[];
     readonly isInstanceable: boolean;
-}
-
-// @internal
-export interface GraphicTemplateBatch {
-    // (undocumented)
-    readonly featureTable: RenderFeatureTable;
-    // (undocumented)
-    readonly options?: BatchOptions;
-    // (undocumented)
-    readonly range: Range3d;
-}
-
-// @internal
-export interface GraphicTemplateBranch {
-    // (undocumented)
-    readonly transform?: Transform;
-    // (undocumented)
-    readonly viewFlagOverrides?: ViewFlagOverrides;
-}
-
-// @internal (undocumented)
-export interface GraphicTemplateNode {
-    // (undocumented)
-    geometry: RenderGeometry[];
-    instances?: InstancedGraphicParams;
-    transform?: Transform;
 }
 
 // @public
