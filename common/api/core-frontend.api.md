@@ -10275,14 +10275,6 @@ export class SceneContext extends RenderContext {
     withGraphicType(type: TileGraphicType, func: () => void): void;
 }
 
-// @internal
-export interface SceneVolumeClassifier {
-    // (undocumented)
-    classifier: ActiveSpatialClassifier;
-    // (undocumented)
-    modelId: Id64String;
-}
-
 // @internal (undocumented)
 export const _scheduleScriptReference: unique symbol;
 

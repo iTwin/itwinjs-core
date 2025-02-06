@@ -10,15 +10,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
-import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
-
-/** Describes the spatial classification applied to a [[Scene]].
- * @internal
- */
-export interface SceneVolumeClassifier {
-  classifier: ActiveSpatialClassifier;
-  modelId: Id64String;
-}
+import { SceneVolumeClassifier } from "../internal/render/SceneVolumeClassifier";
 
 /** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.
  * @see [[SceneContext]] for the context in which the scene is created.
