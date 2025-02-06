@@ -9,8 +9,8 @@
 import { Id64String } from "@itwin/core-bentley";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
-import { RenderTextureDrape } from "./RenderSystem";
 import { SceneVolumeClassifier } from "../internal/render/SceneVolumeClassifier";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 
 /** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.
  * @see [[SceneContext]] for the context in which the scene is created.

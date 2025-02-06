@@ -25,11 +25,12 @@ import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "../internal/render/RenderPlan";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
-import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
+import { RenderSystem, } from "./RenderSystem";
 import { Scene } from "./Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
 import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 import { _implementationProhibited } from "../common/internal/Symbols";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].

@@ -14,11 +14,11 @@ import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
-import { RenderTextureDrape } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();

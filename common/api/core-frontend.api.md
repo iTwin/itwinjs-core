@@ -10105,26 +10105,6 @@ export interface RenderTargetDebugControl {
     vcSupportIntersectingVolumes: boolean;
 }
 
-// @internal (undocumented)
-export abstract class RenderTerrainGeometry implements Disposable, RenderMemory.Consumer {
-    // (undocumented)
-    abstract [Symbol.dispose](): void;
-    // (undocumented)
-    abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    abstract get transform(): Transform | undefined;
-}
-
-// @internal
-export abstract class RenderTextureDrape implements Disposable {
-    // (undocumented)
-    abstract [Symbol.dispose](): void;
-    // (undocumented)
-    abstract collectGraphics(context: SceneContext): void;
-    // (undocumented)
-    abstract collectStatistics(stats: RenderMemory.Statistics): void;
-}
-
 // @public
 export interface RequestMeshDataArgs {
     isCanceled(): boolean;
@@ -11591,29 +11571,6 @@ export class TerrainProviderRegistry {
 }
 
 // @internal (undocumented)
-export class TerrainTexture {
-    constructor(texture: RenderTexture, featureId: number, scale: Vector2d, translate: Vector2d, targetRectangle: Range2d, layerIndex: number, transparency: number, clipRectangle?: Range2d | undefined);
-    // (undocumented)
-    readonly clipRectangle?: Range2d | undefined;
-    // (undocumented)
-    cloneWithClip(clipRectangle: Range2d): TerrainTexture;
-    // (undocumented)
-    featureId: number;
-    // (undocumented)
-    readonly layerIndex: number;
-    // (undocumented)
-    readonly scale: Vector2d;
-    // (undocumented)
-    readonly targetRectangle: Range2d;
-    // (undocumented)
-    readonly texture: RenderTexture;
-    // (undocumented)
-    readonly translate: Vector2d;
-    // (undocumented)
-    transparency: number;
-}
-
-// @internal (undocumented)
 export interface TerrainTileContent extends TileContent {
     // (undocumented)
     terrain?: {
@@ -11655,9 +11612,6 @@ export interface TextureCacheOwnership {
     iModel: IModelConnection;
     key: TextureCacheKey;
 }
-
-// @internal (undocumented)
-export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 // @public
 export interface TextureImage {

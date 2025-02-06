@@ -11,13 +11,12 @@ import {
   ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
-import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
 import { MeshParams } from "../common/internal/render/MeshParams";
@@ -52,52 +51,15 @@ import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
 import { RenderSystemDebugControl } from "../internal/render/RenderSystemDebugControl";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
-
-/** An opaque representation of a texture draped on geometry within a [[Viewport]].
- * @internal
- */
-export abstract class RenderTextureDrape implements Disposable {
-  public abstract [Symbol.dispose](): void;
-
-  /** @internal */
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-  public abstract collectGraphics(context: SceneContext): void;
-}
-
-/** @internal */
-export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** Default implementation of RenderGraphicOwner. */
 class GraphicOwner extends RenderGraphicOwner {
   public constructor(private readonly _graphic: RenderGraphic) { super(); }
   public get graphic(): RenderGraphic { return this._graphic; }
-}
-
-/** @internal */
-export abstract class RenderTerrainGeometry implements Disposable, RenderMemory.Consumer {
-  public abstract [Symbol.dispose](): void;
-  public abstract get transform(): Transform | undefined;
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-}
-
-/** @internal */
-export class TerrainTexture {
-  public constructor(
-    public readonly texture: RenderTexture,
-    public featureId: number,
-    public readonly scale: Vector2d,
-    public readonly translate: Vector2d,
-    public readonly targetRectangle: Range2d,
-    public readonly layerIndex: number,
-    public transparency: number,
-    public readonly clipRectangle?: Range2d,
-  ) { }
-
-  public cloneWithClip(clipRectangle: Range2d) {
-    return new TerrainTexture(this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
-  }
 }
 
 /** Transparency settings for planar grid display.

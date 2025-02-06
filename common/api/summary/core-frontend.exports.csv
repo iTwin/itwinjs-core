@@ -626,8 +626,6 @@ public;namespace;RenderSystem
 internal;interface;RenderSystemDebugControl
 public;class;RenderTarget
 internal;interface;RenderTargetDebugControl
-internal;class;RenderTerrainGeometry
-internal;class;RenderTextureDrape
 public;interface;RequestMeshDataArgs
 internal;type;RequestTileTreePropsFunc
 alpha;type;ResolveFunc
@@ -706,13 +704,11 @@ public;class;TerrainMeshProvider
 public;interface;TerrainMeshProviderOptions
 public;interface;TerrainProvider
 public;class;TerrainProviderRegistry
-internal;class;TerrainTexture
 internal;interface;TerrainTileContent
 public;interface;TextInputFormatPropEditorSpec
 public;interface;TextSelectFormatPropEditorSpec
 public;type;TextureCacheKey
 public;interface;TextureCacheOwnership
-internal;type;TextureDrapeMap
 public;interface;TextureImage
 public;type;TextureImageSource
 public;type;TextureOwnership

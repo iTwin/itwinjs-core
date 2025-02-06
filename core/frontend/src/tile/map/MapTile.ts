@@ -15,7 +15,8 @@ import { RealityMeshParams } from "../../render/RealityMeshParams";
 import { upsampleRealityMeshParams } from "../../internal/render/UpsampleRealityMeshParams";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem, RenderTerrainGeometry, TerrainTexture } from "../../render/RenderSystem";
+import { RenderSystem } from "../../render/RenderSystem";
+import { RenderTerrainGeometry, TerrainTexture } from "../../internal/render/RenderTerrain";
 import { ViewingSpace } from "../../ViewingSpace";
 import {
   ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, RealityTileParams, Tile, TileContent, TileDrawArgs, TileGraphicType,

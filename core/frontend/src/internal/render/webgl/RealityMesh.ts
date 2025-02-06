@@ -16,7 +16,7 @@ import { RealityMeshParams } from "../../../render/RealityMeshParams";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { RenderSystem, TerrainTexture } from "../../../render/RenderSystem";
+import { RenderSystem, } from "../../../render/RenderSystem";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
@@ -29,6 +29,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { TerrainTexture } from "../RenderTerrain";
 
 const scratchOverlapRange = Range2d.createNull();
 const scratchBytes = new Uint8Array(4);

@@ -26,7 +26,7 @@ import { GraphicList } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
 import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { RenderTextureDrape, TextureDrapeMap } from "../../../render/RenderSystem";
+import { RenderTextureDrape, TextureDrapeMap } from "../RenderTextureDrape";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../../../render/RenderTarget";
 import { ScreenSpaceEffectContext } from "../../../render/ScreenSpaceEffectBuilder";
 import { Scene } from "../../../render/Scene";
