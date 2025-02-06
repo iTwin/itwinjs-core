@@ -60,7 +60,7 @@ describe("ECSqlReader", (() => {
         params.bindIdSet(1, ["0x32"]);
         const optionBuilder = new QueryOptionsBuilder();
         optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
+        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", params, optionBuilder.getOptions());
         const rows = await reader.toArray();
         assert.equal(rows[0].id, "0x32");
         assert.equal(rows.length, 1);
