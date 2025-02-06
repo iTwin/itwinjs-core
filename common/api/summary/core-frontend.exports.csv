@@ -286,7 +286,6 @@ public;interface;GraphicArc2d
 public;class;GraphicAssembler
 internal;interface;GraphicAssemblerOptions
 public;class;GraphicBranch
-internal;interface;GraphicBranchFrustum
 public;interface;GraphicBranchOptions
 public;class;GraphicBuilder
 public;interface;GraphicBuilderOptions

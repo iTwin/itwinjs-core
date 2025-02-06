@@ -4580,17 +4580,6 @@ export class GraphicBranch implements Disposable {
     viewFlagOverrides: ViewFlagOverrides;
 }
 
-// @internal
-export interface GraphicBranchFrustum {
-    // (undocumented)
-    is3d: boolean;
-    // (undocumented)
-    scale: {
-        x: number;
-        y: number;
-    };
-}
-
 // @public
 export interface GraphicBranchOptions {
     appearanceProvider?: FeatureAppearanceProvider;

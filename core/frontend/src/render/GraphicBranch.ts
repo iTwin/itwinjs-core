@@ -19,17 +19,7 @@ import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifie
 import { RenderTextureDrape } from "./RenderSystem";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
-
-/** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
- * @internal
- */
-export interface GraphicBranchFrustum {
-  is3d: boolean;
-  scale: {
-    x: number;
-    y: number;
-  };
-}
+import { GraphicBranchFrustum } from "../internal/render/GraphicBranchFrustum";
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
