@@ -13,3 +13,4 @@ export { OnScreenTarget, Target } from "./render/webgl/Target";
 export { PerformanceMetrics } from "./render/webgl/PerformanceMetrics";
 export { type GLTimerResult, RenderDiagnostics, type RenderSystemDebugControl } from "./render/RenderSystemDebugControl";
 export { formatAnimationBranchId } from "./render/AnimationBranchState";
+export { PrimitiveVisibility, type RenderTargetDebugControl } from "./render/RenderTargetDebugControl";

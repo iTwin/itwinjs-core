@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Frustum, ImageBuffer } from "@itwin/core-common";
+import { ImageBuffer } from "@itwin/core-common";
 import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
@@ -31,45 +31,7 @@ import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./Visibl
 import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 import { _implementationProhibited } from "../common/internal/Symbols";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
-
-/** Used for debugging purposes, to toggle display of instanced or batched primitives.
- * @see [[RenderTargetDebugControl]].
- * @internal
- */
-export enum PrimitiveVisibility {
-  /** Draw all primitives. */
-  All,
-  /** Only draw instanced primitives. */
-  Instanced,
-  /** Only draw un-instanced primitives. */
-  Uninstanced,
-}
-
-/** An interface optionally exposed by a RenderTarget that allows control of various debugging features.
- * @internal
- */
-export interface RenderTargetDebugControl {
-  /** If true, render to the screen as if rendering off-screen for readPixels(). */
-  drawForReadPixels: boolean;
-  primitiveVisibility: PrimitiveVisibility;
-  vcSupportIntersectingVolumes: boolean;
-  readonly shadowFrustum: Frustum | undefined;
-  displayDrapeFrustum: boolean;
-  displayMaskFrustum: boolean;
-  /** Override device pixel ratio for on-screen targets only. This supersedes window.devicePixelRatio.
-   * Undefined clears the override. Chiefly useful for tests.
-   */
-  devicePixelRatioOverride?: number;
-  displayRealityTilePreload: boolean;
-  displayRealityTileRanges: boolean;
-  logRealityTiles: boolean;
-  displayNormalMaps: boolean;
-  freezeRealityTiles: boolean;
-  /** Obtain a summary of the render commands required to draw the scene currently displayed.
-   * Each entry specifies  the type of command and the number of such commands required by the current scene.
-   */
-  getRenderCommands(): Array<{ name: string, count: number }>;
-}
+import { RenderTargetDebugControl } from "../internal/render/RenderTargetDebugControl";
 
 /** Connects a [[Viewport]] to a graphics renderer such as a [WebGLRenderingContext](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext)
  * to enable the viewport's contents to be rendered to the screen or to an off-screen buffer.

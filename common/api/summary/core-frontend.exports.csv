@@ -473,7 +473,6 @@ public;enum;MessageBoxIconType
 public;enum;MessageBoxType
 public;enum;MessageBoxValue
 internal;function;metersToRange
-internal;namespace;MockRender
 public;interface;ModalOptions
 public;interface;ModalReturn
 beta;interface;ModelDisplayTransform
