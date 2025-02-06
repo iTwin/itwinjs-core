@@ -9,8 +9,8 @@ import * as fs from "fs";
 import * as os from "os";
 import { join } from "path";
 import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
-import { Id64String, StopWatch } from "@itwin/core-bentley";
-import { DbResult, QueryRowFormat } from "@itwin/core-common";
+import { DbResult, Id64String, StopWatch } from "@itwin/core-bentley";
+import { QueryRowFormat } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 
 describe("#performance Element properties loading", () => {
