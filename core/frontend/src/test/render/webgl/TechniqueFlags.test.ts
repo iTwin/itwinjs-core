@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
+import { TechniqueFlags } from "../../../internal/render/webgl/TechniqueFlags";
 
 const descriptions = [
   "Opaque",
