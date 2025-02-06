@@ -232,7 +232,6 @@ internal;interface;FrameCameraFrustumData
 internal;interface;FrameCameraViewData
 internal;interface;FrameRenderData
 alpha;interface;FrameStats
-internal;class;FrameStatsCollector
 public;interface;FrontendHubAccess
 public;enum;FrontendLoggerCategory
 public;interface;FrontendSecurityOptions
@@ -510,7 +509,6 @@ public;interface;OffScreenViewportOptions
 internal;interface;OldTextureImage
 public;type;OnDownloadProgress
 public;type;OnFlashedIdChangedEventArgs
-alpha;type;OnFrameStatsReadyEvent
 internal;class;OnScreenTarget
 public;interface;OnViewExtentsError
 internal;class;OPCFormatInterpreter
@@ -626,7 +624,6 @@ beta;interface;RenderInstancesParams
 beta;namespace;RenderInstancesParams
 beta;interface;RenderInstancesParamsBuilder
 beta;namespace;RenderInstancesParamsBuilder
-internal;interface;RenderMaterialSource
 public;namespace;RenderMemory
 internal;class;Buffers
 internal;enum;BufferType

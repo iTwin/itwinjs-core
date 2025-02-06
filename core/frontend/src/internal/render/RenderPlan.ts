@@ -19,9 +19,6 @@ const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
 const scratchPoint3c = new Point3d();
 
-/**
- * @internal
- */
 export class RenderPlanEllipsoid {
   public readonly ellipsoidCenter: Point3d;
   public readonly ellipsoidRotation: Matrix3d;
@@ -44,9 +41,7 @@ export class RenderPlanEllipsoid {
   }
 }
 
-/** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
- * @internal
- */
+/** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
 export interface RenderPlan {
   readonly is3d: boolean;
   readonly viewFlags: ViewFlags;
@@ -77,7 +72,6 @@ export interface RenderPlan {
   readonly ellipsoid?: RenderPlanEllipsoid;
 }
 
-/** @internal */
 export function createEmptyRenderPlan(): RenderPlan {
   return {
     is3d: true,
@@ -100,7 +94,6 @@ export function createEmptyRenderPlan(): RenderPlan {
   };
 }
 
-/** @internal */
 export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const view = vp.view;
   const style = view.displayStyle;

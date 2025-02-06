@@ -11,11 +11,9 @@ import { FrameStats } from "../../render/FrameStats";
 
 /** An event which will be raised when a new frame statistics object is available. The listeners will receive that frame statistics object.
  * @see [[Viewport.enableFrameStatsListener]]
- * @internal
  */
 export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
 
-/** @internal */
 export class FrameStatsCollector {
   private _onFrameStatsReady?: OnFrameStatsReadyEvent;
   private _frameStats = FrameStatsCollector._createStats();

@@ -3806,19 +3806,6 @@ export interface FrameStats {
     validateRenderPlanTime: number;
 }
 
-// @internal (undocumented)
-export class FrameStatsCollector {
-    constructor(onFrameStatsReady?: OnFrameStatsReadyEvent);
-    // (undocumented)
-    beginFrame(): void;
-    // (undocumented)
-    beginTime(entry: keyof FrameStats): void;
-    // (undocumented)
-    endFrame(wasFrameDrawn?: boolean): void;
-    // (undocumented)
-    endTime(entry: keyof FrameStats): void;
-}
-
 // @public (undocumented)
 export interface FrontendHubAccess {
     getChangesetFromNamedVersion(arg: IModelIdArg & {
@@ -8233,9 +8220,6 @@ export type OnFlashedIdChangedEventArgs = {
     readonly current: undefined;
 };
 
-// @alpha
-export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
-
 // @internal
 export class OnScreenTarget extends Target {
     // (undocumented)
@@ -9711,14 +9695,6 @@ export interface RenderInstancesParamsBuilder {
 // @beta (undocumented)
 export namespace RenderInstancesParamsBuilder {
     export function create(args: CreateRenderInstancesParamsBuilderArgs): RenderInstancesParamsBuilder;
-}
-
-// @internal
-export interface RenderMaterialSource {
-    // (undocumented)
-    id: Id64String;
-    // (undocumented)
-    iModel: IModelConnection;
 }
 
 // @public

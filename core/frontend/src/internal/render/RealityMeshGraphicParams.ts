@@ -10,7 +10,6 @@ import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
 import { MapCartoRectangle, MapTileProjection } from "../../tile/internal";
 import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "../../render/RenderSystem";
 
-/** @internal */
 export interface RealityMeshGraphicParams {
   readonly realityMesh: RenderTerrainGeometry;
   readonly projection: MapTileProjection;
