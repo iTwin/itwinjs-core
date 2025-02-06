@@ -57,7 +57,6 @@ import {
   createRandomECInstancesNodeKey,
   createRandomLabelDefinition,
   createRandomNodePathElement,
-  createRandomRuleset,
   createRandomTransientId,
   createTestCategoryDescription,
   createTestContentDescriptor,
@@ -67,6 +66,7 @@ import {
   createTestPropertiesContentField,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
@@ -77,7 +77,6 @@ import {
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
@@ -1486,7 +1485,7 @@ describe("PresentationManager", () => {
     let testRulesetVariable: RulesetVariable;
 
     beforeEach(async () => {
-      testRuleset = await createRandomRuleset();
+      testRuleset = { id: "test-ruleset", rules: [] };
       rulesetsManagerMock.setup(async (x) => x.get(testRuleset.id)).returns(async () => new RegisteredRuleset(testRuleset, "", () => {}));
       testRulesetVariable = { id: faker.random.word(), type: VariableValueTypes.String, value: faker.random.word() };
       await manager.vars(testRuleset.id).setString(testRulesetVariable.id, testRulesetVariable.value);

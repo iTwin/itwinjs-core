@@ -80,7 +80,6 @@ import {
   createRandomLabelDefinition,
   createRandomNodePathElementJSON,
   createRandomRelationshipPath,
-  createRandomRuleset,
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
@@ -513,7 +512,7 @@ describe("PresentationManager", () => {
     });
 
     it("returns correct id when input is a ruleset", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset: Ruleset = { id: "test", rules: [] };
       expect(manager.getRulesetId(ruleset)).to.contain(ruleset.id);
     });
 
@@ -521,7 +520,7 @@ describe("PresentationManager", () => {
       sinon.stub(IpcHost, "isValid").get(() => true);
       sinon.stub(IpcHost, "handle");
       manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
-      const ruleset = await createRandomRuleset();
+      const ruleset: Ruleset = { id: "test", rules: [] };
       expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
     });
   });
@@ -537,7 +536,7 @@ describe("PresentationManager", () => {
     });
 
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset: Ruleset = { id: "test", rules: [] };
       addonMock
         .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined))
         .returns(async () => ({ result: "{}" }))
@@ -754,7 +753,7 @@ describe("PresentationManager", () => {
     let manager: PresentationManager;
     beforeEach(async () => {
       testData = {
-        rulesetOrId: await createRandomRuleset(),
+        rulesetOrId: { id: "test-ruleset", rules: [] },
         pageOptions: { start: faker.random.number(), size: faker.random.number() } as PageOptions,
         displayType: faker.random.word(),
         selectionInfo: {
