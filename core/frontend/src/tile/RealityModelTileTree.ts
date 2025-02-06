@@ -244,7 +244,7 @@ enum SMTextureType {
 }
 
 /** @internal */
-class RealityModelTileTreeProps {
+export class RealityModelTileTreeProps {
   public location: Transform;
   public tilesetJson: any;
   public doDrapeBackgroundMap: boolean = false;
@@ -408,7 +408,7 @@ async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<an
 }
 
 /** @internal */
-class RealityModelTileLoader extends RealityTileLoader {
+export class RealityModelTileLoader extends RealityTileLoader {
   public readonly tree: RealityModelTileTreeProps;
   private readonly _batchedIdMap?: BatchedTileIdMap;
   private _viewFlagOverrides: ViewFlagOverrides;

@@ -1952,8 +1952,10 @@ export abstract class GltfReader {
       this._dracoMeshes.set(ext, mesh);
   }
 
-  private resolveUrl(uri: string): string | undefined {
+  protected resolveUrl(uri: string): string | undefined {
     try {
+      console.log("resolveUrl called, baseurl is:", this._baseUrl, "\n");
+
       const resolved = new URL(uri, this._baseUrl);
       resolved.search = this._baseUrl?.search ?? "";
       return resolved.toString();

@@ -139,6 +139,7 @@ export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
 export * from "./request/utils";
 export * from "./RealityDataSource";
+export * from "./RealityDataSourceTilesetUrlImpl";
 
 export * from "./internal/cross-package";
 
