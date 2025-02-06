@@ -694,9 +694,14 @@ export namespace RealityModelTileTree {
     iModel: IModelConnection,
     modelId: Id64String,
     tilesetToDb: Transform | undefined,
-    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean },
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean, customSource?: RealityDataSource | undefined },
   ): Promise<TileTree | undefined> {
-    const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
+    let rdSource;
+    if (opts?.customSource) {
+      rdSource = opts.customSource;
+    } else {
+      rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
+    }
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdSource) {
       // Serialize the reality data source key into a string to uniquely identify this tile tree
