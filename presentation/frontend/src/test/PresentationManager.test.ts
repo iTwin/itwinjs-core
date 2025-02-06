@@ -25,7 +25,6 @@ import {
   DescriptorOverrides,
   DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions,
-  DisplayValueGroup,
   DistinctValuesRequestOptions,
   ECInstancesNodeKey,
   ElementProperties,
@@ -37,9 +36,7 @@ import {
   InstanceKey,
   Item,
   KeySet,
-  Node,
   NodeKey,
-  NodePathElement,
   Paged,
   PresentationIpcEvents,
   PropertyValueFormat,
@@ -464,7 +461,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
+        .returns(async () => ({ total: count, items: nodes }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
       expect(actualResult).to.deep.eq({ count, nodes });
@@ -483,7 +480,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
-        .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
+        .returns(async () => ({ total: count, items: nodes }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
       expect(actualResult).to.deep.eq({ count, nodes });
@@ -502,11 +499,11 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 0, size: 0 } })))
-        .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
+        .returns(async () => ({ total: count, items: [node1] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
-        .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
+        .returns(async () => ({ total: count, items: [node2] }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
       expect(actualResult).to.deep.eq({ count, nodes: [node1, node2] });
@@ -525,7 +522,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        .returns(async () => ({ total: result.length, items: result.map(Node.toJSON) }))
+        .returns(async () => ({ total: result.length, items: result }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq(result);
@@ -546,7 +543,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        .returns(async () => ({ total: 666, items: prelocalizedNode.map(Node.toJSON) }))
+        .returns(async () => ({ total: 666, items: prelocalizedNode }))
         .verifiable();
 
       const actualResult = await manager.getNodes(options);
@@ -568,7 +565,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
-        .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
+        .returns(async () => ({ total: 666, items: result }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq(result);
@@ -587,11 +584,11 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 0, size: 0 } })))
-        .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
+        .returns(async () => ({ total: count, items: [node1] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
-        .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
+        .returns(async () => ({ total: count, items: [node2] }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq([node1, node2]);
@@ -691,7 +688,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getFilteredNodePaths(toRulesetRpcOptions(options)))
-        .returns(async () => value.map(NodePathElement.toJSON))
+        .returns(async () => value)
         .verifiable();
       const result = await manager.getFilteredNodePaths(options);
       expect(result).to.be.deep.equal(value);
@@ -711,7 +708,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getNodePaths(toRulesetRpcOptions(options)))
-        .returns(async () => value.map(NodePathElement.toJSON))
+        .returns(async () => value)
         .verifiable();
       const result = await manager.getNodePaths(options);
       expect(result).to.be.deep.equal(value);
@@ -1252,11 +1249,11 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
-        .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item1)] }))
+        .returns(async () => ({ total: 2, items: [item1] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 1, size: 1 } }))
-        .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item2)] }))
+        .returns(async () => ({ total: 2, items: [item2] }))
         .verifiable();
       const actualResult = await manager.getPagedDistinctValues(managerOptions);
       rpcRequestsHandlerMock.verifyAll();

@@ -74,10 +74,6 @@ export const initialize = async (props?: {
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const outputRoot = setupTestsOutputDirectory();
-  const tempCachesDir = path.join(outputRoot, "caches");
-  if (!fs.existsSync(tempCachesDir)) {
-    fs.mkdirSync(tempCachesDir);
-  }
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
@@ -106,7 +102,7 @@ export const initialize = async (props?: {
 
   const presentationTestingInitProps: PresentationInitProps = {
     backendProps: backendInitProps,
-    backendHostProps: { cacheDir: tempCachesDir },
+    backendHostProps: { cacheDir: outputRoot },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,
