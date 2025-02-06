@@ -2392,9 +2392,6 @@ export function createDefaultViewFlagOverrides(options: {
 }): ViewFlagOverrides;
 
 // @internal (undocumented)
-export function createEmptyRenderPlan(): RenderPlan;
-
-// @internal (undocumented)
 export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined;
 
 // @beta
@@ -2448,9 +2445,6 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
     // @internal
     source?: RenderMaterialSource;
 }
-
-// @internal (undocumented)
-export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
 
 // @internal
 export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
@@ -8689,21 +8683,6 @@ export namespace Pixel {
     }
 }
 
-// @internal (undocumented)
-export type PlanarClassifierMap = Map<string, RenderPlanarClassifier>;
-
-// @internal (undocumented)
-export interface PlanarClassifierTarget {
-    // (undocumented)
-    isPointCloud: boolean;
-    // (undocumented)
-    location: Transform;
-    // (undocumented)
-    modelId: Id64String;
-    // (undocumented)
-    tiles: Tile[];
-}
-
 // @beta
 export class PlanarClipMaskState {
     // (undocumented)
@@ -9112,30 +9091,6 @@ export class RealityDataSourceProviderRegistry {
     constructor();
     find(name: string): RealityDataSourceProvider | undefined;
     register(name: string, provider: RealityDataSourceProvider): void;
-}
-
-// @internal (undocumented)
-export interface RealityMeshGraphicParams {
-    // (undocumented)
-    readonly baseColor: ColorDef | undefined;
-    // (undocumented)
-    readonly baseTransparent: boolean;
-    // (undocumented)
-    readonly disableClipStyle?: true;
-    // (undocumented)
-    readonly featureTable: PackedFeatureTable;
-    // (undocumented)
-    readonly layerClassifiers?: MapLayerClassifiers;
-    // (undocumented)
-    readonly projection: MapTileProjection;
-    // (undocumented)
-    readonly realityMesh: RenderTerrainGeometry;
-    // (undocumented)
-    readonly textures?: TerrainTexture[];
-    // (undocumented)
-    readonly tileId: string | undefined;
-    // (undocumented)
-    readonly tileRectangle: MapCartoRectangle;
 }
 
 // @public
@@ -9950,87 +9905,6 @@ export namespace RenderMemory {
         // @internal (undocumented)
         get vertexTables(): Consumers;
     }
-}
-
-// @internal
-export interface RenderPlan {
-    // (undocumented)
-    readonly analysisStyle?: AnalysisStyle;
-    // (undocumented)
-    readonly analysisTexture?: RenderTexture;
-    // (undocumented)
-    readonly ao?: AmbientOcclusion.Settings;
-    // (undocumented)
-    readonly atmosphere?: Atmosphere.Settings;
-    // (undocumented)
-    readonly backgroundMapOn: boolean;
-    // (undocumented)
-    readonly bgColor: ColorDef;
-    // (undocumented)
-    readonly clip?: ClipVector;
-    // (undocumented)
-    readonly clipStyle: ClipStyle;
-    // (undocumented)
-    readonly contours?: ContourDisplay;
-    // (undocumented)
-    readonly ellipsoid?: RenderPlanEllipsoid;
-    // (undocumented)
-    readonly emphasisSettings: Hilite.Settings;
-    // (undocumented)
-    readonly flashSettings: FlashSettings;
-    // (undocumented)
-    readonly fraction: number;
-    // (undocumented)
-    readonly frustum: Frustum;
-    // (undocumented)
-    readonly globalViewTransition: number;
-    // (undocumented)
-    readonly hiliteSettings: Hilite.Settings;
-    // (undocumented)
-    readonly hline?: HiddenLine.Settings;
-    // (undocumented)
-    readonly is3d: boolean;
-    // (undocumented)
-    readonly isFadeOutActive: boolean;
-    // (undocumented)
-    readonly isGlobeMode3D: boolean;
-    // (undocumented)
-    readonly lights?: LightSettings;
-    // (undocumented)
-    readonly monochromeMode: MonochromeMode;
-    // (undocumented)
-    readonly monoColor: ColorDef;
-    // (undocumented)
-    readonly thematic?: ThematicDisplay;
-    // (undocumented)
-    readonly upVector: Vector3d;
-    // (undocumented)
-    readonly viewFlags: ViewFlags;
-    // (undocumented)
-    readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
-}
-
-// @internal
-export abstract class RenderPlanarClassifier implements Disposable {
-    // (undocumented)
-    abstract [Symbol.dispose](): void;
-    // (undocumented)
-    abstract collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void;
-    // (undocumented)
-    abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
-}
-
-// @internal (undocumented)
-export class RenderPlanEllipsoid {
-    constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d);
-    // (undocumented)
-    readonly ellipsoidCenter: Point3d;
-    // (undocumented)
-    readonly ellipsoidRadii: Point3d;
-    // (undocumented)
-    readonly ellipsoidRotation: Matrix3d;
-    // (undocumented)
-    equals(other: RenderPlanEllipsoid): boolean;
 }
 
 // @internal (undocumented)
