@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "adjustments for metadata changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
