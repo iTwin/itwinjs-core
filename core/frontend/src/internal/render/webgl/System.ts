@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
@@ -153,8 +153,8 @@ export class IdMap implements WebGLDisposable {
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public getMaterial(params: RenderMaterial.Params): RenderMaterial {
+
+  public getMaterial(params: RenderMaterialParams): RenderMaterial {
     if (!params.key || !Id64.isValidId64(params.key))   // Only cache persistent materials.
       return new Material(params);
 
@@ -175,8 +175,8 @@ export class IdMap implements WebGLDisposable {
       return this.findGradient(key);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+
+  public getTextureFromElement(key: Id64String, iModel: IModelConnection, params: RenderTextureParams, format: ImageSourceFormat): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
       return tex;
@@ -234,8 +234,8 @@ export class IdMap implements WebGLDisposable {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTexture.Params): RenderTexture | undefined {
+
+  public getTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, params: RenderTextureParams): RenderTexture | undefined {
     let tex = this.findTexture(params.key);
     if (tex)
       return tex;
@@ -660,8 +660,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         return cached;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const params = new RenderMaterial.Params();
+
+    const params = new RenderMaterialParams();
     params.alpha = args.alpha;
     if (undefined !== args.diffuse?.weight)
       params.diffuse = args.diffuse.weight;
@@ -746,13 +746,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.getIdMap(args.ownership.iModel).getTextureFromImageSource(args, args.ownership.key);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTexture.Params, format: ImageSourceFormat): RenderTexture | undefined {
+
+  public override createTextureFromElement(id: Id64String, imodel: IModelConnection, params: RenderTextureParams, format: ImageSourceFormat): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromElement(id, imodel, params, format);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
+
+  public override createTextureFromCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement, imodel: IModelConnection, params: RenderTextureParams): RenderTexture | undefined {
     return this.getIdMap(imodel).getTextureFromCubeImages(posX, negX, posY, negY, posZ, negZ, params);
   }
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
@@ -480,8 +480,8 @@ describe("GraphicDescriptionBuilder", () => {
     expect(context[_textures].size).toEqual(4);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  function expectMaterial(mat: Material, expected: Partial<RenderMaterial.Params>): void {
+
+  function expectMaterial(mat: Material, expected: Partial<RenderMaterialParams>): void {
     expect(mat.params).toBeDefined();
     const actual = {
       ...mat.params,
@@ -493,8 +493,7 @@ describe("GraphicDescriptionBuilder", () => {
     delete actual._alpha;
 
     expected = {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      ...RenderMaterial.Params.defaults,
+      ...RenderMaterialParams.defaults,
       diffuseColor: undefined,
       alpha: undefined,
       ...expected,
