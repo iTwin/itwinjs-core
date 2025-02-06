@@ -584,7 +584,7 @@ export class TextBlockLayout {
   }
 
   private justifyLines(): void {
-    if (this.lines.length <= 1 || "left" === this.source.justification) {
+    if (this.lines.length <= 0 || "left" === this.source.justification) {
       return;
     }
 
