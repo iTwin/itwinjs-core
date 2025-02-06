@@ -413,7 +413,6 @@ Object {
     },
   ],
   "fieldsFilterExpression": "testFilterExpression",
-  "filterExpression": "testFilterExpression",
   "inputKeysHash": "",
   "instanceFilter": Object {
     "expression": "testExpression",
