@@ -16,7 +16,7 @@ import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";

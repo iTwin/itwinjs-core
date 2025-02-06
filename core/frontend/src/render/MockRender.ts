@@ -24,7 +24,7 @@ import { PrimitiveBuilder } from "../internal/render/PrimitiveBuilder";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
-import { RenderPlan } from "./RenderPlan";
+import { RenderPlan } from "../internal/render/RenderPlan";
 import { RenderAreaPattern, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";

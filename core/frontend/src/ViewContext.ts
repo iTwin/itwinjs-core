@@ -20,7 +20,7 @@ import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
 import { GraphicBuilder, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
-import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
+import { RenderPlanarClassifier } from "./internal/render/RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";

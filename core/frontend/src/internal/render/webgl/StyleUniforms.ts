@@ -7,7 +7,7 @@
  */
 
 import { ColorDef, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
-import { RenderPlan } from "../../../render/RenderPlan";
+import { RenderPlan } from "../RenderPlan";
 import { ColorInfo } from "./ColorInfo";
 import { FloatRgb, FloatRgba } from "./FloatRGBA";
 import { UniformHandle } from "./UniformHandle";

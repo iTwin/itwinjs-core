@@ -8,9 +8,9 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { SpatialClassifierTileTreeReference, Tile } from "../tile/internal";
-import { SceneContext } from "../ViewContext";
+import { PlanarClipMaskState } from "../../PlanarClipMaskState";
+import { SpatialClassifierTileTreeReference, Tile } from "../../tile/internal";
+import { SceneContext } from "../../ViewContext";
 
 /**  @internal */
 export interface PlanarClassifierTarget { modelId: Id64String, tiles: Tile[], location: Transform, isPointCloud: boolean }

@@ -12,7 +12,7 @@ import {
 import {
   OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization,
 } from "@itwin/core-common";
-import { RealityMeshParams, RealityMeshParamsBuilder } from "./RealityMeshParams";
+import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 
 class UpsampleIndexMap extends Map<number, number> {
   private _next = 0;

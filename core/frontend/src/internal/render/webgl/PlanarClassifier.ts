@@ -18,7 +18,7 @@ import { SceneContext } from "../../../ViewContext";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { PlanarClassifierTarget, RenderPlanarClassifier } from "../../../render/RenderPlanarClassifier";
+import { PlanarClassifierTarget, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { BatchState } from "./BatchState";
 import { BranchStack } from "./BranchStack";
 import { CachedGeometry, Combine3TexturesGeometry, CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry";

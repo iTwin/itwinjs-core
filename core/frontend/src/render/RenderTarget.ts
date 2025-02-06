@@ -23,8 +23,8 @@ import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./Gr
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
-import { RenderPlan } from "./RenderPlan";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderPlan } from "../internal/render/RenderPlan";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";

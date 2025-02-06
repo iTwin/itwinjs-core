@@ -7,8 +7,8 @@
  */
 
 import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
-import { MapCartoRectangle, MapTileProjection } from "../tile/internal";
-import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "./RenderSystem";
+import { MapCartoRectangle, MapTileProjection } from "../../tile/internal";
+import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "../../render/RenderSystem";
 
 /** @internal */
 export interface RealityMeshGraphicParams {

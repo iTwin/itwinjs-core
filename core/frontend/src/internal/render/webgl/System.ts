@@ -23,7 +23,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBran
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../../render/GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { RealityMeshGraphicParams } from "../../../render/RealityMeshGraphicParams";
+import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "../../../render/RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../../../render/RenderGraphic";

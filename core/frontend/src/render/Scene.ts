@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { RenderGraphic } from "./RenderGraphic";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 

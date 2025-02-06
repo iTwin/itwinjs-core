@@ -43,7 +43,7 @@ import { AnimationBranchStates } from "./render/GraphicBranch";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
-import { createRenderPlanFromViewport } from "./render/RenderPlan";
+import { createRenderPlanFromViewport } from "./internal/render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";

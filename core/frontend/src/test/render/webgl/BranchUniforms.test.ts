@@ -7,7 +7,7 @@ import { dispose } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
 import { ViewRect } from "../../../common/ViewRect";
-import { createEmptyRenderPlan } from "../../../render/RenderPlan";
+import { createEmptyRenderPlan } from "../../../internal/render/RenderPlan";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Branch } from "../../../internal/render/webgl/Graphic";
 import { ClipVolume } from "../../../internal/render/webgl/ClipVolume";
