@@ -6,8 +6,8 @@ import { assert, expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList } from "@itwin/core-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
-  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport,
+  PlanarClipMaskState, RenderMemory, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
 import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/internal/webgl";
@@ -17,6 +17,7 @@ import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
+import { PlanarClassifierMap, PlanarClassifierTarget, RenderPlanarClassifier } from "@itwin/core-frontend/lib/cjs/internal/render/RenderPlanarClassifier";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
