@@ -60,7 +60,7 @@ import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
-import { FrameStatsCollector } from "../../../render/FrameStats";
+import { FrameStatsCollector } from "../FrameStatsCollector";
 import { ActiveSpatialClassifier } from "../../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../../common/internal/render/AnimationNodeId";
 import { _implementationProhibited } from "../../../common/internal/Symbols";

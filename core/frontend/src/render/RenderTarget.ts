@@ -17,7 +17,7 @@ import { ViewRect } from "../common/ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
-import { FrameStatsCollector } from "./FrameStats";
+import { FrameStatsCollector } from "../internal/render/FrameStatsCollector";
 import { AnimationBranchStates } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
