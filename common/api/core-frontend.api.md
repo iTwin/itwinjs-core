@@ -7150,7 +7150,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -8935,9 +8935,6 @@ export interface QueryTileFeaturesOptions {
     includeNonLocatable?: boolean;
     source: "tiles";
 }
-
-// @internal
-export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
 
 // @public
 export type QueryVisibleFeaturesCallback = (features: Iterable<VisibleFeature>) => void;

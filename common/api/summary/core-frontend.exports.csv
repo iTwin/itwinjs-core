@@ -564,7 +564,6 @@ public;type;QuantityTypeKey
 public;interface;QueryScreenFeaturesOptions
 public;function;queryTerrainElevationOffset
 public;interface;QueryTileFeaturesOptions
-internal;function;queryVisibleFeatures
 public;type;QueryVisibleFeaturesCallback
 public;type;QueryVisibleFeaturesOptions
 internal;function;rangeToCartographicArea
