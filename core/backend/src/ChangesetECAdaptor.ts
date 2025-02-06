@@ -5,8 +5,9 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, GuidString, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
+import { Base64EncodedString } from "@itwin/core-common";
 
 interface IClassRef {
   classId: Id64String;
@@ -410,16 +411,29 @@ namespace DateTime {
  * span multiple tables.
  * @beta
  */
-export class PartialECChangeUnifier {
-  private _cache = new Map<string, ChangedECInstance>();
+export class PartialECChangeUnifier implements Disposable {
+  private readonly _cacheTable = Guid.createValue();
   private _readonly = false;
+  public constructor(private _db: AnyDb) {
+    this.createTempTable();
+  }
+
+  /**
+   * Dispose the instance.
+   */
+  public [Symbol.dispose](): void {
+    if (this._db.isOpen) {
+      this.dropTempTable();
+    }
+  }
+
   /**
    * Get root class id for a given class
    * @param classId given class id
    * @param db use to find root class
    * @returns return root class id
    */
-  private static getRootClassId(classId: Id64String, db: AnyDb): Id64String | undefined {
+  private getRootClassId(classId: Id64String): Id64String | undefined {
     const sql = `
       WITH
       [base_class]([classId], [baseClassId], [Level]) AS(
@@ -443,7 +457,7 @@ export class PartialECChangeUnifier {
                             AND [ss].[Name] = 'CoreCustomAttributes'))
       ORDER BY [Level] DESC`;
 
-    return db.withSqliteStatement(sql, (stmt) => {
+    return this._db.withSqliteStatement(sql, (stmt) => {
       stmt.bindId(1, classId);
       if (stmt.step() === DbResult.BE_SQLITE_ROW && !stmt.isValueNull(0)) {
         return stmt.getValueString(0);
@@ -455,12 +469,12 @@ export class PartialECChangeUnifier {
    * Combine partial instance with instance with same key if already exists.
    * @param rhs partial instance
    */
-  private combine(rhs: ChangedECInstance, db?: AnyDb): void {
+  private combine(rhs: ChangedECInstance): void {
     if (!rhs.$meta) {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
-    const key = PartialECChangeUnifier.buildKey(rhs, db);
-    const lhs = this._cache.get(key);
+    const key = this.buildKey(rhs);
+    const lhs = this.getInstance(key); // get from temp db instead
     if (lhs) {
       const { $meta: _, ...restOfRhs } = rhs;
       Object.assign(lhs, restOfRhs);
@@ -469,10 +483,10 @@ export class PartialECChangeUnifier {
         lhs.$meta.changeIndexes = [...rhs.$meta?.changeIndexes, ...lhs.$meta?.changeIndexes];
 
         // we preserve child class name & id when merging instance.
-        if (rhs.$meta.fallbackClassId && lhs.$meta.fallbackClassId && db && rhs.$meta.fallbackClassId !== lhs.$meta.fallbackClassId) {
+        if (rhs.$meta.fallbackClassId && lhs.$meta.fallbackClassId && rhs.$meta.fallbackClassId !== lhs.$meta.fallbackClassId) {
           const lhsClassId = lhs.$meta.fallbackClassId;
           const rhsClassId = rhs.$meta.fallbackClassId;
-          const isRhsIsSubClassOfLhs = db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
+          const isRhsIsSubClassOfLhs = this._db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
             stmt.bindId(1, rhsClassId);
             stmt.bindId(2, lhsClassId);
             stmt.step();
@@ -484,20 +498,83 @@ export class PartialECChangeUnifier {
           }
         }
       }
+      this.setInstance(key, lhs);
     } else {
-      this._cache.set(key, rhs);
+      this.setInstance(key, rhs);
     }
+  }
+
+  private getInstance(key: string): ChangedECInstance | undefined {
+    return this._db.withPreparedSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}] WHERE [key]=?`, (stmt) => {
+      stmt.bindString(1, key);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const out = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
+        PartialECChangeUnifier.replaceBase64WithUint8Array(out);
+        return out;
+      }
+      return undefined;
+    });
+  }
+  private static replaceBase64WithUint8Array(row: any): void {
+    for (const key of Object.keys(row)) {
+      const val = row[key];
+      if (typeof val === "string") {
+        if (Base64EncodedString.hasPrefix(val)) {
+          row[key] = Base64EncodedString.toUint8Array(val);
+        }
+      } else if (typeof val === "object" && val !== null) {
+        this.replaceBase64WithUint8Array(val);
+      }
+    }
+  }
+  private static replaceUint8ArrayWithBase64(row: any): void {
+    for (const key of Object.keys(row)) {
+      const val = row[key];
+      if (val instanceof Uint8Array) {
+        row[key] = Base64EncodedString.fromUint8Array(val);
+      } else if (typeof val === "object" && val !== null) {
+        this.replaceUint8ArrayWithBase64(val);
+      }
+    }
+  }
+  private setInstance(key: string, value: ChangedECInstance): void {
+    const shallowCopy = Object.assign({}, value);
+    PartialECChangeUnifier.replaceUint8ArrayWithBase64(shallowCopy);
+    this._db.withPreparedSqliteStatement(`INSERT INTO [temp].[${this._cacheTable}] ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [excluded].[value]`, (stmt) => {
+      stmt.bindString(1, key);
+      stmt.bindString(2, JSON.stringify(shallowCopy));
+      stmt.step();
+
+    });
+  }
+
+  private createTempTable(): void {
+    // table name should be unique in case two PartialECChangeUnifiers are made
+    this._db.withPreparedSqliteStatement(`CREATE TABLE [temp].[${this._cacheTable}] ([key] text primary key, [value] text)`, (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step()) {
+        // throw new Error(db.nativeDb.getLastError());
+        throw new Error("unable to create temp table");
+      }
+    });
+  }
+  private dropTempTable(): void {
+    this._db.withPreparedSqliteStatement(`DROP TABLE IF EXISTS [temp].[${this._cacheTable}]`, (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step()) {
+        // throw new Error(db.nativeDb.getLastError());
+        throw new Error("unable to drop temp table");
+      }
+    });
   }
   /**
    * Build key from EC change.
    * @param change EC change
    * @returns key created from EC change.
    */
-  private static buildKey(change: ChangedECInstance, db?: AnyDb): string {
+  private buildKey(change: ChangedECInstance): string {
     let classId = change.ECClassId;
     if (typeof classId === "undefined") {
-      if (db && change.$meta?.fallbackClassId) {
-        classId = this.getRootClassId(change.$meta.fallbackClassId, db);
+      if (change.$meta?.fallbackClassId) {
+        classId = this.getRootClassId(change.$meta.fallbackClassId);
       }
       if (typeof classId === "undefined") {
         throw new Error(`unable to resolve ECClassId to root class id.`);
@@ -520,33 +597,43 @@ export class PartialECChangeUnifier {
       throw new Error("this instance is marked as readonly.");
     }
 
+    // todo: create table here if not exist on adapter.reader.db
+
     if (adaptor.op === "Updated" && adaptor.inserted && adaptor.deleted) {
-      this.combine(adaptor.inserted, adaptor.reader.db);
-      this.combine(adaptor.deleted, adaptor.reader.db);
+      this.combine(adaptor.inserted);
+      this.combine(adaptor.deleted);
     } else if (adaptor.op === "Inserted" && adaptor.inserted) {
-      this.combine(adaptor.inserted, adaptor.reader.db);
+      this.combine(adaptor.inserted);
     } else if (adaptor.op === "Deleted" && adaptor.deleted) {
-      this.combine(adaptor.deleted, adaptor.reader.db);
+      this.combine(adaptor.deleted);
     }
   }
   /**
    * Delete $meta from all the instances.
    */
   public stripMetaData(): void {
-    for (const inst of this._cache.values()) {
-      if ("$meta" in inst) {
-        delete inst.$meta;
-      }
-    }
+    this._db.withPreparedSqliteStatement(`UPDATE [temp].[${this._cacheTable}] SET [value] = json_remove([value], '$meta')`, (stmt) => {
+      stmt.step();
+    });
     this._readonly = true;
+  }
+  private *getInstances(): IterableIterator<ChangedECInstance> {
+    const stmt = this._db.prepareSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`);
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const value = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
+      PartialECChangeUnifier.replaceBase64WithUint8Array(value);
+      yield value;
+    }
+    stmt[Symbol.dispose]();
   }
   /**
    * Returns complete EC change instances.
    * @beta
    */
-  public get instances(): IterableIterator<ChangedECInstance> { return this._cache.values(); }
+  public get instances(): IterableIterator<ChangedECInstance> {
+    return this.getInstances();
+  }
 }
-
 /**
  * Transform sqlite change to ec change. EC change is partial change as
  * it is per table while a single instance can span multiple table.
