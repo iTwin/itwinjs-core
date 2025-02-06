@@ -742,9 +742,9 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id  | parent | notused | detail                                                     |
-| --- | ------ | ------- | ---------------------------------------------------------- |
-| 3   | 0      | 0       | SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
+| detail                                                     |
+| ---------------------------------------------------------- |
+| SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
 
 # Trying PRAGMA explain_query with cte
 
@@ -761,11 +761,11 @@ PRAGMA explain_query (  [WITH    cnt (x,y) AS (      SELECT 100, 200    )  SELEC
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id  | parent | notused | detail            |
-| --- | ------ | ------- | ----------------- |
-| 2   | 0      | 0       | CO-ROUTINE cnt    |
-| 3   | 2      | 0       | SCAN CONSTANT ROW |
-| 8   | 0      | 0       | SCAN cnt          |
+| detail            |
+| ----------------- |
+| CO-ROUTINE cnt    |
+| SCAN CONSTANT ROW |
+| SCAN cnt          |
 
 # Trying PRAGMA explain_query with recursive cte
 
@@ -790,14 +790,14 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| notused | detail            |
-| ------- | ----------------- |
-| 0       | CO-ROUTINE cnt    |
-| 0       | SETUP             |
-| 0       | SCAN CONSTANT ROW |
-| 0       | RECURSIVE STEP    |
-| 0       | SCAN cnt          |
-| 0       | SCAN cnt          |
+| detail            |
+| ----------------- |
+| CO-ROUTINE cnt    |
+| SETUP             |
+| SCAN CONSTANT ROW |
+| RECURSIVE STEP    |
+| SCAN cnt          |
+| SCAN cnt          |
 
 # Using Scalar values in select clause with + operator
 
@@ -968,3 +968,169 @@ SELECT 0,0
 | 0_1 |
 | --- |
 | 0   |
+
+# Testing json_tree without schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json_tree(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_tree | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_tree | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_tree | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_tree | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_tree | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_tree | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_tree | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | parent | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | ------ | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | 0      | $.gravity | $    |
+
+# Testing json_tree with schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json1.json_tree(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_tree | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_tree | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_tree | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_tree | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_tree | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_tree | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_tree | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | parent | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | ------ | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | 0      | $.gravity | $    |
+
+# Testing json_tree with empty schema name
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT
+  *
+FROM
+  .json_tree(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+# Testing json_each without schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json_each(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_each | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_each | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_each | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_each | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_each | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_each | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_each | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | $.gravity | $    |
+
+# Testing json_each with schema name
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  json1.json_each(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+| className       | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+| json1:json_each | key          | false     | 0     | key      | key     | undefined    | string   | String | key                |
+| json1:json_each | value        | false     | 1     | value    | value   | undefined    | string   | String | value              |
+| json1:json_each | type         | false     | 2     | type     | type    | undefined    | string   | String | type               |
+| json1:json_each | atom         | false     | 3     | atom     | atom    | undefined    | string   | String | atom               |
+| json1:json_each | parent       | false     | 4     | parent   | parent  | undefined    | int      | Int    | parent             |
+| json1:json_each | fullkey      | false     | 5     | fullkey  | fullkey | undefined    | string   | String | fullkey            |
+| json1:json_each | path         | false     | 6     | path     | path    | undefined    | string   | String | path               |
+
+| key     | value      | type | atom       | fullkey   | path |
+| ------- | ---------- | ---- | ---------- | --------- | ---- |
+| gravity | 3.721 m/s² | text | 3.721 m/s² | $.gravity | $    |
+
+# Testing json_each with schema name as space
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT
+  *
+FROM
+    .json_each(
+    '{ "planet": "mars", "gravity": "3.721 m/s²", "surface_area": "144800000 km²", "distance_from_sun":"227900000 km", "radius" : "3389.5 km","orbital_period" : "687 days", "moons": ["Phobos", "Deimos"]}'
+  ) s
+WHERE
+  s.key = 'gravity'
+```
+
+# Select ECDb schemas from ECDbMeta without schema name
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+Select s.Name, s.Alias from ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4;
+```
+
+# Select Test elements from sample dataset without schema name
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT e.ECClassId, e.DirectStr FROM TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
+```
