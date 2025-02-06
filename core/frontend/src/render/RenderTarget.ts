@@ -12,7 +12,7 @@ import { XAndY } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
-import { ReadImageBufferArgs, ReadImageToCanvasOptions, Viewport } from "../Viewport";
+import { ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
