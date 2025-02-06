@@ -147,72 +147,72 @@ describe("FeatureOverrides", () => {
     assert.isTrue(overrides.isSubCategoryIdVisible(subCategoryId));
   });
 
-  it("overrideModel works as expected", () => {
+  it("override Model works as expected", () => {
     const overrides = new Overrides();
-    const id = Id64.fromString("0x111");
+    const modelId = Id64.fromString("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const modelApp1 = FeatureAppearance.fromJSON(props1);
     const modelApp2 = FeatureAppearance.fromJSON(props2);
-    overrides.overrideModel(id, modelApp1); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.exists(overrides.getModelOverridesById(id));
+    overrides.override({modelId, appearance: modelApp1});
+    assert.exists(overrides.getModelOverridesById(modelId));
 
-    overrides.overrideModel(id, modelApp2); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrideModel will override prexisting model associated with given id if replaceExisting is not set to false explicitly");
+    overrides.override({modelId, appearance: modelApp2});
+    assert.isTrue(overrides.getModelOverridesById(modelId)!.equals(modelApp2), "overrideModel will override prexisting model associated with given id if replaceExisting is not set to false explicitly");
 
-    overrides.overrideModel(id, modelApp1, false); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrides will not replace model if replace existing is set to false");
+    overrides.override({modelId, appearance: modelApp1, onConflict: "skip"});
+    assert.isTrue(overrides.getModelOverridesById(modelId)!.equals(modelApp2), "overrides will not replace model if replace existing is set to false");
 
-    overrides.overrideModel(id, modelApp1); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp1), "overrides will replace model if replace existing isn't set to false (test 2)");
+    overrides.override({modelId, appearance: modelApp1});
+    assert.isTrue(overrides.getModelOverridesById(modelId)!.equals(modelApp1), "overrides will replace model if replace existing isn't set to false (test 2)");
   });
 
-  it("overrideSubCategory works as expected", () => {
+  it("override SubCategory works as expected", () => {
     const overrides = new Overrides();
-    const id = Id64.fromString("0x111");
+    const subCategoryId = Id64.fromString("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const subCatApp1 = FeatureAppearance.fromJSON(props1);
     const subCatApp2 = FeatureAppearance.fromJSON(props2);
 
     // Even though the subcategory is invisible, it's possible a model will override it to be visible.
-    // So overrideSubCategory() will record the appearance override anyway.
-    expect(overrides.getSubCategoryOverridesById(id)).to.be.undefined;
-    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line @typescript-eslint/no-deprecated
-    expect(overrides.getSubCategoryOverridesById(id)).not.to.be.undefined;
+    // So override() will record the appearance override anyway.
+    expect(overrides.getSubCategoryOverridesById(subCategoryId)).to.be.undefined;
+    overrides.override({subCategoryId, appearance: subCatApp1});
+    expect(overrides.getSubCategoryOverridesById(subCategoryId)).not.to.be.undefined;
 
-    overrides.setVisibleSubCategory(id);
-    overrides.overrideSubCategory(id, subCatApp2); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.exists(overrides.getSubCategoryOverridesById(id), "if subCategoryId is in subCategoryVisible set, then subCategoryApp set");
+    overrides.setVisibleSubCategory(subCategoryId);
+    overrides.override({subCategoryId, appearance: subCatApp2});
+    assert.exists(overrides.getSubCategoryOverridesById(subCategoryId), "if subCategoryId is in subCategoryVisible set, then subCategoryApp set");
 
-    overrides.overrideSubCategory(id, subCatApp1, false); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp2), "overrides will not replace subCatApp if replace existing is set to false");
+    overrides.override({subCategoryId, appearance: subCatApp1, onConflict: "skip"});
+    assert.isTrue(overrides.getSubCategoryOverridesById(subCategoryId)!.equals(subCatApp2), "overrides will not replace subCatApp if replace existing is set to false");
 
-    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp1), "overrides will replace subCatApp if replace existing isn't set to false");
+    overrides.override({subCategoryId, appearance: subCatApp1});
+    assert.isTrue(overrides.getSubCategoryOverridesById(subCategoryId)!.equals(subCatApp1), "overrides will replace subCatApp if replace existing isn't set to false");
   });
 
-  it("overrideElement works as expected", () => {
+  it("override Element works as expected", () => {
     let overrides = new Overrides();
-    const id = Id64.fromString("0x111");
+    const elementId = Id64.fromString("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const elemApp1 = FeatureAppearance.fromJSON(props1);
     const elemApp2 = FeatureAppearance.fromJSON(props2);
 
-    overrides.setNeverDrawn(id);
-    overrides.overrideElement(id, elemApp1); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isUndefined(overrides.getElementOverridesById(id), "if elementId is in never drawn set, then nothing is set");
+    overrides.setNeverDrawn(elementId);
+    overrides.override({elementId, appearance: elemApp1});
+    assert.isUndefined(overrides.getElementOverridesById(elementId), "if elementId is in never drawn set, then nothing is set");
 
     overrides = new Overrides();
-    overrides.overrideElement(id, elemApp1); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.exists(overrides.getElementOverridesById(id), "if elementId is not in never drawn set, then elemApp is set");
+    overrides.override({elementId, appearance: elemApp1});
+    assert.exists(overrides.getElementOverridesById(elementId), "if elementId is not in never drawn set, then elemApp is set");
 
-    overrides.overrideElement(id, elemApp2, false); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp1), "overrides will not replace elemApp if replace existing is set to false");
+    overrides.override({elementId, appearance: elemApp2, onConflict: "skip"});
+    assert.isTrue(overrides.getElementOverridesById(elementId)!.equals(elemApp1), "overrides will not replace elemApp if replace existing is set to false");
 
-    overrides.overrideElement(id, elemApp2); // eslint-disable-line @typescript-eslint/no-deprecated
-    assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp2), "overrides will replace elemApp if replace existing isn't set to false");
+    overrides.override({elementId, appearance: elemApp2});
+    assert.isTrue(overrides.getElementOverridesById(elementId)!.equals(elemApp2), "overrides will replace elemApp if replace existing isn't set to false");
   });
 
   it("setDefaultOverrides works as expected", () => {
@@ -243,12 +243,12 @@ describe("FeatureOverrides", () => {
     const defApp = FeatureAppearance.fromRgb(ColorDef.red);
     ovrs.setDefaultOverrides(defApp);
 
-    ovrs.overrideElement(el1, app); // eslint-disable-line @typescript-eslint/no-deprecated
-    ovrs.overrideModel(mod1, app); // eslint-disable-line @typescript-eslint/no-deprecated
-    ovrs.overrideSubCategory(cat1, app); // eslint-disable-line @typescript-eslint/no-deprecated
-    ovrs.overrideElement(el2, noApp); // eslint-disable-line @typescript-eslint/no-deprecated
-    ovrs.overrideModel(mod2, noApp); // eslint-disable-line @typescript-eslint/no-deprecated
-    ovrs.overrideSubCategory(cat2, noApp); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.override({elementId: el1, appearance: app});
+    ovrs.override({modelId: mod1, appearance: app});
+    ovrs.override({subCategoryId: cat1, appearance: app});
+    ovrs.override({elementId: el2, appearance: noApp});
+    ovrs.override({modelId: mod2, appearance: noApp});
+    ovrs.override({subCategoryId: cat2, appearance: noApp});
 
     const expectAppearance = (elem: Id64String, model: Id64String, subcat: Id64String, expectedAppearance: FeatureAppearance) => {
       const feature = new Feature(elem, subcat, GeometryClass.Primary);
@@ -360,18 +360,18 @@ describe("FeatureOverrides", () => {
     expectAppearance("0xa", 2, halfTransp);
     expectAppearance("0xa", 3, halfTranspWeight5);
 
-    ovrs.overrideElement("0xc", FeatureAppearance.defaults); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.override({elementId: "0xc", appearance: FeatureAppearance.defaults});
     expectAppearance("0xc", 1, red);
     expectAppearance("0xc", 2, halfTransp);
     expectAppearance("0xc", 3, halfTranspWeight5);
 
-    ovrs.overrideElement("0xa", blue); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.override({elementId: "0xa", appearance: blue});
     expectAppearance("0xa", 1, blue);
     expectAppearance("0xa", 2, merge(blue, { transparency: 0.5 }));
     expectAppearance("0xa", 3, merge(blue, { transparency: 0.5, weight: 5 }));
 
     const greenWeight3 = FeatureAppearance.fromJSON({ rgb: { r: 0, g: 255, b: 0 }, weight: 3 });
-    ovrs.overrideElement("0xb", greenWeight3); // eslint-disable-line @typescript-eslint/no-deprecated
+    ovrs.override({elementId: "0xb", appearance: greenWeight3});
     expectAppearance("0xb", 1, greenWeight3);
     expectAppearance("0xb", 2, merge(greenWeight3, { transparency: 0.5 }));
     expectAppearance("0xb", 3, merge(greenWeight3, { transparency: 0.5 }));

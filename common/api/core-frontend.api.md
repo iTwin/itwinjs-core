@@ -271,9 +271,11 @@ import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderFeatureTable } from '@itwin/core-common';
 import { RenderMaterial } from '@itwin/core-common';
+import { RenderMaterialParams } from '@itwin/core-common';
 import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
+import { RenderTextureParams } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RenderType } from '@itwin/webgl-compatibility';
 import { RgbColor } from '@itwin/core-common';
@@ -10149,8 +10151,8 @@ export abstract class RenderSystem implements Disposable {
     // (undocumented)
     createTexture(_args: CreateTextureArgs): RenderTexture | undefined;
     // @internal
-    createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined;
-    createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined;
+    createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTextureParams): RenderTexture | undefined;
+    createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTextureParams, _format: ImageSourceFormat): RenderTexture | undefined;
     createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined>;
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;

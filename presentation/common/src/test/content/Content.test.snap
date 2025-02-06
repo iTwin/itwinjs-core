@@ -10,9 +10,8 @@ Object {
         "name": "Ergonomic",
       },
       "displayValues": Object {
-        "test": "Sports Steel program",
+        "test": "Mayotte Refined Frozen Gloves Lebanese Pound",
       },
-      "imageId": "0a890ef4-a778-4e4a-be09-ff6d1800ec1d",
       "labelDefinition": Object {
         "displayValue": "Jamaica",
         "rawValue": "Avon",
@@ -26,7 +25,7 @@ Object {
         },
       ],
       "values": Object {
-        "test": 39366,
+        "test": 1827,
       },
     },
   ],
@@ -53,9 +52,8 @@ Object {
         "name": "Handmade Metal Soap",
       },
       "displayValues": Object {
-        "test": "Walk",
+        "test": "Mouse forecast",
       },
-      "imageId": "662345d2-c264-474e-848f-278119131c18",
       "labelDefinition": Object {
         "displayValue": "yellow",
         "rawValue": "Brand",
@@ -69,7 +67,7 @@ Object {
         },
       ],
       "values": Object {
-        "test": 61626,
+        "test": 39491,
       },
     },
   ],
