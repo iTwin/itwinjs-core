@@ -8,19 +8,8 @@
 
 import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
-import {
-  DefinitionElement,
-  DefinitionModel,
-  DefinitionPartition,
-  ECSqlStatement,
-  Element,
-  Entity,
-  IModelDb,
-  KnownLocations,
-  Model,
-  Subject,
-} from "@itwin/core-backend";
-import { assert, DbResult, Id64String } from "@itwin/core-bentley";
+import { DefinitionElement, DefinitionModel, DefinitionPartition, Element, Entity, IModelDb, KnownLocations, Model, Subject } from "@itwin/core-backend";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   BisCodeSpec,
   Code,
@@ -243,15 +232,11 @@ export class RulesetEmbedder {
     }
 
     const rulesetList: Ruleset[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const row = statement.getRow();
-        const rulesetElement = this._imodel.elements.getElement({ id: row.id });
-        const ruleset = rulesetElement.jsonProperties.jsonProperties;
-        rulesetList.push(ruleset);
-      }
-    });
+    for await (const row of this._imodel.createQueryReader(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`)) {
+      const rulesetElement = this._imodel.elements.getElement({ id: row.id });
+      const ruleset = rulesetElement.jsonProperties.jsonProperties;
+      rulesetList.push(ruleset);
+    }
     return rulesetList;
   }
 

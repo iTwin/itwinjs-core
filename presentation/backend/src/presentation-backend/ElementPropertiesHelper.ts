@@ -7,8 +7,8 @@
  */
 
 import { bufferCount, defer, from, groupBy, map, mergeMap, Observable, ObservedValueOf, of, range, reduce } from "rxjs";
-import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
-import { DbResult, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
+import { Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { QueryRowProxy } from "@itwin/core-common";
 import {
   ContentDescriptorRequestOptions,
@@ -93,7 +93,7 @@ export function getContentItemsObservableFromClassNames(
         classParallelism,
       ),
     ),
-    count: of(getElementsCount(imodel, elementClasses)),
+    count: from(getElementsCount(imodel, elementClasses)),
   };
 }
 
@@ -278,7 +278,7 @@ export function getBatchedClassElementIds(imodel: IModelDb, fullClassName: strin
 }
 
 /** @internal */
-export function getElementsCount(db: IModelDb, classNames: string[]) {
+export async function getElementsCount(db: IModelDb, classNames: string[]) {
   const whereClause = (() => {
     if (classNames === undefined || classNames.length === 0) {
       return undefined;
@@ -296,12 +296,12 @@ export function getElementsCount(db: IModelDb, classNames: string[]) {
     return `e.ECClassId IS (${classNames.join(",")})`;
   })();
   const query = `
-    SELECT COUNT(e.ECInstanceId)
+    SELECT COUNT(e.ECInstanceId) AS elementCount
     FROM bis.Element e
     ${whereClause ? `WHERE ${whereClause}` : ""}
   `;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
-    return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValue(0).getInteger() : 0;
-  });
+  for await (const row of db.createQueryReader(query)) {
+    return row.elementCount;
+  }
+  return 0;
 }
