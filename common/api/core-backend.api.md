@@ -2346,6 +2346,7 @@ export class Entity {
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
+    // @beta
     getMetaData(): Promise<EntityClass>;
     // @internal @deprecated
     getReferenceConcreteIds: () => EntityReferenceSet;
@@ -2362,9 +2363,9 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
-    // @internal
+    // @beta
     static get schemaItemKey(): SchemaItemKey;
-    // (undocumented)
+    // @beta
     get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
     toJSON(): EntityProps;
@@ -3285,7 +3286,7 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
-    // (undocumented)
+    // @beta
     get schemaContext(): SchemaContext;
     // @beta
     simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;

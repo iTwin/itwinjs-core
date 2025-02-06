@@ -32,7 +32,6 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  * @beta
  */
 export class RelationshipClass extends ECClass {
-  public override readonly schema!: Schema;
   public override readonly schemaItemType = RelationshipClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.RelationshipClass; }
   protected _strength: StrengthType;

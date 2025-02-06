@@ -18,6 +18,14 @@ import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 
+// @beta
+export enum AbstractSchemaItemType {
+    // (undocumented)
+    Class = "Class",
+    // (undocumented)
+    SchemaItem = "SchemaItem"
+}
+
 // @beta (undocumented)
 export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
 
@@ -341,6 +349,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     get properties(): IterableIterator<Property> | undefined;
     // (undocumented)
     protected _properties?: Map<string, Property>;
+    // (undocumented)
+    static get schemaItemType(): SupportedSchemaItemType;
     protected setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
@@ -500,13 +510,12 @@ export class ECVersion {
     static fromString(versionString: string): ECVersion;
     // (undocumented)
     get minor(): number;
+    static readonly NO_VERSION: ECVersion;
     // (undocumented)
     get read(): number;
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get write(): number;
-    // (undocumented)
-    static readonly ZERO: ECVersion;
 }
 
 // @beta
@@ -787,10 +796,14 @@ export interface InvertedUnitProps extends SchemaItemProps {
     readonly unitSystem: string;
 }
 
-// @beta (undocumented)
+// @beta
 export interface ISchemaItemLocater {
-    getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): Promise<T | undefined>;
-    getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): T | undefined;
+    getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
+    // (undocumented)
+    getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
+    getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
+    // (undocumented)
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
 }
 
 // @beta
@@ -1446,7 +1459,7 @@ export enum PropertyType {
 }
 
 // @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {
@@ -1480,8 +1493,7 @@ export class RelationshipClass extends ECClass {
     fromJSON(relationshipClassProps: RelationshipClassProps): Promise<void>;
     // (undocumented)
     fromJSONSync(relationshipClassProps: RelationshipClassProps): void;
-    // (undocumented)
-    readonly schema: Schema;
+    static isRelationshipClass(item?: SchemaItem): item is RelationshipClass;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
     // (undocumented)
@@ -1726,7 +1738,6 @@ export class Schema implements CustomAttributeContainerProps {
     fromJSONSync(schemaProps: SchemaProps): void;
     static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema;
     get fullName(): string;
-    // (undocumented)
     getClasses(): IterableIterator<ECClass>;
     getConstant(name: string): Promise<Constant | undefined>;
     getCustomAttributeClass(name: string): Promise<CustomAttributeClass | undefined>;
@@ -1734,19 +1745,19 @@ export class Schema implements CustomAttributeContainerProps {
     getEnumeration(name: string): Promise<Enumeration | undefined>;
     getFormat(name: string): Promise<Format | undefined>;
     getInvertedUnit(name: string): Promise<InvertedUnit | undefined>;
-    getItem<T extends SchemaItem>(name: string, itemConstructor?: SchemaItemConstructor<T>): Promise<T | undefined>;
+    getItem(name: string): Promise<SchemaItem | undefined>;
     // (undocumented)
+    getItem<T extends typeof SchemaItem>(name: string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
     getItems<T extends AnySchemaItem>(): IterableIterator<T>;
-    getItemSync<T extends SchemaItem>(name: string, itemConstructor?: SchemaItemConstructor<T>): T | undefined;
+    getItemSync(name: string): SchemaItem | undefined;
+    // (undocumented)
+    getItemSync<T extends typeof SchemaItem>(name: string, itemConstructor: T): InstanceType<T> | undefined;
     getKindOfQuantity(name: string): Promise<KindOfQuantity | undefined>;
     getMixin(name: string): Promise<Mixin | undefined>;
     getPhenomenon(name: string): Promise<Phenomenon | undefined>;
     getPropertyCategory(name: string): Promise<PropertyCategory | undefined>;
-    // (undocumented)
     getReference(refSchemaName: string): Promise<Schema | undefined>;
-    // (undocumented)
     getReferenceNameByAlias(alias: string): string | undefined;
-    // (undocumented)
     getReferenceSync(refSchemaName: string): Schema | undefined;
     getRelationshipClass(name: string): Promise<RelationshipClass | undefined>;
     getSchemaItemKey(fullName: string): SchemaItemKey;
@@ -1759,8 +1770,12 @@ export class Schema implements CustomAttributeContainerProps {
     get label(): string | undefined;
     // (undocumented)
     protected _label?: string;
-    lookupItem<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): Promise<T | undefined>;
-    lookupItemSync<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): T | undefined;
+    lookupItem(key: Readonly<SchemaItemKey> | string): Promise<SchemaItem | undefined>;
+    // (undocumented)
+    lookupItem<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
+    lookupItemSync(key: Readonly<SchemaItemKey> | string): SchemaItem | undefined;
+    // (undocumented)
+    lookupItemSync<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor: T): InstanceType<T> | undefined;
     // (undocumented)
     get minorVersion(): number;
     // (undocumented)
@@ -1827,9 +1842,13 @@ export class SchemaContext implements ISchemaItemLocater {
     getKnownSchemas(): Schema[];
     getSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
-    getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): Promise<T | undefined>;
+    getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
+    // (undocumented)
+    getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
     getSchemaItems(): IterableIterator<SchemaItem>;
-    getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: SchemaItemConstructor<T>): T | undefined;
+    getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
+    // (undocumented)
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     // (undocumented)
     get locaters(): ISchemaLocater[];
@@ -1886,9 +1905,7 @@ export abstract class SchemaItem {
     static parseFullName(fullName: string): [string, string];
     // (undocumented)
     readonly schema: Schema;
-    // (undocumented)
-    static get schemaItemType(): SchemaItemType;
-    // (undocumented)
+    static get schemaItemType(): SupportedSchemaItemType;
     abstract get schemaItemType(): SchemaItemType;
     // @alpha
     protected setDescription(description: string): void;
@@ -2187,9 +2204,7 @@ export interface StructArrayPropertyProps extends ArrayPropertyProps {
 export class StructClass extends ECClass {
     static assertIsStructClass(item?: SchemaItem): asserts item is StructClass;
     static isStructClass(item?: SchemaItem): item is StructClass;
-    // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
     static get schemaItemType(): SchemaItemType;
 }
 
@@ -2217,6 +2232,9 @@ export interface StructPropertyProps extends PropertyProps {
     // (undocumented)
     readonly typeName: string;
 }
+
+// @beta
+export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
 
 // @beta
 export class Unit extends SchemaItem {

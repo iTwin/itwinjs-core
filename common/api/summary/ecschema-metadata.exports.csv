@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item Type;API Item Name
+beta;enum;AbstractSchemaItemType
 beta;type;AnyArrayProperty
 beta;type;AnyClass
 beta;type;AnyClassProps
@@ -149,6 +150,7 @@ beta;class;StructClass
 beta;type;StructClassProps
 beta;class;StructProperty
 beta;interface;StructPropertyProps
+beta;type;SupportedSchemaItemType
 beta;class;Unit
 internal;class;UnitConversion
 internal;class;UnitConverter

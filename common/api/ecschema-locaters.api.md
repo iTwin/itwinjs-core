@@ -38,7 +38,6 @@ export abstract class SchemaFileLocater {
     // (undocumented)
     fileExistsSync(filePath: string): boolean | undefined;
     protected findEligibleSchemaKeys(desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType, format: string): FileSchemaKey[];
-    // (undocumented)
     abstract getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     // (undocumented)
     protected abstract getSchemaKey(data: string): SchemaKey;
