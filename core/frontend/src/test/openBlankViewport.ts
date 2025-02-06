@@ -55,9 +55,11 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
     public ownedIModel?: BlankConnection;
 
     public override[Symbol.dispose](): void {
-      document.body.removeChild(this.parentDiv);
-      super[Symbol.dispose]();
-      this.ownedIModel?.closeSync();
+      if (!this.isDisposed) {
+        document.body.removeChild(this.parentDiv);
+        super[Symbol.dispose]();
+        this.ownedIModel?.closeSync();
+      }
     }
   }
 
@@ -81,12 +83,17 @@ export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenV
     args.test(vp);
 }
 
+export type TestBlankViewportAsyncOptions = BlankViewportOptions & { test: (vp: ScreenViewport) => Promise<void> };
+
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export async function testBlankViewportAsync(args: ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
+export async function testBlankViewportAsync(args: TestBlankViewportAsyncOptions | ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
   using vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  await args(vp);
+  if (typeof args === "function")
+    return args(vp);
+  else
+    return args.test(vp);
 }
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
