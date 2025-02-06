@@ -5,8 +5,7 @@
 import { expect } from "chai";
 import { firstValueFrom, toArray } from "rxjs";
 import * as moq from "typemoq";
-import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
-import { DbResult } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
 import { PresentationError } from "@itwin/presentation-common";
 import { createIdBatches, getBatchedClassElementIds, getElementsCount } from "../presentation-backend/ElementPropertiesHelper";
 import { stubECSqlReader } from "./Helpers";
@@ -17,56 +16,30 @@ describe("getElementsCount", () => {
     imodelMock.reset();
   });
 
-  it("returns 0 when statement has no rows", () => {
-    imodelMock
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
-      .returns((_q, cb) => {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
-        return cb(statementMock.object);
-      });
-    expect(getElementsCount(imodelMock.object, [])).to.be.eq(0);
+  it("returns 0 when statement has no rows", async () => {
+    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader([]));
+    expect(await getElementsCount(imodelMock.object, [])).to.be.eq(0);
   });
 
-  it("returns count when statement has row", () => {
+  it("returns count when statement has row", async () => {
     const elementCount = 3;
-    imodelMock
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
-      .returns((_q, cb) => {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const valueMock = moq.Mock.ofType<ECSqlValue>();
-        valueMock.setup((x) => x.getInteger()).returns(() => elementCount);
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        const statementMock = moq.Mock.ofType<ECSqlStatement>();
-        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
-        statementMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
-        return cb(statementMock.object);
-      });
-    expect(getElementsCount(imodelMock.object, [])).to.be.eq(elementCount);
+    imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader([{ elementCount }]));
+    expect(await getElementsCount(imodelMock.object, [])).to.be.eq(elementCount);
   });
 
-  it("adds WHERE clause when class list is defined and not empty", () => {
+  it("adds WHERE clause when class list is defined and not empty", async () => {
     imodelMock
-      .setup((x) =>
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        x.withPreparedStatement(
-          moq.It.is((query) => query.includes("WHERE")),
-          moq.It.isAny(),
-        ),
-      )
-      .returns(() => 0)
+      .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes("WHERE"))))
+      .returns(() => stubECSqlReader([]))
       .verifiable();
-    getElementsCount(imodelMock.object, ["TestSchema:TestClass"]);
+    await getElementsCount(imodelMock.object, ["TestSchema:TestClass"]);
     imodelMock.verifyAll();
   });
 
-  it("throws if class list contains invalid class name", () => {
-    expect(() => getElementsCount(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
-    expect(() => getElementsCount(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
-    expect(() => getElementsCount(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
+  it("throws if class list contains invalid class name", async () => {
+    await expect(getElementsCount(imodelMock.object, ["'TestSchema:TestClass'"])).to.eventually.be.rejectedWith(PresentationError);
+    await expect(getElementsCount(imodelMock.object, ["%TestSchema:TestClass%"])).to.eventually.be.rejectedWith(PresentationError);
+    await expect(getElementsCount(imodelMock.object, ["TestSchema:TestClass  "])).to.eventually.be.rejectedWith(PresentationError);
   });
 });
 
