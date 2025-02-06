@@ -166,40 +166,8 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    */
   createGroupForUnspecifiedValues?: boolean;
 
-  /**
-   * Specifies whether instances should be grouped using property's display or raw value.
-   *
-   * @see PropertyGroupingValue
-   * @deprecated in 3.x. Display value should always be used for grouping.
-   */
-  groupingValue?: `${PropertyGroupingValue}`; // eslint-disable-line @typescript-eslint/no-deprecated
-
-  /**
-   * Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result
-   * is the same, unless a [label override rule]($docs/presentation/customization/LabelOverride.md) is used to change node's display label.
-   *
-   * @see PropertyGroupingValue
-   * @deprecated in 3.x. Property grouping nodes should always be sorted by display label.
-   */
-  sortingValue?: `${PropertyGroupingValue}`; // eslint-disable-line @typescript-eslint/no-deprecated
-
   /** Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified. */
   ranges?: PropertyRangeGroupSpecification[];
-}
-
-/**
- * Used in [[PropertyGroup]] to specify the type of value to use
- * for grouping and sorting
- *
- * @public
- * @deprecated in 3.x. The attributes using this enum are deprecated.
- */
-export enum PropertyGroupingValue {
-  /** By property value */
-  PropertyValue = "PropertyValue",
-
-  /** By display label */
-  DisplayLabel = "DisplayLabel",
 }
 
 /**
