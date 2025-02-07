@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
-import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
+import { createRenderPlanFromViewport } from "../../../internal/render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { SpatialViewState } from "../../../SpatialViewState";

@@ -8,7 +8,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";
-import { MockRender } from "../../render/MockRender";
+import { MockRender } from "../../internal/render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import { GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
