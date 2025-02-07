@@ -16,10 +16,11 @@ Do not add any new types to this file.
 All types here will be removed in 4.0
 */
 
-/** @internal @deprecated in 3.x. This type was mistakenly made public in the common scope. */
+/** BackendReadable and BackendWritable are tagged public for depreciated public RPC APIs which reference these types. */
+/** @public @deprecated in 3.x. This type was mistakenly made public in the common scope. */
 export type BackendReadable = Readable;
 
-/** @internal @deprecated in 3.x. This type was mistakenly made public in the common scope. */
+/** @public @deprecated in 3.x. This type was mistakenly made public in the common scope. */
 export type BackendWritable = Writable;
 
 /** @internal @deprecated in 3.x. This type was mistakenly made public in the common scope. */
