@@ -92,6 +92,7 @@ describe("Quantity formatter", async () => {
     expect(parsedVal.ok).toBe(true);
     expect(withinTolerance((parsedVal as ParsedQuantity).value, numericVal)).toBe(true);
   });
+
   it("Save overrides to localStorage", async () => {
     const overrideLengthAndCoordinateEntry = {
       metric: {
@@ -548,9 +549,12 @@ describe("Test Formatted Quantities", async () => {
 
   async function testFormatting(type: QuantityTypeArg, magnitude: number, expectedValue: string) {
     const formatterSpec = await quantityFormatter.getFormatterSpecByQuantityType(type);
+    const parserSpec = await quantityFormatter.getParserSpecByQuantityType(type);
+
     const formattedValue = quantityFormatter.formatQuantity(magnitude, formatterSpec);
-    // console.log(`Type=${type} formatted value=${formattedValue}`); // eslint-disable-line no-console
+    const parsedValue = quantityFormatter.parseToQuantityValue(expectedValue, parserSpec);
     expect(formattedValue).toBe(expectedValue);
+    expect(withinTolerance((parsedValue as ParsedQuantity).value, magnitude, 0.01)).toBe(true);
   }
 
   it("QuantityFormatter should handle unit system changes properly", async () => {
