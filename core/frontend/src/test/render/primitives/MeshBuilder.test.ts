@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { MockRender } from "../../../render/MockRender";
+import { MockRender } from "../../../internal/render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
@@ -39,7 +39,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   afterAll(async () => {
-    viewport.dispose();
+    viewport[Symbol.dispose]();
     await MockRender.App.shutdown();
   });
 
@@ -63,7 +63,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {type: GraphicType.Scene, viewport });
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -390,7 +390,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   function createMeshBuilder(type: MeshPrimitiveType, range: Range3d, options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>): MeshBuilder {
-    options = options ?? { };
+    options = options ?? {};
     const tolerance = options.tolerance ?? 0.15;
     return MeshBuilder.create({
       quantizePositions: false,

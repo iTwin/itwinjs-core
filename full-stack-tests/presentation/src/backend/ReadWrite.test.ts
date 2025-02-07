@@ -39,7 +39,7 @@ describe("ReadWrite", () => {
     const imodelPath = imodel.pathName;
     imodel.close();
     fs.unlinkSync(imodelPath);
-    manager.dispose();
+    manager[Symbol.dispose]();
   });
 
   describe("Handling read-write operations", () => {
@@ -52,8 +52,7 @@ describe("ReadWrite", () => {
             specifications: [
               {
                 specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-                classes: { schemaName: "BisCore", classNames: ["Element"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
                 groupByClass: false,
               },
             ],

@@ -60,7 +60,7 @@ export interface AcquireImdlDecoderArgs {
  * Decoders are reference-counted, because they make use of reference-counted [[ImdlParser]]s internally.
  * The caller of this function increments the reference count of the decoder and is responsible
  * for decrementing it by calling [[ImdlDecoder.release]] when it is no longer needed. Typically, a decoder's lifetime is tied to the
- * lifetime of some [IDisposable]($bentley) object like a [[TileTree]] - acquired in the constructor, and released in the `dispose` method.
+ * lifetime of some `Disposable` object like a [[TileTree]] - acquired in the constructor, and released in the `[Symbol.dispose]` method.
  * @internal
  */
 export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder {

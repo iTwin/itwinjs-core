@@ -6,11 +6,13 @@
 /** @packageDocumentation
  * @module AccuDraw
  */
+import { FormatType, Parser } from "@itwin/core-quantity";
 import { AccuDraw, CompassMode, ItemField } from "../AccuDraw";
 import { ViewRect } from "../common/ViewRect";
 import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { BeButtonEvent } from "./Tool";
+import { ScreenViewport } from "../Viewport";
 
 interface AccuDrawControls {
   overlay: HTMLDivElement; // Viewport overlay...
@@ -26,6 +28,7 @@ export class AccuDrawViewportUI extends AccuDraw {
   private _focusItem: ItemField;
   private _controls?: AccuDrawControls;
   private _toolTipsSuspended?: true;
+  private _expression?: { item: ItemField, operator: string };
 
   /** Settings to control the behavior and visual appearance of the viewport controls.
    * @note Colors were chosen for visibility against viewport background and contents.
@@ -37,6 +40,12 @@ export class AccuDrawViewportUI extends AccuDraw {
     fixedLocation: false,
     /** Layout controls in a single row horizontally instead of in columns vertically as an option when using fixed location. */
     horizontalArrangement: false,
+    /** When controls follow the cursor, the X and Y offsets applied to the current point to position the top left (values in inches based on screen DPI) */
+    cursorOffset: { x: .4, y: .1 },
+    /** Replace "^", ";", and ".." with "°" or ":" for easier input. */
+    simplifiedInput: true,
+    /** Enable simple math operations not supported by quantity parser. */
+    mathOperations: true,
     /** Number of visible characters to show in text input fields. */
     fieldSize: 12,
     /** Row spacing of text input fields for vertical arrangement. */
@@ -64,8 +73,6 @@ export class AccuDrawViewportUI extends AccuDraw {
     button: {
       /** Background color of locked buttons. */
       pressedColor: "rgba(50, 50, 50, 0.75)",
-      /** Padding to use on left and right of label and affects overall width. */
-      padding: "0.25em",
       /** Margin to use on left and right to position relative to text input field. */
       margin: "0.25em",
       /** Width of border outline. */
@@ -144,26 +151,105 @@ export class AccuDrawViewportUI extends AccuDraw {
     itemField.setSelectionRange(0, itemField.value.length);
   }
 
+  private makeParserHappy(value: string, isAngle: boolean): string {
+    // TODO: Work around for default length parser not accepting output formatted with dash separator, ex. 20'-6"...
+    const parserSpec = (isAngle ? undefined : this.getLengthParser());
+    if (undefined === parserSpec)
+      return value;
+    return (FormatType.Fractional === parserSpec.format.type && -1 !== value.indexOf("'-") ? value.replaceAll("'-", "':") : value);
+  }
+
+  private evaluateExpression(operator: string, operandA: number, operandB: number): number {
+    switch (operator) {
+      case "+":
+        return operandA + operandB;
+      case "-":
+        return operandA - operandB;
+      case "*":
+        return operandA * operandB;
+      case "/":
+        return operandA / operandB;
+      default:
+        return operandA;
+    }
+  }
+
+  private parseExpression(currentValue: string, isAngle: boolean): string | undefined {
+    if (undefined === this._expression)
+      return undefined; // Not an expression...
+
+    // Attempt to parse and apply operation to current value...
+    const operator = currentValue.lastIndexOf(this._expression.operator)
+    if (-1 === operator) {
+      this._expression = undefined; // Operator has been edited out of string, parse current value...
+      return undefined;
+    }
+
+    const parserSpec = (isAngle ? this.getAngleParser() : this.getLengthParser());
+    const formatterSpec = (isAngle ? this.getAngleFormatter() : this.getLengthFormatter());
+    if (undefined === parserSpec || undefined === formatterSpec)
+      return undefined; // Nothing to do...
+
+    const operandAStr = currentValue.substring(0, operator);
+    const parseResultA = parserSpec.parseToQuantityValue(this.makeParserHappy(operandAStr, isAngle));
+    if (!Parser.isParsedQuantity(parseResultA))
+      return undefined; // First operand isn't valid, try to parse current value (which is also likely to fail)...
+
+    const operandBStr = currentValue.substring(operator + this._expression.operator.length);
+    const operatorKey = this._expression.operator[1];
+    const isNumber = ("*" === operatorKey || "/" === operatorKey); // Treat as number for */ and quantity for +-...
+    let operandB;
+
+    if (isNumber) {
+      operandB = parseFloat(operandBStr);
+      if (Number.isNaN(operandB))
+        return operandAStr; // Second operand is invalid number, set value to first operand which is valid...
+    } else {
+      const parseResultB = parserSpec.parseToQuantityValue(this.makeParserHappy(operandBStr, isAngle));
+      if (!Parser.isParsedQuantity(parseResultB))
+        return operandAStr; // Second operand is invalid quantity, set value to first operand which is valid...
+      operandB = parseResultB.value;
+    }
+
+    const operandA = parseResultA.value;
+    const newValue = this.evaluateExpression(operatorKey, operandA, operandB);
+    const newValueStr = IModelApp.quantityFormatter.formatQuantity(newValue, formatterSpec);
+
+    return newValueStr;
+  }
+
   private async processPartialInput(item: ItemField): Promise<void> {
     if (undefined === this._controls)
       return;
 
     const itemField = this._controls.itemFields[item];
-    if (0 !== itemField.value.length)
-      return this.processFieldInput(item, itemField.value, false);
+    const currentValue = itemField.value;
 
-    this.updateFieldLock(item, false);
-    IModelApp.toolAdmin.simulateMotionEvent();
+    // If current value has been deleted, unlock field and refresh for current cursor location...
+    if (0 === currentValue.length) {
+      this.updateFieldLock(item, false);
+      IModelApp.toolAdmin.simulateMotionEvent();
+      return;
+    }
+
+    const isAngle = (ItemField.ANGLE_Item === item);
+    const expressionValue = this.parseExpression(currentValue, isAngle);
+    return this.processFieldInput(item, this.makeParserHappy(expressionValue ?? currentValue, isAngle), false);
   }
 
   private async acceptPartialInput(item: ItemField, forward?: boolean): Promise<void> {
     if (undefined === this._controls)
       return;
 
-    if (undefined === forward)
-      return AccuDrawShortcuts.itemFieldAcceptInput(item, this._controls.itemFields[item].value);
+    const itemField = this._controls.itemFields[item];
+    const currentValue = itemField.value;
+    const isAngle = (ItemField.ANGLE_Item === item);
+    const expressionValue = this.parseExpression(currentValue, isAngle);
 
-    return AccuDrawShortcuts.itemFieldNavigate(item, this._controls.itemFields[item].value, forward);
+    if (undefined === forward)
+      return AccuDrawShortcuts.itemFieldAcceptInput(item, this.makeParserHappy(expressionValue ?? currentValue, isAngle));
+
+    return AccuDrawShortcuts.itemFieldNavigate(item, this.makeParserHappy(expressionValue ?? currentValue, isAngle), forward);
   }
 
   private acceptSavedValue(item: ItemField, next: boolean): void {
@@ -277,7 +363,7 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private doProcessOverrideKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): boolean {
-    if (undefined === this._controls)
+    if (undefined === this._controls || !AccuDrawViewportUI.controlProps.simplifiedInput)
       return false;
 
     switch (ev.key) {
@@ -292,16 +378,95 @@ export class AccuDrawViewportUI extends AccuDraw {
     }
   }
 
-  private async doProcessUnhandledKey(ev: KeyboardEvent, _isDown: boolean): Promise<void> {
-    ev.preventDefault();
+  private doProcessExpressionKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): boolean {
+    if (undefined === this._controls || !AccuDrawViewportUI.controlProps.mathOperations)
+      return false;
+
+    const itemField = this._controls.itemFields[item];
+    const currentValue = itemField.value;
+
+    switch (ev.key) {
+      case "ArrowLeft":
+      case "ArrowRight":
+        if (undefined === this._expression || !isDown || this.isDynamicKeyinStatus(item) || !itemField.selectionStart)
+          break;
+
+        const moveLeft = ("ArrowLeft" === ev.key);
+        const operatorPosIns = currentValue.lastIndexOf(this._expression.operator);
+        if (itemField.selectionStart !== (moveLeft ? operatorPosIns + this._expression.operator.length : operatorPosIns))
+          break;
+
+        // Treat expression operator string as a single character when moving the text insertion cursor...
+        itemField.selectionStart = itemField.selectionEnd = (moveLeft ? operatorPosIns : operatorPosIns + this._expression.operator.length);
+        ev.preventDefault();
+        return true;
+
+      case "Backspace":
+      case "Delete":
+        if (undefined === this._expression || !isDown || this.isDynamicKeyinStatus(item) || !itemField.selectionStart)
+          break;
+
+        const deleteBefore = ("Backspace" === ev.key);
+        const operatorPosDel = currentValue.lastIndexOf(this._expression.operator);
+        if (itemField.selectionStart !== (deleteBefore ? operatorPosDel + this._expression.operator.length : operatorPosDel))
+          break;
+
+        // Treat expression operator string as single character for delete...
+        itemField.value = currentValue.substring(0, operatorPosDel);
+        itemField.selectionStart = itemField.selectionEnd = itemField.value.length;
+        this._expression = undefined;
+        ev.preventDefault();
+        return true;
+
+      case " ":
+        if (!isDown || !this.isDynamicKeyinStatus(item))
+          break;
+
+        this.setPartialKeyinStatus(item, false); // Replacing current w/space isn't useful, append to end to support + or - more conveniently...
+        return true;
+
+      case "+":
+      case "-":
+      case "*":
+      case "/":
+        if (!isDown || undefined !== this._expression)
+          break;
+
+        if (!currentValue.length || !itemField.selectionStart || itemField.selectionStart !== currentValue.length)
+          break;
+
+        const haveSpace = (" " === currentValue[itemField.selectionStart - 1]);
+        const requireSpace = ("+" === ev.key || "-" === ev.key); // These are valid for 1st character to replace current value...
+
+        if (!(requireSpace ? haveSpace : (haveSpace || this.isDynamicKeyinStatus(item))))
+          break;
+
+        const operator = ` ${ev.key} `
+        const expression = `${currentValue + (haveSpace ? operator.substring(1) : operator)}`;
+
+        itemField.value = expression;
+        itemField.selectionStart = itemField.selectionEnd = itemField.value.length;
+        this._expression = { item, operator };
+
+        this.setPartialKeyinStatus(item, false);
+        ev.preventDefault();
+
+        return true;
+    }
+
+    return false;
   }
 
   private async doProcessKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void> {
-    // Make sure a potentially valid input field value is rejected when any qualifier other than shift is active...
-    if (ev.ctrlKey || ev.altKey || ev.metaKey || !this.itemFieldInputIsValid(ev.key, item))
-      return this.doProcessUnhandledKey(ev, isDown);
+    if (!this.itemFieldInputIsValid(ev.key, item)) {
+      ev.preventDefault(); // Ignore potential shortcuts...
+      return;
+    }
 
     if (this.doProcessOverrideKey(ev, isDown, item))
+      return;
+
+    if (this.doProcessExpressionKey(ev, isDown, item))
       return;
 
     if (isDown)
@@ -311,6 +476,11 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private async onKeyboardEvent(ev: KeyboardEvent, isDown: boolean): Promise<void> {
+    if (ev.ctrlKey || ev.altKey || ev.metaKey) {
+      ev.preventDefault(); // Ignore qualifiers other than shift...
+      return;
+    }
+
     switch (ev.key) {
       case "Escape":
         return this.doFocusHome(ev, isDown, this._focusItem);
@@ -330,14 +500,19 @@ export class AccuDrawViewportUI extends AccuDraw {
         return this.doNavigate(ev, isDown, this._focusItem, false);
       case "Enter":
         return this.doAcceptInput(ev, isDown, this._focusItem);
-      case "ArrowLeft":
-      case "ArrowRight":
       case "Home":
       case "End":
       case "Insert":
         return this.doNewInput(ev, isDown, this._focusItem);
+      case "ArrowLeft":
+      case "ArrowRight":
+        if (this.doProcessExpressionKey(ev, isDown, this._focusItem))
+          return;
+        return this.doNewInput(ev, isDown, this._focusItem);
       case "Backspace":
       case "Delete":
+        if (this.doProcessExpressionKey(ev, isDown, this._focusItem))
+          return;
         return this.doDeleteInput(ev, isDown, this._focusItem);
       default:
         return this.doProcessKey(ev, isDown, this._focusItem);
@@ -368,7 +543,12 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private updateItemFieldKeyinStatus(itemField: HTMLInputElement, item: ItemField) {
-    itemField.style.caretColor = this.isDynamicKeyinStatus(item) ? itemField.style.backgroundColor : itemField.style.color;
+    const isDynamic = this.isDynamicKeyinStatus(item)
+
+    if (isDynamic && item === this._expression?.item)
+      this._expression = undefined; // Only valid when entering partial input...
+
+    itemField.style.caretColor = isDynamic ? itemField.style.backgroundColor : itemField.style.color;
   }
 
   private updateItemFieldValue(itemField: HTMLInputElement, item: ItemField) {
@@ -447,11 +627,26 @@ export class AccuDrawViewportUI extends AccuDraw {
     this.updateItemFieldLock(itemLock, item);
 
     const button = AccuDrawViewportUI.controlProps.button;
-    style.paddingLeft = style.paddingRight = button.padding;
+    style.paddingLeft = style.paddingRight = "0";
     style.marginLeft = style.marginRight = button.margin;
     style.outlineWidth = button.outlineWidth;
 
     return itemLock;
+  }
+
+  /** Use to override the position of the controls in the supplied view. */
+  protected modifyControlRect(_rect: ViewRect, _vp: ScreenViewport): void { }
+
+  /** Return the ViewRect currently occupied by the controls in the supplied view. */
+  protected currentControlRect(vp: ScreenViewport): ViewRect | undefined {
+    if (undefined === this._controls || this._controls.overlay.parentElement !== vp.vpDiv)
+      return undefined;
+
+    const viewRect = vp.vpDiv.getBoundingClientRect();
+    const elemRect = this._controls.div.getBoundingClientRect();
+    const controlRect = new ViewRect(elemRect.left - viewRect.left, elemRect.top - viewRect.top, elemRect.right - viewRect.left, elemRect.bottom - viewRect.top);
+
+    return controlRect;
   }
 
   private updateControlVisibility(isPolar: boolean, is3d?: boolean): void {
@@ -483,13 +678,15 @@ export class AccuDrawViewportUI extends AccuDraw {
       return;
 
     if (undefined !== this._controls && this._controls.overlay.parentElement !== vp.vpDiv)
-      this.removeControls(); // TODO: View valid for active tool? Preserve partial input?
+      this.removeControls(); // Could be enhanced to save/restore partial input of currently focused item...
+
+    const props = AccuDrawViewportUI.controlProps;
 
     if (undefined === this._controls) {
       const overlay = vp.addNewDiv("accudraw-overlay", true, 35);
       const div = this.createControlDiv();
       const is3dLayout = vp.view.is3d();
-      const isHorizontalLayout = AccuDrawViewportUI.controlProps.horizontalArrangement;
+      const isHorizontalLayout = props.horizontalArrangement;
 
       overlay.appendChild(div);
 
@@ -501,7 +698,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         div.appendChild(itemField);
 
         if (is3dLayout || ItemField.Z_Item !== item)
-          rowOffset += itemField.offsetHeight * AccuDrawViewportUI.controlProps.rowSpacingFactor;
+          rowOffset += itemField.offsetHeight * props.rowSpacingFactor;
 
         itemWidth = itemField.offsetWidth;
         itemHeight = itemField.offsetHeight;
@@ -509,16 +706,14 @@ export class AccuDrawViewportUI extends AccuDraw {
         const itemLock = itemLocks[item] = this.createItemFieldLock(item);
         itemLock.style.top = itemField.style.top;
         itemLock.style.left = isHorizontalLayout ? `${columnOffset + itemWidth}px` : `${itemWidth}px`;
+        itemLock.style.width = itemLock.style.height = `${itemHeight}px`; // Make square of same height as text field...
 
         div.appendChild(itemLock);
 
-        if (0 === lockWidth)
-          lockWidth = itemLock.offsetWidth;
-        else
-          itemLock.style.width = `${lockWidth}px`;
+        lockWidth = itemLock.offsetWidth;
 
         if (is3dLayout || ItemField.Z_Item !== item)
-          columnOffset += (itemWidth + lockWidth) * AccuDrawViewportUI.controlProps.columnSpacingFactor;
+          columnOffset += (itemWidth + lockWidth) * props.columnSpacingFactor;
       };
 
       let rowOffset = 0;
@@ -541,7 +736,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       createFieldAndLock(ItemField.Z_Item); // Both polar and rectangular modes support Z in 3d views...
 
       div.style.width = isHorizontalLayout ? `${columnOffset}px` : `${itemWidth + lockWidth + 5}px`;
-      div.style.height = isHorizontalLayout ? `${itemHeight * AccuDrawViewportUI.controlProps.rowSpacingFactor}px` : `${rowOffset}px`;
+      div.style.height = isHorizontalLayout ? `${itemHeight * props.rowSpacingFactor}px` : `${rowOffset}px`;
 
       this._controls = { overlay, div, itemFields, itemLocks };
       this.updateControlVisibility(CompassMode.Polar === this.compassMode, vp.view.is3d());
@@ -554,15 +749,17 @@ export class AccuDrawViewportUI extends AccuDraw {
     const viewRect = vp.viewRect;
     const position = vp.worldToView(ev.point);
 
-    if (AccuDrawViewportUI.controlProps.fixedLocation) {
+    if (props.fixedLocation) {
       position.x = (viewRect.left + ((viewRect.width - this._controls.div.offsetWidth) * 0.5));
       position.y = (viewRect.bottom - this._controls.div.offsetHeight);
     } else {
-      position.x += Math.floor(vp.pixelsFromInches(0.4)) + 0.5;
-      position.y += Math.floor(vp.pixelsFromInches(0.1)) + 0.5;
+      position.x += Math.floor(vp.pixelsFromInches(props.cursorOffset.x)) + 0.5;
+      position.y += Math.floor(vp.pixelsFromInches(props.cursorOffset.y)) + 0.5;
     }
 
     const controlRect = new ViewRect(position.x, position.y, position.x + this._controls.div.offsetWidth, position.y + this._controls.div.offsetHeight);
+    this.modifyControlRect(controlRect, vp);
+
     if (!controlRect.isContained(viewRect))
       return; // Keep showing at last valid location...
 

@@ -88,25 +88,19 @@ export * from "./render/GraphicBranch";
 export * from "./render/GraphicBuilder";
 export * from "./render/GraphicTemplate";
 export * from "./render/MeshArgs";
-export * from "./render/MockRender";
 export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/PolylineArgs";
-export * from "./render/RealityMeshGraphicParams";
 export * from "./render/RealityMeshParams";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
 export * from "./render/RenderMemory";
-export * from "./render/RenderPlan";
-export * from "./render/RenderPlanarClassifier";
 export * from "./render/RenderSystem";
 export * from "./render/RenderTarget";
 export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
 export * from "./render/VisibleFeature";
-export * from "./render/webgl/IModelFrameLifecycle";
-export * from "./render/webgl/PerformanceMetrics";
-export * from "./render/webgl/Target";
+export * from "./internal/render/webgl/IModelFrameLifecycle";
 export type {
   TxnEntityChange,
   TxnEntityChangeIterable,

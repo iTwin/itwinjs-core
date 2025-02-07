@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed problem causing bg map masking of large models to crash.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

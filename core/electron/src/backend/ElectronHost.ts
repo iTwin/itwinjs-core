@@ -22,7 +22,10 @@ import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInt
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
-  public addListener(channel: string, listener: IpcListener): RemoveFunction {
+  public addListener(
+    channel: string,
+    listener: (evt: any, ...args: any[]) => void, // There is mismatch between IPC Event and Electron.IpcMainEvent. Defining `evt` as any as a temporary fix
+  ): RemoveFunction {
     ElectronHost.ipcMain.addListener(channel, listener);
     return () => ElectronHost.ipcMain.removeListener(channel, listener);
   }

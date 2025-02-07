@@ -15,7 +15,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshRenderGeometry } from "../../render/webgl/Mesh";
+import { MeshRenderGeometry } from "../../internal/render/webgl/Mesh";
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 import { MeshArgs } from "../../render/MeshArgs";
@@ -38,7 +38,7 @@ describe("GraphicBuilder", () => {
     viewport = openBlankViewport();
   });
 
-  afterEach(() => viewport.dispose());
+  afterEach(() => viewport[Symbol.dispose]());
 
   afterAll(async () => {
     await imodel.close();
@@ -180,7 +180,7 @@ describe("GraphicBuilder", () => {
     }
 
     function createTriangle(): Point3d[] {
-      return [ new Point3d(0, 0, 0), new Point3d(100, 0, 0), new Point3d(0, 100, 0) ];
+      return [new Point3d(0, 0, 0), new Point3d(100, 0, 0), new Point3d(0, 100, 0)];
     }
 
     it("should preserve polyface normals", () => {
@@ -199,7 +199,7 @@ describe("GraphicBuilder", () => {
         const gfBuilder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals: requestNormals });
         gfBuilder.addPolyface(pfBuilder.claimPolyface(), false);
         const gf = gfBuilder.finish();
-        gf.dispose();
+        gf[Symbol.dispose]();
         expect(createMeshInvoked).toBe(true);
       };
 
@@ -217,7 +217,7 @@ describe("GraphicBuilder", () => {
         const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals });
         builder.addShape(createTriangle());
         const gf = builder.finish();
-        gf.dispose();
+        gf[Symbol.dispose]();
         expect(createMeshInvoked).toBe(true);
       };
 
@@ -260,7 +260,7 @@ describe("GraphicBuilder", () => {
         addToGraphic(builder);
 
         const gf = builder.finish();
-        gf.dispose();
+        gf[Symbol.dispose]();
         expect(createMeshInvoked).toBe(true);
       }
 

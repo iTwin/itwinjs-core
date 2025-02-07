@@ -9,6 +9,7 @@ import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createBlankConnection } from "./createBlankConnection";
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './../common/internal/Symbols';
 
 describe("DisplayStyleState", () => {
   describe("schedule script state", () => {
@@ -50,12 +51,12 @@ describe("DisplayStyleState", () => {
         super(props, iModel);
 
         this.eventPayloads = [];
-        this.onScheduleScriptReferenceChanged.addListener((ref) => this.eventPayloads.push(ref)); // eslint-disable-line @typescript-eslint/no-deprecated
+        this[_onScheduleScriptReferenceChanged].addListener((ref) => this.eventPayloads.push(ref));
       }
 
       public expectScript(props: RenderSchedule.ScriptProps, sourceId: string): void {
         expect(this.scheduleScript).toBeDefined();
-        expect(this.scheduleScriptReference!.sourceId).toEqual(sourceId); // eslint-disable-line @typescript-eslint/no-deprecated
+        expect(this[_scheduleScriptReference]!.sourceId).toEqual(sourceId);
         expect(this.scheduleScript!.modelTimelines[0].modelId).toEqual(props[0].modelId);
       }
 
@@ -179,7 +180,7 @@ describe("DisplayStyleState", () => {
 
       function pushExpected(expectNonNull = true) {
         expect(style.scheduleScript !== undefined).toEqual(expectNonNull);
-        expected.push(style.scheduleScriptReference); // eslint-disable-line @typescript-eslint/no-deprecated
+        expected.push(style[_scheduleScriptReference]);
         expectPayloads();
       }
 
@@ -221,7 +222,7 @@ describe("DisplayStyleState", () => {
       expect(style.isLoading).toBe(false);
 
       style.expectScript(script2, "0x2");
-      expect(style.eventPayloads).toEqual([style.scheduleScriptReference]); // eslint-disable-line @typescript-eslint/no-deprecated
+      expect(style.eventPayloads).toEqual([style[_scheduleScriptReference]]);
     });
 
     it("is set to undefined if loadScheduleScriptReference produces an exception", async () => {
@@ -230,7 +231,7 @@ describe("DisplayStyleState", () => {
       style.expectScript(script1, "0x1");
 
       await style.changeRenderTimeline("0x3");
-      expect(style.scheduleScriptReference).toBeUndefined(); // eslint-disable-line @typescript-eslint/no-deprecated
+      expect(style[_scheduleScriptReference]).toBeUndefined();
     });
   });
 });

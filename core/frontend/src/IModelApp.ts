@@ -34,7 +34,7 @@ import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
-import { System } from "./render/webgl/System";
+import { System } from "./internal/render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
@@ -123,11 +123,13 @@ export interface IModelAppOptions {
    *  @internal
    */
   noRender?: boolean;
-  /**
+
+   /**
    * @deprecated in 3.7. Specify desired RPC interfaces in the platform-specific RPC manager call instead.
    * See [[MobileRpcManager.initializeClient]], [[ElectronRpcManager.initializeFrontend]], [[BentleyCloudRpcManager.initializeClient]].
    */
-  rpcInterfaces?: RpcInterfaceDefinition[];
+   rpcInterfaces?: RpcInterfaceDefinition[];
+
   /** @beta */
   realityDataAccess?: RealityDataAccess;
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
