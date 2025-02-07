@@ -158,6 +158,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public displayNormalMaps = true;
 
   public freezeRealityTiles = false;
+
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;
@@ -1094,12 +1095,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(): HTMLCanvasElement {
+  public copyImageToCanvas(overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
+
+    if (overlayCanvas) {
+      const ctx = retCanvas.getContext("2d")!;
+      ctx.drawImage(overlayCanvas, 0, 0);
+    }
+
     const pixelRatio = this.devicePixelRatio;
     retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
+
     return retCanvas;
   }
 
@@ -1429,11 +1437,10 @@ export class OnScreenTarget extends Target {
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
-  public override readImageToCanvas(): HTMLCanvasElement {
-    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
+  public override readImageToCanvas(overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
+    return this._usingWebGLCanvas || !overlayCanvas ? this.copyImageToCanvas(overlayCanvas) : this._2dCanvas.canvas;
   }
 }
-
 /** @internal */
 export class OffScreenTarget extends Target {
   public constructor(rect: ViewRect) {

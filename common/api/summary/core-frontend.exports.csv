@@ -560,6 +560,7 @@ public;function;readGltfGraphics
 public;interface;ReadGltfGraphicsArgs
 beta;function;readGltfTemplate
 public;interface;ReadImageBufferArgs
+public;interface;ReadImageToCanvasOptions
 internal;function;readImdlContent
 public;interface;ReadMeshArgs
 internal;class;ReadonlyTileUserSet
