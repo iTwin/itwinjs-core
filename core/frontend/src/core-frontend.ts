@@ -110,7 +110,32 @@ export type {
   TxnEntityMetadata,
   TxnEntityMetadataCriterion,
 } from "./TxnEntityChanges";
-export * from "./tile/internal";
+export {
+  type TileTreeDiscloser, DisclosedTileTreeSet,
+  type ReadGltfGraphicsArgs, GltfGraphic, GltfTemplate, readGltfGraphics, readGltfTemplate, readGltf,
+  readElementGraphics,
+  BatchTableProperties, RealityTileTree,
+  RealityTileGeometry, RealityTile,
+  type RenderGraphicTileTreeArgs,
+  type GpuMemoryLimit, type GpuMemoryLimits, TileAdmin,
+  type TileContent,
+  type TiledGraphicsProvider,
+  type TileDrawArgParams, TileDrawArgs,
+  type CollectTileStatus, type TileGeometryCollectorOptions, TileGeometryCollector, type GeometryTileTreeReference,
+  type TileParams,
+  TileRequestChannels,
+  type TileContentDecodingStatistics, TileRequestChannelStatistics, TileRequestChannel,
+  TileRequest,
+  type TileTreeOwner,
+  type TileTreeParams,
+  TileGraphicType, TileTreeReference,
+  type TileTreeSupplier,
+  TileTreeLoadStatus, TileTree,
+  Tile, TileLoadStatus, TileVisibility, TileLoadPriority, TileBoundingBoxes,
+  TileUsageMarker,
+  TileUser,
+  BingElevationProvider,
+} from "./tile/internal";
 export * from "./tools/AccuDrawTool";
 export * from "./tools/AccuDrawViewportUI";
 export * from "./tools/ClipViewTool";

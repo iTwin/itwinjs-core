@@ -7,10 +7,9 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../common/gltf/GltfSchema";
-import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
+import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../../common/gltf/GltfSchema";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
 
-/** @internal */
 export interface MeshoptDecoder {
   decodeVertexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, filter?: string) => void;
   decodeIndexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
@@ -120,7 +119,6 @@ async function getDecoder(): Promise<MeshoptDecoder | undefined> {
 let meshoptDecoderLoaded: boolean = false;
 let meshoptDecoder: MeshoptDecoder | undefined;
 
-/** @internal */
 export async function getMeshoptDecoder(): Promise<MeshoptDecoder | undefined> {
   if (!meshoptDecoderLoaded) {
     meshoptDecoder = await getDecoder();
@@ -130,7 +128,6 @@ export async function getMeshoptDecoder(): Promise<MeshoptDecoder | undefined> {
 }
 
 /** Arguments supplied to decodeMeshoptBuffer.
- * @internal
  */
 export interface DecodeMeshoptBufferArgs {
   byteStride: number;
@@ -139,7 +136,6 @@ export interface DecodeMeshoptBufferArgs {
   filter?: ExtMeshoptCompressionFilter;
 }
 
-/** @internal */
 export async function decodeMeshoptBuffer(source: Uint8Array, args: DecodeMeshoptBufferArgs): Promise<Uint8Array | undefined> {
   const decoder = await getMeshoptDecoder();
   if (!decoder) {

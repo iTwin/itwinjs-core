@@ -8,17 +8,15 @@
 
 import { Map4d } from "@itwin/core-geometry";
 import { FrustumPlanes } from "@itwin/core-common";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { SceneContext } from "../ViewContext";
-import { TileDrawArgs, TileGraphicType, TileTreeReference } from "./internal";
+import { GraphicBranch } from "../../render/GraphicBranch";
+import { RenderGraphic } from "../../render/RenderGraphic";
+import { SceneContext } from "../../ViewContext";
+import { TileDrawArgs, TileGraphicType, TileTreeReference } from "../../tile/internal";
 
-/** @internal */
 export interface GraphicsCollector {
   addGraphic(graphic: RenderGraphic): void;
 }
 
-/** @internal */
 export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   private _planes: FrustumPlanes;
   private _worldToViewMap: Map4d;

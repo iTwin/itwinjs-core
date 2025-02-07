@@ -13,16 +13,15 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@itwin/core-common";
-import { RenderSystem } from "../render/RenderSystem";
-import { IModelApp } from "../IModelApp";
+import { RenderSystem } from "../../render/RenderSystem";
+import { IModelApp } from "../../IModelApp";
 import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
-} from "./internal";
+} from "../../tile/internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].
  * [[GraphicalEditingScope]].
- * @internal
  */
 export abstract class DynamicIModelTile extends Tile {
   protected constructor(params: TileParams, tree: TileTree) {

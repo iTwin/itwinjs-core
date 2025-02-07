@@ -8,10 +8,9 @@
 
 import { Map4d } from "@itwin/core-geometry";
 import { FrustumPlanes } from "@itwin/core-common";
-import { TileDrawArgs } from "./internal";
-import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
+import { TileDrawArgs } from "../../tile/internal";
+import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 
-/** @internal */
 export class RealityTileDrawArgs extends TileDrawArgs {
   private readonly _worldToViewMap: Map4d;
   public override get worldToViewMap(): Map4d { return this._worldToViewMap; }

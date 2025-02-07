@@ -6,21 +6,19 @@
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
-import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
 import { BentleyError, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
-import { RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
+import { RealityDataError, SpatialLocationAndExtents } from "../../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
 /**
  * This class provide methods used to interpret Orbit Point Cloud (OPC) format
- * @internal
  */
 export class OPCFormatInterpreter  {
   /** Gets an OPC file reader from a blobFileUrl
    * @param blobFileURL the name of the file.
    * @returns return a file reader open to read provided blob file
-   * @internal
    */
   public static async getFileReaderFromBlobFileURL(blobFileURL: string): Promise<PointCloudReader> {
     if (Downloader.INSTANCE == null)
@@ -43,7 +41,6 @@ export class OPCFormatInterpreter  {
    * @param fileReader a file reader instance obtains from call to getFileReaderFromBlobFileURL
    * @returns spatial location and volume of interest, in meters, centered around `spatial location`
    * @throws [[RealityDataError]] if source is invalid or cannot be read
-   * @internal
    */
   public static async getSpatialLocationAndExtents(fileReader: PointCloudReader): Promise<SpatialLocationAndExtents> {
     let worldRange = new Range3d();

@@ -12,17 +12,16 @@ import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
   IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps,
 } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { GraphicalEditingScope } from "../GraphicalEditingScope";
-import { RenderSystem } from "../render/RenderSystem";
-import { GraphicBranch } from "../render/GraphicBranch";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { GraphicalEditingScope } from "../../GraphicalEditingScope";
+import { RenderSystem } from "../../render/RenderSystem";
+import { GraphicBranch } from "../../render/GraphicBranch";
 import {
   acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
   TileRequestChannel, TileTree, TileTreeParams,
-} from "./internal";
+} from "../../tile/internal";
 
-/** @internal */
 export interface IModelTileTreeOptions {
   readonly allowInstancing: boolean;
   readonly edges: EdgeOptions | false;
@@ -35,7 +34,6 @@ export interface IModelTileTreeOptions {
 const viewFlagOverrides = {};
 
 /** Parameters used to construct an [[IModelTileTree]]
- * @internal
  */
 export interface IModelTileTreeParams extends TileTreeParams {
   rootTile: TileProps;
@@ -48,7 +46,6 @@ export interface IModelTileTreeParams extends TileTreeParams {
   transformNodeRanges?: Map<number, Range3d>;
 }
 
-/** @internal */
 export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
   const location = Transform.fromJSON(props.location);
   const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip, geometryGuid } = props;
@@ -172,7 +169,6 @@ const disposedState = new DisposedState();
 type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
 
 /** The root tile for an [[IModelTileTree]].
- * @internal
  */
 export type RootIModelTile = Tile & { tileScreenSize: number, updateDynamicRange: (childTile: Tile) => void };
 
@@ -336,7 +332,6 @@ class RootTile extends Tile {
 }
 
 /** A TileTree whose contents are derived from geometry stored in a Model in an IModelDb.
- * @internal
  */
 export class IModelTileTree extends TileTree {
   public readonly decoder: ImdlDecoder;

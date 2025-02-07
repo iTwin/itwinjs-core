@@ -10,7 +10,6 @@ import { RenderMode, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
 
 /** Create ViewFlagOverrides suitable for most non-iModel tile trees (reality/map tiles).
  * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.
- * @internal
  */
 export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean, thematic?: false }): ViewFlagOverrides {
   const noLights = undefined !== options.lighting ? !options.lighting : undefined;

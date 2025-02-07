@@ -7,13 +7,12 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "../IModelConnection";
-import { BatchTableProperties } from "./internal";
+import { IModelConnection } from "../../IModelConnection";
+import { BatchTableProperties } from "../../tile/internal";
 
 /**
  * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).
  * these properties may be present in batched tile sets.
- * @internal
  */
 export class BatchedTileIdMap implements BatchTableProperties {
   private readonly _iModel: IModelConnection;

@@ -15,21 +15,21 @@ import {
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
-import { DisplayStyleState } from "../DisplayStyleState";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { GeometricModel3dState, GeometricModelState } from "../ModelState";
-import { formatAnimationBranchId } from "../internal/render/AnimationBranchState";
-import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { SpatialViewState } from "../SpatialViewState";
-import { SceneContext } from "../ViewContext";
-import { AttachToViewportArgs, ViewState, ViewState3d } from "../ViewState";
+import { DisplayStyleState } from "../../DisplayStyleState";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { GeometricModel3dState, GeometricModelState } from "../../ModelState";
+import { formatAnimationBranchId } from "../../internal/render/AnimationBranchState";
+import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
+import { RenderClipVolume } from "../../render/RenderClipVolume";
+import { SpatialViewState } from "../../SpatialViewState";
+import { SceneContext } from "../../ViewContext";
+import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
-} from "./internal";
-import { _scheduleScriptReference } from "../common/internal/Symbols";
+} from "../../tile/internal";
+import { _scheduleScriptReference } from "../../common/internal/Symbols";
 
 interface PrimaryTreeId {
   treeId: PrimaryTileTreeId;
@@ -118,7 +118,6 @@ const primaryTreeSupplier = new PrimaryTreeSupplier();
 /** Find all extant tile trees associated with the specified model Ids and dispose of them.
  * This is used by BriefcaseConnection when a GraphicalEditingScope is exited or after a change to the models' geometry guids
  * is committed, undone, redone, or merged.
- * @internal
  */
 export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iModel: IModelConnection): void {
   const trees = iModel.tiles.getTreeOwnersForSupplier(primaryTreeSupplier);
@@ -271,7 +270,6 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 }
 
-/** @internal */
 export class AnimatedTreeReference extends PrimaryTreeReference {
   private readonly _branchId: string;
 
@@ -401,7 +399,6 @@ function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: 
   return new PrimaryTreeReference(view, model, false, undefined, sectionCut);
 }
 
-/** @internal */
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference {
   return createTreeRef(view, model, undefined);
 }
@@ -438,12 +435,10 @@ class MaskTreeReference extends TileTreeReference {
   }
 }
 
-/** @internal */
 export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
   return new MaskTreeReference(view, model);
 }
 
-/** @internal */
 export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   private _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
@@ -490,14 +485,12 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
     };
   }
 }
-/** @internal */
 export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined {
   const classifier = SpatialClassifier.fromModelMapLayer(layerSettings);
   return classifier ? new ModelMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
- * @internal
  */
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   /** Supplies an iterator over all of the [[TileTreeReference]]s. */
@@ -518,14 +511,12 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
  * not present in the optionally-supplied exclusion list.
- * @internal
  */
 export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences {
   return new SpatialRefs(view, excludedModels);
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
- * @internal
  */
 export namespace SpatialTileTreeReferences {
   /** Create a SpatialTileTreeReferences object reflecting the contents of the specified view. */
@@ -680,7 +671,6 @@ class SpatialRefs implements SpatialTileTreeReferences {
    * @param modelIds modelIds for which to get the TileTreeReferences
    * @param maskTreeRefs where to store the TileTreeReferences
    * @param maskRange range to extend for the maskRefs
-   * @internal
    */
   public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
     for (const modelId of modelIds) {
@@ -699,7 +689,6 @@ class SpatialRefs implements SpatialTileTreeReferences {
 
   /** For getting a list of modelIds which do not participate in masking, for planar classification.
    * For non-batched tile trees this is not needed, so just return undefined.
-   * @internal
    */
   public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): Id64String[] | undefined { return undefined; }
 

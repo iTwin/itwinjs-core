@@ -8,7 +8,6 @@ import { RealityDataFormat, RealityDataProvider } from "@itwin/core-common";
 
 /**
  * This class provide methods used to interpret url to Project Wise Context Share (RealityDataProvider.ContextShare)
- * @internal
  */
 export class ContextShareProvider {
   /** Return true if this is a supported url to this service provider */

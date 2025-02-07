@@ -8,14 +8,13 @@
 
 import type { ByteStream, Id64Set, Id64String } from "@itwin/core-bentley";
 import { BatchType } from "@itwin/core-common";
-import type { IModelConnection } from "../IModelConnection";
-import { RenderSystem } from "../render/RenderSystem";
-import type { ImdlTimeline } from "../common/imdl/ParseImdlDocument";
-import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "./internal";
-import { BatchOptions } from "../common/render/BatchOptions";
+import type { IModelConnection } from "../../IModelConnection";
+import { RenderSystem } from "../../render/RenderSystem";
+import type { ImdlTimeline } from "../../common/imdl/ParseImdlDocument";
+import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "../../tile/internal";
+import { BatchOptions } from "../../common/render/BatchOptions";
 
 /** Arguments supplied to [[ImdlDecoder.decode]].
- * @internal
  */
 export interface ImdlDecodeArgs {
   /** The encoded tile content. */
@@ -35,7 +34,6 @@ export interface ImdlDecodeArgs {
 /** An object that can decode graphics in iMdl format.
  * @note decoders are reference-counted. When you are finished using one, call [[release]].
  * @see [[acquireImdlDecoder]] to acquire a decoder.
- * @internal
  */
 export interface ImdlDecoder {
   decode(args: ImdlDecodeArgs): Promise<ImdlReaderResult>;
@@ -43,7 +41,6 @@ export interface ImdlDecoder {
 }
 
 /** Arguments supplied to [[acquireImdlDecoder]].
- * @internal
  */
 export interface AcquireImdlDecoderArgs {
   iModel: IModelConnection;
@@ -61,7 +58,6 @@ export interface AcquireImdlDecoderArgs {
  * The caller of this function increments the reference count of the decoder and is responsible
  * for decrementing it by calling [[ImdlDecoder.release]] when it is no longer needed. Typically, a decoder's lifetime is tied to the
  * lifetime of some `Disposable` object like a [[TileTree]] - acquired in the constructor, and released in the `[Symbol.dispose]` method.
- * @internal
  */
 export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder {
   const parser = acquireImdlParser(args);

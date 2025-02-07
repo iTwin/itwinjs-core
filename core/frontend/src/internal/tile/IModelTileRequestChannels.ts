@@ -8,10 +8,10 @@
 
 import { assert, compareStrings, SortedArray } from "@itwin/core-bentley";
 import { TileTreeContentIds } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { IpcApp } from "../IpcApp";
-import { IModelConnection } from "../IModelConnection";
-import { IModelTile, IModelTileContent, Tile, TileRequest, TileRequestChannel, TileTree } from "./internal";
+import { IModelApp } from "../../IModelApp";
+import { IpcApp } from "../../IpcApp";
+import { IModelConnection } from "../../IModelConnection";
+import { IModelTile, IModelTileContent, Tile, TileRequest, TileRequestChannel, TileTree } from "../../tile/internal";
 
 /** Handles requests to the cloud storage tile cache, if one is configured. If a tile's content is not found in the cache, subsequent requests for the same tile will
  * use the IModelTileChannel instead.
@@ -144,7 +144,6 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
 }
 
 /** TileRequestChannels used for requesting content for IModelTiles.
- * @internal
  */
 export class IModelTileRequestChannels {
   private _cloudStorage: TileRequestChannel;

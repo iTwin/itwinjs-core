@@ -7,11 +7,10 @@
  */
 
 import { ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
-import { TileUser } from "./internal";
+import { TileUser } from "../../tile/internal";
 
 /** An immutable set of [[TileUser]]s wherein uniqueness is determined by each TileUser's unique integer identifier.
  * @see [[UniqueTileUserSets]].
- * @internal
  */
 export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
   public constructor(user?: TileUser) {
@@ -112,7 +111,6 @@ class TileUserSetSet extends SortedArray<TileUserSet> {
  * Using UniqueTileUserSets ensures all tiles requested by the same user use the same TileUserSet object.
  * Additionally, whenever a user is unregistered there is no need to track down every associated tile request - the user can just be removed from the TileUserSets managed by this object.
  * The TileUserSets managed by this object should be treated as immutable - "adding" a user to an existing set should be done using [[getTileUserSet]].
- * @internal
  */
 export class UniqueTileUserSets {
   private readonly _sets = new TileUserSetSet();

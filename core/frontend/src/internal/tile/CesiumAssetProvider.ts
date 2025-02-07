@@ -5,7 +5,6 @@
 
 /**
  * This class provide methods used to interpret url to a cesiumIon asset (RealityDataProvider.CesiumIonAsset)
- * @internal
  */
 export class CesiumIonAssetProvider {
   public static osmBuildingId="OSMBuildings";

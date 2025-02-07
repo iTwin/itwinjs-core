@@ -15,22 +15,22 @@ import {
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
-import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
-import { DisplayStyleState } from "../DisplayStyleState";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { RealityDataSource } from "../RealityDataSource";
-import { RenderMemory } from "../render/RenderMemory";
-import { SceneContext } from "../ViewContext";
-import { ViewState } from "../ViewState";
+import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometry";
+import { DisplayStyleState } from "../../DisplayStyleState";
+import { HitDetail } from "../../HitDetail";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { PlanarClipMaskState } from "../../PlanarClipMaskState";
+import { RealityDataSource } from "../../RealityDataSource";
+import { RenderMemory } from "../../render/RenderMemory";
+import { SceneContext } from "../../ViewContext";
+import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
   getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
-} from "./internal";
-import { SpatialClassifiersState } from "../SpatialClassifiersState";
+} from "../../tile/internal";
+import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -120,7 +120,6 @@ class RealityTreeSupplier implements TileTreeSupplier {
 
 const realityTreeSupplier = new RealityTreeSupplier();
 
-/** @internal */
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
   return new RealityTreeReference(props);
 }
@@ -129,7 +128,6 @@ const zeroPoint = Point3d.createZero();
 const earthEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
 const scratchRay = Ray3d.createXAxis();
 
-/** @internal */
 export class RealityTileRegion {
   constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number }) {
     this.minLongitude = values.minLongitude;
@@ -187,7 +185,6 @@ export class RealityTileRegion {
   }
 }
 
-/** @internal */
 export class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
     if (undefined === boundingVolume)
@@ -236,14 +233,12 @@ export class RealityModelTileUtils {
   }
 }
 
-/** @internal */
 enum SMTextureType {
   None = 0, // no textures
   Embedded = 1, // textures are available and stored in the nodes
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
-/** @internal */
 class RealityModelTileTreeProps {
   public location: Transform;
   public tilesetJson: any;
@@ -290,7 +285,6 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
   }
 }
 
-/** @internal */
 class RealityModelTileProps implements RealityTileParams {
   public readonly contentId: string;
   public readonly range: Range3d;
@@ -346,12 +340,10 @@ class RealityModelTileProps implements RealityTileParams {
   }
 }
 
-/** @internal */
 class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
-/** @internal */
 function assembleUrl(prefix: string, url: string): string {
   if (url.startsWith("/")) {
     // Relative to base origin, not to parent tile
@@ -376,7 +368,6 @@ function assembleUrl(prefix: string, url: string): string {
   return prefix + url;
 }
 
-/** @internal */
 function addUrlPrefix(subTree: any, prefix: string) {
   if (undefined === subTree)
     return;
@@ -393,7 +384,6 @@ function addUrlPrefix(subTree: any, prefix: string) {
       addUrlPrefix(child, prefix);
 }
 
-/** @internal */
 async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<any> {
   const childUrl = getUrl(root.content);
   if (undefined === childUrl || "tileset" !== rdsource.getTileContentType(childUrl))
@@ -407,7 +397,6 @@ async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<an
   return subTree.root;
 }
 
-/** @internal */
 class RealityModelTileLoader extends RealityTileLoader {
   public readonly tree: RealityModelTileTreeProps;
   private readonly _batchedIdMap?: BatchedTileIdMap;
@@ -527,10 +516,8 @@ class RealityModelTileLoader extends RealityTileLoader {
   }
 }
 
-/** @internal */
 export type RealityModelSource = ViewState | DisplayStyleState;
 
-/** @internal */
 export class RealityModelTileTree extends RealityTileTree {
   private readonly _isContentUnbounded: boolean;
   public constructor(params: RealityTileTreeParams) {
@@ -541,7 +528,6 @@ export class RealityModelTileTree extends RealityTileTree {
   public override get isContentUnbounded() { return this._isContentUnbounded; }
 }
 
-/** @internal */
 export namespace RealityModelTileTree {
   export interface ReferenceBaseProps {
     iModel: IModelConnection;
@@ -766,7 +752,6 @@ export namespace RealityModelTileTree {
 }
 
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
- * @internal
  */
 export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;

@@ -17,22 +17,22 @@ import {
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@itwin/core-orbitgt";
-import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
-import { DisplayStyleState } from "../DisplayStyleState";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { RealityDataSource } from "../RealityDataSource";
-import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderMemory } from "../render/RenderMemory";
-import { RenderSystem } from "../render/RenderSystem";
-import { ViewingSpace } from "../ViewingSpace";
-import { Viewport } from "../Viewport";
+import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometry";
+import { DisplayStyleState } from "../../DisplayStyleState";
+import { HitDetail } from "../../HitDetail";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { RealityDataSource } from "../../RealityDataSource";
+import { Mesh } from "../../common/internal/render/MeshPrimitives";
+import { RenderGraphic } from "../../render/RenderGraphic";
+import { RenderMemory } from "../../render/RenderMemory";
+import { RenderSystem } from "../../render/RenderSystem";
+import { ViewingSpace } from "../../ViewingSpace";
+import { Viewport } from "../../Viewport";
 import {
   RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
   TileTreeParams, TileTreeSupplier, TileUsageMarker,
-} from "./internal";
+} from "../../tile/internal";
 
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
@@ -114,7 +114,6 @@ function rangeFromOrbitGt(ogtBounds: OrbitGtBounds, result?: Range3d) {
   return result;
 }
 
-/** @internal */
 export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference {
   return new OrbitGtTreeReference(props);
 }
@@ -222,7 +221,6 @@ class OrbitGtTileGraphic extends TileUsageMarker {
   }
 }
 
-/** @internal */
 export class OrbitGtTileTree extends TileTree {
   private _tileParams: TileParams;
   public rootTile: OrbitGtRootTile;
@@ -353,7 +351,6 @@ export class OrbitGtTileTree extends TileTree {
   }
 }
 
-/** @internal */
 export namespace OrbitGtTileTree {
   export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
     orbitGtBlob?: OrbitGtBlobProps;
@@ -486,7 +483,7 @@ export namespace OrbitGtTileTree {
 }
 
 /** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextOrbitGtState]].
- * @internal exported strictly for tests.
+ * Exported strictly for tests.
  */
 export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;

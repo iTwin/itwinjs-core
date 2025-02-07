@@ -9,17 +9,17 @@ import { compareNumbers, comparePossiblyUndefined, compareStrings, compareString
 import {
   BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
 } from "@itwin/core-common";
-import { DisplayStyleState } from "../DisplayStyleState";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { GeometricModelState } from "../ModelState";
-import { SceneContext } from "../ViewContext";
-import { ViewState } from "../ViewState";
-import { ActiveSpatialClassifier, SpatialClassifiersState } from "../SpatialClassifiersState";
+import { DisplayStyleState } from "../../DisplayStyleState";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { GeometricModelState } from "../../ModelState";
+import { SceneContext } from "../../ViewContext";
+import { ViewState } from "../../ViewState";
+import { ActiveSpatialClassifier, SpatialClassifiersState } from "../../SpatialClassifiersState";
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
-} from "./internal";
-import { _scheduleScriptReference } from "../common/internal/Symbols";
+} from "../../tile/internal";
+import { _scheduleScriptReference } from "../../common/internal/Symbols";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
@@ -85,7 +85,6 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
 
 const classifierTreeSupplier = new ClassifierTreeSupplier();
 
-/** @internal */
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get isPlanar(): boolean;
   public abstract get activeClassifier(): ActiveSpatialClassifier | undefined;
@@ -93,7 +92,6 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
   public get transparency(): number | undefined { return undefined; }
 }
 
-/** @internal */
 class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private _id: ClassifierTreeId;
   private readonly _classifiers: SpatialClassifiersState;
@@ -185,7 +183,6 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 
 }
 
-/** @internal */
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }

@@ -11,27 +11,26 @@ import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-ge
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, TextureMapping,
 } from "@itwin/core-common";
-import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
-import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
-import { ImdlModel as Imdl } from "../common/imdl/ImdlModel";
-import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../common/imdl/ImdlSchema";
-import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../common/imdl/ParseImdlDocument";
-import { VertexIndices } from "../common/internal/render/VertexIndices";
-import type { RenderGraphic } from "../render/RenderGraphic";
-import { GraphicBranch } from "../render/GraphicBranch";
-import type { RenderSystem } from "../render/RenderSystem";
-import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
-import type { IModelConnection } from "../IModelConnection";
-import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
-import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
-import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
-import { _implementationProhibited, _textures } from "../common/internal/Symbols";
-import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../internal/render/GraphicTemplateImpl";
-import { GraphicTemplate } from "../render/GraphicTemplate";
+import { AuxChannelTable } from "../../common/internal/render/AuxChannelTable";
+import { createSurfaceMaterial } from "../../common/internal/render/SurfaceParams";
+import { ImdlModel as Imdl } from "../../common/imdl/ImdlModel";
+import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../../common/imdl/ImdlSchema";
+import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../../common/imdl/ParseImdlDocument";
+import { VertexIndices } from "../../common/internal/render/VertexIndices";
+import type { RenderGraphic } from "../../render/RenderGraphic";
+import { GraphicBranch } from "../../render/GraphicBranch";
+import type { RenderSystem } from "../../render/RenderSystem";
+import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
+import type { IModelConnection } from "../../IModelConnection";
+import { GraphicDescription } from "../../common/render/GraphicDescriptionBuilder";
+import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
+import { _implementationProhibited, _textures } from "../../common/internal/Symbols";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
+import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../../internal/render/GraphicTemplateImpl";
+import { GraphicTemplate } from "../../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
- * @internal
  */
 export interface ImdlDecodeOptions {
   document: Imdl.Document;
@@ -398,7 +397,6 @@ function createPrimitivesNodeGraphics(node: Imdl.PrimitivesNode, options: Graphi
   return graphics;
 }
 
-/** @internal */
 export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<RenderGraphic | undefined> {
   const textures = await loadNamedTextures(options);
   if (options.isCanceled && options.isCanceled())
@@ -475,7 +473,6 @@ function remapGraphicDescription(descr: GraphicDescriptionImpl, context: Graphic
   }
 }
 
-/** @internal */
 export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate {
   if (!isGraphicDescription(descr)) {
     throw new Error("Invalid GraphicDescription");
@@ -525,7 +522,6 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
   });
 }
 
-/** @internal */
 export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined {
   const template = createGraphicTemplateFromDescription(descr, context, system);
   return system.createGraphicFromTemplate({ template });

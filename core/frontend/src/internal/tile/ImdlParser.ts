@@ -8,18 +8,17 @@
 
 import { assert, Dictionary } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import { createWorkerProxy, WorkerProxy } from "../common/WorkerProxy";
-import { ImdlModel } from "../common/imdl/ImdlModel";
-import { ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
-import { ParseImdlWorker } from "../workers/ImdlParser/Worker";
-import { IModelApp } from "../IModelApp";
+import { createWorkerProxy, WorkerProxy } from "../../common/WorkerProxy";
+import { ImdlModel } from "../../common/imdl/ImdlModel";
+import { ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common/imdl/ParseImdlDocument";
+import { ParseImdlWorker } from "../../workers/ImdlParser/Worker";
+import { IModelApp } from "../../IModelApp";
 
 /** An object that can parse binary iMdl content into an iMdl document on a worker thread.
  * Parsers are reference-counted. Their lifetimes are typically managed by an [[ImdlDecoder]].
  * The caller is responsible for invoking [[release]] to decrement the reference count when they are finished using the parsing.
  * @see [[acquireImdlDecoder]] to acquire a decoder that uses a parser internally.
  * @see [[acquireImdlParser]] to obtain a parser directly (but you probably don't need to do that).
- * @internal
  */
 export interface ImdlParser {
   parse(options: ImdlParserOptions): Promise<ImdlModel.Document | ImdlParseError>;
@@ -27,7 +26,6 @@ export interface ImdlParser {
 }
 
 /** Arguments supplied to [[acquireImdlParser]].
- * @internal
  */
 export interface AcquireImdlParserArgs {
   timeline?: ImdlTimeline;
@@ -36,7 +34,6 @@ export interface AcquireImdlParserArgs {
 
 type ParserProxy = WorkerProxy<ParseImdlWorker>;
 
-/** @internal */
 export function acquireImdlParser(args: AcquireImdlParserArgs): ImdlParser {
   const timeline = args.timeline;
   if (args.noWorker) {

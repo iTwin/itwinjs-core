@@ -11,22 +11,20 @@ import { Range3d } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
 } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { RenderSystem } from "../render/RenderSystem";
+import { IModelApp } from "../../IModelApp";
+import { GraphicBuilder } from "../../render/GraphicBuilder";
+import { RenderSystem } from "../../render/RenderSystem";
 import {
   addRangeGraphic, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
   TileRequestChannel, TileTreeLoadStatus, TileVisibility,
-} from "./internal";
+} from "./../../tile/internal";
 
 /** Parameters used to construct an [[IModelTile]].
- * @internal
  */
 export interface IModelTileParams extends TileParams {
   sizeMultiplier?: number;
 }
 
-/** @internal */
 export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams {
   const { contentId, maximumSize, isLeaf, sizeMultiplier } = props;
   const range = Range3d.fromJSON(props.range);
@@ -40,14 +38,12 @@ export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | 
 
 /**
  * Indicates whether a parent tile should be drawn in place of a child tile.
- * @internal
  */
 export enum SelectParent {
   No,
   Yes,
 }
 
-/** @internal */
 export interface IModelTileContent extends TileContent {
   /** If this tile was produced by refinement, the multiplier applied to its screen size. */
   sizeMultiplier?: number;
@@ -56,7 +52,6 @@ export interface IModelTileContent extends TileContent {
 }
 
 /** A tile belonging to an [[IModelTileTree].
- * @internal
  */
 export class IModelTile extends Tile {
   private _sizeMultiplier?: number;

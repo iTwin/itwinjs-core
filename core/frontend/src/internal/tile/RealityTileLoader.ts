@@ -9,15 +9,15 @@
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderSystem } from "../render/RenderSystem";
-import { ScreenViewport, Viewport } from "../Viewport";
-import { GltfWrapMode } from "../common/gltf/GltfSchema";
+import { IModelApp } from "../../IModelApp";
+import { GraphicBranch } from "../../render/GraphicBranch";
+import { RenderSystem } from "../../render/RenderSystem";
+import { ScreenViewport, Viewport } from "../../Viewport";
+import { GltfWrapMode } from "../../common/gltf/GltfSchema";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
   RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
-} from "./internal";
+} from "../../tile/internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 
@@ -25,7 +25,6 @@ const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();
 
 /** Serves as a "handler" for a specific type of [[TileTree]]. Its primary responsibilities involve loading tile content.
- * @internal
  */
 export abstract class RealityTileLoader {
   private _containsPointClouds = false;

@@ -8,11 +8,11 @@
 import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
-import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { RenderSystem } from "../render/RenderSystem";
-import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
+import { IModelConnection } from "../../IModelConnection";
+import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
+import { Mesh } from "../../common/internal/render/MeshPrimitives";
+import { RenderSystem } from "../../render/RenderSystem";
+import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "../../tile/internal";
 
 function setTransform(transforms: Float32Array, index: number, rotation: Matrix3d, origin: Point3d): void {
   const i = index * 12;
@@ -44,7 +44,6 @@ function setTransform(transforms: Float32Array, index: number, rotation: Matrix3
 
 /**
  * Deserializes a tile in [i3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Instanced3DModel) format.
- * @internal
  */
 export class I3dmReader extends GltfReader {
   private _instanceCount = 0;

@@ -7,13 +7,12 @@
  */
 
 import { assert, ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
-import { RenderMemory } from "../render/RenderMemory";
-import { Tile } from "./internal";
+import { RenderMemory } from "../../render/RenderMemory";
+import { Tile } from "../../tile/internal";
 
 /** Maintains in sorted order a set of [[TileUser]] Ids for which a given tile has been selected for display. The number of users in a set is expected to be very small - often only 1 for a typical application.
  * Strictly for use by LRUTileList.
  * @see TileUserIdSets.
- * @internal
  */
 export class TileUserIdSet extends ReadonlySortedArray<number> {
   public constructor(userId?: number) {
@@ -62,7 +61,6 @@ export class TileUserIdSet extends ReadonlySortedArray<number> {
 /** Maintains a set of TileUserIdSets such that each set represents a unique combination of TileUser ids and each set contains at least one TileUser id.
  * Exported strictly for tests.
  * @see LRUTileList.
- * @internal
  */
 export class TileUserIdSets extends SortedArray<TileUserIdSet> {
   private readonly _scratch = new TileUserIdSet();
@@ -150,7 +148,6 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
 
 /** A node in an LRUTileList. It is either a [[Tile]], or a sentinel node used to partition the list.
  * Strictly for use by LRUTileList.
- * @internal
  */
 export interface LRUTileListNode {
   previous?: LRUTileListNode;
@@ -203,7 +200,6 @@ function* lruListIterator(start: Tile | undefined, end: LRUTileListNode | undefi
  * When the system determines that GPU memory should be freed up, it can simply pop nodes off the beginning of the "not selected" partition, freeing their content, until the target memory usage is reached or no more non-selected nodes exist.
  *
  * Strictly for use by [[TileAdmin]].
- * @internal
  */
 export class LRUTileList {
   protected readonly _sentinel: LRUTileListNode;
