@@ -16,7 +16,7 @@ Do not add any new types to this file.
 All types here will be removed in 4.0
 */
 
-/** BackendReadable and BackendWritable are tagged public for depreciated public RPC APIs which reference these types. */
+/** BackendReadable and BackendWritable are tagged public for deprecated public RPC APIs which reference these types. */
 /** @public @deprecated in 3.x. This type was mistakenly made public in the common scope. */
 export type BackendReadable = Readable;
 
