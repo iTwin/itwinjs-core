@@ -741,6 +741,7 @@ describe("Viewport", () => {
         omitCanvasDecorations: true,
       };
 
+      expect(vp.rendersToScreen).to.be.true;
       const canvas = vp.readImageToCanvas(readImageOptions);
       const ctx = canvas.getContext("2d");
       const pixel = ctx!.getImageData(0, 0, 1, 1).data;
@@ -761,6 +762,7 @@ describe("Viewport", () => {
         omitCanvasDecorations: false,
       };
 
+      expect(vp.rendersToScreen).to.be.true;
       let canvas = vp.readImageToCanvas(readImageOptions);
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
@@ -794,12 +796,14 @@ describe("Viewport", () => {
         omitCanvasDecorations: true,
       };
 
+      expect(vp.rendersToScreen).to.be.false;
       let canvas = vp.readImageToCanvas(readImageOptions);
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
       let rgb = [pixel[0], pixel[1], pixel[2]];
       expect(rgb).toEqual([0,0,0]);
 
+      expect(vp2.rendersToScreen).to.be.false;
       canvas = vp2.readImageToCanvas(readImageOptions);
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
@@ -825,6 +829,7 @@ describe("Viewport", () => {
         omitCanvasDecorations: false,
       };
 
+      expect(vp.rendersToScreen).to.be.false;
       let canvas = vp.readImageToCanvas(readImageOptions);
       let ctx = canvas.getContext("2d");
       let pixel = ctx!.getImageData(0, 0, 1, 1).data;
@@ -835,6 +840,7 @@ describe("Viewport", () => {
         omitCanvasDecorations: undefined,
       };
 
+      expect(vp2.rendersToScreen).to.be.false;
       canvas = vp2.readImageToCanvas(readImageOptions);
       ctx = canvas.getContext("2d");
       pixel = ctx!.getImageData(0, 0, 1, 1).data;
