@@ -7,6 +7,7 @@ import { FeatureSymbolizedRenderer } from "../../../../tile/internal";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry renderer,
  * that will ultimately be called by an [[ArcGisFeatureReader]] implementation.
+ * @internal
  */
 export interface FeatureGeometryRenderer {
   transform: Transform | undefined;
@@ -16,6 +17,7 @@ export interface FeatureGeometryRenderer {
 }
 
 /** Internal implementation of [[FeatureGeometryRenderer]]
+ * @internal
  */
 export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRenderer {
   private _transform: Transform | undefined;

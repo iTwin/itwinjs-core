@@ -185,6 +185,7 @@ export class RealityTileRegion {
   }
 }
 
+/** @internal */
 export class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
     if (undefined === boundingVolume)

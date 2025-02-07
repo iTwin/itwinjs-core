@@ -491,6 +491,7 @@ export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLaye
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
+ * @internal
  */
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   /** Supplies an iterator over all of the [[TileTreeReference]]s. */
@@ -511,12 +512,14 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
  * not present in the optionally-supplied exclusion list.
+ * @internal
  */
 export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences {
   return new SpatialRefs(view, excludedModels);
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
+ * @internal
  */
 export namespace SpatialTileTreeReferences {
   /** Create a SpatialTileTreeReferences object reflecting the contents of the specified view. */

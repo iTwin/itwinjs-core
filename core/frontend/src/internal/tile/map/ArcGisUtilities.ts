@@ -14,6 +14,7 @@ import { headersIncludeAuthMethod } from "../../../request/utils";
 
 /**
  * Class representing an ArcGIS error code.
+ * @internal
  */
 export enum ArcGisErrorCode {
   InvalidCredentials = 401,
@@ -26,6 +27,7 @@ export enum ArcGisErrorCode {
 
 /**
  * Class representing an ArcGIS service metadata.
+ * @internal
  */
 export interface ArcGISServiceMetadata {
   /** JSON content from the service */
@@ -35,14 +37,14 @@ export interface ArcGISServiceMetadata {
   accessTokenRequired: boolean;
 }
 
-/** Arguments for validating ArcGIS sources
+/** Arguments for validating ArcGIS sources * @internal
  */
 export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
   /** List of capabilities 'keyword' that needs to be advertised in the service's metadata in order to be valid.  For example: 'Map', 'Query', etc*/
   capabilitiesFilter: string[];
 }
 
-/** Arguments for fetching service metadata
+/** Arguments for fetching service metadata * @internal
  */
 export interface ArcGisGetServiceJsonArgs  {
   url: string;
@@ -56,6 +58,7 @@ export interface ArcGisGetServiceJsonArgs  {
 
 /**
  * Class containing utilities relating to ArcGIS services and coordinate systems.
+ * @internal
  */
 export class ArcGisUtilities {
 

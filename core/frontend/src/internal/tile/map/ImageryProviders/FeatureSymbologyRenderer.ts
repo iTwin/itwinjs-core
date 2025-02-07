@@ -6,6 +6,7 @@
 import { FeatureAttributeDrivenSymbology } from "../../../../tile/internal";
 
 /** Renderer responsible of applying the feature symbology
+ * @internal
  */
 export interface FeatureSymbologyRenderer {
   isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
@@ -13,6 +14,7 @@ export interface FeatureSymbologyRenderer {
 }
 
 /** Enables symbology rendering on a Feature renderer
+ * @internal
  */
 export interface FeatureSymbolizedRenderer {
   symbolRenderer: FeatureSymbologyRenderer;

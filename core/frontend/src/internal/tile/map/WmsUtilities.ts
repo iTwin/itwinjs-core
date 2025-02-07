@@ -10,6 +10,7 @@ import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../reques
  * @module Tiles
  */
 
+/** @internal */
 export class WmsUtilities {
   public static getBaseUrl(url: string): string {
     const lastIndex = url.lastIndexOf("?");

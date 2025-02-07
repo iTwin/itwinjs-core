@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { deflateCoordinates, FeatureGeometryRenderer } from "../../../../tile/internal";
 
+/** @internal */
 export class ArcGisGeometryReaderJSON {
   private _ringsOrPaths: boolean;
   private _points: boolean;

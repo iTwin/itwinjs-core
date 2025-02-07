@@ -25,6 +25,7 @@ const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();
 
 /** Serves as a "handler" for a specific type of [[TileTree]]. Its primary responsibilities involve loading tile content.
+ * @internal
  */
 export abstract class RealityTileLoader {
   private _containsPointClouds = false;

@@ -1095,7 +1095,7 @@ export namespace AccuSnap {
     }
 }
 
-// @public
+// @internal
 export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder;
 
 // @public (undocumented)
@@ -1189,7 +1189,12 @@ export interface Animator {
     interrupt(): void;
 }
 
-// @public
+// @internal
+export function appendQueryParams(url: string, queryParams?: {
+    [key: string]: string;
+}): string;
+
+// @internal
 export enum ArcGisErrorCode {
     // (undocumented)
     InvalidCredentials = 401,
@@ -1205,7 +1210,34 @@ export enum ArcGisErrorCode {
     UnknownError = 1000
 }
 
-// @public
+// @internal (undocumented)
+export class ArcGisGeometryReaderJSON {
+    constructor(geometryType: string, renderer: FeatureGeometryRenderer, relativeCoords?: boolean);
+    // (undocumented)
+    readGeometry(geometry: any): Promise<void>;
+}
+
+// @internal
+export interface ArcGisGetServiceJsonArgs {
+    // (undocumented)
+    formatId: string;
+    // (undocumented)
+    ignoreCache?: boolean;
+    // (undocumented)
+    password?: string;
+    // (undocumented)
+    queryParams?: {
+        [key: string]: string;
+    };
+    // (undocumented)
+    requireToken?: boolean;
+    // (undocumented)
+    url: string;
+    // (undocumented)
+    userName?: string;
+}
+
+// @internal
 export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
     // (undocumented)
@@ -1222,13 +1254,13 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     get supportsMapFeatureInfo(): boolean;
 }
 
-// @public
+// @internal
 export interface ArcGISServiceMetadata {
     accessTokenRequired: boolean;
     content: any;
 }
 
-// @public
+// @internal
 export class ArcGisUtilities {
     // (undocumented)
     static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
@@ -1251,6 +1283,11 @@ export class ArcGisUtilities {
     static isEpsg3857Compatible(tileInfo: any): boolean;
     static validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation>;
     static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
+}
+
+// @internal
+export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
+    capabilitiesFilter: string[];
 }
 
 // @internal
@@ -2113,7 +2150,7 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
     source?: RenderMaterialSource;
 }
 
-// @public
+// @internal
 export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
 
 // @public
@@ -3089,7 +3126,34 @@ export interface FeatureAttributeDrivenSymbology {
     }) => void;
 }
 
-// @public
+// @internal
+export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRenderer {
+    constructor(world2PixelTransform?: Transform);
+    // (undocumented)
+    protected abstract beginPath(): void;
+    // (undocumented)
+    protected abstract closePath(): void;
+    // (undocumented)
+    protected abstract drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected abstract fill(): Promise<void>;
+    // (undocumented)
+    protected abstract finishPoints(): Promise<void>;
+    // (undocumented)
+    abstract hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
+    // (undocumented)
+    protected abstract lineTo(x: number, y: number): void;
+    // (undocumented)
+    protected abstract moveTo(x: number, y: number): void;
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    protected abstract stroke(): Promise<void>;
+    // (undocumented)
+    get transform(): Transform | undefined;
+}
+
+// @internal
 export interface FeatureGeometryRenderer {
     // (undocumented)
     hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
@@ -3101,7 +3165,7 @@ export interface FeatureGeometryRenderer {
     transform: Transform | undefined;
 }
 
-// @public
+// @internal
 export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer implements GraphicsGeometryRenderer {
     constructor(props: FeatureGraphicsRendererProps);
     // (undocumented)
@@ -3131,7 +3195,7 @@ export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-// @public
+// @internal
 export interface FeatureSymbolizedRenderer {
     // (undocumented)
     symbolRenderer: FeatureSymbologyRenderer;
@@ -3156,7 +3220,7 @@ export namespace FeatureSymbology {
     }
 }
 
-// @public
+// @internal
 export interface FeatureSymbologyRenderer {
     // (undocumented)
     activeGeometryType: string;
@@ -4218,7 +4282,7 @@ export interface GraphicPrimitive2d {
     zDepth: number;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
     // (undocumented)
     moveGraphics(): GraphicPrimitive[];
@@ -4598,7 +4662,7 @@ export class ImageryMapTileTree extends RealityTileTree {
     get viewFlagOverrides(): ViewFlagOverrides;
 }
 
-// @public
+// @internal
 export interface ImdlDecoder {
     // (undocumented)
     decode(args: ImdlDecodeArgs): Promise<ImdlReaderResult>;
@@ -5609,6 +5673,14 @@ export interface MapLayerIndex {
     isOverlay: boolean;
 }
 
+// @internal
+export interface MapLayerInfoFromTileTree {
+    index?: MapLayerIndex;
+    isBaseLayer: boolean;
+    provider?: MapLayerImageryProvider;
+    settings: MapLayerSettings;
+}
+
 // @public
 export interface MapLayerOptions {
     [format: string]: MapLayerKey | undefined;
@@ -5978,6 +6050,68 @@ export class MapTileTree extends RealityTileTree {
     tileFromQuadId(quadId: QuadId): MapTile | undefined;
     // @internal (undocumented)
     useDepthBuffer: boolean;
+}
+
+// @internal
+export class MapTileTreeReference extends TileTreeReference {
+    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
+    addToScene(context: SceneContext): void;
+    // (undocumented)
+    get baseColor(): ColorDef | undefined;
+    // (undocumented)
+    canSupplyToolTip(hit: HitDetail): boolean;
+    // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
+    clearLayers(): void;
+    // (undocumented)
+    createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
+    // (undocumented)
+    protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
+    // (undocumented)
+    discloseTileTrees(trees: DisclosedTileTreeSet): void;
+    // (undocumented)
+    forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void;
+    // (undocumented)
+    getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined;
+    // (undocumented)
+    getMapFeatureInfo(hit: HitDetail, options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined>;
+    getMapLayerScaleRangeVisibility(index: number): MapTileTreeScaleRangeVisibility;
+    // (undocumented)
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
+    // (undocumented)
+    protected getViewFlagOverrides(_tree: TileTree): Partial<Mutable<NonFunctionPropertiesOf<ViewFlags>>>;
+    // (undocumented)
+    imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference[];
+    // (undocumented)
+    initializeLayers(context: SceneContext): boolean;
+    // (undocumented)
+    get isGlobal(): boolean;
+    // (undocumented)
+    protected get _isLoadingComplete(): boolean;
+    // (undocumented)
+    isOverlay: boolean;
+    // (undocumented)
+    layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[];
+    // (undocumented)
+    get layerSettings(): MapLayerSettings[];
+    // (undocumented)
+    get planarClipMaskPriority(): number;
+    // (undocumented)
+    setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
+    // (undocumented)
+    setLayerSettings(layerSettings: MapLayerSettings[]): void;
+    // (undocumented)
+    get settings(): BackgroundMapSettings;
+    set settings(settings: BackgroundMapSettings);
+    // (undocumented)
+    get treeOwner(): TileTreeOwner;
+    unionFitRange(_range: Range3d): void;
+    // (undocumented)
+    get useDepthBuffer(): boolean;
 }
 
 // @beta
@@ -7674,7 +7808,7 @@ export interface RealityMeshParamsBuilderOptions {
     wantNormals?: boolean;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class RealityModelTileUtils {
     // (undocumented)
     static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number;
@@ -7798,7 +7932,7 @@ export interface RealityTileGeometry {
     polyfaces?: IndexedPolyface[];
 }
 
-// @public
+// @internal
 export abstract class RealityTileLoader {
     constructor(_produceGeometry?: boolean | undefined);
     // (undocumented)
@@ -9308,7 +9442,7 @@ export class SpatialModelState extends GeometricModel3dState {
     get isRealityModel(): boolean;
 }
 
-// @public
+// @internal
 export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
     [Symbol.iterator](): Iterator<TileTreeReference>;
     attachToViewport(args: AttachToViewportArgs): void;
@@ -9319,7 +9453,7 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
     update(): void;
 }
 
-// @public
+// @internal
 export namespace SpatialTileTreeReferences {
     export function create(view: SpatialViewState): SpatialTileTreeReferences;
 }
@@ -13277,6 +13411,18 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
     yFractionToLatitude(yFraction: number): number;
 }
 
+// @internal (undocumented)
+export interface WGS84Extent {
+    // (undocumented)
+    latitudeBottom: number;
+    // (undocumented)
+    latitudeTop: number;
+    // (undocumented)
+    longitudeLeft: number;
+    // (undocumented)
+    longitudeRight: number;
+}
+
 // @internal
 export class WheelEventProcessor {
     // (undocumented)
@@ -13315,7 +13461,7 @@ export class WindowAreaTool extends ViewTool {
     static toolId: string;
 }
 
-// @public
+// @internal (undocumented)
 export class WmsUtilities {
     static fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string>;
     // (undocumented)

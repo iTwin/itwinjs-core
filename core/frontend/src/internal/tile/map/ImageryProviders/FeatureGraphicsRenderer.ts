@@ -21,12 +21,14 @@ export interface FeatureGraphicsRendererProps {
   crs: "webMercator" | "wgs84";
 }
 
+/** @internal */
 export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
   moveGraphics(): GraphicPrimitive[];
 }
 
 /** Feature geometry renderer implementation that will "render" a list of [GraphicPrimitive]($frontend)
  * This renderer initial objective is to read geometries when a call to [[MapLayerImageryProvider.getFeatureInfo]] is performed.
+ * @internal
  */
 export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer implements GraphicsGeometryRenderer {
 
