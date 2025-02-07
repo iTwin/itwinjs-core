@@ -499,7 +499,7 @@ export class MapTile extends RealityTile {
   }
 
   /** @internal */
-  public clearLayers() {
+  public override clearLayers() {
     this.clearImageryTiles();
     this._graphic = undefined;
     if (this.children)
