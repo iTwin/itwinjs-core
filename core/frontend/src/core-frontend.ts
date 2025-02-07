@@ -112,10 +112,10 @@ export type {
 } from "./TxnEntityChanges";
 export {
   type TileTreeDiscloser, DisclosedTileTreeSet,
-  type ReadGltfGraphicsArgs, GltfGraphic, GltfTemplate, readGltfGraphics, readGltfTemplate, readGltf,
+  type ReadGltfGraphicsArgs, type GltfGraphic, type GltfTemplate, readGltfGraphics, readGltfTemplate, readGltf,
   readElementGraphics,
-  BatchTableProperties, RealityTileTree,
-  RealityTileGeometry, RealityTile,
+  type BatchTableProperties, RealityTileTree,
+  type RealityTileGeometry, RealityTile,
   type RenderGraphicTileTreeArgs,
   type GpuMemoryLimit, type GpuMemoryLimits, TileAdmin,
   type TileContent,
