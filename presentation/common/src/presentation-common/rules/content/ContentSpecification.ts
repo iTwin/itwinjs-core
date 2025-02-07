@@ -43,14 +43,6 @@ export interface ContentSpecificationBase extends ContentModifiersList {
    */
   priority?: number;
 
-  /**
-   * Should image IDs be calculated for the returned instances. When `true`, [[ImageIdOverride]] rules get applied when
-   * creating the content.
-   *
-   * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
-   */
-  showImages?: boolean;
-
   /** Specifications of [related instances]($docs/presentation/RelatedInstanceSpecification.md) that can be used when creating the content. */
   relatedInstances?: RelatedInstanceSpecification[];
 

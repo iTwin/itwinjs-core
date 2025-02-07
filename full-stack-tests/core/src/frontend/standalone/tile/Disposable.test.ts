@@ -10,7 +10,7 @@ import {
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";

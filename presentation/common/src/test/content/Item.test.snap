@@ -1,24 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Item constructor creates valid item with label 1`] = `
-Object {
-  "displayValues": Object {
-    "key": "Kina",
-  },
-  "imageId": "70c6cab5-86c7-4d22-b010-6c0cf48d9662",
-  "labelDefinition": Object {
-    "displayValue": "pink",
-    "rawValue": "pink",
-    "typeName": "string",
-  },
-  "mergedFieldNames": Array [],
-  "primaryKeys": Array [],
-  "values": Object {
-    "key": "models",
-  },
-}
-`;
-
 exports[`Item constructor creates valid item with label definition 1`] = `
 Object {
   "displayValue": "test display value",
@@ -38,15 +19,14 @@ Object {
 exports[`Item fromJSON creates valid Item from valid JSON 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x9c64000000847e",
-    "label": "Brand",
-    "name": "XSS",
+    "id": "0x129780000006fdb",
+    "label": "index synthesizing Checking Account",
+    "name": "indigo",
   },
   "displayValues": Object {
-    "key1": "Associate Savings Account",
-    "key2": "technologies",
+    "key1": "Fork orange",
+    "key2": "Technician capacitor",
   },
-  "imageId": "4c3cfc6d-ca16-4409-b743-4afabfe4b926",
   "labelDefinition": Object {
     "displayValue": "Rustic Soft Fish",
     "rawValue": "override",
@@ -57,8 +37,8 @@ Object {
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": 94837,
-    "key2": "mesh collaborative",
+    "key1": 38324,
+    "key2": "Kids",
   },
 }
 `;
@@ -66,15 +46,14 @@ Object {
 exports[`Item fromJSON creates valid Item from valid serialized JSON 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0xf3eb0000001909",
-    "label": "magnetic International",
-    "name": "Consultant",
+    "id": "0x133b90000017b16",
+    "label": "deposit Rustic port",
+    "name": "optimize",
   },
   "displayValues": Object {
-    "key1": "Mobility",
-    "key2": "payment Future Legacy",
+    "key1": "object-oriented Avon deposit",
+    "key2": "Toys Buckinghamshire Generic Frozen Bacon",
   },
-  "imageId": "fc61ba21-2b4d-4c31-9124-d4b70a2f087a",
   "labelDefinition": Object {
     "displayValue": "Strategist",
     "rawValue": "firewall",
@@ -85,8 +64,8 @@ Object {
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": 7721,
-    "key2": "Books whiteboard discrete",
+    "key1": 85626,
+    "key2": "Compatible Checking Account Gloves",
   },
 }
 `;
@@ -94,14 +73,13 @@ Object {
 exports[`Item fromJSON creates valid Item with nested content values 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x6e520000005776",
-    "label": "invoice Sleek",
-    "name": "bandwidth",
+    "id": "0x48ab0000006470",
+    "label": "Rustic",
+    "name": "cutting-edge",
   },
   "displayValues": Object {
-    "key1": null,
+    "key1": undefined,
   },
-  "imageId": "425d312e-81f7-4a06-a30a-1de9fba7ba14",
   "labelDefinition": Object {
     "displayValue": "bricks-and-clicks",
     "rawValue": "Mountains",
@@ -118,16 +96,16 @@ Object {
           "nested": "",
         },
         "mergedFieldNames": Array [
-          "override",
+          "Developer",
         ],
         "primaryKeys": Array [
           Object {
-            "className": "SAS",
-            "id": "0x110880000004de8",
+            "className": "Refined",
+            "id": "0xdd92000001659c",
           },
         ],
         "values": Object {
-          "nested": null,
+          "nested": undefined,
         },
       },
     ],
@@ -135,20 +113,19 @@ Object {
 }
 `;
 
-exports[`Item fromJSON creates valid Item with null values 1`] = `
+exports[`Item fromJSON creates valid Item with undefined values 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0xbd4c0000006e24",
-    "label": "Incredible Metal Chair",
-    "name": "deposit",
+    "id": "0x158860000009a00",
+    "label": "Algeria Markets",
+    "name": "one-to-one",
   },
   "displayValues": Object {
-    "key1": null,
+    "key1": undefined,
   },
-  "imageId": "26da4e9d-28ab-4e7b-8895-4da11390a707",
   "labelDefinition": Object {
-    "displayValue": "impactful",
-    "rawValue": "GB",
+    "displayValue": "Handcrafted",
+    "rawValue": "Analyst",
     "typeName": "string",
   },
   "mergedFieldNames": Array [
@@ -156,7 +133,7 @@ Object {
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": null,
+    "key1": undefined,
   },
 }
 `;
@@ -167,7 +144,6 @@ Array [
     "displayValues": Object {
       "a": "B",
     },
-    "imageId": "",
     "labelDefinition": Object {
       "displayValue": "test display value",
       "rawValue": "test raw value",
@@ -188,7 +164,6 @@ Array [
     "displayValues": Object {
       "c": "D",
     },
-    "imageId": "",
     "labelDefinition": Object {
       "displayValue": "test display value",
       "rawValue": "test raw value",
@@ -214,7 +189,6 @@ Array [
     "displayValues": Object {
       "a": "B",
     },
-    "imageId": "",
     "labelDefinition": Object {
       "displayValue": "test display value",
       "rawValue": "test raw value",
@@ -235,7 +209,6 @@ Array [
     "displayValues": Object {
       "c": "D",
     },
-    "imageId": "",
     "labelDefinition": Object {
       "displayValue": "test display value",
       "rawValue": "test raw value",
