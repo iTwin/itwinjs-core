@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, StopWatch } from "@itwin/core-bentley";
-import { GLTimerResultCallback } from "../../../render/RenderSystem";
+import { GLTimerResultCallback } from "../RenderSystemDebugControl";
 import { FrameBuffer } from "./FrameBuffer";
 import { System } from "./System";
 

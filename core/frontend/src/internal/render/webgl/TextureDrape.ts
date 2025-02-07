@@ -9,7 +9,7 @@ import { dispose } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
 import { SceneContext } from "../../../ViewContext";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { RenderTextureDrape } from "../../../render/RenderSystem";
+import { RenderTextureDrape } from "../RenderTextureDrape";
 import { WebGLDisposable } from "./Disposable";
 import { Target } from "./Target";
 import { Texture } from "./Texture";

@@ -19,7 +19,7 @@ import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
-import { formatAnimationBranchId } from "../render/GraphicBranch";
+import { formatAnimationBranchId } from "../internal/render/AnimationBranchState";
 import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { SpatialViewState } from "../SpatialViewState";

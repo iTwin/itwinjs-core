@@ -27,7 +27,8 @@ import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
 import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../internal/render/GraphicTemplateImpl";
+import { GraphicTemplate } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
