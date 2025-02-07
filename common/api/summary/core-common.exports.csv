@@ -31,9 +31,9 @@ internal;class;B3dmHeader
 internal;type;BackendBuffer
 deprecated;type;BackendBuffer
 public;class;BackendError
-internal;type;BackendReadable
+public;type;BackendReadable
 deprecated;type;BackendReadable
-internal;type;BackendWritable
+public;type;BackendWritable
 deprecated;type;BackendWritable
 public;enum;BackgroundFill
 public;interface;BackgroundMapProps

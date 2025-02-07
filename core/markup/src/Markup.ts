@@ -309,7 +309,7 @@ export class MarkupApp {
   /** @internal */
   protected static async readMarkup(): Promise<MarkupData> {
     const result = this.props.result;
-    let canvas = this.markup!.vp.readImageToCanvas();
+    let canvas = this.markup!.vp.readImageToCanvas({omitCanvasDecorations: false});
     let svg, image;
     try {
       svg = this.readMarkupSvg(); // read the current svg data for the markup

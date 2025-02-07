@@ -479,6 +479,7 @@ public;function;readGltfGraphics
 public;interface;ReadGltfGraphicsArgs
 beta;function;readGltfTemplate
 public;interface;ReadImageBufferArgs
+public;interface;ReadImageToCanvasOptions
 public;interface;ReadMeshArgs
 public;interface;ReadPixelsArgs
 alpha;class;RealityDataError
