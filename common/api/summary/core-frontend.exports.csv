@@ -27,6 +27,7 @@ internal;class;AccuDrawSuspendToggleTool
 beta;class;AccuDrawViewportUI
 public;class;AccuSnap
 public;namespace;AccuSnap
+public;function;acquireImdlDecoder
 public;enum;ACSDisplayOptions
 public;enum;ACSType
 alpha;type;ActivationEvent
@@ -37,6 +38,10 @@ internal;class;AlternateUnitLabelsRegistry
 beta;class;AngleDescription
 internal;enum;AnimationNodeId
 public;interface;Animator
+public;enum;ArcGisErrorCode
+public;class;ArcGISImageryProvider
+public;interface;ArcGISServiceMetadata
+public;class;ArcGisUtilities
 internal;function;areaToEyeHeight
 internal;function;areaToEyeHeightFromGcs
 public;type;AttachToViewportArgs
@@ -103,6 +108,7 @@ beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
+public;function;createSpatialTileTreeReferences
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
 beta;function;createWorkerProxy
@@ -119,6 +125,7 @@ public;interface;Decorator
 internal;class;DefaultViewTouchTool
 internal;class;DefineACSByElementTool
 internal;class;DefineACSByPointsTool
+internal;function;deflateCoordinates
 public;interface;DepthPointOptions
 public;enum;DepthPointSource
 public;interface;DepthRangeNpc
@@ -156,9 +163,14 @@ public;interface;ExtentLimits
 public;function;extractImageSourceDimensions
 internal;function;eyeToCartographicOnGlobe
 internal;function;eyeToCartographicOnGlobeFromGcs
+internal;interface;FeatureAttributeDrivenSymbology
+public;interface;FeatureGeometryRenderer
+public;class;FeatureGraphicsRenderer
 public;interface;FeatureOverrideProvider
+public;interface;FeatureSymbolizedRenderer
 public;namespace;FeatureSymbology
 alpha;interface;Source
+public;interface;FeatureSymbologyRenderer
 public;class;FitViewTool
 internal;class;Flags
 public;enum;FlashMode
@@ -208,6 +220,9 @@ public;class;GlobeAnimator
 internal;enum;GltfDataType
 public;interface;GltfGraphic
 internal;interface;GltfMeshPrimitive
+internal;class;GltfReader
+internal;interface;GltfReaderArgs
+internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
 public;type;GpuMemoryLimit
@@ -238,6 +253,7 @@ public;interface;GraphicPointString2d
 public;interface;GraphicPolyface
 public;type;GraphicPrimitive
 public;interface;GraphicPrimitive2d
+public;interface;GraphicsGeometryRenderer
 public;interface;GraphicShape
 public;interface;GraphicShape2d
 public;interface;GraphicSolidPrimitive
@@ -267,6 +283,8 @@ public;function;imageElementFromImageSource
 public;function;imageElementFromUrl
 beta;class;ImageryMapLayerFormat
 beta;class;ImageryMapLayerTreeReference
+internal;class;ImageryMapTileTree
+public;interface;ImdlDecoder
 public;class;IModelApp
 public;interface;IModelAppOptions
 public;class;IModelConnection
@@ -470,8 +488,10 @@ internal;function;fromGltfMesh
 alpha;function;toPolyface
 beta;class;RealityMeshParamsBuilder
 beta;interface;RealityMeshParamsBuilderOptions
+public;class;RealityModelTileUtils
 public;class;RealityTile
 public;interface;RealityTileGeometry
+public;class;RealityTileLoader
 public;class;RealityTileTree
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
@@ -545,6 +565,8 @@ public;class;SpatialClassifiersState
 alpha;interface;SpatialLocationAndExtents
 public;class;SpatialLocationModelState
 public;class;SpatialModelState
+public;interface;SpatialTileTreeReferences
+public;namespace;SpatialTileTreeReferences
 public;class;SpatialViewState
 public;class;Sprite
 public;class;SpriteLocation
@@ -706,6 +728,7 @@ alpha;class;WebMercatorProjection
 beta;class;WebMercatorTilingScheme
 internal;class;WheelEventProcessor
 public;class;WindowAreaTool
+public;class;WmsUtilities
 beta;interface;WorkerGraphicDescriptionContext
 beta;namespace;WorkerGraphicDescriptionContext
 beta;interface;WorkerGraphicDescriptionContextProps

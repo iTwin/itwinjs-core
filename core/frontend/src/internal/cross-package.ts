@@ -14,3 +14,37 @@ export { PerformanceMetrics } from "./render/webgl/PerformanceMetrics";
 export { type GLTimerResult, RenderDiagnostics, type RenderSystemDebugControl } from "./render/RenderSystemDebugControl";
 export { formatAnimationBranchId } from "./render/AnimationBranchState";
 export { PrimitiveVisibility, type RenderTargetDebugControl } from "./render/RenderTargetDebugControl";
+
+// Used by frontend-tiles, map-layers-formats, frontend-dev-tools
+export {
+ acquireImdlDecoder,
+ appendQueryParams,
+ ArcGisErrorCode,
+ ArcGisGeometryReaderJSON,
+ ArcGisGetServiceJsonArgs,
+ ArcGISImageryProvider,
+ ArcGISServiceMetadata,
+ ArcGisUtilities,
+ ArcGisValidateSourceArgs,
+ createSpatialTileTreeReferences,
+ deflateCoordinates,
+ FeatureAttributeDrivenSymbology,
+ FeatureGeometryBaseRenderer,
+ FeatureGeometryRenderer,
+ FeatureGraphicsRenderer,
+ FeatureSymbolizedRenderer,
+ FeatureSymbologyRenderer,
+ GltfReader,
+ GltfReaderArgs,
+ GltfReaderResult,
+ GraphicsGeometryRenderer,
+ ImageryMapTileTree,
+ ImdlDecoder,
+ MapLayerInfoFromTileTree,
+ MapTileTreeReference,
+ RealityModelTileUtils,
+ RealityTileLoader,
+ SpatialTileTreeReferences,
+ WGS84Extent,
+ WmsUtilities,
+} from "../tile/internal";

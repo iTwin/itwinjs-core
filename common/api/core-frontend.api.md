@@ -1095,6 +1095,9 @@ export namespace AccuSnap {
     }
 }
 
+// @public
+export function acquireImdlDecoder(args: AcquireImdlDecoderArgs): ImdlDecoder;
+
 // @public (undocumented)
 export enum ACSDisplayOptions {
     // (undocumented)
@@ -1184,6 +1187,70 @@ export enum AnimationNodeId {
 export interface Animator {
     animate(): boolean;
     interrupt(): void;
+}
+
+// @public
+export enum ArcGisErrorCode {
+    // (undocumented)
+    InvalidCredentials = 401,
+    // (undocumented)
+    InvalidToken = 498,
+    // (undocumented)
+    MissingPermissions = 403,
+    // (undocumented)
+    NoTokenService = 1001,
+    // (undocumented)
+    TokenRequired = 499,
+    // (undocumented)
+    UnknownError = 1000
+}
+
+// @public
+export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
+    constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean);
+    // (undocumented)
+    protected _accessClient: MapLayerAccessClient | undefined;
+    protected _accessTokenRequired: boolean;
+    protected fetch(url: URL, options?: RequestInit): Promise<Response>;
+    protected getServiceJson(): Promise<ArcGISServiceMetadata | undefined>;
+    // (undocumented)
+    protected _lastAccessToken: MapLayerAccessToken | undefined;
+    protected onStatusUpdated(status: MapLayerImageryProviderStatus): void;
+    // (undocumented)
+    protected _querySupported: boolean;
+    // (undocumented)
+    get supportsMapFeatureInfo(): boolean;
+}
+
+// @public
+export interface ArcGISServiceMetadata {
+    accessTokenRequired: boolean;
+    content: any;
+}
+
+// @public
+export class ArcGisUtilities {
+    // (undocumented)
+    static appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
+    static checkForResponseErrorCode(response: Response): Promise<number | undefined>;
+    static computeZoomLevelsScales(startZoom?: number, endZoom?: number, latitude?: number, tileSize?: number, screenDpi?: number): {
+        zoom: number;
+        resolution: number;
+        scale: number;
+    }[];
+    // (undocumented)
+    static getNationalMapSources(): Promise<MapLayerSource[]>;
+    // (undocumented)
+    static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
+    static getServiceJson(args: ArcGisGetServiceJsonArgs): Promise<ArcGISServiceMetadata | undefined>;
+    static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
+    static getZoomLevelsScales(defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number, tolerance?: number): {
+        minLod?: number;
+        maxLod?: number;
+    };
+    static isEpsg3857Compatible(tileInfo: any): boolean;
+    static validateSource(args: ArcGisValidateSourceArgs): Promise<MapLayerSourceValidation>;
+    static validateUrl(url: string, serviceType: string): MapLayerSourceStatus;
 }
 
 // @internal
@@ -2047,6 +2114,9 @@ export interface CreateRenderMaterialArgs extends MaterialParams {
 }
 
 // @public
+export function createSpatialTileTreeReferences(view: SpatialViewState, excludedModels?: Set<Id64String>): SpatialTileTreeReferences;
+
+// @public
 export interface CreateTextureArgs {
     image: TextureImage;
     ownership?: TextureOwnership;
@@ -2290,6 +2360,9 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     // (undocumented)
     static toolId: string;
 }
+
+// @internal
+export function deflateCoordinates(coordinates: number[][], flatCoordinates: number[], stride: number, offset: number): number;
 
 // @public
 export interface DepthPointOptions {
@@ -3006,9 +3079,62 @@ export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeigh
 // @internal
 export function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise<Cartographic | undefined>;
 
+// @internal (undocumented)
+export interface FeatureAttributeDrivenSymbology {
+    // (undocumented)
+    rendererFields?: string[];
+    // (undocumented)
+    setActiveFeatureAttributes: (attributes: {
+        [key: string]: any;
+    }) => void;
+}
+
+// @public
+export interface FeatureGeometryRenderer {
+    // (undocumented)
+    hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
+    // (undocumented)
+    renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean): Promise<void>;
+    // (undocumented)
+    transform: Transform | undefined;
+}
+
+// @public
+export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer implements GraphicsGeometryRenderer {
+    constructor(props: FeatureGraphicsRendererProps);
+    // (undocumented)
+    protected beginPath(): void;
+    // (undocumented)
+    protected closePath(): void;
+    // (undocumented)
+    protected drawPoint(x: number, y: number): void;
+    // (undocumented)
+    protected fill(): Promise<void>;
+    // (undocumented)
+    protected finishPoints(): Promise<void>;
+    // (undocumented)
+    hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
+    // (undocumented)
+    protected lineTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    moveGraphics(): GraphicPrimitive[];
+    // (undocumented)
+    protected moveTo(x: number, y: number): Promise<void>;
+    // (undocumented)
+    protected stroke(): Promise<void>;
+}
+
 // @public
 export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+}
+
+// @public
+export interface FeatureSymbolizedRenderer {
+    // (undocumented)
+    symbolRenderer: FeatureSymbologyRenderer;
 }
 
 // @public
@@ -3028,6 +3154,14 @@ export namespace FeatureSymbology {
     export interface Source {
         readonly onSourceDisposed: BeEvent<() => void>;
     }
+}
+
+// @public
+export interface FeatureSymbologyRenderer {
+    // (undocumented)
+    activeGeometryType: string;
+    // (undocumented)
+    isAttributeDriven(): this is FeatureAttributeDrivenSymbology;
 }
 
 // @public
@@ -3589,6 +3723,169 @@ export interface GltfMeshPrimitive extends GltfProperty {
     targets?: GltfStringMap<GltfId>;
 }
 
+// @internal
+export abstract class GltfReader {
+    protected constructor(args: GltfReaderArgs);
+    // (undocumented)
+    protected get _accessors(): GltfDictionary<GltfAccessor>;
+    // (undocumented)
+    protected readonly _baseUrl?: URL;
+    // (undocumented)
+    protected get _buffers(): GltfDictionary<GltfBuffer & {
+        resolvedBuffer?: Uint8Array;
+    }>;
+    // (undocumented)
+    protected get _bufferViews(): GltfDictionary<GltfBufferViewProps & {
+        resolvedBuffer?: Uint8Array;
+    }>;
+    // (undocumented)
+    protected _computedContentRange?: ElementAlignedBox3d;
+    // (undocumented)
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
+    // (undocumented)
+    protected readonly _deduplicateVertices: boolean;
+    defaultWrapMode: GltfWrapMode;
+    // (undocumented)
+    protected findTextureMapping(id: string | undefined, isTransparent: boolean, normalMapId: string | undefined): TextureMapping | undefined;
+    // (undocumented)
+    getBufferView(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferView | undefined;
+    getTextureType(sampler?: GltfSampler): RenderTexture.Type;
+    // (undocumented)
+    protected readonly _glTF: GltfDocument;
+    // (undocumented)
+    protected readonly _idMap?: BatchedTileIdMap;
+    // (undocumented)
+    protected get _images(): GltfDictionary<GltfImage & {
+        resolvedImage?: TextureImageSource;
+    }>;
+    // (undocumented)
+    protected readonly _iModel: IModelConnection;
+    // (undocumented)
+    protected _instanceElementIdToFeatureId: Map<string, number>;
+    // (undocumented)
+    protected _instanceFeatures: Feature[];
+    // (undocumented)
+    protected readonly _is3d: boolean;
+    // (undocumented)
+    protected get _isCanceled(): boolean;
+    // (undocumented)
+    protected get _isVolumeClassifier(): boolean;
+    // (undocumented)
+    protected get _materials(): GltfDictionary<GltfMaterial>;
+    // (undocumented)
+    protected _meshElementIdToFeatureIndex: Map<string, number>;
+    // (undocumented)
+    protected get _meshes(): GltfDictionary<GltfMesh>;
+    // (undocumented)
+    protected _meshFeatures: Feature[];
+    // (undocumented)
+    protected get _nodes(): GltfDictionary<GltfNode>;
+    abstract read(): Promise<GltfReaderResult>;
+    // (undocumented)
+    protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive): void;
+    // (undocumented)
+    protected readBufferData(json: {
+        [k: string]: any;
+    }, accessorName: string, type: GltfDataType): GltfBufferData | undefined;
+    // (undocumented)
+    readBufferData16(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
+    // (undocumented)
+    readBufferData32(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
+    // (undocumented)
+    readBufferData8(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
+    // (undocumented)
+    readBufferDataFloat(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
+    // (undocumented)
+    protected readColors(mesh: GltfMeshData, attribute: {
+        [k: string]: any;
+    }, accessorName: string): boolean;
+    // (undocumented)
+    protected readFeatureIndices(_json: any): number[] | undefined;
+    // (undocumented)
+    readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals?: boolean, needParams?: boolean): RealityTileGeometry;
+    // (undocumented)
+    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
+    // (undocumented)
+    protected readGltfAndCreateTemplate(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, noDispose: boolean, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfTemplateResult;
+    // (undocumented)
+    protected readIndices(json: {
+        [k: string]: any;
+    }, accessorName: string): number[] | undefined;
+    // (undocumented)
+    protected readMeshIndices(mesh: GltfMeshData, json: {
+        [k: string]: any;
+    }): boolean;
+    // (undocumented)
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
+    // (undocumented)
+    protected readNormals(mesh: GltfMeshData, json: {
+        [k: string]: any;
+    }, accessorName: string): boolean;
+    // (undocumented)
+    protected readPolylines(polylines: MeshPolylineList, json: {
+        [k: string]: any;
+    }, accessorName: string, disjoint: boolean): boolean;
+    // (undocumented)
+    protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined;
+    // (undocumented)
+    protected resolveResources(): Promise<void>;
+    // (undocumented)
+    protected readonly _returnToCenter?: Point3d;
+    // (undocumented)
+    protected get _samplers(): GltfDictionary<GltfSampler>;
+    // (undocumented)
+    protected readonly _sceneNodes: GltfId[];
+    // (undocumented)
+    protected _structuralMetadata?: StructuralMetadata;
+    // (undocumented)
+    protected readonly _system: RenderSystem;
+    // (undocumented)
+    protected get _textures(): GltfDictionary<GltfTexture>;
+    traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode>;
+    traverseScene(): Iterable<GltfNode>;
+    // (undocumented)
+    protected readonly _type: BatchType;
+    // (undocumented)
+    protected readonly _version: number;
+    // (undocumented)
+    protected readonly _vertexTableRequired: boolean;
+    // (undocumented)
+    protected get viewFlagOverrides(): ViewFlagOverrides | undefined;
+    // (undocumented)
+    protected readonly _yAxisUp: boolean;
+}
+
+// @internal
+export interface GltfReaderArgs {
+    deduplicateVertices?: boolean;
+    idMap?: BatchedTileIdMap;
+    iModel: IModelConnection;
+    is2d?: boolean;
+    props: GltfReaderProps;
+    shouldAbort?: ShouldAbortReadGltf;
+    system?: RenderSystem;
+    type?: BatchType;
+    vertexTableRequired?: boolean;
+}
+
+// @internal
+export interface GltfReaderResult extends TileContent {
+    // (undocumented)
+    range?: AxisAlignedBox3d;
+    // (undocumented)
+    readStatus: TileReadStatus;
+}
+
 // @beta
 export interface GltfTemplate {
     boundingBox: AxisAlignedBox3d;
@@ -3919,6 +4216,12 @@ export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | Graphic
 // @public
 export interface GraphicPrimitive2d {
     zDepth: number;
+}
+
+// @public (undocumented)
+export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
+    // (undocumented)
+    moveGraphics(): GraphicPrimitive[];
 }
 
 // @public
@@ -4266,6 +4569,41 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     // (undocumented)
     resetTreeOwner(): void;
     get treeOwner(): TileTreeOwner;
+}
+
+// @internal (undocumented)
+export class ImageryMapTileTree extends RealityTileTree {
+    constructor(params: RealityTileTreeParams, _imageryLoader: ImageryTileLoader);
+    // (undocumented)
+    addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
+    // (undocumented)
+    cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle;
+    // (undocumented)
+    draw(_args: TileDrawArgs): void;
+    // (undocumented)
+    getTileRectangle(quadId: QuadId): MapCartoRectangle;
+    // (undocumented)
+    get imageryLoader(): ImageryTileLoader;
+    // (undocumented)
+    get is3d(): boolean;
+    // (undocumented)
+    get isContentUnbounded(): boolean;
+    // (undocumented)
+    selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus;
+    // (undocumented)
+    protected _selectTiles(_args: TileDrawArgs): Tile[];
+    // (undocumented)
+    get tilingScheme(): MapTilingScheme;
+    // (undocumented)
+    get viewFlagOverrides(): ViewFlagOverrides;
+}
+
+// @public
+export interface ImdlDecoder {
+    // (undocumented)
+    decode(args: ImdlDecodeArgs): Promise<ImdlReaderResult>;
+    // (undocumented)
+    release(): void;
 }
 
 // @public
@@ -7336,6 +7674,20 @@ export interface RealityMeshParamsBuilderOptions {
     wantNormals?: boolean;
 }
 
+// @public (undocumented)
+export class RealityModelTileUtils {
+    // (undocumented)
+    static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number;
+    // (undocumented)
+    static rangeFromBoundingVolume(boundingVolume: any): {
+        range: Range3d;
+        corners?: Point3d[];
+        region?: RealityTileRegion;
+    } | undefined;
+    // (undocumented)
+    static transformFromJson(jTrans: number[] | undefined): Transform;
+}
+
 // @public
 export class RealityTile extends Tile {
     // @internal
@@ -7444,6 +7796,57 @@ export class RealityTile extends Tile {
 // @public
 export interface RealityTileGeometry {
     polyfaces?: IndexedPolyface[];
+}
+
+// @public
+export abstract class RealityTileLoader {
+    constructor(_produceGeometry?: boolean | undefined);
+    // (undocumented)
+    protected get _batchType(): BatchType;
+    // (undocumented)
+    static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
+    // (undocumented)
+    computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number;
+    // (undocumented)
+    get containsPointClouds(): boolean;
+    // (undocumented)
+    forceTileLoad(_tile: Tile): boolean;
+    // (undocumented)
+    getBatchIdMap(): BatchedTileIdMap | undefined;
+    // (undocumented)
+    abstract getRequestChannel(tile: Tile): TileRequestChannel;
+    // (undocumented)
+    get isContentUnbounded(): boolean;
+    // (undocumented)
+    abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
+    // (undocumented)
+    protected get _loadEdges(): boolean;
+    // (undocumented)
+    loadGeometryFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem): Promise<RealityTileContent>;
+    // (undocumented)
+    loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<RealityTileContent>;
+    // (undocumented)
+    abstract get maxDepth(): number;
+    // (undocumented)
+    get maximumScreenSpaceError(): number | undefined;
+    // (undocumented)
+    abstract get minDepth(): number;
+    // (undocumented)
+    get parentsAndChildrenExclusive(): boolean;
+    // (undocumented)
+    readonly preloadRealityParentDepth: number;
+    // (undocumented)
+    readonly preloadRealityParentSkip: number;
+    // (undocumented)
+    abstract get priority(): TileLoadPriority;
+    // (undocumented)
+    processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[];
+    // (undocumented)
+    abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
+    // (undocumented)
+    get viewFlagOverrides(): ViewFlagOverrides;
+    // (undocumented)
+    get wantDeduplicatedVertices(): boolean;
 }
 
 // @public
@@ -8903,6 +9306,22 @@ export class SpatialModelState extends GeometricModel3dState {
     // (undocumented)
     static get className(): string;
     get isRealityModel(): boolean;
+}
+
+// @public
+export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
+    [Symbol.iterator](): Iterator<TileTreeReference>;
+    attachToViewport(args: AttachToViewportArgs): void;
+    collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
+    detachFromViewport(): void;
+    getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
+    setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
+    update(): void;
+}
+
+// @public
+export namespace SpatialTileTreeReferences {
+    export function create(view: SpatialViewState): SpatialTileTreeReferences;
 }
 
 // @public
@@ -12894,6 +13313,13 @@ export class WindowAreaTool extends ViewTool {
     provideToolAssistance(): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @public
+export class WmsUtilities {
+    static fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string>;
+    // (undocumented)
+    static getBaseUrl(url: string): string;
 }
 
 // @beta
