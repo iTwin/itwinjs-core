@@ -158,7 +158,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 }
 
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
-describe.only("Disposal of System", () => {
+describe("Disposal of System", () => {
   beforeAll(async () => {
     await IModelApp.startup();
     imodel0 = createBlankConnection();
@@ -197,7 +197,7 @@ describe.only("Disposal of System", () => {
   });
 });
 
-describe.only("Disposal of WebGL Resources", () => {
+describe("Disposal of WebGL Resources", () => {
   beforeAll(async () => {
     await IModelApp.startup();
 
