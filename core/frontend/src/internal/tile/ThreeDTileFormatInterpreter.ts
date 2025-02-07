@@ -6,13 +6,12 @@
 import { JsonUtils, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
-import { PublisherProductInfo, RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
+import { PublisherProductInfo, RealityDataError, SpatialLocationAndExtents } from "../../RealityDataSource";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 /** This interface provides information about 3dTile files for this reality data
  * Currently only used for debbugging
- * @internal
  */
 export interface ThreeDTileFileInfo {
   /** the number of children at the root of this reality data */
@@ -20,14 +19,12 @@ export interface ThreeDTileFileInfo {
 }
 /**
  * This class provide methods used to interpret Cesium 3dTile format
- * @internal
  */
 export class ThreeDTileFormatInterpreter  {
   /** Gets reality data spatial location and extents
    * @param json root document file in json format
    * @returns spatial location and volume of interest, in meters, centered around `spatial location`
    * @throws [[RealityDataError]] if source is invalid or cannot be read
-   * @internal
    */
   public static getSpatialLocationAndExtents(json: any): SpatialLocationAndExtents {
     const worldRange = new Range3d();
@@ -118,7 +115,6 @@ export class ThreeDTileFormatInterpreter  {
    * Will return undefined if cannot be resolved
    * @param rootDocjson root document file in json format
    * @returns information to identify the product and engine that create this reality data
-   * @alpha
    */
   public static getPublisherProductInfo(rootDocjson: any): PublisherProductInfo {
     const info: PublisherProductInfo = {product: "", engine: "", version: ""};
@@ -135,7 +131,6 @@ export class ThreeDTileFormatInterpreter  {
    * Will return undefined if cannot be resolved
    * @param rootDocjson root document file in json format
    * @returns information about 3dTile file for this reality data
-   * @internal
    */
   public static getFileInfo(rootDocjson: any): ThreeDTileFileInfo {
     const info: ThreeDTileFileInfo = {
@@ -146,7 +141,6 @@ export class ThreeDTileFormatInterpreter  {
   /** Convert a boundingVolume into a range
    * @param boundingVolume the bounding volume to convert
    * @returns the range or undefined if cannot convert
-   * @internal
    */
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
     if (undefined === boundingVolume)
@@ -175,14 +169,12 @@ export class ThreeDTileFormatInterpreter  {
     return undefined;
   }
   /** Convert a boundingVolume into a range
-   * @internal
    */
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
     const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
   /** Convert a boundingVolume into a range
-   * @internal
    */
   public static transformFromJson(jTrans: number[] | undefined): Transform | undefined {
     return (jTrans === undefined) ? undefined : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));

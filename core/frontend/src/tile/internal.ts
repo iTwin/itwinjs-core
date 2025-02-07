@@ -105,7 +105,7 @@ export * from "./map/MapLayerSources";
 export * from "./map/MapTiledGraphicsProvider";
 export * from "../internal/tile/CesiumAssetProvider";
 export * from "../internal/tile/ContextShareProvider";
-export * from "./ThreeDTileFormatInterpreter";
+export * from "../internal/tile/ThreeDTileFormatInterpreter";
 export * from "../internal/tile/OPCFormatInterpreter";
 export * from "../internal/tile/FetchCloudStorage";
 export * from "../internal/tile/MeshoptCompression";
