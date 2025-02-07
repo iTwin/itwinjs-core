@@ -178,8 +178,8 @@ const createNodesRuleset = (): Ruleset => ({
           classes: {
             schemaName: "BisCore",
             classNames: ["Model"],
+            arePolymorphic: true,
           },
-          arePolymorphic: true,
         },
       ],
     },

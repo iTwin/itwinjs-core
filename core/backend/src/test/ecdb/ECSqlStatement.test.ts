@@ -1848,7 +1848,7 @@ describe("ECSqlStatement", () => {
         });
       });
 
-      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
         let idSet: Id64String[] = [];
         stmt.bindIdSet(1, idSet);
         let result = stmt.step();
@@ -1906,7 +1906,7 @@ describe("ECSqlStatement", () => {
         });
       });
 
-      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, ECVLib.IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
+      ecdb.withPreparedStatement("SELECT ECInstanceId, ECClassId, Name from ecdbf.ExternalFileInfo, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", (stmt: ECSqlStatement) => {
         let idSet: Id64String[] = [];
         stmt.bindIdSet(1, idSet);
         let result = stmt.step();
@@ -3127,8 +3127,8 @@ describe("ECSqlStatement", () => {
           <ECProperty propertyName="booleanProperty" typeName="boolean"/>
           <ECProperty propertyName="blobProperty" typeName="binary"/>
           <ECProperty propertyName="doubleProperty" typeName="double"/>
-          <ECProperty propertyName="customIdProperty" typeName="id"/>
-          <ECProperty propertyName="customIdSetProperty" typeName="idSet"/>
+          <ECProperty propertyName="customIdProperty" typeName="string"/>
+          <ECProperty propertyName="customIdSetProperty" typeName="string"/>
           <ECProperty propertyName="intProperty" typeName="int"/>
           <ECProperty propertyName="longProperty" typeName="long"/>
           <ECProperty propertyName="stringProperty" typeName="string"/>

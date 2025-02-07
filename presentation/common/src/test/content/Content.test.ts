@@ -27,7 +27,6 @@ describe("Content", () => {
         descriptor: {
           connectionId: "",
           contentFlags: 0,
-          contentOptions: 0,
           displayType: "",
           inputKeysHash: "",
           selectClasses: [],
@@ -40,7 +39,6 @@ describe("Content", () => {
             classInfo: createRandomECClassInfo(),
             primaryKeys: [createRandomECInstanceKey()],
             labelDefinition: createRandomLabelDefinition(),
-            imageId: faker.random.uuid(),
             mergedFieldNames: [],
             values: {
               test: faker.random.number(),

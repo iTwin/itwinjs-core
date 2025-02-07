@@ -13,6 +13,7 @@ import {
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -25,15 +26,19 @@ import {
   FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions,
   FormatsMap,
+  HierarchyLevel,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
   Item,
+  ItemJSON,
   Key,
   KeySet,
   LabelDefinition,
+  Node,
   NodeKey,
   NodePathElement,
+  NodePathFilteringData,
   Paged,
   PagedResponse,
   PresentationIpcEvents,
@@ -162,7 +167,9 @@ export class PresentationManagerDetail implements Disposable {
       ...strippedOptions,
       paths: instancePaths,
     };
-    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+    const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
+    paths.forEach(fixNodePathElementFromAddon);
+    return paths;
   }
 
   public async getFilteredNodePaths(
@@ -174,7 +181,9 @@ export class PresentationManagerDetail implements Disposable {
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
     };
-    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+    const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
+    paths.forEach(fixNodePathElementFromAddon);
+    return paths;
   }
 
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>): Promise<string> {
@@ -200,7 +209,7 @@ export class PresentationManagerDetail implements Disposable {
     const reviver = (key: string, value: any) => {
       return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
     };
-    return JSON.parse(await this.request(params), reviver);
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params), reviver));
   }
 
   public async getContentSetSize(
@@ -230,8 +239,9 @@ export class PresentationManagerDetail implements Disposable {
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    return JSON.parse(await this.request(params), Item.listReviver);
+    return JSON.parse(await this.request(params))
+      .map((json: ItemJSON) => Item.fromJSON(deepReplaceNullsToUndefined(json)))
+      .filter((item: Item | undefined): item is Item => !!item);
   }
 
   public async getContent(
@@ -246,7 +256,7 @@ export class PresentationManagerDetail implements Disposable {
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    return JSON.parse(await this.request(params), (key, value) => Content.reviver(key, value));
+    return Content.fromJSON(deepReplaceNullsToUndefined(JSON.parse(await this.request(params))));
   }
 
   public async getPagedDistinctValues(
@@ -262,16 +272,7 @@ export class PresentationManagerDetail implements Disposable {
       keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    const reviver = (key: string, value: any) => {
-      return key === ""
-        ? {
-            total: value.total,
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            items: value.items.map(DisplayValueGroup.fromJSON),
-          }
-        : value;
-    };
-    return JSON.parse(await this.request(params), reviver);
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
   }
 
   public async getDisplayLabelDefinition(
@@ -281,7 +282,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
     };
-    return JSON.parse(await this.request(params));
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
   }
 
   public async getDisplayLabelDefinitions(
@@ -613,3 +614,41 @@ export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
 /** @internal */
 // istanbul ignore next
 export function noopUpdatesHandler(_info: UpdateInfo | undefined) {}
+
+/** @internal */
+export function parseHierarchyLevelFromString(serializedHierarchyLevel: string): HierarchyLevel {
+  const hl: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
+  hl.nodes.forEach(fixNodeFromAddon);
+  return hl;
+}
+
+function fixNodePathElementFromAddon(npe: NodePathElement & { filteringData?: NodePathFilteringData | AddonNodePathFilteringData }): NodePathElement {
+  fixNodeFromAddon(npe.node);
+  npe.children.forEach(fixNodePathElementFromAddon);
+  // istanbul ignore next
+  if (npe.filteringData && isAddonNodePathFilteringData(npe.filteringData)) {
+    npe.filteringData = {
+      matchesCount: npe.filteringData.occurances,
+      childMatchesCount: npe.filteringData.childrenOccurances,
+    };
+  }
+  return npe;
+}
+interface AddonNodePathFilteringData {
+  childrenOccurances: number;
+  occurances: number;
+}
+function isAddonNodePathFilteringData(filteringData: NodePathFilteringData | AddonNodePathFilteringData): filteringData is AddonNodePathFilteringData {
+  return "occurances" in filteringData;
+}
+
+function fixNodeFromAddon(node: Node & { labelDefinition?: LabelDefinition }): Node {
+  // FIXME: this is a temporary workaround until the addon starts serializing node labels
+  // under the "label" property
+  // istanbul ignore next
+  if (node.labelDefinition) {
+    node.label = node.labelDefinition;
+    delete node.labelDefinition;
+  }
+  return node;
+}

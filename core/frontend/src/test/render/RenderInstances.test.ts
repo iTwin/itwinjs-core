@@ -9,7 +9,7 @@ import { Id64 } from "@itwin/core-bentley";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
-import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
+import { InstanceBuffers, InstanceBuffersData } from "../../internal/render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
 import { GraphicType } from "../../common";

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { GL } from "../../../render/webgl/GL";
-import { BufferHandle } from "../../../render/webgl/AttributeBuffers";
+import { GL } from "../../../internal/render/webgl/GL";
+import { BufferHandle } from "../../../internal/render/webgl/AttributeBuffers";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("BufferHandle", () => {

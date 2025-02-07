@@ -8,8 +8,8 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
-  ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
+  ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
   RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps,
@@ -466,10 +466,6 @@ export abstract class GeometricElement extends Element {
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
-  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
-   * @beta
-   */
-  public elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   /** The origin, orientation, and bounding box of this GeometricElement. */
   public abstract get placement(): Placement2d | Placement3d;
 
@@ -707,7 +703,10 @@ export abstract class InformationReferenceElement extends InformationContentElem
 export class Subject extends InformationReferenceElement {
   public static override get className(): string { return "Subject"; }
   public description?: string;
-  protected constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: SubjectProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description;
+  }
 
   public override toJSON(): SubjectProps { // This override only specializes the return type
     return super.toJSON() as SubjectProps; // Entity.toJSON takes care of auto-handled properties
@@ -880,7 +879,11 @@ export class SheetBorderTemplate extends Document {
   public static override get className(): string { return "SheetBorderTemplate"; }
   public height?: number;
   public width?: number;
-  protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.height = props.height;
+    this.width = props.width;
+  }
 }
 
 /** The template for a [[Sheet]]
@@ -892,7 +895,12 @@ export class SheetTemplate extends Document {
   public width?: number;
   public border?: Id64String;
 
-  protected constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: SheetTemplateProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.height = props.height;
+    this.width = props.width;
+    this.border = props.border;
+  }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
@@ -1053,7 +1061,10 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   public static override get className(): string { return "TypeDefinitionElement"; }
   public recipe?: RelatedElement;
 
-  protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.recipe = this.recipe;
+  }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
@@ -1252,7 +1263,10 @@ export abstract class InformationPartitionElement extends InformationContentElem
   /** A human-readable string describing the intent of the partition. */
   public description?: string;
 
-  protected constructor(props: InformationPartitionElementProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: InformationPartitionElementProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description;
+  }
 
   public override toJSON(): InformationPartitionElementProps { // This override only specializes the return type
     return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
@@ -1446,10 +1460,6 @@ export abstract class RoleElement extends Element {
 export class GeometryPart extends DefinitionElement {
   public static override get className(): string { return "GeometryPart"; }
   public geom?: GeometryStreamProps;
-  /** How to build the part's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
-   * @beta
-   */
-  public elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
   public bbox: ElementAlignedBox3d;
 
   protected constructor(props: GeometryPartProps, iModel: IModelDb) {
@@ -1483,9 +1493,13 @@ export class GeometryPart extends DefinitionElement {
 export class LineStyle extends DefinitionElement {
   public static override get className(): string { return "LineStyle"; }
   public description?: string;
-  public data!: string;
+  public data: string;
 
-  protected constructor(props: LineStyleProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: LineStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description;
+    this.data = props.data;
+  }
 
   /** Create a Code for a LineStyle definition given a name that is meant to be unique within the scope of the specified model.
    * @param iModel The IModel

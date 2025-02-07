@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { AttributeMap } from "../../../render/webgl/AttributeMap";
-import { TechniqueId } from "../../../render/webgl/TechniqueId";
+import { AttributeMap } from "../../../internal/render/webgl/AttributeMap";
+import { TechniqueId } from "../../../internal/render/webgl/TechniqueId";
 
 describe("AttributeMap tests", () => {
   it("should find default AttributeMap with and without instancing", () => {

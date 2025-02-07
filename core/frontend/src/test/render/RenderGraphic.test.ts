@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
-import { MockRender } from "../../render/MockRender";
+import { MockRender } from "../../internal/render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 
 function addIsDisposed(disposable: Disposable): void {

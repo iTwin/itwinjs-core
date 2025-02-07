@@ -42,8 +42,7 @@ describe("Hierarchies", () => {
             specifications: [
               {
                 specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-                classes: { schemaName: "BisCore", classNames: ["Model"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
                 groupByClass: true,
                 groupByLabel: false,
               },

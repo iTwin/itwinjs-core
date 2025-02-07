@@ -37,7 +37,6 @@ import {
   HierarchyCompareInfo,
   HierarchyCompareOptions,
   HierarchyLevelDescriptorRequestOptions,
-  HierarchyLevelJSON,
   HierarchyRequestOptions,
   InstanceKey,
   isComputeSelectionRequestOptions,
@@ -66,7 +65,7 @@ import {
 } from "@itwin/presentation-common";
 import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
+import { getRulesetIdObject, parseHierarchyLevelFromString, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
@@ -504,11 +503,9 @@ export class PresentationManager {
   public async getNodes(
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Node[]> {
-    const serializedNodesJson = await this._detail.getNodes(requestOptions);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
-    const nodes = Node.listFromJSON(nodesJson.nodes);
-    return this._localizationHelper.getLocalizedNodes(nodes);
+    const serializedHierarchyLevel = await this._detail.getNodes(requestOptions);
+    const hierarchyLevel = parseHierarchyLevelFromString(serializedHierarchyLevel);
+    return this._localizationHelper.getLocalizedNodes(hierarchyLevel.nodes);
   }
 
   /**
@@ -874,9 +871,6 @@ export class PresentationManager {
       currRulesetVariables: JSON.stringify(currRulesetVariables),
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const reviver = (key: string, value: any) => (key === "" ? HierarchyCompareInfo.fromJSON(value) : value);
-    return JSON.parse(await this._detail.request(params), reviver);
+    return JSON.parse(await this._detail.request(params));
   }
 }

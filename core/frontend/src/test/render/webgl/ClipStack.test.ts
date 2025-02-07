@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
-import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { ClipStack } from "../../../render/webgl/ClipStack";
+import { ClipVolume } from "../../../internal/render/webgl/ClipVolume";
+import { ClipStack } from "../../../internal/render/webgl/ClipStack";
 import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
 

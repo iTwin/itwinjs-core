@@ -5,7 +5,7 @@
 
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { MockRender } from "../../../render/MockRender";
+import { MockRender } from "../../../internal/render/MockRender";
 import { createBlankConnection } from "../../createBlankConnection";
 import { ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree";
 import { IModelConnection } from "../../../IModelConnection";

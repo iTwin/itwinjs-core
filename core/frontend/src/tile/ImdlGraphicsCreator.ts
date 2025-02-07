@@ -9,7 +9,7 @@
 import { assert, Id64, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
+  ColorDef, Gradient, ImageSource, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, TextureMapping,
 } from "@itwin/core-common";
 import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
 import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
@@ -27,7 +27,8 @@ import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal
 import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
 import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../internal/render/GraphicTemplateImpl";
+import { GraphicTemplate } from "../render/GraphicTemplate";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -78,8 +79,7 @@ async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, option
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
+    const params = new RenderTextureParams(cacheable ? name : undefined, textureType);
     return options.system.createTextureFromElement(name, options.iModel, params, namedTex.format);
   } catch {
     return undefined;
@@ -195,8 +195,7 @@ function getMaterial(mat: string | Imdl.SurfaceMaterialParams, options: Graphics
     return col ? ColorDef.from(col[0] * 255 + 0.5, col[1] * 255 + 0.5, col[2] * 255 + 0.5) : undefined;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const params = new RenderMaterial.Params(mat);
+  const params = new RenderMaterialParams(mat);
   params.diffuseColor = colorDefFromJson(json.diffuseColor);
   if (json.diffuse !== undefined)
     params.diffuse = JsonUtils.asDouble(json.diffuse);

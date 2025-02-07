@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
-import { MockRender } from "../render/MockRender";
+import { MockRender } from "../internal/render/MockRender";
 import { KeyinParseError, Tool } from "../tools/Tool";
 
 // these are later set by executing the TestImmediate tool.

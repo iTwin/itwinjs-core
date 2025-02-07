@@ -9,7 +9,7 @@
 import { Map4d } from "@itwin/core-geometry";
 import { FrustumPlanes } from "@itwin/core-common";
 import { TileDrawArgs } from "./internal";
-import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 
 /** @internal */
 export class RealityTileDrawArgs extends TileDrawArgs {

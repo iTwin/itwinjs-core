@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added SheetIndex classes to Class Registery",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

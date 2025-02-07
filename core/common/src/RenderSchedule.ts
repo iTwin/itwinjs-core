@@ -1209,8 +1209,7 @@ export namespace RenderSchedule {
   }
 
   /** A reference to a [[RenderSchedule.Script]], optionally identifying the source of the script.
-   * @see [DisplayStyle.loadScheduleScript]($backend) and [DisplayStyleState.scheduleScript]($frontend) to obtain the script reference for a display style on the frontend
-   * and backend respectively.
+   * @see [DisplayStyle.loadScheduleScript]($backend) to obtain the script reference for a display style.
    * @see [DisplayStyleState.scheduleScript]($frontend) or [DisplayStyleState.changeRenderTimeline]($frontend) to change a display style's script on the frontend.
    */
   export class ScriptReference {

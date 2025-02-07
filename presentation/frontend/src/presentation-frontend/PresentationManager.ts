@@ -417,8 +417,7 @@ export class PresentationManager implements Disposable {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
           total: result.total,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          items: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+          items: this._localizationHelper.getLocalizedNodes(result.items),
         };
       },
     });
@@ -482,8 +481,7 @@ export class PresentationManager implements Disposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /** Retrieves paths from root nodes to nodes containing filter text in their label. */
@@ -493,8 +491,7 @@ export class PresentationManager implements Disposable {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /**
@@ -668,8 +665,7 @@ export class PresentationManager implements Disposable {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
           total: response.total,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(DisplayValueGroup.fromJSON(x))),
+          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(x)),
         };
       },
     });

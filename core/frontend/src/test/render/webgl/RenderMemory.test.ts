@@ -11,7 +11,7 @@ import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
-import { Texture } from "../../../render/webgl/Texture";
+import { Texture } from "../../../internal/render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
 import { InstancedGraphicParams, MeshArgs } from "../../../core-frontend";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";

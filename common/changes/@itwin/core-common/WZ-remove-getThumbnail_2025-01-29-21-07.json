@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "removed getThumbnail api",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

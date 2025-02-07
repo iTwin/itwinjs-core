@@ -19,8 +19,11 @@ export const _branch = Symbol.for(sym("branch"));
 export const _callIpcChannel = Symbol.for(sym("callIpcChannel"));
 export const _featureTable = Symbol.for(sym("featureTable"));
 export const _nodes = Symbol.for(sym("nodes"));
+export const _onScheduleScriptReferenceChanged = Symbol.for(sym("onScheduleScriptReferenceChanged"));
 export const _requestSnap = Symbol.for(sym("requestSnap"));
 export const _renderSystem = Symbol.for(sym("renderSystem"));
+/** @internal */
+export const _scheduleScriptReference = Symbol.for(sym("scheduleScriptReference"));
 export const _textures = Symbol.for(sym("textures"));
 export const _transformCenter = Symbol.for(sym("transformCenter"));
 export const _transforms = Symbol.for(sym("transforms"));

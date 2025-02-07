@@ -7,8 +7,8 @@ import { afterAll, describe, expect, it } from "vitest";
 import { Capabilities } from "@itwin/webgl-compatibility";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
-import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
-import { System } from "../../../render/webgl/System";
+import { CompileStatus, ShaderProgram } from "../../../internal/render/webgl/ShaderProgram";
+import { System } from "../../../internal/render/webgl/System";
 import { EmptyLocalization } from "@itwin/core-common";
 
 class TestSystem extends System {

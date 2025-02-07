@@ -999,67 +999,6 @@ export class AccuDrawShortcuts {
     if (accudraw.isEnabled)
       accudraw.unlockAllFields();
   }
-
-  /** @internal Temporary keyboard shortcuts. */
-  public static async processShortcutKey(keyEvent: KeyboardEvent) {
-    switch (keyEvent.key.toLowerCase()) {
-      case "enter":
-        AccuDrawShortcuts.lockSmart();
-        return true;
-      case "x":
-        AccuDrawShortcuts.lockX();
-        return true;
-      case "y":
-        AccuDrawShortcuts.lockY();
-        return true;
-      case "z":
-        AccuDrawShortcuts.lockZ();
-        return true;
-      case "a":
-        AccuDrawShortcuts.lockAngle();
-        return true;
-      case "d":
-        AccuDrawShortcuts.lockDistance();
-        return true;
-      case "h":
-        AccuDrawShortcuts.suspendToggle();
-        return true;
-      case "l":
-        AccuDrawShortcuts.lockIndex();
-        return true;
-      case "m":
-        AccuDrawShortcuts.changeCompassMode();
-        return true;
-      case "t":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
-        return true;
-      case "f":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
-        return true;
-      case "s":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
-        return true;
-      case "v":
-        AccuDrawShortcuts.setStandardRotation(RotationMode.View);
-        return true;
-      case "o":
-        AccuDrawShortcuts.setOrigin();
-        return true;
-      case "c":
-        AccuDrawShortcuts.rotateCycle();
-        return true;
-      case "q":
-        return AccuDrawShortcuts.rotateAxes(true);
-      case "e":
-        return AccuDrawShortcuts.rotateToElement();
-      case "p":
-        return AccuDrawShortcuts.rotatePerpendicular();
-      case "r":
-        return AccuDrawShortcuts.defineACSByPoints();
-    }
-
-    return false;
-  }
 }
 
 /** @internal */

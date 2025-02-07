@@ -11,13 +11,11 @@ import { IModelRpcProps, RpcManager } from "@itwin/core-common";
 import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
-import { DisplayValueGroupJSON } from "./content/Value";
 import { ClientDiagnostics, ClientDiagnosticsAttribute, ClientDiagnosticsHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKey } from "./hierarchy/Key";
-import { NodeJSON } from "./hierarchy/Node";
-import { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import { Node } from "./hierarchy/Node";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinition } from "./LabelDefinition";
 import {
@@ -43,6 +41,8 @@ import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
 import { PagedResponse } from "./Utils";
+import { NodePathElement } from "./hierarchy/NodePathElement";
+import { DisplayValueGroup } from "./content/Value";
 
 /**
  * Default timeout for how long we're going to wait for RPC request to be fulfilled before throwing
@@ -139,7 +139,8 @@ export class RpcRequestsHandler {
       rpcOptions.diagnostics = diagnosticsOptions;
     }
     const doRequest = async () => func(imodel, rpcOptions, ...additionalOptions);
-    return this.requestWithTimeout(doRequest, diagnosticsHandler);
+    const result = await this.requestWithTimeout(doRequest, diagnosticsHandler);
+    return result;
   }
 
   public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number> {
@@ -149,10 +150,9 @@ export class RpcRequestsHandler {
 
   public async getPagedNodes(
     options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute,
+  ): Promise<PagedResponse<Node>> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<PagedResponse<NodeJSON>> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<PagedResponse<NodeJSON>, typeof options>(this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
+    return this.request<PagedResponse<Node>, typeof options>(this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
   }
 
   public async getNodesDescriptor(
@@ -168,18 +168,16 @@ export class RpcRequestsHandler {
 
   public async getNodePaths(
     options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<NodePathElementJSON[]> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<NodePathElementJSON[], typeof options>(this.rpcClient.getNodePaths.bind(this.rpcClient), options);
+    return this.request<NodePathElement[], typeof options>(this.rpcClient.getNodePaths.bind(this.rpcClient), options);
   }
 
   public async getFilteredNodePaths(
     options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<NodePathElementJSON[]> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<NodePathElementJSON[], typeof options>(this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options);
+    return this.request<NodePathElement[], typeof options>(this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options);
   }
 
   public async getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult> {
@@ -216,10 +214,9 @@ export class RpcRequestsHandler {
 
   public async getPagedDistinctValues(
     options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute,
+  ): Promise<PagedResponse<DisplayValueGroup>> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<PagedResponse<DisplayValueGroupJSON>> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<PagedResponse<DisplayValueGroupJSON>, typeof options>(this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
+    return this.request<PagedResponse<DisplayValueGroup>, typeof options>(this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
   public async getContentInstanceKeys(

@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { LinePixels } from "@itwin/core-common";
-import { LineCode } from "../../../render/webgl/LineCode";
+import { LineCode } from "../../../internal/render/webgl/LineCode";
 
 describe("LineCode", () => {
   it("valueFromLinePixels correctly converts a LinePixel into a LineCode", () => {

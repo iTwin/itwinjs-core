@@ -4,11 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { join } from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
-import { assert } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
@@ -37,9 +36,20 @@ describe("Presentation", () => {
     });
 
     it("can be safely shutdown via IModelHost shutdown listener", async () => {
-      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
-      Presentation.initialize();
-      await IModelHost.shutdown();
+      const onBeforeShutdown: (typeof IModelHost)["onBeforeShutdown"] = new BeEvent();
+      sinon.stub(IModelHost, "onBeforeShutdown").get(() => onBeforeShutdown);
+
+      Presentation.initialize({
+        clientManagerFactory: () =>
+          ({
+            setOnManagerUsedHandler: sinon.stub(),
+            [Symbol.dispose]: sinon.stub(),
+          }) as unknown as PresentationManager,
+      });
+      expect(onBeforeShutdown.numberOfListeners).to.eq(1);
+      expect(Presentation.getManager()).to.not.be.undefined;
+
+      onBeforeShutdown.raiseEvent();
       expect(() => Presentation.getManager()).to.throw(PresentationError);
     });
 

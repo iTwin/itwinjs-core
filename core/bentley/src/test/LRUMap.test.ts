@@ -179,12 +179,12 @@ describe("LRUMap", () => {
     c.set("a", 4);
     assert.equal(c.size, 1);
     assert.equal(c.newest, c.oldest);
-    assert.deepEqual(c.newest, { key: "a", value: 4 });
+    assert.deepEqual(c.newest, { key: "a", value: 4, newer: undefined, older: undefined });
 
     c.set("a", 5);
     assert.equal(c.size, 1);
     assert.equal(c.newest, c.oldest);
-    assert.deepEqual(c.newest, { key: "a", value: 5 });
+    assert.deepEqual(c.newest, { key: "a", value: 5, newer: undefined, older: undefined });
 
     c.set("b", 6);
     assert.equal(c.size, 2);

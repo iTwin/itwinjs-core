@@ -52,8 +52,7 @@ describe("ReadWrite", () => {
             specifications: [
               {
                 specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-                classes: { schemaName: "BisCore", classNames: ["Element"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
                 groupByClass: false,
               },
             ],

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix issue with concurrent query where it interrupt statement during prepare",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

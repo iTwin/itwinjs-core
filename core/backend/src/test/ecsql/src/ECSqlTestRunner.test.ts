@@ -190,7 +190,7 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
           if (expectedColInfo.type !== undefined)
             assert.strictEqual(ECSqlValueType[colInfo.getType()], expectedColInfo.type, `Expected type ${expectedColInfo.type} but got ${ECSqlValueType[colInfo.getType()]} for column index ${i}`);
           if (expectedColInfo.originPropertyName !== undefined)
-            assert.strictEqual(colInfo.getOriginPropertyName(), expectedColInfo.originPropertyName, `Expected extended type ${expectedColInfo.originPropertyName} but got ${colInfo.getOriginPropertyName()} for column index ${i}`);
+            assert.strictEqual(colInfo.getOriginPropertyName(), expectedColInfo.originPropertyName, `Expected Origin PropertyName ${expectedColInfo.originPropertyName} but got ${colInfo.getOriginPropertyName()} for column index ${i}`);
         }
       }
 

@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Item, ItemJSON } from "../../presentation-common/content/Item";
-import { NestedContentValueJSON } from "../../presentation-common/content/Value";
 import { createTestContentItem, createTestLabelDefinition } from "../_helpers";
 import { createTestECInstanceKey } from "../_helpers/EC";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
+import { NestedContentValue } from "../../presentation-common/content/Value";
 
 describe("Item", () => {
   describe("constructor", () => {
@@ -38,7 +38,6 @@ describe("Item", () => {
       testItemJSON = {
         primaryKeys: [],
         labelDefinition: createRandomLabelDefinition(),
-        imageId: faker.random.uuid(),
         classInfo: createRandomECClassInfo(),
         values: {
           key1: faker.random.number(),
@@ -83,28 +82,27 @@ describe("Item", () => {
       expect(item.extendedData).to.deep.eq({ x: 123 });
     });
 
-    it("creates valid Item with null values", () => {
+    it("creates valid Item with undefined values", () => {
       const item = Item.fromJSON({
         ...testItemJSON,
-        values: { key1: null },
-        displayValues: { key1: null },
+        values: { key1: undefined },
+        displayValues: { key1: undefined },
       });
       expect(item).to.matchSnapshot();
     });
 
     it("creates valid Item with nested content values", () => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const nestedContentValueJSON: NestedContentValueJSON = {
+      const nestedContentValue: NestedContentValue = {
         primaryKeys: [createRandomECInstanceKey()],
-        values: { nested: null },
+        values: { nested: undefined },
         displayValues: { nested: "" },
         mergedFieldNames: [faker.random.word()],
       };
       const item = Item.fromJSON({
         ...testItemJSON,
-        displayValues: { key1: null },
+        displayValues: { key1: undefined },
         values: {
-          key1: [nestedContentValueJSON],
+          key1: [nestedContentValue],
         },
       });
       expect(item).to.matchSnapshot();
@@ -113,24 +111,6 @@ describe("Item", () => {
     it("returns undefined for undefined JSON", () => {
       const item = Item.fromJSON(undefined);
       expect(item).to.be.undefined;
-    });
-  });
-
-  describe("listFromJSON", () => {
-    it("parses items from JSON", () => {
-      const items = [
-        createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
-        createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
-      ];
-      expect(Item.listFromJSON(items.map((i) => i.toJSON()))).to.matchSnapshot();
-    });
-
-    it("parses items from serialized JSON string", () => {
-      const items = [
-        createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
-        createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
-      ];
-      expect(Item.listFromJSON(JSON.stringify(items))).to.matchSnapshot();
     });
   });
 

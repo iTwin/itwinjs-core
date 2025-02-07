@@ -1,0 +1,21 @@
+{
+  "require": [
+    "global-jsdom/register",
+    "source-map-support/register",
+    "./lib/setup.js"
+  ],
+  "checkLeaks": true,
+  "timeout": 60000,
+  "spec": [
+    "lib/**/*.test.js"
+  ],
+  "globals": [
+    "requestAnimationFrame"
+  ],
+  "reporter": [
+    "node_modules/@itwin/build-tools/mocha-reporter"
+  ],
+  "reporterOptions": [
+    "mochaFile=lib/test/junit_results.xml"
+  ]
+}

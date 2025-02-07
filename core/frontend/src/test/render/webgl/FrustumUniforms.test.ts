@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { FrustumUniforms, FrustumUniformType } from "../../../render/webgl/FrustumUniforms";
+import { FrustumUniforms, FrustumUniformType } from "../../../internal/render/webgl/FrustumUniforms";
 
 class TestUniforms extends FrustumUniforms {
   public constructor() {

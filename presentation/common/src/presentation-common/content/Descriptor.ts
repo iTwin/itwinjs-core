@@ -9,7 +9,6 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
   ClassInfo,
-  ClassInfoJSON,
   CompressedClassInfoJSON,
   RelatedClassInfo,
   RelatedClassInfoJSON,
@@ -52,8 +51,7 @@ export interface SelectClassInfo {
  * Serialized [[SelectClassInfo]] JSON representation
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfo> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
   pathFromInputToSelectClass?: RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON>[];
@@ -143,12 +141,6 @@ export enum ContentFlags {
   /** Each content record only has [[InstanceKey]] and no data */
   KeysOnly = 1 << 0,
 
-  /**
-   * Each content record additionally has an image id
-   * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
-   */
-  ShowImages = 1 << 1,
-
   /** Each content record additionally has a display label */
   ShowLabels = 1 << 2,
 
@@ -205,8 +197,6 @@ export interface DescriptorJSON {
   classesMap: { [id: string]: CompressedClassInfoJSON };
   connectionId: string;
   inputKeysHash: string;
-  /** @deprecated in 3.x. The attribute is not used anymore. */
-  contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
   selectClasses: SelectClassInfoJSON<Id64String>[];
@@ -215,8 +205,6 @@ export interface DescriptorJSON {
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
-  /** @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]]. */
-  filterExpression?: string;
   fieldsFilterExpression?: string;
   instanceFilter?: InstanceFilterDefinition;
   ruleset?: Ruleset;
@@ -252,11 +240,6 @@ export interface DescriptorOverrides {
     direction: SortDirection;
   };
 
-  /**
-   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
-   */
-  filterExpression?: string;
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
    * select fields.
@@ -312,11 +295,6 @@ export interface DescriptorSource {
    */
   readonly ruleset?: Ruleset;
   /**
-   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
-   */
-  filterExpression?: string;
-  /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
    * select fields.
    *
@@ -351,11 +329,6 @@ export class Descriptor implements DescriptorSource {
   public readonly connectionId?: string;
   /** Hash of the input keys used to create the descriptor */
   public readonly inputKeysHash?: string;
-  /**
-   * Extended options used to create the descriptor.
-   * @deprecated in 3.6. The attribute is not used anymore.
-   */
-  public readonly contentOptions: any;
   /** Selection info used to create the descriptor */
   public readonly selectionInfo?: SelectionInfo;
   /** Display type used to create the descriptor */
@@ -377,11 +350,6 @@ export class Descriptor implements DescriptorSource {
   public sortingField?: Field;
   /** Sorting direction */
   public sortDirection?: SortDirection;
-  /**
-   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
-   */
-  public filterExpression?: string;
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
    * select fields.
@@ -417,8 +385,7 @@ export class Descriptor implements DescriptorSource {
     this.fields = [...source.fields];
     this.sortingField = source.sortingField;
     this.sortDirection = source.sortDirection;
-    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
-    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
+    this.fieldsFilterExpression = source.fieldsFilterExpression;
     this.instanceFilter = source.instanceFilter;
     this.ruleset = source.ruleset;
   }
@@ -437,12 +404,8 @@ export class Descriptor implements DescriptorSource {
       classesMap,
       connectionId: this.connectionId ?? "",
       inputKeysHash: this.inputKeysHash ?? "",
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      contentOptions: this.contentOptions,
       sortingFieldName: this.sortingField?.name,
       sortDirection: this.sortDirection,
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      filterExpression: this.filterExpression,
       fieldsFilterExpression: this.fieldsFilterExpression,
       instanceFilter: this.instanceFilter,
       selectionInfo: this.selectionInfo,
@@ -520,10 +483,8 @@ export class Descriptor implements DescriptorSource {
     if (this.contentFlags !== 0) {
       overrides.contentFlags = this.contentFlags;
     }
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    if (this.filterExpression || this.fieldsFilterExpression) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression;
+    if (this.fieldsFilterExpression) {
+      overrides.fieldsFilterExpression = this.fieldsFilterExpression;
     }
     if (this.instanceFilter) {
       overrides.instanceFilter = this.instanceFilter;

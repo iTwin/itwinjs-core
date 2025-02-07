@@ -17,10 +17,10 @@ import { MeshList } from "../../common/internal/render/MeshPrimitives";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import { assert } from "@itwin/core-bentley";
 import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols";
-import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch } from "../../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplateBatch } from "../../internal/render/GraphicTemplateImpl";
+import { GraphicTemplate } from "../../render/GraphicTemplate";
 import { RenderGeometry } from "./RenderGeometry";
 
-/** @internal */
 export class PrimitiveBuilder extends GraphicBuilder {
   public readonly [_implementationProhibited] = undefined;
   public readonly system: RenderSystem;

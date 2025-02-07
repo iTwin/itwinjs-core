@@ -69,16 +69,18 @@ export class Model extends Entity {
   public static override get className(): string { return "Model"; }
   /** @internal */
   public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
-  public readonly modeledElement!: RelatedElement;
+  public readonly modeledElement: RelatedElement;
   public readonly name: string;
-  public readonly parentModel!: Id64String;
+  public readonly parentModel?: Id64String;
   public readonly jsonProperties: { [key: string]: any };
   public isPrivate: boolean;
   public isTemplate: boolean;
 
   protected constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
+    this.modeledElement = new RelatedElement(props.modeledElement);
     this.name = props.name ? props.name : ""; // NB this isn't really a property of Model (it's the code.value of the modeled element), but it comes in ModelProps because it's often needed
+    this.parentModel = props.parentModel;
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
@@ -233,11 +235,14 @@ export class Model extends Entity {
  * @public
  */
 export class GeometricModel extends Model {
-  public geometryGuid?: GuidString; // Initialized by the Entity constructor
+  public geometryGuid?: GuidString;
 
   public static override get className(): string { return "GeometricModel"; }
 
-  protected constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: GeometricModelProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.geometryGuid = props.geometryGuid;
+  }
 
   /** Query for the union of the extents of the elements contained by this model.
    * @note This function blocks the JavaScript event loop. Consider using [[queryRange]] instead.
@@ -293,10 +298,13 @@ export abstract class GeometricModel3d extends GeometricModel {
  */
 export abstract class GeometricModel2d extends GeometricModel {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
-  public globalOrigin?: Point2d; // Initialized by the Entity constructor
+  public globalOrigin?: Point2d;
   public static override get className(): string { return "GeometricModel2d"; }
 
-  protected constructor(props: GeometricModel2dProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.globalOrigin = props.globalOrigin ? Point2d.fromJSON(props.globalOrigin) : undefined;
+  }
 
   public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;

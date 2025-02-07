@@ -143,28 +143,6 @@ export class ITwinLocalization implements Localization {
     return value;
   }
 
-  /** Similar to `getLocalizedString` but the default namespace is a separate parameter and the key does not need
-   * to include a namespace. If a key includes a namespace, that namespace will be used for interpolating that key.
-   * @param namespace - the namespace that identifies the particular localization file that contains the property.
-   * @param key - the key that matches a property in the JSON localization file.
-   * @returns The string corresponding to the first key that resolves.
-   * @throws Error if no keys resolve to a string.
-   * @internal
-   */
-  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
-    let fullKey: string | string[] = "";
-
-    if (typeof key === "string") {
-      fullKey = `${namespace}:${key}`;
-    } else {
-      fullKey = key.map((subKey: string) => {
-        return `${namespace}:${subKey}`;
-      });
-    }
-
-    return this.getLocalizedString(fullKey, options);
-  }
-
   /** Gets the English translation.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.

@@ -180,7 +180,6 @@ If the rules can't be defined in required order, the actual order may be adjuste
 | [`propertyName`](#attribute-propertyname)                                       | Yes       | `string`                            |         |
 | [`createGroupForSingleItem`](#attribute-creategroupforsingleitem)               | No        | `boolean`                           | `false` |
 | [`createGroupForUnspecifiedValues`](#attribute-creategroupforunspecifiedvalues) | No        | `boolean`                           | `true`  |
-| [`imageId`](#attribute-imageid)                                                 | No        | `string`                            | `""`    |
 | [`ranges`](#attribute-ranges)                                                   | No        | `PropertyRangeGroupSpecification[]` | `[]`    |
 
 #### Attribute: `propertyName`
@@ -227,7 +226,9 @@ Should a separate grouping node be created for nodes whose grouping value is not
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | ![Example of using "create group for unspecified values" attribute set to "false"](./media/hierarchy-grouping-with-creategroupforunspecifiedvalues-attribute.png) | ![Example of using "create group for unspecified values" attribute set to "true"](./media/hierarchy-grouping-with-creategroupforunspecifiedvalues-attribute-grouped.png) |
 
-#### Attribute: `imageId`
+#### Attribute: `imageId` (deprecated)
+
+> **Note:** This attribute is deprecated. Use [extended data](../customization/ExtendedDataUsage.md#customize-tree-node-item-icon) instead.
 
 Specifies grouping node's image ID. If set, the ID is assigned to [Node.imageId]($presentation-common) and it's up to the UI component
 to decide what to do with it.
@@ -256,12 +257,11 @@ Ranges into which the grouping values are divided. Instances are grouped by valu
 | **Is Required**   | No                                  |
 | **Default Value** | `[]`                                |
 
-| Name        | Required? | Type     | Default                                                             | Meaning                                                                 |
-| ----------- | --------- | -------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `fromValue` | Yes       | `string` |                                                                     | Value that defines the range start (inclusive)                          |
-| `toValue`   | Yes       | `string` |                                                                     | Value that defines the range end (inclusive)                            |
-| `imageId`   | No        | `string` | [`imageId` of the property group specification](#attribute-imageid) | Identifier of an image to use for the grouping node.                    |
-| `label`     | No        | `string` | `"{from value} - {to value}"`                                       | Grouping node's label. May be [localized](../advanced/Localization.md). |
+| Name        | Required? | Type     | Default                       | Meaning                                                                 |
+| ----------- | --------- | -------- | ----------------------------- | ----------------------------------------------------------------------- |
+| `fromValue` | Yes       | `string` |                               | Value that defines the range start (inclusive)                          |
+| `toValue`   | Yes       | `string` |                               | Value that defines the range end (inclusive)                            |
+| `label`     | No        | `string` | `"{from value} - {to value}"` | Grouping node's label. May be [localized](../advanced/Localization.md). |
 
 Range [`fromValue`, `toValue`] is inclusive on both sides. If a value falls into more than one range, the first listed range that contains the value is chosen.
 
@@ -270,38 +270,6 @@ Range [`fromValue`, `toValue`] is inclusive on both sides. If a value falls into
 ```
 
 ![Example of using "ranges" attribute](./media/hierarchy-grouping-with-ranges-attribute.png)
-
-#### Deprecated attribute: `groupingValue`
-
-Specifies whether instances should be grouped using property's display or raw value.
-
-> **Note:** Grouping by property value is required if the display label is overridden to display grouped instances count.
->
-> **Warning:** Grouping by label and sorting by property value is not possible.
-
-Display value should always be used for grouping. In cases when there's a need to show grouped instances count suffix, that
-can be achieved at the UI component layer by composing UI node's label from node's display label and [GroupingNodeKey.groupedInstancesCount]($presentation-common).
-
-|                   |                                     |
-| ----------------- | ----------------------------------- |
-| **Type**          | `"PropertyValue" \| "DisplayLabel"` |
-| **Is Required**   | No                                  |
-| **Default Value** | `"DisplayLabel"`                    |
-
-#### Deprecated attribute: `sortingValue`
-
-Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result is the same,
-unless a [label override rule](../customization/LabelOverride.md) is used to change node's display label.
-
-> **Note:** Sorting by property value only makes sense when instances are grouped by property value as well.
->
-> **Warning:** Grouping by label and sorting by property value is not possible.
-
-|                   |                                     |
-| ----------------- | ----------------------------------- |
-| **Type**          | `"PropertyValue" \| "DisplayLabel"` |
-| **Is Required**   | No                                  |
-| **Default Value** | `"DisplayLabel"`                    |
 
 ### Same label instance grouping
 

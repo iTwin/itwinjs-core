@@ -26,24 +26,19 @@ import {
   DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions,
   DisplayValueGroup,
-  DisplayValueGroupJSON,
   DistinctValuesRpcRequestOptions,
   ElementProperties,
   FilterByInstancePathsHierarchyRpcRequestOptions,
   FilterByTextHierarchyRpcRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
-  HierarchyLevelJSON,
   HierarchyRpcRequestOptions,
   isComputeSelectionRequestOptions,
   ItemJSON,
   KeySet,
   KeySetJSON,
   LabelDefinition,
-  NodeJSON,
-  NodeKey,
-  NodeKeyJSON,
+  Node,
   NodePathElement,
-  NodePathElementJSON,
   Paged,
   PagedResponse,
   PageOptions,
@@ -65,6 +60,7 @@ import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
+import { parseHierarchyLevelFromString } from "./PresentationManagerDetail";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJsonVersion = require("../../../package.json").version;
@@ -268,33 +264,21 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
 
   public override async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<number> {
     return this.makeRequest(token, "getNodesCount", requestOptions, async (options) => {
-      options = {
-        ...options,
-        parentKey: nodeKeyFromJson(options.parentKey),
-      };
       return this.getManager(requestOptions.clientId).getNodesCount(options);
     });
   }
 
-  public override async getPagedNodes(
-    token: IModelRpcProps,
-    requestOptions: Paged<HierarchyRpcRequestOptions>,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<PagedResponse<NodeJSON>> {
+  public override async getPagedNodes(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<Node>> {
     return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
-      options = enforceValidPageSize({
-        ...options,
-        parentKey: nodeKeyFromJson(options.parentKey),
-      });
-      const [serializedNodesJson, count] = await Promise.all([
+      options = enforceValidPageSize(options);
+      const [serializedHierarchyLevel, count] = await Promise.all([
         this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
+      const hierarchyLevel = parseHierarchyLevelFromString(serializedHierarchyLevel);
       return {
         total: count,
-        items: nodesJson.nodes,
+        items: hierarchyLevel.nodes,
       };
     });
   }
@@ -304,10 +288,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: HierarchyLevelDescriptorRpcRequestOptions,
   ): PresentationRpcResponse<string | DescriptorJSON | undefined> {
     return this.makeRequest(token, "getNodesDescriptor", requestOptions, async (options) => {
-      options = {
-        ...options,
-        parentKey: nodeKeyFromJson(options.parentKey),
-      };
       return this.getManager(requestOptions.clientId).getDetail().getNodesDescriptor(options);
     });
   }
@@ -315,24 +295,18 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
   public override async getNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<NodePathElementJSON[]> {
+  ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
-      const result = await this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return result.map(NodePathElement.toJSON);
+      return this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
     });
   }
 
   public override async getFilteredNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByTextHierarchyRpcRequestOptions,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<NodePathElementJSON[]> {
+  ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
-      const result = await this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return result.map(NodePathElement.toJSON);
+      return this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
     });
   }
 
@@ -453,19 +427,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
   public override async getPagedDistinctValues(
     token: IModelRpcProps,
     requestOptions: DistinctValuesRpcRequestOptions,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
+  ): PresentationRpcResponse<PagedResponse<DisplayValueGroup>> {
     return this.makeRequest(token, "getPagedDistinctValues", requestOptions, async (options) => {
       options = enforceValidPageSize({
         ...options,
         keys: KeySet.fromJSON(options.keys),
       });
-      const response = await this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
-      return {
-        ...response,
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        items: response.items.map(DisplayValueGroup.toJSON),
-      };
+      return this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
     });
   }
 
@@ -572,13 +540,4 @@ const enforceValidPageSize = <TOptions extends Paged<object>>(
 const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
   const requestedSize = size ?? 0;
   return requestedSize === 0 || requestedSize > maxPageSize ? maxPageSize : requestedSize;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
-  if (!json) {
-    return undefined;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return NodeKey.fromJSON(json);
 };
