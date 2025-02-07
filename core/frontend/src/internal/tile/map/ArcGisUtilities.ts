@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../internal";
-import { IModelApp } from "../../IModelApp";
-import { headersIncludeAuthMethod } from "../../request/utils";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../../../tile/internal";
+import { IModelApp } from "../../../IModelApp";
+import { headersIncludeAuthMethod } from "../../../request/utils";
 
 /** @packageDocumentation
  * @module Tiles
@@ -14,7 +14,6 @@ import { headersIncludeAuthMethod } from "../../request/utils";
 
 /**
  * Class representing an ArcGIS error code.
- * @internal
  */
 export enum ArcGisErrorCode {
   InvalidCredentials = 401,
@@ -27,7 +26,6 @@ export enum ArcGisErrorCode {
 
 /**
  * Class representing an ArcGIS service metadata.
- * @internal
  */
 export interface ArcGISServiceMetadata {
   /** JSON content from the service */
@@ -38,7 +36,6 @@ export interface ArcGISServiceMetadata {
 }
 
 /** Arguments for validating ArcGIS sources
- * @internal
  */
 export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
   /** List of capabilities 'keyword' that needs to be advertised in the service's metadata in order to be valid.  For example: 'Map', 'Query', etc*/
@@ -46,7 +43,6 @@ export interface ArcGisValidateSourceArgs extends ValidateSourceArgs {
 }
 
 /** Arguments for fetching service metadata
- * @internal
  */
 export interface ArcGisGetServiceJsonArgs  {
   url: string;
@@ -60,7 +56,6 @@ export interface ArcGisGetServiceJsonArgs  {
 
 /**
  * Class containing utilities relating to ArcGIS services and coordinate systems.
- * @internal
  */
 export class ArcGisUtilities {
 

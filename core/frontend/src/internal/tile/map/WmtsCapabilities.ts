@@ -7,8 +7,8 @@
  */
 
 import { Point2d, Range2d } from "@itwin/core-geometry";
-import { RequestBasicCredentials } from "../../request/Request";
-import { MapCartoRectangle, WmsUtilities } from "../internal";
+import { RequestBasicCredentials } from "../../../request/Request";
+import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
 
 enum OwsConstants {
   ABSTRACT_XMLTAG = "ows:Abstract",
@@ -60,8 +60,6 @@ enum XmlConstants {
   XLINK_HREF = "xlink:href",
 }
 
-/** @internal
-*/
 export enum WmtsConstants {
   GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178,
   GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
@@ -71,7 +69,6 @@ export enum WmtsConstants {
  * Utility function to extract an element' text content
  * @return An element's text content, default to provided defaultTest value if no text is available.
  * @param url server URL to address the request
- * @internal
  */
 const getElementTextContent = (elem: Element, qualifiedName: string, defaultText?: string) => {
 
@@ -84,7 +81,6 @@ const getElementTextContent = (elem: Element, qualifiedName: string, defaultText
 };
 
 /** Encapsulation of the capabilities for an WMTS server
- * @internal
  */
 export namespace WmtsCapability {
   export class ServiceIdentification {
@@ -497,7 +493,7 @@ export namespace WmtsCapability {
     }
   }
 }
-/** @internal */
+
 export class WmtsCapabilities {
   private static _capabilitiesCache = new Map<string, WmtsCapabilities | undefined>();
 

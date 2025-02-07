@@ -6,14 +6,13 @@
  * @module Tiles
  */
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
+import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../../../tile/internal";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
 const columnToken = "{column}";
 
 /**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png
-* @internal
 */
 export class TileUrlImageryProvider extends MapLayerImageryProvider {
   constructor(settings: ImageMapLayerSettings) {

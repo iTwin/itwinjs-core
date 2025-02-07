@@ -9,16 +9,15 @@
 import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { Range2d } from "@itwin/core-geometry";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { request } from "../../../request/Request";
-import { IModelApp } from "../../../IModelApp";
-import { ScreenViewport } from "../../../Viewport";
+import { request } from "../../../../request/Request";
+import { IModelApp } from "../../../../IModelApp";
+import { ScreenViewport } from "../../../../Viewport";
 import {
   MapLayerImageryProvider, MapTile, MapTilingScheme, QuadId,
   Tile, WebMercatorTilingScheme,
-} from "../../internal";
+} from "../../../../tile/internal";
 
 /** Represents one range of geography and tile zoom levels for a bing data provider
- * @internal
  */
 class Coverage {
   constructor(private _lowerLeftLatitude: number,
@@ -48,7 +47,6 @@ class Coverage {
 }
 
 /** Represents the copyright message and an array of coverage data for one of bing's data providers (HERE for example).
- * @internal
  */
 class BingAttribution {
   constructor(public copyrightMessage: string, private _coverages: Coverage[]) { }
@@ -69,7 +67,6 @@ function replaceHttpWithHttps(originalUrl: string) {
   return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
 }
 
-/** @internal */
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   private _urlTemplate?: string;
   private _urlSubdomains?: string[];

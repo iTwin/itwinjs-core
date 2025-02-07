@@ -11,20 +11,18 @@ import { Point2d } from "@itwin/core-geometry";
 import {
   ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,
   WmsCapability, WmsUtilities,
-} from "../../internal";
+} from "../../../../tile/internal";
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
 
 const scratchPoint2d = Point2d.createZero();
 
-/** @internal */
 export interface WmsCrsSupport {
   support3857: boolean;
   support4326: boolean;
 }
 
-/** @internal */
 export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _capabilities?: WmsCapabilities;
   private _allLayersRange?: MapCartoRectangle;

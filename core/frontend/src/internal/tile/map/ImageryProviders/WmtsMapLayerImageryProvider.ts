@@ -12,10 +12,10 @@ import {
   MapLayerImageryProviderStatus,
   QuadId,
   WmsUtilities, WmtsCapabilities, WmtsCapability, WmtsConstants,
-} from "../../internal";
+} from "../../../../tile/internal";
 
 interface TileMatrixSetAndLimits { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
-/** @internal */
+
 export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _baseUrl: string;
   private _capabilities?: WmtsCapabilities;

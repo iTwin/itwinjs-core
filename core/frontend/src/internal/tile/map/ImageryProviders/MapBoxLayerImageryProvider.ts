@@ -7,11 +7,10 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { MapLayerImageryProvider } from "../../internal";
+import { IModelApp } from "../../../../IModelApp";
+import { MapLayerImageryProvider } from "../../../../tile/internal";
 
 /** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
- * @internal
  */
 export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   private _zoomMin: number;

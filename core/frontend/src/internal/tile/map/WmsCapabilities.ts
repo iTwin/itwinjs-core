@@ -7,9 +7,9 @@
  */
 
 import { MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "../../request/Request";
+import { RequestBasicCredentials } from "../../../request/Request";
 import WMS from "wms-capabilities";
-import { MapCartoRectangle, WmsUtilities } from "../internal";
+import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
 
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
   return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
@@ -36,7 +36,6 @@ function initArray<T>(input: any): undefined | T[] {
 }
 
 /** Encapsulation of the capabilities for an WMS server
- * @internal
  */
 export namespace WmsCapability {
 
@@ -141,7 +140,6 @@ export namespace WmsCapability {
     }
   }
 
-  /** @internal */
   export class SubLayer {
     public readonly name: string;
     public readonly title: string;
@@ -180,7 +178,6 @@ export namespace WmsCapability {
   }
 }
 
-/** @internal */
 export class WmsCapabilities {
   private static _capabilitiesCache = new Map<string, WmsCapabilities | undefined>();
   public readonly service: WmsCapability.Service;

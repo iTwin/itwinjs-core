@@ -7,10 +7,9 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { MapLayerImageryProvider } from "../../internal";
+import { IModelApp } from "../../../../IModelApp";
+import { MapLayerImageryProvider } from "../../../../tile/internal";
 
-/** @internal */
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   constructor(settings: ImageMapLayerSettings) { super(settings, true); }
 

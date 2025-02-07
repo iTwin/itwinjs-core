@@ -7,16 +7,14 @@
  */
 
 import { assert, compareStrings, Dictionary, Logger } from "@itwin/core-bentley";
-import { QuadId } from "../internal";
+import { QuadId } from "../../../tile/internal";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 const loggerCategory = "ArcGISTileMap";
 
-/** @internal */
 export type FetchFunction = (url: URL, options?: RequestInit) => Promise<Response>;
 
 const nonVisibleChildren = [false, false, false, false];
 
-/** @internal */
 export class ArcGISTileMap {
 
   // For similar reasons as the corner offset, we need to keep the tile map size not too big to avoid covering multiple bundles.

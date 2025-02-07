@@ -7,17 +7,16 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../internal";
-import { IModelApp } from "../../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
-import { headersIncludeAuthMethod } from "../../../request/utils";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../../tile/internal";
+import { IModelApp } from "../../../../IModelApp";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
+import { headersIncludeAuthMethod } from "../../../../request/utils";
 
 /** Base class for ArcGIS map-layer imagery providers.
  *
  * The initial purpose of this class is to offer shared methods
  * to query ArcGIS services and apply the appropriate security token.
  * @see [[ArcGISMapLayerImageryProvider]]
- * @internal
  */
 export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
@@ -39,7 +38,6 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   }
 
   /** Updates the accessClient token state whenever the status of the provider change.
-   *  @internal
    * */
   protected override onStatusUpdated(status: MapLayerImageryProviderStatus) {
     if (status === MapLayerImageryProviderStatus.RequireAuth) {

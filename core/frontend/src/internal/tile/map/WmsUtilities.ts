@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { HttpResponseError, RequestBasicCredentials } from "../../request/Request";
-import { headersIncludeAuthMethod, setBasicAuthorization } from "../../request/utils";
+import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
+import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
 
 /** @packageDocumentation
  * @module Tiles
  */
 
-/** @internal */
 export class WmsUtilities {
   public static getBaseUrl(url: string): string {
     const lastIndex = url.lastIndexOf("?");
@@ -20,7 +19,6 @@ export class WmsUtilities {
   /**
  * fetch XML from HTTP request
  * @param url server URL to address the request
- * @internal
  */
   public static async fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
 

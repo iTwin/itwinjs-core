@@ -9,13 +9,12 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import { Polyface, Range1d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { RenderSystem } from "../../render/RenderSystem";
-import { MapCartoRectangle, MapTile, QuadId, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, Tile, TileLoadPriority, TileRequest } from "../internal";
+import { IModelConnection } from "../../../IModelConnection";
+import { IModelApp } from "../../../IModelApp";
+import { RenderSystem } from "../../../render/RenderSystem";
+import { MapCartoRectangle, MapTile, QuadId, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, Tile, TileLoadPriority, TileRequest } from "../../../tile/internal";
 
 /** Specialization of map tile loader that includes terrain geometry with map imagery draped on it.
- * @internal
  */
 export class MapTileLoader extends RealityTileLoader {
   public get priority(): TileLoadPriority { return TileLoadPriority.Terrain; }

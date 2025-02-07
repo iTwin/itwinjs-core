@@ -7,18 +7,17 @@
  */
 
 import { Cartographic } from "@itwin/core-common";
-import { MapCartoRectangle, MapTilingScheme } from "../internal";
+import { MapCartoRectangle, MapTilingScheme } from "../../../tile/internal";
 import { SortedArray } from "@itwin/core-bentley";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
-/** @internal */
+
 class RectangleWithLevel extends MapCartoRectangle {
   constructor(public level: number, west: number, south: number, east: number, north: number) {
     super(west, south, east, north);
   }
 }
 
-/** @internal */
 class QuadTreeNode {
   public swNode?: QuadTreeNode;
   public seNode?: QuadTreeNode;
@@ -55,7 +54,6 @@ class QuadTreeNode {
   }
 }
 
-/** @internal */
 function putRectangleInQuadtree(maxDepth: number, node: QuadTreeNode, rectangle: RectangleWithLevel) {
   while (node.level < maxDepth) {
     if (node.nw.extent.containsRange(rectangle)) {
@@ -74,7 +72,6 @@ function putRectangleInQuadtree(maxDepth: number, node: QuadTreeNode, rectangle:
   node.rectangles.insert(rectangle);
 }
 
-/** @internal */
 export class TileAvailability {
   private _rootNodes = new Array<QuadTreeNode>();
   constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) { }
