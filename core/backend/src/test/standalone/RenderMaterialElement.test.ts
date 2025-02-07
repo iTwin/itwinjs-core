@@ -97,6 +97,7 @@ describe("RenderMaterialElement", () => {
 
       const db = SnapshotDb.openFile(seedFileName);
       let id: Id64String;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       db.withStatement(`SELECT ECInstanceId from Bis.RenderMaterial`, (stmt) => {
         expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
         id = stmt.getRow().id;
