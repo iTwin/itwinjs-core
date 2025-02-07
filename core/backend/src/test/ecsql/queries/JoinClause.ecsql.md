@@ -152,7 +152,7 @@ FROM
 ```sql
 SELECT
   t0.ECInstanceId AS ParentId,
-  t0.ECClassId AS ParentClassId,
+  ec_classname (t0.ECClassId) AS ParentClassName,
   t1.ECInstanceId AS ChildId,
   t1.ECClassId AS ChildClassId
 FROM
@@ -160,19 +160,19 @@ FROM
   JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] FORWARD;
 ```
 
-| className | accessString  | generated | index | jsonName      | name          | extendedType | typeName | type | originPropertyName |
-| --------- | ------------- | --------- | ----- | ------------- | ------------- | ------------ | -------- | ---- | ------------------ |
-|           | ParentId      | true      | 0     | parentId      | ParentId      | Id           | long     | Id   | ECInstanceId       |
-|           | ParentClassId | true      | 1     | parentClassId | ParentClassId | ClassId      | long     | Id   | ECClassId          |
-|           | ChildId       | true      | 2     | childId       | ChildId       | Id           | long     | Id   | ECInstanceId       |
-|           | ChildClassId  | true      | 3     | childClassId  | ChildClassId  | ClassId      | long     | Id   | ECClassId          |
+| className | accessString    | generated | index | jsonName        | name            | extendedType | typeName | type   | originPropertyName |
+| --------- | --------------- | --------- | ----- | --------------- | --------------- | ------------ | -------- | ------ | ------------------ |
+|           | ParentId        | true      | 0     | parentId        | ParentId        | Id           | long     | Id     | ECInstanceId       |
+|           | ParentClassName | true      | 1     | parentClassName | ParentClassName | undefined    | string   | String | undefined          |
+|           | ChildId         | true      | 2     | childId         | ChildId         | Id           | long     | Id     | ECInstanceId       |
+|           | ChildClassId    | true      | 3     | childClassId    | ChildClassId    | ClassId      | long     | Id     | ECClassId          |
 
-| ParentId | ParentClassId | ChildId | ChildClassId |
-| -------- | ------------- | ------- | ------------ |
-| 0x12     | 0xc5          | 0x13    | 0x89         |
-| 0x1      | 0x126         | 0xe     | 0xdd         |
-| 0x1      | 0x126         | 0x10    | 0x98         |
-| 0x1      | 0x126         | 0x11    | 0xf0         |
+| ParentId | ParentClassName         | ChildId | ChildClassId |
+| -------- | ----------------------- | ------- | ------------ |
+| 0x12     | BisCore:SpatialCategory | 0x13    | 0x89         |
+| 0x1      | BisCore:Subject         | 0xe     | 0xe6         |
+| 0x1      | BisCore:Subject         | 0x10    | 0x9a         |
+| 0x1      | BisCore:Subject         | 0x11    | 0xf9         |
 
 # JOIN USING - BACKWARD
 
@@ -181,7 +181,7 @@ FROM
 ```sql
 SELECT
   t0.ECInstanceId AS ParentId,
-  t0.ECClassId AS ParentClassId,
+  ec_classname (t0.ECClassId) AS ParentClassName,
   t1.ECInstanceId AS ChildId,
   t1.ECClassId AS ChildClassId
 FROM
@@ -189,19 +189,19 @@ FROM
   JOIN [BisCore].[Element] t1 USING [BisCore].[ElementOwnsChildElements] BACKWARD;
 ```
 
-| className | accessString  | generated | index | jsonName      | name          | extendedType | typeName | type | originPropertyName |
-| --------- | ------------- | --------- | ----- | ------------- | ------------- | ------------ | -------- | ---- | ------------------ |
-|           | ParentId      | true      | 0     | parentId      | ParentId      | Id           | long     | Id   | ECInstanceId       |
-|           | ParentClassId | true      | 1     | parentClassId | ParentClassId | ClassId      | long     | Id   | ECClassId          |
-|           | ChildId       | true      | 2     | childId       | ChildId       | Id           | long     | Id   | ECInstanceId       |
-|           | ChildClassId  | true      | 3     | childClassId  | ChildClassId  | ClassId      | long     | Id   | ECClassId          |
+| className | accessString    | generated | index | jsonName        | name            | extendedType | typeName | type   | originPropertyName |
+| --------- | --------------- | --------- | ----- | --------------- | --------------- | ------------ | -------- | ------ | ------------------ |
+|           | ParentId        | true      | 0     | parentId        | ParentId        | Id           | long     | Id     | ECInstanceId       |
+|           | ParentClassName | true      | 1     | parentClassName | ParentClassName | undefined    | string   | String | undefined          |
+|           | ChildId         | true      | 2     | childId         | ChildId         | Id           | long     | Id     | ECInstanceId       |
+|           | ChildClassId    | true      | 3     | childClassId    | ChildClassId    | ClassId      | long     | Id     | ECClassId          |
 
-| ParentId | ParentClassId | ChildId | ChildClassId |
-| -------- | ------------- | ------- | ------------ |
-| 0x13     | 0x89          | 0x12    | 0xc5         |
-| 0xe      | 0xdd          | 0x1     | 0x126        |
-| 0x10     | 0x98          | 0x1     | 0x126        |
-| 0x11     | 0xf0          | 0x1     | 0x126        |
+| ParentId | ParentClassName             | ChildId | ChildClassId |
+| -------- | --------------------------- | ------- | ------------ |
+| 0x13     | BisCore:SubCategory         | 0x12    | 0xcb         |
+| 0xe      | BisCore:LinkPartition       | 0x1     | 0x135        |
+| 0x10     | BisCore:DefinitionPartition | 0x1     | 0x135        |
+| 0x11     | BisCore:PhysicalPartition   | 0x1     | 0x135        |
 
 # Double JOIN ON
 
@@ -210,7 +210,7 @@ FROM
 ```sql
 SELECT
   t0.ECInstanceId AS ParentId,
-  t0.ECClassId AS ParentClassId,
+  ec_classname (t0.ECClassId) AS ParentClassName,
   t1.ECInstanceId AS ChildId,
   t1.ECClassId AS ChildClassId,
   rel.SourceECInstanceId,
@@ -223,23 +223,23 @@ FROM
   JOIN [BisCore].[Element] t1 ON t1.ECInstanceId = rel.SourceECInstanceId;
 ```
 
-| className | accessString       | generated | index | jsonName        | name               | extendedType  | typeName | type | originPropertyName |
-| --------- | ------------------ | --------- | ----- | --------------- | ------------------ | ------------- | -------- | ---- | ------------------ |
-|           | ParentId           | true      | 0     | parentId        | ParentId           | Id            | long     | Id   | ECInstanceId       |
-|           | ParentClassId      | true      | 1     | parentClassId   | ParentClassId      | ClassId       | long     | Id   | ECClassId          |
-|           | ChildId            | true      | 2     | childId         | ChildId            | Id            | long     | Id   | ECInstanceId       |
-|           | ChildClassId       | true      | 3     | childClassId    | ChildClassId       | ClassId       | long     | Id   | ECClassId          |
-|           | SourceECInstanceId | false     | 4     | sourceId        | SourceECInstanceId | SourceId      | long     | Id   | SourceECInstanceId |
-|           | SourceECClassId    | false     | 5     | sourceClassName | SourceECClassId    | SourceClassId | long     | Id   | SourceECClassId    |
-|           | TargetECInstanceId | false     | 6     | targetId        | TargetECInstanceId | TargetId      | long     | Id   | TargetECInstanceId |
-|           | TargetECClassId    | false     | 7     | targetClassName | TargetECClassId    | TargetClassId | long     | Id   | TargetECClassId    |
+| className | accessString       | generated | index | jsonName        | name               | extendedType  | typeName | type   | originPropertyName |
+| --------- | ------------------ | --------- | ----- | --------------- | ------------------ | ------------- | -------- | ------ | ------------------ |
+|           | ParentId           | true      | 0     | parentId        | ParentId           | Id            | long     | Id     | ECInstanceId       |
+|           | ParentClassName    | true      | 1     | parentClassName | ParentClassName    | undefined     | string   | String | undefined          |
+|           | ChildId            | true      | 2     | childId         | ChildId            | Id            | long     | Id     | ECInstanceId       |
+|           | ChildClassId       | true      | 3     | childClassId    | ChildClassId       | ClassId       | long     | Id     | ECClassId          |
+|           | SourceECInstanceId | false     | 4     | sourceId        | SourceECInstanceId | SourceId      | long     | Id     | SourceECInstanceId |
+|           | SourceECClassId    | false     | 5     | sourceClassName | SourceECClassId    | SourceClassId | long     | Id     | SourceECClassId    |
+|           | TargetECInstanceId | false     | 6     | targetId        | TargetECInstanceId | TargetId      | long     | Id     | TargetECInstanceId |
+|           | TargetECClassId    | false     | 7     | targetClassName | TargetECClassId    | TargetClassId | long     | Id     | TargetECClassId    |
 
-| ParentId | ParentClassId | ChildId | ChildClassId | SourceECInstanceId | SourceECClassId | TargetECInstanceId | TargetECClassId |
-| -------- | ------------- | ------- | ------------ | ------------------ | --------------- | ------------------ | --------------- |
-| 0x13     | 0x89          | 0x12    | 0xc5         | 0x12               | 0xc5            | 0x13               | 0x89            |
-| 0xe      | 0xdd          | 0x1     | 0x126        | 0x1                | 0x126           | 0xe                | 0xdd            |
-| 0x10     | 0x98          | 0x1     | 0x126        | 0x1                | 0x126           | 0x10               | 0x98            |
-| 0x11     | 0xf0          | 0x1     | 0x126        | 0x1                | 0x126           | 0x11               | 0xf0            |
+| ParentId | ParentClassName             | ChildId | ChildClassId | SourceECInstanceId | SourceECClassId | TargetECInstanceId | TargetECClassId |
+| -------- | --------------------------- | ------- | ------------ | ------------------ | --------------- | ------------------ | --------------- |
+| 0x13     | BisCore:SubCategory         | 0x12    | 0xcb         | 0x12               | 0xcb            | 0x13               | 0x89            |
+| 0xe      | BisCore:LinkPartition       | 0x1     | 0x135        | 0x1                | 0x135           | 0xe                | 0xe6            |
+| 0x10     | BisCore:DefinitionPartition | 0x1     | 0x135        | 0x1                | 0x135           | 0x10               | 0x9a            |
+| 0x11     | BisCore:PhysicalPartition   | 0x1     | 0x135        | 0x1                | 0x135           | 0x11               | 0xf9            |
 
 
 # CROSS JOIN
@@ -313,7 +313,7 @@ NATURAL JOIN (SELECT ECInstanceId AS CommonId, IsPrivate FROM bis.Model) AS Mode
 ```sql
 SELECT
   t0.ECInstanceId AS ParentId,
-  t0.ECClassId AS ParentClassId,
+  ec_classname (t0.ECClassId) AS ParentClassName,
   t1.ECInstanceId AS ChildId,
   t1.ECClassId AS ChildClassId,
   t2.ECInstanceId AS GrandChildId,
@@ -324,27 +324,27 @@ FROM
   JOIN [BisCore].[Element] t2 USING [BisCore].[ElementOwnsChildElements] AS Rel2 FORWARD;
 ```
 
-| className | accessString      | generated | index | jsonName          | name              | extendedType | typeName | type | originPropertyName |
-| --------- | ----------------- | --------- | ----- | ----------------- | ----------------- | ------------ | -------- | ---- | ------------------ |
-|           | ParentId          | true      | 0     | parentId          | ParentId          | Id           | long     | Id   | ECInstanceId       |
-|           | ParentClassId     | true      | 1     | parentClassId     | ParentClassId     | ClassId      | long     | Id   | ECClassId          |
-|           | ChildId           | true      | 2     | childId           | ChildId           | Id           | long     | Id   | ECInstanceId       |
-|           | ChildClassId      | true      | 3     | childClassId      | ChildClassId      | ClassId      | long     | Id   | ECClassId          |
-|           | GrandChildId      | true      | 4     | grandChildId      | GrandChildId      | Id           | long     | Id   | ECInstanceId       |
-|           | GrandChildClassId | true      | 5     | grandChildClassId | GrandChildClassId | ClassId      | long     | Id   | ECClassId          |
+| className | accessString      | generated | index | jsonName          | name              | extendedType | typeName | type   | originPropertyName |
+| --------- | ----------------- | --------- | ----- | ----------------- | ----------------- | ------------ | -------- | ------ | ------------------ |
+|           | ParentId          | true      | 0     | parentId          | ParentId          | Id           | long     | Id     | ECInstanceId       |
+|           | ParentClassName   | true      | 1     | parentClassName   | ParentClassName   | undefined    | string   | String | undefined          |
+|           | ChildId           | true      | 2     | childId           | ChildId           | Id           | long     | Id     | ECInstanceId       |
+|           | ChildClassId      | true      | 3     | childClassId      | ChildClassId      | ClassId      | long     | Id     | ECClassId          |
+|           | GrandChildId      | true      | 4     | grandChildId      | GrandChildId      | Id           | long     | Id     | ECInstanceId       |
+|           | GrandChildClassId | true      | 5     | grandChildClassId | GrandChildClassId | ClassId      | long     | Id     | ECClassId          |
 
-| ParentId | ParentClassId | ChildId | ChildClassId | GrandChildId | GrandChildClassId |
-| -------- | ------------- | ------- | ------------ | ------------ | ----------------- |
-| 0x12     | 0xc5          | 0x13    | 0x89         | 0x13         | 0x89              |
-| 0x1      | 0x126         | 0xe     | 0xdd         | 0xe          | 0xdd              |
-| 0x1      | 0x126         | 0xe     | 0xdd         | 0x10         | 0x98              |
-| 0x1      | 0x126         | 0xe     | 0xdd         | 0x11         | 0xf0              |
-| 0x1      | 0x126         | 0x10    | 0x98         | 0xe          | 0xdd              |
-| 0x1      | 0x126         | 0x10    | 0x98         | 0x10         | 0x98              |
-| 0x1      | 0x126         | 0x10    | 0x98         | 0x11         | 0xf0              |
-| 0x1      | 0x126         | 0x11    | 0xf0         | 0xe          | 0xdd              |
-| 0x1      | 0x126         | 0x11    | 0xf0         | 0x10         | 0x98              |
-| 0x1      | 0x126         | 0x11    | 0xf0         | 0x11         | 0xf0              |
+| ParentId | ParentClassName         | ChildId | ChildClassId | GrandChildId | GrandChildClassId |
+| -------- | ----------------------- | ------- | ------------ | ------------ | ----------------- |
+| 0x12     | BisCore:SpatialCategory | 0x13    | 0x89         | 0x13         | 0x89              |
+| 0x1      | BisCore:Subject         | 0xe     | 0xe6         | 0xe          | 0xe6              |
+| 0x1      | BisCore:Subject         | 0xe     | 0xe6         | 0x10         | 0x9a              |
+| 0x1      | BisCore:Subject         | 0xe     | 0xe6         | 0x11         | 0xf9              |
+| 0x1      | BisCore:Subject         | 0x10    | 0x9a         | 0xe          | 0xe6              |
+| 0x1      | BisCore:Subject         | 0x10    | 0x9a         | 0x10         | 0x9a              |
+| 0x1      | BisCore:Subject         | 0x10    | 0x9a         | 0x11         | 0xf9              |
+| 0x1      | BisCore:Subject         | 0x11    | 0xf9         | 0xe          | 0xe6              |
+| 0x1      | BisCore:Subject         | 0x11    | 0xf9         | 0x10         | 0x9a              |
+| 0x1      | BisCore:Subject         | 0x11    | 0xf9         | 0x11         | 0xf9              |
 
 # Double Join with Where
 
