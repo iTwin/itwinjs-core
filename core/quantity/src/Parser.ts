@@ -333,17 +333,17 @@ export class Parser {
           }
         } else {
           // not processing a number
-            const isCharOperator = isOperator(charCode);
-            const isSpacer = charCode === format.spacerOrDefault.charCodeAt(0) && charCode !== QuantityConstants.CHAR_SPACE;
+          const isCharOperator = isOperator(charCode);
+          const isSpacer = charCode === format.spacerOrDefault.charCodeAt(0) && charCode !== QuantityConstants.CHAR_SPACE;
 
-            if (isSpacer && i > 0 && i < str.length - 1) {
-              const prevCharCode = str.charCodeAt(i - 1);
-              const nextCharCode = str.charCodeAt(i + 1);
-              if (isCharOperator && nextCharCode !== QuantityConstants.CHAR_SPACE && prevCharCode !== QuantityConstants.CHAR_SPACE) {
-                // ignore spacer if it's not at the start or end, not whitespace, and is not in between whitespace
-                continue;
-              }
+          if (isSpacer && i > 0 && i < str.length - 1) {
+            const prevCharCode = str.charCodeAt(i - 1);
+            const nextCharCode = str.charCodeAt(i + 1);
+            if (isCharOperator && nextCharCode !== QuantityConstants.CHAR_SPACE && prevCharCode !== QuantityConstants.CHAR_SPACE) {
+              // ignore spacer if it's not at the start or end, not whitespace, and is not in between whitespace
+              continue;
             }
+          }
 
           if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
             // Don't add space when the wip token is empty.
