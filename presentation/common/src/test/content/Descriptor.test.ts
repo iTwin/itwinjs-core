@@ -88,7 +88,6 @@ describe("Descriptor", () => {
         connectionId: "",
         categories: [CategoryDescription.toJSON(category)],
         contentFlags: 0,
-        contentOptions: 0,
         displayType: "",
         inputKeysHash: "",
         classesMap: {
@@ -313,7 +312,6 @@ describe("Descriptor", () => {
         connectionId: "",
         categories: [CategoryDescription.toJSON(category)],
         contentFlags: 0,
-        contentOptions: 0,
         displayType: "",
         inputKeysHash: "",
         selectClasses: [],
@@ -493,17 +491,6 @@ describe("Descriptor", () => {
       });
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({
         contentFlags: 123,
-      });
-    });
-
-    it("creates a valid object with filter expression", () => {
-      const descriptor = createTestContentDescriptor({
-        fields: [],
-        filterExpression: "test filter",
-      });
-      descriptor.fieldsFilterExpression = undefined;
-      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
-        fieldsFilterExpression: "test filter",
       });
     });
 

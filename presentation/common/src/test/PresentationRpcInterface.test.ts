@@ -255,15 +255,6 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("[deprecated] forwards computeSelection call", async () => {
-      const options: SelectionScopeRpcRequestOptions = {};
-      const ids = new Array<Id64String>();
-      const scopeId = faker.random.uuid();
-
-      await rpcInterface.computeSelection(token, options, ids, scopeId);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
-    });
-
     it("forwards computeSelection call", async () => {
       const options: ComputeSelectionRpcRequestOptions = {
         elementIds: new Array<Id64String>(),

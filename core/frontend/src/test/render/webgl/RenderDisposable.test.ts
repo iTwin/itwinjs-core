@@ -2,25 +2,52 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { ByteStream } from "@itwin/core-bentley";
-import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList } from "@itwin/core-common";
-import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
-  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
-  TileTreeReference,
-} from "@itwin/core-frontend";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/internal/webgl";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
+import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, ModelProps, QParams3d, QPoint3dList, RelatedElementProps } from "@itwin/core-common";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
-import { TestUtility } from "../../TestUtility";
-import { testViewports } from "../../TestViewport";
-import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
-import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
-import { TestSnapshotConnection } from "../../TestSnapshotConnection";
+import { BlankConnection, IModelConnection } from "../../../IModelConnection";
+import { OnScreenTarget, Target } from "../../../internal/render/webgl/Target";
+import { Decorations } from "../../../render/Decorations";
+import { GraphicList } from "../../../render/RenderGraphic";
+import { Batch, WorldDecorations } from "../../../internal/render/webgl/Graphic";
+import { TextureHandle } from "../../../internal/render/webgl/Texture";
+import { PlanarClassifierMap, PlanarClassifierTarget, RenderPlanarClassifier } from "../../../internal/render/RenderPlanarClassifier";
+import { RenderTextureDrape, TextureDrapeMap } from "../../../internal/render/RenderTextureDrape";
+import { IModelApp } from "../../../IModelApp";
+import { createBlankConnection } from "../../createBlankConnection";
+import { GeometricModelState } from "../../../ModelState";
+import { TILE_DATA_1_1 } from "./tile-data";
+import { ImdlReader, TileTreeReference } from "../../../tile/internal";
+import { testBlankViewportAsync } from "../../openBlankViewport";
+import { OffScreenViewport, ScreenViewport } from "../../../Viewport";
+import { FrameBuffer } from "../../../internal/render/webgl/FrameBuffer";
+import { SceneContext } from "../../../ViewContext";
+import { PlanarClipMaskState } from "../../../PlanarClipMaskState";
+import { RenderMemory } from "../../../render/RenderMemory";
+import { GraphicType } from "../../../common/render/GraphicType";
+import { SpatialViewState } from "../../../SpatialViewState";
 
-let imodel0: IModelConnection;
-let imodel1: IModelConnection;
+let imodel0: BlankConnection;
+let imodel1: BlankConnection;
 const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
+
+class FakeGMState extends GeometricModelState {
+  public get is3d(): boolean { return true; }
+  public override get is2d(): boolean { return !this.is3d; }
+  public constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
+}
+
+class FakeModelProps implements ModelProps {
+  public modeledElement: RelatedElementProps;
+  public classFullName: string = "fake";
+  public constructor(props: RelatedElementProps) { this.modeledElement = props; }
+}
+
+class FakeREProps implements RelatedElementProps {
+  public id: Id64String;
+  public constructor() { this.id = Id64.invalid; }
+}
 
 /**
  * Class holding a RenderTarget that provides getters for all of a Target's typically private members, as well as members that may be set to undefined when disposing.
@@ -132,14 +159,14 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
-  before(async () => {
-    await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
-    imodel0 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+  beforeAll(async () => {
+    await IModelApp.startup();
+    imodel0 = createBlankConnection();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel0.close();
-    await TestUtility.shutdownFrontend();
+    await IModelApp.shutdown();
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
@@ -171,17 +198,17 @@ describe("Disposal of System", () => {
 });
 
 describe("Disposal of WebGL Resources", () => {
-  before(async () => {
-    await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
+  beforeAll(async () => {
+    await IModelApp.startup();
 
-    imodel0 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel1 = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel0 = createBlankConnection();
+    imodel1 = createBlankConnection();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel1.close();
     await imodel0.close();
-    await TestUtility.shutdownFrontend();
+    await IModelApp.shutdown();
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...
@@ -246,43 +273,42 @@ describe("Disposal of WebGL Resources", () => {
   });
 
   it("disposes of Target's framebuffer and attachments", async () => {
-    const views = await imodel1.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
-    expect(views.length).least(1);
+    await testBlankViewportAsync({
+      iModel: imodel1,
+      test: async (vp: ScreenViewport) => {
+        expect(vp.isDisposed).to.be.false;
 
-    await testViewports(views[0].id, imodel1, 10, 10, async (vp) => {
-      expect(vp instanceof ScreenViewport || vp instanceof OffScreenViewport).to.be.true;
-      expect(vp.isDisposed).to.be.false;
+        const target = (vp.target as any);
+        let fbo = target._fbo as FrameBuffer;
+        expect(fbo).to.be.undefined;
+        let blitGeom = target._blitGeom;
+        expect(blitGeom).to.be.undefined;
 
-      const target = (vp.target as any);
-      let fbo = target._fbo as FrameBuffer;
-      expect(fbo).to.be.undefined;
-      let blitGeom = target._blitGeom;
-      expect(blitGeom).to.be.undefined;
+        vp.renderFrame();
+        fbo = target._fbo as FrameBuffer;
+        expect(fbo).not.to.be.undefined;
+        expect(fbo.isDisposed).to.be.false;
+        const tx = fbo.getColor(0);
+        expect(tx).not.to.be.undefined;
+        expect(tx.isDisposed).to.be.false;
 
-      vp.renderFrame();
-      fbo = target._fbo as FrameBuffer;
-      expect(fbo).not.to.be.undefined;
-      expect(fbo.isDisposed).to.be.false;
-      const tx = fbo.getColor(0);
-      expect(tx).not.to.be.undefined;
-      expect(tx.isDisposed).to.be.false;
+        blitGeom = target._blitGeom as Disposable;
+        expect(blitGeom === undefined).to.equal(vp instanceof OffScreenViewport);
+        if (blitGeom)
+          expect(blitGeom.isDisposed).to.be.false;
 
-      blitGeom = target._blitGeom as Disposable;
-      expect(blitGeom === undefined).to.equal(vp instanceof OffScreenViewport);
-      if (blitGeom)
-        expect(blitGeom.isDisposed).to.be.false;
+        vp[Symbol.dispose]();
+        expect(vp.isDisposed).to.be.true;
+        expect(target.isDisposed).to.be.true;
 
-      vp[Symbol.dispose]();
-      expect(vp.isDisposed).to.be.true;
-      expect(target.isDisposed).to.be.true;
-
-      expect(target._fbo).to.be.undefined;
-      expect(fbo.isDisposed).to.be.true;
-      expect(tx.isDisposed).to.be.true;
-      if (blitGeom) {
-        expect(target._blitGeom).to.be.undefined;
-        expect(blitGeom.isDisposed).to.be.true;
-      }
+        expect(target._fbo).to.be.undefined;
+        expect(fbo.isDisposed).to.be.true;
+        expect(tx.isDisposed).to.be.true;
+        if (blitGeom) {
+          expect(target._blitGeom).to.be.undefined;
+          expect(blitGeom.isDisposed).to.be.true;
+        }
+      },
     });
   });
 
@@ -320,10 +346,7 @@ describe("Disposal of WebGL Resources", () => {
     get: (target: ExposedTarget, id: string) => T | undefined,
     change: (target: ExposedTarget, map: Map<string, T> | undefined) => void,
   ): Promise<void> {
-    const viewDefs = await imodel0.views.getViewList({ from: "BisCore.SpatialViewDefinition" });
-    expect(viewDefs[0]).not.to.be.undefined;
-    const view = await imodel0.views.load(viewDefs[0].id);
-    expect(view).not.to.be.undefined;
+    const view = SpatialViewState.createBlank(imodel0, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
 
     const div = document.createElement("div");
     div.style.width = div.style.height = "100px";
@@ -415,11 +438,7 @@ describe("Disposal of WebGL Resources", () => {
   it("expect disposal of target to trigger disposal of only owned resources", async () => {
     const system = IModelApp.renderSystem;
 
-    // Let's grab an actual view and set up a target that is holding prepared decorations
-    const viewDefinitions = await imodel1.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
-    assert.isTrue(viewDefinitions.length > 0);
-    const viewState = await imodel1.views.load(viewDefinitions[0].id);
-    assert.exists(viewState);
+    const viewState = SpatialViewState.createBlank(imodel1, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
 
     const viewDiv = document.createElement("div");
     viewDiv.style.width = viewDiv.style.height = "1000px";

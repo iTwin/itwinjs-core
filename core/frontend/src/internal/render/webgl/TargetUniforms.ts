@@ -7,7 +7,7 @@
  */
 
 import { Matrix4d, Vector3d } from "@itwin/core-geometry";
-import { RenderPlan } from "../../../render/RenderPlan";
+import { RenderPlan } from "../RenderPlan";
 import { BatchUniforms } from "./BatchUniforms";
 import { BranchUniforms } from "./BranchUniforms";
 import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms";

@@ -41,9 +41,6 @@ internal;function;addRangeGraphic
 internal;class;AlternateUnitLabelsRegistry
 beta;class;AngleDescription
 internal;class;AnimatedTreeReference
-internal;interface;AnimationBranchState
-internal;interface;AnimationBranchStates
-internal;namespace;AnimationBranchStates
 internal;enum;AnimationNodeId
 public;interface;Animator
 internal;function;appendQueryParams
@@ -130,11 +127,9 @@ public;enum;CoordSystem
 internal;class;CoreTools
 internal;function;createClassifierTileTreeReference
 internal;function;createDefaultViewFlagOverrides
-internal;function;createEmptyRenderPlan
 internal;function;createGraphicFromDescription
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
-internal;function;createGraphicTemplate
 internal;function;createGraphicTemplateFromDescription
 internal;function;createMapLayerTreeReference
 internal;function;createMaskTreeReference
@@ -144,7 +139,6 @@ internal;function;createPrimaryTileTreeReference
 internal;function;createRealityTileTreeReference
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
-internal;function;createRenderPlanFromViewport
 internal;function;createSpatialTileTreeReferences
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
@@ -154,7 +148,6 @@ public;enum;CurrentState
 public;interface;CustomFormatPropEditorSpec
 public;interface;CustomGraphicBuilderOptions
 public;interface;CustomQuantityTypeDefinition
-internal;class;DebugShaderFile
 internal;function;decodeImdlGraphics
 internal;function;decodeMeshoptBuffer
 internal;interface;DecodeMeshoptBufferArgs
@@ -234,7 +227,6 @@ internal;interface;FrameCameraFrustumData
 internal;interface;FrameCameraViewData
 internal;interface;FrameRenderData
 alpha;interface;FrameStats
-internal;class;FrameStatsCollector
 public;interface;FrontendHubAccess
 public;enum;FrontendLoggerCategory
 public;interface;FrontendSecurityOptions
@@ -284,7 +276,6 @@ internal;class;GltfReaderProps
 internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
-internal;type;GLTimerResultCallback
 public;type;GpuMemoryLimit
 public;interface;GpuMemoryLimits
 public;class;GraphicalEditingScope
@@ -293,7 +284,6 @@ public;interface;GraphicArc2d
 public;class;GraphicAssembler
 internal;interface;GraphicAssemblerOptions
 public;class;GraphicBranch
-internal;interface;GraphicBranchFrustum
 public;interface;GraphicBranchOptions
 public;class;GraphicBuilder
 public;interface;GraphicBuilderOptions
@@ -321,9 +311,6 @@ public;interface;GraphicShape
 public;interface;GraphicShape2d
 public;interface;GraphicSolidPrimitive
 beta;interface;GraphicTemplate
-internal;interface;GraphicTemplateBatch
-internal;interface;GraphicTemplateBranch
-internal;interface;GraphicTemplateNode
 public;enum;GraphicType
 internal;interface;GroundPlaneDecorations
 public;interface;GroupMark
@@ -430,7 +417,6 @@ beta;interface;MapLayerAccessClient
 beta;interface;MapLayerAccessToken
 beta;interface;MapLayerAccessTokenParams
 beta;interface;MapLayerAuthenticationInfo
-internal;type;MapLayerClassifiers
 beta;interface;MapLayerFeature
 beta;interface;MapLayerFeatureAttribute
 beta;interface;MapLayerFeatureGeometry
@@ -487,7 +473,6 @@ public;enum;MessageBoxIconType
 public;enum;MessageBoxType
 public;enum;MessageBoxValue
 internal;function;metersToRange
-internal;namespace;MockRender
 public;interface;ModalOptions
 public;interface;ModalReturn
 beta;interface;ModelDisplayTransform
@@ -509,10 +494,8 @@ internal;class;NullRenderSystem
 internal;class;NullTarget
 public;class;OffScreenViewport
 public;interface;OffScreenViewportOptions
-internal;interface;OldTextureImage
 public;type;OnDownloadProgress
 public;type;OnFlashedIdChangedEventArgs
-alpha;type;OnFrameStatsReadyEvent
 internal;class;OnScreenTarget
 public;interface;OnViewExtentsError
 internal;class;OPCFormatInterpreter
@@ -546,8 +529,6 @@ public;class;PhysicalModelState
 public;interface;PickableGraphicOptions
 internal;interface;PingTestResult
 public;namespace;Pixel
-internal;type;PlanarClassifierMap
-internal;interface;PlanarClassifierTarget
 beta;class;PlanarClipMaskState
 alpha;interface;PlanarGridProps
 alpha;class;PlanarGridTransparency
@@ -570,7 +551,6 @@ public;type;QuantityTypeKey
 public;interface;QueryScreenFeaturesOptions
 public;function;queryTerrainElevationOffset
 public;interface;QueryTileFeaturesOptions
-internal;function;queryVisibleFeatures
 public;type;QueryVisibleFeaturesCallback
 public;type;QueryVisibleFeaturesOptions
 internal;function;rangeToCartographicArea
@@ -596,7 +576,6 @@ alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
 alpha;interface;RealityDataSourceProvider
 alpha;class;RealityDataSourceProviderRegistry
-internal;interface;RealityMeshGraphicParams
 public;interface;RealityMeshParams
 public;namespace;RealityMeshParams
 internal;function;fromGltfMesh
@@ -620,7 +599,6 @@ internal;class;RealityTreeReference
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
 alpha;interface;RemoteExtensionProviderProps
-internal;interface;RenderAreaPattern
 public;class;RenderClipVolume
 public;class;RenderContext
 internal;enum;RenderDiagnostics
@@ -632,27 +610,17 @@ beta;interface;RenderInstancesParams
 beta;namespace;RenderInstancesParams
 beta;interface;RenderInstancesParamsBuilder
 beta;namespace;RenderInstancesParamsBuilder
-internal;interface;RenderMaterialSource
 public;namespace;RenderMemory
 internal;class;Buffers
 internal;enum;BufferType
 internal;interface;Consumer
 internal;class;Consumers
 internal;enum;ConsumerType
-internal;interface;RenderPlan
-internal;class;RenderPlanarClassifier
-internal;class;RenderPlanEllipsoid
-internal;type;RenderSkyBoxParams
-internal;interface;RenderSkyCubeParams
-internal;interface;RenderSkyGradientParams
-internal;interface;RenderSkySphereParams
 public;class;RenderSystem
 public;namespace;RenderSystem
-beta;interface;RenderSystemDebugControl
+internal;interface;RenderSystemDebugControl
 public;class;RenderTarget
 internal;interface;RenderTargetDebugControl
-internal;class;RenderTerrainGeometry
-internal;class;RenderTextureDrape
 public;interface;RequestMeshDataArgs
 internal;type;RequestTileTreePropsFunc
 alpha;type;ResolveFunc
@@ -664,7 +632,6 @@ public;class;RoundOff
 internal;class;SavedState
 public;class;Scene
 public;class;SceneContext
-internal;interface;SceneVolumeClassifier
 internal;const;_scheduleScriptReference
 public;interface;ScreenSpaceEffectBuilder
 public;interface;ScreenSpaceEffectBuilderParams
@@ -732,13 +699,11 @@ public;class;TerrainMeshProvider
 public;interface;TerrainMeshProviderOptions
 public;interface;TerrainProvider
 public;class;TerrainProviderRegistry
-internal;class;TerrainTexture
 internal;interface;TerrainTileContent
 public;interface;TextInputFormatPropEditorSpec
 public;interface;TextSelectFormatPropEditorSpec
 public;type;TextureCacheKey
 public;interface;TextureCacheOwnership
-internal;type;TextureDrapeMap
 public;interface;TextureImage
 public;type;TextureImageSource
 public;type;TextureOwnership
