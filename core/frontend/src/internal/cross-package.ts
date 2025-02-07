@@ -40,6 +40,7 @@ export {
  GraphicsGeometryRenderer,
  ImageryMapTileTree,
  ImdlDecoder,
+ ImdlReader,
  MapLayerInfoFromTileTree,
  MapTileTreeReference,
  RealityModelTileUtils,

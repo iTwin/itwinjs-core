@@ -290,6 +290,8 @@ beta;class;ImageryMapLayerFormat
 beta;class;ImageryMapLayerTreeReference
 internal;class;ImageryMapTileTree
 internal;interface;ImdlDecoder
+internal;interface;ImdlReader
+internal;namespace;ImdlReader
 public;class;IModelApp
 public;interface;IModelAppOptions
 public;class;IModelConnection

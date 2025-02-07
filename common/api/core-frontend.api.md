@@ -4670,6 +4670,18 @@ export interface ImdlDecoder {
     release(): void;
 }
 
+// @internal (undocumented)
+export interface ImdlReader {
+    // (undocumented)
+    read: () => Promise<ImdlReaderResult>;
+}
+
+// @internal (undocumented)
+export namespace ImdlReader {
+    // (undocumented)
+    export function create(args: ImdlReaderCreateArgs): ImdlReader;
+}
+
 // @public
 export class IModelApp {
     protected constructor();
