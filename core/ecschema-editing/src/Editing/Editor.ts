@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { AbstractSchemaItemType, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { AbstractSchemaItemType, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -198,17 +198,20 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem>
-  public async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey,  itemConstructor: T): Promise<InstanceType<T>>
-  public async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: T): Promise<SchemaItem | InstanceType<T>> {
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>> {
     const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
-    const schemaItemType = itemConstructor?.schemaItemType ?? AbstractSchemaItemType.SchemaItem;
-    if (!schemaItem) {
-      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType as SchemaItemType, schemaItemKey));
+    const schemaItemType = itemConstructor.schemaItemType;
+    if(!isSchemaItemType(schemaItemType)) {
+      // This block should never be hit, as the editor components always pass in the itemConstructor with a valid schemaItemType.
+      throw new Error(`Invalid schema item lookup for: ${schemaItemType}`);
     }
-    //TODO: the provided schemaItemType in these errors expects a different enum type, the cast is not clean.
-    if (itemConstructor !== undefined && !isItemType(schemaItem, itemConstructor))
-      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType as SchemaItemType, schemaItemKey));
+
+    if (!schemaItem) {
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
+    }
+
+    if (!isItemType(schemaItem, itemConstructor))
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
 
     return schemaItem;
   }
@@ -300,3 +303,6 @@ function isItemType<T extends typeof SchemaItem>(schemaItem: SchemaItem, itemCon
   return schemaItem.schemaItemType === itemConstructor.schemaItemType;
 }
 
+function isSchemaItemType(type: SupportedSchemaItemType): type is SchemaItemType {
+  return Object.values(SchemaItemType).includes(type as SchemaItemType);
+}

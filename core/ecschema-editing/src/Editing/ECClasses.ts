@@ -246,7 +246,7 @@ export class ECClasses extends SchemaItems{
   public async delete(classKey: SchemaItemKey): Promise<void> {
     try {
       const schema = await this.getSchema(classKey.schemaKey);
-      const ecClass = await schema.getItem(classKey.name, ECClass);
+      const ecClass = await schema.getItem(classKey.name, this.itemTypeClass);
       if (ecClass === undefined)
         return;
 

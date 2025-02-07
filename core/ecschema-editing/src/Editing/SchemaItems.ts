@@ -39,11 +39,11 @@ export abstract class SchemaItems {
   public async setName(itemKey: SchemaItemKey, name: string): Promise<SchemaItemKey> {
     try {
       const schema = await this.getSchema(itemKey.schemaKey);
-      const ecClass = await schema.getItem(name) as MutableSchemaItem;
+      const ecClass = await schema.getItem(name, this.itemTypeClass);
       if (ecClass !== undefined)
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, new SchemaItemId(this.schemaItemType, name, schema.schemaKey));
 
-      const mutableItem = await this.getSchemaItem(itemKey) as MutableSchemaItem;
+      const mutableItem = await this.getSchemaItem(itemKey, this.itemTypeClass) as MutableSchemaItem;
 
       const existingName = itemKey.name;
       mutableItem.setName(name);
@@ -96,12 +96,7 @@ export abstract class SchemaItems {
     return schema;
   }
 
-  protected async getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem>
-  protected async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>>
-  protected async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: T): Promise<SchemaItem | InstanceType<T>>{
-    if(itemConstructor === undefined)
-      return this.schemaEditor.getSchemaItem(schemaItemKey);
-
+  protected async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>> {
     return this.schemaEditor.getSchemaItem(schemaItemKey, itemConstructor);
   }
 

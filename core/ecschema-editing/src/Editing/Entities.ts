@@ -36,8 +36,8 @@ export class Entities extends ECClasses {
 
   public async createElement(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     try {
-      const baseClass = await this.getSchemaItem(baseClassKey);
-      if (!(await (baseClass as EntityClass).is("Element", "BisCore"))) {
+      const baseClass = await this.getSchemaItem(baseClassKey, EntityClass);
+      if (!(await (baseClass).is("Element", "BisCore"))) {
         throw new SchemaEditingError(ECEditingStatus.BaseClassIsNotElement, new ClassId(this.schemaItemType, baseClassKey));
       }
     } catch(e: any){
@@ -49,8 +49,8 @@ export class Entities extends ECClasses {
 
   public async createElementUniqueAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     try {
-      const baseClass = await this.getSchemaItem(baseClassKey);
-      if (!(await (baseClass as EntityClass).is("ElementUniqueAspect", "BisCore"))) {
+      const baseClass = await this.getSchemaItem(baseClassKey, EntityClass);
+      if (!(await (baseClass).is("ElementUniqueAspect", "BisCore"))) {
         throw new SchemaEditingError(ECEditingStatus.BaseClassIsNotElementUniqueAspect, new ClassId(this.schemaItemType, baseClassKey));
       }
     } catch(e: any){
@@ -62,8 +62,8 @@ export class Entities extends ECClasses {
 
   public async createElementMultiAspect(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClassKey: SchemaItemKey, displayLabel?: string, mixins?: Mixin[]): Promise<SchemaItemKey> {
     try {
-      const baseClass = await this.getSchemaItem(baseClassKey);
-      if (!(await (baseClass as EntityClass).is("ElementMultiAspect", "BisCore"))) {
+      const baseClass = await this.getSchemaItem(baseClassKey, EntityClass);
+      if (!(await (baseClass).is("ElementMultiAspect", "BisCore"))) {
         throw new SchemaEditingError(ECEditingStatus.BaseClassIsNotElementMultiAspect, new ClassId(this.schemaItemType, baseClassKey));
       }
     } catch(e: any){
