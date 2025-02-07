@@ -336,6 +336,10 @@ parseResult.value // 7.5 (feet)
 #### Limitations
 Only plus(`+`) and minus(`-`) signs are supported for now.
 Other operators will end up returning a parsing error or an invalid input result.
+If a Format uses a spacer that conflicts with one of the operators above, additional restrictions will apply:
+
+- Mathematical operations only apply when it is in between whitespace. So `-2FT 6IN + 6IN` is equal to `-2FT-6IN + 6IN`, and `-2FT-6IN - 6IN` is not equal to `-2FT-6IN-6IN`.
+- For a value like `2FT 6IN-0.5`, the `-` sign will be treated as a spacer and not subtraction. However, the `0.5` value will use the default unit conversion provided to the parser, because it's not a part of the composite unit when that composite is made up of only 2 units - `FT` and `IN`.
 
 #### Usage
 The parsing of mathematical operations is disabled by default.

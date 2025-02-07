@@ -333,21 +333,30 @@ export class Parser {
           }
         } else {
           // not processing a number
-          if (isOperator(charCode)) {
+            const isCharOperator = isOperator(charCode);
+            const isSpacer = charCode === format.spacerOrDefault.charCodeAt(0) && charCode !== QuantityConstants.CHAR_SPACE;
+
+            if (isSpacer && i > 0 && i < str.length - 1) {
+              const prevCharCode = str.charCodeAt(i - 1);
+              const nextCharCode = str.charCodeAt(i + 1);
+              if (isCharOperator && nextCharCode !== QuantityConstants.CHAR_SPACE && prevCharCode !== QuantityConstants.CHAR_SPACE) {
+                // ignore spacer if it's not at the start or end, not whitespace, and is not in between whitespace
+                continue;
+              }
+            }
+
+          if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
+            // Don't add space when the wip token is empty.
+            continue;
+          }
+
+          if (isCharOperator) {
             if(wipToken.length > 0){
               // There is a token is progress, process it now, before adding the new operator token.
               tokens.push(new ParseToken(wipToken));
               wipToken = "";
             }
-            const newToken = new ParseToken(str[i]);
-            if (charCode === format.spacerOrDefault.charCodeAt(0)) newToken.isOperator = false; // If the operator is also a spacer, we don't want to treat it as an operator.
-
-            tokens.push(newToken); // Push an Operator Token in the list.
-            continue;
-          }
-
-          if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
-            // Don't add space when the wip token is empty.
+            tokens.push(new ParseToken(str[i])); // Push an Operator Token in the list.
             continue;
           }
 
@@ -629,10 +638,7 @@ export class Parser {
         let value = sign * (tokenPair[0].value as number);
         let conversion: UnitConversionProps | undefined;
         if(tokenPair.length === 2 && tokenPair[1].isString){
-          const spacer = format.spacerOrDefault;
-          if(tokenPair[1].value !== spacer){ // ignore spacer
-            conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
-          }
+          conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
         }
         if (!conversion) {
           if (compositeUnitIndex > 0 && format.units && format.units.length > compositeUnitIndex) {
