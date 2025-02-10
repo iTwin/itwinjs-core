@@ -2109,8 +2109,6 @@ export class SchemaContextEditor {
     // @internal
     getSchema(schemaKey: SchemaKey): Promise<MutableSchema>;
     // @internal (undocumented)
-    getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem>;
-    // (undocumented)
     getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>>;
     incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey>;
     // (undocumented)

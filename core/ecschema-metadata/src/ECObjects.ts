@@ -472,6 +472,9 @@ export function strengthDirectionToString(direction: StrengthDirection): string 
   }
 }
 
+/** Compares a SchemaItemType against supported type.
+ * @beta
+ */
 export function isSupportedSchemaItemType(value: SchemaItemType, supported: SupportedSchemaItemType): boolean {
   if(value === supported)
     return true;

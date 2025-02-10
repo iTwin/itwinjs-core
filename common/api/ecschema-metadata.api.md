@@ -860,6 +860,9 @@ export interface ISchemaPartVisitor {
 }
 
 // @beta
+export function isSupportedSchemaItemType(value: SchemaItemType, supported: SupportedSchemaItemType): boolean;
+
+// @beta
 export class KindOfQuantity extends SchemaItem {
     // (undocumented)
     protected addPresentationFormat(format: Format | OverrideFormat, isDefault?: boolean): void;
@@ -1460,6 +1463,7 @@ export enum PropertyType {
 
 // @beta (undocumented)
 export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {

@@ -54,6 +54,7 @@ beta;interface;InvertedUnitProps
 beta;interface;ISchemaItemLocater
 beta;interface;ISchemaLocater
 beta;interface;ISchemaPartVisitor
+beta;function;isSupportedSchemaItemType
 beta;class;KindOfQuantity
 beta;interface;KindOfQuantityProps
 beta;type;LazyLoadedConstant
