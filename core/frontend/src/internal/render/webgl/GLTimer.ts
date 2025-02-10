@@ -5,7 +5,7 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { GLTimerResult, GLTimerResultCallback } from "../../../render/RenderSystem";
+import { type GLTimerResult, GLTimerResultCallback } from "../RenderSystemDebugControl";
 import { System } from "./System";
 
 class DisjointTimerExtension {

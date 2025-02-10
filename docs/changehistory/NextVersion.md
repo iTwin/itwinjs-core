@@ -41,6 +41,9 @@ Table of contents:
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
     - [TypeScript configuration changes](#typescript-configuration-changes)
+  - [Graphics](#graphics)
+    - [Read Image To Canvas](#read-image-to-canvas)
+
 
 ## Selection set
 
@@ -415,3 +418,11 @@ class MyElement extends Element {
   ...
 }
 ```
+
+## Graphics
+
+### Read Image To Canvas
+
+Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
+
+If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.

@@ -14,7 +14,7 @@ import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-ge
 import { tryImageElementFromUrl } from "./common/ImageUtil";
 import { IModelApp } from "./IModelApp";
 import { RenderGraphic } from "./render/RenderGraphic";
-import { RenderSkyBoxParams } from "./render/RenderSystem";
+import { RenderSkyBoxParams } from "./internal/render/RenderSkyBoxParams";
 import { DecorateContext } from "./ViewContext";
 import { ViewState3d } from "./ViewState";
 import { GraphicType } from "./common/render/GraphicType";
