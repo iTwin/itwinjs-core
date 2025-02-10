@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { AbstractSchemaItemType, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
+import { AbstractSchemaItemType, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus, isSupportedSchemaItemType, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -210,10 +210,10 @@ export class SchemaContextEditor {
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
     }
 
-    if (!isItemType(schemaItem, itemConstructor))
+    if (!isSupportedSchemaItemType(schemaItem.schemaItemType, itemConstructor.schemaItemType))
       throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
 
-    return schemaItem;
+    return schemaItem as InstanceType<T>;
   }
 
   private removeReference(schema: Schema, refSchema: Schema) {
@@ -292,15 +292,6 @@ export class SchemaContextEditor {
       throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias,  new SchemaId(schemaKey), e);
     }
   }
-}
-
-function isItemType<T extends typeof SchemaItem>(schemaItem: SchemaItem, itemConstructor: T): schemaItem is InstanceType<T> {
-  if(itemConstructor.schemaItemType === AbstractSchemaItemType.SchemaItem)
-    return SchemaItem.isSchemaItem(schemaItem);
-  if(itemConstructor.schemaItemType === AbstractSchemaItemType.Class)
-    return ECClass.isECClass(schemaItem);
-
-  return schemaItem.schemaItemType === itemConstructor.schemaItemType;
 }
 
 function isSchemaItemType(type: SupportedSchemaItemType): type is SchemaItemType {

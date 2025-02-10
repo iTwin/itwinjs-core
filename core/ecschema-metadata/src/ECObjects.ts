@@ -471,3 +471,23 @@ export function strengthDirectionToString(direction: StrengthDirection): string 
     default: throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
   }
 }
+
+export function isSupportedSchemaItemType(value: SchemaItemType, supported: SupportedSchemaItemType): boolean {
+  if(value === supported)
+    return true;
+
+  if(supported === AbstractSchemaItemType.Class && (
+    value === SchemaItemType.EntityClass ||
+    value === SchemaItemType.Mixin ||
+    value === SchemaItemType.StructClass ||
+    value === SchemaItemType.CustomAttributeClass ||
+    value === SchemaItemType.RelationshipClass)) {
+      return true;;
+  }
+
+  if(supported === AbstractSchemaItemType.SchemaItem) {
+    return true;
+  }
+
+  return false;
+}

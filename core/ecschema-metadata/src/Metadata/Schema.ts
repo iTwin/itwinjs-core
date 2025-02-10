@@ -12,7 +12,7 @@ import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlParser } from "../Deserialization/XmlParser";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { AbstractSchemaItemType, ECClassModifier, PrimitiveType, SchemaItemType } from "../ECObjects";
+import { ECClassModifier, isSupportedSchemaItemType, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -567,26 +567,10 @@ export class Schema implements CustomAttributeContainerProps {
     if (value === undefined || itemConstructor === undefined)
       return value;
 
-    if (value.schemaItemType !== itemConstructor.schemaItemType) {
-      // There is one special case here: ECClass, where the item type can be any of the class types
-      if(itemConstructor.schemaItemType === AbstractSchemaItemType.Class && (
-        value.schemaItemType === SchemaItemType.EntityClass ||
-        value.schemaItemType === SchemaItemType.Mixin ||
-        value.schemaItemType === SchemaItemType.StructClass ||
-        value.schemaItemType === SchemaItemType.CustomAttributeClass ||
-        value.schemaItemType === SchemaItemType.RelationshipClass)) {
-          return value as InstanceType<T>;
-      }
+    if(isSupportedSchemaItemType(value.schemaItemType, itemConstructor.schemaItemType))
+      return value as InstanceType<T>;
 
-      if(itemConstructor.schemaItemType === AbstractSchemaItemType.SchemaItem) {
-        return value as InstanceType<T>;
-      }
-
-      return undefined;
-    }
-
-
-    return value as InstanceType<T>;
+    return undefined;
   }
 
   /**
