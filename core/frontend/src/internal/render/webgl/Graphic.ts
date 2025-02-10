@@ -11,7 +11,7 @@ import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, The
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../../../render/GraphicBranch";
+import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBranch";
 import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { ClipVolume } from "./ClipVolume";
@@ -28,6 +28,7 @@ import { ThematicSensors } from "./ThematicSensors";
 import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { Contours } from "./Contours";
+import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {

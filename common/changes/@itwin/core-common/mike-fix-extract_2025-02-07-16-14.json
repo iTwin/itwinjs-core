@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Revert BackendTypes to Public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

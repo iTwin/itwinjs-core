@@ -6,7 +6,7 @@
 import { assert, ByteStream, Guid } from "@itwin/core-bentley";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
 import {
-  ImdlReader, IModelApp, IModelConnection, IModelTileTree, Tool,
+  ImdlReader, IModelApp, IModelConnection, Tool,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
@@ -56,7 +56,7 @@ export class GenerateTileContentTool extends Tool {
 
     for (const owner of iModel.tiles) {
       const tree = owner.owner.tileTree;
-      if (tree instanceof IModelTileTree && tree.modelId === modelId)
+      if (tree && "modelId" in tree && tree.modelId === modelId)
         return this.run({ tree, contentId });
     }
 
