@@ -12,12 +12,11 @@ import {
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
-  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
+  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, IModelApp, IModelConnection,
   ModelDisplayTransform,
   ModelDisplayTransformProvider,
   PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
-import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -28,6 +27,7 @@ import {
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
 import { Transform } from "@itwin/core-geometry";
 import { TestSnapshotConnection } from "./TestSnapshotConnection";
+import { GLTimerResultCallback } from "@itwin/core-frontend/lib/cjs/internal/render/RenderSystemDebugControl";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -460,7 +460,7 @@ export class TestRunner {
         if (++frameCount === numFrames)
           target.performanceMetrics = undefined;
 
-        if (timings.gpuFramesCollected >= numFrames || (frameCount >= numFrames && !(IModelApp.renderSystem as System).isGLTimerSupported)) {
+        if (timings.gpuFramesCollected >= numFrames || (frameCount >= numFrames && !IModelApp.renderSystem.debugControl?.isGLTimerSupported)) {
           removeListener();
           IModelApp.viewManager.dropViewport(vp, false);
           vp.continuousRendering = false;
