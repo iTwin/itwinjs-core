@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-rpcinterface-common",
-      "comment": "adjust to changes in ecschema-metadata",
+      "comment": "",
       "type": "none"
     }
   ],
