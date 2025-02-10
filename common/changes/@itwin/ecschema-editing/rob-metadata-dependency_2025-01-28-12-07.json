@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-editing",
-      "comment": "adjust to changes in ecschema-metadata",
+      "comment": "",
       "type": "none"
     }
   ],

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "improve type safety, remove generics from getItem, add type guards and assertions",
+      "comment": "Improve type-safety, remove generics from getItem(), add type guards and assertions for SchemaItem.",
       "type": "none"
     }
   ],
