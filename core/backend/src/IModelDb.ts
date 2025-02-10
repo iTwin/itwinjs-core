@@ -2842,6 +2842,7 @@ export class BriefcaseDb extends IModelDb {
         } finally {
           await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
+        return;
       }
       throw error;
     }

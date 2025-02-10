@@ -26,7 +26,7 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 - dataset: AllProperties.bim
 
 ```sql
-SELECT ec_classname(e.ECClassId) as Name, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
+SELECT ec_classname(e.ECClassId) as ClassName, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
 ```
 
 ```json
@@ -34,11 +34,11 @@ SELECT ec_classname(e.ECClassId) as Name, e.DirectStr FROM aps.TestElement e WHE
   "columns": [
     {
       "className": "",
-      "accessString": "Name",
+      "accessString": "ClassName",
       "generated": true,
       "index": 0,
-      "jsonName": "name",
-      "name": "Name",
+      "jsonName": "className",
+      "name": "ClassName",
       "typeName": "string",
       "type": "String"
     },
@@ -60,11 +60,11 @@ SELECT ec_classname(e.ECClassId) as Name, e.DirectStr FROM aps.TestElement e WHE
 ```json
 [
   {
-    "Name": "AllProperties:TestElement",
+    "ClassName": "AllProperties:TestElement",
     "DirectStr": "str6"
   },
   {
-    "Name": "AllProperties:TestElement",
+    "ClassName": "AllProperties:TestElement",
     "DirectStr": "str7"
   }
 ]

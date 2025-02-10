@@ -7,7 +7,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 ```sql
 SELECT
   ECInstanceId,
-  ec_classname (ECClassId) AS Name,
+  ec_classname (ECClassId) AS ClassName,
   Model.Id,
   i,
   DirectStr,
@@ -22,14 +22,14 @@ LIMIT
 | className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-|                           | Name         | true      | 1     | name         | Name         | undefined    | string   | String | undefined          |
+|                           | ClassName    | true      | 1     | className    | ClassName    | undefined    | string   | String | undefined          |
 |                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
 | AllProperties:IPrimitive  | i            | false     | 3     | i            | i            | undefined    | int      | Int    | i                  |
 | AllProperties:TestElement | DirectStr    | false     | 4     | directStr    | DirectStr    | undefined    | string   | String | DirectStr          |
 | AllProperties:TestElement | DirectLong   | false     | 5     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
 | AllProperties:TestElement | DirectDouble | false     | 6     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
-| ECInstanceId | Name                      | Id   | i   | DirectStr | DirectLong | DirectDouble |
+| ECInstanceId | ClassName                 | Id   | i   | DirectStr | DirectLong | DirectDouble |
 | ------------ | ------------------------- | ---- | --- | --------- | ---------- | ------------ |
 | 0x14         | AllProperties:TestElement | 0x11 | 100 | str0      | 1000       | 0.1          |
 
@@ -41,7 +41,7 @@ LIMIT
 ```sql
 SELECT
   test.ECInstanceId,
-  ec_classname (ECClassId) AS Name,
+  ec_classname (ECClassId) AS ClassName,
   test.Model.Id,
   test.i,
   test.DirectStr,
@@ -56,14 +56,14 @@ LIMIT
 | className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-|                           | Name         | true      | 1     | name         | Name         | undefined    | string   | String | undefined          |
+|                           | ClassName    | true      | 1     | className    | ClassName    | undefined    | string   | String | undefined          |
 |                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
 | AllProperties:IPrimitive  | i            | false     | 3     | i            | i            | undefined    | int      | Int    | i                  |
 | AllProperties:TestElement | DirectStr    | false     | 4     | directStr    | DirectStr    | undefined    | string   | String | DirectStr          |
 | AllProperties:TestElement | DirectLong   | false     | 5     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
 | AllProperties:TestElement | DirectDouble | false     | 6     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
-| ECInstanceId | Name                      | Id   | i   | DirectStr | DirectLong | DirectDouble |
+| ECInstanceId | ClassName                 | Id   | i   | DirectStr | DirectLong | DirectDouble |
 | ------------ | ------------------------- | ---- | --- | --------- | ---------- | ------------ |
 | 0x14         | AllProperties:TestElement | 0x11 | 100 | str0      | 1000       | 0.1          |
 
@@ -238,7 +238,7 @@ LIMIT
 ```sql
 SELECT
   sub.ECInstanceId,
-  ec_classname (sub.ECClassId) AS Name,
+  ec_classname (sub.ECClassId) AS ClassName,
   sub.Model.Id,
   sub.i,
   sub.DirectStr,
@@ -264,14 +264,14 @@ FROM
 | className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
 |                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-|                           | Name         | true      | 1     | name         | Name         | undefined    | string   | String | undefined          |
+|                           | ClassName    | true      | 1     | className    | ClassName    | undefined    | string   | String | undefined          |
 |                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
 | AllProperties:IPrimitive  | i            | false     | 3     | i            | i            | undefined    | int      | Int    | i                  |
 | AllProperties:TestElement | DirectStr    | false     | 4     | directStr    | DirectStr    | undefined    | string   | String | DirectStr          |
 | AllProperties:TestElement | DirectLong   | false     | 5     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
 | AllProperties:TestElement | DirectDouble | false     | 6     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
-| ECInstanceId | Name                      | Id   | i   | DirectStr | DirectLong | DirectDouble |
+| ECInstanceId | ClassName                 | Id   | i   | DirectStr | DirectLong | DirectDouble |
 | ------------ | ------------------------- | ---- | --- | --------- | ---------- | ------------ |
 | 0x14         | AllProperties:TestElement | 0x11 | 100 | str0      | 1000       | 0.1          |
 | 0x15         | AllProperties:TestElement | 0x11 | 101 | str1      | 1001       | 1.1          |
@@ -374,7 +374,7 @@ SELECT
   e.ECInstanceId AS ElementId,
   ec_classname (e.ECClassId) AS ElementClassName,
   a.ECInstanceID AS AspectId,
-  a.ECClassId AS AspectClass
+  ec_classname (a.ECClassId) AS AspectClassName
 FROM
   aps.TestElement e,
   aps.TestElementAspect a
@@ -387,12 +387,12 @@ LIMIT
 |           | ElementId        | true      | 0     | elementId        | ElementId        | Id           | long     | Id     | ECInstanceId       |
 |           | ElementClassName | true      | 1     | elementClassName | ElementClassName | undefined    | string   | String | undefined          |
 |           | AspectId         | true      | 2     | aspectId         | AspectId         | Id           | long     | Id     | ECInstanceId       |
-|           | AspectClass      | true      | 3     | aspectClass      | AspectClass      | ClassId      | long     | Id     | ECClassId          |
+|           | AspectClassName  | true      | 3     | aspectClassName  | AspectClassName  | undefined    | string   | String | undefined          |
 
-| ElementId | ElementClassName          | AspectId | AspectClass |
-| --------- | ------------------------- | -------- | ----------- |
-| 0x14      | AllProperties:TestElement | 0x21     | 0x163       |
-| 0x14      | AllProperties:TestElement | 0x22     | 0x163       |
-| 0x14      | AllProperties:TestElement | 0x23     | 0x163       |
-| 0x14      | AllProperties:TestElement | 0x24     | 0x163       |
-| 0x14      | AllProperties:TestElement | 0x25     | 0x163       |
+| ElementId | ElementClassName          | AspectId | AspectClassName                 |
+| --------- | ------------------------- | -------- | ------------------------------- |
+| 0x14      | AllProperties:TestElement | 0x21     | AllProperties:TestElementAspect |
+| 0x14      | AllProperties:TestElement | 0x22     | AllProperties:TestElementAspect |
+| 0x14      | AllProperties:TestElement | 0x23     | AllProperties:TestElementAspect |
+| 0x14      | AllProperties:TestElement | 0x24     | AllProperties:TestElementAspect |
+| 0x14      | AllProperties:TestElement | 0x25     | AllProperties:TestElementAspect |
