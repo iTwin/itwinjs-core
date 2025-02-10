@@ -147,7 +147,7 @@ export const GoogleMaps = {
     }
 
     if (opts.layerTypes !== undefined) {
-      properties.layerTypes = opts.layerTypes;
+      properties.layerTypes = [...opts.layerTypes];
     }
 
     return properties
