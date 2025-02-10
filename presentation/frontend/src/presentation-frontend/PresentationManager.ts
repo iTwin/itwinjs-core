@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -195,7 +195,7 @@ export interface PresentationManagerProps {
  *
  * @public
  */
-export class PresentationManager implements IDisposable {
+export class PresentationManager implements Disposable {
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _localizationHelper: FrontendLocalizationHelper;
@@ -259,11 +259,17 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper.locale = locale;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (this._clearEventListener) {
       this._clearEventListener();
       this._clearEventListener = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   private onUpdate = (_evt: Event, report: UpdateInfo) => {
@@ -411,8 +417,7 @@ export class PresentationManager implements IDisposable {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
           total: result.total,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          items: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+          items: this._localizationHelper.getLocalizedNodes(result.items),
         };
       },
     });
@@ -476,8 +481,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /** Retrieves paths from root nodes to nodes containing filter text in their label. */
@@ -487,8 +491,7 @@ export class PresentationManager implements IDisposable {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /**
@@ -662,8 +665,7 @@ export class PresentationManager implements IDisposable {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
           total: response.total,
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(DisplayValueGroup.fromJSON(x))),
+          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(x)),
         };
       },
     });

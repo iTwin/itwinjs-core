@@ -6,8 +6,9 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, IModelError } from "../../IModelError";
-import { BackendBuffer, BackendReadable } from "../../BackendTypes";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { IModelError } from "../../IModelError";
+import { BackendBuffer, BackendReadable } from "../../internal/BackendTypes";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 

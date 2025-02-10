@@ -13,33 +13,12 @@ import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
 import { TestIModelConnection } from "../IModelSetupUtils";
 
-const RULESET: Ruleset = {
-  id: "ruleset vars test",
-  rules: [
-    {
-      ruleType: RuleTypes.RootNodes,
-      specifications: [
-        {
-          specType: ChildNodeSpecificationTypes.CustomNode,
-          type: "root",
-          label: "root",
-        },
-      ],
-    },
-    {
-      ruleType: RuleTypes.LabelOverride,
-      condition: 'ThisNode.Type = "root"',
-      label: 'GetVariableStringValue("variable_id")',
-    },
-  ],
-};
-
 describe("Ruleset Variables", async () => {
   let variables: RulesetVariablesManager;
 
   beforeEach(async () => {
     await initialize();
-    variables = Presentation.presentation.vars(RULESET.id);
+    variables = Presentation.presentation.vars("ruleset vars test");
   });
 
   afterEach(async () => {
@@ -247,6 +226,29 @@ describe("Ruleset Variables", async () => {
   });
 
   describe("Multiple frontends for one backend", async () => {
+    const RULESET: Ruleset = {
+      id: "ruleset vars test",
+      rules: [
+        {
+          ruleType: RuleTypes.RootNodes,
+          specifications: [
+            {
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "root",
+              label: "root",
+            },
+          ],
+        },
+        {
+          ruleType: "ExtendedData",
+          condition: 'ThisNode.Type = "root"',
+          items: {
+            value: 'GetVariableStringValue("variable_id")',
+          },
+        },
+      ],
+    };
+
     let imodel: IModelConnection;
     let frontends: PresentationManager[];
 
@@ -258,7 +260,7 @@ describe("Ruleset Variables", async () => {
 
     afterEach(async () => {
       await imodel.close();
-      frontends.forEach((f) => f.dispose());
+      frontends.forEach((f) => f[Symbol.dispose]());
     });
 
     it("handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
@@ -266,7 +268,7 @@ describe("Ruleset Variables", async () => {
         frontends.forEach(async (f, fi) => f.vars(RULESET.id).setString("variable_id", `${i}_${fi}`));
         const nodes = await Promise.all(frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: RULESET }).then(async (x) => collect(x.items))));
         frontends.forEach((_f, fi) => {
-          expect(nodes[fi][0].label.displayValue).to.eq(`${i}_${fi}`);
+          expect(nodes[fi][0].extendedData?.value).to.eq(`${i}_${fi}`);
         });
       }
     });
@@ -285,7 +287,7 @@ describe("Ruleset Variables", async () => {
 
     afterEach(async () => {
       await imodel.close();
-      frontend.dispose();
+      frontend[Symbol.dispose]();
     });
 
     it("can use the same frontend-registered ruleset variables after backend is reset", async () => {

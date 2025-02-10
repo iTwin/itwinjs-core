@@ -32,8 +32,7 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  * @beta
  */
 export class RelationshipClass extends ECClass {
-  public override readonly schema!: Schema;
-  public override readonly schemaItemType!: SchemaItemType.RelationshipClass;
+  public override readonly schemaItemType = SchemaItemType.RelationshipClass;
   protected _strength: StrengthType;
   protected _strengthDirection: StrengthDirection;
   protected _source: RelationshipConstraint;
@@ -41,7 +40,6 @@ export class RelationshipClass extends ECClass {
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
-    this.schemaItemType = SchemaItemType.RelationshipClass;
     this._strengthDirection = StrengthDirection.Forward;
     this._strength = StrengthType.Referencing;
     this._source = new RelationshipConstraint(this, RelationshipEnd.Source);
@@ -123,7 +121,7 @@ export class RelationshipClass extends ECClass {
 
     let strength = parseStrength(relationshipClassProps.strength);
     if (undefined === strength) {
-      if (SchemaReadHelper.isECSpecVersionNewer({readVersion: relationshipClassProps.originalECSpecMajorVersion, writeVersion: relationshipClassProps.originalECSpecMinorVersion} as ECSpecVersion))
+      if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: relationshipClassProps.originalECSpecMajorVersion, writeVersion: relationshipClassProps.originalECSpecMinorVersion } as ECSpecVersion))
         strength = StrengthType.Referencing;
       else
         throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
@@ -242,11 +240,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     if (undefined === this._constraintClasses)
       return;
 
-    this._constraintClasses.forEach( (item, index) => {
+    this._constraintClasses.forEach((item, index) => {
       const constraintName = item.fullName;
-      if(constraintName === constraint.fullName)
+      if (constraintName === constraint.fullName)
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._constraintClasses?.splice(index,1);
+        this._constraintClasses?.splice(index, 1);
     });
   }
 

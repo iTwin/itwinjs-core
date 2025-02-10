@@ -10,8 +10,8 @@ import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
   AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass,
-  Enumeration, Format, KindOfQuantity, Mixin, OverrideFormat, Property, PropertyProps,
-  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem,
+  Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Property, PropertyProps,
+  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, Unit,
 } from "@itwin/ecschema-metadata";
 import {
   type AnyClassItemDifference,
@@ -22,6 +22,7 @@ import {
   type DifferenceType,
   type EntityClassMixinDifference,
   type EnumeratorDifference,
+  type FormatUnitDifference,
   type KindOfQuantityPresentationFormatDifference,
   type RelationshipConstraintClassDifference,
   type RelationshipConstraintDifference,
@@ -39,7 +40,10 @@ import {
 export class SchemaDiagnosticVisitor {
 
   public readonly schemaDifferences: Array<SchemaDifference | SchemaReferenceDifference>;
-  public readonly schemaItemDifferences: Array<AnySchemaItemDifference | EntityClassMixinDifference | KindOfQuantityPresentationFormatDifference>;
+  public readonly schemaItemDifferences: Array<AnySchemaItemDifference 
+    | EntityClassMixinDifference 
+    | KindOfQuantityPresentationFormatDifference 
+    | FormatUnitDifference>;
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
 
@@ -107,10 +111,10 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.PresentationUnitMissing:
         return this.visitMissingPresentationUnit(diagnostic);
 
-      // Currently not handled...
       case SchemaCompareCodes.FormatUnitMissing:
+        return this.visitMissingFormatUnit(diagnostic);
       case SchemaCompareCodes.UnitLabelOverrideDelta:
-        break;
+        return this.visitChangedFormatUnitLabel(diagnostic);
     }
     return;
   }
@@ -248,7 +252,7 @@ export class SchemaDiagnosticVisitor {
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
       itemName: property.class.name,
-      path: property.name,
+      path:  property.name,
       difference: property.toJSON() as AnyPropertyProps,
     });
   }
@@ -462,7 +466,61 @@ export class SchemaDiagnosticVisitor {
     }
     addEntry.difference.push(presentationFormat.fullName);
   }
-}
+
+  private visitMissingFormatUnit(diagnostic: AnyDiagnostic) {
+    const format = diagnostic.ecDefinition as Format;
+
+    for (let index = this.schemaItemPathDifferences.length-1; index>=0; index--) {
+      const entry = this.schemaItemPathDifferences[index];
+      if (entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.FormatUnitLabel && entry.itemName === format.name) {
+        this.schemaItemPathDifferences.splice(index, 1);
+      }
+    }
+
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is FormatUnitDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.FormatUnit
+        && entry.itemName === format.name;
+    });
+
+    if (modifyEntry === undefined && format.units) {
+      modifyEntry = {
+        changeType: "modify",
+        schemaType: SchemaOtherTypes.FormatUnit,
+        itemName: format.name,
+        difference: [],
+      };
+
+      for (const [unit, label] of format.units) {
+        modifyEntry.difference.push({
+          name: unit.fullName,
+          label,
+        });
+      };
+
+      this.schemaItemDifferences.push(modifyEntry);
+    }
+  }
+
+  private visitChangedFormatUnitLabel(diagnostic: AnyDiagnostic) {
+    const format = diagnostic.ecDefinition as Format;
+
+    if (this.schemaItemDifferences.find((entry): entry is FormatUnitDifference => { return entry.changeType === "modify"
+        && entry.schemaType === SchemaOtherTypes.FormatUnit && entry.itemName === format.name})) {
+      return;
+    }
+
+    const [unit, label] = diagnostic.messageArgs as [Unit | InvertedUnit, string | undefined];
+    this.schemaItemPathDifferences.push({
+      changeType: "modify",
+      schemaType: SchemaOtherTypes.FormatUnitLabel,
+      itemName: format.name,
+      path: unit.fullName,
+      difference: {
+        label,
+      },
+    });
+  };
+};
 
 function isPropertyTypeName(property: Property, propertyName: string) {
   return (propertyName === "type") ||

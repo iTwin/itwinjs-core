@@ -10,9 +10,9 @@ beta;interface;FrontendTilesOptions
 internal;const;frontendTilesOptions
 alpha;interface;GetGeoscienceTilesetArgs
 alpha;function;getGeoscienceTilesetUrl
-beta;type;GraphicRepresentation
+beta;interface;GraphicRepresentation
 beta;type;GraphicRepresentationFormat
-beta;enum;GraphicRepresentationStatus
+beta;type;GraphicRepresentationStatus
 beta;function;initializeFrontendTiles
 beta;interface;MeshExport
 internal;interface;MeshExports

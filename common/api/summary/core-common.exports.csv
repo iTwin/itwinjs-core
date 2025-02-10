@@ -289,9 +289,13 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
+public;interface;FontFamilyDescriptor
+beta;interface;FontFamilySelector
 public;type;FontId
 public;class;FontMap
+deprecated;class;FontMap
 public;interface;FontMapProps
+deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;interface;FormDataCommon
@@ -419,8 +423,6 @@ public;class;IModel
 public;type;IModelConnectionProps
 beta;interface;IModelCoordinatesRequestProps
 beta;interface;IModelCoordinatesResponseProps
-public;interface;IModelEncryptionProps
-deprecated;interface;IModelEncryptionProps
 public;class;IModelError
 public;type;IModelErrorNumber
 public;class;IModelNotFoundResponse
@@ -464,7 +466,7 @@ internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
 public;function;isPowerOfTwo
-internal;function;isValidImageSourceFormat
+public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 beta;interface;ITwinError
 beta;namespace;ITwinError
@@ -504,7 +506,7 @@ public;interface;MaterialProps
 internal;class;MeshEdge
 internal;class;MeshEdges
 internal;class;MeshPolyline
-internal;class;MeshPolylineList
+internal;type;MeshPolylineList
 public;class;ModelClipGroup
 public;interface;ModelClipGroupProps
 public;class;ModelClipGroups
@@ -639,9 +641,6 @@ public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
 public;namespace;Quantization
-internal;function;isInRange
-internal;function;isQuantizable
-internal;function;isQuantized
 public;class;QueryBinder
 public;interface;QueryLimit
 public;interface;QueryOptions
@@ -676,15 +675,16 @@ internal;interface;RelTypeInfo
 public;type;RemoveFunction
 public;interface;RenderFeatureTable
 public;class;RenderMaterial
-public;namespace;RenderMaterial
 public;interface;RenderMaterialAssetMapsProps
 public;interface;RenderMaterialAssetProps
+internal;class;RenderMaterialParams
 public;interface;RenderMaterialProps
 public;enum;RenderMode
 public;namespace;RenderSchedule
 internal;class;Interval
 public;class;RenderTexture
 public;namespace;RenderTexture
+internal;class;RenderTextureParams
 public;interface;RenderTimelineLoadProps
 public;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
@@ -761,6 +761,7 @@ beta;class;RpcRoutingToken
 internal;interface;RpcSerializedValue
 internal;namespace;RpcSerializedValue
 internal;class;RpcSessionInvocation
+alpha;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
@@ -829,9 +830,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
-public;type;TerrainProviderName
-deprecated;type;TerrainProviderName
 public;class;TerrainSettings
+internal;interface;TestingArgs
 internal;class;TestRpcManager
 beta;class;TextAnnotation
 public;interface;TextAnnotation2dProps

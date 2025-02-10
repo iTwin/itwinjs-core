@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "5.0.0-dev.10",
+  "version": "5.0.0-dev.59",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=core-bentley",
     "test": "vitest",
@@ -37,12 +37,12 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@opentelemetry/api": "1.0.4",
-    "@types/node": "~20.9.5",
-    "@vitest/coverage-v8": "^2.1.5",
+    "@types/node": "~20.17.0",
+    "@vitest/coverage-v8": "^3.0.5",
     "eslint": "^9.13.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.6.2",
-    "vitest": "^2.1.5"
+    "vitest": "^3.0.5"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

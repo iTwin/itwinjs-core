@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MapLayerSource, MapLayerSourceStatus } from "../../../core-frontend";
-import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../tile/map/ArcGisUtilities";
+import { MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
+import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../internal/tile/map/ArcGisUtilities";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods";
 import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
@@ -111,12 +111,7 @@ describe("ArcGisUtilities", () => {
 
   it("should validate by invoking getServiceJson with proper parameters ", async () => {
     const source = getSampleSourceWithQueryParamsAndCreds();
-    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async function (_input: NodeJS.fetch.RequestInfo, _init?: RequestInit) {
-      return Promise.resolve({
-        status: 200,
-        json: async () => {return {};},
-      } as unknown as Response);
-    });
+    const fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
     await ArcGisUtilities.getServiceJson({ url: source.url, formatId: source.formatId, userName: source.userName, password: source.password, queryParams: source.collectQueryParams() });
 
     expect(fetchStub).toHaveBeenCalledOnce();

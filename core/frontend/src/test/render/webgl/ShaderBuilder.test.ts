@@ -5,10 +5,10 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
+import { ShaderProgram } from "../../../internal/render/webgl/ShaderProgram";
 import {
   ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
-} from "../../../render/webgl/ShaderBuilder";
+} from "../../../internal/render/webgl/ShaderBuilder";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {

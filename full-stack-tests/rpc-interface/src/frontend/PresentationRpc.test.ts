@@ -23,7 +23,7 @@ describe("PresentationRpcInterface tests", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    const accessToken = testContext.adminUserAccessToken;
+    const accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -178,8 +178,8 @@ const createNodesRuleset = (): Ruleset => ({
           classes: {
             schemaName: "BisCore",
             classNames: ["Model"],
+            arePolymorphic: true,
           },
-          arePolymorphic: true,
         },
       ],
     },

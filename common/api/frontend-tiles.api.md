@@ -73,34 +73,20 @@ export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
 export function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise<string | undefined>;
 
 // @beta
-export type GraphicRepresentation = {
+export interface GraphicRepresentation {
+    dataSource: DataSource;
     displayName: string;
+    format: GraphicRepresentationFormat;
     representationId: string;
     status: GraphicRepresentationStatus;
-    format: GraphicRepresentationFormat;
-    dataSource: DataSource;
-} & ({
-    status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
-    url?: string;
-} | {
-    status: GraphicRepresentationStatus.Complete;
-    url: string;
-});
-
-// @beta
-export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
-
-// @beta
-export enum GraphicRepresentationStatus {
-    // (undocumented)
-    Complete = "Complete",
-    // (undocumented)
-    Failed = "Failed",
-    // (undocumented)
-    InProgress = "In progress",
-    // (undocumented)
-    NotStarted = "Not started"
+    url: string | undefined;
 }
+
+// @beta
+export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL" | string;
+
+// @beta
+export type GraphicRepresentationStatus = "Complete" | "InProgress" | "Invalid" | "NotStarted";
 
 // @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;

@@ -6,13 +6,9 @@
  * @module Measure
  */
 
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import {
-  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
-} from "@itwin/core-geometry";
-import {
-  BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
-} from "@itwin/core-common";
+import { BentleyStatus, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps } from "@itwin/core-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
@@ -1273,7 +1269,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   /** @internal */
   public override async onCleanup() {
     if (0 !== this._acceptedIds.length)
-      this.iModel.hilited.setHilite(this._acceptedIds, false);
+      this.iModel.hilited.remove({ elements: this._acceptedIds });
   }
 
   /** @internal */
@@ -1575,7 +1571,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
 
     this._acceptedMeasurements.push(marker);
     this._acceptedIds.push(hit.sourceId);
-    this.iModel.hilited.setHilite(hit.sourceId, true);
+    this.iModel.hilited.add({ elements: hit.sourceId });
 
     await this.updateTotals();
     this.setupAndPromptForNextAction();
@@ -1595,7 +1591,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
       await this.onReinitialize();
     } else {
       if (0 !== this._acceptedIds.length) {
-        this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false);
+        this.iModel.hilited.remove({ elements: this._acceptedIds[this._acceptedIds.length - 1] });
         this._acceptedIds.pop();
       }
 

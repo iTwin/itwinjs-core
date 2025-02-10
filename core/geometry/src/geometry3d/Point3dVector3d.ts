@@ -1111,10 +1111,10 @@ export class Vector3d extends XYZ {
     return unitNormal ? unitNormal.crossProduct(this).plusScaled(unitNormal, unitNormal.dotProduct(this), result) : undefined;
   }
   /**
-   * Return a vector computed at fractional position between this vector and vectorB
-   * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
-   *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
-   * @param vectorB second vector
+   * Return a vector computed at fractional position between this vector and vectorB.
+   * @param fraction fractional position. 0 is at `this`. 1 is at `vectorB`. True fractions are "between",
+   * negatives are "before this", beyond 1 is "beyond vectorB".
+   * @param vectorB second vector.
    * @param result optional preallocated result.
    */
   public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
@@ -1573,8 +1573,8 @@ export class Vector3d extends XYZ {
    * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
    * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison
-   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel
-   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel. Default false.
+   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value. Default false.
    * @param options optional radian and distance tolerances.
    */
   public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,
