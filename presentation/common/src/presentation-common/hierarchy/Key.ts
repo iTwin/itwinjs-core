@@ -28,67 +28,29 @@ export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace NodeKey {
-  /**
-   * Serialize given [[NodeKey]] to JSON
-   * @deprecated in 3.x. Use [[NodeKey]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function toJSON(key: NodeKey): NodeKeyJSON {
-    return { ...key };
-  }
-
-  /**
-   * Deserialize node key from JSON
-   * @deprecated in 3.x. Use [[NodeKey]].
-   */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function fromJSON(json: NodeKeyJSON): NodeKey {
-    return { version: 1, ...json };
-  }
-
   /** Checks if the supplied key is an [[ECInstancesNodeKey]] */
-  export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
-  /** Checks if the supplied key is an [[ECInstancesNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isInstancesNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey {
     return key.type === StandardNodeTypes.ECInstancesNode;
   }
 
   /** Checks if the supplied key is an [[ECClassGroupingNodeKey]] */
-  export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
-  /** Checks if the supplied key is an [[ECClassGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isClassGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey {
     return key.type === StandardNodeTypes.ECClassGroupingNode;
   }
 
   /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]] */
-  export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
-  /** Checks if the supplied key is an [[ECPropertyGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isPropertyGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey {
     return key.type === StandardNodeTypes.ECPropertyGroupingNode;
   }
 
   /** Checks if the supplied key is a [[LabelGroupingNodeKey]] */
-  export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
-  /** Checks if the supplied key is a [[LabelGroupingNodeKey]]. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isLabelGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
+  export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey {
     return key.type === StandardNodeTypes.DisplayLabelGroupingNode;
   }
 
   /** Checks if the supplied key is a grouping node key */
-  export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
-  /** Checks if the supplied key is a grouping node key. @deprecated in 3.x. Use an override for [[NodeKey]]. */
-  export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function isGroupingNodeKey(key: NodeKey | NodeKeyJSON) {
-    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key); // eslint-disable-line @typescript-eslint/no-deprecated
+  export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey {
+    return isClassGroupingNodeKey(key) || isPropertyGroupingNodeKey(key) || isLabelGroupingNodeKey(key);
   }
 
   /**
@@ -177,18 +139,6 @@ export interface BaseNodeKey {
   /** Query that returns all selected instance keys */
   instanceKeysSelectQuery?: PresentationQuery;
 }
-/**
- * Serialized [[BaseNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[BaseNodeKey]].
- */
-export interface BaseNodeKeyJSON {
-  type: string;
-  // TODO: make this required
-  version?: number;
-  pathFromRoot: string[];
-  instanceKeysSelectQuery?: PresentationQuery;
-}
 
 /**
  * Data structure that describes a node ECInstance node key
@@ -197,15 +147,6 @@ export interface BaseNodeKeyJSON {
 export interface ECInstancesNodeKey extends BaseNodeKey {
   type: StandardNodeTypes.ECInstancesNode;
   /** List of [[InstanceKey]] objects of ECInstances represented by the node */
-  instanceKeys: InstanceKey[];
-}
-/**
- * Serialized [[ECInstancesNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[ECInstancesNodeKey]].
- */
-export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
-  type: StandardNodeTypes.ECInstancesNode;
   instanceKeys: InstanceKey[];
 }
 
@@ -223,14 +164,6 @@ export interface GroupingNodeKey extends BaseNodeKey {
    */
   groupedInstancesCount: number;
 }
-/**
- * Serialized [[GroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[GroupingNodeKey]].
- */
-export interface GroupingNodeKeyJSON extends BaseNodeKey {
-  groupedInstancesCount: number;
-}
 
 /**
  * Data structure that describes an ECClass grouping node key
@@ -239,15 +172,6 @@ export interface GroupingNodeKeyJSON extends BaseNodeKey {
 export interface ECClassGroupingNodeKey extends GroupingNodeKey {
   type: StandardNodeTypes.ECClassGroupingNode;
   /** Full name of the grouping ECClass */
-  className: string;
-}
-/**
- * Serialized [[ECClassGroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[ECClassGroupingNodeKey]].
- */
-export interface ECClassGroupingNodeKeyJSON extends GroupingNodeKey {
-  type: StandardNodeTypes.ECClassGroupingNode;
   className: string;
 }
 
@@ -264,17 +188,6 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
   /** Raw grouping values */
   groupingValues: any[];
 }
-/**
- * Serialized [[ECPropertyGroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[ECPropertyGroupingNodeKey]].
- */
-export interface ECPropertyGroupingNodeKeyJSON extends GroupingNodeKey {
-  type: StandardNodeTypes.ECPropertyGroupingNode;
-  className: string;
-  propertyName: string;
-  groupingValues: any[];
-}
 
 /**
  * Data structure that describes a display label grouping node key
@@ -285,23 +198,6 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
   /** Grouping display label */
   label: string;
 }
-/**
- * Serialized [[LabelGroupingNodeKey]] JSON representation.
- * @public
- * @deprecated in 3.x. Use [[LabelGroupingNodeKey]].
- */
-export interface LabelGroupingNodeKeyJSON extends GroupingNodeKey {
-  type: StandardNodeTypes.DisplayLabelGroupingNode;
-  label: string;
-}
-
-/**
- * One of the serialized node key types
- * @public
- * @deprecated in 3.x. Use [[NodeKey]].
- */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
 
 /**
  * Data structure that describes a presentation query

@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
-import { IModelApp, MockRender, readElementGraphics } from "@itwin/core-frontend";
+import { IModelApp, readElementGraphics } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
