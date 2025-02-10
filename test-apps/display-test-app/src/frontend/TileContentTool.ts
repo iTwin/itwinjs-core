@@ -8,6 +8,7 @@ import { PersistentGraphicsRequestProps } from "@itwin/core-common";
 import {
   ImdlReader, IModelApp, IModelConnection, Tool,
 } from "@itwin/core-frontend";
+import { IModelTileTree } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 export class GenerateTileContentTool extends Tool {
@@ -55,7 +56,7 @@ export class GenerateTileContentTool extends Tool {
       return false;
 
     for (const owner of iModel.tiles) {
-      const tree = owner.owner.tileTree;
+      const tree = owner.owner.tileTree instanceof IModelTileTree ? owner.owner.tileTree : undefined;
       if (tree && "modelId" in tree && tree.modelId === modelId)
         return this.run({ tree, contentId });
     }
