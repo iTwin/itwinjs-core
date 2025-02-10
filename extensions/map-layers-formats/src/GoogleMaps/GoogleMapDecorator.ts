@@ -6,7 +6,7 @@ import { MapTypesType } from "./GoogleMaps";
 /** A simple decorator that show logo at the a given screen position.
  * @internal
  */
-class LogoDecoration implements CanvasDecoration {
+export class LogoDecoration implements CanvasDecoration {
   private _sprite?: Sprite;
 
   /** The current position of the logo in view coordinates. */

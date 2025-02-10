@@ -109,10 +109,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     const zooms = new Set<number>();
     const matchingAttributions: string[] = [];
 
-          // Viewport info requests must be made for a specific zoom level
+    // Viewport info requests must be made for a specific zoom level
     tiles.forEach((tile) => zooms.add(tile.depth));
-    for (const zoom of zooms) {
 
+    for (const zoom of zooms) {
       let cartoRect: MapCartoRectangle|undefined;
       for (const tile of tiles) {
         if (tile.depth === zoom && tile instanceof MapTile) {
@@ -197,9 +197,13 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     this._decorator.decorate(context);
   }
 
+  private getSelectedTiles(vp: ScreenViewport) {
+    return IModelApp.tileAdmin.getTilesForUser(vp)?.selected
+  }
+
   public override async addAttributions (cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     let copyrightMsg = "";
-    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
+    const tiles = this.getSelectedTiles(vp);
     if (tiles) {
       try {
         const attrList = await this.fetchAttributions(tiles);
