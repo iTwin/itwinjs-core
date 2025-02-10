@@ -57,13 +57,13 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param destOffset copy to instance array starting at this point index; zero if undefined
    * @return count and offset of points copied
    */
-  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): { count: number, offset: number } {
     // validate inputs and convert from points to entries
     let myOffset = (undefined !== destOffset) ? destOffset * 2 : 0;
     if (myOffset < 0)
       myOffset = 0;
     if (myOffset >= this._data.length)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     let myCount = (undefined !== sourceCount) ? sourceCount * 2 : source.length;
     if (myCount > 0) {
       if (myCount > source.length)
@@ -74,14 +74,14 @@ export class GrowableXYArray extends IndexedXYCollection {
         myCount -= myCount % 2;
     }
     if (myCount <= 0)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     if (myCount === source.length)
       this._data.set(source, myOffset);
     else if (source instanceof Float64Array)
       this._data.set(source.subarray(0, myCount), myOffset);
     else
       this._data.set(source.slice(0, myCount), myOffset);
-    return {count: myCount / 2, offset: myOffset / 2};
+    return { count: myCount / 2, offset: myOffset / 2 };
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
@@ -112,7 +112,7 @@ export class GrowableXYArray extends IndexedXYCollection {
    * @param pointCount new number of active points in array
    * @param padWithZero when increasing point count, whether to zero out new points (default false)
    */
-   public resize(pointCount: number, padWithZero?: boolean) {
+  public resize(pointCount: number, padWithZero?: boolean) {
     if (pointCount >= 0 && pointCount < this._xyInUse)
       this._xyInUse = pointCount;
     else if (pointCount > this._xyInUse) {
@@ -451,14 +451,6 @@ export class GrowableXYArray extends IndexedXYCollection {
     this._data[index + 1] = y;
     return true;
   }
-  /**
-   * Set the coordinates of a single point given as coordinates.
-   * @deprecated in 3.x. Use setXYAtCheckedPointIndex instead
-   */
-   public setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean {
-    return this.setXYAtCheckedPointIndex(pointIndex, x, y);
-  }
-
   /**
    * Copy all points into a simple array of Point3d with given z.
    */

@@ -666,17 +666,31 @@ export class Format extends SchemaItem {
     // @alpha
     protected setDecimalSeparator(separator: string): void;
     // @alpha
+    protected setFormatTraits(formatTraits: FormatTraits): void;
+    // @alpha
     protected setFormatType(formatType: FormatType): void;
+    // @alpha
+    protected setIncludeZero(includeZero: boolean): void;
+    // @alpha
+    protected setMinWidth(minWidth: number): void;
     // (undocumented)
     protected setPrecision(precision: number): void;
     // @alpha
     protected setRoundFactor(roundFactor: number): void;
     // @alpha
+    protected setScientificType(scientificType: ScientificType): void;
+    // @alpha
     protected setShowSignOption(signOption: ShowSignOption): void;
+    // @alpha
+    protected setSpacer(spacer: string): void;
+    // @alpha
+    protected setStationOffsetSize(stationOffsetSize: number): void;
     // @alpha
     protected setStationSeparator(separator: string): void;
     // @alpha
     protected setThousandSeparator(separator: string): void;
+    // @alpha
+    protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]>): void;
     // @alpha
     protected setUomSeparator(separator: string): void;
     // (undocumented)
@@ -1416,8 +1430,6 @@ export class RelationshipClass extends ECClass {
     fromJSON(relationshipClassProps: RelationshipClassProps): Promise<void>;
     // (undocumented)
     fromJSONSync(relationshipClassProps: RelationshipClassProps): void;
-    // (undocumented)
-    readonly schema: Schema;
     // (undocumented)
     readonly schemaItemType = SchemaItemType.RelationshipClass;
     // @alpha

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Enabled `useDefineForClassFields` TypeScript config flag",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

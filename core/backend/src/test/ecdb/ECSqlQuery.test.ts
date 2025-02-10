@@ -393,7 +393,60 @@ describe("ECSql Query", () => {
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
     }
   });
+  // new new addon build
+  it("ecsql interrupt check", async () => {
+    let cancelled = 0;
+    let successful = 0;
+    let rowCount = 0;
+    try {
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb], { allowTestingArgs: true });
+      const scheduleQuery = async () => {
+        return new Promise<void>(async (resolve, reject) => {
+          try {
+            const options = new QueryOptionsBuilder();
+            options.setTestingArgs({ interrupt: true });
+            options.setDelay(1000);
+            const reader = imodel1.createQueryReader(`
+              WITH sequence(n) AS (
+                SELECT  1
+                UNION ALL
+                SELECT n + 1 FROM sequence WHERE n < 10000
+              )
+              SELECT  COUNT(*)
+              FROM bis.SpatialIndex i, sequence s`, undefined, options.getOptions());
+            while (await reader.step()) {
+              rowCount++;
+            }
+            successful++;
+            resolve();
+          } catch (err: any) {
+            // we expect query to be cancelled
+            if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
+              cancelled++;
+              resolve();
+            } else {
+              reject(new Error("rejected"));
+            }
+          }
+        });
+      };
 
+      const queries = [];
+      for (let i = 0; i < 100; i++) {
+        queries.push(scheduleQuery());
+      }
+
+      await Promise.all(queries);
+      // We expect at least one query to be cancelled
+      assert.equal(successful, 100, "success should be 100");
+      assert.equal(rowCount, 100, "expect 100 rows");
+      assert.isAtLeast(cancelled, 0, "should not have any cancelled query");
+    } finally {
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb]);
+    }
+  });
   // new new addon build
   it("ecsql with blob", async () => {
     let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
@@ -550,6 +603,69 @@ describe("ECSql Query", () => {
     assert.equal(reader.stats.backendRowsReturned, 23);
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 100);
+  });
+  it("concurrent query bind idset in IdSet virtual table", async () => {
+    const ids: string[] = [];
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+      ids.push(row[0]);
+    }
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 23);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    assert.equal(reader.stats.backendRowsReturned, 23);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 100);
+  });
+  it("concurrent query bind single id in IdSet virtual table", async () => {
+    let ids: string = "";
+    for await (const row of imodel1.createQueryReader("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+      ids = row[0]; // getting only the first id
+      break;
+    }
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    let rows = 0; // backend will fail to bind so no rows will be returned
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 0);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    assert.equal(reader.stats.backendRowsReturned, 0);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+  });
+  it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
+    const ids: string[] = ["0x1","ABC","YZ"];
+
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    let rows = 0; // backend will bind successfully but some of the values are not valid for IdSet VT so those values will be ignored
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 1);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 12); // 11 for BisCore.element and 1 for IdSet
+    assert.equal(reader.stats.backendRowsReturned, 1);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+  });
+  it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
+    const ids: string[] = ["ABC", "0x1","YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
+
+    try{
+      imodel1.createQueryReader("SELECT * FROM BisCore.element, IdSet(?) WHERE id = ECInstanceId ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES", QueryBinder.from([ids]));
+    }catch(err: any){
+      assert.equal(err.message, "unsupported type");
+    }
   });
   it("concurrent query get meta data", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");

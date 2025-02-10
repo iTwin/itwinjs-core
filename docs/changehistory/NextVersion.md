@@ -26,14 +26,23 @@ Table of contents:
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
-      - [@itwin/core-bentley](#itwincore-bentley)
-      - [@itwin/core-electron](#itwincore-electron)
-    - [API removals](#api-removals)
+      - [@itwin/core-bentley](#itwincore-bentley-1)
       - [@itwin/core-common](#itwincore-common-1)
+      - [@itwin/core-electron](#itwincore-electron)
+      - [@itwin/core-frontend](#itwincore-frontend-1)
+      - [@itwin/core-geometry](#itwincore-geometry)
+      - [@itwin/presentation-common](#itwinpresentation-common-1)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-2)
     - [Packages dropped](#packages-dropped)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
+    - [TypeScript configuration changes](#typescript-configuration-changes)
+      - [`target`](#target)
+      - [`useDefineForClassFields`](#usedefineforclassfields)
+  - [Graphics](#graphics)
+    - [Read Image To Canvas](#read-image-to-canvas)
 
 ## Selection set
 
@@ -120,6 +129,14 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 - All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
 
+- `imageId` properties of [CustomNodeSpecification]($presentation-common) and [PropertyRangeGroupSpecification]($presentation-common) have been deprecated. [ExtendedData](../presentation/customization/ExtendedDataUsage.md#customize-tree-node-item-icon) rule should be used instead.
+
+- `fromJSON` and `toJSON` methods of [Field]($presentation-common), [PropertiesField]($presentation-common), [ArrayPropertiesField]($presentation-common), [StructPropertiesField]($presentation-common) and [NestedContentField]($presentation-common) have been deprecated. Use `fromCompressedJSON` and `toCompressedJSON` methods instead.
+
+- `ItemJSON.labelDefinition` has been deprecated in favor of newly added optional `label` property.
+
+- `NestedContentValue.labelDefinition` has been deprecated in favor of newly added optional `label` property.
+
 ## Breaking Changes
 
 ### Opening connection to local snapshot requires IPC
@@ -136,7 +153,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only the latest Electron release (Electron 34) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
@@ -221,12 +238,163 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
 | `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
 
+#### @itwin/core-common
+
+| Removed                                        | Replacement                                          |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`                                  |
+| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`                          |
+| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString`                    |
+| `TerrainProviderName`                          | `string`                                             |
+| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
+| `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
+
 #### @itwin/core-electron
 
 | Removed                             | Replacement                                               |
 | ----------------------------------- | --------------------------------------------------------- |
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+
+#### @itwin/core-frontend
+
+| **Removed**                                          | **Replacement**                                                                                                   |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `callIpcHost`                                        | Use `appFunctionIpc` instead.                                                                                     |
+| `callNativeHost`                                     | Use `nativeAppIpc` instead.                                                                                       |
+| `createMaterial`                                     | Use `createRenderMaterial` instead.                                                                               |
+| `createTextureFromImage`                             | Use `createTexture` instead.                                                                                      |
+| `createTextureFromImageBuffer`                       | Use `createTexture` instead.                                                                                      |
+| `createTextureFromImageSource`                       | Use `RenderSystem.createTextureFromSource` instead.                                                               |
+| `displayStyleState.getThumbnail`                     | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                    |
+| `displayStyleState.onScheduleScriptReferenceChanged` | Use [DisplayStyleState.onScheduleScriptChanged]($frontend) instead                                                |
+| `displayStyleState.scheduleScriptReference`          | Use [DisplayStyleState.scheduleScript]($frontend) instead                                                         |
+| `GraphicBuilder.pickId`                              | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                     |
+| `getDisplayedExtents`                                | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
+| `IModelConnection.displayedExtents`                  | N/A                                                                                                               |
+| `IModelConnection.expandDisplayedExtents`            | Use `displayedExtents` instead.                                                                                   |
+| `IModelConnection.query`                             | Use `createQueryReader` instead (same parameter).                                                                 |
+| `IModelConnection.queryRowCount`                     | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`.    |
+| `IModelConnection.restartQuery`                      | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.      |
+| `requestDownloadBriefcase(progress)`                 | `progress` is removed, use `DownloadBriefcaseOptions.progressCallback` instead.                                   |
+| `readImage`                                          | Use `readImageBuffer` instead.                                                                                    |
+| `setEventController`                                 | Removed (was for internal use).                                                                                   |
+| `PullChangesOptions.progressCallback`                | Use `downloadProgressCallback` instead.                                                                           |
+
+#### @itwin/core-geometry
+
+| Removed                                           | Replacement                                 |
+| ------------------------------------------------- | ------------------------------------------- |
+| `PathFragment.childFractionTChainDistance`        | `PathFragment.childFractionToChainDistance` |
+| `GrowableXYArray.setXYZAtCheckedPointIndex`       | `GrowableXYArray.setXYAtCheckedPointIndex`  |
+| `PolyfaceBuilder.findOrAddPoint`                  | `PolyfaceBuilder.addPoint`                  |
+| `PolyfaceBuilder.findOrAddParamXY`                | `PolyfaceBuilder.addParamXY`                |
+| `PolyfaceBuilder.findOrAddParamInGrowableXYArray` | `PolyfaceBuilder.addParamInGrowableXYArray` |
+| `PolyfaceBuilder.findOrAddPointXYZ`               | `PolyfaceBuilder.addPointXYZ`               |
+
+#### @itwin/presentation-common
+
+| Removed                                                      | Replacement                                                                                                                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BaseNodeKeyJSON`                                            | `BaseNodeKey`                                                                                                                                                 |
+| `BooleanRulesetVariableJSON`                                 | `BooleanRulesetVariable`                                                                                                                                      |
+| `CheckBoxRule`                                               | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `ClassInfo.fromJSON`                                         | `ClassInfo`                                                                                                                                                   |
+| `ClassInfo.toJSON`                                           | `ClassInfo`                                                                                                                                                   |
+| `ClassInfoJSON`                                              | `ClassInfo`                                                                                                                                                   |
+| `ConditionContainer`                                         | n/a                                                                                                                                                           |
+| `ContentFlags.ShowImages`                                    | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `ContentSpecificationBase.showImages`                        | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `Descriptor.contentOptions`                                  | n/a                                                                                                                                                           |
+| `Descriptor.filterExpression`                                | `Descriptor.fieldsFilterExpression`                                                                                                                           |
+| `DescriptorJSON.contentOptions`                              | n/a                                                                                                                                                           |
+| `DescriptorJSON.filterExpression`                            | `DescriptorJSON.fieldsFilterExpression`                                                                                                                       |
+| `DescriptorSource.filterExpression`                          | `DescriptorSource.fieldsFilterExpression`                                                                                                                     |
+| `DisplayValue.fromJSON`                                      | `DisplayValue`                                                                                                                                                |
+| `DisplayValue.toJSON`                                        | `DisplayValue`                                                                                                                                                |
+| `DisplayValueJSON`                                           | `DisplayValue`                                                                                                                                                |
+| `DisplayValuesArrayJSON`                                     | `DisplayValuesArray`                                                                                                                                          |
+| `DisplayValuesMapJSON`                                       | `DisplayValuesMap`                                                                                                                                            |
+| `DisplayValueGroup.fromJSON`                                 | `DisplayValueGroup`                                                                                                                                           |
+| `DisplayValueGroup.toJSON`                                   | `DisplayValueGroup`                                                                                                                                           |
+| `DisplayValueGroupJSON`                                      | `DisplayValueGroup`                                                                                                                                           |
+| `ECClassGroupingNodeKeyJSON`                                 | `ECClassGroupingNodeKeyJSON`                                                                                                                                  |
+| `ECInstancesNodeKeyJSON`                                     | `ECInstancesNodeKey`                                                                                                                                          |
+| `ECPropertyGroupingNodeKeyJSON`                              | `ECPropertyGroupingNodeKeyJSON`                                                                                                                               |
+| `GroupingNodeKeyJSON`                                        | `GroupingNodeKey`                                                                                                                                             |
+| `HierarchyCompareInfo.fromJSON`                              | `HierarchyCompareInfo`                                                                                                                                        |
+| `HierarchyCompareInfo.toJSON`                                | `HierarchyCompareInfo`                                                                                                                                        |
+| `HierarchyCompareInfoJSON`                                   | `HierarchyCompareInfo`                                                                                                                                        |
+| `HierarchyLevel.fromJSON`                                    | `HierarchyLevel`                                                                                                                                              |
+| `HierarchyLevelJSON`                                         | `HierarchyLevel`                                                                                                                                              |
+| `Id64RulesetVariableJSON`                                    | `Id64RulesetVariable`                                                                                                                                         |
+| `ImageIdOverride`                                            | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `InstanceKey.fromJSON`                                       | `InstanceKey`                                                                                                                                                 |
+| `InstanceKey.toJSON`                                         | `InstanceKey`                                                                                                                                                 |
+| `InstanceKeyJSON`                                            | `InstanceKey`                                                                                                                                                 |
+| `InstanceNodesOfSpecificClassesSpecification.arePolymorphic` | The attribute was replaced with `arePolymorphic` attribute specified individually for each class definition under `classes` and `excludedClasses` attributes. |
+| `IntRulesetVariableJSON`                                     | `IntRulesetVariable`                                                                                                                                          |
+| `IntsRulesetVariableJSON`                                    | `IntsRulesetVariable`                                                                                                                                         |
+| `Item.imageId`                                               | Use `Item.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `ItemJSON.imageId`                                           | Use `Item.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `LabelCompositeValue.fromJSON`                               | `LabelCompositeValue`                                                                                                                                         |
+| `LabelCompositeValue.toJSON`                                 | `LabelCompositeValue`                                                                                                                                         |
+| `LabelCompositeValueJSON`                                    | `LabelCompositeValue`                                                                                                                                         |
+| `LabelDefinition.fromJSON`                                   | `LabelDefinition`                                                                                                                                             |
+| `LabelDefinition.toJSON`                                     | `LabelDefinition`                                                                                                                                             |
+| `LabelDefinitionJSON`                                        | `LabelDefinition`                                                                                                                                             |
+| `LabelGroupingNodeKeyJSON`                                   | `LabelGroupingNodeKey`                                                                                                                                        |
+| `LabelOverride`                                              | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `LabelRawValueJSON`                                          | `LabelRawValue`                                                                                                                                               |
+| `NavigationPropertyInfo.fromJSON`                            | `NavigationPropertyInfo.fromCompressedJSON`                                                                                                                   |
+| `NavigationPropertyInfo.toJSON`                              | `NavigationPropertyInfo.toCompressedJSON`                                                                                                                     |
+| `NestedContentField.fromJSON`                                | `NestedContentField.fromCompressedJSON`                                                                                                                       |
+| `NestedContentValue.fromJSON`                                | `NestedContentValue`                                                                                                                                          |
+| `NestedContentValue.toJSON`                                  | `NestedContentValue`                                                                                                                                          |
+| `NestedContentValueJSON`                                     | `NestedContentValue`                                                                                                                                          |
+| `Node.backColor`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.fontStyle`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.foreColor`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.isCheckboxEnabled`                                     | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.isCheckboxVisible`                                     | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.isChecked`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.fromJSON`                                              | `Node`                                                                                                                                                        |
+| `Node.toJSON`                                                | `Node`                                                                                                                                                        |
+| `NodeJSON`                                                   | `Node`                                                                                                                                                        |
+| `NodeDeletionInfoJSON`                                       | `NodeDeletionInfo`                                                                                                                                            |
+| `NodeInsertionInfoJSON`                                      | `NodeInsertionInfo`                                                                                                                                           |
+| `NodeKey.fromJSON`                                           | `NodeKey`                                                                                                                                                     |
+| `NodeKey.toJSON`                                             | `NodeKey`                                                                                                                                                     |
+| `NodeKeyJSON`                                                | `NodeKey`                                                                                                                                                     |
+| `NodePathElement.fromJSON`                                   | `NodePathElement`                                                                                                                                             |
+| `NodePathElement.toJSON`                                     | `NodePathElement`                                                                                                                                             |
+| `NodePathElementJSON`                                        | `NodePathElement`                                                                                                                                             |
+| `NodePathFilteringData.fromJSON`                             | `NodePathFilteringData`                                                                                                                                       |
+| `NodePathFilteringData.toJSON`                               | `NodePathFilteringData`                                                                                                                                       |
+| `NodePathFilteringDataJSON`                                  | `NodePathFilteringData`                                                                                                                                       |
+| `NodeUpdateInfoJSON`                                         | `NodeUpdateInfo`                                                                                                                                              |
+| `PartialHierarchyModification.fromJSON`                      | `PartialHierarchyModification`                                                                                                                                |
+| `PartialHierarchyModification.toJSON`                        | `PartialHierarchyModification`                                                                                                                                |
+| `PartialHierarchyModificationJSON`                           | `PartialHierarchyModification`                                                                                                                                |
+| `PartialNodeJSON`                                            | `PartialNode`                                                                                                                                                 |
+| `Property.fromJSON`                                          | `Property`                                                                                                                                                    |
+| `Property.toJSON`                                            | `Property.toCompressedJSON`                                                                                                                                   |
+| `PropertyGroup.groupingValue`                                | n/a - display value should always be used for grouping.                                                                                                       |
+| `PropertyGroup.sortingValue`                                 | n/a - property grouping nodes should always be sorted by display label.                                                                                       |
+| `PropertyGroupingValue`                                      | n/a                                                                                                                                                           |
+| `PropertyInfo.fromJSON`                                      | `PropertyInfo.fromCompressedJSON`                                                                                                                             |
+| `PropertyInfo.toJSON`                                        | `PropertyInfo.toCompressedJSON`                                                                                                                               |
+| `RelatedClassInfo.fromJSON`                                  | `RelatedClassInfo.fromCompressedJSON`                                                                                                                         |
+| `RelatedClassInfo.toJSON`                                    | `RelatedClassInfo.toCompressedJSON`                                                                                                                           |
+| `StringRulesetVariableJSON`                                  | `StringRulesetVariable`                                                                                                                                       |
+| `StyleOverride`                                              | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `Value.fromJSON`                                             | `Value`                                                                                                                                                       |
+| `Value.toJSON`                                               | `Value`                                                                                                                                                       |
+| `ValueJSON`                                                  | `Value`                                                                                                                                                       |
+| `ValuesArrayJSON`                                            | `ValuesArray`                                                                                                                                                 |
+| `ValuesMapJSON`                                              | `ValuesMap`                                                                                                                                                   |
 
 ### API removals
 
@@ -252,11 +420,11 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                                                                                                                                 |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all.                                      |
-| `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client. |
-| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                      |
+| Removed                        | Replacement                                                                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all. |
+| `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client.        |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                             |
 
 ### Change to pullMerge
 
@@ -286,3 +454,64 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
+
+### TypeScript configuration changes
+
+There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
+
+#### `target`
+
+[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
+
+#### `useDefineForClassFields`
+
+Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
+
+This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
+
+```ts
+interface MyElementProps extends ElementProps {
+  property: string;
+}
+
+class MyElement extends Element {
+  public property!: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+  }
+}
+
+const myElement = new MyElement({ property: "value" });
+console.log(myElement.property); // undefined
+```
+
+To fix this, you can either initialize your properties in your class constructor:
+
+```ts
+class MyElement extends Element {
+  public property: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+    property = props.property;
+  }
+}
+```
+
+or just define your properties using `declare` keyword:
+
+```ts
+class MyElement extends Element {
+  declare public property: string;
+  ...
+}
+```
+
+## Graphics
+
+### Read Image To Canvas
+
+Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
+
+If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.

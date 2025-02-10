@@ -6,16 +6,16 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
-import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
+import { createRenderPlanFromViewport } from "../../../internal/render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
-import { Target } from "../../../render/webgl/Target";
-import { Primitive } from "../../../render/webgl/Primitive";
-import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
-import { MeshGraphic } from "../../../render/webgl/Mesh";
-import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
+import { Target } from "../../../internal/render/webgl/Target";
+import { Primitive } from "../../../internal/render/webgl/Primitive";
+import { Pass, RenderPass, SinglePass } from "../../../internal/render/webgl/RenderFlags";
+import { MeshGraphic } from "../../../internal/render/webgl/Mesh";
+import { SurfaceGeometry } from "../../../internal/render/webgl/SurfaceGeometry";
 import { createBlankConnection } from "../../createBlankConnection";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
 import { MeshArgs } from "../../../render/MeshArgs";
@@ -106,14 +106,12 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const params = new RenderMaterial.Params();
-    params.alpha = alpha;
-    if (texture)
-      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
-
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const material = IModelApp.renderSystem.createMaterial(params, imodel);
+    let textureMapping;
+    if(texture) {
+      textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
+    }
+    const material = IModelApp.renderSystem.createRenderMaterial({alpha,
+      textureMapping});
     expect(material).toBeDefined();
     return material!;
   }

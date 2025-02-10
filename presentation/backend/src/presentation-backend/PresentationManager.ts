@@ -23,6 +23,7 @@ import {
   ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -36,8 +37,8 @@ import {
   FormatsMap,
   HierarchyCompareInfo,
   HierarchyCompareOptions,
+  HierarchyLevel,
   HierarchyLevelDescriptorRequestOptions,
-  HierarchyLevelJSON,
   HierarchyRequestOptions,
   InstanceKey,
   isComputeSelectionRequestOptions,
@@ -504,11 +505,9 @@ export class PresentationManager {
   public async getNodes(
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Node[]> {
-    const serializedNodesJson = await this._detail.getNodes(requestOptions);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
-    const nodes = Node.listFromJSON(nodesJson.nodes);
-    return this._localizationHelper.getLocalizedNodes(nodes);
+    const serializedHierarchyLevel = await this._detail.getNodes(requestOptions);
+    const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
+    return this._localizationHelper.getLocalizedNodes(hierarchyLevel.nodes);
   }
 
   /**
@@ -874,9 +873,6 @@ export class PresentationManager {
       currRulesetVariables: JSON.stringify(currRulesetVariables),
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const reviver = (key: string, value: any) => (key === "" ? HierarchyCompareInfo.fromJSON(value) : value);
-    return JSON.parse(await this._detail.request(params), reviver);
+    return JSON.parse(await this._detail.request(params));
   }
 }
