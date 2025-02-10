@@ -105,7 +105,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   }
   protected constructor(poleDimension: number, numPoles: number, order: number, knots: KnotVector) {
     super();
-    this._bcurve = BSpline1dNd.create(numPoles, poleDimension, order, knots) as BSpline1dNd;
+    this._bcurve = BSpline1dNd.create(numPoles, poleDimension, order, knots);
   }
   /** Return the degree (one less than the order) of the curve. */
   public get degree(): number {

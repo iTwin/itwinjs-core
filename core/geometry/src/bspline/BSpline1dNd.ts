@@ -80,14 +80,14 @@ export class BSpline1dNd {
     this.poleBuffer2 = new Float64Array(poleLength);
   }
   /**
-   * Create a `1Bspline1dNd`.
+   * Create a `BSpline1dNd`.
    * @param numPoles number of poles.
    * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted,
    *  3 for 2d weighted).
    * @param order number of poles in support for a section of the bspline.
    * @param knots the KnotVector. This is captured, not cloned.
    */
-  public static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined {
+  public static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd {
     return new BSpline1dNd(numPoles, poleLength, order, knots);
   }
   /** Map a span index and span fraction to knot value. */
