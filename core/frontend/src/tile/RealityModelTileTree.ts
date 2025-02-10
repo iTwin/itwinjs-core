@@ -771,7 +771,6 @@ export namespace RealityModelTileTree {
       tree.clearLayers();
   }
     public initializeLayers(context: SceneContext): boolean {
-      console.log("initializeLayers");
       const removals = this._detachFromDisplayStyle;
       if (0 === removals.length) {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
