@@ -361,7 +361,7 @@ export class TestRunner {
     if (testConfig.testType === "image" || testConfig.testType === "both") {
       this.updateTestNames(test, undefined, true);
 
-      const canvas = vp.readImageToCanvas();
+      const canvas = vp.readImageToCanvas({omitCanvasDecorations: false});
       await savePng(this.getImageName(test), canvas);
 
       if (testConfig.testType === "image")
@@ -1028,7 +1028,7 @@ export class TestRunner {
 
   private async createReadPixelsImages(test: TestCase, pix: Pixel.Selector, pixStr: string): Promise<void> {
     const vp = test.viewport;
-    const canvas = vp.readImageToCanvas();
+    const canvas = vp.readImageToCanvas({omitCanvasDecorations: false});
     const ctx = canvas.getContext("2d");
     if (!ctx)
       return;

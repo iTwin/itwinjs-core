@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { PrimitiveVisibility } from "../../../render/RenderTarget";
+import { PrimitiveVisibility } from "../RenderTargetDebugControl";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";

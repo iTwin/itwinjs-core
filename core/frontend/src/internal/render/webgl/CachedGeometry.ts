@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
-import { RenderSkyGradientParams, RenderSkySphereParams } from "../../../render/RenderSystem";
+import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSkyBoxParams";
 import { FlashMode } from "../../../FlashSettings";
 import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams";
 import { RenderMemory } from "../../../render/RenderMemory";

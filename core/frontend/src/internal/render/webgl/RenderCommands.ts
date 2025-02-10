@@ -12,7 +12,7 @@ import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-commo
 import { Decorations } from "../../../render/Decorations";
 import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
 import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic";
-import { AnimationBranchState } from "../../../render/GraphicBranch";
+import { AnimationBranchState } from "../AnimationBranchState";
 import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
 import { BranchState } from "./BranchState";

@@ -8,7 +8,7 @@ import { Capabilities } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialArgs";
 import { IModelConnection } from "../../../IModelConnection";
-import { MockRender } from "../../../render/MockRender";
+import { MockRender } from "../../../internal/render/MockRender";
 import { Material } from "../../../internal/render/webgl/Material";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { TileAdmin } from "../../../tile/internal";

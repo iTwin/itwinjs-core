@@ -20,14 +20,15 @@ import { IModelConnection } from "../../../IModelConnection";
 import { CanvasDecoration } from "../../../render/CanvasDecoration";
 import { Decorations } from "../../../render/Decorations";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { AnimationBranchStates } from "../../../render/GraphicBranch";
+import { AnimationBranchStates } from "../AnimationBranchState";
 import { Pixel } from "../../../render/Pixel";
 import { GraphicList } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { createEmptyRenderPlan, RenderPlan } from "../../../render/RenderPlan";
-import { PlanarClassifierMap, RenderPlanarClassifier } from "../../../render/RenderPlanarClassifier";
-import { RenderTextureDrape, TextureDrapeMap } from "../../../render/RenderSystem";
-import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../../../render/RenderTarget";
+import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
+import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import { RenderTextureDrape, TextureDrapeMap } from "../RenderTextureDrape";
+import { RenderTarget } from "../../../render/RenderTarget";
+import { PrimitiveVisibility, RenderTargetDebugControl } from "../RenderTargetDebugControl";
 import { ScreenSpaceEffectContext } from "../../../render/ScreenSpaceEffectBuilder";
 import { Scene } from "../../../render/Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "../../../render/VisibleFeature";
@@ -60,7 +61,7 @@ import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
-import { FrameStatsCollector } from "../../../render/FrameStats";
+import { FrameStatsCollector } from "../FrameStatsCollector";
 import { ActiveSpatialClassifier } from "../../../SpatialClassifiersState";
 import { AnimationNodeId } from "../../../common/internal/render/AnimationNodeId";
 import { _implementationProhibited } from "../../../common/internal/Symbols";
@@ -157,6 +158,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public displayNormalMaps = true;
 
   public freezeRealityTiles = false;
+
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;
@@ -1093,12 +1095,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return image;
   }
 
-  public copyImageToCanvas(): HTMLCanvasElement {
+  public copyImageToCanvas(overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
     const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
+
+    if (overlayCanvas) {
+      const ctx = retCanvas.getContext("2d")!;
+      ctx.drawImage(overlayCanvas, 0, 0);
+    }
+
     const pixelRatio = this.devicePixelRatio;
     retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
+
     return retCanvas;
   }
 
@@ -1428,11 +1437,10 @@ export class OnScreenTarget extends Target {
     return toScreen ? this._webglCanvas.canvas : undefined;
   }
 
-  public override readImageToCanvas(): HTMLCanvasElement {
-    return this._usingWebGLCanvas ? this.copyImageToCanvas() : this._2dCanvas.canvas;
+  public override readImageToCanvas(overlayCanvas?: HTMLCanvasElement): HTMLCanvasElement {
+    return this._usingWebGLCanvas || !overlayCanvas ? this.copyImageToCanvas(overlayCanvas) : this._2dCanvas.canvas;
   }
 }
-
 /** @internal */
 export class OffScreenTarget extends Target {
   public constructor(rect: ViewRect) {
