@@ -68,8 +68,6 @@
     "@types/chai-as-promised": "^7",
     "@vitest/browser": "^3.0.5",
     "@vitest/coverage-v8": "^3.0.5",
-    "babel-loader": "~8.2.5",
-    "babel-plugin-istanbul": "~6.1.1",
     "cpx2": "^3.0.0",
     "eslint": "^9.13.0",
     "glob": "^10.3.12",

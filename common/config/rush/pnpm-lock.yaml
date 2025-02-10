@@ -842,12 +842,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.0.5
         version: 3.0.5(@vitest/browser@3.0.5)(vitest@3.0.5)
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.26.0)(webpack@5.97.1)
-      babel-plugin-istanbul:
-        specifier: ~6.1.1
-        version: 6.1.1
       cpx2:
         specifier: ^3.0.0
         version: 3.0.0
