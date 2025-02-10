@@ -18,8 +18,9 @@ import { DisplayValue, Value } from "./Value";
 export interface ItemJSON {
   inputKeys?: InstanceKey[];
   primaryKeys: InstanceKey[];
-  // TODO: rename to `label`
+  /** @deprecated in 5.x. Use [[label]] instead. */
   labelDefinition: LabelDefinition;
+  label?: LabelDefinition;
   classInfo?: ClassInfo;
   values: ValuesDictionary<Value>;
   displayValues: ValuesDictionary<DisplayValue>;
@@ -139,6 +140,7 @@ export class Item {
     return omitUndefined({
       ...baseItem,
       labelDefinition: label,
+      label,
     });
   }
 
@@ -152,10 +154,11 @@ export class Item {
       return Item.fromJSON(JSON.parse(json));
     }
 
-    const { labelDefinition, ...baseJson } = json;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const { labelDefinition, label, ...baseJson } = json;
     return new Item({
       ...baseJson,
-      label: labelDefinition,
+      label: label ?? labelDefinition,
     });
   }
 }
