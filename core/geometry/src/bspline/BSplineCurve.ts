@@ -321,11 +321,8 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     clone._bcurve.addKnot(knotB, clone.degree);
     if (origNumKnots === clone._bcurve.knots.knots.length)
       return clone; // full curve
-    if (knotA > knotB) {
-      const tmp = knotA;
-      knotA = knotB;
-      knotB = tmp;
-    }
+    if (knotA > knotB)
+      [knotA, knotB] = [knotB, knotA];
     // choose first/last knot and pole such that knotA/knotB has degree multiplicity in the new knot sequence
     const iStartKnot = clone._bcurve.knots.knotToLeftKnotIndex(knotA) - clone.degree + 1;
     const iStartPole = iStartKnot * clone._bcurve.poleLength;
@@ -342,7 +339,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     return clone;
   }
   /**
-   * Implement `CurvePrimitive.appendPlaneIntersections` to compute intersections of the curve with a plane..
+   * Implement `CurvePrimitive.appendPlaneIntersections` to compute intersections of the curve with a plane.
    * @param plane A plane (e.g., specific type Plane3dByOriginAndUnitNormal or Point4d).
    * @param result growing array of plane intersections.
    * @return number of intersections appended to the array.

@@ -329,6 +329,12 @@ export class KnotVector {
     fraction = Geometry.clamp(fraction, 0, 1); // B-splines are not extendable
     return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
+  private assertSpan(knotIndex0: number, u: number) {
+    const spanIsValid = () => knotIndex0 >= this.degree - 1 && knotIndex0 + this.degree < this.knots.length;
+    const uIsInSpan = () => this.knots[knotIndex0] <= u && u <= this.knots[knotIndex0 + 1];
+    assert(spanIsValid, "knotIndex0 defines a valid knot span");
+    assert(uIsInSpan, "the knot span contains u");
+  }
   /**
    * Evaluate the B-spline basis functions f[] at a parameter u in a knot span.
    * * This method implements the Mansfield-Cox-de Boor recurrence relation.
@@ -340,10 +346,7 @@ export class KnotVector {
   public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): boolean {
     if (f.length < this.degree + 1)
       return false;
-    const spanIsValid = () => knotIndex0 >= this.degree - 1 && knotIndex0 + this.degree < this.knots.length;
-    const uIsInSpan = () => this.knots[knotIndex0] <= u && u <= this.knots[knotIndex0 + 1];
-    assert(spanIsValid, "knotIndex0 defines a valid knot span");
-    assert(uIsInSpan, "the knot span contains u");
+    this.assertSpan(knotIndex0, u);
     f[0] = 1.0;
     if (this.degree < 1)
       return true;
@@ -375,7 +378,6 @@ export class KnotVector {
     }
     return true;
   }
-
   /**
    * Evaluate basis functions f[], derivatives df[], and optional second derivatives ddf[] at a parameter u
    * in a knot span.
@@ -395,10 +397,7 @@ export class KnotVector {
       return false;
     if (ddf && ddf.length < this.degree + 1)
       return false;
-    const spanIsValid = () => knotIndex0 >= this.degree - 1 && knotIndex0 + this.degree < this.knots.length;
-    const uIsInSpan = () => this.knots[knotIndex0] <= u && u <= this.knots[knotIndex0 + 1];
-    assert(spanIsValid, "knotIndex0 defines a valid knot span");
-    assert(uIsInSpan, "the knot span contains u");
+    this.assertSpan(knotIndex0, u);
     f[0] = 1.0;
     df[0] = 0.0;
     if (this.degree < 1)

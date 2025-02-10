@@ -80,7 +80,7 @@ export class BSpline1dNd {
     this.poleBuffer2 = new Float64Array(poleLength);
   }
   /**
-   * Create a 1Bspline1dNd`
+   * Create a `1Bspline1dNd`.
    * @param numPoles number of poles.
    * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted,
    *  3 for 2d weighted).

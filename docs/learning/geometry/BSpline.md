@@ -5,23 +5,23 @@ A `BSplineCurve3d` (or `BSplineCurve3dH`) is a curve that (loosely) follows a se
 Internally, the curve is a sequence of polynomial curves that join together smoothly. Call each of those separate pieces a _span_.
 
 A BSpline curve of order `k+1` (degree `k`) is defined by:
-$$
+```math
 S(t) = \sum_{i=0}^{n} N_{i,k}(t) P_i
-$$
+```
 where $P_0$, $P_1$, ..., $P_n$ are `n+1` control points and $N_{i,k}(t)$ are the basis functions defined by the *Cox-de Boor Recursion Formula*:
 
-$$
+```math
 N_{i,0}(x) =
 \begin{cases}
 1 & \text{if } t_i \leq t < t_{i+1} \\
 0 & \text{otherwise}
 \end{cases}
-$$
-$$
+```
+```math
 N_{i,j}(t) = \frac{t - t_i}{t_{i+j} - t_i} N_{i,j-1}(t) + \frac{t_{i+j+1} - t}{t_{i+j+1} - t_{i+1}} N_{i+1,j-1}(t)
-$$
+```
 `t_i`s are called the knots. The basis functions can be written as a triangular scheme:
-$$
+```math
 \begin{array}{ccccccc}
 N_{0,0}(t) \rightarrow & N_{0,1}(t)	\rightarrow & \cdots & N_{0,k-1}(t) \rightarrow &  N_{0,k}(t) \\
 N_{1,0}(t) \rightarrow & N_{1,1}(t)	\rightarrow & \cdots & N_{1,k-1}(t) \\
@@ -29,7 +29,7 @@ N_{1,0}(t) \rightarrow & N_{1,1}(t)	\rightarrow & \cdots & N_{1,k-1}(t) \\
 N_{n-1,0}(t) 	\rightarrow & N_{n-1,1}(t) \\
 N_{n,0}(t)
 \end{array}
-$$
+```
 
 Please note that we always have:
 
