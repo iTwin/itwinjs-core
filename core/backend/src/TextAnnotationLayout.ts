@@ -300,6 +300,7 @@ export class RunLayout {
   public denominatorRange?: Range2d;
   public numeratorRange?: Range2d;
   public offsetFromLine: { x: number, y: number };
+  // public margins: { left: number, right: number, top: number, bottom: number } = { left: 0, right: 0, top: 0, bottom: 0 };
   public style: TextStyleSettings;
   public fontId: FontId;
 
@@ -312,6 +313,7 @@ export class RunLayout {
     this.denominatorRange = props.denominatorRange;
     this.numeratorRange = props.numeratorRange;
     this.offsetFromLine = props.offsetFromLine;
+    // this.margins = props.margins;
     this.style = props.style;
     this.fontId = props.fontId;
   }
@@ -511,6 +513,8 @@ export class TextBlockLayout {
 
     this.populateLines(context);
     this.justifyLines();
+    this.range.extendXY(this.range.low.x - source.margins.left, this.range.low.y - source.margins.bottom);
+    this.range.extendXY(this.range.high.x + source.margins.right, this.range.high.y + source.margins.top);
   }
 
   public toResult(): TextBlockLayoutResult {
