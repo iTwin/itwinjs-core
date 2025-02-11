@@ -316,7 +316,7 @@ describe("Descriptor", () => {
         inputKeysHash: "",
         selectClasses: [],
         classesMap: {},
-        fields: [createTestSimpleContentField({ category }).toJSON(), undefined as any],
+        fields: [createTestSimpleContentField({ category }).toCompressedJSON({}), undefined as any],
       };
       const descriptor = Descriptor.fromJSON(json);
       expect(descriptor!.fields.length).to.eq(1);
