@@ -16,7 +16,7 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import { GltfWrapMode } from "../../common/gltf/GltfSchema";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
-  RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
+  RealityTile, RealityTileContent, RealityTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "../../tile/internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
@@ -143,7 +143,9 @@ export abstract class RealityTileLoader {
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
         break;
       case TileFormat.Gltf:
-        const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
+        const tree = tile.tree as RealityTileTree;
+        const baseUrl = tree.baseUrl;
+        const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, baseUrl);
         if (props) {
           reader = new GltfGraphicsReader(props, {
             iModel,
@@ -155,7 +157,6 @@ export abstract class RealityTileLoader {
             idMap: this.getBatchIdMap(),
           });
         }
-
         break;
       case TileFormat.Cmpt:
         const header = new CompositeTileHeader(streamBuffer);
@@ -241,4 +242,19 @@ export abstract class RealityTileLoader {
 
     return minDistance;
   }
+}
+
+/** Exposed strictly for testing purposes.
+* @internal
+*/
+export function createReaderPropsWithBaseUrl(streamBuffer: ByteStream, yAxisUp: boolean, baseUrl?: string): GltfReaderProps | undefined {
+  let url: URL | undefined;
+  if (baseUrl) {
+    try {
+      url = new URL(baseUrl);
+    } catch {
+      url = undefined;
+    }
+  }
+  return GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp, url);
 }
