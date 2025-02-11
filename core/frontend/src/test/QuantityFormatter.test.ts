@@ -88,7 +88,7 @@ describe("Quantity formatter", async () => {
     const imperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
     const stringVal = quantityFormatter.formatQuantity(numericVal, imperialFormatSpec);
     expect(stringVal).toBe(`20'-6"`);
-    const parsedVal = quantityFormatter.parseToQuantityValue(`20'-6"`, imperialParserSpec);
+    const parsedVal = quantityFormatter.parseToQuantityValue(stringVal, imperialParserSpec);
     expect(parsedVal.ok).toBe(true);
     expect(withinTolerance((parsedVal as ParsedQuantity).value, numericVal)).toBe(true);
   });
@@ -554,6 +554,7 @@ describe("Test Formatted Quantities", async () => {
     const formattedValue = quantityFormatter.formatQuantity(magnitude, formatterSpec);
     const parsedValue = quantityFormatter.parseToQuantityValue(expectedValue, parserSpec);
     expect(formattedValue).toBe(expectedValue);
+    expect(parsedValue.ok).toBe(true);
     expect(withinTolerance((parsedValue as ParsedQuantity).value, magnitude, 0.01)).toBe(true);
   }
 
