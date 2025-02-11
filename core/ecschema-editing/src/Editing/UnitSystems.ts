@@ -17,6 +17,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type UnitSystems.
  */
 export class UnitSystems extends SchemaItems {
+  protected override get itemTypeClass(): typeof UnitSystem {
+    return UnitSystem;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.UnitSystem, schemaEditor);
   }
