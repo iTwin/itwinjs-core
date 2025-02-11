@@ -10,6 +10,6 @@ When adding new APIs or updating documentation for this package, review if [Quan
 
 See the [Contributing.md](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md) for more details.
 
-# Licensing
+## Licensing
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
