@@ -23,7 +23,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBran
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../../render/GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { RealityMeshGraphicParams } from "../../../render/RealityMeshGraphicParams";
+import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "../../../render/RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../../../render/RenderGraphic";
@@ -31,9 +31,9 @@ import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialAr
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RealityMeshParams } from "../../../render/RealityMeshParams";
 import {
-  CreateGraphicFromTemplateArgs,
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderInstances, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
+  CreateGraphicFromTemplateArgs, PlanarGridProps, RenderInstances, RenderSystem,
 } from "../../../render/RenderSystem";
+import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystemDebugControl } from "../RenderSystemDebugControl";
 import { RenderTarget } from "../../../render/RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "../../../render/CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../../../render/ScreenSpaceEffectBuilder";
@@ -70,6 +70,8 @@ import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../../common/render/RenderInstancesParams";
 import { _batch, _branch, _featureTable, _nodes } from "../../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
+import { RenderSkyBoxParams } from "../RenderSkyBoxParams";
+import { RenderAreaPattern } from "../RenderAreaPattern";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -919,7 +921,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this.context.invalidateFramebuffer(this.context.FRAMEBUFFER, attachments);
   }
 
-  public override enableDiagnostics(enable: RenderDiagnostics): void {
+  public enableDiagnostics(enable: RenderDiagnostics | undefined): void {
+    enable = enable ?? RenderDiagnostics.All;
     Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
     Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
   }

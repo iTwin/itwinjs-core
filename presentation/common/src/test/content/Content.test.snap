@@ -12,6 +12,11 @@ Object {
       "displayValues": Object {
         "test": "Mayotte Refined Frozen Gloves Lebanese Pound",
       },
+      "label": Object {
+        "displayValue": "Jamaica",
+        "rawValue": "Avon",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Jamaica",
         "rawValue": "Avon",
@@ -53,6 +58,11 @@ Object {
       },
       "displayValues": Object {
         "test": "Mouse forecast",
+      },
+      "label": Object {
+        "displayValue": "yellow",
+        "rawValue": "Brand",
+        "typeName": "string",
       },
       "labelDefinition": Object {
         "displayValue": "yellow",

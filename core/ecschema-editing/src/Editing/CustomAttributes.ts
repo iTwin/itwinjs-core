@@ -25,6 +25,10 @@ export class CustomAttributes extends ECClasses {
     super(SchemaItemType.CustomAttributeClass, schemaEditor);
   }
 
+  protected override get itemTypeClass(): typeof CustomAttributeClass {
+    return CustomAttributeClass;
+  }
+
   public async create(schemaKey: SchemaKey, name: string, appliesTo: CustomAttributeContainerType, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
     try {
       const newClass = await this.createClass<CustomAttributeClass>(schemaKey, this.schemaItemType, (schema) => schema.createCustomAttributeClass.bind(schema), name, baseClassKey) as MutableCAClass;

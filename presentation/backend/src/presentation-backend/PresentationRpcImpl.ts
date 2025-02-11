@@ -20,6 +20,7 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
+  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
@@ -30,6 +31,7 @@ import {
   ElementProperties,
   FilterByInstancePathsHierarchyRpcRequestOptions,
   FilterByTextHierarchyRpcRequestOptions,
+  HierarchyLevel,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
   isComputeSelectionRequestOptions,
@@ -60,7 +62,6 @@ import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
-import { parseHierarchyLevelFromString } from "./PresentationManagerDetail";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJsonVersion = require("../../../package.json").version;
@@ -275,7 +276,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
         this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      const hierarchyLevel = parseHierarchyLevelFromString(serializedHierarchyLevel);
+      const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
       return {
         total: count,
         items: hierarchyLevel.nodes,

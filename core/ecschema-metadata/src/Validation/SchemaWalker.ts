@@ -34,7 +34,7 @@ export class SchemaWalker {
    * Traverses the given Schema, calling ISchemaWalkerVisitor methods along the way.
    * @param schema The Schema to traverse.
    */
-  public async traverseSchema<T extends Schema>(schema: T): Promise<T> {
+  public async traverseSchema(schema: Schema): Promise<Schema> {
     this._schema = schema;
 
     await this._visitorHelper.visitSchema(schema);

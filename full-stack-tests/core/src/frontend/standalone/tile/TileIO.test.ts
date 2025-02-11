@@ -9,9 +9,9 @@ import {
   ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
-  RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
@@ -27,6 +27,7 @@ import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3";
 import { TILE_DATA_1_4 } from "./data/TileIO.data.1.4";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./data/TileIO.data.fake";
+import { ImdlReader, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
