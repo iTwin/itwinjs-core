@@ -425,8 +425,22 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
    * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   * Additionally, refresh the Reality Tile Tree to reflect changes in the map layer.
    */
   public invalidateController(): void {
+    this._controllerValid = this._analysisFractionValid = false;
+    this.invalidateRenderPlan();
+    for (const { supplier, id, owner } of this.iModel.tiles) {
+      if (owner.tileTree instanceof RealityTileTree) {
+        this.iModel.tiles.resetTileTreeOwner(id, supplier);
+      }
+    }
+  }
+
+  /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
+   * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   */
+  public refreshViewController(): void {
     this._controllerValid = this._analysisFractionValid = false;
     this.invalidateRenderPlan();
   }
@@ -1303,11 +1317,6 @@ export abstract class Viewport implements Disposable, TileUser {
     const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-      for (const { supplier, id, owner } of this.iModel.tiles) {
-        if (owner.tileTree instanceof RealityTileTree) {
-          this.iModel.tiles.resetTileTreeOwner(id, supplier);
-        }
-      }
     };
 
     removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
