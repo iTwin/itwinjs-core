@@ -321,7 +321,7 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 - Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
 - Replaced existing generic getItem() methods from schemaItemLocater, schemaContext and Schema as it suggested type safety when there was none. The new overload requires either no generic type at all, or providing an additional ctor parameter of the desired schemaItem class.
 
-Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted Either into
+Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted either into
 `context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
