@@ -1,6 +1,6 @@
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile, TileUrlImageryProvider } from "@itwin/core-frontend";
-import { CreateSessionOptions, GoogleMaps, GoogleMapsSession, LayerTypes, MapTypes, ScaleFactors } from "./GoogleMaps";
+import { _internal, CreateSessionOptions, GoogleMapsSession, LayerTypes, MapTypes, ScaleFactors } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
@@ -9,6 +9,9 @@ const rowToken = "{row}";
 const columnToken = "{column}";
 
 const urlTemplate = `https://tile.googleapis.com/v1/2dtiles/${levelToken}/${columnToken}/${rowToken}`;
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const GoogleMapsUtils = _internal;
 
 /*
 * Google Maps imagery provider
@@ -31,7 +34,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     const sessionOptions = this.createCreateSessionOptions();
     if (this._settings.accessKey ) {
       // Create session and store in query parameters
-      const sessionObj = await GoogleMaps.createSession(this._settings.accessKey.value, sessionOptions);
+      const sessionObj = await GoogleMapsUtils.createSession(this._settings.accessKey.value, sessionOptions);
       this._settings.unsavedQueryParams = {session: sessionObj.session};
       return sessionObj;
     } else {
@@ -133,7 +136,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
       if (cartoRect) {
         try {
-          const viewportInfo = await GoogleMaps.getViewportInfo({
+          const viewportInfo = await GoogleMapsUtils.getViewportInfo({
             rectangle: cartoRect,
             session: this._settings.collectQueryParams().session,
             key: this._settings.accessKey!.value,

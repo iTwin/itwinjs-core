@@ -5,6 +5,7 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import {
+  CheckBox,
   ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox,
   createTextBox
 
@@ -31,6 +32,7 @@ export class GoogleMapsSettings implements Disposable {
   private _layerTypes: LayerTypes[] = [];
   private _lang = "en-US";
 
+  private _roadmapLayerCheckox: CheckBox|undefined;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._currentTerrainProps.contourDef = {};
@@ -54,6 +56,15 @@ export class GoogleMapsSettings implements Disposable {
     const isGoogleBase = vp.displayStyle.backgroundMapBase instanceof BaseMapLayerSettings && vp.displayStyle.backgroundMapBase.formatId === "GoogleMaps";
     this._enabled = isGoogleBase || googleLayer !== undefined;
     this._overlay = googleLayer !== undefined;
+    if (googleLayer) {
+      const opts = googleLayer.properties;
+      if (opts) {
+        this._mapType = opts.mapType as MapTypes;
+        this._layerTypes = opts.layerTypes as LayerTypes[] ?? [];
+        this._lang = opts.language as string ?? "en-US";
+        this._scaleFactor = opts.scale as ScaleFactors ?? "scaleFactor1x";
+      }
+    }
     if (isGoogleBase) {
       const baseSettings = vp.displayStyle.backgroundMapBase as BaseMapLayerSettings;
       const properties = baseSettings.properties;
@@ -95,6 +106,20 @@ export class GoogleMapsSettings implements Disposable {
       value: this._mapType,
       handler: (cbx) => {
         this._mapType = cbx.value as MapTypes;
+        if (this._mapType === "terrain" && !this._layerTypes.includes("layerRoadmap")) {
+          this._layerTypes.push("layerRoadmap");
+        }
+
+        // Force roadmap layer to be enabled if terrain is selected
+        if (this._roadmapLayerCheckox) {
+          if (this._mapType === "terrain") {
+            this._roadmapLayerCheckox.checkbox.checked = true;
+            this._roadmapLayerCheckox.checkbox.disabled = true;
+          } else {
+            this._roadmapLayerCheckox.checkbox.disabled = false;
+          }
+    }
+
       },
     });
     this._element.appendChild(document.createElement("br"));
@@ -109,7 +134,7 @@ export class GoogleMapsSettings implements Disposable {
     layerTypesLabel.style.display = "inline";
     layerTypesDiv.appendChild(layerTypesLabel);
 
-    createCheckBox({
+    this._roadmapLayerCheckox = createCheckBox({
       parent: layerTypesDiv,
       name: "Roadmap",
       id: "google_layertype_roadmap",
@@ -122,6 +147,7 @@ export class GoogleMapsSettings implements Disposable {
         }
       },
     });
+    this._roadmapLayerCheckox.checkbox.disabled = this._mapType === "terrain";
 
     createCheckBox({
       parent: layerTypesDiv,
@@ -247,7 +273,6 @@ export class GoogleMapsSettings implements Disposable {
     }
 
 
-
     if (this._overlay) {
       this._vp.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON({
         formatId: "ArcGIS",
@@ -273,7 +298,7 @@ export class GoogleMapsSettings implements Disposable {
         scale: this._scaleFactor,
       };
       try {
-        this._vp.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON(GoogleMaps.createMapLayerProps("GoogleMaps", opts));
+        this._vp.displayStyle.backgroundMapBase = GoogleMaps.createBaseLayerSettings(opts);
       } catch (e: any) {
         // eslint-disable-next-line no-console
         console.log(e.message);
