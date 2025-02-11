@@ -182,8 +182,8 @@ describe("ViewDefinition", () => {
     expect(selectedModels.models[0]).equal(modelId);
 
     const ds1 = iModel.elements.getElement<DisplayStyle3d>(displayStyleId);
-    ds1.settings.setPlanProjectionSettings("0x1", new PlanProjectionSettings({ elevation: 1 }));
-    ds1.settings.setPlanProjectionSettings("0x2", new PlanProjectionSettings({ elevation: 2 }));
+    ds1.settings.setPlanProjectionSettings("0x1", PlanProjectionSettings.fromJSON({ elevation: 1 }));
+    ds1.settings.setPlanProjectionSettings("0x2", PlanProjectionSettings.fromJSON({ elevation: 2 }));
 
     const styles = (ds1.toJSON() as DisplayStyle3dProps).jsonProperties!.styles!;
     styles.subCategoryOvr =

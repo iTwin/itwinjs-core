@@ -30,7 +30,7 @@ describe("PropertyRule tests", () => {
     testBaseClass = await mutable.createEntityClass("TestBaseClass");
     testKindOfQuantity = await mutable.createKindOfQuantity("TestKoQ");
     testBaseKindOfQuantity = await mutable.createKindOfQuantity("TestBaseKoQ");
-    testClass.baseClass = new DelayedPromiseWithProps(testBaseClass.key, async () => testBaseClass);
+    await (testClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(testBaseClass.key, async () => testBaseClass));
   });
 
   describe("IncompatibleValueTypePropertyOverride Tests", () => {
@@ -59,7 +59,7 @@ describe("PropertyRule tests", () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (testClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
 
       const properties = [...testClass.properties!];
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
@@ -155,7 +155,7 @@ describe("PropertyRule tests", () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveArrayProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (testBaseClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
 
       const properties = [...testClass.properties!];
       const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
@@ -257,7 +257,7 @@ describe("PropertyRule tests", () => {
       const rootBaseClass = new EntityClass(schema, "RootBaseClass");
       await (rootBaseClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
       await (testClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
-      testBaseClass.baseClass = new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass);
+      await (testBaseClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(rootBaseClass.key, async () => rootBaseClass));
 
       const basePropJson = {
         name: "TestProperty",
@@ -594,7 +594,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(baseRelationshipJson, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -642,7 +642,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -683,7 +683,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -731,7 +731,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -770,7 +770,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestTargetEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -818,7 +818,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestTargetEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -859,7 +859,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -907,7 +907,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, 0, propertyJson), new SchemaContext());
-        const testProperty = (await testSchema.getItem<RelationshipClass>("TestRelationship2"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestRelationship2", RelationshipClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -946,7 +946,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestTargetEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -994,7 +994,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, 0, propertyJson), new SchemaContext());
-        const testProperty = (await testSchema.getItem<RelationshipClass>("TestRelationship2"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestRelationship2", RelationshipClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1035,7 +1035,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1083,7 +1083,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1122,7 +1122,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestTargetEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1170,7 +1170,8 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
-        const testProperty = (await testSchema.getItem<RelationshipClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testRelationship = await testSchema.getItem("TestTargetEntity", EntityClass);
+        const testProperty = testRelationship?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1209,7 +1210,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 1), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1248,7 +1249,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 2), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1287,7 +1288,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 3), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestSourceEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1326,7 +1327,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 1), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestTargetEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1365,7 +1366,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 2), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestTargetEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 
@@ -1404,7 +1405,7 @@ describe("PropertyRule tests", () => {
         };
 
         const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 3), new SchemaContext());
-        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+        const testProperty = (await testSchema.getItem("TestTargetEntity", EntityClass))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
 

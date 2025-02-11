@@ -333,16 +333,16 @@ with tmp(x) as (SELECT e.array_s FROM aps.TestElement e LIMIT 1) select x from t
 - dataset: AllProperties.bim
 
 ```sql
-with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from tmp
+with tmp(x) as (SELECT ec_classname(e.ECClassId) FROM aps.TestElement e LIMIT 1) select x from tmp
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | String |
 
-| x     |
-| ----- |
-| 0x153 |
+| x                         |
+| ------------------------- |
+| AllProperties:TestElement |
 
 # Testing classId props with convertClassIdsToClassNames flag using CTE
 
@@ -350,16 +350,16 @@ with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from
 - convertClassIdsToClassNames: true
 
 ```sql
-with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from tmp
+with tmp(x) as (SELECT ec_classname(e.ECClassId) FROM aps.TestElement e LIMIT 1) select x from tmp
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | String |
 
-| x     |
-| ----- |
-| 0x153 |
+| x                         |
+| ------------------------- |
+| AllProperties:TestElement |
 
 # Testing classId props with convertClassIdsToClassNames flag using CTE subquery
 
@@ -367,16 +367,16 @@ with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from
 - convertClassIdsToClassNames: true
 
 ```sql
-select x from (with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from tmp)
+select x from (with tmp(x) as (SELECT ec_classname(e.ECClassId) FROM aps.TestElement e LIMIT 1) select x from tmp)
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | String |
 
-| x     |
-| ----- |
-| 0x153 |
+| x                         |
+| ------------------------- |
+| AllProperties:TestElement |
 
 # Testing InstanceId props using CTE
 
@@ -577,13 +577,127 @@ WITH RECURSIVE cte (x) AS ( SELECT e.i FROM aps.TestElement e WHERE e.i = 100 UN
 | 103 |
 | 104 |
 
-# Expected table aliasing to fail in CTE subquery due to prop name being wrong
+# CTE subquery with alias
 
 - dataset: AllProperties.bim
-- errorDuringPrepare: true
 
 ```sql
-select a.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x from tmp) a;
+SELECT
+  a.x
+FROM
+  (
+    WITH
+      tmp (x) AS (
+        SELECT
+          e.i
+        FROM
+          aps.TestElement e
+        ORDER BY
+          e.i
+        LIMIT
+          1
+      )
+    SELECT
+      x
+    FROM
+      tmp
+  ) a
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | x            | true      | 0     | x        | x    | undefined    | int      | Int  |
+
+| x   |
+| --- |
+| 100 |
+
+# CTE Without subcolumns subquery with alias
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  a.i
+FROM
+  (
+    WITH
+      tmp AS (
+        SELECT
+          e.i
+        FROM
+          aps.TestElement e
+        ORDER BY
+          e.i
+        LIMIT
+          1
+      )
+    SELECT
+      i
+    FROM
+      tmp
+  ) a
+```
+
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int  | i                  |
+
+| i   |
+| --- |
+| 100 |
+
+# CTE Without subcolumns subquery with alias for array property
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  a.array_i
+FROM
+  (
+    WITH
+      tmp AS (
+        SELECT
+          e.array_i
+        FROM
+          aps.TestElement e
+        ORDER BY
+          e.i
+        LIMIT
+          1
+      )
+    SELECT
+      array_i
+    FROM
+      tmp
+  ) a
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "AllProperties:IPrimitiveArray",
+      "accessString": "array_i",
+      "generated": false,
+      "index": 0,
+      "jsonName": "array_i",
+      "name": "array_i",
+      "typeName": "int",
+      "type": "PrimitiveArray",
+      "originPropertyName": "array_i"
+    }
+  ]
+}
+```
+
+```json
+[
+  {
+    "array_i": [0, 1, 2]
+  }
+]
 ```
 
 # Expected table aliasing for inner and outer tables to fail in CTE subquery due to prop name being wrong

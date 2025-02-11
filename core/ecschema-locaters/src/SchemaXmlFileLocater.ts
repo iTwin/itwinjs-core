@@ -28,11 +28,11 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(key, matchType, context);
 
     const schema = await context.getCachedSchema(key, matchType);
-    return schema as T;
+    return schema;
   }
 
   /**
@@ -76,7 +76,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
@@ -101,7 +101,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     let schema: Schema = new Schema(context);
     schema = reader.readSchemaSync(schema, document);
 
-    return schema as T;
+    return schema;
   }
 
   /**

@@ -7,7 +7,7 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { BeEvent, Id64String, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   buildElementProperties,
@@ -20,30 +20,27 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
+  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
   DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions,
   DisplayValueGroup,
-  DisplayValueGroupJSON,
   DistinctValuesRpcRequestOptions,
   ElementProperties,
   FilterByInstancePathsHierarchyRpcRequestOptions,
   FilterByTextHierarchyRpcRequestOptions,
+  HierarchyLevel,
   HierarchyLevelDescriptorRpcRequestOptions,
-  HierarchyLevelJSON,
   HierarchyRpcRequestOptions,
   isComputeSelectionRequestOptions,
   ItemJSON,
   KeySet,
   KeySetJSON,
   LabelDefinition,
-  NodeJSON,
-  NodeKey,
-  NodeKeyJSON,
+  Node,
   NodePathElement,
-  NodePathElementJSON,
   Paged,
   PagedResponse,
   PageOptions,
@@ -84,7 +81,7 @@ const DEFAULT_REQUEST_TIMEOUT = 5000;
  *
  * @internal
  */
-export class PresentationRpcImpl extends PresentationRpcInterface implements IDisposable {
+export class PresentationRpcImpl extends PresentationRpcInterface implements Disposable {
   private _requestTimeout: number;
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
   private _cancelEvents: Map<string, BeEvent<() => void>>;
@@ -112,8 +109,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     this._cancelEvents = new Map<string, BeEvent<() => void>>();
   }
 
-  public dispose() {
-    this._pendingRequests.dispose();
+  public [Symbol.dispose]() {
+    this._pendingRequests[Symbol.dispose]();
   }
 
   public get requestTimeout() {
@@ -151,14 +148,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   private async getIModel(token: IModelRpcProps): Promise<IModelDb> {
-    let imodel: IModelDb;
-    try {
-      imodel = IModelDb.findByKey(token.key);
-      // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
-      await imodel.refreshContainerForRpc(RpcTrace.expectCurrentActivity.accessToken);
-    } catch {
-      throw new PresentationError(PresentationStatus.InvalidArgument, "IModelRpcProps doesn't point to a valid iModel");
-    }
+    const imodel = IModelDb.findByKey(token.key);
+    // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
+    await imodel.refreshContainerForRpc(RpcTrace.expectCurrentActivity.accessToken);
     return imodel;
   }
 
@@ -170,13 +162,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 
-    let imodel: IModelDb;
-    try {
-      imodel = await this.getIModel(token);
-    } catch (e) {
-      assert(e instanceof Error);
-      return this.errorResponse(PresentationStatus.InvalidArgument, e.message);
-    }
+    const imodel = await this.getIModel(token);
 
     let resultPromise = this._pendingRequests.getValue(requestKey);
     if (resultPromise) {
@@ -225,7 +211,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       // initiate request
       resultPromise = request(managerRequestOptions)
         .then((result) => this.successResponse(result, diagnostics))
-        .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message, diagnostics));
+        .catch((e: unknown) => {
+          if (e instanceof PresentationError) {
+            return this.errorResponse(e.errorNumber, e.message, diagnostics);
+          }
+          throw e;
+        });
 
       // store the request promise
       this._pendingRequests.addValue(requestKey, resultPromise);
@@ -243,57 +234,52 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     let timeout: NodeJS.Timeout;
     const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
-        reject(new Error());
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        reject("timeout");
       }, this._requestTimeout);
     });
 
     Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Returning a promise with a timeout of ${this._requestTimeout}.`);
     return Promise.race([resultPromise, timeoutPromise])
-      .catch<PresentationRpcResponseData>(() => {
-        // note: error responses from the manager get handled when creating `resultPromise`, so we can only get here due
-        // to a timeout exception
-        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
-        return this.errorResponse(PresentationStatus.BackendTimeout);
+      .catch<PresentationRpcResponseData>((e: unknown) => {
+        if (e === "timeout") {
+          // note: error responses from the manager get handled when creating `resultPromise`, so we can only get here due
+          // to a timeout exception
+          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
+          return this.errorResponse(PresentationStatus.BackendTimeout);
+        }
+        // ...or an error that we don't want to reveal - let RPC system handle it.
+        throw e;
       })
       .then((response: PresentationRpcResponseData<TResult>) => {
         if (response.statusCode !== PresentationStatus.BackendTimeout) {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request completed, returning result.`);
           this._pendingRequests.deleteValue(requestKey);
         }
-        clearTimeout(timeout);
         return response;
+      })
+      .finally(() => {
+        clearTimeout(timeout);
       });
   }
 
   public override async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<number> {
     return this.makeRequest(token, "getNodesCount", requestOptions, async (options) => {
-      options = {
-        ...options,
-        parentKey: nodeKeyFromJson(options.parentKey),
-      };
       return this.getManager(requestOptions.clientId).getNodesCount(options);
     });
   }
 
-  public override async getPagedNodes(
-    token: IModelRpcProps,
-    requestOptions: Paged<HierarchyRpcRequestOptions>,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<PagedResponse<NodeJSON>> {
+  public override async getPagedNodes(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<Node>> {
     return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
-      options = enforceValidPageSize({
-        ...options,
-        parentKey: nodeKeyFromJson(options.parentKey),
-      });
-      const [serializedNodesJson, count] = await Promise.all([
+      options = enforceValidPageSize(options);
+      const [serializedHierarchyLevel, count] = await Promise.all([
         this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
+      const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
       return {
         total: count,
-        items: nodesJson.nodes,
+        items: hierarchyLevel.nodes,
       };
     });
   }
@@ -303,10 +289,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     requestOptions: HierarchyLevelDescriptorRpcRequestOptions,
   ): PresentationRpcResponse<string | DescriptorJSON | undefined> {
     return this.makeRequest(token, "getNodesDescriptor", requestOptions, async (options) => {
-      options = {
-        ...options,
-        parentKey: nodeKeyFromJson(options.parentKey),
-      };
       return this.getManager(requestOptions.clientId).getDetail().getNodesDescriptor(options);
     });
   }
@@ -314,24 +296,18 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<NodePathElementJSON[]> {
+  ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
-      const result = await this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return result.map(NodePathElement.toJSON);
+      return this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
     });
   }
 
   public override async getFilteredNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByTextHierarchyRpcRequestOptions,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<NodePathElementJSON[]> {
+  ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
-      const result = await this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return result.map(NodePathElement.toJSON);
+      return this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
     });
   }
 
@@ -452,19 +428,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getPagedDistinctValues(
     token: IModelRpcProps,
     requestOptions: DistinctValuesRpcRequestOptions,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
+  ): PresentationRpcResponse<PagedResponse<DisplayValueGroup>> {
     return this.makeRequest(token, "getPagedDistinctValues", requestOptions, async (options) => {
       options = enforceValidPageSize({
         ...options,
         keys: KeySet.fromJSON(options.keys),
       });
-      const response = await this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
-      return {
-        ...response,
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        items: response.items.map(DisplayValueGroup.toJSON),
-      };
+      return this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
     });
   }
 
@@ -571,13 +541,4 @@ const enforceValidPageSize = <TOptions extends Paged<object>>(
 const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
   const requestedSize = size ?? 0;
   return requestedSize === 0 || requestedSize > maxPageSize ? maxPageSize : requestedSize;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
-  if (!json) {
-    return undefined;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return NodeKey.fromJSON(json);
 };

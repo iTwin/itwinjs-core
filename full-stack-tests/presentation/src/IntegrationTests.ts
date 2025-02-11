@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import * as cpx from "cpx2";
 import * as fs from "fs";
 import Backend from "i18next-http-backend";
 import * as path from "path";
@@ -46,43 +45,10 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", ".env"));
 
-const copyITwinBackendAssets = (outputDir: string) => {
-  const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath)
-    .map((packageName) => {
-      const packagePath = path.resolve(iTwinPackagesPath, packageName);
-      return path.join(packagePath, "lib", "cjs", "assets");
-    })
-    .filter((assetsPath) => {
-      return fs.existsSync(assetsPath);
-    })
-    .forEach((src) => {
-      cpx.copySync(`${src}/**/*`, outputDir);
-    });
-};
-
-const copyITwinFrontendAssets = (outputDir: string) => {
-  const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath)
-    .map((packageName) => {
-      const packagePath = path.resolve(iTwinPackagesPath, packageName);
-      return path.join(packagePath, "lib", "public");
-    })
-    .filter((assetsPath) => {
-      return fs.existsSync(assetsPath);
-    })
-    .forEach((src) => {
-      cpx.copySync(`${src}/**/*`, outputDir);
-    });
-};
-
 class IntegrationTestsApp extends NoRenderApp {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     await NoRenderApp.startup(opts);
     await IModelApp.localization.changeLanguage("en-PSEUDO");
-    cpx.copySync(`assets/**/*`, "lib/assets");
-    copyITwinBackendAssets("lib/assets");
-    copyITwinFrontendAssets("lib/public");
   }
 }
 
@@ -108,10 +74,6 @@ export const initialize = async (props?: {
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const outputRoot = setupTestsOutputDirectory();
-  const tempCachesDir = path.join(outputRoot, "caches");
-  if (!fs.existsSync(tempCachesDir)) {
-    fs.mkdirSync(tempCachesDir);
-  }
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
@@ -140,7 +102,7 @@ export const initialize = async (props?: {
 
   const presentationTestingInitProps: PresentationInitProps = {
     backendProps: backendInitProps,
-    backendHostProps: { cacheDir: tempCachesDir },
+    backendHostProps: { cacheDir: outputRoot },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,

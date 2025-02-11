@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MapLayerSource, MapLayerSourceStatus } from "../../../core-frontend";
-import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../tile/map/ArcGisUtilities";
+import { MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
+import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../internal/tile/map/ArcGisUtilities";
 import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
 import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods";
 import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";

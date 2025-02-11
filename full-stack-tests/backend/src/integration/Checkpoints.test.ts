@@ -335,6 +335,41 @@ describe("Checkpoints", () => {
       expect(stats.totalClients).to.equal(0);
     });
 
+    it("should be able to open multiple checkpoints in same container when sas expires", async () => {
+      const iModel = await SnapshotDb.openCheckpointFromRpc({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      });
+
+      await iModel.refreshContainerForRpc(accessToken);
+
+      const checkpointContainer = iModel[_nativeDb].cloudContainer;
+      iModel.close();
+
+      // simulate sas token expiration / bad token
+      expect(checkpointContainer).to.not.be.undefined;
+      checkpointContainer!.accessToken = "";
+
+      // Open iModel from same container, expect it to refresh the token
+      const iModel2 = await SnapshotDb.openCheckpointFromRpc({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSetFirstVersion,
+      });
+      expect(checkpointContainer?.accessToken).to.not.be.empty;
+      assert.equal(iModel2.iModelId, testIModelId);
+      assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
+      assert.equal(iModel2.iTwinId, testITwinId);
+      assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
+      const numModels = await queryBisModelCount(iModel2);
+      assert.equal(numModels, 3);
+      iModel2.close();
+
+    });
+
     it("should be able to open and read checkpoint for Rpc with daemon running", async () => {
       let iModel = await SnapshotDb.openCheckpointFromRpc({
         accessToken,

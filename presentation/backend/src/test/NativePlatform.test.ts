@@ -44,13 +44,13 @@ describe("default NativePlatform", () => {
   });
 
   afterEach(async () => {
-    nativePlatform.dispose();
+    nativePlatform[Symbol.dispose]();
     await IModelHost.shutdown();
   });
 
   it("calls addon's dispose", async () => {
     addonMock.setup((x) => x.dispose()).verifiable();
-    nativePlatform.dispose();
+    nativePlatform[Symbol.dispose]();
     addonMock.verifyAll();
   });
 

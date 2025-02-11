@@ -226,7 +226,7 @@ export class HyperModeling {
     if (start) {
       return this._start(viewport);
     } else {
-      decorator?.dispose();
+      decorator?.[Symbol.dispose]();
       return undefined;
     }
   }
@@ -267,7 +267,7 @@ export class HyperModeling {
    */
   public static stop(viewport: ScreenViewport): void {
     const decorator = HyperModelingDecorator.getForViewport(viewport);
-    decorator?.dispose();
+    decorator?.[Symbol.dispose]();
   }
 
   /** @internal */
