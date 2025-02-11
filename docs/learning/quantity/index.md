@@ -57,6 +57,9 @@ Unit conversion is performed through a [UnitConversionSpec]($quantity). These ob
 <summary>Example Code</summary>
 
 ```ts
+    import { BasicUnitsProvider } from "@itwin/core-frontend";
+    import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
+
     const unitsProvider = new BasicUnitsProvider();
     const formatData = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
@@ -100,6 +103,8 @@ For the composite format below, we provide a unit in meters and produce a format
 <summary>Example Code</summary>
 
 ```ts
+    import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
+
     const formatData = {
       composite: {
         includeZero: true,
@@ -152,6 +157,8 @@ For the composite format below, we provide a unit in meters and produce a format
   <summary>Example Code:</summary>
 
 ```ts
+  import { Format, ParserSpec } from "@itwin/core-quantity";
+
   // define output unit and also used to determine the unit family used during parsing
   const outUnit = await unitsProvider.findUnitByName("Units.M");
 
@@ -189,27 +196,30 @@ The quantity formatter supports parsing mathematical operations. The operation i
 <summary>Example Code</summary>
 
 ```Typescript
-const unitsProvider = new BasicUnitsProvider(); // If @itwin/core-frontend is available, can use IModelApp.quantityFormatter.unitsProvider
-const formatData = {
-  formatTraits: ["keepSingleZero", "showUnitLabel"],
-  precision: 8,
-  type: "Fractional",
-  uomSeparator: "",
-  allowMathematicOperations: true,
-};
+  import { BasicUnitsProvider } from "@itwin/core-frontend";
+  import { Format, Parser } from "@itwin/core-quantity";
 
-const format = new Format("exampleFormat");
-await format.fromJSON(unitsProvider, formatData);
-// Operation containing many units (feet, inches, yards).
-const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
+  const unitsProvider = new BasicUnitsProvider(); // If @itwin/core-frontend is available, can use IModelApp.quantityFormatter.unitsProvider
+  const formatData = {
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 8,
+    type: "Fractional",
+    uomSeparator: "",
+    allowMathematicOperations: true,
+  };
 
-// Asynchronous implementation
-const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
-// quantityProps.magnitude 7.5 (value in feet)
+  const format = new Format("exampleFormat");
+  await format.fromJSON(unitsProvider, formatData);
+  // Operation containing many units (feet, inches, yards).
+  const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
 
-// Synchronous implementation
-const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
-// parseResult.value 7.5 (value in feet)
+  // Asynchronous implementation
+  const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
+  // quantityProps.magnitude 7.5 (value in feet)
+
+  // Synchronous implementation
+  const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
+  // parseResult.value 7.5 (value in feet)
 ```
 
 </details>
