@@ -10,7 +10,7 @@ import { IModelApp } from "../../IModelApp";
 import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
 import { GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
-import { BatchedTileIdMap } from "../../core-frontend";
+import { BatchedTileIdMap } from "../../tile/internal";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);

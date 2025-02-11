@@ -6,7 +6,9 @@ import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
-import { B3dmReader, GltfDataType, IModelApp, MockRender, RealityMeshParams } from "@itwin/core-frontend";
+import { GltfDataType, IModelApp, RealityMeshParams } from "@itwin/core-frontend";
+import { B3dmReader } from "@itwin/core-frontend/lib/cjs/tile/internal";
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 

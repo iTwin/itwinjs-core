@@ -8,7 +8,7 @@
 
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { AnimationBranchStates } from "./render/GraphicBranch";
+import { AnimationBranchStates } from "./internal/render/AnimationBranchState";
 import { RenderSystem } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { ViewRect } from "./common/ViewRect";

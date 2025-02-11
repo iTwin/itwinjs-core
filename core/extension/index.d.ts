@@ -594,7 +594,6 @@ export type {
 	SubCategoryProps,
 	SubjectProps,
 	TerrainProps,
-	TerrainProviderName,
 	TextAnnotation2dProps,
 	TextAnnotation3dProps,
 	TextStringPrimitive,
