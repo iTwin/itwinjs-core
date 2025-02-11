@@ -3938,6 +3938,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected resolveResources(): Promise<void>;
     // (undocumented)
+    protected resolveUrl(uri: string): string | undefined;
+    // (undocumented)
     protected readonly _returnToCenter?: Point3d;
     // (undocumented)
     protected get _samplers(): GltfDictionary<GltfSampler>;
@@ -7824,6 +7826,8 @@ export interface RealityDataSource {
     getTileContentType(url: string): "tile" | "tileset";
     // @internal
     getTileJson(name: string): Promise<any>;
+    // @internal
+    getTilesetUrl?(): string | undefined;
     // (undocumented)
     readonly isContextShare: boolean;
     // (undocumented)
@@ -8095,6 +8099,8 @@ export abstract class RealityTileLoader {
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
+    // @internal (undocumented)
+    readonly baseUrl?: string;
     // @beta
     get batchTableProperties(): BatchTableProperties | undefined;
     // @internal (undocumented)
