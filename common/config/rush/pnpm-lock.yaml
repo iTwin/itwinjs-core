@@ -16,8 +16,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.0.53
-        version: 5.0.53
+        specifier: 5.0.54
+        version: 5.0.54
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -70,6 +70,9 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../geometry
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../ecschema-metadata
       '@itwin/ecsql-common':
         specifier: workspace:*
         version: link:../ecsql/common
@@ -4646,8 +4649,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.0.53':
-    resolution: {integrity: sha512-kpYC5brFG4KSVbrUVUlVn/RomTu1o1gbJmfX3ubuweBA9CI/QY1kwllxB+0m9NXUAjFdT1q6aHGYxTGDMxlNNQ==}
+  '@bentley/imodeljs-native@5.0.54':
+    resolution: {integrity: sha512-/X4MGsnTlbw/nQLjwkEXw20i/Y4bB/JAnsRNXcIYOMXVW9Oxi+BXGwVYL9GCWFtblN0SPE+Nz+qblj0p0VJL1Q==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -10896,7 +10899,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.0.53': {}
+  '@bentley/imodeljs-native@5.0.54': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
