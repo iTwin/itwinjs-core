@@ -52,7 +52,7 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 - dataset: AllProperties.bim
 
 ```sql
-SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
+SELECT ec_classname(e.ECClassId) as ClassName, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
 ```
 
 - rowFormat: ECSqlIndexes
@@ -61,19 +61,25 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 {
   "columns": [
     {
-      "accessString": "ECClassId",
-      "name": "ECClassId",
-      "type": "Id",
-      "typeName": "long",
-      "generated": false,
-      "extendedType": "ClassId"
+      "className": "",
+      "accessString": "ClassName",
+      "generated": true,
+      "index": 0,
+      "jsonName": "className",
+      "name": "ClassName",
+      "typeName": "string",
+      "type": "String"
     },
     {
+      "className": "AllProperties:TestElement",
       "accessString": "DirectStr",
+      "generated": false,
+      "index": 1,
+      "jsonName": "directStr",
       "name": "DirectStr",
-      "type": "String",
       "typeName": "string",
-      "generated": false
+      "type": "String",
+      "originPropertyName": "DirectStr"
     }
   ]
 }
@@ -81,8 +87,8 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 
 ```json
 [
-  ["0x153", "str6"],
-  ["0x153", "str7"]
+  ["AllProperties:TestElement","str6"],
+  ["AllProperties:TestElement","str7"]
 ]
 ```
 

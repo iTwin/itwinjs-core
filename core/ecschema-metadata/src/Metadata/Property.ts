@@ -12,7 +12,7 @@ import {
   PrimitivePropertyProps, PropertyProps, StructPropertyProps,
 } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
+import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, SchemaItemType, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes";
@@ -23,7 +23,7 @@ import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, ser
 import { Enumeration } from "./Enumeration";
 import { KindOfQuantity } from "./KindOfQuantity";
 import { PropertyCategory } from "./PropertyCategory";
-import { RelationshipClass } from "./RelationshipClass";
+import { type RelationshipClass } from "./RelationshipClass";
 import { Schema } from "./Schema";
 
 /**
@@ -118,7 +118,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       return undefined;
     }
 
-    return this.class.schema.lookupItemSync(this._category);
+    return this.class.schema.lookupItemSync(this._category, PropertyCategory);
   }
 
   public getKindOfQuantitySync(): KindOfQuantity | undefined {
@@ -131,7 +131,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       return undefined;
     }
 
-    return this.class.schema.lookupItemSync(this._kindOfQuantity);
+    return this.class.schema.lookupItemSync(this._kindOfQuantity, KindOfQuantity);
   }
 
   /**
@@ -221,7 +221,7 @@ export abstract class Property implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
       this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey,
         async () => {
-          const category = await this.class.schema.lookupItem<PropertyCategory>(propertyCategorySchemaItemKey);
+          const category = await this.class.schema.lookupItem(propertyCategorySchemaItemKey, PropertyCategory);
           if (undefined === category)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
           return category;
@@ -234,7 +234,7 @@ export abstract class Property implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
       this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey,
         async () => {
-          const koq = await this.class.schema.lookupItem<KindOfQuantity>(koqSchemaItemKey);
+          const koq = await this.class.schema.lookupItem(koqSchemaItemKey, KindOfQuantity);
           if (undefined === koq)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
           return koq;
@@ -521,7 +521,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
       this._enumeration = new DelayedPromiseWithProps<SchemaItemKey, Enumeration>(enumSchemaItemKey,
         async () => {
-          const enumeration = await this.class.schema.lookupItem<Enumeration>(enumSchemaItemKey);
+          const enumeration = await this.class.schema.lookupItem(enumSchemaItemKey, Enumeration);
           if (undefined === enumeration)
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
           return enumeration;
@@ -596,7 +596,9 @@ export class NavigationProperty extends Property {
     if (!this._relationshipClass) // eslint-disable-line @typescript-eslint/no-misused-promises
       return undefined;
 
-    return this.class.schema.lookupItemSync(this._relationshipClass);
+    // We cannot use the type guard here to avoid a circular dependency
+    const result = this.class.schema.lookupItemSync(this._relationshipClass);
+    return result?.schemaItemType === SchemaItemType.RelationshipClass ? result as RelationshipClass : undefined
   }
 
   public get direction() { return this._direction; }

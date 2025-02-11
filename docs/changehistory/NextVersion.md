@@ -16,6 +16,7 @@ Table of contents:
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
     - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/ecschema-metadata](#itwincore-ecschema-metadata)
     - [@itwin/presentation-common](#itwinpresentation-common)
   - [Breaking Changes](#breaking-changes)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
@@ -33,6 +34,8 @@ Table of contents:
       - [@itwin/core-geometry](#itwincore-geometry)
       - [@itwin/presentation-common](#itwinpresentation-common-1)
     - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-1)
+      - [@itwin/core-ecschema-metadata](#itwincore-ecschema-metadata-1)
       - [@itwin/core-common](#itwincore-common-2)
     - [Packages dropped](#packages-dropped)
     - [Change to pullMerge](#change-to-pullmerge)
@@ -113,6 +116,7 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 ### @itwin/core-backend
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
+- Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
 
 ### @itwin/core-frontend
 
@@ -124,6 +128,14 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
+
+### @itwin/core-ecschema-metadata
+
+Reworked the ISchemaItemLocater and Schema classes' APIs so it's type-safe.
+The original was never type-safe like it suggested. It just returned any schema item found.
+The new safe overload takes a constructor of a schema item subclass to only return items of that type.
+
+Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. EntityClass.isEntityClass())
 
 ### @itwin/presentation-common
 
@@ -415,6 +427,17 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 | `GetMetaDataFunction` |
 | `LogFunction`         |
 | `LoggingMetaData`     |
+
+#### @itwin/core-ecschema-metadata-1
+
+- Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
+- Replaced existing generic `getItem()` methods from `schemaItemLocater`, `schemaContext` and `Schema` as it suggested type safety when there was none. The new overload requires either no generic type at all, or providing an additional ctor parameter of the desired schemaItem class.
+
+Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted either into
+`context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
+A regex can be used to do bulk renaming:
+`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
+This applies to SchemaContext.getSchemaItem/Sync, Schema.getItem/Sync and Schema.lookupItem/Sync
 
 ### Packages dropped
 
