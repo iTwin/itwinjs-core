@@ -27,7 +27,6 @@ import {
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
 import { Transform } from "@itwin/core-geometry";
 import { TestSnapshotConnection } from "./TestSnapshotConnection";
-import { GLTimerResultCallback } from "@itwin/core-frontend/lib/cjs/internal/render/RenderSystemDebugControl";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -93,7 +92,7 @@ class Timings {
   public readonly gpu = new Map<string, number[]>();
   public readonly actualFps = new Array<Map<string, number>>();
   public gpuFramesCollected = 0;
-  public readonly callback: GLTimerResultCallback;
+  public readonly callback: (result: GLTimerResult) => void;
 
   public constructor(numFramesToCollect: number) {
     this.callback = (result: GLTimerResult) => {

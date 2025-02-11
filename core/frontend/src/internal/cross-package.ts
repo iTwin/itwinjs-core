@@ -49,3 +49,8 @@ export {
  type WGS84Extent,
  WmsUtilities,
 } from "../tile/internal";
+
+// Used by display-test-app which currently builds using both ESModules and CommonJS.
+// Remove once CommonJS is dropped.
+export { DebugShaderFile } from "./render/RenderSystemDebugControl";
+export { IModelTileTree } from "./tile/IModelTileTree";

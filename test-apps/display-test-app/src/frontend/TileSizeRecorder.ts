@@ -5,8 +5,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { iModelTileTreeIdToString } from "@itwin/core-common";
-import { IModelApp, TileAdmin, Tool } from "@itwin/core-frontend";
-import { IModelTileTree } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
+import { IModelApp, IModelTileTree, TileAdmin, Tool } from "@itwin/core-frontend";
 import { copyStringToClipboard, parseToggle } from "@itwin/frontend-devtools";
 
 interface ContentId {
