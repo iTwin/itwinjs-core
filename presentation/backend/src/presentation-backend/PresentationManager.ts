@@ -23,6 +23,7 @@ import {
   ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -36,6 +37,7 @@ import {
   FormatsMap,
   HierarchyCompareInfo,
   HierarchyCompareOptions,
+  HierarchyLevel,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
@@ -65,7 +67,7 @@ import {
 } from "@itwin/presentation-common";
 import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import { getRulesetIdObject, parseHierarchyLevelFromString, PresentationManagerDetail } from "./PresentationManagerDetail";
+import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
@@ -504,7 +506,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Node[]> {
     const serializedHierarchyLevel = await this._detail.getNodes(requestOptions);
-    const hierarchyLevel = parseHierarchyLevelFromString(serializedHierarchyLevel);
+    const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
     return this._localizationHelper.getLocalizedNodes(hierarchyLevel.nodes);
   }
 
