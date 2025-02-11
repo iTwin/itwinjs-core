@@ -56,6 +56,7 @@ export interface DtaStringConfiguration {
   oidcScope?: string; // default is undefined, used for auth setup
   oidcRedirectUri?: string; // default is undefined, used for auth setup
   frontendTilesUrlTemplate?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
+  googleMapsUi?: boolean; // if set, a Google Maps toolbar icon will be displayed in the UI
 }
 
 export interface DtaNumberConfiguration {
@@ -156,6 +157,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_WINDOW_SIZE)
     configuration.windowSize = process.env.IMJS_WINDOW_SIZE;
+
+  if (undefined !== process.env.IMJS_GOOGLEMAPS_UI)
+    configuration.googleMapsUi = !!process.env.IMJS_GOOGLEMAPS_UI;
 
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
   configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;
