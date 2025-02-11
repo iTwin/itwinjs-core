@@ -15,24 +15,21 @@ import { SchemaMatchType } from "../../ECObjects";
 import { SchemaKey } from "../../SchemaKey";
 
 class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(schemaKey, matchType, context) as T;
+  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext): Promise<Schema | undefined> {
+    return this.getSchemaSync(schemaKey, matchType, context);
   }
 
   public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<SchemaInfo | undefined> {
     return this.getSchema(schemaKey, matchType, context);
   }
-  public getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context?: SchemaContext): Schema | undefined {
     if (schemaKey.name !== "Units")
       return undefined;
 
     const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema = deserializeXmlSync(schemaXml, context || new SchemaContext());
-    if (schema !== undefined)
-      return schema as T;
-
-    return undefined;
+    return schema;
   }
 }
 
