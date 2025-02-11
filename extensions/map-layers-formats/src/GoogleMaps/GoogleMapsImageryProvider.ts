@@ -1,6 +1,6 @@
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile, TileUrlImageryProvider } from "@itwin/core-frontend";
-import { CreateSessionOptions, GoogleMaps, GoogleMapsSession, LayerTypesType, MapTypesType } from "./GoogleMaps";
+import { CreateSessionOptions, GoogleMaps, GoogleMapsSession, LayerTypes, MapTypes, ScaleFactors } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
@@ -61,7 +61,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
     this._tileSize = session.tileWidth; // assuming here tiles are square
 
-    const isActivated = await this._decorator.activate(this._settings.properties!.mapType as MapTypesType);
+    const isActivated = await this._decorator.activate(this._settings.properties!.mapType as MapTypes);
     if (!isActivated) {
       const msg = `Failed to activate decorator`;
       Logger.logError(loggerCategory, msg);
@@ -81,17 +81,24 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
 
     const createSessionOptions: CreateSessionOptions = {
-      mapType: this._settings.properties!.mapType as MapTypesType,
+      mapType: this._settings.properties!.mapType as MapTypes,
       region: this._settings.properties!.region as string,
       language: this._settings.properties!.language as string,
     }
 
     if (this._settings.properties?.layerTypes !== undefined) {
-      createSessionOptions.layerTypes = this._settings.properties!.layerTypes as LayerTypesType[];
+      createSessionOptions.layerTypes = this._settings.properties.layerTypes as LayerTypes[];
+    }
+
+    if (this._settings.properties?.scale !== undefined) {
+      createSessionOptions.scale = this._settings.properties.scale as ScaleFactors;
+    }
+
+    if (this._settings.properties?.overlay !== undefined) {
+      createSessionOptions.overlay = this._settings.properties.overlay as boolean;
     }
     return createSessionOptions;
-
-    }
+  }
 
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, level: number): Promise<string> {

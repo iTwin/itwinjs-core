@@ -1,4 +1,4 @@
-import { ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
+import { BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
 import { IModelApp, MapCartoRectangle } from "@itwin/core-frontend";
 import { GoogleMapsMapLayerFormat } from "./GoogleMapsImageryFormat";
 import { Angle } from "@itwin/core-geometry";
@@ -6,12 +6,16 @@ import { Logger } from "@itwin/core-bentley";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
-export type LayerTypesType = "layerRoadmap" | "layerStreetview" | "layerTraffic";
-export type MapTypesType =  "roadmap"|"satellite"|"terrain";
-export type ImageFormatsType = "jpeg" | "png";
+/** @beta*/
+export type LayerTypes = "layerRoadmap" | "layerStreetview" | "layerTraffic";
+/** @beta*/
+export type MapTypes =  "roadmap"|"satellite"|"terrain";
+/** @beta*/
+export type ScaleFactors =  "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 /**
 * Represents the options to create a Google Maps session.
+* @beta
 */
 export interface CreateSessionOptions {
     /**
@@ -24,7 +28,7 @@ export interface CreateSessionOptions {
    * `terrain`: Terrain imagery. When selecting `terrain` as the map type, you must also include the `layerRoadmap` layer type.
    * @beta
    * */
-  mapType: MapTypesType,
+  mapType: MapTypes,
   /**
    * An {@link https://en.wikipedia.org/wiki/IETF_language_tag | IETF language tag} that specifies the language used to display information on the tiles. For example, `en-US` specifies the English language as spoken in the United States.
    */
@@ -44,11 +48,28 @@ export interface CreateSessionOptions {
    * `layerTraffic`: Displays current traffic conditions.
    * @beta
    * */
-  layerTypes?: LayerTypesType[];
+  layerTypes?: LayerTypes[];
+
   /**
-   * Specifies the file format to return. Valid values are either jpeg or png. JPEG files don't support transparency, therefore they aren't recommended for overlay tiles. If you don't specify an imageFormat, then the best format for the tile is chosen automatically.
-   */
-  imageFormat?: ImageFormatsType;
+   * Scales-up the size of map elements (such as road labels), while retaining the tile size and coverage area of the default tile.
+   * Increasing the scale also reduces the number of labels on the map, which reduces clutter.
+   *
+   * `scaleFactor1x`: The default.
+   *
+   * `scaleFactor2x`: Doubles label size and removes minor feature labels.
+   *
+   * `scaleFactor4x`: Quadruples label size and removes minor feature labels.
+   * @beta
+   * */
+  scale?: ScaleFactors
+
+  /**
+   * A boolean value that specifies whether layerTypes should be rendered as a separate overlay, or combined with the base imagery.
+   * When true, the base map isn't displayed. If you haven't defined any layerTypes, then this value is ignored.
+   * Default is false.
+   * @beta
+   * */
+    overlay? : boolean;
 };
 
 /**
@@ -150,7 +171,14 @@ export const GoogleMaps = {
       properties.layerTypes = [...opts.layerTypes];
     }
 
-    return properties
+    if (opts.scale !== undefined) {
+      properties.scale = opts.scale;
+    }
+
+    if (opts.overlay !== undefined) {
+      properties.overlay = opts.overlay;
+    }
+    return properties;
   },
 
 /**
@@ -162,6 +190,11 @@ export const GoogleMaps = {
   createMapLayerSettings: (name?: string, opts?: CreateSessionOptions): ImageMapLayerSettings => {
     return ImageMapLayerSettings.fromJSON(GoogleMaps.createMapLayerProps(name, opts));
   },
+
+  createBaseLayerSettings: (name?: string, opts?: CreateSessionOptions): ImageMapLayerSettings => {
+    return BaseMapLayerSettings.fromJSON(GoogleMaps.createMapLayerProps(name, opts));
+  },
+
 
   /**
  * Creates a Google Maps layer props.
