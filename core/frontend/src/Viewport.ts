@@ -49,7 +49,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -1303,6 +1303,11 @@ export abstract class Viewport implements Disposable, TileUser {
     const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
+      for (const { supplier, id, owner } of this.iModel.tiles) {
+        if (owner.tileTree instanceof RealityTileTree) {
+          this.iModel.tiles.resetTileTreeOwner(id, supplier);
+        }
+      }
     };
 
     removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
@@ -3187,7 +3192,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== IModelApp.applicationLogoCard) {
         logos.appendChild(IModelApp.applicationLogoCard());
       }
-      
+
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
       for (const ref of this.getTileTreeRefs()) {
         ref.addLogoCards(logos, this);
