@@ -21,6 +21,10 @@ type MutableEnumerator = {
  * A class allowing you to create schema items of type Enumeration.
  */
 export class Enumerations extends SchemaItems {
+  protected override get itemTypeClass(): typeof Enumeration {
+    return Enumeration;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Enumeration, schemaEditor);
   }
@@ -61,7 +65,7 @@ export class Enumerations extends SchemaItems {
 
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {
     try {
-      const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
+      const enumeration = await this.getSchemaItem(enumerationKey, Enumeration);
 
       if (enumeration.isInt && typeof (enumerator.value) !== "number")
         throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumeratorId(enumerator, enumeration));
@@ -77,7 +81,7 @@ export class Enumerations extends SchemaItems {
 
   public async setEnumeratorLabel(enumerationKey: SchemaItemKey, enumeratorName: string, label: string | undefined): Promise<void> {
     try {
-      const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
+      const enumeration = await this.getSchemaItem(enumerationKey, Enumeration);
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)
@@ -91,7 +95,7 @@ export class Enumerations extends SchemaItems {
 
   public async setEnumeratorDescription(enumerationKey: SchemaItemKey, enumeratorName: string, description: string | undefined): Promise<void> {
     try {
-      const enumeration = await this.getSchemaItem<Enumeration>(enumerationKey, SchemaItemType.Enumeration);
+      const enumeration = await this.getSchemaItem(enumerationKey, Enumeration);
 
       const enumerator = enumeration.getEnumeratorByName(enumeratorName);
       if (enumerator === undefined)

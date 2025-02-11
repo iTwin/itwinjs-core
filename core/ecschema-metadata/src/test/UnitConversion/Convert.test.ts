@@ -51,10 +51,8 @@ describe("Unit Conversion tests", () => {
 
   it(`should convert units parallel`, async () => {
     const converter = new UnitConverter(context);
-    const conversionPromises = testData.map(async (test: TestData) => {
+    await Promise.all(testData.map(async (test: TestData) => {
       await convertAndVerifyTestData(test, converter);
-    });
-
-    await Promise.all(conversionPromises);
+    }));
   });
 });

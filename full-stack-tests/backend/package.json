@@ -24,7 +24,8 @@
     "perftest:elAspect": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ElementAspectPerformance \"./lib/cjs/perftest/**/*.test.js\"",
     "perftest:schema": "npm run -s perftest:pre && mocha --timeout=999999999 --grep SchemaDesignPerf \"./lib/cjs/perftest/**/*.test.js\"",
     "perftest:schemaloader": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/SchemaLoader.test.js\"",
-    "perftest:ecSqlRowPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlRow.test.js\""
+    "perftest:ecSqlRowPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 \"./lib/cjs/perftest/ECSqlRow.test.js\"",
+    "perftest:metadataPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep PerformanceElementGetMetadata \"./lib/cjs/perftest/ElementCRUD.test.js\""
   },
   "dependencies": {
     "@azure/storage-blob": "^12.26.0",

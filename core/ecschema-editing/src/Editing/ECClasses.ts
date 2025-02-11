@@ -11,7 +11,7 @@ import {
   CustomAttributeContainerProps,
   DelayedPromiseWithProps,
   ECClass, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
@@ -19,10 +19,9 @@ import { SchemaContextEditor } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 import * as Rules from "../Validation/ECRules";
 import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties";
-import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, SchemaEditingError, SchemaItemId } from "./Exception";
+import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
-import { MutableSchema } from "./Mutable/MutableSchema";
 
 export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 
@@ -43,6 +42,15 @@ export class ECClasses extends SchemaItems{
   }
 
   protected override schemaItemType: ECClassSchemaItems;
+
+  /**
+   * Allows access for the editors itemType class instance.
+   * It returns ECClass here, but editors for subclasses will override this to return the
+   * appropriate subclass.
+   */
+  protected override get itemTypeClass(): typeof ECClass {
+    return ECClass;
+  }
 
   /**
    * Allows access for editing of base Property attributes.
@@ -69,8 +77,11 @@ export class ECClasses extends SchemaItems{
     const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);
 
     if (baseClassKey !== undefined) {
-      const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : newClass.schema as MutableSchema;
-      const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+      if(!await this.schemaEditor.schemaContext.getSchema(baseClassKey.schemaKey)) {
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(baseClassKey.schemaKey));
+      }
+
+      const baseClassItem = await this.getSchemaItem(baseClassKey, this.itemTypeClass);
       await (newClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T));
     }
 
@@ -235,7 +246,7 @@ export class ECClasses extends SchemaItems{
   public async delete(classKey: SchemaItemKey): Promise<void> {
     try {
       const schema = await this.getSchema(classKey.schemaKey);
-      const ecClass = await schema.getItem<ECClass>(classKey.name);
+      const ecClass = await schema.getItem(classKey.name, this.itemTypeClass);
       if (ecClass === undefined)
         return;
 
@@ -278,14 +289,17 @@ export class ECClasses extends SchemaItems{
    */
   public async setBaseClass(itemKey: SchemaItemKey, baseClassKey?: SchemaItemKey): Promise<void> {
     try {
-      const classItem = await this.getSchemaItem<ECClass>(itemKey);
+      const classItem = await this.getSchemaItem(itemKey, this.itemTypeClass);
       if (!baseClassKey) {
         await (classItem as MutableClass).setBaseClass(undefined);
         return;
       }
 
-      const baseClassSchema = !baseClassKey.schemaKey.matches(itemKey.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : classItem.schema as MutableSchema;
-      const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
+      if(!await this.schemaEditor.schemaContext.getSchema(baseClassKey.schemaKey)) {
+        throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(baseClassKey.schemaKey));
+      }
+
+      const baseClassItem = await this.getSchemaItem(baseClassKey, this.itemTypeClass);
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
         throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 
@@ -298,20 +312,12 @@ export class ECClasses extends SchemaItems{
   private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
     const schema = await this.getSchema(classKey.schemaKey);
 
-    const ecClass = await schema.getItem<MutableClass>(classKey.name);
+    const ecClass = await schema.getItem(classKey.name);
     if (ecClass === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new ClassId(this.schemaItemType, classKey));
 
-    switch (ecClass.schemaItemType) {
-      case SchemaItemType.EntityClass:
-      case SchemaItemType.Mixin:
-      case SchemaItemType.StructClass:
-      case SchemaItemType.CustomAttributeClass:
-      case SchemaItemType.RelationshipClass:
-        break;
-      default:
-        throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new ClassId(this.schemaItemType, classKey));
-    }
+    if(!isMutableClass(ecClass))
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new ClassId(this.schemaItemType, classKey));
 
     return ecClass;
   }
@@ -337,4 +343,8 @@ export class ECClasses extends SchemaItems{
 
     return derivedClasses;
   }
+}
+
+function isMutableClass(schemaItem: SchemaItem): schemaItem is MutableClass {
+  return ECClass.isECClass(schemaItem);
 }
