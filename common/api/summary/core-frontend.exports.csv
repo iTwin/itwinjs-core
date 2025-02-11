@@ -124,6 +124,7 @@ public;enum;CurrentState
 public;interface;CustomFormatPropEditorSpec
 public;interface;CustomGraphicBuilderOptions
 public;interface;CustomQuantityTypeDefinition
+internal;class;DebugShaderFile
 public;class;DecorateContext
 public;interface;DecorateContextCreateArgs
 public;class;Decorations
@@ -302,6 +303,7 @@ public;namespace;IModelConnection
 internal;class;IModelFrameLifecycle
 public;interface;IModelIdArg
 public;class;IModelRoutingContext
+internal;class;IModelTileTree
 public;class;InputCollector
 public;enum;InputSource
 beta;interface;Instance
