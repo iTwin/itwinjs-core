@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { Frustum, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
+import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider";
 import { _internal , CreateSessionOptions, GoogleMaps, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats";

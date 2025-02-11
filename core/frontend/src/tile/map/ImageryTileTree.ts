@@ -360,7 +360,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
                     if (0 !== cmp)
                       break;
                   } else {
-                    cmp = compareSimpleTypes(lhsProp as number | string | boolean, rhsProp as number | string | boolean);
+                    cmp = compareSimpleTypes(lhsProp, rhsProp as number | string | boolean);
                     if (0 !== cmp)
                       break;
                   }

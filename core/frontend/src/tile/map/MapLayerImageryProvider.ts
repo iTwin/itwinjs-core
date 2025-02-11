@@ -204,8 +204,7 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   public  decorate(_context: DecorateContext): void {
-    console.log ("MapLayerImageryProvider.Decorate called");
-    }
+  }
 
   /** @internal */
   protected async getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {

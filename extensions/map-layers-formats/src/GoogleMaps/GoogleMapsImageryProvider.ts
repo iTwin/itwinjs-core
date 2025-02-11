@@ -1,5 +1,5 @@
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile, TileUrlImageryProvider } from "@itwin/core-frontend";
+import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { _internal, CreateSessionOptions, GoogleMapsSession, LayerTypes, MapTypes, ScaleFactors } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator";
