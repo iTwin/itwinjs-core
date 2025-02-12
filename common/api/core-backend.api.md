@@ -347,15 +347,18 @@ export interface AzureBlobStorageCredentials {
     baseUrl?: string;
 }
 
-// @internal
+// @public
 export interface BackendHubAccess {
+    // @internal
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
+    // @internal
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
+    // @internal
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @deprecated
+    // @internal @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
@@ -365,14 +368,18 @@ export interface BackendHubAccess {
     }) => Promise<ChangesetProps>;
     getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
     getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
+    // @internal
     pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
     }) => Promise<ChangesetIndex>;
+    // @internal
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
+    // @internal
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
+    // @internal
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
@@ -3071,6 +3078,9 @@ export class GroupModel extends GroupInformationModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
+// @internal (undocumented)
+export const _hubAccess: unique symbol;
+
 // @internal
 export class HubMock {
     // (undocumented)
@@ -3470,6 +3480,12 @@ export class IModelElementCloneContext {
 
 // @public
 export class IModelHost {
+    // @internal
+    static [_getHubAccess](): BackendHubAccess | undefined;
+    // @internal
+    static get [_hubAccess](): BackendHubAccess;
+    // @internal (undocumented)
+    static [_setHubAccess](hubAccess: BackendHubAccess | undefined): void;
     static get appAssetsDir(): string | undefined;
     static get applicationId(): string;
     static set applicationId(id: string);
@@ -3490,14 +3506,10 @@ export class IModelHost {
         exactMatch?: boolean;
     }): string;
     // (undocumented)
-    static configuration?: IModelHostOptions;
+    static configuration?: Omit<IModelHostOptions, "hubAccess">;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
-    // @internal
-    static getHubAccess(): BackendHubAccess | undefined;
-    // @internal
-    static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
@@ -3518,8 +3530,6 @@ export class IModelHost {
     static set sessionId(id: GuidString);
     // @internal
     static setCrashReportProperty(name: string, value: string): void;
-    // @internal (undocumented)
-    static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
     // @beta
     static get settingsSchemas(): SettingsSchemas;
     static shutdown(this: void): Promise<void>;
@@ -3584,7 +3594,6 @@ export interface IModelHostOptions {
     // @internal
     crashReportingConfig?: CrashReportingConfig;
     enableOpenTelemetry?: boolean;
-    // @internal
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;

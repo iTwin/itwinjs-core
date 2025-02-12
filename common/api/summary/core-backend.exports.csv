@@ -9,7 +9,7 @@ public;class;AuxCoordSystem3d
 public;class;AuxCoordSystemSpatial
 beta;interface;AvailableCoordinateReferenceSystemProps
 beta;interface;AzureBlobStorageCredentials
-internal;interface;BackendHubAccess
+public;interface;BackendHubAccess
 public;enum;BackendLoggerCategory
 public;type;BindParameter
 public;class;BisCoreSchema
@@ -232,6 +232,7 @@ public;class;GroupInformationElement
 public;class;GroupInformationModel
 public;class;GroupInformationPartition
 public;class;GroupModel
+internal;const;_hubAccess
 internal;class;HubMock
 beta;const;IModelCloneContext
 deprecated;const;IModelCloneContext
