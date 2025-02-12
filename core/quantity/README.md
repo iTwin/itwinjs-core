@@ -2,7 +2,7 @@
 
 The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing. For detailed API documentation, see our [iTwin.js reference documentation](https://www.itwinjs.org/reference/core-quantity/quantity/).
 
-Also check the [iTwin.js learning documentation](https://www.itwinjs.org/learning/quantity/index.md) explaining quantity formatting and its basic concepts.
+Also check the [iTwin.js learning documentation](https://www.itwinjs.org/learning/quantity) explaining quantity formatting and its basic concepts.
 
 ## Contributing
 

@@ -1,8 +1,9 @@
-# Quantity Formatting Package
+# Quantity Formatting And Parsing
 
-- [Quantity Formatting Package](#quantity-formatting-package)
+- [Quantity Formatting And Parsing](#quantity-formatting-and-parsing)
   - [Terms and Concepts](#terms-and-concepts)
     - [Common Terms](#common-terms)
+    - [FormatProps](#formatprops)
     - [Concepts](#concepts)
       - [Units Provider](#units-provider)
       - [Unit Conversion](#unit-conversion)
@@ -21,16 +22,21 @@ If you're developing a frontend application that takes advantage of the core qua
 
 ### Common Terms
 
-- [Unit]($quantity)/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label. The definition of any unit is represented through its `UnitProps`.
+- Unit - A named unit of measure which can be located by its name or label. The definition of any unit is represented through its [UnitProps]($quantity).
 - [UnitsProvider]($quantity) - An interface that locates the `UnitProps` for a unit given name or label. This interface also provides methods for [UnitConversion]($quantity) to allow converting from one unit to another.
 - Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
-- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel.
-- Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
-  - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
+- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable iModel. iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
+- [KindOfQuantity]($docs/bis/ec/kindofquantity/) - An object that defines a persistence unit and presentation formats.
+- [Format]($quantity) - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
+- CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
 - [FormatterSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the `UnitsProvider` during the formatting process.
 - [ParserSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the `UnitsProvider` and to allow users to input quantities in different unit systems than specified. For instance, if a metric unit system is set, a user could enter `43in` and have the result properly converted to meters.
 - [Formatter]($quantity) - A class that holds methods to format a quantity value into a text string. Given a `FormatterSpec` object — which includes one or more unit definitions, each with their own conversion information and a specified format — and a single magnitude number, the `Formatter` can convert this number into a text string, adhering to the properties specified in the `formatTraits`.
 - [Parser]($quantity) - A class that holds methods to parse a text string into a single number. Given a `ParserSpec` object containing a Format's Units and their Unit Conversions, as well as an input string, the Parser can either return an object `QuantityParseResult` that contains the magnitude of type `number`, or an object `ParseQuantityError`.
+
+### FormatProps
+
+For a detailed description of all the setting supported by FormatProp see the EC documentation on [Format](../../bis/ec/ec-format.md).
 
 ### Concepts
 
@@ -52,7 +58,7 @@ Unit conversion is performed through a [UnitConversionSpec]($quantity). These ob
 
 #### Numeric Format
 
-  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units, the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
+  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units; the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
 <details>
 <summary>Example Code</summary>
 

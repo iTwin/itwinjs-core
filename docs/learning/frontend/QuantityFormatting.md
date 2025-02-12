@@ -4,6 +4,8 @@ The iTwin.js offers two ways to format quantity values. The more primitive inter
 
 A more convenient interface to format and parse values is the [QuantityFormatter]($frontend) in the `core-frontend` package.  It is limited to formatting and parsing values for a fixed set of quantity types.
 
+More detailed explanation can be found at [Quantity Formatting and Parsing](../quantity/index.md).
+
 ## QuantityFormatter
 
 The [QuantityFormatter]($frontend) class formats quantities for interactive tools, such as the different measure tools, and is used to parse strings back into quantity values. The QuantityFormatter is not used to format properties stored in the iModel, as that is work is done on the back-end via the Presentation layer, but the QuantityFormatter can be set to format values in the same unit system as that used by the back-end. There are four Unit Systems definitions that is shared between the back-end Presentation Manager and the front-end QuantityFormatter:
@@ -42,7 +44,7 @@ To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) as sh
 
 ### Units Provider
 
-A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most IModels contain a `Units` schema. If this is the case, a SchemaUnitProvider may be defined when an IModel is opened. The parent application must opt-in to using an IModel specific UnitsProvider using the following technique:
+A units provider is used to define all available units and provides conversion factors between units. The [QuantityFormatter]($frontend) has a default units provider [BasicUnitsProvider]($frontend) that only defines units needed by the set of QuantityTypes the formatter supports. Most iModels contain a `Units` schema. If this is the case, a SchemaUnitProvider may be defined when an IModel is opened. The parent application must opt-in to using an iModel specific UnitsProvider using the following technique:
 
 ```ts
     const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
@@ -178,29 +180,15 @@ It is possible to retrieve `Units` from schemas stored in IModels. The new [Sche
 
 The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes used to specify formatting and provide information needed to parse strings into quantity values. It should be noted that most of the classes and interfaces used in this package are based on the native C++ code that formats quantities on the back-end. The purpose of this frontend package was to produce the same formatted strings without requiring constant calls to the backend to do the work.
 
-Common Terms:
-
-- Unit/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label.
-- [UnitsProvider]($quantity) - An interface that locates the UnitProps for a unit given name or label. This interface also provides methods for [UnitConversion]($quantity) to allow converting from one unit to another.
-- Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
-- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel. IModels define the persistence unit through [KindOfQuantity](../../bis/ec/kindofquantity.md) objects.
-- KindOfQuantity = An object that defines a persistence unit and presentation formats.
-- Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
-  - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
-- FormatterSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the UnitsProvider during the formatting process.
-- ParserSpec - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the UnitsProvider and also done to allow a user to enter `43in` even when in "metric" unit system and have the string properly converted to meters.
-
-### FormatProps
-
-For a detailed description of all the setting supported by FormatProp see the EC documentation on [Format](../../bis/ec/ec-format.md).
+Common terms used across this page are explained at [Quantity Formatting and Parsing](../quantity/index.md).
 
 ### Formatting Examples
 
-Below are a couple examples of formatting values using methods directly from the @itwinjs/core-quantity package. The UnitsProvider used in the examples below can be seen in [TestHelper](https://github.com/iTwin/itwinjs-core/blob/master/core/quantity/src/test/TestUtils/TestHelper.ts). As discussed above, there are UnitProviders that can read units defined in the active IModel, and there is a basic provider that can be used when not IModel is open.
+Below are a couple examples of formatting values using methods directly from the @itwinjs/core-quantity package. The UnitsProvider used in the examples below can be seen in [TestHelper](https://github.com/iTwin/itwinjs-core/blob/master/core/quantity/src/test/TestUtils/TestHelper.ts). As discussed above, there are UnitProviders that can read units defined in the active iModel, and there is a basic provider that can be used when no iModel is open.
 
 #### Numeric Format
 
-  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units, the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
+  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units; the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
 
 ```ts
     const unitsProvider = new BasicUnitsProvider();
