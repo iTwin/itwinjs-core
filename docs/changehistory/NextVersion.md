@@ -77,7 +77,7 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 ### Google Maps 2D tiles API
 
-The `itwin\map-layers-formats` package now include an API for consuming Google Maps 2D tiles.
+The `itwin\map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
 
 To enable it as a base map, it's simple as:
 
