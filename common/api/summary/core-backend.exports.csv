@@ -98,10 +98,10 @@ public;class;DisplayStyle3d
 public;interface;DisplayStyleCreationOptions
 public;class;DocumentListModel
 public;class;DocumentPartition
-beta;interface;DownloadChangesetArg
-beta;interface;DownloadChangesetRangeArg
+public;interface;DownloadChangesetArg
+public;interface;DownloadChangesetRangeArg
 internal;interface;DownloadJob
-beta;interface;DownloadProgressArg
+public;interface;DownloadProgressArg
 internal;interface;DownloadRequest
 internal;class;Downloads
 public;class;Drawing
@@ -232,7 +232,6 @@ public;class;GroupInformationElement
 public;class;GroupInformationModel
 public;class;GroupInformationPartition
 public;class;GroupModel
-internal;const;_hubAccess
 internal;class;HubMock
 beta;const;IModelCloneContext
 deprecated;const;IModelCloneContext
@@ -280,8 +279,8 @@ internal;interface;LocalhostIpcHostOpts
 internal;class;LocalHub
 beta;class;LockConflict
 public;interface;LockControl
-internal;type;LockMap
-beta;interface;LockProps
+public;type;LockMap
+public;interface;LockProps
 public;enum;LockState
 deprecated;enum;LockState
 internal;interface;LockStatusExclusive
@@ -453,7 +452,7 @@ public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
 internal;class;V1CheckpointManager
-internal;interface;V2CheckpointAccessProps
+public;interface;V2CheckpointAccessProps
 internal;class;V2CheckpointManager
 public;interface;ValidationError
 beta;class;VersionedSqliteDb

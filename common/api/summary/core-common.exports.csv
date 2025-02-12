@@ -100,7 +100,7 @@ public;interface;ChangedEntities
 internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
-internal;interface;ChangesetFileProps
+public;interface;ChangesetFileProps
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex
 public;type;ChangesetIndex

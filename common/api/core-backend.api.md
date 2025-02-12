@@ -349,14 +349,11 @@ export interface AzureBlobStorageCredentials {
 
 // @public
 export interface BackendHubAccess {
-    // @internal
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
     createNewIModel: (arg: CreateNewIModelProps) => Promise<GuidString>;
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
-    // @internal
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
-    // @internal
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
     // @internal @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
@@ -368,18 +365,14 @@ export interface BackendHubAccess {
     }) => Promise<ChangesetProps>;
     getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
     getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
-    // @internal
     pushChangeset: (arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
     }) => Promise<ChangesetIndex>;
-    // @internal
     queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
-    // @internal
     queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
-    // @internal
     releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
@@ -1686,12 +1679,12 @@ export class DocumentPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
-// @beta
+// @public
 export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
 
-// @beta
+// @public
 export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
@@ -1704,7 +1697,7 @@ export interface DownloadJob {
     request: DownloadRequest;
 }
 
-// @beta
+// @public
 export interface DownloadProgressArg {
     progressCallback?: ProgressFunction;
 }
@@ -3078,9 +3071,6 @@ export class GroupModel extends GroupInformationModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
-// @internal (undocumented)
-export const _hubAccess: unique symbol;
-
 // @internal
 export class HubMock {
     // (undocumented)
@@ -4173,10 +4163,10 @@ export interface LockControl {
     releaseAllLocks(): Promise<void>;
 }
 
-// @internal (undocumented)
+// @public
 export type LockMap = Map<Id64String, LockState_2>;
 
-// @beta
+// @public
 export interface LockProps {
     readonly id: Id64String;
     readonly state: LockState_2;
@@ -6075,7 +6065,7 @@ export class V1CheckpointManager {
     static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
 }
 
-// @internal
+// @public
 export interface V2CheckpointAccessProps {
     readonly accountName: string;
     readonly containerId: string;
