@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
-import { IModelHost, IModelJsFs, IModelNative, V1CheckpointManager } from "@itwin/core-backend";
+import { _hubAccess, IModelHost, IModelJsFs, IModelNative, V1CheckpointManager } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
@@ -71,7 +71,7 @@ export class HubUtility {
       return HubUtility.imodelCache.get(name)!;
 
     const iTwinId = await HubUtility.getTestITwinId(accessToken);
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName: name });
+    const iModelId = await IModelHost[_hubAccess].queryIModelByName({ accessToken, iTwinId, iModelName: name });
     if (undefined === iModelId)
       throw new Error(`Cannot find iModel with ${name} in ${iTwinId}`);
     HubUtility.imodelCache.set(name, iModelId);
@@ -98,7 +98,7 @@ export class HubUtility {
   /** Download all change sets of the specified iModel */
   private static async downloadChangesets(accessToken: AccessToken, changesetsPath: string, iModelId: GuidString): Promise<ChangesetProps[]> {
     // Determine the range of changesets that remain to be downloaded
-    const changesets: ChangesetProps[] = await IModelHost.hubAccess.queryChangesets({ iModelId, accessToken }); // oldest to newest
+    const changesets: ChangesetProps[] = await IModelHost[_hubAccess].queryChangesets({ iModelId, accessToken }); // oldest to newest
     if (changesets.length === 0)
       return changesets;
     const latestIndex = changesets.length;
@@ -116,7 +116,7 @@ export class HubUtility {
     const latestChangesetIndex = latestIndex; // Query results include latest specified change set
 
     using _perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download Changesets");
-    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangesetIndex, end: latestChangesetIndex }, targetDir: changesetsPath });
+    await IModelHost[_hubAccess].downloadChangesets({ accessToken, iModelId, range: { first: earliestChangesetIndex, end: latestChangesetIndex }, targetDir: changesetsPath });
     return changesets;
   }
 
@@ -164,7 +164,7 @@ export class HubUtility {
   public static async downloadIModelByName(accessToken: AccessToken, iTwinName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
 
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    const iModelId = await IModelHost[_hubAccess].queryIModelByName({ accessToken, iTwinId, iModelName });
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
 
@@ -174,11 +174,11 @@ export class HubUtility {
   /** Delete an IModel from the hub */
   public static async deleteIModel(accessToken: AccessToken, iTwinName: string, iModelName: string): Promise<void> {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    const iModelId = await IModelHost[_hubAccess].queryIModelByName({ accessToken, iTwinId, iModelName });
 
     if (!iModelId)
       return;
-    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+    await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId, iModelId });
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */

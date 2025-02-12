@@ -10,6 +10,7 @@ import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryBinder, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
+  _hubAccess,
   BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
   SpatialCategory,
 } from "@itwin/core-backend";
@@ -145,7 +146,7 @@ describe("ChangeSummary", () => {
     setupTest(emptyIModelId);
     await purgeAcquiredBriefcases(accessToken, emptyIModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: emptyIModelId });
+    const changeSets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId: emptyIModelId });
     assert.equal(changeSets.length, 0);
 
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: emptyIModelId });
@@ -169,7 +170,7 @@ describe("ChangeSummary", () => {
   it("Extract ChangeSummary for single changeset", async () => {
     setupTest(iModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changeSets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId = changeSets[1].id;
@@ -207,7 +208,7 @@ describe("ChangeSummary", () => {
   it("Extracting ChangeSummaries for a range of changesets", async () => {
     setupTest(iModelId);
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     assert.isAtLeast(changesets.length, 3);
     const firstChangeSet = changesets[0];
     const lastChangeSet = changesets[1];
@@ -250,7 +251,7 @@ describe("ChangeSummary", () => {
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(iModelId);
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     assert.isAtLeast(changesets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId = changesets[0].id;
@@ -470,7 +471,7 @@ describe("ChangeSummary", () => {
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
     }
 
-    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
+    await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
   });
 
   // FIXME: Failed OIDC signin for TestUserType.SuperManager.
@@ -523,7 +524,7 @@ describe("ChangeSummary", () => {
 
   it("Detaching and reattaching change cache", async () => {
     setupTest(iModelId);
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.first().toJSON(), briefcaseId: 0 });
     try {
       for (const changeset of changesets) {
@@ -624,7 +625,7 @@ describe("ChangeSummary", () => {
   it("Create change summaries for just the latest change set", async () => {
     setupTest(iModelId);
 
-    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
+    const first = (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
 
     const summaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId, iModelId, range: { first } });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId });
@@ -663,7 +664,7 @@ describe("ChangeSummary", () => {
     setupTest(iModelId);
     let errorThrown = false;
 
-    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
+    const first = (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     try {
       await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId, iModelId, range: { first, end: 0 } });
     } catch (err) {

@@ -7,4 +7,5 @@ export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentle
 export { IModelNative } from "./NativePlatform";
 export {
   _nativeDb,
+  _hubAccess,
 } from "./Symbols";

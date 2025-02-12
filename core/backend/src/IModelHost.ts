@@ -41,6 +41,7 @@ import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
+import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -121,7 +122,6 @@ export interface IModelHostOptions {
 
   /**
    * The kind of iModel hub server to use.
-   * @internal
    */
   hubAccess?: BackendHubAccess;
 
@@ -288,7 +288,8 @@ export class IModelHost {
   private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
 
-  public static configuration?: IModelHostOptions;
+  // Omit the hubAccess field from configuration so it stays internal.
+  public static configuration?: Omit<IModelHostOptions, "hubAccess">;
 
   /**
    * The name of the *Profile* directory (a subdirectory of "[[cacheDir]]/profiles/") for this process.
@@ -408,19 +409,19 @@ export class IModelHost {
 
   private static _hubAccess?: BackendHubAccess;
   /** @internal */
-  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
+  public static [_setHubAccess](hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
 
   /** get the current hubAccess, if present.
    * @internal
    */
-  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
+  public static [_getHubAccess](): BackendHubAccess | undefined { return this._hubAccess; }
 
   /** Provides access to the IModelHub for this IModelHost
    * @internal
    * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
    * To determine whether one is present, use [[getHubAccess]].
    */
-  public static get hubAccess(): BackendHubAccess {
+  public static get [_hubAccess](): BackendHubAccess {
     if (IModelHost._hubAccess === undefined)
       throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
     return IModelHost._hubAccess;
@@ -491,10 +492,11 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    if (undefined !== options.hubAccess)
-      this._hubAccess = options.hubAccess;
+    const { hubAccess, ...otherOptions } = options;
+    if (undefined !== hubAccess)
+      this._hubAccess = hubAccess;
 
-    this.configuration = options;
+    this.configuration = otherOptions;
     this.setupTileCache();
 
     process.once("beforeExit", IModelHost.shutdown);

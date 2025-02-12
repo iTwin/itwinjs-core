@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import {
-  BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
+  _hubAccess, BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
   PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
 import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
@@ -31,7 +31,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
   const masterDb = await BriefcaseDb.open({ fileName: masterDbProps.fileName });
 
   // create a duplicate of master as a good starting point for our branch
-  const branchIModelId = await IModelHost.hubAccess.createNewIModel({
+  const branchIModelId = await IModelHost[_hubAccess].createNewIModel({
     iTwinId: myITwinId,
     iModelName: "my-branch-imodel",
     version0: masterDb.pathName,
@@ -198,7 +198,7 @@ describe.skip("IModelBranchingOperations", () => {
   it("run branching operations", async () => {
     const myAccessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
     const myITwinId = HubMock.iTwinId;
-    const masterIModelId = await IModelHost.hubAccess.createNewIModel({
+    const masterIModelId = await IModelHost[_hubAccess].createNewIModel({
       iTwinId: myITwinId,
       iModelName: "my-branch-imodel",
       version0: version0Path,
