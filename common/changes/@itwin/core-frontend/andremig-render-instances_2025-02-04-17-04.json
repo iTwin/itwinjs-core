@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "add yAxisUp to ReadGltfGraphicsArgs",
+      "comment": "",
       "type": "none"
     }
   ],
