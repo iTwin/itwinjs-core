@@ -12,7 +12,6 @@ import { Cartographic } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { EventHandled } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
-import { ImageMapLayerProps } from '@itwin/core-common';
 import { ImageMapLayerSettings } from '@itwin/core-common';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
@@ -24,7 +23,6 @@ import { MapCartoRectangle } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
-import { MapLayerProviderProperties } from '@itwin/core-common';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
@@ -101,15 +99,6 @@ export interface GoogleMapsSession {
     tileHeight: number;
     tileWidth: number;
 }
-
-// @internal
-export const _internal: {
-    createMapLayerProps: (name?: string, opts?: CreateSessionOptions) => ImageMapLayerProps;
-    createSession: (apiKey: string, opts: CreateSessionOptions) => Promise<GoogleMapsSession>;
-    createPropertiesFromSessionOptions: (opts: CreateSessionOptions) => MapLayerProviderProperties;
-    getViewportInfo: (params: ViewportInfoRequestParams) => Promise<ViewportInfo | undefined>;
-    registerFormatIfNeeded: () => void;
-};
 
 // @beta (undocumented)
 export type LayerTypes = "layerRoadmap" | "layerStreetview";
