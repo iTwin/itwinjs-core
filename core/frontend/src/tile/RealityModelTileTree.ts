@@ -765,11 +765,16 @@ export namespace RealityModelTileTree {
       this.clearLayers();
     }
 
-  public clearLayers() {
-    const tree = this.treeOwner.tileTree as RealityModelTileTree;
-    if (undefined !== tree)
-      tree.clearLayers();
-  }
+    public clearLayers() {
+      const tree = this.treeOwner.tileTree as RealityModelTileTree;
+      if (undefined !== tree)
+        tree.clearLayers();
+    }
+
+    public getMapLayerCount(): number {
+      return this._layerTrees.length;
+    }
+
     public initializeLayers(context: SceneContext): boolean {
       const removals = this._detachFromDisplayStyle;
       if (0 === removals.length) {

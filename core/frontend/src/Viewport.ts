@@ -49,7 +49,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityModelTileTree, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -428,19 +428,6 @@ export abstract class Viewport implements Disposable, TileUser {
    * Additionally, refresh the Reality Tile Tree to reflect changes in the map layer.
    */
   public invalidateController(): void {
-    this._controllerValid = this._analysisFractionValid = false;
-    this.invalidateRenderPlan();
-    for (const { supplier, id, owner } of this.iModel.tiles) {
-      if (owner.tileTree instanceof RealityTileTree) {
-        this.iModel.tiles.resetTileTreeOwner(id, supplier);
-      }
-    }
-  }
-
-  /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
-   * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
-   */
-  public refreshViewController(): void {
     this._controllerValid = this._analysisFractionValid = false;
     this.invalidateRenderPlan();
   }
@@ -931,6 +918,49 @@ export abstract class Viewport implements Disposable, TileUser {
     return true;
   }
 
+  /** Refresh the Reality Tile Tree to reflect changes in the map layer. */
+  private refreshRealityTile(): void {
+    for (const { supplier, id, owner } of this.iModel.tiles) {
+      if (owner.tileTree instanceof RealityTileTree) {
+        this.iModel.tiles.resetTileTreeOwner(id, supplier);
+      }
+    }
+  }
+
+  /**
+   * Helper function that compares the map layer counts of two view states.
+   * Returns true if the counts are different, otherwise false.
+   * @param prevView The previous view state.
+   * @param newView The new view state.
+   * @internal
+   */
+  private compareMapLayerCounts(prevView: ViewState, newView: ViewState): boolean {
+    const prevTileTreeRefs = Array.from(prevView.getTileTreeRefs());
+    const newTileTreeRefs = Array.from(newView.getTileTreeRefs());
+
+    const prevRealityRefs = prevTileTreeRefs.filter(
+        ref => ref instanceof RealityModelTileTree.Reference
+    );
+
+    const newRealityRefs = newTileTreeRefs.filter(
+        ref => ref instanceof RealityModelTileTree.Reference
+    );
+
+    for (const newRef of newRealityRefs) {
+      if (newRef.getMapLayerCount() > 1) {
+          return true; // Always return true if map layer count is greater than 1
+      }
+
+      // If newRef has only one map layer(bg map), check if the previous view has the same map layer count
+      for (const prevRef of prevRealityRefs) {
+          if (newRef.getMapLayerCount() !== prevRef.getMapLayerCount()) {
+            return true;
+          }
+      }
+    }
+    return false;
+  }
+
   /** Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
    * @beta
    */
@@ -1317,6 +1347,7 @@ export abstract class Viewport implements Disposable, TileUser {
     const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
+      this.refreshRealityTile();
     };
 
     removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
@@ -1797,6 +1828,10 @@ export abstract class Viewport implements Disposable, TileUser {
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
       this._changeFlags.setViewState();
+      console.log(this.compareMapLayerCounts(prevView, view));
+      if (this.compareMapLayerCounts(prevView, view)) {
+        this.refreshRealityTile();
+      }
     }
   }
 
