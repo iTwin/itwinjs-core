@@ -70,7 +70,7 @@ export type LockMap = Map<Id64String, CommonLockState>;
 
 /**
  * The properties of a lock that may be obtained from a lock server.
- * @beta
+ * @public
  */
 export interface LockProps {
   /** The elementId for the lock */
@@ -142,7 +142,7 @@ export interface ChangesetArg extends IModelIdArg {
 }
 
 /** Argument for downloading a changeset.
- * @beta
+ * @public
  */
 export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
   /** Directory where the changeset should be downloaded. */
@@ -163,7 +163,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
 }
 
 /** Argument for downloading a changeset range.
- * @beta
+ * @public
  */
 export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
   /** Directory where the changesets should be downloaded. */
