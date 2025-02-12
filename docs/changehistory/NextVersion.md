@@ -82,6 +82,7 @@ The `itwin\map-layers-formats` package now includes an API for consuming Google 
 To enable it as a base map, it's simple as:
 
  ```typescript
+import { GoogleMaps } from "@itwin/map-layers-formats";
 const ds = IModelApp.viewManager.selectedView.displayStyle;
 ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
 ```
