@@ -4854,6 +4854,8 @@ export interface GraphicTemplate {
     readonly [_implementationProhibited]: unknown;
     // @internal (undocumented)
     readonly [_nodes]: GraphicTemplateNode[];
+    // @internal (undocumented)
+    isGltf?: boolean;
     readonly isInstanceable: boolean;
 }
 
@@ -9041,7 +9043,6 @@ export interface ReadGltfGraphicsArgs {
     pickableOptions?: PickableGraphicOptions;
     // @alpha (undocumented)
     transform?: Transform;
-    yAxisUp?: boolean;
 }
 
 // @beta
