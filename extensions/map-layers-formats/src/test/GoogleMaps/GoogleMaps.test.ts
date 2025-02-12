@@ -8,7 +8,7 @@ import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider";
 import { CreateSessionOptions, GoogleMaps, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats";
-import { GoogleMapsUtils } from "../../internal/cross-package";
+import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils";
 
 import { fakeJsonFetch } from "../TestUtils";
 import { LogoDecoration } from "../../GoogleMaps/GoogleMapDecorator";
@@ -39,7 +39,7 @@ const stubCreateSession = (sandbox:sinon.SinonSandbox,  session: GoogleMapsSessi
   return session;
 });
 
-const minCreateSessionOptions: GoogleMapsUtils.CreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
+const minCreateSessionOptions: CreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
 const createSessionOptions2: CreateSessionOptions = {...minCreateSessionOptions, layerTypes: ["layerRoadmap"]};
 
 const defaultPngSession = {tileWidth: 256, tileHeight: 256, imageFormat: "image/png", expiry: 0, session: "dummySession"};
