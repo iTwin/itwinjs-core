@@ -1,8 +1,18 @@
 sep=;
 Release Tag;API Item Type;API Item Name
 internal;class;ArcGisFeatureProvider
+beta;interface;CreateSessionOptions
 internal;class;DefaultArcGiSymbology
+beta;const;GoogleMaps
+beta;interface;GoogleMapsSession
+internal;const;_internal
+beta;type;LayerTypes
 beta;class;MapFeatureInfoTool
 beta;interface;MapFeatureInfoToolData
 beta;class;MapLayersFormats
 beta;interface;MapLayersFormatsConfig
+beta;type;MapTypes
+beta;interface;MaxZoomRectangle
+beta;type;ScaleFactors
+beta;interface;ViewportInfo
+beta;interface;ViewportInfoRequestParams

@@ -25,6 +25,8 @@ public;function;compareBooleansOrUndefined
 public;function;compareNumbers
 public;function;compareNumbersOrUndefined
 public;function;comparePossiblyUndefined
+beta;function;compareSimpleArrays
+beta;function;compareSimpleTypes
 public;function;compareStrings
 public;function;compareStringsOrUndefined
 public;function;compareWithTolerance

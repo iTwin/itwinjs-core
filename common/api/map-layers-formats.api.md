@@ -5,12 +5,14 @@
 ```ts
 
 import { ArcGISImageryProvider } from '@itwin/core-frontend';
+import { BaseMapLayerSettings } from '@itwin/core-common';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { Cartographic } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { EventHandled } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
+import { ImageMapLayerProps } from '@itwin/core-common';
 import { ImageMapLayerSettings } from '@itwin/core-common';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
@@ -18,9 +20,11 @@ import { Listener } from '@itwin/core-bentley';
 import { Localization } from '@itwin/core-common';
 import { LocateFilterStatus } from '@itwin/core-frontend';
 import { LocateResponse } from '@itwin/core-frontend';
+import { MapCartoRectangle } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
+import { MapLayerProviderProperties } from '@itwin/core-common';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
@@ -56,6 +60,17 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     get tileSize(): number;
 }
 
+// @beta
+export interface CreateSessionOptions {
+    apiOptions?: string[];
+    language: string;
+    layerTypes?: LayerTypes[];
+    mapType: MapTypes;
+    overlay?: boolean;
+    region: string;
+    scale?: ScaleFactors;
+}
+
 // @internal (undocumented)
 export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
     // (undocumented)
@@ -71,6 +86,33 @@ export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
     // (undocumented)
     initialize(): Promise<void>;
 }
+
+// @beta
+export const GoogleMaps: {
+    createMapLayerSettings: (name?: string, opts?: CreateSessionOptions) => ImageMapLayerSettings;
+    createBaseLayerSettings: (opts?: CreateSessionOptions) => BaseMapLayerSettings;
+};
+
+// @beta
+export interface GoogleMapsSession {
+    expiry: number;
+    imageFormat: string;
+    session: string;
+    tileHeight: number;
+    tileWidth: number;
+}
+
+// @internal
+export const _internal: {
+    createMapLayerProps: (name?: string, opts?: CreateSessionOptions) => ImageMapLayerProps;
+    createSession: (apiKey: string, opts: CreateSessionOptions) => Promise<GoogleMapsSession>;
+    createPropertiesFromSessionOptions: (opts: CreateSessionOptions) => MapLayerProviderProperties;
+    getViewportInfo: (params: ViewportInfoRequestParams) => Promise<ViewportInfo | undefined>;
+    registerFormatIfNeeded: () => void;
+};
+
+// @beta (undocumented)
+export type LayerTypes = "layerRoadmap" | "layerStreetview";
 
 // @beta
 export class MapFeatureInfoTool extends PrimitiveTool {
@@ -124,6 +166,40 @@ export class MapLayersFormats {
 export interface MapLayersFormatsConfig {
     // (undocumented)
     localization?: Localization;
+}
+
+// @beta (undocumented)
+export type MapTypes = "roadmap" | "satellite" | "terrain";
+
+// @beta
+export interface MaxZoomRectangle {
+    // (undocumented)
+    east: number;
+    // (undocumented)
+    maxZoom: number;
+    // (undocumented)
+    north: number;
+    // (undocumented)
+    south: number;
+    // (undocumented)
+    west: number;
+}
+
+// @beta (undocumented)
+export type ScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
+
+// @beta
+export interface ViewportInfo {
+    copyright: string;
+    maxZoomRects: MaxZoomRectangle[];
+}
+
+// @beta
+export interface ViewportInfoRequestParams {
+    key: string;
+    rectangle: MapCartoRectangle;
+    session: string;
+    zoom: number;
 }
 
 // (No @packageDocumentation comment for this package)
