@@ -92,7 +92,12 @@ ds.attachMapLayer({
   mapLayerIndex: {index: 0, isOverlay: false},
   settings: GoogleMaps.createMapLayerSettings("GoogleMaps")});
 ```
-
+  > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+```
+   mapLayerOptions: {
+          GoogleMaps: { key: "key", value: "YOUR_KEY_HERE" }
+        }
+```
 ## API deprecations
 
 ### @itwin/core-bentley
