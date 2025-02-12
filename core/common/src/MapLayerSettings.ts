@@ -19,7 +19,7 @@ export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" |
 /** @public */
 export type SubLayerId = string | number;
 
-/** @public */
+/** @beta */
 export type  MapLayerProviderArrayProperty = Array<number|string|boolean>;
 export interface MapLayerProviderProperties { [key: string]: number | string | boolean | MapLayerProviderArrayProperty };
 
@@ -136,10 +136,12 @@ export interface CommonMapLayerProps {
 
   /** A user-friendly name for the layer. */
   name: string;
+
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing,
    * or false to indicate the transparency should not be overridden.
    * Default value: 0.
    */
+
   transparency?: number;
   /** True to indicate background is transparent.
    * Default: true.
@@ -173,7 +175,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   */
   queryParams?: { [key: string]: string };
 
-  /** Data specific to each map layer provider.
+  /** Properties specific to the map layer provider.
    * @beta
   */
   properties?: MapLayerProviderProperties;
@@ -307,7 +309,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   */
   public unsavedQueryParams?: { [key: string]: string };
 
-  /** TODO
+  /** Properties specific to the map layer provider.
    * @beta
   */
   public readonly properties?: MapLayerProviderProperties;
