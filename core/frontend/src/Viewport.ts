@@ -49,7 +49,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -425,8 +425,22 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
    * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   * Additionally, refresh the Reality Tile Tree to reflect changes in the map layer.
    */
   public invalidateController(): void {
+    this._controllerValid = this._analysisFractionValid = false;
+    this.invalidateRenderPlan();
+    for (const { supplier, id, owner } of this.iModel.tiles) {
+      if (owner.tileTree instanceof RealityTileTree) {
+        this.iModel.tiles.resetTileTreeOwner(id, supplier);
+      }
+    }
+  }
+
+  /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
+   * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   */
+  public refreshViewController(): void {
     this._controllerValid = this._analysisFractionValid = false;
     this.invalidateRenderPlan();
   }
@@ -3187,7 +3201,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== IModelApp.applicationLogoCard) {
         logos.appendChild(IModelApp.applicationLogoCard());
       }
-      
+
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
       for (const ref of this.getTileTreeRefs()) {
         ref.addLogoCards(logos, this);

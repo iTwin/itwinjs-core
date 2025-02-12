@@ -343,10 +343,8 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     };
 
     const layerTextures: TerrainOrProjectedTexture[] = texture ? [texture] : [];
-    for (const [, layerClassifier] of layerClassifiers) {
-        // TODO: check for overlapping range of classifier and reality model (like down below in createGraphic).
-        layerTextures.push(new ProjectedTexture(layerClassifier, realityMeshParams, realityMeshParams.tileRectangle));
-    }
+
+    layerClassifiers?.forEach((layerClassifier, layerIndex) => layerTextures[layerIndex] = new ProjectedTexture(layerClassifier, realityMeshParams, realityMeshParams.tileRectangle));
 
     return new RealityMeshGeometry({ realityMeshParams: params, textureParams: layerTextures.length > 0 ? RealityTextureParams.create(layerTextures) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
   }

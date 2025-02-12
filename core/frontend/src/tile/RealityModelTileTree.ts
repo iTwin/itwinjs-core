@@ -13,7 +13,7 @@ import {
 import {
   BackgroundMapSettings,
   BaseLayerSettings,
-  Cartographic, ColorDef, DefaultSupportedTypes, GeoCoordStatus, MapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, ColorDef, DefaultSupportedTypes, GeoCoordStatus, MapImagerySettings, MapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -29,7 +29,7 @@ import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  getGcsConverterAvailable, ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 import { SpatialClassifiersState } from "../SpatialClassifiersState";
@@ -579,6 +579,11 @@ export class RealityModelTileTree extends RealityTileTree {
   }
 
   /** @internal */
+  public clearLayers() {
+    this._rootTile.clearLayers();
+  }
+
+  /** @internal */
     protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
       super.collectClassifierGraphics(args, selectedTiles);
 
@@ -628,7 +633,9 @@ export namespace RealityModelTileTree {
     private _baseLayerSettings: BaseLayerSettings | undefined;
     private _baseTransparent = false;
     private _baseColor?: ColorDef;
+    private _layerSettings: MapLayerSettings[] | undefined;
     private _bgMapSettings?: BackgroundMapSettings;
+    private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
     public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -686,11 +693,11 @@ export namespace RealityModelTileTree {
       if (this._baseImageryLayerIncluded = (undefined !== tree))
         this._layerTrees.push(tree);
 
-      const layerSettings = props.backgroundLayers;
+      this._layerSettings = props.backgroundLayers;
 
-      if (undefined !== layerSettings) { // ###TODO should this always be true?
-        for (let i = 0; i < layerSettings.length; i++)
-          if (undefined !== (tree = createMapLayerTreeReference(layerSettings[i], i + 1, this._iModel)))
+      if (undefined !== this._layerSettings) { // ###TODO should this always be true?
+        for (let i = 0; i < this._layerSettings.length; i++)
+          if (undefined !== (tree = createMapLayerTreeReference(this._layerSettings[i], i + 1, this._iModel)))
             this._layerTrees.push(tree);
       }
 
@@ -719,7 +726,60 @@ export namespace RealityModelTileTree {
     }
 
     // ###TODO lifted from MapTileTree.ts - should be refactored
+    public setBaseLayerSettings(baseLayerSettings: BaseLayerSettings) {
+      let tree;
+      this._baseLayerSettings = baseLayerSettings;
+
+      if (baseLayerSettings instanceof MapLayerSettings) {
+        tree = createMapLayerTreeReference(baseLayerSettings, 0, this._iModel);
+        this._baseColor = undefined;
+        this._baseTransparent = baseLayerSettings.transparency > 0;
+      } else {
+        this._baseColor = baseLayerSettings;
+        this._baseTransparent = this._baseColor.getTransparency() > 0;
+      }
+
+      if (tree) {
+        if (this._baseImageryLayerIncluded)
+          this._layerTrees[0] = tree;
+        else
+          this._layerTrees.splice(0, 0, tree);
+      } else {
+        if (this._baseImageryLayerIncluded)
+          this._layerTrees.shift();
+      }
+      this._baseImageryLayerIncluded = tree !== undefined;
+      this.clearLayers();
+    }
+
+    public setLayerSettings(layerSettings: MapLayerSettings[]) {
+      this._layerSettings = layerSettings;
+      const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
+
+      this._layerTrees.length = Math.min(layerSettings.length + baseLayerIndex, this._layerTrees.length);    // Truncate if number of layers reduced.
+      for (let i = 0; i < layerSettings.length; i++) {
+        const treeIndex = i + baseLayerIndex;
+        if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex]?.layerSettings.displayMatches(layerSettings[i]))
+          this._layerTrees[treeIndex] = createMapLayerTreeReference(layerSettings[i], treeIndex, this._iModel)!;
+      }
+      this.clearLayers();
+    }
+
+  public clearLayers() {
+    const tree = this.treeOwner.tileTree as RealityModelTileTree;
+    if (undefined !== tree)
+      tree.clearLayers();
+  }
     public initializeLayers(context: SceneContext): boolean {
+      const removals = this._detachFromDisplayStyle;
+      if (0 === removals.length) {
+        removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
+          this.setBaseLayerSettings(imagery.backgroundBase);
+          this.setLayerSettings(imagery.backgroundLayers);
+          this.clearLayers();
+        }));
+      }
+
       let hasLoadedTileTree = false;
       const tree = this.treeOwner.load() as RealityModelTileTree;
       if (undefined === tree) {

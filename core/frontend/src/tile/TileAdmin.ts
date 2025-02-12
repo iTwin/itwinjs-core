@@ -303,7 +303,7 @@ export class TileAdmin {
         // of any spatial view's that may be displaying the reality model.
         for (const user of this.tileUsers)
           if (user instanceof Viewport && user.view.isSpatialView())
-            user.invalidateController();
+            user.refreshViewController();
       }),
     ];
 
