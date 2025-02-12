@@ -11,6 +11,8 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
+  - [Map layers](#map-layers)
+    - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -70,6 +72,25 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 - [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
+
+## Map layers
+
+### Google Maps 2D tiles API
+
+The `itwin\map-layers-formats` package now include an API for consuming Google Maps 2 tiles.
+To enable it as a base map, it's simple as:
+
+ ```typescript
+const ds = IModelApp.viewManager.selectedView.displayStyle;
+ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
+```
+
+Can also be attached as a map-layer:
+```typescript
+ds.attachMapLayer({
+  mapLayerIndex: {index: 0, isOverlay: false},
+  settings: GoogleMaps.createMapLayerSettings("GoogleMaps")});
+```
 
 ## API deprecations
 
