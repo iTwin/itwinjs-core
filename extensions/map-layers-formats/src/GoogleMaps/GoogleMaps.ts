@@ -7,7 +7,7 @@ import { Logger } from "@itwin/core-bentley";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
 /** @beta*/
-export type LayerTypes = "layerRoadmap" | "layerStreetview" | "layerTraffic";
+export type LayerTypes = "layerRoadmap" | "layerStreetview";
 /** @beta*/
 export type MapTypes =  "roadmap"|"satellite"|"terrain";
 /** @beta*/
@@ -45,7 +45,6 @@ export interface CreateSessionOptions {
    *
    * `layerStreetview`: Shows Street View-enabled streets and locations using blue outlines on the map.
    *
-   * `layerTraffic`: Displays current traffic conditions.
    * @beta
    * */
   layerTypes?: LayerTypes[];
@@ -70,6 +69,12 @@ export interface CreateSessionOptions {
    * @beta
    * */
     overlay? : boolean;
+
+    /**
+     * An array of values specifying additional options to apply.
+     * @beta
+     * */
+    apiOptions?: string[];
 };
 
 /**
@@ -225,6 +230,11 @@ const createPropertiesFromSessionOptions = (opts: CreateSessionOptions): MapLaye
   if (opts.overlay !== undefined) {
     properties.overlay = opts.overlay;
   }
+
+  if (opts.apiOptions !== undefined) {
+    properties.apiOptions = [...opts.apiOptions];
+  }
+
   return properties;
 };
 
@@ -238,6 +248,11 @@ export const GoogleMaps = {
  * Creates Google Maps map-layer settings.
  * @param name Name of the layer (Defaults to "GoogleMaps")
  * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
+ * @example
+ * const ds = IModelApp.viewManager.selectedView.displayStyle;
+ * ds.attachMapLayer({
+ *    mapLayerIndex: {index: 0, isOverlay: false},
+ *    settings: GoogleMaps.createMapLayerSettings("GoogleMaps")});
  * @beta
 */
   createMapLayerSettings: (name?: string, opts?: CreateSessionOptions) => {
@@ -248,6 +263,9 @@ export const GoogleMaps = {
  * Creates Google Maps base layer settings.
  * @param name Name of the layer (Defaults to "GoogleMaps")
  * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
+ * @example
+ * const ds = IModelApp.viewManager.selectedView.displayStyle;
+ * ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
  * @beta
 */
   createBaseLayerSettings: (opts?: CreateSessionOptions) => {

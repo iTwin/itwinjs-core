@@ -26,6 +26,7 @@ export class GoogleMapsSettings implements Disposable {
   private _currentTerrainProps: ContourGroupProps = {};
   private _enabled: boolean = false;
   private _overlay: boolean = false;
+  private _newStyle: boolean = false;
   private _mapTypesCombobox: ComboBox;
   private _mapType: MapTypes;
   private _scaleFactor: ScaleFactors = "scaleFactor1x";
@@ -75,6 +76,12 @@ export class GoogleMapsSettings implements Disposable {
 
       if (properties?.scale)
         this._scaleFactor = properties.scale as ScaleFactors;
+
+      if (properties?.apiOptions){
+        const apiOptions = properties.apiOptions as string[];
+
+        this._newStyle = apiOptions.includes("MCYJ5E517XR2JC");
+      }
     }
 
 
@@ -151,20 +158,6 @@ export class GoogleMapsSettings implements Disposable {
 
     createCheckBox({
       parent: layerTypesDiv,
-      name: "Traffic",
-      id: " google_layertype_traffic",
-      isChecked: this._layerTypes.includes("layerTraffic"),
-      handler: (cb) => {
-        if (cb.checked) {
-          this._layerTypes.push("layerTraffic");
-        } else {
-          this._layerTypes = this._layerTypes.filter((layerType) => layerType !== "layerTraffic");
-        }
-      },
-    });
-
-    createCheckBox({
-      parent: layerTypesDiv,
       name: "Streetview",
       id: "google_layertype_streetview",
       isChecked: this._layerTypes.includes("layerStreetview"),
@@ -226,6 +219,18 @@ export class GoogleMapsSettings implements Disposable {
       isChecked: this._overlay,
       handler: (checkbox) => {
         this._overlay = checkbox.checked;
+        this.sync();
+      },
+    });
+    this._element.appendChild(document.createElement("br"));
+
+    createCheckBox({
+      parent: this._element,
+      name: "New 2025 style",
+      id: "cbx_toggle_newStyle",
+      isChecked: this._newStyle,
+      handler: (checkbox) => {
+        this._newStyle = checkbox.checked;
         this.sync();
       },
     });
@@ -296,6 +301,7 @@ export class GoogleMapsSettings implements Disposable {
         language: this._lang,
         region: "US",
         scale: this._scaleFactor,
+        apiOptions: this._newStyle ? ["MCYJ5E517XR2JC"] : undefined,
       };
       try {
         this._vp.displayStyle.backgroundMapBase = GoogleMaps.createBaseLayerSettings(opts);

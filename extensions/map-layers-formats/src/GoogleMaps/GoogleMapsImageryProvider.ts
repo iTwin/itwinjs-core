@@ -100,6 +100,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     if (this._settings.properties?.overlay !== undefined) {
       createSessionOptions.overlay = this._settings.properties.overlay as boolean;
     }
+
+    if (this._settings.properties?.apiOptions !== undefined) {
+      createSessionOptions.apiOptions = this._settings.properties.apiOptions as string[];
+    }
     return createSessionOptions;
   }
 
