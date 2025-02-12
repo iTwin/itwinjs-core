@@ -135,6 +135,8 @@ export interface QueryStats {
   totalTime: number;
   /** The number of retries attempted to execute the query. */
   retryCount: number;
+  /** Total time in millisecond to prepare ECSQL or grabing it from cache and binding parameters */
+  prepareTime: number;
 }
 
 /**
@@ -171,7 +173,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   private _props = new PropertyMetaDataMap([]);
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
-  private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0 };
+  private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0, prepareTime: 0 };
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
   private _rowProxy = new Proxy<ECSqlReader>(this, {
@@ -366,11 +368,12 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
    * @internal
    */
   protected async runWithRetry(request: DbQueryRequest) {
-    const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout) && (rs.data === undefined || rs.data.length === 0);
+    const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout || rs.status === DbResponseStatus.ShuttingDown) && (rs.data === undefined || rs.data.length === 0);
     const updateStats = (rs: DbQueryResponse) => {
       this._stats.backendCpuTime += rs.stats.cpuTime;
       this._stats.backendTotalTime += rs.stats.totalTime;
       this._stats.backendMemUsed += rs.stats.memUsed;
+      this._stats.prepareTime += rs.stats.prepareTime;
       this._stats.backendRowsReturned += (rs.data === undefined) ? 0 : rs.data.length;
     };
     const execQuery = async (req: DbQueryRequest) => {
