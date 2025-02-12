@@ -23,6 +23,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
+    include: ["@itwin/core-bentley"],
     force: true,
   }
 })
