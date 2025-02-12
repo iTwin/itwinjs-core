@@ -7,14 +7,14 @@ import * as sinon from "sinon";
 import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider";
-import { _internal , CreateSessionOptions, GoogleMaps, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats";
+import { CreateSessionOptions, GoogleMaps, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats";
+import { GoogleMapsUtils } from "../../internal/cross-package";
+
 import { fakeJsonFetch } from "../TestUtils";
 import { LogoDecoration } from "../../GoogleMaps/GoogleMapDecorator";
 import { DecorateContext, Decorations, IconSprites, IModelApp, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite, TilePatch } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const GoogleMapsUtils = _internal;
 
 class FakeMapTile extends MapTile  {
   public override depth: number;
@@ -30,15 +30,6 @@ class FakeMapTile extends MapTile  {
   }
 }
 
-// const getTestSettings = (properties?: MapLayerProviderProperties) => {
-//   return GoogleMaps.createBaseLayerSettings({
-//     name: "test",
-//     url: "",
-//     formatId: "GoogleMaps",
-//     properties
-//   });
-// };
-
 const createProvider = (settings: ImageMapLayerSettings) => {
   settings.accessKey = {key: "key", value: "dummyKey"};
   return new GoogleMapsImageryProvider(settings);
@@ -48,7 +39,7 @@ const stubCreateSession = (sandbox:sinon.SinonSandbox,  session: GoogleMapsSessi
   return session;
 });
 
-const minCreateSessionOptions: CreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
+const minCreateSessionOptions: GoogleMapsUtils.CreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
 const createSessionOptions2: CreateSessionOptions = {...minCreateSessionOptions, layerTypes: ["layerRoadmap"]};
 
 const defaultPngSession = {tileWidth: 256, tileHeight: 256, imageFormat: "image/png", expiry: 0, session: "dummySession"};

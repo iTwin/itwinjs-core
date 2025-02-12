@@ -7,6 +7,7 @@ export * from "./mapLayersFormats";
 export * from "./ArcGisFeature/ArcGisFeatureProvider";
 export * from "./Tools/MapFeatureInfoTool";
 export * from "./GoogleMaps/GoogleMaps";
+export * from "./internal/cross-package";
 
 
 /** @docs-package-description

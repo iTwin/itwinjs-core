@@ -1,17 +1,15 @@
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
-import { _internal, CreateSessionOptions, GoogleMapsSession, LayerTypes, MapTypes, ScaleFactors } from "./GoogleMaps";
+import { CreateSessionOptions, GoogleMapsSession, LayerTypes, MapTypes, ScaleFactors } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator";
+import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 const levelToken = "{level}";
 const rowToken = "{row}";
 const columnToken = "{column}";
 
 const urlTemplate = `https://tile.googleapis.com/v1/2dtiles/${levelToken}/${columnToken}/${rowToken}`;
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const GoogleMapsUtils = _internal;
 
 /*
 * Google Maps imagery provider

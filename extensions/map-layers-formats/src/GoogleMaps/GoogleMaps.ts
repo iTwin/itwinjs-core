@@ -1,10 +1,7 @@
-import { BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
-import { IModelApp, MapCartoRectangle } from "@itwin/core-frontend";
-import { GoogleMapsMapLayerFormat } from "./GoogleMapsImageryFormat";
-import { Angle } from "@itwin/core-geometry";
-import { Logger } from "@itwin/core-bentley";
+import { BaseMapLayerSettings, ImageMapLayerSettings } from "@itwin/core-common";
+import { MapCartoRectangle } from "@itwin/core-frontend";
+import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
 
-const loggerCategory = "MapLayersFormats.GoogleMaps";
 
 /** @beta*/
 export type LayerTypes = "layerRoadmap" | "layerStreetview";
@@ -142,103 +139,6 @@ export interface ViewportInfoRequestParams {
 
 
 /**
- * Creates a Google Maps session.
- * @param apiKey Google Cloud API key
- * @param opts Options to create the session
- * @internal
-*/
-const createSession = async (apiKey: string, opts: CreateSessionOptions): Promise<GoogleMapsSession> => {
-  const url = `https://tile.googleapis.com/v1/createSession?key=${apiKey}`;
-  const request = new Request(url, {method: "POST", body: JSON.stringify(opts)});
-  const response = await fetch (request);
-  if (!response.ok) {
-    throw new Error(`CreateSession request failed: ${response.status} - ${response.statusText}`);
-  }
-  Logger.logInfo(loggerCategory, `Session created successfully`);
-  return response.json();
-};
-
-/**
- * Register the google maps format if it is not already registered.
- * @internal
-*/
-const registerFormatIfNeeded = () => {
-  if (!IModelApp.mapLayerFormatRegistry.isRegistered(GoogleMapsMapLayerFormat.formatId)) {
-    IModelApp.mapLayerFormatRegistry.register(GoogleMapsMapLayerFormat);
-  }
-}
-
-  /**
- * Creates a Google Maps layer props.
- * @param name Name of the layer (Defaults to "GoogleMaps")
- * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
- * @internal
-*/
-const createMapLayerProps = (name: string = "GoogleMaps", opts?: CreateSessionOptions): ImageMapLayerProps => {
-  _internal.registerFormatIfNeeded();
-
-  return {
-    formatId: GoogleMapsMapLayerFormat.formatId,
-    url: "",
-    name,
-    properties: createPropertiesFromSessionOptions(opts ?? {mapType: "satellite", language: "en-US", region: "US:", layerTypes: ["layerRoadmap"]}),
-  };
-};
-
-/**
-* Retrieves the maximum zoom level available within a bounding rectangle.
-* @param rectangle The bounding rectangle
-* @returns The maximum zoom level available within the bounding rectangle.
-* @internal
-*/
-const getViewportInfo = async (params: ViewportInfoRequestParams): Promise<ViewportInfo | undefined>=> {
-  const {rectangle, session, key, zoom} = params;
-  const north = Angle.radiansToDegrees(rectangle.north);
-  const south = Angle.radiansToDegrees(rectangle.south);
-  const east = Angle.radiansToDegrees(rectangle.east);
-  const west = Angle.radiansToDegrees(rectangle.west);
-  const url = `https://tile.googleapis.com/tile/v1/viewport?session=${session}&key=${key}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
-  const request = new Request(url, {method: "GET"});
-  const response = await fetch (request);
-  if (!response.ok) {
-    return undefined;
-  }
-  const json = await response.json();
-  return json as ViewportInfo;;
-};
-
-  /**
- * Converts the session options to provider properties
- * @param opts Options to create the session
- * @internal
-*/
-const createPropertiesFromSessionOptions = (opts: CreateSessionOptions): MapLayerProviderProperties => {
-  const properties: MapLayerProviderProperties = {
-    mapType: opts.mapType,
-    language: opts.language,
-    region: opts.region,
-  }
-
-  if (opts.layerTypes !== undefined) {
-    properties.layerTypes = [...opts.layerTypes];
-  }
-
-  if (opts.scale !== undefined) {
-    properties.scale = opts.scale;
-  }
-
-  if (opts.overlay !== undefined) {
-    properties.overlay = opts.overlay;
-  }
-
-  if (opts.apiOptions !== undefined) {
-    properties.apiOptions = [...opts.apiOptions];
-  }
-
-  return properties;
-};
-
-/**
  * Google Maps API
  * @beta
 */
@@ -256,7 +156,7 @@ export const GoogleMaps = {
  * @beta
 */
   createMapLayerSettings: (name?: string, opts?: CreateSessionOptions) => {
-    return ImageMapLayerSettings.fromJSON(_internal.createMapLayerProps(name, opts));
+    return ImageMapLayerSettings.fromJSON(GoogleMapsUtils.createMapLayerProps(name, opts));
   },
 
 /**
@@ -269,18 +169,6 @@ export const GoogleMaps = {
  * @beta
 */
   createBaseLayerSettings: (opts?: CreateSessionOptions) => {
-    return BaseMapLayerSettings.fromJSON(_internal.createMapLayerProps("GoogleMaps", opts));
+    return BaseMapLayerSettings.fromJSON(GoogleMapsUtils.createMapLayerProps("GoogleMaps", opts));
   }
-};
-
-/**
- * Internal function export for testing purposes, do not use.
- * @internal
- * */
-export const _internal = {
-  createMapLayerProps,
-  createSession,
-  createPropertiesFromSessionOptions,
-  getViewportInfo,
-  registerFormatIfNeeded,
 };
