@@ -77,11 +77,12 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 ### Google Maps 2D tiles API
 
-The `itwin\map-layers-formats` package now include an API for consuming Google Maps 2D tiles.
+The `itwin\map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
 
 To enable it as a base map, it's simple as:
 
  ```typescript
+import { GoogleMaps } from "@itwin/map-layers-formats";
 const ds = IModelApp.viewManager.selectedView.displayStyle;
 ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
 ```
@@ -92,7 +93,12 @@ ds.attachMapLayer({
   mapLayerIndex: {index: 0, isOverlay: false},
   settings: GoogleMaps.createMapLayerSettings("GoogleMaps")});
 ```
-
+  > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+```
+   mapLayerOptions: {
+          GoogleMaps: { key: "key", value: "YOUR_KEY_HERE" }
+        }
+```
 ## API deprecations
 
 ### @itwin/core-bentley
