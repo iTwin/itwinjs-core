@@ -141,6 +141,10 @@ export interface CommonMapLayerProps {
    * Default: true.
    */
   transparentBackground?: boolean;
+  /** True to drape this layer onto all attached reality data, not the background map. Otherwise, the layer will be draped onto the background map.
+   * Default: false.
+   */
+  toRealityData?: boolean;
 }
 
 /** JSON representation of an [[ImageMapLayerSettings]].
@@ -216,16 +220,18 @@ export abstract class MapLayerSettings {
   public readonly name: string;
   public readonly transparency: number;
   public readonly transparentBackground: boolean;
+  public readonly toRealityData: boolean;
   public abstract get allSubLayersInvisible(): boolean;
   public abstract clone(changedProps: Partial<MapLayerProps>): MapLayerSettings;
   public abstract toJSON(): MapLayerProps;
 
   /** @internal */
-  protected constructor(name: string, visible = true, transparency: number = 0, transparentBackground = true) {
+  protected constructor(name: string, visible = true, transparency: number = 0, transparentBackground = true, toRealityData = false) {
     this.name = name;
     this.visible = visible;
     this.transparentBackground = transparentBackground;
     this.transparency = transparency;
+    this.toRealityData = toRealityData;
   }
 
   /** Create a map layer settings from its JSON representation. */
@@ -245,6 +251,9 @@ export abstract class MapLayerSettings {
 
     if (this.transparentBackground === false)
       props.transparentBackground = this.transparentBackground;
+
+    if (this.toRealityData === true)
+      props.toRealityData = this.toRealityData;
 
     return props;
   }
@@ -303,7 +312,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   /** @internal */
   protected constructor(props: ImageMapLayerProps) {
     const transparentBackground = props.transparentBackground ?? true;
-    super(props.name, props.visible, props.transparency, transparentBackground);
+    super(props.name, props.visible, props.transparency, transparentBackground, props.toRealityData);
 
     this.formatId = props.formatId;
     this.url = props.url;
@@ -488,15 +497,15 @@ export class ModelMapLayerSettings extends MapLayerSettings {
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true) {
-    super(name, visible, transparency, transparentBackground);
+    transparency: number = 0, transparentBackground = true, toRealityData = false) {
+    super(name, visible, transparency, transparentBackground, toRealityData);
     this.modelId = modelId;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground);
+    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground, json.toRealityData);
   }
 
   /** return JSON representation of this MapLayerSettings object */

@@ -1004,6 +1004,12 @@ export class MapTileTreeReference extends TileTreeReference {
       const hasValidTileTree = layerTreeRef && TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus;
       const isImageryMapLayer = layerTreeRef instanceof ImageryMapLayerTreeReference;
       const isLayerVisible = (isImageryMapLayer || (!isImageryMapLayer && layerTreeRef?.layerSettings.visible));
+
+      if (true === layerTreeRef?.layerSettings.toRealityData) {
+        // If the layer is not to be displayed on top of background maps, then we should skip adding it to the tile tree.
+        continue;
+      }
+
       // Load tile tree for each configured layer.
       // Note: Non-visible imagery layer are always added to allow proper tile tree scale range visibility reporting.
       if (hasValidTileTree
