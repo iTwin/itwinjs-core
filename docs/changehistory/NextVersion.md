@@ -116,6 +116,10 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
+- Deprecated [addLogoCards]($core-frontend)-related APIs:
+  - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
+  - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
+
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
 
 ### @itwin/presentation-common
