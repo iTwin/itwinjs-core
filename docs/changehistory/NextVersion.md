@@ -16,7 +16,7 @@ Table of contents:
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
     - [@itwin/core-frontend](#itwincore-frontend)
-    - [@itwin/ecschema-metadata](#itwincore-ecschema-metadata)
+    - [@itwin/ecschema-metadata](#itwinecschema-metadata)
     - [@itwin/presentation-common](#itwinpresentation-common)
   - [Breaking Changes](#breaking-changes)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
@@ -33,10 +33,11 @@ Table of contents:
       - [@itwin/core-frontend](#itwincore-frontend-1)
       - [@itwin/core-geometry](#itwincore-geometry)
       - [@itwin/presentation-common](#itwinpresentation-common-1)
+      - [@itwin/presentation-backend](#itwinpresentation-backend)
+      - [@itwin/presentation-frontend](#itwinpresentation-frontend)
     - [API removals](#api-removals)
-      - [@itwin/core-common](#itwincore-common-1)
-      - [@itwin/core-ecschema-metadata](#itwincore-ecschema-metadata-1)
       - [@itwin/core-common](#itwincore-common-2)
+      - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
     - [Packages dropped](#packages-dropped)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
@@ -129,7 +130,7 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
 
-### @itwin/core-ecschema-metadata
+### @itwin/ecschema-metadata
 
 Reworked the ISchemaItemLocater and Schema classes' APIs so it's type-safe.
 The original was never type-safe like it suggested. It just returned any schema item found.
@@ -408,6 +409,22 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ValuesArrayJSON`                                            | `ValuesArray`                                                                                                                                                 |
 | `ValuesMapJSON`                                              | `ValuesMap`                                                                                                                                                   |
 
+#### @itwin/presentation-backend
+
+| Removed                                                                                                                       | Replacement                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `PresentationAssetsRootConfig.common`                                                                                         | n/a - the prop isn't used anymore                                                                                       |
+| `PresentationManager.computeSelection(arg: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[]; scopeId: string; })` | `PresentationManager.computeSelection` overload that takes a single `ComputeSelectionRequestOptions<IModelDb>` argument |
+| `PresentationManager.activeLocale`, `PresentationManagerProps.defaultLocale` and `PresentationManagerProps.localeDirectories` | `PresentationManagerProps.getLocalizedString`                                                                           |
+| `PresentationManagerMode` and `PresentationManagerProps.mode`                                                                 | n/a - the prop isn't used anymore                                                                                       |
+| `PresentationManagerProps.enableSchemasPreload`                                                                               | `PresentationProps.enableSchemasPreload`                                                                                |
+
+#### @itwin/presentation-frontend
+
+| Removed      | Replacement                                                           |
+| ------------ | --------------------------------------------------------------------- |
+| `getScopeId` | n/a - this is an internal utility that should've never become public. |
+
 ### API removals
 
 The following APIs have been removed:
@@ -428,7 +445,7 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 | `LogFunction`         |
 | `LoggingMetaData`     |
 
-#### @itwin/core-ecschema-metadata-1
+#### @itwin/ecschema-metadata
 
 - Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
 - Replaced existing generic `getItem()` methods from `schemaItemLocater`, `schemaContext` and `Schema` as it suggested type safety when there was none. The new overload requires either no generic type at all, or providing an additional ctor parameter of the desired schemaItem class.
