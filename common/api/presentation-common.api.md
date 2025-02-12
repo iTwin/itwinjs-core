@@ -1284,9 +1284,6 @@ export interface IntsRulesetVariable extends RulesetVariableBase {
     value: number[];
 }
 
-// @internal (undocumented)
-export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel>;
-
 // @internal
 export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent = any>(options: SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>): options is SingleElementPropertiesRequestOptions<TIModel>;
 
