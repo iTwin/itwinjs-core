@@ -70,6 +70,8 @@ export interface GraphicTemplate {
   readonly [_batch]?: GraphicTemplateBatch;
   /** @internal */
   readonly [_branch]?: GraphicTemplateBranch;
+  /** @internal */
+  isGltf?: boolean;
 }
 
 /** Create a GraphicTemplate.

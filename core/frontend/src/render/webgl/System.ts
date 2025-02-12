@@ -46,7 +46,7 @@ import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
-import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl } from "./InstancedGeometry";
+import { InstanceBuffers, InstanceBuffersData, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -68,8 +68,9 @@ import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
-import { _batch, _branch, _featureTable, _nodes } from "../../common/internal/Symbols";
+import { _batch, _branch, _featureTable, _implementationProhibited, _nodes, _transformCenter, _transforms } from "../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
+import { BufferHandle } from "./AttributeBuffers";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -501,9 +502,31 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic {
     const template = args.template;
-    const instances = args.instances as RenderInstancesImpl | undefined;
+    let instances = args.instances as RenderInstancesImpl | undefined;
     if (instances && !template.isInstanceable) {
       throw new Error("GraphicTemplate is not instanceable");
+    }
+
+    //see if template is gltf then rotate
+    if (instances && args.template.isGltf) {
+      const transforms = instances[_transforms];
+      const center = instances[_transformCenter];
+      const transformCenter = new Point3d(center.x, center.z, -center.y);
+      const count = transforms.length/12;
+
+      for (let i = 0; i < count; i++) {
+        const instanceNum = i * 12;
+        const instanceY = transforms[instanceNum + 7];
+        const instanceZ = transforms[instanceNum + 11];
+        transforms[instanceNum + 7] = instanceZ;
+        transforms[instanceNum + 11] = -instanceY;
+      }
+
+      const params: RenderInstancesParamsImpl = {
+        [_implementationProhibited]: "renderInstancesParams",
+        instances: {transforms, transformCenter, count}
+      }
+      instances = RenderInstancesImpl.create(params);
     }
 
     const graphics: RenderGraphic[] = [];
