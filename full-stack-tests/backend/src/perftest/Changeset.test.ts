@@ -15,7 +15,8 @@
 // import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 // import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 // import { Reporter } from "@itwin/perf-tools";
-// import { _hubAccess, BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
+// import { BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
+// import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 // import { HubWrappers, IModelTestUtils, KnownTestLocations, RevisionUtility } from "@itwin/core-backend/lib/cjs/test/index";
 // import { HubUtility } from "../HubUtility";
 // import { PerfTestUtility } from "./PerfTestUtils";

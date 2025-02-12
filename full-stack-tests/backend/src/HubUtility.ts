@@ -5,7 +5,8 @@
 
 import * as path from "path";
 import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
-import { _hubAccess, IModelHost, IModelJsFs, IModelNative, V1CheckpointManager } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, IModelNative, V1CheckpointManager } from "@itwin/core-backend";
+import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";

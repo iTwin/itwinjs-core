@@ -6,9 +6,10 @@
 import * as fs from "fs";
 import * as path from "path";
 import {
-  _hubAccess, BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
+  BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
   PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
+import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, ExternalSourceProps, IModel, PhysicalElementProps, RepositoryLinkProps, SubCategoryAppearance } from "@itwin/core-common";
