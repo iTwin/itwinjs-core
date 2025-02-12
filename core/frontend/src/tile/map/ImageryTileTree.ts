@@ -348,23 +348,31 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
             cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
             if (0 === cmp) {
               if (lhs.settings.properties && rhs.settings.properties) {
-                for (const key of Object.keys(lhs.settings.properties)) {
-                  const lhsProp = lhs.settings.properties[key];
-                  const rhsProp = rhs.settings.properties[key];
-                  if (typeof lhsProp !== typeof rhsProp) {
-                    cmp = 1;
-                    break;
-                  }
-                  if (Array.isArray(lhsProp)) {
-                    cmp = compareSimpleArrays(lhsProp, rhsProp as (number | string | boolean)[]);
-                    if (0 !== cmp)
+                const lhsKeysLength = Object.keys(lhs.settings.properties).length;
+                const rhsKeysLength = Object.keys(rhs.settings.properties).length;
+
+                if (lhsKeysLength !== rhsKeysLength) {
+                  cmp = lhsKeysLength - rhsKeysLength;
+                } else {
+                  for (const key of Object.keys(lhs.settings.properties)) {
+                    const lhsProp = lhs.settings.properties[key];
+                    const rhsProp = rhs.settings.properties[key];
+                    if (typeof lhsProp !== typeof rhsProp) {
+                      cmp = 1;
                       break;
-                  } else {
-                    cmp = compareSimpleTypes(lhsProp, rhsProp as number | string | boolean);
-                    if (0 !== cmp)
-                      break;
+                    }
+                    if (Array.isArray(lhsProp) || Array.isArray(rhsProp)) {
+                      cmp = compareSimpleArrays(lhsProp as (number | string | boolean)[], rhsProp as (number | string | boolean)[]);
+                      if (0 !== cmp)
+                        break;
+                    } else {
+                      cmp = compareSimpleTypes(lhsProp, rhsProp);
+                      if (0 !== cmp)
+                        break;
+                    }
                   }
                 }
+
                 if (0 === cmp) {
                   cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
                   if (0 === cmp) {
