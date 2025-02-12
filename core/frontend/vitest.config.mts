@@ -61,5 +61,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["@itwin/core-common", "@itwin/core-bentley", "@itwin/core-geometry", "@itwin/core-quantity", "@itwin/appui-abstract", "@itwin/core-orbitgt"],
+    force: true,
   },
 })

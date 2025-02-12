@@ -1,4 +1,5 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+
 export default defineConfig({
   test: {
     dir: "src",
@@ -20,5 +21,8 @@ export default defineConfig({
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
     }
+  },
+  optimizeDeps: {
+    force: true,
   }
 })

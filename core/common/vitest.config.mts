@@ -23,5 +23,8 @@ export default defineConfig({
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
     }
+  },
+  optimizeDeps: {
+    force: true,
   }
 })
