@@ -166,6 +166,9 @@ importers:
       webpack:
         specifier: ^5.97.1
         version: 5.97.1(webpack-cli@5.0.1)
+      zx:
+        specifier: ^8.3.2
+        version: 8.3.2
 
   ../../core/bentley:
     devDependencies:
@@ -5666,6 +5669,9 @@ packages:
   '@types/flatbuffers@1.10.0':
     resolution: {integrity: sha512-7btbphLrKvo5yl/5CC2OCxUSMx1wV1wvGT1qDXkSt7yi00/YW7E8k6qzXqJHsp+WU0eoG7r6MTQQXI9lIvd0qA==}
 
+  '@types/fs-extra@11.0.4':
+    resolution: {integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==}
+
   '@types/fs-extra@4.0.7':
     resolution: {integrity: sha512-BN48b/2F3kL0Ual7tjcHjj0Fl+nuYKtHa0G/xT3Q43HuCpN7rQD5vIx6Aqnl9x10oBI5xMJh8Ly+FQpP205JlA==}
 
@@ -5719,6 +5725,9 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+
+  '@types/jsonfile@6.1.4':
+    resolution: {integrity: sha512-D5qGUYwjvnNNextdU59/+fI+spnwtTFmyQP0h+PfIOSkNfpU6AOICUOkm4i0OnSk+NyjdPJrxCDro0sJsWlRpQ==}
 
   '@types/jsonwebtoken@8.5.9':
     resolution: {integrity: sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==}
@@ -10761,6 +10770,11 @@ packages:
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
+  zx@8.3.2:
+    resolution: {integrity: sha512-qjTunv1NClO05jDaUjrNZfpqC9yvNCchge/bzOcQevsh1aM5qE3TG6MY24kuQKlOWx+7vNuhqO2wa9nQCIGvZA==}
+    engines: {node: '>= 12.17.0'}
+    hasBin: true
+
 snapshots:
 
   '@ampproject/remapping@2.3.0':
@@ -12044,13 +12058,13 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
 
   '@types/cacheable-request@6.0.3':
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
       '@types/responselike': 1.0.3
 
   '@types/chai-as-promised@7.1.0':
@@ -12146,6 +12160,12 @@ snapshots:
 
   '@types/flatbuffers@1.10.0': {}
 
+  '@types/fs-extra@11.0.4':
+    dependencies:
+      '@types/jsonfile': 6.1.4
+      '@types/node': 20.17.12
+    optional: true
+
   '@types/fs-extra@4.0.7':
     dependencies:
       '@types/node': 20.17.0
@@ -12174,7 +12194,7 @@ snapshots:
   '@types/glob@7.2.0':
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
 
   '@types/google-protobuf@3.15.6': {}
 
@@ -12204,13 +12224,18 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
+  '@types/jsonfile@6.1.4':
+    dependencies:
+      '@types/node': 20.17.12
+    optional: true
+
   '@types/jsonwebtoken@8.5.9':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
 
   '@types/lodash@4.14.202': {}
 
@@ -12254,12 +12279,12 @@ snapshots:
 
   '@types/readable-stream@4.0.18':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
       safe-buffer: 5.1.2
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
 
   '@types/rimraf@2.0.2':
     dependencies:
@@ -12271,7 +12296,7 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
 
   '@types/serve-static@1.15.7':
     dependencies:
@@ -15230,7 +15255,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -17963,7 +17988,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.12
 
   wms-capabilities@0.4.0:
     dependencies:
@@ -18118,3 +18143,8 @@ snapshots:
   yoctocolors-cjs@2.1.2: {}
 
   zwitch@2.0.4: {}
+
+  zx@8.3.2:
+    optionalDependencies:
+      '@types/fs-extra': 11.0.4
+      '@types/node': 20.17.12
