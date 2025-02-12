@@ -93,6 +93,7 @@ export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefin
     return areEqual(t, u);
 }
 
+/** @beta */
 export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number {
   // Make sure the types are the same
   if (typeof lhs !== typeof rhs) {
@@ -115,6 +116,7 @@ export function compareSimpleTypes(lhs: number | string | boolean, rhs: number |
   return cmp;
 }
 
+/** @beta */
 export function compareSimpleArrays (lhs?: Array<number | string | boolean>, rhs?: Array<number | string | boolean> ) {
   if (undefined === lhs)
     return undefined === rhs ? 0 : -1;

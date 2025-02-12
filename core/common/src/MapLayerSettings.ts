@@ -21,6 +21,7 @@ export type SubLayerId = string | number;
 
 /** @beta */
 export type  MapLayerProviderArrayProperty = Array<number|string|boolean>;
+/** @beta */
 export interface MapLayerProviderProperties { [key: string]: number | string | boolean | MapLayerProviderArrayProperty };
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
