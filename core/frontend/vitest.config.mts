@@ -11,8 +11,10 @@ export default defineConfig({
     browser: {
       provider: "playwright",
       enabled: true,
-      name: "chromium",
-      headless: true,
+      instances : [
+        { browser: "chromium"}
+      ],
+      headless: false,
       screenshotFailures: false
     },
     coverage: {
@@ -34,7 +36,7 @@ export default defineConfig({
       reportsDirectory: "./lib/cjs/test/coverage",
     },
     pool: "threads",
-    fileParallelism: false // Had to disable parallel test runs due to Worker related tests timing out and not fetching properly.
+    fileParallelism: true
   },
   plugins: [
     viteStaticCopy({
@@ -61,5 +63,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["@itwin/core-common", "@itwin/core-bentley", "@itwin/core-geometry", "@itwin/core-quantity", "@itwin/appui-abstract", "@itwin/core-orbitgt"],
+    exclude: ["@vitest/coverage-v8/browser"]
   },
 })
