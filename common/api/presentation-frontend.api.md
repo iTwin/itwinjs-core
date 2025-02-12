@@ -176,9 +176,6 @@ export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
 // @public
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
-// @public @deprecated
-export function getScopeId(scope: SelectionScope | string | undefined): string;
-
 // @public
 export interface HiliteSet {
     // (undocumented)

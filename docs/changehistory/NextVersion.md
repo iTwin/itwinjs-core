@@ -34,6 +34,7 @@ Table of contents:
       - [@itwin/core-geometry](#itwincore-geometry)
       - [@itwin/presentation-common](#itwinpresentation-common-1)
       - [@itwin/presentation-backend](#itwinpresentation-backend)
+      - [@itwin/presentation-frontend](#itwinpresentation-frontend)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-2)
       - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
@@ -417,6 +418,12 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `PresentationManager.activeLocale`, `PresentationManagerProps.defaultLocale` and `PresentationManagerProps.localeDirectories` | `PresentationManagerProps.getLocalizedString`                                                                           |
 | `PresentationManagerMode` and `PresentationManagerProps.mode`                                                                 | n/a - the prop isn't used anymore                                                                                       |
 | `PresentationManagerProps.enableSchemasPreload`                                                                               | `PresentationProps.enableSchemasPreload`                                                                                |
+
+#### @itwin/presentation-frontend
+
+| Removed      | Replacement                                                           |
+| ------------ | --------------------------------------------------------------------- |
+| `getScopeId` | n/a - this is an internal utility that should've never become public. |
 
 ### API removals
 
