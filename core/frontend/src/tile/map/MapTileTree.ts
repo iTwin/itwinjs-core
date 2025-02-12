@@ -1007,6 +1007,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
       if (true === layerTreeRef?.layerSettings.toRealityData) {
         // If the layer is not to be displayed on top of background maps, then we should skip adding it to the tile tree.
+        hasLoadedTileTree = true; // ###TODO had to set this to true so addToScene actually works. alternative?
         continue;
       }
 

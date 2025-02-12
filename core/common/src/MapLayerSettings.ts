@@ -264,6 +264,7 @@ export abstract class MapLayerSettings {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
       visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
       transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
+      toRealityData: undefined !== changedProps.toRealityData ? changedProps.toRealityData : this.toRealityData,
       transparentBackground: undefined !== changedProps.transparentBackground ? changedProps.transparentBackground : this.transparentBackground,
     };
   }

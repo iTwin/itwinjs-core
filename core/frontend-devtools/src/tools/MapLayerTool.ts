@@ -65,8 +65,8 @@ class AttachMapLayerBaseTool extends Tool {
  * @beta
  */
 export class AttachModelMapLayerTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
   public static override toolId = "AttachModelMapLayerTool";
   constructor(protected _formatId: string) { super(); }
 
