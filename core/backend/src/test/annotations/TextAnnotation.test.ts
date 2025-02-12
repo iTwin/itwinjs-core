@@ -301,8 +301,12 @@ describe("layoutTextBlock", () => {
       expect(line.offsetFromDocument.x).to.equal(offset);
     }
 
+    // Two text runs with 7 characters total.
     block.appendRun(makeTextRun("abc"));
     block.appendRun(makeTextRun("defg"));
+
+    // 1 line of text with width 0: left, right, center justification.
+    block.justification = "left";
     expectBlockRange(7, 1);
     expectLineOffset(0, 0);
 
@@ -314,6 +318,22 @@ describe("layoutTextBlock", () => {
     expectBlockRange(7, 1);
     expectLineOffset(0, 0);
 
+    // 1 line of text from a width greater than number of characters: left, right, center justification.
+    block.width = 10;
+
+    block.justification = "left";
+    expectBlockRange(10, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "right";
+    expectBlockRange(10, 1);
+    expectLineOffset(3, 0); // 3 = 10 - 7
+
+    block.justification = "center";
+    expectBlockRange(10, 1);
+    expectLineOffset(1.5, 0); // 1.5 = (10 - 7) / 2
+
+    // 2 line of text from a width less than number of characters: left, right, center justification.
     block.justification = "left";
     block.width = 4;
     expectBlockRange(4, 2);
@@ -330,6 +350,7 @@ describe("layoutTextBlock", () => {
     expectLineOffset(0.5, 0);
     expectLineOffset(0, 1);
 
+    // Testing text longer the the width of the text block.
     block.width = 2;
     block.justification = "left";
     expectBlockRange(4, 2);

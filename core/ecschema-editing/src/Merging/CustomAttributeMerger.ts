@@ -19,7 +19,7 @@ export async function addCustomAttribute(context: SchemaMergeContext, change: Cu
   }
   const schemaItemKey = await updateSchemaItemKey(context, change.difference.className);
 
-  const targetCustomAttributeClass = await context.targetSchema.lookupItem<CustomAttributeClass>(schemaItemKey);
+  const targetCustomAttributeClass = await context.targetSchema.lookupItem(schemaItemKey, CustomAttributeClass);
   if (targetCustomAttributeClass === undefined) {
     throw new Error(`Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.`);
   }
@@ -38,7 +38,7 @@ export async function addCustomAttribute(context: SchemaMergeContext, change: Cu
     await editor.addCustomAttribute(itemKey, caInstance);
   }
   if (change.appliedTo === "Property") {
-    const itemKey = toItemKey(context, change.itemName);    
+    const itemKey = toItemKey(context, change.itemName);
     const [propertyName] = change.path.split(".");
     const propertyKey = toPropertyKey(context, change.itemName, propertyName);
     const editor = await getClassEditor(context, itemKey);
@@ -46,7 +46,7 @@ export async function addCustomAttribute(context: SchemaMergeContext, change: Cu
   }
   if (change.appliedTo === "RelationshipConstraint") {
     const itemKey = toItemKey(context, change.itemName);
-    const relationshipClass = await context.targetSchema.lookupItem<RelationshipClass>(itemKey);
+    const relationshipClass = await context.targetSchema.lookupItem(itemKey, RelationshipClass);
     if (relationshipClass === undefined) {
       throw new Error(`Unable to locate the relationship class ${itemKey.name} in the merged schema.`);
     }

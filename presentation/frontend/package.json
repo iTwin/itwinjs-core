@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.0.0-dev.55",
+  "version": "5.0.0-dev.61",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -37,7 +37,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-frontend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "test": "mocha -r jsdom-global/register --config ./.mocharc.json",
+    "test": "mocha --config ./.mocharc.json",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
     "prettier:fix": "prettier --write ."
   },

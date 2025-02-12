@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
-import { CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import {
+  _scheduleScriptReference, CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
+} from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 
@@ -167,8 +169,7 @@ describe("Schedule script (#integration)", () => {
     view.displayStyle.settings.scheduleScriptProps = json;
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
+    expect(view.displayStyle[_scheduleScriptReference]!.sourceId).to.equal(embedStyleId);
     expect(countTileTrees(view)).to.equal(3);
   });
 
