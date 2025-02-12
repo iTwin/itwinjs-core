@@ -191,15 +191,24 @@ export interface CreateNewIModelProps extends IModelNameArg {
  * @public
  */
 export interface BackendHubAccess {
-  /** Download all the changesets in the specified range. */
+  /**
+   * Download all the changesets in the specified range.
+   * @internal
+   */
   downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-  /** Download a single changeset. */
+  /**
+   * Download a single changeset.
+   * @internal
+   */
   downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
   /** Query the changeset properties given a ChangesetIndex  */
   queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-  /** Push a changeset to iModelHub. Returns the newly pushed changeset's index */
+  /**
+   * Push a changeset to iModelHub. Returns the newly pushed changeset's index
+   * @internal
+   */
   pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps }) => Promise<ChangesetIndex>;
   /** Get the ChangesetProps of the most recent changeset */
   getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
