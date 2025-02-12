@@ -47,7 +47,7 @@ export enum LockState {
 
 /**
  * The properties to access a V2 checkpoint through a daemon.
- * @internal
+ * @public
  */
 export interface V2CheckpointAccessProps {
   /** blob store account name. */
@@ -62,7 +62,10 @@ export interface V2CheckpointAccessProps {
   readonly storageType: string;
 }
 
-/** @internal */
+/**
+ * A Map from `Id64String` to `CommonLockState`.
+ * @public
+ */
 export type LockMap = Map<Id64String, CommonLockState>;
 
 /**
@@ -189,24 +192,15 @@ export interface CreateNewIModelProps extends IModelNameArg {
  * @public
  */
 export interface BackendHubAccess {
-  /**
-   * Download all the changesets in the specified range.
-   * @internal
-   */
+  /** Download all the changesets in the specified range. */
   downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-  /**
-   * Download a single changeset.
-   * @internal
-   */
+  /** Download a single changeset. */
   downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
   /** Query the changeset properties given a ChangesetIndex  */
   queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
   /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-  /**
-   * Push a changeset to iModelHub. Returns the newly pushed changeset's index
-   * @internal
-   */
+  /** Push a changeset to iModelHub. Returns the newly pushed changeset's index */
   pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps }) => Promise<ChangesetIndex>;
   /** Get the ChangesetProps of the most recent changeset */
   getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
@@ -232,29 +226,19 @@ export interface BackendHubAccess {
    */
   downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line @typescript-eslint/no-deprecated
 
-  /**
-   * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
-   * @internal
-   */
+  /** Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists. */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
 
   /**
    * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired
-   * @internal
    * @throws ConflictingLocksError if one or more requested locks are held by other briefcases.
    */
   acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
 
-  /**
-   * Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests.
-   * @internal
-   */
+  /** Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests. */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
-  /**
-   * Release all currently held locks
-   * @internal
-   */
+  /** Release all currently held locks */
   releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
