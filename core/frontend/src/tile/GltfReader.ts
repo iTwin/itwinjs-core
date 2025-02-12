@@ -2134,8 +2134,6 @@ export interface ReadGltfGraphicsArgs {
   hasChildren?: boolean;
   /** @internal */
   idMap?: BatchedTileIdMap;
-  /** Specify the axis orientation. If true, y will be up. */
-  yAxisUp?: boolean;
 }
 
 /** The output of [[readGltf]].
@@ -2180,8 +2178,7 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
  */
 export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<GltfTemplate | undefined> {
   const baseUrl = typeof args.baseUrl === "string" ? new URL(args.baseUrl) : args.baseUrl;
-  const yAxisUp = args.yAxisUp ?? true; // default to true
-  const props = GltfReaderProps.create(args.gltf, yAxisUp, baseUrl); // glTF supports exactly one coordinate system with y axis up.
+  const props = GltfReaderProps.create(args.gltf, true, baseUrl); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader)
     return undefined;
