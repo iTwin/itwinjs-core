@@ -72,7 +72,7 @@ export namespace InUseLocksError {
     return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "in-use-locks";
   }
 
-  /** throws an error which passes the [[InUseLocksError.isInUseLocksError]] type guard function */
+  /** throws an error which passes the [[isInUseLocksError]] type guard function */
   export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never {
     const errorObject = new Error();
     errorObject.name = "InUseLocksError"; // optional but makes it so that when the error is thrown and not caught we see InUseLocksError: 'message' instead of Error: 'message'

@@ -62,10 +62,8 @@ export class Box extends SolidPrimitive {
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
-  /**
-   * Apply the transform to the box's `localToWorld` frame.
+  /** Apply the transform to the box's `localToWorld` frame.
    * * Note that this may make the frame nonrigid.
-   * * This fails if the transformation is singular.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
@@ -73,14 +71,11 @@ export class Box extends SolidPrimitive {
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
-  /**
-   * Clone the box and immediately apply `transform` to the local frame of the clone.
-   * * Note that this may make the frame nonrigid.
-   * * This fails if the transformation is singular.
-  */
+  /** Clone the box and immediately apply `transform` to the local frame of the clone. */
   public cloneTransformed(transform: Transform): Box | undefined {
     const result = this.clone();
-    return result.tryTransformInPlace(transform) ? result : undefined;
+    transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
+    return result;
   }
 
   /**
@@ -125,7 +120,7 @@ export class Box extends SolidPrimitive {
 
   /**
    * Create an axis-aligned `Box` primitive for a range.
-   * @param range range low point is origin of base rectangle, range extents are box extents
+   * @param range range corners Origin of base rectangle
    * @param capped true to define top and bottom closure caps
    */
   public static createRange(range: Range3d, capped: boolean): Box | undefined {

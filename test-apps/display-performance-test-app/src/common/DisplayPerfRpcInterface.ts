@@ -5,7 +5,7 @@
 import * as chromeLauncher from "chrome-launcher";
 import * as http from "http";
 import * as https from "https";
-import { IModelConnectionProps, RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
+import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
 import { DptaEnvConfig } from "./DisplayPerfEnvConfig";
 
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
@@ -29,9 +29,6 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public static chrome?: chromeLauncher.LaunchedChrome;
 
   public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
-
-  public async openSnapshot(_filePath: string): Promise<IModelConnectionProps> { return this.forward(arguments); }
-  public async closeIModel(_iModelKey: string): Promise<void> { return this.forward(arguments); }
 
   @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async getDefaultConfigs(): Promise<string> { return this.forward(arguments); }

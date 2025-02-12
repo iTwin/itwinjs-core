@@ -21,13 +21,6 @@ export class FileSchemaKey extends SchemaKey {
 }
 
 // @beta
-export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
-    constructor(knownBackendAssetsDir: string);
-    addSchemaSearchPath(_schemaPath: string): void;
-    addSchemaSearchPaths(_schemaPaths: string[]): void;
-}
-
-// @beta
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;

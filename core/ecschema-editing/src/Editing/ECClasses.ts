@@ -35,11 +35,6 @@ export class ECClasses extends SchemaItems{
   protected constructor(schemaItemType: ECClassSchemaItems, schemaEditor: SchemaContextEditor) {
     super(schemaItemType, schemaEditor);
     this.schemaItemType = schemaItemType;
-    this.properties = new Properties(this.schemaItemType, this.schemaEditor);
-    this.arrayProperties = new ArrayProperties(this.schemaItemType, this.schemaEditor);
-    this.primitiveProperties = new PrimitiveProperties(this.schemaItemType, this.schemaEditor);
-    this.enumerationProperties = new EnumerationProperties(this.schemaItemType, this.schemaEditor);
-    this.structProperties = new StructProperties(this.schemaItemType, this.schemaEditor);
   }
 
   protected override schemaItemType: ECClassSchemaItems;
@@ -47,23 +42,23 @@ export class ECClasses extends SchemaItems{
   /**
    * Allows access for editing of base Property attributes.
    */
-  public readonly properties: Properties;
+  public readonly properties = new Properties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of ArrayProperty attributes.
    */
-  public readonly arrayProperties: ArrayProperties;
+  public readonly arrayProperties = new ArrayProperties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of PrimitiveProperty attributes.
    */
-  public readonly primitiveProperties: PrimitiveProperties;
+  public readonly primitiveProperties = new PrimitiveProperties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of EnumerationProperty attributes.
    */
-  public readonly enumerationProperties: EnumerationProperties;
+  public readonly enumerationProperties = new EnumerationProperties(this.schemaItemType, this.schemaEditor);
   /**
    * Allows access for editing of StructProperty attributes.
    */
-  public readonly structProperties: StructProperties;
+  public readonly structProperties = new StructProperties(this.schemaItemType, this.schemaEditor);
 
   public async createClass<T extends ECClass>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, baseClassKey?: SchemaItemKey, ...args: any[]): Promise<T> {
     const newClass = await this.createSchemaItem(schemaKey, type, create, name, ...args);
@@ -71,7 +66,7 @@ export class ECClasses extends SchemaItems{
     if (baseClassKey !== undefined) {
       const baseClassSchema = !baseClassKey.schemaKey.matches(newClass.schema.schemaKey) ? await this.getSchema(baseClassKey.schemaKey) : newClass.schema as MutableSchema;
       const baseClassItem = await this.lookupSchemaItem<ECClass>(baseClassSchema, baseClassKey);
-      await (newClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T));
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, T>(baseClassKey, async () => baseClassItem as T);
     }
 
     return newClass;
@@ -280,7 +275,7 @@ export class ECClasses extends SchemaItems{
     try {
       const classItem = await this.getSchemaItem<ECClass>(itemKey);
       if (!baseClassKey) {
-        await (classItem as MutableClass).setBaseClass(undefined);
+        classItem.baseClass = undefined;
         return;
       }
 
@@ -289,7 +284,7 @@ export class ECClasses extends SchemaItems{
       if (classItem.baseClass !== undefined && !await baseClassItem.is(await classItem.baseClass))
         throw new SchemaEditingError(ECEditingStatus.InvalidBaseClass, new ClassId(this.schemaItemType, baseClassKey), undefined, undefined, `Base class ${baseClassKey.fullName} must derive from ${(await classItem.baseClass).fullName}.`);
 
-      await (classItem as MutableClass).setBaseClass(new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem));
+      classItem.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClassKey, async () => baseClassItem);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(this.schemaItemType, itemKey), e);
     }

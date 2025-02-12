@@ -36,7 +36,9 @@ import {
   NodePathElement,
   Paged,
   PagedResponse,
+  PresentationError,
   PresentationIpcEvents,
+  PresentationStatus,
   Prioritized,
   Ruleset,
   RulesetVariable,
@@ -104,8 +106,9 @@ export class PresentationManagerDetail implements IDisposable {
 
   public getNativePlatform(): NativePlatformDefinition {
     if (this._disposed) {
-      throw new Error("Attempting to use Presentation manager after disposal");
+      throw new PresentationError(PresentationStatus.NotInitialized, "Attempting to use Presentation manager after disposal");
     }
+
     return this._nativePlatform!;
   }
 

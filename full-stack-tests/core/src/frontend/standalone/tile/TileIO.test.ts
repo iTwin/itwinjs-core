@@ -6,20 +6,18 @@ import { expect } from "chai";
 import { ByteStream, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, EdgeOptions, EmptyLocalization, ImdlFlags, ImdlHeader, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
-  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+  ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, SnapshotIModelRpcInterface, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
-  RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  RenderGraphic, SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
 import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
-import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
@@ -74,7 +72,7 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
       renderMode: options?.renderMode ?? RenderMode.SmoothShade,
       visibleEdges: options?.visibleEdges ?? false,
     }),
-    displayStyle: {},
+    displayStyle: { },
   } as unknown as ViewState;
 }
 
@@ -264,7 +262,7 @@ describe("TileIO (WebGL)", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -442,7 +440,7 @@ describe("TileIO (mock render)", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -615,13 +613,13 @@ describe("mirukuru TileTree", () => {
       await ElectronApp.startup({
         iModelApp: {
           localization: new EmptyLocalization(),
-          rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
+          rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
           tileAdmin,
         },
       });
     }
 
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   afterEach(() => {
@@ -779,7 +777,7 @@ describe("TileAdmin", () => {
       await super.startup({
         tileAdmin: props,
         localization: new EmptyLocalization(),
-        rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
+        rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
       });
 
       if (ProcessDetector.isElectronAppFrontend) {
@@ -787,12 +785,12 @@ describe("TileAdmin", () => {
           iModelApp: {
             tileAdmin: props,
             localization: new EmptyLocalization(),
-            rpcInterfaces: [IModelReadRpcInterface, IModelTileRpcInterface, TestRpcInterface],
+            rpcInterfaces: [ IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface ],
           },
         });
       }
 
-      theIModel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+      theIModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
       return theIModel;
     }
 
@@ -818,7 +816,7 @@ describe("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const document = await parseImdlDocument({
+        const document = parseImdlDocument({
           data: response,
           batchModelId: "0x1c",
           is3d: true,

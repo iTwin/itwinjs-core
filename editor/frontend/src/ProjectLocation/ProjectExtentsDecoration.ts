@@ -131,7 +131,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   protected override stop(): void {
-    const selectedId = (undefined !== this._clipId && this.iModel.selectionSet.elements.has(this._clipId)) ? this._clipId : undefined;
+    const selectedId = (undefined !== this._clipId && this.iModel.selectionSet.has(this._clipId)) ? this._clipId : undefined;
     this._clipId = undefined; // Invalidate id so that decorator will be dropped...
     super.stop();
     if (undefined !== selectedId)
@@ -269,7 +269,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
     // Show controls if only range box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
-    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.elements.has(this._clipId)) {
+    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.has(this._clipId)) {
       showControls = true;
       if (this.iModel.selectionSet.size > 1) {
         this.iModel.selectionSet.elements.forEach((val) => {
@@ -668,7 +668,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
-      const isSelected = this.iModel.selectionSet.elements.has(this._controlIds[iFace]);
+      const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);
 
       let outlineColorOvr = this._controls[iFace].outline;
       if (undefined !== outlineColorOvr) {

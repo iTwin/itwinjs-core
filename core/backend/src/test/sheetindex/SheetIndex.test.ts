@@ -80,7 +80,7 @@ describe("SheetIndex", () => {
 
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "SheetIndex" } });
     await ExtensiveTestScenario.prepareDb(iModelDb);
-    await ExtensiveTestScenario.populateDb(iModelDb);
+    ExtensiveTestScenario.populateDb(iModelDb);
     iModel = iModelDb;
 
     await insertCodeSpec(iModel);

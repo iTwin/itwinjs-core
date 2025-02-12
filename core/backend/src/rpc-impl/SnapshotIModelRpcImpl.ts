@@ -16,7 +16,6 @@ import { IModelHost } from "../IModelHost";
 
 /** The backend implementation of SnapshotIModelRpcInterface.
  * @internal
- * @deprecated in 5.0. Check [[IpcAppFunctions]] for replacements.
  */
 export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface {
   public static register() { RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl); }

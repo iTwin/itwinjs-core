@@ -56,7 +56,6 @@ The iTwin.js library requires a JavaScript engine with es2017 support.
 - [GeoLocation in iModels](./GeoLocation.md)
 - [Change summaries](./ChangeSummaries.md)
 - [Remote procedure call ("RPC") Interfaces](./RpcInterface)
-- [EC Schema XML File Locaters](./schema-xml-file-locaters.md)
 
 Step by step instructions to:
 

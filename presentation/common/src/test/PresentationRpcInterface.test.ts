@@ -71,7 +71,6 @@ describe("PresentationRpcInterface", () => {
     return arguments;
   }
 
-  /* eslint-disable @typescript-eslint/no-deprecated -- PresentationRpcInterface methods are deprecated */
   describe("calls forwarding", () => {
     let rpcInterface: PresentationRpcInterface;
     let spy: sinon.SinonStub<[IArguments], Promise<any>>;
@@ -259,7 +258,7 @@ describe("PresentationRpcInterface", () => {
       const options: SelectionScopeRpcRequestOptions = {};
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
-
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
     });
@@ -273,5 +272,4 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
   });
-  /* eslint-enable @typescript-eslint/no-deprecated */
 });

@@ -32,7 +32,7 @@ describe("IModel Connection", () => {
     if (!testContext.settings.runiModelReadRpcTests)
       this.skip();
 
-    accessToken = testContext.serviceAuthToken;
+    accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
@@ -101,7 +101,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.serviceAuthToken;
+    accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -367,7 +367,7 @@ describe("Snapping", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.serviceAuthToken;
+    accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -409,7 +409,7 @@ describe("Snapping", () => {
       expect(snap.status).not.to.be.undefined;
     } catch (err: any) {
       // This is what we expect if the cancellation occurs in time to really cancel the snap.
-      expect(err.message).to.equal("Unknown server response code.");
+      expect(err.message).to.equal("aborted");
     }
   });
 });

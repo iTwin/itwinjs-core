@@ -7,8 +7,8 @@
  * @module Editing
  */
 
-import { BentleyError, Id64, Id64Arg, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { GeometricElementProps, isPlacement2dProps, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d } from "@itwin/core-common";
+import { BentleyError, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { GeometricElementProps, IModelStatus, isPlacement2dProps, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d } from "@itwin/core-common";
 import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, GraphicBranch, IModelApp, IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";

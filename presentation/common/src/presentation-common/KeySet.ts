@@ -194,13 +194,12 @@ export class KeySet {
       this._nodeKeys.add(JSON.stringify(key));
     }
     for (const entry of keyset.instanceKeys) {
-      const normalizedClassName = normalizeClassName(entry["0"]);
-      const lcClassName = normalizedClassName.toLowerCase();
+      const lcClassName = normalizeClassName(entry["0"]);
       const idsJson: string | Id64String[] = entry["1"];
       const ids: Set<Id64String> =
         typeof idsJson === "string" ? (idsJson === Id64.invalid ? new Set([Id64.invalid]) : CompressedId64Set.decompressSet(idsJson)) : new Set(idsJson);
       this._instanceKeys.set(lcClassName, ids);
-      this._lowerCaseMap.set(lcClassName, normalizedClassName);
+      this._lowerCaseMap.set(lcClassName, entry["0"]);
     }
   }
 
@@ -223,12 +222,12 @@ export class KeySet {
       if (Key.isEntityProps(value)) {
         this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
       } else if (Key.isInstanceKey(value)) {
-        const normalizedClassName = normalizeClassName(value.className);
-        const lcClassName = normalizedClassName.toLowerCase();
+        const lcClassName = normalizeClassName(value.className);
         if (!this._instanceKeys.has(lcClassName)) {
           this._instanceKeys.set(lcClassName, new Set());
+          this._lowerCaseMap.set(lcClassName, value.className);
         }
-        this._lowerCaseMap.set(lcClassName, normalizedClassName);
+        this._lowerCaseMap.set(lcClassName, value.className);
         this._instanceKeys.get(lcClassName)!.add(value.id);
       } else if (Key.isNodeKey(value)) {
         this._nodeKeys.add(JSON.stringify(value));
@@ -275,8 +274,7 @@ export class KeySet {
     } else if (Key.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else if (Key.isInstanceKey(value)) {
-      const normalizedClassName = normalizeClassName(value.className);
-      const set = this._instanceKeys.get(normalizedClassName.toLowerCase());
+      const set = this._instanceKeys.get(normalizeClassName(value.className));
       if (set) {
         set.delete(value.id);
       }
@@ -303,8 +301,7 @@ export class KeySet {
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
     }
     if (Key.isInstanceKey(value)) {
-      const normalizedClassName = normalizeClassName(value.className);
-      const set = this._instanceKeys.get(normalizedClassName.toLowerCase());
+      const set = this._instanceKeys.get(normalizeClassName(value.className));
       return !!(set && set.has(value.id));
     }
     if (Key.isNodeKey(value)) {
@@ -507,7 +504,7 @@ export class KeySet {
 }
 
 function normalizeClassName(className: string) {
-  return className.replace(".", ":");
+  return className.replace(".", ":").toLowerCase();
 }
 
 const some = <TItem>(set: Set<TItem>, cb: (item: TItem) => boolean) => {

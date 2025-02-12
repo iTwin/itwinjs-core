@@ -221,7 +221,6 @@ export class AccuDrawShortcuts {
   }
 
   public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
-  public static itemFieldCompletedInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Dynamic); }
 
   public static async itemFieldAcceptInput(index: ItemField, str: string): Promise<void> {
     const accudraw = IModelApp.accuDraw;

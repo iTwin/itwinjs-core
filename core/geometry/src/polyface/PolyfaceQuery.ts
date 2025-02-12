@@ -1983,8 +1983,8 @@ export class PolyfaceQuery {
   /**
    * Search facets for the first one that intersects the infinite line.
    * * To process _all_ intersections, callers can supply an `options.acceptIntersection` callback that always
-   * returns `false`. In this case, `intersectRay3d` will return `undefined`, but the callback will be invoked for
-   * each intersection.
+   * returns `false`.
+   * In this case, `intersectRay3d` will return `undefined`, but the callback will be invoked for each intersection.
    * * Example callback logic:
    *    * Accept the first found facet that intersects the half-line specified by the ray: `return detail.a >= 0.0;`
    *    * Collect all intersections: `myIntersections.push(detail.clone()); return false;` Then after `intersectRay3d`
@@ -2004,7 +2004,6 @@ export class PolyfaceQuery {
     if (visitor instanceof Polyface)
       return PolyfaceQuery.intersectRay3d(visitor.createVisitor(0), ray, options);
     let detail: FacetLocationDetail;
-    const tol: [number, number] | undefined = options ? [options.distanceTolerance, options.parameterTolerance] : undefined;
     visitor.setNumWrap(0);
     while (visitor.moveToNextFacet()) {
       const numEdges = visitor.pointCount; // #vertices = #edges since numWrap is zero
@@ -2022,7 +2021,9 @@ export class PolyfaceQuery {
           visitor.currentReadIndex(), detail3, this._workFacetDetail3,
         );
       } else {
-        const detailN = this._workPolyDetail = PolygonOps.intersectRay3d(vertices, ray, tol, this._workPolyDetail);
+        const detailN = this._workPolyDetail = PolygonOps.intersectRay3d(
+          vertices, ray, options?.distanceTolerance, this._workPolyDetail,
+        );
         if (PolygonOps.isConvex(vertices))
           detail = this._workFacetDetailC = ConvexFacetLocationDetail.create(
             visitor.currentReadIndex(), numEdges, detailN, this._workFacetDetailC,

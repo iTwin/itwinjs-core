@@ -148,7 +148,7 @@ export class Mesh {
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
-    this._data = MeshPrimitiveType.Mesh === type ? new TriangleList() : [];
+    this._data = MeshPrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
     this.displayParams = displayParams;
     this.features = features ? new Mesh.Features(features) : undefined;
     this.type = type;

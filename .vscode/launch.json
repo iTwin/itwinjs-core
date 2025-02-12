@@ -696,6 +696,19 @@
         "WORKSPACE_EDITOR_LOGGING": "false",
       }
     },
+    {
+      "name": "Webpack Plugin Tests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/webpack-core",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ]
+    },
     // TEST APPS
     { /* PARTIAL */
       "name": "[BACKEND] display-test-app (chrome)",

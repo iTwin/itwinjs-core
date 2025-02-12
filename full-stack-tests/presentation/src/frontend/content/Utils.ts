@@ -5,10 +5,9 @@
 
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
 import { ECClassHierarchyInfo } from "../../ECClasHierarchy";
-import { TestIModelConnection } from "../../IModelSetupUtils";
 import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 
 interface ContentTestSuiteParams {
@@ -26,7 +25,7 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
     let suiteIModel: IModelConnection;
     const openDefaultSuiteIModel = async () => {
       if (!suiteIModel || !suiteIModel.isOpen) {
-        suiteIModel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+        suiteIModel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       }
       expect(suiteIModel).is.not.null;
       return suiteIModel;
@@ -39,7 +38,7 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
     };
 
     before(async () => {
-      await initialize({ imodelAppProps: { localization: testLocalization } });
+      await initialize({ localization: testLocalization });
     });
 
     after(async () => {

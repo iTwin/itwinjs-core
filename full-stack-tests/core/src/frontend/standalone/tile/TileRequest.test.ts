@@ -8,14 +8,13 @@ import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, Tile, TileLoadStatus,
+  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
   TileRequestChannel, TileStorage, Viewport,
 } from "@itwin/core-frontend";
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
-import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 use(sinonChai);
 
@@ -31,7 +30,7 @@ describe("IModelTileRequestChannels", () => {
     return channels.iModelChannels.cloudStorage;
   }
 
-  async function getTileForIModel(imodel: TestSnapshotConnection): Promise<IModelTile> {
+  async function getTileForIModel(imodel: SnapshotConnection): Promise<IModelTile> {
     await imodel.models.load("0x1c");
     const model = imodel.models.getLoaded("0x1c")!.asGeometricModel!;
     const view = fakeViewState(imodel);
@@ -62,11 +61,11 @@ describe("IModelTileRequestChannels", () => {
   }
 
   describe("CloudStorageCacheChannel", () => {
-    let imodel: TestSnapshotConnection;
+    let imodel: SnapshotConnection;
 
     beforeEach(async () => {
       await TestUtility.startFrontend();
-      imodel = await TestSnapshotConnection.openFile("test.bim");
+      imodel = await SnapshotConnection.openFile("test.bim");
     });
 
     afterEach(async () => {
@@ -145,11 +144,11 @@ describe("IModelTileRequestChannels", () => {
   });
 
   describe("Metadata cache channel", () => {
-    let imodel: TestSnapshotConnection;
+    let imodel: SnapshotConnection;
 
     beforeEach(async () => {
       await TestUtility.startFrontend({ tileAdmin: { cacheTileMetadata: true } });
-      imodel = await TestSnapshotConnection.openFile("test.bim");
+      imodel = await SnapshotConnection.openFile("test.bim");
     });
 
     afterEach(async () => {
@@ -359,11 +358,11 @@ describe("TileStorage", () => {
   }
 
   let tileStorage: TileStorage;
-  let iModel: TestSnapshotConnection;
+  let iModel: SnapshotConnection;
   let downloadTileParameters: Parameters<typeof tileStorage.downloadTile>;
   before(async () => {
     await TestUtility.startFrontend();
-    iModel = await TestSnapshotConnection.openFile("test.bim");
+    iModel = await SnapshotConnection.openFile("test.bim");
     const rpcProps = iModel.getRpcProps();
     downloadTileParameters = [
       rpcProps,

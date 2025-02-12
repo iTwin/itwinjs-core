@@ -8,17 +8,18 @@
 
 import { CustomAttributeClassProps } from "../Deserialization/JsonProps";
 import {
-  containerTypeToString, CustomAttributeContainerType, parseCustomAttributeContainerType, SchemaItemType,
+  containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECClass } from "./Class";
+import { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
  * @beta
  */
 export class CustomAttributeClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.CustomAttributeClass;
+  public override readonly schemaItemType!: SchemaItemType.CustomAttributeClass;
   protected _appliesTo?: CustomAttributeContainerType;
 
   /**
@@ -32,6 +33,11 @@ export class CustomAttributeClass extends ECClass {
     if (undefined === this._appliesTo)
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
     return this._appliesTo;
+  }
+
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
+    this.schemaItemType = SchemaItemType.CustomAttributeClass;
   }
 
   /**

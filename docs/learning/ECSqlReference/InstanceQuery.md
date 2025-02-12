@@ -242,7 +242,7 @@ SELECT *
 1. Only top level property is allowed.
 2. Only primitive type values can be accessed in the filter directly. Any composite type will require `JSON_EXTRACT()` to extract child value before it can be used in a query. Refer [Accessing Composite Properties](#accessing-composite-properties)
 3. Currently indexes are not supported on instance properties.
-4. MetaData a.k.a `ColumnInfo` is dynamically updated only for primitive properties selected for output. All other properties will get generic `ColumnInfo` with a string property and `extendedType=JSON`.
+4. MetaData a.k.a `ColumnInfo` is dynamically updated only for primitive properties selected for output. All other properties will get generic `ColumnInfo` with a string property and `extendType=JSON`.
 
 ## Performance
 

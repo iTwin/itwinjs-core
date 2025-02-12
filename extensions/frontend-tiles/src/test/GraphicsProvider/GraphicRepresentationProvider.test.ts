@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { createGraphicRepresentationsQueryUrl, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -31,7 +31,7 @@ interface TestJsonResponse {
   };
 }
 
-interface TestJsonResponses {
+interface TestJsonResponses{
   exports: TestJsonResponse[];
 
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -81,8 +81,8 @@ function makeSource(props: SourceProps): TestJsonResponse {
       iModelId: "",
       changesetId: props.changesetId ?? "",
       exportType: "srcType",
-      geometryOptions: {},
-      viewDefinitionFilter: {},
+      geometryOptions: { },
+      viewDefinitionFilter: { },
     },
   };
 
@@ -112,7 +112,6 @@ function makeSources(props: SourcesProps): TestJsonResponses {
 async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
-
 const testArgs = {
   accessToken: "this-is-a-fake-access-token",
   sessionId: "testSession",
@@ -165,7 +164,7 @@ describe("queryGraphicRepresentations", () => {
 
   it("includes only completed Data Sources unless otherwise specified", async () => {
     await mockFetch(
-      async () => makeSourcesResponse({ exports: [{ id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" }] }),
+      async () => makeSourcesResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
       async () => {
         await expectSources(["a"], testArgs);
         await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
@@ -179,7 +178,7 @@ describe("obtainGraphicRepresentationUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
-  async function fetchSources(resource: NodeJS.fetch.RequestInfo | RequestInfo): Promise<Response> {
+  async function fetchSources(resource: RequestInfo | URL): Promise<Response> {
     expect(typeof resource).to.equal("string");
     const url = resource as string;
 
@@ -238,27 +237,5 @@ describe("obtainGraphicRepresentationUrl", () => {
 
   it("returns undefined if no Data Source matches the source version Id and caller requires an exact version match", async () => {
     await expectUrl(undefined, { versionId: "bbbbbb", exact: true });
-  });
-});
-
-describe("createGraphicRepresentationsQueryUrl", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
-
-  it("creates the expected url to query the default number of exports", async () => {
-    const url = createGraphicRepresentationsQueryUrl({
-      sourceId: testArgs.dataSource.id,
-      sourceType: testArgs.dataSource.type
-    });
-    expect(url).to.contain("$top=5");
-  });
-
-  it("creates the expected url to query a specific number of exports", async () => {
-    const url = createGraphicRepresentationsQueryUrl({
-      sourceId: testArgs.dataSource.id,
-      sourceType: testArgs.dataSource.type,
-      numExports: 50
-    });
-    expect(url).to.contain("$top=50");
   });
 });

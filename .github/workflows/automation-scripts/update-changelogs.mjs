@@ -57,19 +57,6 @@ function editFileInPlaceSynchronously(filePath, stringToSearch, stringToReplace)
   }
 }
 
-// Finds the largest version number in an array of version strings formatted "major.minor.x"
-function findLargestVersion(versions) {
-  return versions.reduce((largest, current) => {
-    const [largestMajor, largestMinor] = largest.split('.').map(Number);
-    const [currentMajor, currentMinor] = current.split('.').map(Number);
-
-    if (currentMajor > largestMajor || (currentMajor === largestMajor && currentMinor > largestMinor)) { //if current major is largest, set as largest, if equal major, check minor
-      return current;
-    }
-    return largest;
-  });
-}
-
 const targetPath = "./temp-target-changelogs"
 const incomingPath = "./temp-incoming-changelogs"
 
@@ -78,10 +65,7 @@ await $`mkdir ${targetPath}`
 await $`mkdir ${incomingPath}`
 
 // find the latest release branch, and make that the target for the changelogs
-let branchVersions = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | sed "s/  remotes\\/origin\\/release\\///"`;
-branchVersions = String(branchVersions).split("\n");
-let targetBranch = findLargestVersion(branchVersions);
-targetBranch = `origin/release/${targetBranch}`;
+let targetBranch = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | tail -n1 | sed 's/  remotes\\///'`;
 let currentBranch = await $`git branch --show-current`;
 // the version in the commit message can be extracted from the latest commit with commit message starting with "X.X.X" (except X.X.X-dev.X)
 let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$" -n 1 --pretty=format:%s`;
@@ -166,15 +150,3 @@ await $`rush change --bulk --message "" --bump-type none`;
 await $`git add .`;
 await $`git commit --amend --no-edit`;
 await $`git push origin HEAD:${targetBranch}`;
-
-
-// Tests:
-function testFindLargestVersion() {
-  let versions = ["1.0.x", "1.0.x", "1.1.x", "1.1.x", "2.0.x", "2.0.x", "2.1.x", "2.10.x", "2.1.x"]; // check minor double digits
-  let largest = findLargestVersion(versions);
-  console.assert(largest === "2.10.x", `Expected 2.10.x, got ${largest}`);
-  versions = ["1.0.x", "10.0.x", "1.1.x", "1.30.x", "2.0.x", "2.0.x", "2.1.x", "2.21.x"]; //check major double digits
-  largest = findLargestVersion(versions);
-  console.assert(largest === "10.0.x", `Expected 10.0.x, got ${largest}`);
-}
-// testFindLargestVersion();

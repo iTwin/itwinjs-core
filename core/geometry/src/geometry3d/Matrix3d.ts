@@ -359,35 +359,35 @@ export class Matrix3d implements BeJSONFunctions {
     return Geometry.isDistanceWithinTol(max, tol);
   }
   /**
-   * A matrix equivalence test, returning true if and only if the matrices are almost equal,
-   * or all of the following column comparisons hold:
-   * * z columns are almost equal, and
-   * * x columns differ only by a rotation of angle t around the z column, and
-   * * y columns differ only by a rotation of the same angle t around the z column.
-   * @param other matrix to compare
-   * @param tol optional distance tolerance, for comparisons by Geometry.isDistanceWithinTol
-   * @return whether matrices are almost equal modulo a rotation around their common nonzero z-column.
+   * Test if `this` and `other` have almost equal Z column and have X and Y columns differing only by a
+   * rotation of the same angle around that Z.
+   * * **WARNING:** X and Y columns have to be perpendicular to Z column in both `this` and `other`.
+   * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
    */
   public isAlmostEqualAllowZRotation(other: Matrix3d, tol?: number): boolean {
     if (this.isAlmostEqual(other, tol))
       return true;
-    if (!this.isAlmostEqualColumn(AxisIndex.Z, other, tol))
-      return false;
-    const columnX = this.columnX();
-    const columnY = this.columnY();
-    const columnZ = this.columnZ();
-    const toOtherColumnX = columnX.signedAngleTo(other.columnX(), columnZ);
-    let testColumn = Vector3d.createRotateVectorAroundVector(columnX, columnZ, toOtherColumnX);
-    if (!testColumn)
-      return false; // columnZ is zero length
-    if (!other.isAlmostEqualColumnXYZ(0, testColumn.x, testColumn.y, testColumn.z, tol))
-      return false; // columnX rotated around columnZ by angle doesn't end up at other.columnX
-    testColumn = Vector3d.createRotateVectorAroundVector(columnY, columnZ, toOtherColumnX);
-    if (!testColumn)
-      return false;
-    if (!other.isAlmostEqualColumnXYZ(1, testColumn.x, testColumn.y, testColumn.z, tol))
-      return false; // columnY rotated around columnZ by angle doesn't end up at other.columnY
-    return true;
+    if (this.isAlmostEqualColumn(AxisIndex.Z, other, tol)) {
+      const radians = Angle.radiansBetweenVectorsXYZ(
+        this.coffs[0], this.coffs[3], this.coffs[6],
+        other.coffs[0], other.coffs[3], other.coffs[6],
+      );
+      const angle = Angle.createRadians(radians); // angle between X columns in `this` and `other`
+      const columnX = this.columnX();
+      const columnY = this.columnY();
+      const columnZ = this.columnZ();
+      /**
+       * Here we rotate this.columnX() around this.columnZ() by "angle" and expect to get other.columnX().
+       * Then we rotate this.columnY() around this.columnZ() by the same "angle" and if we get other.columnY(),
+       * that means `this` and `other` have X and Y columns differing only by a rotation around column Z.
+       */
+      let column = Vector3d.createRotateVectorAroundVector(columnX, columnZ, angle)!;
+      if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)) {
+        column = Vector3d.createRotateVectorAroundVector(columnY, columnZ, angle)!;
+        return other.isAlmostEqualColumnXYZ(1, column.x, column.y, column.z, tol);
+      }
+    }
+    return false;
   }
   /** Test for exact (bitwise) equality with other. */
   public isExactEqual(other: Matrix3d): boolean {
@@ -720,11 +720,12 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * Construct a rigid matrix (orthogonal matrix with determinant 1) using vectorA and its 2 perpendiculars.
+   * Construct a rigid matrix (orthogonal matrix with +1 determinant) using vectorA and its 2 perpendicular.
    * * If axisOrder is not passed then `AxisOrder = AxisOrder.ZXY` is used as default.
    * * This function internally uses createPerpendicularVectorFavorXYPlane and createRigidFromColumns.
-   * * Passing the normal of a plane P into this method returns a matrix whose transpose rotates geometry in P
-   * to the xy-plane if P contains the origin, or to a plane parallel to the xy-plane if P does not contain the origin.
+   * * If you want to rotate a given plane (which contains (0,0,0)) to the xy-plane, pass the normal vector of
+   * your plane into createRigidHeadsUp. The transpose of the returned Matrix3d can be used to rotate your plane
+   * to the xy-plane. If plane does not contain (0,0,0) then the plane is rotated to a plane parallel to the xy-plane.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/2PerpendicularVectorsTo1Vector
    */
   public static createRigidHeadsUp(

@@ -23,12 +23,14 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class Format extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.Format;
+  public override readonly schemaItemType!: SchemaItemType.Format;
   protected _base: BaseFormat;
   protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
+    this.schemaItemType = SchemaItemType.Format;
+
     this._base = new BaseFormat(name);
   }
 

@@ -263,7 +263,6 @@ internal;function;getFrustumPlaneIntersectionDepthRange
 internal;function;getGcsConverterAvailable
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
-internal;function;getMeshoptDecoder
 public;interface;GetPixelDataWorldPointArgs
 public;function;getQuantityTypeKey
 public;interface;GlobalAlignmentOptions
@@ -482,7 +481,6 @@ public;class;MeasureLengthTool
 public;class;MeasureLocationTool
 public;class;MeasureVolumeTool
 public;interface;MeshArgs
-internal;interface;MeshoptDecoder
 public;enum;MessageBoxIconType
 public;enum;MessageBoxType
 public;enum;MessageBoxValue
@@ -674,7 +672,6 @@ public;class;ScrollViewTool
 beta;interface;SectionDrawingAttachmentHitInfo
 internal;interface;SectionDrawingInfo
 public;class;SectionDrawingModelState
-public;interface;SelectableIds
 public;interface;SelectAddEvent
 internal;interface;SelectedAndReadyTiles
 public;interface;SelectedViewportChangedArgs

@@ -4,10 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { RpcManager } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
-import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("PresentationRpcInterface", () => {
   let imodel: IModelConnection;
@@ -15,7 +14,7 @@ describe("PresentationRpcInterface", () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = TestIModelConnection.openFile(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 
@@ -32,7 +31,6 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("returns properties for requested element", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
         elementId: "0x1",
       });

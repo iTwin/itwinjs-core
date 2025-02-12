@@ -44,12 +44,7 @@ export class RotationalSweep extends SolidPrimitive {
     this.capped = capped;
     this._sweepAngle = sweepAngle;
   }
-  /** Create a rotational sweep.
-   * @param contour profile to sweep, coplanar with axis. CAPTURED
-   * @param axis rotation axis
-   * @param sweepAngle signed angular sweep
-   * @param capped whether to cap the surface to make a solid
-   */
+  /** Create a rotational sweep. */
   public static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined {
     if (!axis.direction.normalizeInPlace())
       return undefined;
@@ -95,28 +90,20 @@ export class RotationalSweep extends SolidPrimitive {
   public clone(): RotationalSweep {
     return new RotationalSweep(this._contour.clone(), this._normalizedAxis.clone(), this._sweepAngle.clone(), this.capped);
   }
-  /**
-   * Transform the contour and axis.
-   * * This fails if the transformation is singular.
-   */
+  /** Transform the contour and axis */
   public tryTransformInPlace(transform: Transform): boolean {
-    if (transform.matrix.isSingular())
-      return false;
-    if (this._contour.tryTransformInPlace(transform)) {
+    if (!transform.matrix.isSingular()
+      && this._contour.tryTransformInPlace(transform)) {
       this._normalizedAxis.transformInPlace(transform);
-      if (transform.matrix.determinant() < 0.0)
-        this._sweepAngle.setRadians(-this._sweepAngle.radians);
       return this._normalizedAxis.direction.normalizeInPlace();
     }
     return false;
   }
-  /**
-   * Return a transformed clone.
-   * * This fails if the transformation is singular.
-   */
-  public cloneTransformed(transform: Transform): RotationalSweep | undefined {
+  /** return a cloned transform. */
+  public cloneTransformed(transform: Transform): RotationalSweep {
     const result = this.clone();
-    return result.tryTransformInPlace(transform) ? result : undefined;
+    result.tryTransformInPlace(transform);
+    return result;
   }
   /** Dispatch to strongly typed handler  `handler.handleRotationalSweep(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

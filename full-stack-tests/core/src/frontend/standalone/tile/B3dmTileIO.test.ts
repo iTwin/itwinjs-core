@@ -6,9 +6,8 @@ import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
-import { B3dmReader, GltfDataType, IModelApp, MockRender, RealityMeshParams } from "@itwin/core-frontend";
+import { B3dmReader, GltfDataType, IModelApp, MockRender, RealityMeshParams, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
-import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 const b3dmBytes = new Uint8Array([
   0x62, 0x33, 0x64, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x90, 0x10, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00,
@@ -279,11 +278,11 @@ const b3dmBytes = new Uint8Array([
 ]);
 
 describe("B3dmReader", () => {
-  let imodel: TestSnapshotConnection;
+  let imodel: SnapshotConnection;
 
   before(async () => {
     await TestUtility.startFrontend(undefined, false);
-    imodel = await TestSnapshotConnection.openFile("test.bim");
+    imodel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, Logger, LogLevel, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, TxnEntityChanges, TxnEntityChangeType } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
@@ -56,18 +56,11 @@ describe("BriefcaseTxns", () => {
         for (const additionalEvent of additionalEvents)
           expected.push(additionalEvent);
 
-        let timesWaited = 0;
         const wait = async (): Promise<void> => {
           if (received.length >= expected.length)
             return;
 
-          if (timesWaited > 300) { // 10 timesWaited is 1 second. 100 is 10 seconds. 300 is 30 seconds.
-            timesWaited = 0;
-            Logger.logTrace("TestCategory", `Waited for 30 seconds. Received: ${received.length}, Expected: ${expected.length}
-              \tReceived: ${received.map((evt) => evt).join(", ")}\n\tExpected: ${expected.map((evt) => evt).join(", ")}`);
-          }
           await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
-          timesWaited++;
           return wait();
         };
 
@@ -82,8 +75,7 @@ describe("BriefcaseTxns", () => {
     describe("writable connection", () => {
       it("receives events from TxnManager", async () => {
         const expectEvents = installListeners(rwConn);
-        Logger.initializeToConsole();
-        Logger.setLevel("TestCategory", LogLevel.Trace);
+
         const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
         const dictModelId = await rwConn.models.getDictionaryModel();
@@ -154,8 +146,6 @@ describe("BriefcaseTxns", () => {
           "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
           "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
         ]);
-
-        Logger.initialize(); // Reset the logger since we initialized it to console above.
       });
 
       it("receives events including entity Id and class name", async () => {

@@ -450,7 +450,6 @@
         "NoFenceElems": "No elements in fence",
         "NoFenceElemsOutside": "No elements outside fence",
         "NoSSElems": "No elements selected",
-        "ActiveSSWithoutElems": "Selection set contains models and/or categories, but no elements",
         "AlreadySelected": "Element is already selected",
         "NotSelected": "Element is not selected",
         "NotSupportedElmType": "Element type not valid for this tool",

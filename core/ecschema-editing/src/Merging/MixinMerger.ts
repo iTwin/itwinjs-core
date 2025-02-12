@@ -35,7 +35,7 @@ export async function modifyMixinClass(context: SchemaMergeContext, change: Mixi
     const appliesTo = await updateSchemaItemKey(context, change.difference.appliesTo);
     const currentValue = await mixin.appliesTo;
     if (currentValue !== undefined && !appliesTo.matches(currentValue.key)) {
-      throw new Error(`Changing the mixin '${change.itemName}' appliesTo is not supported.`);
+      throw new Error(`Changing the mixin '${itemKey.name}' appliesTo is not supported.`);
     }
   }
 

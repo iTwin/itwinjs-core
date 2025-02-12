@@ -119,7 +119,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
 
   public override async onCleanup() {
     if (0 !== this._acceptedElementIds.size)
-      this.iModel.hilited.remove({ elements: this._acceptedElementIds });
+      this.iModel.hilited.setHilite(this._acceptedElementIds, false);
     this.clearIds();
   }
 

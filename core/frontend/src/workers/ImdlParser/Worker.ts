@@ -29,8 +29,8 @@ export interface ParseImdlWorker {
 }
 
 registerWorker<ParseImdlWorker>({
-  parse: async (options: ImdlParserOptions) => {
-    const result = await parseImdlDocument({
+  parse: (options: ImdlParserOptions) => {
+    const result = parseImdlDocument({
       ...options,
       data: options.data,
       timeline,

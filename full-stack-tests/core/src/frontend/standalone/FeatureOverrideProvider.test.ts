@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelConnection, MutableChangeFlags, Viewport,
+  EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelConnection, MutableChangeFlags, SnapshotConnection, Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("FeatureOverrideProvider", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

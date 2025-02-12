@@ -19,7 +19,7 @@ export * from "./presentation-common/RegisteredRuleset";
 export * from "./presentation-common/RulesetVariables";
 export * from "./presentation-common/RulesetsFactory";
 export * from "./presentation-common/Update";
-export { DEFAULT_KEYS_BATCH_SIZE, Omit, PagedResponse, PartialBy, Subtract, ValuesDictionary, getInstancesCount } from "./presentation-common/Utils";
+export * from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
 export * from "./presentation-common/LocalizationHelper";
 export * from "./presentation-common/InstanceFilterDefinition";

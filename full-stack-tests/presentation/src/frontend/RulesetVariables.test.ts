@@ -5,13 +5,12 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
-import { TestIModelConnection } from "../IModelSetupUtils";
 
 const RULESET: Ruleset = {
   id: "ruleset vars test",
@@ -252,7 +251,7 @@ describe("Ruleset Variables", async () => {
 
     beforeEach(async () => {
       const testIModelName = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = TestIModelConnection.openFile(testIModelName);
+      imodel = await SnapshotConnection.openFile(testIModelName);
       frontends = [0, 1].map(() => PresentationManager.create());
     });
 
@@ -278,7 +277,7 @@ describe("Ruleset Variables", async () => {
 
     beforeEach(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = TestIModelConnection.openFile(testIModelName);
+      imodel = await SnapshotConnection.openFile(testIModelName);
       expect(imodel).is.not.null;
       frontend = PresentationManager.create();
     });
@@ -313,7 +312,7 @@ describe("Ruleset Variables", async () => {
     let imodel: IModelConnection;
 
     beforeEach(async () => {
-      imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     });
 
     afterEach(async () => {

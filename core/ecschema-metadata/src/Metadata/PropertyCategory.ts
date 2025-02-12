@@ -15,13 +15,14 @@ import { SchemaItem } from "./SchemaItem";
  * @beta
  */
 export class PropertyCategory extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.PropertyCategory;
+  public override readonly schemaItemType!: SchemaItemType.PropertyCategory;
   protected _priority: number;
 
   public get priority() { return this._priority; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
+    this.schemaItemType = SchemaItemType.PropertyCategory;
     this._priority = 0;
   }
 

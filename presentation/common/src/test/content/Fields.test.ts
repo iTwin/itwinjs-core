@@ -580,7 +580,6 @@ describe("NestedContentField", () => {
       const json = createTestNestedContentField({
         category,
         nestedFields: [createTestSimpleContentField({ category })],
-        autoExpand: true,
       }).toJSON();
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       const field = NestedContentField.fromJSON(json, [category]);

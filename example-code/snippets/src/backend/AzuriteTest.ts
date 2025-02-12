@@ -166,9 +166,6 @@ export namespace AzuriteTest {
         ownerGuid: metadata.ownerguid,
       };
     },
-    queryContainersMetadata: async (_userToken: AccessToken, _args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> => {
-      throw new Error("Querying containers not supported in this test service");
-    },
     queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
       const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
       return {

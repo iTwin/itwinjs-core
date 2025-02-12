@@ -12,8 +12,7 @@ export class BisTestHelper {
     const context = new SchemaContext();
     await Schema.fromJson(coreCustomAttributesSchema, context);
     await Schema.fromJson(bisCoreSchema, context);
-    await Schema.fromJson(unitsSchema, context);
-    await Schema.fromJson(formatsSchema, context);
+
     return context;
   }
 }
@@ -192,66 +191,6 @@ const bisCoreSchema = {
       description: "Applied to an ECClass to indicate that a C++ subclass of DgnDomain::Handler will supply behavior for it at run-time. This custom attribute may only be used by BisCore or other core schemas.",
       modifier: "sealed",
       schemaItemType: "CustomAttributeClass",
-    },
-  },
-};
-
-const formatsSchema = {
-  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-  alias: "f",
-  name: "Formats",
-  version: "01.00.01",
-  label: "Formats",
-  items: {
-    DefaultRealU: {
-      schemaItemType: "Format",
-      label: "realu",
-      type: "Decimal",
-      precision: 6,
-      formatTraits: [
-        "KeepSingleZero",
-        "KeepDecimalPoint",
-        "ShowUnitLabel",
-      ],
-      decimalSeparator: ",",
-      thousandSeparator: " ",
-    },
-  },
-};
-
-const unitsSchema = {
-  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-  alias: "u",
-  name: "Units",
-  version: "01.00.01",
-  label: "Units",
-  items: {
-    SI: {
-      schemaItemType: "UnitSystem",
-    },
-    LENGTH: {
-      schemaItemType: "Phenomenon",
-      label: "Length",
-      definition: "LENGTH",
-    },
-    AREA: {
-      schemaItemType: "Phenomenon",
-      label: "Area",
-      definition: "LENGTH(2)",
-    },
-    M: {
-      schemaItemType: "Unit",
-      label: "m",
-      phenomenon: "Units.LENGTH",
-      unitSystem: "Units.SI",
-      definition: "M",
-    },
-    SQ_M: {
-      schemaItemType: "Unit",
-      label: "m²",
-      phenomenon: "Units.AREA",
-      unitSystem: "Units.SI",
-      definition: "M(2)",
     },
   },
 };

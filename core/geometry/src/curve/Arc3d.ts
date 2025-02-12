@@ -39,8 +39,6 @@ import { OffsetOptions } from "./OffsetOptions";
 import { Path } from "./Path";
 import { StrokeOptions } from "./StrokeOptions";
 
-// cspell:words binormal
-
 /**
  * Compact vector form of an elliptic arc defined by center, vectors at 0 and 90 degrees, and angular sweep.
  * * @see [Curve Collections]($docs/learning/geometry/CurvePrimitive.md) learning article for further details of the
@@ -239,16 +237,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private static _workVectorU = Vector3d.create();
   private static _workVectorV = Vector3d.create();
   private static _workVectorW = Vector3d.create();
-  /** Read/write the center. Getter returns clone. */
+  /** Read property for (clone of) center. */
   public get center(): Point3d {
     return this._center.clone();
-  }
-  public set center(center: XYAndZ) {
-    this._center.setFrom(center);
-  }
-  /** Read property for (reference to) center. */
-  public get centerRef(): Point3d {
-    return this._center;
   }
   /** Read property for (clone of) vector0. */
   public get vector0(): Vector3d {
@@ -258,19 +249,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public get vector90(): Vector3d {
     return this._matrix.columnY();
   }
-  /**
-   * Compute an arc binormal vector with arbitrary length.
-   * * The arc parameterization is counter-clockwise with respect to this vector.
-   * * This vector is parallel to [[perpendicularVector]] and possibly opposite.
-   */
-  public binormalVector(result?: Vector3d): Vector3d {
-    const plane = this.fractionToPointAnd2Derivatives(0.0);
-    return plane.vectorU.crossProduct(plane.vectorV, result);
-  }
-  /**
-   * Read property for (clone of) plane normal, with arbitrary length.
-   * * Does not take arc sweep direction into account. See also [[binormalVector]].
-   */
+  /** Read property for (clone of) plane normal, with arbitrary length. */
   public get perpendicularVector(): Vector3d {
     return this._matrix.columnZ();
   }
@@ -282,7 +261,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public get matrixRef(): Matrix3d {
     return this._matrix;
   }
-  /** Read/write the sweep. Getter returns reference. */
+  /** Sweep of the angle. */
   public get sweep(): AngleSweep {
     return this._sweep;
   }
@@ -931,7 +910,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const axy = this._matrix.columnXDotColumnY();
     return Angle.isPerpendicularDotSet(axx, ayy, axy) && Geometry.isSameCoordinateSquared(axx, ayy);
   }
-  /** Return radius if the vector0 and vector90 are of equal length and perpendicular. Ignores z. */
+  /** Return radius if the vector0 and vector90 are of equal length and perpendicular. */
   public circularRadiusXY(): number | undefined {
     const ux = this._matrix.at(0, 0);
     const uy = this._matrix.at(1, 0);
@@ -1086,12 +1065,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       vector0.unitCrossProductWithDefault(vector90, 0, 0, 0), // normal will be 000 for degenerate case
     );
   }
-  /**
-   * Return the symmetric definition of the arc, with rigid axes and radii.
-   * * The caller can send the returned data into [[createScaledXYColumns]] to construct the major-minor axis
-   * version of the instance arc. This formulation of the arc has the same shape, but has perpendicular axes,
-   * from which the arc's symmetry is readily apparent.
-   */
+  /** Return the arc definition with rigid matrix form with axis radii. */
   public toScaledMatrix3d(): { center: Point3d, axes: Matrix3d, r0: number, r90: number, sweep: AngleSweep } {
     const angleData = Angle.dotProductsToHalfAngleTrigValues(
       this._matrix.columnXMagnitudeSquared(),
@@ -1241,9 +1215,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Return an arc whose basis vectors are rotated by given angle within the current basis space.
-   * * The returned arc will have `vector0 = this.vector0 * cos(theta) + this.vector90 * sin(theta)`.
-   * * The returned arc has the same shape as the instance.
-   *   * In other words, the arc's sweep is adjusted so that all fractional parameters evaluate to the same points.
+   * * the result arc will have its zero-degree point (new `vector0`) at the current.
+   * `vector0 * cos(theta) + vector90 * sin(theta)`.
+   * * the result sweep is adjusted so all fractional coordinates (e.g. start and end) evaluate to the same xyz.
    *   * Specifically, theta is subtracted from the original start and end angles.
    * @param theta the angle (in the input arc space) which is to become the 0-degree point in the new arc.
    */
@@ -1257,39 +1231,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     );
     const arcB = Arc3d.create(this._center.clone(), vector0, vector90, newSweep);
     return arcB;
-  }
-  /**
-   * Return a cloned arc with basis rotated to align with the global axes. The arc's shape is unchanged.
-   * * This method is most useful when the instance is an xy-circular arc, for then the aligned arc's stored sweep
-   * angles can be understood as being measured from the global positive x-axis to the arc's start/end. This is *not*
-   * the case for xy-elliptical arcs: the parameter angle difference between two points on an ellipse is in general
-   * not the same as the angle measured between their radials.
-   * * For an xy instance, the output arc will have:
-   *   * vector0 is in the same direction as the positive x-axis
-   *   * perpendicularVector is in the same direction as the positive z-axis
-   * * For a general instance, the output arc will have:
-   *   * vector0 is in the same direction as the projection of the positive x-axis vector onto the arc plane
-   *   * perpendicularVector lies in the halfspace z >= 0
-   * @returns cloned arc, or undefined (if the instance normal is parallel to the x-axis, or its matrix is singular)
-   */
-  public cloneAxisAligned(): Arc3d | undefined {
-    const plane = Plane3dByOriginAndUnitNormal.create(this.center, this.perpendicularVector.crossProduct(Vector3d.unitX()));
-    if (!plane)
-      return undefined;
-    const axisPts: CurveLocationDetail[] = [];
-    if (2 !== this.appendPlaneIntersectionPoints(plane, axisPts))
-      return undefined;
-    const iAxisPt = plane.getNormalRef().dotProduct(this.perpendicularVector.crossProductStartEnd(this.center, axisPts[0].point)) > 0.0 ? 0 : 1;
-    const toUnitX = this.sweep.fractionToAngle(axisPts[iAxisPt].fraction);
-    const arc1 = this.cloneInRotatedBasis(toUnitX); // rotate in arc's plane
-    if (this.perpendicularVector.dotProduct(Vector3d.unitZ()) < -Geometry.smallAngleRadians) {
-      if (this.matrixRef.isSingular())
-        return undefined;
-      const flip = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, -1); // rotate 180 degrees around arc's local x-axis
-      arc1.matrixRef.multiplyMatrixMatrix(flip, arc1.matrixRef);
-      arc1.sweep.setStartEndDegrees(-arc1.sweep.startDegrees, -arc1.sweep.endDegrees); // rotation alone is insufficient to flip
-    }
-    return arc1;
   }
   /**
    * Find intervals of this CurvePrimitive that are interior to a clipper.

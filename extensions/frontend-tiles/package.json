@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-tiles",
-  "version": "5.0.0-dev.44",
+  "version": "5.0.0-dev.0",
   "description": "Experimental alternative technique for visualizing the contents of iModels",
   "main": "lib/cjs/frontend-tiles.js",
   "module": "lib/esm/frontend-tiles.js",
@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "npm -s test",
     "docs": "",
@@ -50,7 +50,7 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~20.9.5",
+    "@types/node": "~18.16.20",
     "@types/sinon": "^17.0.2",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
@@ -63,6 +63,6 @@
     "sinon": "^17.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.97.1"
+    "webpack": "^5.76.0"
   }
 }

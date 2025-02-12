@@ -4,7 +4,6 @@ alpha;function;attachGeoscienceTileset
 alpha;type;AttachGeoscienceTilesetArgs
 alpha;interface;BaseGeoscienceArgs
 beta;type;ComputeSpatialTilesetBaseUrl
-internal;function;createGraphicRepresentationsQueryUrl
 beta;interface;DataSource
 beta;interface;FrontendTilesOptions
 internal;const;frontendTilesOptions

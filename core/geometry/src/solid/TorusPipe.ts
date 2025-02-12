@@ -72,23 +72,19 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     result._isReversed = this._isReversed;
     return result;
   }
-  /**
-   * Apply `transform` to the local coordinate system.
-   * * Fails if the transformation is singular.
-   */
+  /** Apply `transform` to the local coordinate system. */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
-  /**
-   * Clone this TorusPipe and transform the clone.
-   * * Fails if the transformation is singular.
-   */
+  /** Clone this TorusPipe and transform the clone */
   public cloneTransformed(transform: Transform): TorusPipe | undefined {
     const result = this.clone();
-    return result.tryTransformInPlace(transform) ? result : undefined;
+    if (!result.tryTransformInPlace(transform))
+      return undefined;
+    return result;
   }
   /** Create a new `TorusPipe`
    * @param frame local to world transformation. For best results, the matrix part should be a pure rotation.

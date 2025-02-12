@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DelayedPromiseWithProps, ECClass, ECClassModifier, EntityClass,
+import { DelayedPromiseWithProps, ECClassModifier, EntityClass,
   RelationshipClass, Schema, SchemaContext, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
 import * as Rules from "../../../Validation/ECRules";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
-import { MutableClass } from "../../../Editing/Mutable/MutableClass";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
@@ -23,7 +22,7 @@ describe("ClassRule tests", () => {
   it("BaseClassIsSealed, rule violated.", async () => {
     const baseClass = new EntityClass(schema, "TestBase", ECClassModifier.Sealed);
     const entityClass = new EntityClass(schema, "TestClass");
-    await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
     const result = Rules.baseClassIsSealed(entityClass);
 
@@ -43,7 +42,7 @@ describe("ClassRule tests", () => {
   it("BaseClassIsSealed, base is not sealed, rule passes.", async () => {
     const baseClass = new EntityClass(schema, "TestBase");
     const entityClass = new EntityClass(schema, "TestClass");
-    await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
     const result = Rules.baseClassIsSealed(entityClass);
     for await (const _diagnostic of result) {
@@ -63,7 +62,7 @@ describe("ClassRule tests", () => {
   it("BaseClassIsOfDifferentType, rule violated.", async () => {
     const baseClass = new RelationshipClass(schema, "TestBase");
     const entityClass = new EntityClass(schema, "TestClass");
-    await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
     const baseType = schemaItemTypeToString(baseClass.schemaItemType);
 
     const result = Rules.baseClassIsOfDifferentType(entityClass);
@@ -83,7 +82,7 @@ describe("ClassRule tests", () => {
   it("BaseClassIsOfDifferentType, same type, rule passes.", async () => {
     const baseClass = new EntityClass(schema, "TestBase");
     const entityClass = new EntityClass(schema, "TestClass");
-    await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
     const result = Rules.baseClassIsOfDifferentType(entityClass);
     for await (const _diagnostic of result) {

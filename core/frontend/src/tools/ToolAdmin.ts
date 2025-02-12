@@ -922,20 +922,9 @@ export class ToolAdmin {
       else
         this.fillEventFromCursorLocation(ev);
 
-      if (adjustPoint && undefined !== ev.viewport) {
-        // Use ev.rawPoint for cursor location when not snapped as ev.point gets adjusted in fromButton...
-        const snap = TentativeOrAccuSnap.getCurrentSnap(false);
-        if (undefined !== snap) {
-          // Account for changes to locks, reset and re-adjust snap point...
-          snap.adjustedPoint.setFrom(snap.getPoint());
-          this.adjustSnapPoint();
-          ev.point.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
-        } else {
-          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : ev.rawPoint);
-          this.adjustPoint(ev.point, ev.viewport);
-        }
-        IModelApp.accuDraw.onMotion(ev);
-      }
+      // NOTE: Do not call adjustPoint when snapped, refer to CurrentInputState.fromButton
+      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false))
+        this.adjustPoint(ev.point, ev.viewport);
     }
 
     if (undefined === ev.viewport)
@@ -1337,8 +1326,8 @@ export class ToolAdmin {
     if (!updateDynamics)
       return;
 
-    // Update tool dynamics for current cursor location to not require a motion event.
-    this.updateDynamics(undefined, undefined, true);
+    // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
+    this.updateDynamics(undefined, true, true);
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {

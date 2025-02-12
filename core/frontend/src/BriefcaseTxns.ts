@@ -6,9 +6,9 @@
  * @module IModelConnection
  */
 
-import { BeEvent, IModelStatus } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import {
-  ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, ipcAppChannels,
+  ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, ipcAppChannels,
   ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, RemoveFunction, RootSubjectProps, TxnNotifications,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";

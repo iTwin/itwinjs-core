@@ -5,10 +5,9 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
-import { IModelConnection, Pixel } from "@itwin/core-frontend";
+import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // Set of tests require a BingMap key to be defined
 describe("Background map (#integration)", () => {
@@ -36,7 +35,7 @@ describe("Background map (#integration)", () => {
       },
     });
 
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

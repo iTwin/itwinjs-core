@@ -316,10 +316,10 @@ class PrimitiveOrEnumProperties extends Properties {
   }
 
   /**
-   * Sets the extendedTypeName attribute value.
+   * Sets the extendTypeName attribute value.
    * @param classKey The SchemaItemKey of the class.
    * @param propertyName The name of the property.
-   * @param extendedTypeName The extended type name of the property.
+   * @param extendTypeName The extended type name of the property.
    */
   public async setExtendedTypeName(classKey: SchemaItemKey, propertyName: string, extendedTypeName: string) {
     const property = await this.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName)

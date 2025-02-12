@@ -7,10 +7,9 @@ import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps,
   TerrainHeightOriginMode,
 } from "@itwin/core-common";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Background map", () => {
   let imodel: IModelConnection;
@@ -24,7 +23,7 @@ describe("Background map", () => {
       },
     });
 
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

@@ -7,19 +7,16 @@
  */
 
 import { AnySchemaDifferenceConflict } from "./SchemaConflicts";
-import { AnySchemaEdits, SchemaEditType } from "../Merging/Edits/SchemaEdits";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import {
-  AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
-  CustomAttributeClassProps, ECClass, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
+  AnyEnumerator, AnyPropertyProps, ConstantProps, CustomAttribute,
+  CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
-  type Schema, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
+  type Schema, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { validateDifferences } from "./SchemaDifferenceValidator";
-import { AnyDiagnostic } from "../Validation/Diagnostic";
-import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
 type PartialEditable<T> = {
@@ -411,23 +408,13 @@ export interface KindOfQuantityPresentationFormatDifference {
  * @returns             An [[SchemaDifferenceResult]] object.
  * @alpha
  */
-export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema, schemaEdits?: Iterable<AnySchemaEdits>): Promise<SchemaDifferenceResult> {
-  const schemaComparer = new DifferenceSchemaComparer();
-  if(schemaEdits) {
-    for(const edit of schemaEdits) {
-      if(edit.type === SchemaEditType.RenameSchemaItem) {
-        schemaComparer.nameMappings.addItemMapping(edit.key, edit.value);
-      }
-      if(edit.type === SchemaEditType.RenameProperty) {
-        schemaComparer.nameMappings.addPropertyMapping(edit.key, edit.value);
-      }
-    }
-  }
-
+export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult> {
+  const changesList: SchemaChanges[] = [];
+  const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
   await schemaComparer.compareSchemas(sourceSchema, targetSchema);
 
   const visitor = new SchemaDiagnosticVisitor();
-  for (const diagnostic of schemaComparer.diagnostics) {
+  for (const diagnostic of changesList[0].allDiagnostics) {
     visitor.visit(diagnostic);
   }
 
@@ -438,7 +425,7 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
     ...visitor.customAttributeDifferences,
   ];
 
-  const conflicts = await validateDifferences(differences, targetSchema, sourceSchema, schemaComparer.nameMappings);
+  const conflicts = await validateDifferences(differences, targetSchema, sourceSchema);
 
   return {
     sourceSchemaName: sourceSchema.schemaKey.toString(),
@@ -446,47 +433,4 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
     conflicts: conflicts.length > 0 ? conflicts : undefined,
     differences,
   };
-}
-
-/**
- * Implementation of a SchemaComparer that is used in the schema differencing process.
- * It extends the SchemaComparer base class with additional functionality to store the
- * name mappings of renamed schema items and properties.
- *
- * @internal
- */
-class DifferenceSchemaComparer extends SchemaComparer {
-  public readonly nameMappings: NameMapping;
-  private readonly _changes: Array<SchemaChanges>;
-
-  public get diagnostics(): Iterable<AnyDiagnostic> {
-    return this._changes[0].allDiagnostics;
-  }
-
-  constructor() {
-    super({ report: (changes) => this._changes.push(changes as SchemaChanges) });
-
-    this._changes = [];
-    this.nameMappings = new NameMapping();
-  }
-
-  public override async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
-    const classKey = this.nameMappings.resolveItemKey(item.key);
-    return lookupSchema.lookupItem<TItem>(classKey.name);
-  }
-
-  public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
-    const propertyKey = this.nameMappings.resolvePropertyKey(new PropertyKey(propertyA.name, propertyA.class.key));
-    return ecClass.getProperty(propertyKey.propertyName) as Promise<AnyProperty | undefined>;
-  }
-
-  public override areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean {
-    if (itemKeyA) {
-      if (SchemaItem.isSchemaItem(itemKeyA)) {
-        itemKeyA = itemKeyA.key;
-      }
-      itemKeyA = this.nameMappings.resolveItemKey(itemKeyA);
-    }
-    return super.areEqualByName(itemKeyA, itemKeyB);
-  }
 }

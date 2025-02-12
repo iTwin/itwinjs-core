@@ -5,7 +5,6 @@
 import type { EnumeratorDifference } from "../Differencing/SchemaDifference";
 import type { SchemaMergeContext } from "./SchemaMerger";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { toItemKey } from "./Utils";
 
 /**
  * Merges a new Enumerator into the target schema.
@@ -19,7 +18,7 @@ export async function addEnumerator(context: SchemaMergeContext, change: Enumera
     throw new Error("Enumerators must define a value");
   }
 
-  const itemKey = toItemKey(context, change.itemName);
+  const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
   await context.editor.enumerations.addEnumerator(itemKey, {
     name: change.difference.name,
     value: change.difference.value,
