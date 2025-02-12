@@ -419,7 +419,7 @@ export class IModelHost {
   /** Provides access to the IModelHub for this IModelHost
    * @internal
    * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
-   * To determine whether one is present, use [[getHubAccess]].
+   * To determine whether one is present, use [[_getHubAccess]].
    */
   public static get [_hubAccess](): BackendHubAccess {
     if (IModelHost._hubAccess === undefined)
