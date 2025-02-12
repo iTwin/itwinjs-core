@@ -355,8 +355,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "@microsoft/api-extractor",
+      "name": "@microsoft/api-documenter",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "@microsoft/api-extractor",
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "@openid/appauth",
