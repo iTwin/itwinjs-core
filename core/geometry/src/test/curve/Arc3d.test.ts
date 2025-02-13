@@ -964,7 +964,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("EllipseSampler", { timeout: 45000 }, () => {
+  it("EllipseSampler", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;

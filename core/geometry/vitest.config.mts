@@ -7,7 +7,7 @@ export default defineConfig({
     dir: "src/test",
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/filename.test.ts"], // to honor it/describe.only
-    testTimeout: 15000, // Some tests can take longer than the default 5 seconds.
+    testTimeout: 45000, // Some tests can take much longer than the default 5 seconds when run in parallel.
     coverage: {
       provider: "v8",
       include: [
