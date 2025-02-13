@@ -380,7 +380,7 @@ export abstract class IModelConnection extends IModel {
 
   private _snapRpc = new OneAtATimeAction<SnapResponseProps>(
     async (props: SnapRequestProps) =>
-      this._iModelReadApi.requestSnap(IModelApp.sessionId, props),
+      IModelReadRpcInterface.getClientForRouting(this.routingContext.token).requestSnap(this.getRpcProps(), IModelApp.sessionId, props),
   );
 
   /** Request a snap from the backend.
@@ -808,7 +808,7 @@ export class SnapshotConnection extends IModelConnection {
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
-    const connection = new SnapshotConnection(openResponse);
+    const connection = new SnapshotConnection(openResponse, new IpcIModelRead(openResponse.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
     connection.routingContext = routingContext;
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
