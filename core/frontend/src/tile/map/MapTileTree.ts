@@ -1263,7 +1263,10 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   public override decorate(context: DecorateContext): void {
-    this.forEachLayerTileTreeRef((ref) => ref.decorate(context));
+    for (const layerTree of this._layerTrees) {
+      if (layerTree)
+        layerTree.decorate(context);
+    }
   }
 }
 

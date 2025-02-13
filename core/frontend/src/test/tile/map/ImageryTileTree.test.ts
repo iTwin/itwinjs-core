@@ -58,7 +58,7 @@ describe("ImageryTileTree", () => {
     vi.restoreAllMocks();
   });
 
-  it("tree supplier", async () => {
+  it.only("tree supplier", async () => {
     const baseProps: ImageMapLayerProps = { formatId: "Custom1", url: "https://dummy.com", name: "CustomLayer", subLayers: [{name: "sub0", visible: true}]};
     const dataset: DatasetEntry[] = [
       {lhs: {...baseProps}, rhs: {...baseProps}, expectSameTileTree:true},
@@ -67,8 +67,19 @@ describe("ImageryTileTree", () => {
       {lhs: {...baseProps, formatId:"Custom2"}, rhs: {...baseProps}, expectSameTileTree:false},
       {lhs: {...baseProps, subLayers: [{name: "sub0", visible: false}]}, rhs: {...baseProps}, expectSameTileTree:false},
       {lhs: {...baseProps, subLayers: [{name: "sub1", visible: true}]}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps}, rhs: {...baseProps, properties: {key: "value"}}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps, properties: {key: "value"}}, expectSameTileTree:true},
+      {lhs: {...baseProps, properties: {key: [1,2,3]}}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3,4]}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3,4]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:true},
     ];
+    let i = 1;
     for (const entry of dataset) {
+      console.log(`Test ${i++}`);
       const settingsLhs = ImageMapLayerSettings.fromJSON(entry.lhs);
       const treeRefLhs = new ImageryMapLayerTreeReference({ layerSettings: settingsLhs, layerIndex: 0, iModel: imodel });
       const treeOwnerLhs = treeRefLhs.treeOwner;
