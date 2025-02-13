@@ -8,6 +8,7 @@
   "license": "MIT",
   "exports": {
     ".": {
+      "types": "./lib/cjs/core-backend.d.ts",
       "require": {
         "default": "./lib/cjs/core-backend.js",
         "types": "./lib/cjs/core-backend.d.ts"
