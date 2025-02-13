@@ -142,3 +142,12 @@ export class ImageSource {
     this.format = format;
   }
 }
+
+export interface BinaryImageSource {
+  readonly format: ImageSourceFormat.Jpeg | ImageSourceFormat.Png;
+  readonly data: Uint8Array;
+}
+
+export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource {
+  return source.format !== ImageSourceFormat.Svg && source.data instanceof Uint8Array;
+}
