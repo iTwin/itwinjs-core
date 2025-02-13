@@ -3497,6 +3497,7 @@ export class IModelHost {
     }): string;
     // (undocumented)
     static configuration?: Omit<IModelHostOptions, "hubAccess">;
+    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
