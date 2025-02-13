@@ -14,7 +14,7 @@ export default defineConfig({
       instances : [
         { browser: "chromium"}
       ],
-      headless: false,
+      headless: true,
       screenshotFailures: false
     },
     coverage: {
@@ -63,6 +63,5 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["@itwin/core-common", "@itwin/core-bentley", "@itwin/core-geometry", "@itwin/core-quantity", "@itwin/appui-abstract", "@itwin/core-orbitgt"],
-    exclude: ["@vitest/coverage-v8/browser"]
   },
 })

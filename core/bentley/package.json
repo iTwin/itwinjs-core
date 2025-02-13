@@ -17,7 +17,7 @@
     "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=core-bentley",
-    "test": "vitest",
+    "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
     "cover": "vitest --run --coverage",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
