@@ -147,6 +147,7 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
 
   if (debugAnchorPt) {
 
+    // Draw lines representing the margins, intersecting at the anchor point.
     const marginsLx = layout.marginRange.low.x - debugAnchorPt.x;
     const marginsLy = layout.marginRange.low.y - debugAnchorPt.y;
     const marginsHx = layout.marginRange.high.x - debugAnchorPt.x;

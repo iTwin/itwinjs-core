@@ -292,21 +292,21 @@ export class TextDecorationTool extends Tool {
         break;
       }
       case "margin": {
-        const margin = inArgs[1].toLowerCase();
+        const marginLocation = inArgs[1].toLowerCase();
         const val = parseInt(inArgs[2], 10);
         if (isNaN(val)) {
           throw new Error("Expected a number");
         }
 
-        switch (margin) {
+        switch (marginLocation) {
           case "left":
           case "right":
           case "top":
           case "bottom":
-            editor.setMargins({ [margin]: val });
+            editor.setMargins({ [marginLocation]: val });
             break;
           default:
-            throw new Error("Expected top, middle, bottom, left, center, or right");
+            throw new Error("Expected left, right, top, or bottom");
         }
         break;
       }

@@ -411,7 +411,7 @@ export class Paragraph extends TextBlockComponent {
  */
 export type TextBlockJustification = "left" | "center" | "right";
 
-/** Describes the relative alignment of the content of a [[TextBlock]]. It's measured in meters.
+/** Describes the margins around the content inside a [[TextBlock]]. It's measured in meters.
  * @beta
  */
 export interface TextBlockMargins {
@@ -436,7 +436,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
   width?: number;
   /** The alignment of the document content. Default: "left". */
   justification?: TextBlockJustification;
-  /** The alignment of the document content. Default: "left". */
+  /** The margins to surround the document content. Default: 0 margins on each sides */
   margins?: TextBlockMargins;
   /** The paragraphs within the text block. Default: an empty array. */
   paragraphs?: ParagraphProps[];
