@@ -796,7 +796,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined;
     getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined;
-    getSaturatedBezierSpan3d(spanIndex: number, result?: BezierCurveBase): BezierCurveBase | undefined;
+    getSaturatedBezierSpan3d(spanIndex: number, result?: BezierCurveBase): BezierCurve3d | undefined;
     getSaturatedBezierSpan3dH(spanIndex: number, result?: BezierCurveBase): BezierCurve3dH | undefined;
     getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
     isAlmostEqual(other: any): boolean;
@@ -807,7 +807,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     knotToPointAnd2Derivatives(u: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     knotToPointAndDerivative(u: number, result?: Ray3d): Ray3d;
     quickLength(): number;
-    spanFractionToKnot(span: number, localFraction: number): number;
+    spanFractionToKnot(spanIndex: number, spanFraction: number): number;
     tryTransformInPlace(transform: Transform): boolean;
 }
 
@@ -821,7 +821,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     cloneTransformed(transform: Transform): BSplineCurve3dBase;
     closestPoint(spacePoint: Point3d, _extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectBezierSpans(prefer3dH: boolean): BezierCurveBase[];
-    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
+    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): BSplineCurve3d | undefined;
     copyKnots(includeExtraEndKnot: boolean): number[];
     readonly curvePrimitiveType = "bsplineCurve";
     set definitionData(data: any);

@@ -19,43 +19,44 @@ export enum BSplineWrapMode {
   /** No conversion performed. */
   None = 0,
   /**
-   * The B-spline was opened up by adding degree wrap-around control points (poles) to the legacy periodic data.
-   * * This is typical of B-splines constructed with maximum {degree - 1} continuity.
+   * The legacy periodic B-spline data was opened up by adding `degree` wrap-around poles.
+   * * This is typical of B-spline curves and surfaces constructed with maximum `degree - 1` continuity.
    * * Knots are unaffected by this conversion.
    */
   OpenByAddingControlPoints = 1,
   /**
-   * The B-spline was opened up by removing degree extreme knots from the legacy periodic data.
+   * The legacy periodic B-spline data was opened up by removing `degree` exterior knots.
    * * This is typical of rational B-spline curves representing full circles and ellipses.
    * * Poles are unaffected by this conversion.
    */
   OpenByRemovingKnots = 2,
 }
 /**
- * Array of non-decreasing numbers acting as a knot array for B-splines.
+ * Array of non-decreasing numbers acting as a knot vector for B-spline curves and surfaces.
  *
  * * Essential identity: numKnots = numPoles + order - 2 = numPoles + degree - 1
  * * Various B-spline libraries have confusion over how many "end knots" are needed. Many libraries (including MicroStation
  * and Parasolid) demand order knots at each end for clamping. However, only order-1 are really needed. This class uses the
  * order-1 convention.
  * * A span is a single interval of the knots.
- * * The left knot of span {k} is knot {k+degree-1}.
- * * A knots array is clamped when first {degree} knots are the same and the last {degree} knots are the same.
+ * * The left knot of the span with index `k>=0` is the knot with index `k+degree-1`.
+ * * A knot vector is clamped when the first `degree` knots are equal and the last `degree` knots are equal.
+ * * The "active knot interval" is the subset of the knot vector sans its first and last `degree-1` knots, and serves as
+ * the parametric domain of the associated B-spline object.
  * * This class provides queries to convert among spanIndex, knotIndex, spanFraction, fraction of knot range, and knot.
- * * Core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs. Callers need to know
- * their primary values (global knot, spanFraction).
+ * * Callers need to distinguish core computational inputs such as left knot index, knot value, span index, and span fraction.
  * @public
  */
 export class KnotVector {
+  /** The simple array of knot values. */
+  public knots: Float64Array;
+  /** The degree of basis functions defined in these knots. */
+  public degree: number;
   /** The leftmost knot value (of the active interval, ignoring unclamped leading knots). */
   private _knot0: number;
   /** The rightmost knot value (of the active interval, ignoring unclamped leading knots). */
   private _knot1: number;
   private _wrapMode?: BSplineWrapMode;
-  /** The simple array of knot values. */
-  public knots: Float64Array;
-  /** The degree of basis functions defined in these knots. */
-  public degree: number;
   /** Tolerance for considering two knots to be the same. */
   public static readonly knotTolerance = 1.0e-9;
   /** Return the leftmost knot value (of the active interval, ignoring unclamped leading knots). */
@@ -84,14 +85,14 @@ export class KnotVector {
   public set wrappable(value: BSplineWrapMode) {
     this._wrapMode = value;
   }
-  /** Return the number of bezier spans. Note that this includes zero-length spans if there are repeated knots. */
+  /** Return the number of Bezier spans. Note that this includes zero-length spans if there are repeated knots. */
   public get numSpans() {
     return this.rightKnotIndex - this.leftKnotIndex;
   }
   /**
    * Private constructor.
-   * * If knots is a number array or Float64Array, then those values become the local knot array.
-   * * If knots is a simple number, the local knot array is allocated to the given number (size) but left as zeros.
+   * * If `knots` is a number array or Float64Array, then its values are copied to the instance array.
+   * * If `knots` is a number, the instance array is allocated to this size but left as zeros.
    */
   private constructor(knots: number[] | Float64Array | number, degree: number, wrapMode?: BSplineWrapMode) {
     this.degree = degree;
@@ -121,7 +122,10 @@ export class KnotVector {
       this._knot1 = this.knots[this.knots.length - this.degree];
     }
   }
-  /** Return the total knot distance from beginning to end (of the active interval). */
+  /**
+   * Return the length of the active knot interval.
+   * * This is the size of (one dimension of) the parametric domain for the associated B-spline object.
+   */
   public get knotLength01(): number {
     return this._knot1 - this._knot0;
   }
@@ -203,7 +207,7 @@ export class KnotVector {
     return m;
   }
   /**
-   * Transform knots such that active knots are transformed to span [0,1].
+   * Transform knots such that the active knot range becomes [0,1].
    * @returns false if and only if `this.knotLength01` is trivial.
    */
   public normalize(): boolean {
@@ -263,7 +267,10 @@ export class KnotVector {
   }
   /**
    * Create knot vector with wraparound knots at start and end, and uniform knots between.
-   * @param numInterval number of intervals in active knot space (NOT POLE COUNT).
+   * @param numInterval the number of intervals into which to uniformly divide the active knot interval `[a0,a1]`,
+   * creating `numInterval-1` equally spaced interior knots between `a0` and `a1`.
+   * This number is equal to the number of Bezier spans in the associated B-spline object.
+   * It is _not_ the pole count.
    * @param degree degree of polynomial.
    * @param a0 left knot value for active interval.
    * @param a1 right knot value for active interval.
@@ -290,7 +297,8 @@ export class KnotVector {
   }
   /**
    * Return the average of degree consecutive knots beginning at knotIndex.
-   * * If knotIndex is negative returns leftKnot and if leftKnot is greater than rightKnot returns rightKnot.
+   * * If `knotIndex` is negative, return `leftKnot`.
+   * * If `knotIndex > rightKnotIndex` return `rightKnot`.
    */
   public grevilleKnot(knotIndex: number): number {
     if (knotIndex < 0)
@@ -303,7 +311,7 @@ export class KnotVector {
       sum += this.knots[i];
     return sum / this.degree;
   }
-  /** Return an array of size `degree + 1` (sized for a set of the basis function values). */
+  /** Return an array of size `degree + 1`, e.g., to hold the set of relevant basis function values at a parameter. */
   public createBasisArray(): Float64Array {
     return new Float64Array(this.degree + 1);
   }
@@ -329,11 +337,10 @@ export class KnotVector {
     fraction = Geometry.clamp(fraction, 0, 1); // B-splines are not extendable
     return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
-  private assertSpan(knotIndex0: number, u: number) {
-    const spanIsValid = () => knotIndex0 >= this.degree - 1 && knotIndex0 + this.degree < this.knots.length;
-    const uIsInSpan = () => this.knots[knotIndex0] <= u && u <= this.knots[knotIndex0 + 1];
-    assert(spanIsValid, "knotIndex0 defines a valid knot span");
-    assert(uIsInSpan, "the knot span contains u");
+  private isKnotInValidSpan(knotIndex0: number, u: number): boolean {
+    const spanIsValid = knotIndex0 >= this.degree - 1 && knotIndex0 + this.degree < this.knots.length;
+    const uIsInSpan = this.knots[knotIndex0] <= u && u <= this.knots[knotIndex0 + 1];
+    return spanIsValid && uIsInSpan;
   }
   /**
    * Evaluate the B-spline basis functions f[] at a parameter u in a knot span.
@@ -346,7 +353,7 @@ export class KnotVector {
   public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array): boolean {
     if (f.length < this.degree + 1)
       return false;
-    this.assertSpan(knotIndex0, u);
+    assert(() => this.isKnotInValidSpan(knotIndex0, u), "knot is in a valid span");
     f[0] = 1.0;
     if (this.degree < 1)
       return true;
@@ -397,7 +404,7 @@ export class KnotVector {
       return false;
     if (ddf && ddf.length < this.degree + 1)
       return false;
-    this.assertSpan(knotIndex0, u);
+    assert(() => this.isKnotInValidSpan(knotIndex0, u), "knot is in a valid span");
     f[0] = 1.0;
     df[0] = 0.0;
     if (this.degree < 1)
@@ -509,7 +516,7 @@ export class KnotVector {
     const b = this.rightKnot;
     const numKnots = this.knots.length;
     for (let i = 0; i < numKnots; i++)
-      this.knots[i] = a + b - this.knots[i];
+      this.knots[i] = a + (b - this.knots[i]);
     this.knots.reverse();
   }
   /** Return a simple array form of the knots. Optionally replicate the first and last in classic over-clamped manner. */

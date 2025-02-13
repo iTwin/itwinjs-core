@@ -139,8 +139,6 @@ export class EllipticalArcApproximationOptions {
    * default quadratic. For best results, this function should be a bijection.
    * @param forcePath whether to return a [[Path]] instead of a [[Loop]] when approximating a full elliptical arc,
    * default false.
-   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximationGeneral and
-   *  https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximation
    */
   public static create(
     method: EllipticalArcSampleMethod = EllipticalArcSampleMethod.AdaptiveSubdivision,
@@ -1438,6 +1436,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Construct a circular arc chain approximation to the instance elliptical arc.
+   * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximationGeneral and
+   *  https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximation
    * @param options bundle of options for sampling an elliptical arc (use default options if undefined).
    * @returns the approximating curve chain, the circular instance, or undefined if construction fails.
    */

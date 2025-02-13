@@ -48,24 +48,42 @@ export class BSpline1dNd {
   public getPoint3dPole(i: number, result?: Point3d): Point3d | undefined {
     return Point3d.createFromPacked(this.packedData, i, result);
   }
-  /** Preallocated array (length === `order`) used as temporary in evaluations. */
-  public basisBuffer: Float64Array; // one set of basis function values (ALLOCATED BY CTOR FOR FREQUENT REUSE)
-  /** Preallocated array (length === `order`) used as temporary in evaluations. */
-  public basisBuffer1: Float64Array; // one set of basis function values (ALLOCATED BY CTOR FOR FREQUENT REUSE)
-  /** Preallocated array (length === `order`) used as temporary in evaluations. */
-  public basisBuffer2: Float64Array; // one set of basis function values (ALLOCATED BY CTOR FOR FREQUENT REUSE)
-  /** Preallocated array (length === `poleLength`) used as temporary in evaluations. */
-  public poleBuffer: Float64Array; // one set of target values (ALLOCATED BY CTOR FOR FREQUENT REUSE)
-  /** Preallocated array (length === `poleLength`) used as temporary in evaluations. */
-  public poleBuffer1: Float64Array; // one set of target values (ALLOCATED BY CTOR FOR FREQUENT REUSE)
-  /** Preallocated array (length === `poleLength`) used as temporary in evaluations. */
-  public poleBuffer2: Float64Array; // one set of target values (ALLOCATED BY CTOR FOR FREQUENT REUSE)
+  /**
+   * Values of the `order` relevant B-spline basis functions at a parameter.
+   * * Preallocated to length `order` in the constructor and used as a temporary in evaluations.
+   */
+  public basisBuffer: Float64Array;
+  /**
+   * Derivatives of the `order` relevant B-spline basis functions at a parameter.
+   * * Preallocated to length `order` in the constructor and used as a temporary in evaluations.
+   */
+  public basisBuffer1: Float64Array;
+  /**
+   * Second derivatives of the `order` relevant B-spline basis functions at a parameter.
+   * * Preallocated to length `order` in the constructor and used as a temporary in evaluations.
+   */
+  public basisBuffer2: Float64Array;
+  /**
+   * Temporary to hold a single point.
+   * * Preallocated to length `poleLength` in the constructor.
+   */
+  public poleBuffer: Float64Array;
+  /**
+   * Temporary to hold a single derivative vector.
+   * * Preallocated to length `poleLength` in the constructor.
+   */
+  public poleBuffer1: Float64Array;
+  /**
+   * Temporary to hold a single second derivative vector.
+   * * Preallocated to length `poleLength` in the constructor.
+   */
+  public poleBuffer2: Float64Array;
   /**
    * Initialize arrays for given spline dimensions.
    * @param numPoles number of poles.
    * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted,
    * 3 for 2d weighted).
-   * @param order number of poles in support for a Bezier segment of the bspline.
+   * @param order number of poles defining a Bezier segment of the B-spline function.
    * @param knots the KnotVector. This is captured, not cloned.
    */
   protected constructor(numPoles: number, poleLength: number, order: number, knots: KnotVector) {
@@ -83,8 +101,8 @@ export class BSpline1dNd {
    * Create a `BSpline1dNd`.
    * @param numPoles number of poles.
    * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted,
-   *  3 for 2d weighted).
-   * @param order number of poles in support for a section of the bspline.
+   * 3 for 2d weighted).
+   * @param order number of poles defining a Bezier segment of the B-spline function.
    * @param knots the KnotVector. This is captured, not cloned.
    */
   public static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd {
@@ -112,7 +130,10 @@ export class BSpline1dNd {
       this.knots.evaluateBasisFunctions1(knotIndex0, globalKnot, f, df, ddf) :
       this.knots.evaluateBasisFunctions(knotIndex0, globalKnot, f);
   }
-  /** Sum poles in `poleBuffer` at span `spanIndex` by the weights in the `basisBuffer`. */
+  /**
+   * Compute the linear combination of the given span's poles and the weights in `basisBuffer`, and store this point
+   * in `poleBuffer`.
+   */
   public sumPoleBufferForSpan(spanIndex: number) {
     this.poleBuffer.fill(0);
     let k = spanIndex * this.poleLength;
@@ -120,7 +141,10 @@ export class BSpline1dNd {
       for (let j = 0; j < this.poleLength; j++)
         this.poleBuffer[j] += f * this.packedData[k++];
   }
-  /** Sum poles in `poleBuffer1` at span `spanIndex` by the weights in the `basisBuffer1`, i.e. form first derivatives. */
+  /**
+   * Compute the linear combination of the given span's poles and the weights in `basisBuffer1`, and store this
+   * derivative vector in `poleBuffer1`.
+   */
   public sumPoleBuffer1ForSpan(spanIndex: number) {
     this.poleBuffer1.fill(0);
     let k = spanIndex * this.poleLength;
@@ -128,14 +152,16 @@ export class BSpline1dNd {
       for (let j = 0; j < this.poleLength; j++)
         this.poleBuffer1[j] += f * this.packedData[k++];
   }
-  /** Sum poles in `poleBuffer2` at span `spanIndex` by the weights in the `basisBuffer2`, i.e. form second derivatives. */
+  /**
+   * Compute the linear combination of the given span's poles and the weights in `basisBuffer2`, and store this
+   * second derivative vector in `poleBuffer2`.
+   */
   public sumPoleBuffer2ForSpan(spanIndex: number) {
     this.poleBuffer2.fill(0);
     let k = spanIndex * this.poleLength;
     for (const f of this.basisBuffer2) {
-      for (let j = 0; j < this.poleLength; j++) {
+      for (let j = 0; j < this.poleLength; j++)
         this.poleBuffer2[j] += f * this.packedData[k++];
-      }
     }
   }
   /**
@@ -150,7 +176,7 @@ export class BSpline1dNd {
   }
   /**
    * * Evaluate the basis functions and one derivative at spanIndex and fraction.
-   *   * Evaluations are stored in the preallocated `this.basisBuffer`
+   *   * Function evaluations are stored in the preallocated `this.basisBuffer`; derivative evaluations in `this.basisBuffer1`.
    * * Immediately do the summations of the basis values times the respective poles.
    *   * Summations are stored in the preallocated `this.poleBuffer` and `this.poleBuffer1`
    * */
@@ -160,8 +186,8 @@ export class BSpline1dNd {
     this.sumPoleBuffer1ForSpan(spanIndex);
   }
   /**
-   * Evaluate the function values and first and second derivatives into `this.poleBuffer`, `this.poleBuffer1` and
-   * `this.poleBuffer2`.
+   * Evaluate the B-spline function and optional derivatives at the given parameter in knot space.
+   * * Function value is stored in `poleBuffer`; optional derivative vectors in `poleBuffer1` and `poleBuffer2`.
    */
   public evaluateBuffersAtKnot(u: number, numDerivative: number = 0) {
     const knotIndex0 = this.knots.knotToLeftKnotIndex(u);
@@ -179,19 +205,15 @@ export class BSpline1dNd {
       this.sumPoleBuffer2ForSpan(knotIndex0 - this.degree + 1);
     }
   }
-  /** Reverse the (blocked) poles in `this.packedData` in place. */
+  /** Reverse the instance poles and knots in place. */
   public reverseInPlace(): void {
     const pLen = this.poleLength;
     const data = this.packedData;
     for (let i0 = 0, j0 = pLen * (this.numPoles - 1); i0 < j0; i0 += pLen, j0 -= pLen) {
-      let t = 0;
-      for (let i = 0; i < pLen; i++) {
-        t = data[i0 + i];
-        data[i0 + i] = data[j0 + i];
-        data[j0 + i] = t;
-      }
+      for (let i = 0; i < pLen; i++)
+        [data[i0 + i], data[j0 + i]] = [data[j0 + i], data[i0 + i]];
     }
-    this.knots.reflectKnots(); // poles are reversed so knots should be reversed too
+    this.knots.reflectKnots();
   }
   /**
    * Test if the leading and trailing polygon coordinates are replicated in the manner of a "closed" bspline polygon
@@ -203,9 +225,10 @@ export class BSpline1dNd {
     return this.testClosablePolygon(mode);
   }
   /**
-   * Test if the leading and trailing pole polygon coordinates are replicated in the manner of a "closed" bspline
-   * pole polygon which has been expanded to act as a normal bspline.
-   * @returns true if `degree` leading and trailing pole polygon blocks match.
+   * Test if the leading and trailing poles are replicated in the manner of a "closed" B-spline function with wraparound
+   * control polygon.
+   * @param mode wrap mode, indicating the number of wraparound poles to check. If undefined, `knots.wrappable` is used.
+   * @returns true if the expected leading and trailing poles match, according to `mode`.
    */
   public testClosablePolygon(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
