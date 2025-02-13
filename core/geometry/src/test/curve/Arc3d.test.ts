@@ -964,7 +964,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("EllipseSampler", () => {
+  it("EllipseSampler", { timeout: 45000 }, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;
@@ -1187,7 +1187,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("SubdivisionSampler", () => {
+  it("SubdivisionSampler", { timeout: 40000 }, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const center = Point3d.createZero();

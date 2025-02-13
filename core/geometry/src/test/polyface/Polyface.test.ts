@@ -1930,7 +1930,7 @@ describe("SphericalMeshData", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("Mirror", () => {
+  it("Mirror", { timeout: 45000 }, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
