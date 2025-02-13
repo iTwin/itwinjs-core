@@ -27,6 +27,7 @@ import {
   traverseFieldHierarchy,
 } from "../../presentation-common/content/ContentTraverser";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
+import { NestedContentValue } from "../../presentation-common/content/Value";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
@@ -35,7 +36,6 @@ import {
   createTestSimpleContentField,
 } from "../_helpers/Content";
 import { createTestECInstanceKey } from "../_helpers/EC";
-import { NestedContentValue } from "../../presentation-common";
 
 describe("ContentTraverser", () => {
   class TestContentVisitor implements IContentVisitor {
@@ -1334,7 +1334,7 @@ describe("ContentTraverser", () => {
       values: {
         [parentField.name]: [
           {
-            labelDefinition: nestedContentLabel1,
+            label: nestedContentLabel1,
             primaryKeys: [createTestECInstanceKey()],
             values: {
               [primitiveField1.name]: "value11",

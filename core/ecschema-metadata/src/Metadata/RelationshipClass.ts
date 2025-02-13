@@ -32,7 +32,8 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  * @beta
  */
 export class RelationshipClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.RelationshipClass;
+  public override readonly schemaItemType = RelationshipClass.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.RelationshipClass; }
   protected _strength: StrengthType;
   protected _strengthDirection: StrengthDirection;
   protected _source: RelationshipConstraint;
@@ -137,6 +138,28 @@ export class RelationshipClass extends ECClass {
 
   public override async fromJSON(relationshipClassProps: RelationshipClassProps) {
     this.fromJSONSync(relationshipClassProps);
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type RelationshipClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a RelationshipClass, false otherwise.
+   */
+  public static isRelationshipClass(item?: SchemaItem): item is RelationshipClass {
+    if (item && item.schemaItemType === SchemaItemType.RelationshipClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type RelationshipClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to RelationshipClass if it is a RelationshipClass, undefined otherwise.
+   */
+  public static assertIsRelationshipClass(item?: SchemaItem): asserts item is RelationshipClass {
+    if (!this.isRelationshipClass(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.RelationshipClass}' (RelationshipClass)`);
   }
 }
 
@@ -324,8 +347,9 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
       this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
         async () => {
-          const tempAbstractConstraint = await relClassSchema.lookupItem<AnyConstraintClass>(relationshipConstraintProps.abstractConstraint!);
-          if (undefined === tempAbstractConstraint)
+          const tempAbstractConstraint = await relClassSchema.lookupItem(relationshipConstraintProps.abstractConstraint!);
+          if (undefined === tempAbstractConstraint ||
+               (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
 
           return tempAbstractConstraint;
@@ -333,8 +357,9 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     }
 
     const loadEachConstraint = (constraintClassName: any) => {
-      const tempConstraintClass = relClassSchema.lookupItemSync<AnyConstraintClass>(constraintClassName);
-      if (!tempConstraintClass)
+      const tempConstraintClass = relClassSchema.lookupItemSync(constraintClassName);
+      if (!tempConstraintClass ||
+           (!EntityClass.isEntityClass(tempConstraintClass) && !Mixin.isMixin(tempConstraintClass) && !RelationshipClass.isRelationshipClass(tempConstraintClass)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       return tempConstraintClass;
     };
@@ -410,10 +435,10 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
    * @internal
    */
   public static isRelationshipConstraint(object: any): object is RelationshipConstraint {
-    const relationshipConstrait = object as RelationshipConstraint;
+    const relationshipConstraint = object as RelationshipConstraint;
 
-    return relationshipConstrait !== undefined && relationshipConstrait.polymorphic !== undefined && relationshipConstrait.multiplicity !== undefined
-      && relationshipConstrait.relationshipEnd !== undefined && relationshipConstrait._relationshipClass !== undefined;
+    return relationshipConstraint !== undefined && relationshipConstraint.polymorphic !== undefined && relationshipConstraint.multiplicity !== undefined
+      && relationshipConstraint.relationshipEnd !== undefined && relationshipConstraint._relationshipClass !== undefined;
   }
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {

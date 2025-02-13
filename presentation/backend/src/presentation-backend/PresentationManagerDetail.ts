@@ -26,7 +26,6 @@ import {
   FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions,
   FormatsMap,
-  HierarchyLevel,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
@@ -35,10 +34,8 @@ import {
   Key,
   KeySet,
   LabelDefinition,
-  Node,
   NodeKey,
   NodePathElement,
-  NodePathFilteringData,
   Paged,
   PagedResponse,
   PresentationIpcEvents,
@@ -168,7 +165,6 @@ export class PresentationManagerDetail implements Disposable {
       paths: instancePaths,
     };
     const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
-    paths.forEach(fixNodePathElementFromAddon);
     return paths;
   }
 
@@ -182,7 +178,6 @@ export class PresentationManagerDetail implements Disposable {
       ...strippedOptions,
     };
     const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
-    paths.forEach(fixNodePathElementFromAddon);
     return paths;
   }
 
@@ -614,41 +609,3 @@ export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
 /** @internal */
 // istanbul ignore next
 export function noopUpdatesHandler(_info: UpdateInfo | undefined) {}
-
-/** @internal */
-export function parseHierarchyLevelFromString(serializedHierarchyLevel: string): HierarchyLevel {
-  const hl: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
-  hl.nodes.forEach(fixNodeFromAddon);
-  return hl;
-}
-
-function fixNodePathElementFromAddon(npe: NodePathElement & { filteringData?: NodePathFilteringData | AddonNodePathFilteringData }): NodePathElement {
-  fixNodeFromAddon(npe.node);
-  npe.children.forEach(fixNodePathElementFromAddon);
-  // istanbul ignore next
-  if (npe.filteringData && isAddonNodePathFilteringData(npe.filteringData)) {
-    npe.filteringData = {
-      matchesCount: npe.filteringData.occurances,
-      childMatchesCount: npe.filteringData.childrenOccurances,
-    };
-  }
-  return npe;
-}
-interface AddonNodePathFilteringData {
-  childrenOccurances: number;
-  occurances: number;
-}
-function isAddonNodePathFilteringData(filteringData: NodePathFilteringData | AddonNodePathFilteringData): filteringData is AddonNodePathFilteringData {
-  return "occurances" in filteringData;
-}
-
-function fixNodeFromAddon(node: Node & { labelDefinition?: LabelDefinition }): Node {
-  // FIXME: this is a temporary workaround until the addon starts serializing node labels
-  // under the "label" property
-  // istanbul ignore next
-  if (node.labelDefinition) {
-    node.label = node.labelDefinition;
-    delete node.labelDefinition;
-  }
-  return node;
-}

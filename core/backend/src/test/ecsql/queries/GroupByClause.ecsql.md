@@ -329,7 +329,7 @@ HAVING
 
 ```sql
 SELECT
-  e.ECClassId,
+  ec_classname (e.ECClassId) AS Name,
   e.Model.Id,
   c.Name AS ClassName,
   e.NullProp
@@ -340,17 +340,18 @@ GROUP BY
   nullprop
 ```
 
-| className                 | accessString | generated | index | jsonName    | name      | extendedType | typeName | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ----------- | --------- | ------------ | -------- | ------ | ------------------ |
-|                           | ECClassId    | false     | 0     | className   | ECClassId | ClassId      | long     | Id     | ECClassId          |
-|                           | Model.Id     | false     | 1     | model.id    | Id        | NavId        | long     | Id     | Id                 |
-|                           | ClassName    | true      | 2     | className_1 | ClassName | undefined    | string   | String | Name               |
-| AllProperties:TestElement | NullProp     | false     | 3     | nullProp    | NullProp  | undefined    | string   | String | NullProp           |
+| className                 | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ | ------------------ |
+|                           | Name         | true      | 0     | name      | Name      | undefined    | string   | String | undefined          |
+|                           | Model.Id     | false     | 1     | model.id  | Id        | NavId        | long     | Id     | Id                 |
+|                           | ClassName    | true      | 2     | className | ClassName | undefined    | string   | String | Name               |
+| AllProperties:TestElement | NullProp     | false     | 3     | nullProp  | NullProp  | undefined    | string   | String | NullProp           |
 
-| ECClassId | Id   | ClassName   | NullProp  |
-| --------- | ---- | ----------- | --------- |
-| 0x153     | 0x11 | TestElement | undefined |
-| 0x153     | 0x11 | TestElement | NotNull   |
+| Name                      | Id   | ClassName   | NullProp  |
+| ------------------------- | ---- | ----------- | --------- |
+| AllProperties:TestElement | 0x11 | TestElement | undefined |
+| AllProperties:TestElement | 0x11 | TestElement | NotNull   |
+
 
 # With a subquery
 

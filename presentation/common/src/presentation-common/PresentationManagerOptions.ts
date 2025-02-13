@@ -304,12 +304,6 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
   elementIds: Id64String[];
   scope: SelectionScopeProps;
 }
-/** @internal */
-export function isComputeSelectionRequestOptions<TIModel>(
-  options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>,
-): options is ComputeSelectionRequestOptions<TIModel> {
-  return !!(options as ComputeSelectionRequestOptions<TIModel>).elementIds;
-}
 
 /**
  * Data structure for comparing a hierarchy after ruleset or ruleset variable changes.

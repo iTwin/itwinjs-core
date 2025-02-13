@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, ECObjectsError, ECObjectsStatus, isSupportedSchemaItemType, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -58,7 +58,9 @@ export class SchemaContextEditor {
   }
 
   /** Allows you to get schema classes and items through regular SchemaContext methods. */
-  public get schemaContext(): SchemaContext { return this._schemaContext; }
+  public get schemaContext(): SchemaContext {
+    return this._schemaContext;
+  }
 
   public async finish(): Promise<SchemaContext> {
     return this._schemaContext;
@@ -70,11 +72,11 @@ export class SchemaContextEditor {
    * @internal
   */
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
-    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest);
+    const schema = await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest);
     if (schema === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
-    return schema;
+    return schema as MutableSchema;
   }
 
   /**
@@ -180,12 +182,12 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
+  public async lookupSchemaItem(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<SchemaItem> {
     if(Schema.isSchema(schemaOrKey)) {
       schemaOrKey = schemaOrKey.schemaKey;
     }
 
-    const schemaItem = await this.schemaContext.getSchemaItem<T>(schemaItemKey);
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
     if (schemaItem === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
 
@@ -196,16 +198,22 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
-    const schemaItem = await this.schemaContext.getSchemaItem<T>(schemaItemKey);
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>> {
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
+    const schemaItemType = itemConstructor.schemaItemType;
+    if(!isSchemaItemType(schemaItemType)) {
+      // This block should never be hit, as the editor components always pass in the itemConstructor with a valid schemaItemType.
+      throw new Error(`Invalid schema item lookup for: ${schemaItemType}`);
+    }
+
     if (!schemaItem) {
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
     }
 
-    if (schemaItemType !== schemaItem.schemaItemType)
+    if (!isSupportedSchemaItemType(schemaItem.schemaItemType, itemConstructor.schemaItemType))
       throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
 
-    return schemaItem;
+    return schemaItem as InstanceType<T>;
   }
 
   private removeReference(schema: Schema, refSchema: Schema) {
@@ -222,11 +230,11 @@ export class SchemaContextEditor {
   }
 
   private async lookupSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<MutableSchema> {
-    const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, matchType);
+    const schema = await this.schemaContext.getCachedSchema(schemaKey, matchType);
     if (schema === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
-    return schema;
+    return schema as MutableSchema;
   }
 
   /**
@@ -286,3 +294,6 @@ export class SchemaContextEditor {
   }
 }
 
+function isSchemaItemType(type: SupportedSchemaItemType): type is SchemaItemType {
+  return Object.values(SchemaItemType).includes(type as SchemaItemType);
+}

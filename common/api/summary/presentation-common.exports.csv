@@ -177,7 +177,6 @@ public;enum;InstanceLabelOverrideValueSpecificationType
 public;interface;InstanceNodesOfSpecificClassesSpecification
 public;interface;IntRulesetVariable
 public;interface;IntsRulesetVariable
-internal;function;isComputeSelectionRequestOptions
 internal;function;isSingleElementPropertiesRequestOptions
 public;class;Item
 public;interface;ItemJSON

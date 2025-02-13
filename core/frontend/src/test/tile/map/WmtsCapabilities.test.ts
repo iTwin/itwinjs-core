@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { WmtsCapabilities } from "../../../tile/map/WmtsCapabilities";
+import { WmtsCapabilities } from "../../../internal/tile/map/WmtsCapabilities";
 import { fakeTextFetch } from "./MapLayerTestUtilities";
 
 describe("WmtsCapabilities", () => {

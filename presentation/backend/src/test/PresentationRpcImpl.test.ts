@@ -1955,28 +1955,6 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("computeSelection", () => {
-      it("[deprecated] calls manager", async () => {
-        const scope = createRandomSelectionScope();
-        const ids = [createRandomId()];
-        const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
-          ...defaultRpcParams,
-        };
-        const managerOptions: WithCancelEvent<ComputeSelectionRequestOptions<IModelDb>> = {
-          imodel: testData.imodelMock.object,
-          elementIds: ids,
-          scope: { id: scope.id },
-          cancelEvent: new BeEvent<() => void>(),
-        };
-        const result = new KeySet();
-        presentationManagerMock
-          .setup(async (x) => x.computeSelection(managerOptions))
-          .returns(async () => result)
-          .verifiable();
-        const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(result.toJSON());
-      });
-
       it("calls manager", async () => {
         const scopeId = "element";
         const ancestorLevel = 123;

@@ -787,7 +787,8 @@ function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: 
     const values: ValuesMap = { ...ncv.values };
     const displayValues: DisplayValuesMap = { ...ncv.displayValues };
     const mergedFieldNames: string[] = [...ncv.mergedFieldNames];
-    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.labelDefinition;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.label ?? ncv.labelDefinition;
 
     fieldHierarchy.childFields.forEach((childFieldHierarchy) => {
       const childFieldName = childFieldHierarchy.field.name;

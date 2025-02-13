@@ -27,6 +27,11 @@ Object {
     "key1": "Fork orange",
     "key2": "Technician capacitor",
   },
+  "label": Object {
+    "displayValue": "Rustic Soft Fish",
+    "rawValue": "override",
+    "typeName": "string",
+  },
   "labelDefinition": Object {
     "displayValue": "Rustic Soft Fish",
     "rawValue": "override",
@@ -54,6 +59,11 @@ Object {
     "key1": "object-oriented Avon deposit",
     "key2": "Toys Buckinghamshire Generic Frozen Bacon",
   },
+  "label": Object {
+    "displayValue": "Strategist",
+    "rawValue": "firewall",
+    "typeName": "string",
+  },
   "labelDefinition": Object {
     "displayValue": "Strategist",
     "rawValue": "firewall",
@@ -79,6 +89,11 @@ Object {
   },
   "displayValues": Object {
     "key1": undefined,
+  },
+  "label": Object {
+    "displayValue": "bricks-and-clicks",
+    "rawValue": "Mountains",
+    "typeName": "string",
   },
   "labelDefinition": Object {
     "displayValue": "bricks-and-clicks",
@@ -122,6 +137,11 @@ Object {
   },
   "displayValues": Object {
     "key1": undefined,
+  },
+  "label": Object {
+    "displayValue": "Handcrafted",
+    "rawValue": "Analyst",
+    "typeName": "string",
   },
   "labelDefinition": Object {
     "displayValue": "Handcrafted",

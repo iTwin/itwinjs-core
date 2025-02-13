@@ -56,10 +56,7 @@ class Provider implements TiledGraphicsProvider {
     // Any symbology overrides applied to the viewport are ignored.
     this.ovrs = new FeatureSymbology.Overrides(view);
 
-    this._refs = [];
-    view.forEachModelTreeRef((ref) => {
-      this._refs.push(new Reference(ref, this));
-    });
+    this._refs = Array.from(view.getModelTreeRefs()).map((ref) => new Reference(ref, this));
   }
 
   public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {

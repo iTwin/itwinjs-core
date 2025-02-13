@@ -7,51 +7,23 @@ Regular text, blockquotes or html comments can be used to describe the test, the
 
 ## Properties
 
-Properties go into list and follow the format: - key: value
 These are the available properties:
 
-- dataset: AllProperties.bim
 
-Required. The dataset property specifies the bim file to open
 
-- only: true
+| Property Name | Description | Default Value | Optional/Required | Usage |
+|---------------|-------------|---------------|-------------------|-------|
+| dataset | Specifies the bim file to open | AllProperties.bim | Required | dataset: AllProperties.bim |
+| only | Filters tests so only those marked with this run (translates to it.only()) | true | Optional | only: true |
+| skip | Skips tests marked with this. Provide a reason for skipping. | Property ignored | Optional | skip: Causes a crash |
+| mode | Specifies whether to run only statement, concurrent query, or both. Values: Statement, ConcurrentQuery, Both | Both | Optional | mode: Both |
+| rowFormat | Specifies the row format option for ECDb. Values: ECSqlNames, ECSqlIndexes, JsNames | ECSqlNames | Optional | rowFormat: ECSqlNames |
+| abbreviateBlobs | Abbreviate blobs to single bytes. Only works on ConcurrentQuery. | true | Optional | abbreviateBlobs: true |
+| convertClassIdsToClassNames | Converts ECClassId, SourceECClassId, TargetECClassId, and RelClassId to respective names. Only works on ConcurrentQuery. | false | Optional | convertClassIdsToClassNames: true |
+| errorDuringPrepare | If true, the statement is expected to fail during prepare. | false | Optional | errorDuringPrepare: true |
+| indexesToInclude | Maps property indexes for checking expected results when rowFormat is ECSqlIndexes. | Property ignored | Optional | indexesToInclude: [1, 2, ...] |
 
-Optional. Tests marked by this will be filtered so only those tests run. (Translates into it.only())
-
-- skip: SKIP_REASON
-
-Optional. Tests marked by this will be skipped. SKIP_REASON is the reason for skipping the particular test.
-
-- mode: Both
-
-Optional, defaults to Both
-Specifies whether to run only statement, concurrent query or both. Values are: Statement, ConcurrentQuery, Both
-
-- rowFormat: ECSqlNames
-
-Optional, defaults to ECSqlNames.
-Specifies the row format option given to ECDb. Possible values are: ECSqlNames, ECSqlIndexes, JsNames
-
-- abbreviateBlobs: true
-
-Optional, defaults to false
-It abbreviate blobs to single bytes.
-Only works on ConcurrentQuery as statement does not have the option.
-
-- convertClassIdsToClassNames: true
-
-Optional, defaults to false
-Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
-
-- errorDuringPrepare: true
-
-Optional, defaults to false
-If true, the statement is expected to fail during prepare.
-
-- indexesToInclude: [1, 2, ...]
-
-Optional.
-if the rowFormat is ECSqlIndexes then there is no way to uniquely identify the columns other than the property indexes, in that case this flag is used to tag the property indexes for checking expected Results and ignore the rest, if this flag is not given while the rowFormat is ECSqlIndexes then the expected Results column will assume an incremental 0 based indexing by default. This flag serves as a mapping for the actual results while checking with the expected results.
+> For the property `indexesToInclude`, if the rowFormat is ECSqlIndexes then there is no way to uniquely identify the columns other than the property indexes, in that case this flag is used to tag the property indexes for checking expected results and ignore the rest, if this flag is not given while the rowFormat is ECSqlIndexes then the expected Results column will assume an incremental 0 based indexing by default.This flag serves as a mapping for the actual results while checking with the expected results.
 
 ## SQL
 

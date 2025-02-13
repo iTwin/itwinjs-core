@@ -9,8 +9,10 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, DynamicIModelTile, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, OnScreenTarget, TileLoadPriority
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, TileLoadPriority
 } from "@itwin/core-frontend";
+import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile";
+import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";

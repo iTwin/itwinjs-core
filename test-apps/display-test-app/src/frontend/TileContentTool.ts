@@ -55,8 +55,8 @@ export class GenerateTileContentTool extends Tool {
       return false;
 
     for (const owner of iModel.tiles) {
-      const tree = owner.owner.tileTree;
-      if (tree instanceof IModelTileTree && tree.modelId === modelId)
+      const tree = owner.owner.tileTree instanceof IModelTileTree ? owner.owner.tileTree : undefined;
+      if (tree?.modelId === modelId)
         return this.run({ tree, contentId });
     }
 

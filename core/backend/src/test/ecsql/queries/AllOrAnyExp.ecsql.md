@@ -122,7 +122,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -137,16 +136,15 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using ANY Greater Than Or Equal To
 
@@ -154,7 +152,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -169,17 +166,16 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x153        | TestElement                 |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElement                 |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using ANY Less Than
 
@@ -306,7 +302,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -321,16 +316,15 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using SOME with Greater Than Or Equal To
 
@@ -338,7 +332,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -353,17 +346,16 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x153        | TestElement                 |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElement                 |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using SOME with Less Than
 
@@ -432,7 +424,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -454,16 +445,15 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using ANY with where clause in subquery
 
@@ -471,7 +461,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -493,17 +482,16 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x153        | TestElement                 |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElement                 |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using SOME with where clause in subquery
 
@@ -511,7 +499,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -533,16 +520,15 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using ANY with group by clause in subquery
 
@@ -550,7 +536,6 @@ WHERE
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -567,17 +552,16 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x153        | TestElement                 |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElement                 |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Using SOME with group by clause in subquery
 
@@ -910,7 +894,7 @@ WHERE
 
 ```sql
 SELECT
-  count(*) AS Total_Count
+  Name
 FROM
   meta.ecclassdef
 WHERE
@@ -921,15 +905,19 @@ WHERE
     FROM
       aps.TestElement
   )
+LIMIT 3
 ```
 
-| className | accessString | generated | index | jsonName    | name        | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ----- |
-|           | Total_Count  | true      | 0     | total_Count | Total_Count | undefined    | long     | Int64 |
+| className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| Total_Count |
-| ----------- |
-| 339         |
+| Name                        |
+| --------------------------- |
+| AnnotationElement2d         |
+| AnnotationFrameStyle        |
+| AnnotationLeaderStyle       |
+
 
 # Using ANY with multiple items
 
@@ -937,7 +925,7 @@ WHERE
 
 ```sql
 SELECT
-  count(*) AS Total_Count
+  Name
 FROM
   meta.ecclassdef
 WHERE
@@ -948,15 +936,18 @@ WHERE
     FROM
       aps.TestElement
   )
+LIMIT 3
 ```
 
-| className | accessString | generated | index | jsonName    | name        | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ----- |
-|           | Total_Count  | true      | 0     | Total_Count | Total_Count | undefined    | long     | Int64 |
+| className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| Total_Count |
-| ----------- |
-| 247         |
+| Name                        |
+| --------------------------- |
+| AnnotationFrameStyle        |
+| AnnotationLeaderStyle       |
+| AnnotationTextStyle         |
 
 # Using SOME with multiple items
 
@@ -990,25 +981,25 @@ WHERE
 - dataset: AllProperties.bim
 
 ```sql
-select ALL(ECClassId) from aps.TestElement
+select ec_classname(ALL(ECClassId)) as Test_Val from aps.TestElement
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type | originPropertyName |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ---- | ------------------ |
-|           | ECClassId    | false     | 0     | className | ECClassId | ClassId      | long     | Id   | ECClassId          |
+| className | accessString | generated | index | jsonName | name     | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | -------- | ------------ | -------- | ------ |
+|           | Test_Val     | true      | 0     | test_Val | Test_Val | undefined    | string   | String |
 
-| ECClassId |
-| --------- |
-| 0x153     |
-| 0x153     |
-| 0x153     |
-| 0x153     |
-| 0x153     |
-| 0x153     |
-| 0x153     |
-| 0x153     |
-| 0x153     |
-| 0x153     |
+| Test_Val                  |
+| ------------------------- |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
 
 # ANY in select clause
 
@@ -1048,7 +1039,6 @@ select SOME(ECClassId) as Test_Val from aps.TestElement
 
 ```sql
 SELECT
-  ECInstanceId,
   Name
 FROM
   meta.ECClassDef
@@ -1065,13 +1055,12 @@ WHERE
 
 | className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
 | ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
-| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
 
-| ECInstanceId | Name                        |
-| ------------ | --------------------------- |
-| 0x154        | TestElementAspect           |
-| 0x155        | TestElementRefersToElements |
-| 0x156        | TestEntityClass             |
-| 0x157        | TestFeature                 |
-| 0x158        | TestFeatureUsesElement      |
+| Name                        |
+| --------------------------- |
+| TestElementAspect           |
+| TestElementRefersToElements |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |

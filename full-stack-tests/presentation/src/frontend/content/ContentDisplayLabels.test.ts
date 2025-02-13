@@ -3,8 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { Presentation } from "@itwin/presentation-frontend";
-import { describeContentTestSuite } from "./Utils";
+import { expect } from "chai";
+import { Guid } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   ContentSpecificationTypes,
   DefaultContentDisplayTypes,
@@ -16,8 +17,7 @@ import {
   RuleTypes,
   Value,
 } from "@itwin/presentation-common";
-import { Guid } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -26,8 +26,8 @@ import {
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
 } from "../../IModelSetupUtils";
-import { expect } from "chai";
 import { collect } from "../../Utils";
+import { describeContentTestSuite } from "./Utils";
 
 describeContentTestSuite("Content Display Labels", () => {
   const EMPTY_LABEL = LabelDefinition.fromLabelString("@Presentation:label.notSpecified@");
@@ -127,8 +127,8 @@ describeContentTestSuite("Content Display Labels", () => {
             continue;
           }
           expect(value.length).to.eq(2);
-          expect(value[0].labelDefinition).to.deep.eq(EMPTY_LABEL);
-          expect(value[1].labelDefinition).to.deep.eq(EMPTY_LABEL);
+          expect(value[0].label).to.deep.eq(EMPTY_LABEL);
+          expect(value[1].label).to.deep.eq(EMPTY_LABEL);
         }
       }
     });
@@ -153,8 +153,8 @@ describeContentTestSuite("Content Display Labels", () => {
             continue;
           }
           expect(value.length).to.eq(2);
-          expect(value[0].labelDefinition?.displayValue).to.eq("Color");
-          expect(value[1].labelDefinition?.displayValue).to.eq("Color");
+          expect(value[0].label?.displayValue).to.eq("Color");
+          expect(value[1].label?.displayValue).to.eq("Color");
         }
       }
     });
@@ -199,8 +199,8 @@ describeContentTestSuite("Content Display Labels", () => {
             continue;
           }
           expect(value.length).to.eq(2);
-          expect(value[0].labelDefinition?.displayValue).to.eq(`${idx},${idx + 1},${idx + 2}`);
-          expect(value[1].labelDefinition?.displayValue).to.eq(`${idx + 100},${idx + 101},${idx + 102}`);
+          expect(value[0].label?.displayValue).to.eq(`${idx},${idx + 1},${idx + 2}`);
+          expect(value[1].label?.displayValue).to.eq(`${idx + 100},${idx + 101},${idx + 102}`);
         }
       });
     });
@@ -250,10 +250,10 @@ describeContentTestSuite("Content Display Labels", () => {
       };
     }
 
-    function validateDeeplyNestedContent(nestedContent: Pick<NestedContentValue, "labelDefinition" | "values">, expectedDisplayLabelsStack: Array<string>) {
+    function validateDeeplyNestedContent(nestedContent: Pick<NestedContentValue, "label" | "values">, expectedDisplayLabelsStack: Array<string>) {
       const expectedLabel = LabelDefinition.fromLabelString(expectedDisplayLabelsStack.pop()!);
 
-      expect(nestedContent.labelDefinition).to.deep.eq(expectedLabel);
+      expect(nestedContent.label).to.deep.eq(expectedLabel);
       if (expectedDisplayLabelsStack.length === 0) {
         return;
       }
@@ -299,7 +299,7 @@ describeContentTestSuite("Content Display Labels", () => {
       const arr = await collect(items);
       validateDeeplyNestedContent(
         {
-          labelDefinition: arr[0].label,
+          label: arr[0].label,
           values: arr[0].values,
         },
         ["PhysicalObject", "PhysicalObject", "PhysicalObject"],
@@ -352,7 +352,7 @@ describeContentTestSuite("Content Display Labels", () => {
       const arr = await collect(items);
       validateDeeplyNestedContent(
         {
-          labelDefinition: arr[0].label,
+          label: arr[0].label,
           values: arr[0].values,
         },
         ["Child", "MiddleChild", "Parent"],

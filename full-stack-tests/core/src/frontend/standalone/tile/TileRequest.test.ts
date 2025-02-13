@@ -8,14 +8,15 @@ import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, Tile, TileLoadStatus,
-  TileRequestChannel, TileStorage, Viewport,
+  IModelApp, IpcApp, RenderGraphic, RenderMemory, Tile, TileLoadStatus,
+  TileRequestChannel, Viewport,
 } from "@itwin/core-frontend";
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
+import { IModelTile, IModelTileContent, IModelTileTree, TileStorage } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
 use(sinonChai);
 

@@ -52,8 +52,8 @@ describe("Structs tests", () => {
 
     await testEditor.structs.setBaseClass(structRes, baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
   });
 
   it("should change struct base class with class from superset of base class", async () => {
@@ -61,11 +61,11 @@ describe("Structs tests", () => {
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes);
     const newBaseClassRes = await testEditor.structs.create(testKey, "newBaseClass", "newLabel", baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
 
     await testEditor.structs.setBaseClass(structRes, newBaseClassRes);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(newBaseClassRes));
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(newBaseClassRes, StructClass));
   });
 
   it("should change struct base class with different base class from a different schema", async () => {
@@ -94,20 +94,20 @@ describe("Structs tests", () => {
     const firstBaseClassKey = new SchemaItemKey("testStructBase1", refSchema.schemaKey);
     const structResult = await testEditor.structs.create(testKey, "testStruct", "testLabel", firstBaseClassKey);
 
-    const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structResult);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(firstBaseClassKey));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structResult, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(firstBaseClassKey, StructClass));
 
     const newBaseClassKey = new SchemaItemKey("testStructBase2", refSchema.schemaKey);
     await testEditor.structs.setBaseClass(structResult, newBaseClassKey);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(newBaseClassKey));
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(newBaseClassKey, StructClass));
   });
 
   it("should remove a base class from struct class", async () => {
     const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
 
     await testEditor.structs.setBaseClass(structRes, undefined);
     expect(await testStruct?.baseClass).to.eql(undefined);
@@ -130,8 +130,8 @@ describe("Structs tests", () => {
 
     await expect(testEditor.structs.setBaseClass(structRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -162,8 +162,8 @@ describe("Structs tests", () => {
     const baseClassRes = await testEditor.structs.create(testKey, "testBaseClass");
     const structRes = await testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassRes);
 
-    const testStruct = await testEditor.schemaContext.getSchemaItem<StructClass>(structRes);
-    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<StructClass>(baseClassRes));
+    const testStruct = await testEditor.schemaContext.getSchemaItem(structRes, StructClass);
+    expect(await testStruct?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, StructClass));
 
     const newBaseClassRes = await testEditor.structs.create(testKey, "newBaseClass");
     await expect(testEditor.structs.setBaseClass(structRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {
@@ -186,8 +186,8 @@ describe("Structs tests", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.structs.create(testKey, "testStruct", "testLabel", baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `StructClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 

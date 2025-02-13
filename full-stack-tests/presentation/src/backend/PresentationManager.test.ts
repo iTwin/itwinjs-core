@@ -148,7 +148,7 @@ describe("PresentationManager", () => {
         });
 
         async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
-          using manager = new PresentationManager({ defaultFormats, defaultLocale: "en-PSEUDO", ...config });
+          using manager = new PresentationManager({ defaultFormats, ...config });
           const descriptor = await manager.getContentDescriptor({
             imodel,
             rulesetOrId: ruleset,

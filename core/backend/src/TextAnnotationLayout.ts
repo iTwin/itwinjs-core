@@ -584,7 +584,8 @@ export class TextBlockLayout {
   }
 
   private justifyLines(): void {
-    if (this.lines.length <= 1 || "left" === this.source.justification) {
+    // We don't want to justify empty text, or a single line of text whose width is 0. By default text is already left justified.
+    if (this.lines.length < 1 || (this.lines.length === 1 && this.source.width === 0) || "left" === this.source.justification) {
       return;
     }
 
@@ -605,7 +606,7 @@ export class TextBlockLayout {
     }
 
     if (minOffset < 0) {
-      // Shift left to accomodate lines that exceeded the document's minimum width.
+      // Shift left to accommodate lines that exceeded the document's minimum width.
       this.range.low.x += minOffset;
       this.range.high.x += minOffset;
     }

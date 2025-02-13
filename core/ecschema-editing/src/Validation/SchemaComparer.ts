@@ -53,7 +53,7 @@ export interface ISchemaComparer {
   compareConstants(constantA: Constant, constantB: Constant): void;
 
   /** @internal */
-  resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined>;
+  resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined>;
   /** @internal */
   resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
   /** @internal */
@@ -89,8 +89,8 @@ export class SchemaComparer {
    * Resolves a schema Item from the given lookup schema.
    * @internal
    */
-  public async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
-    return lookupSchema.lookupItem<TItem>(item.name);
+  public async resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined> {
+    return lookupSchema.lookupItem(item.name, itemConstructor);
   }
 
   /**

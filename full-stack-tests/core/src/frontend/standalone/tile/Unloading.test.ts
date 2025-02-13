@@ -6,11 +6,12 @@
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
-  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
+  DisclosedTileTreeSet, IModelApp, IModelConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
+import { IModelTileTree } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;

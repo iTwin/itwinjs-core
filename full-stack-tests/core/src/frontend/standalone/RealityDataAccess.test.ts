@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, ThreeDTileFormatInterpreter, TileAdmin } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, SpatialModelState, TileAdmin } from "@itwin/core-frontend";
+import { ThreeDTileFormatInterpreter } from "@itwin/core-frontend/lib/cjs/internal/tile/ThreeDTileFormatInterpreter";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
 import { EcefLocation, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";

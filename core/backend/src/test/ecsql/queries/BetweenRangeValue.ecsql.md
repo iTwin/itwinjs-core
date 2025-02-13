@@ -111,7 +111,7 @@ SELECT * FROM meta.ECSchemaDef WHERE ECInstanceId NOT BETWEEN '1' and '9'
 - dataset: AllProperties.bim
 
 ```sql
-SELECT * FROM meta.ECSchemaDef WHERE Alias BETWEEN 'bis' and 'CoreCA'
+SELECT ECInstanceId, ECClassId, Name, DisplayLabel, Description, Alias FROM meta.ECSchemaDef WHERE Alias BETWEEN 'bis' and 'CoreCA'
 ```
 
 | className            | accessString              | generated | index | jsonName                  | name                      | extendedType | typeName | type   | originPropertyName        |
@@ -122,17 +122,12 @@ SELECT * FROM meta.ECSchemaDef WHERE Alias BETWEEN 'bis' and 'CoreCA'
 | ECDbMeta:ECSchemaDef | DisplayLabel              | false     | 3     | displayLabel              | DisplayLabel              | undefined    | string   | String | DisplayLabel              |
 | ECDbMeta:ECSchemaDef | Description               | false     | 4     | description               | Description               | undefined    | string   | String | Description               |
 | ECDbMeta:ECSchemaDef | Alias                     | false     | 5     | alias                     | Alias                     | undefined    | string   | String | Alias                     |
-| ECDbMeta:ECSchemaDef | VersionMajor              | false     | 6     | versionMajor              | VersionMajor              | undefined    | int      | Int    | VersionMajor              |
-| ECDbMeta:ECSchemaDef | VersionWrite              | false     | 7     | versionWrite              | VersionWrite              | undefined    | int      | Int    | VersionWrite              |
-| ECDbMeta:ECSchemaDef | VersionMinor              | false     | 8     | versionMinor              | VersionMinor              | undefined    | int      | Int    | VersionMinor              |
-| ECDbMeta:ECSchemaDef | OriginalECXmlVersionMajor | false     | 9     | originalECXmlVersionMajor | OriginalECXmlVersionMajor | undefined    | int      | Int    | OriginalECXmlVersionMajor |
-| ECDbMeta:ECSchemaDef | OriginalECXmlVersionMinor | false     | 10    | originalECXmlVersionMinor | OriginalECXmlVersionMinor | undefined    | int      | Int    | OriginalECXmlVersionMinor |
 
-| ECInstanceId | ECClassId | Name                 | DisplayLabel           | Description                                                                                                            | Alias  | VersionMajor | VersionWrite | VersionMinor | OriginalECXmlVersionMajor | OriginalECXmlVersionMinor |
-| ------------ | --------- | -------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------ | ------------ | ------------ | ------------ | ------------------------- | ------------------------- |
-| 0x8          | 0x27      | BisCore              | BIS Core               | The BIS core schema contains classes that all other domain schemas extend.                                             | bis    | 1            | 0            | 16           | 3                         | 2                         |
-| 0x6          | 0x27      | BisCustomAttributes  | BIS Custom Attributes  | Custom attributes to indicate BIS concepts.                                                                            | bisCA  | 1            | 0            | 0            | 3                         | 2                         |
-| 0x1          | 0x27      | CoreCustomAttributes | Core Custom Attributes | Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes. | CoreCA | 1            | 0            | 4            | 3                         | 2                         |
+| ECInstanceId | ECClassId | Name                 | DisplayLabel           | Description                                                                                                            | Alias  |
+| ------------ | --------- | -------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------ |
+| 0x8          | 0x27      | BisCore              | BIS Core               | The BIS core schema contains classes that all other domain schemas extend.                                             | bis    |
+| 0x6          | 0x27      | BisCustomAttributes  | BIS Custom Attributes  | Custom attributes to indicate BIS concepts.                                                                            | bisCA  |
+| 0x1          | 0x27      | CoreCustomAttributes | Core Custom Attributes | Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes. | CoreCA |
 
 # Select all properties from TestElement which is Not between 2 String value expression
 

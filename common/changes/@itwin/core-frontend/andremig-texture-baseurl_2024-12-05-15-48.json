@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix failure to resolve relative texture URIs in 3D Tiles",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

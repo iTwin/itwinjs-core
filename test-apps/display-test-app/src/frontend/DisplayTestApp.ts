@@ -186,7 +186,7 @@ const dtaFrontendMain = async () => {
   [renderSystemOptions, tileAdminProps] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
-    IModelApp.renderSystem.enableDiagnostics();
+    IModelApp.renderSystem.debugControl?.enableDiagnostics(undefined);
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
@@ -207,7 +207,7 @@ const dtaFrontendMain = async () => {
     [renderSystemOptions, tileAdminProps] = setConfigurationResults();
     await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
     if (false !== configuration.enableDiagnostics)
-      IModelApp.renderSystem.enableDiagnostics();
+      IModelApp.renderSystem.debugControl?.enableDiagnostics(undefined);
 
     if (!configuration.standalone && !configuration.customOrchestratorUri) {
       alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");

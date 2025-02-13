@@ -343,12 +343,6 @@ describe("PresentationManager", () => {
         }
         addon.verifyAll();
       });
-
-      it("sets up active locale if supplied [deprecated]", () => {
-        const locale = faker.random.locale();
-        using manager = new PresentationManager({ addon: addon.object, defaultLocale: locale });
-        expect(manager.activeLocale).to.eq(locale); // eslint-disable-line @typescript-eslint/no-deprecated
-      });
     });
   });
 
@@ -3450,16 +3444,6 @@ describe("PresentationManager", () => {
 
     afterEach(() => {
       manager[Symbol.dispose]();
-    });
-
-    it("[deprecated] computes selection using `SelectionScopesHelper`", async () => {
-      const ids = [createRandomId()];
-      const resultKeys = new KeySet();
-      const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
-      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
-      expect(result).to.eq(resultKeys);
     });
 
     it("computes element selection using `SelectionScopesHelper`", async () => {

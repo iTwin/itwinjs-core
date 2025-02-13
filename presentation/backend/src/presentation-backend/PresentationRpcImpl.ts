@@ -7,12 +7,11 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, Id64String, Logger } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   buildElementProperties,
   ClientDiagnostics,
-  ComputeSelectionRequestOptions,
   ComputeSelectionRpcRequestOptions,
   ContentDescriptorRpcRequestOptions,
   ContentFlags,
@@ -20,6 +19,7 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
+  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
@@ -30,9 +30,9 @@ import {
   ElementProperties,
   FilterByInstancePathsHierarchyRpcRequestOptions,
   FilterByTextHierarchyRpcRequestOptions,
+  HierarchyLevel,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
-  isComputeSelectionRequestOptions,
   ItemJSON,
   KeySet,
   KeySetJSON,
@@ -60,7 +60,6 @@ import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
-import { parseHierarchyLevelFromString } from "./PresentationManagerDetail";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJsonVersion = require("../../../package.json").version;
@@ -275,7 +274,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
         this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      const hierarchyLevel = parseHierarchyLevelFromString(serializedHierarchyLevel);
+      const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
       return {
         total: count,
         items: hierarchyLevel.nodes,
@@ -506,21 +505,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     );
   }
 
-  public override async computeSelection(
-    token: IModelRpcProps,
-    requestOptions: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions,
-    ids?: Id64String[],
-    scopeId?: string,
-  ): PresentationRpcResponse<KeySetJSON> {
+  public override async computeSelection(token: IModelRpcProps, requestOptions: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON> {
     return this.makeRequest(token, "computeSelection", requestOptions, async (options) => {
-      if (!isComputeSelectionRequestOptions(options)) {
-        options = {
-          ...options,
-          elementIds: ids!,
-          scope: { id: scopeId! },
-        };
-      }
-      const keys = await this.getManager(requestOptions.clientId).computeSelection(options as ComputeSelectionRequestOptions<IModelDb>);
+      const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
       return keys.toJSON();
     });
   }

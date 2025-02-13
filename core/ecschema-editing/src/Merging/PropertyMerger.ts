@@ -157,7 +157,7 @@ const enumerationProperty: PropertyMerger<EnumerationPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const enumerationKey = await updateSchemaItemKey(context, property.typeName);
-    const enumerationType = await context.editor.schemaContext.getSchemaItem<Enumeration>(enumerationKey);
+    const enumerationType = await context.editor.schemaContext.getSchemaItem(enumerationKey, Enumeration);
     if (enumerationType === undefined) {
       throw new Error(`Unable to locate the enumeration class ${enumerationKey.name} in the context schema.`);
     }
@@ -184,12 +184,12 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const relationshipKey = await updateSchemaItemKey(context, property.relationshipName);
-    const relationshipType = await context.editor.schemaContext.getSchemaItem<RelationshipClass>(relationshipKey);
+    const relationshipType = await context.editor.schemaContext.getSchemaItem(relationshipKey, RelationshipClass);
     if (relationshipType === undefined) {
       throw new Error(`Unable to locate the relationship class ${relationshipKey.name} in the context schema.`);
     }
 
-    property.relationshipName = relationshipType.fullName; 
+    property.relationshipName = relationshipType.fullName;
 
     const ecClass = await context.editor.schemaContext.getSchemaItem(itemKey) as ECClass;
     if (ecClass.schemaItemType === SchemaItemType.EntityClass)
@@ -255,7 +255,7 @@ const structProperty: PropertyMerger<StructPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const structKey = await updateSchemaItemKey(context, property.typeName);
-    const structType = await context.editor.schemaContext.getSchemaItem<StructClass>(structKey);
+    const structType = await context.editor.schemaContext.getSchemaItem(structKey, StructClass);
     if (structType === undefined) {
       throw new Error(`Unable to locate the struct ${structKey.name} in the context schema.`);
     }

@@ -17,6 +17,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Unit.
  */
 export class Units extends SchemaItems {
+  protected override get itemTypeClass(): typeof Unit {
+    return Unit;
+  }
+
   // TODO: Add more setters for all attributes.
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Unit, schemaEditor);
@@ -26,10 +30,10 @@ export class Units extends SchemaItems {
     try {
       const newUnit = await this.createSchemaItem<Unit>(schemaKey, this.schemaItemType, (schema) => schema.createUnit.bind(schema), name) as MutableUnit;
 
-      const phenomenonItem = await this.lookupSchemaItem<Phenomenon>(newUnit.schema.schemaKey, phenomenon, SchemaItemType.Phenomenon);
+      const phenomenonItem = await this.getSchemaItem(phenomenon, Phenomenon);
       await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
 
-      const unitSystemItem = await this.lookupSchemaItem<UnitSystem>(newUnit.schema.schemaKey, unitSystem, SchemaItemType.UnitSystem);
+      const unitSystemItem = await this.getSchemaItem(unitSystem, UnitSystem);
       await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
 
       await newUnit.setDefinition(definition);

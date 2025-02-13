@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Deprecate `imageId` property of `CustomNodeSpecification` and `PropertyRangeGroupSpecification`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

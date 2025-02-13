@@ -333,16 +333,16 @@ with tmp(x) as (SELECT e.array_s FROM aps.TestElement e LIMIT 1) select x from t
 - dataset: AllProperties.bim
 
 ```sql
-with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from tmp
+with tmp(x) as (SELECT ec_classname(e.ECClassId) FROM aps.TestElement e LIMIT 1) select x from tmp
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | String |
 
-| x     |
-| ----- |
-| 0x153 |
+| x                         |
+| ------------------------- |
+| AllProperties:TestElement |
 
 # Testing classId props with convertClassIdsToClassNames flag using CTE
 
@@ -350,16 +350,16 @@ with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from
 - convertClassIdsToClassNames: true
 
 ```sql
-with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from tmp
+with tmp(x) as (SELECT ec_classname(e.ECClassId) FROM aps.TestElement e LIMIT 1) select x from tmp
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | String |
 
-| x     |
-| ----- |
-| 0x153 |
+| x                         |
+| ------------------------- |
+| AllProperties:TestElement |
 
 # Testing classId props with convertClassIdsToClassNames flag using CTE subquery
 
@@ -367,16 +367,16 @@ with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from
 - convertClassIdsToClassNames: true
 
 ```sql
-select x from (with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from tmp)
+select x from (with tmp(x) as (SELECT ec_classname(e.ECClassId) FROM aps.TestElement e LIMIT 1) select x from tmp)
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | String |
 
-| x     |
-| ----- |
-| 0x153 |
+| x                         |
+| ------------------------- |
+| AllProperties:TestElement |
 
 # Testing InstanceId props using CTE
 

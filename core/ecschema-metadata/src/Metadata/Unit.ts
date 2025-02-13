@@ -24,7 +24,8 @@ import { UnitSystem } from "./UnitSystem";
  * @beta
  */
 export class Unit extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.Unit;
+  public override readonly schemaItemType = Unit.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.Unit; }
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;
   protected _definition: string;
@@ -121,7 +122,7 @@ export class Unit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
       async () => {
-        const phenom = await this.schema.lookupItem<Phenomenon>(phenomenonSchemaItemKey);
+        const phenom = await this.schema.lookupItem(phenomenonSchemaItemKey, Phenomenon);
         if (undefined === phenom)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
         return phenom;
@@ -132,7 +133,7 @@ export class Unit extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
-        const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
+        const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
         if (undefined === unitSystem)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
         return unitSystem;
@@ -185,6 +186,16 @@ export class Unit extends SchemaItem {
    */
   protected async setDefinition(definition: string) {
     this._definition = definition;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Unit.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Unit if it is a Unit, undefined otherwise.
+   */
+  public static assertIsUnit(item?: SchemaItem): asserts item is Unit {
+    if(!this.isUnit(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Unit}' (Unit)`);
   }
 }
 /**

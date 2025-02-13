@@ -146,8 +146,6 @@ export class Presentation {
 // @public
 export interface PresentationAssetsRootConfig {
     backend: string;
-    // @deprecated
-    common: string;
 }
 
 // @public
@@ -219,16 +217,9 @@ export enum PresentationBackendNativeLoggerCategory {
 export class PresentationManager {
     [Symbol.dispose](): void;
     constructor(props?: PresentationManagerProps);
-    // @deprecated
-    activeLocale: string | undefined;
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
-    // @deprecated
-    computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
-        ids: Id64String[];
-        scopeId: string;
-    } & BackendDiagnosticsAttribute): Promise<KeySet>;
     computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
     // @deprecated (undocumented)
     dispose(): void;
@@ -268,31 +259,17 @@ export interface PresentationManagerCachingConfig {
     workerConnectionCacheSize?: number;
 }
 
-// @public @deprecated
-export enum PresentationManagerMode {
-    ReadOnly = 0,
-    ReadWrite = 1
-}
-
 // @public
 export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
     caching?: PresentationManagerCachingConfig;
     defaultFormats?: FormatsMap;
-    // @deprecated
-    defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
     diagnostics?: BackendDiagnosticsOptions;
-    // @deprecated
-    enableSchemasPreload?: boolean;
     getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;
-    // @deprecated
-    localeDirectories?: string[];
-    // @deprecated
-    mode?: PresentationManagerMode;
     // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];

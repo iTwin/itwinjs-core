@@ -27,9 +27,54 @@ describe("CustomAttributeClass", () => {
     });
 
     const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-    const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
+    const testCAClass = await ecschema.getItem("TestCAClass", CustomAttributeClass);
     expect(testCAClass).to.exist;
     expect(testCAClass!.fullName).eq("TestSchema.TestCAClass");
+  });
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestCAClass: {
+        schemaItemType: "CustomAttributeClass",
+        label: "Test CustomAttribute Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+        appliesTo: "AnyClass",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on CustomAttributeClass", async () => {
+      const testCustomAttributeClass = await ecSchema.getItem("TestCAClass");
+      assert.isDefined(testCustomAttributeClass);
+      expect(CustomAttributeClass.isCustomAttributeClass(testCustomAttributeClass)).to.be.true;
+      expect(() => CustomAttributeClass.assertIsCustomAttributeClass(testCustomAttributeClass)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(CustomAttributeClass.isCustomAttributeClass(testPhenomenon)).to.be.false;
+      expect(() => CustomAttributeClass.assertIsCustomAttributeClass(testPhenomenon)).to.throw();
+    });
+
+    it("CustomAttributeClass type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
+      expect(ecSchema.getItemSync("TestCAClass", CustomAttributeClass)).to.be.instanceof(CustomAttributeClass);
+    });
+
+    it("CustomAttributeClass type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", CustomAttributeClass)).to.be.undefined;
+    });
   });
 
   describe("deserialization", () => {
@@ -52,7 +97,7 @@ describe("CustomAttributeClass", () => {
 
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
 
-      const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
+      const testCAClass = await ecschema.getItem("TestCAClass", CustomAttributeClass);
       expect(testCAClass).to.exist;
 
       expect(testCAClass!.name).to.equal("TestCAClass");
@@ -273,7 +318,7 @@ describe("CustomAttributeClass", () => {
       const ecschema = Schema.fromJsonSync(createCustomAttributeJson({}), new SchemaContext());
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      const testCustomAttribute = ecschema.getItemSync("testCustomAttribute", CustomAttributeClass);
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");
@@ -293,7 +338,7 @@ describe("CustomAttributeClass", () => {
       const ecschema = Schema.fromJsonSync(createCustomAttributeJson(propertyJson), new SchemaContext());
       assert.isDefined(ecschema);
 
-      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      const testCustomAttribute = ecschema.getItemSync("testCustomAttribute", CustomAttributeClass);
       assert.isDefined(testCustomAttribute);
       const serialized = await testCustomAttribute!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECCustomAttributeClass");

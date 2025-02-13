@@ -49,9 +49,54 @@ describe("Format", () => {
 
     const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(ecSchema);
-    const format = await ecSchema.getItem<Format>("TestFormat");
+    const format = await ecSchema.getItem("TestFormat", Format);
     assert.isDefined(format);
     expect(format!.fullName).eq("TestSchema.TestFormat");
+  });
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestFormat: {
+        schemaItemType: "Format",
+        label: "Test Format",
+        description: "Used for testing",
+        type: "decimal",
+        precision: 6,
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Format", async () => {
+      const format = await ecSchema.getItem("TestFormat");
+      assert.isDefined(format);
+      expect(Format.isFormat(format)).to.be.true;
+      expect(() => Format.assertIsFormat(format)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(Format.isFormat(testPhenomenon)).to.be.false;
+      expect(() => Format.assertIsFormat(testPhenomenon)).to.throw();
+    });
+
+    it("Format type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestFormat", Format)).to.be.instanceof(Format);
+      expect(ecSchema.getItemSync("TestFormat", Format)).to.be.instanceof(Format);
+    });
+
+    it("Format type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", Format)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", Format)).to.be.undefined;
+    });
   });
 
   describe("type checking json", () => {
@@ -750,13 +795,13 @@ describe("Format", () => {
       it("sync - ", () => {
         const testSchema = Schema.fromJsonSync(createSchemaJson(validComposite), context);
         assert.isDefined(testSchema);
-        const format = testSchema.getItemSync<Format>("TestFormat");
+        const format = testSchema.getItemSync("TestFormat", Format);
         validateTestFormat(format);
       });
       it("async - ", async () => {
         const testSchema = await Schema.fromJson(createSchemaJson(validComposite), context);
         assert.isDefined(testSchema);
-        const format = await testSchema.getItem<Format>("TestFormat");
+        const format = await testSchema.getItem("TestFormat", Format);
         validateTestFormat(format);
       });
     }); // composite
@@ -788,7 +833,7 @@ describe("Format", () => {
       };
       const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecSchema);
-      const format = ecSchema.getItemSync<Format>("TestFormat");
+      const format = ecSchema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
       const formatSerialization = format!.toJSON(false, true);
       expect(formatSerialization).to.deep.equal(testFormatJson);
@@ -812,7 +857,7 @@ describe("Format", () => {
       };
       const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecSchema);
-      const format = ecSchema.getItemSync<Format>("TestFormat");
+      const format = ecSchema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
       const json = JSON.stringify(format);
       const formatSerialization = JSON.parse(json);
@@ -861,7 +906,7 @@ describe("Format", () => {
 
       const ecschema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
       assert.isDefined(ecschema);
-      const format = ecschema.getItemSync<Format>("TestFormat");
+      const format = ecschema.getItemSync("TestFormat", Format);
       assert.isDefined(format);
 
       const serialized = await format!.toXml(newDom);

@@ -8,6 +8,9 @@ import { SchemaContext } from "../../Context";
 import { Phenomenon } from "../../Metadata/Phenomenon";
 import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Phenomenon tests", () => {
   let testPhenomenon: Phenomenon;
@@ -29,9 +32,53 @@ describe("Phenomenon tests", () => {
 
     const schema = await Schema.fromJson(schemaJson, new SchemaContext());
     assert.isDefined(schema);
-    const phenomenon = await schema.getItem<Phenomenon>("testPhenomenon");
+    const phenomenon = await schema.getItem("testPhenomenon", Phenomenon);
     assert.isDefined(phenomenon);
     expect(phenomenon!.fullName).eq("TestSchema.testPhenomenon");
+  });
+
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestEntityClass: {
+        schemaItemType: "EntityClass",
+        label: "Test Entity Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on Phenomenon", async () => {
+      const item = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(item);
+      expect(Phenomenon.isPhenomenon(item)).to.be.true;
+      expect(() => Phenomenon.assertIsPhenomenon(item)).not.to.throw();
+      // verify against other schema item type
+      const testEntityClass = await ecSchema.getItem("TestEntityClass");
+      assert.isDefined(testEntityClass);
+      expect(Phenomenon.isPhenomenon(testEntityClass)).to.be.false;
+      expect(() => Phenomenon.assertIsPhenomenon(testEntityClass)).to.throw();
+    });
+
+    it("Phenomenon type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
+      expect(ecSchema.getItemSync("TestPhenomenon", Phenomenon)).to.be.instanceof(Phenomenon);
+    });
+
+    it("Phenomenon type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestEntityClass", Phenomenon)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestEntityClass", Phenomenon)).to.be.undefined;
+    });
   });
 
   describe("Async fromJson", () => {

@@ -6,12 +6,13 @@ import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, Tile, TileContent, TileDrawArgs, TileLoadPriority,
+  IModelApp, IModelConnection, RenderSystem, Tile, TileContent, TileDrawArgs, TileLoadPriority,
   TileRequest, TileRequestChannel, TileTree,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
+import { overrideRequestTileTreeProps } from "@itwin/core-frontend/lib/cjs/tile/TileAdmin";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
