@@ -18,7 +18,7 @@ import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { BackendHubAccess } from "./BackendHubAccess";
+import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -516,6 +516,16 @@ export class IModelHost {
     // Note: This method is set as a node listener where `this` is unbound. Call private method to
     // ensure `this` is correct. Don't combine these methods.
     return IModelHost.doShutdown();
+  }
+
+  /**
+   * Create a new iModel.
+   * @returns the Guid of the newly created iModel.
+   * @throws [IModelError]($common) in case of errors.
+   * @note If [[IModelHostOptions.hubAccess]] was undefined in the call to [[startup]], this function will throw an error.
+   */
+  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
+    return this[_hubAccess].createNewIModel(arg);
   }
 
   private static async doShutdown() {
