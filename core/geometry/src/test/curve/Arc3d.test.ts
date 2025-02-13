@@ -1187,7 +1187,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("SubdivisionSampler", { timeout: 40000 }, () => {
+  it("SubdivisionSampler", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const center = Point3d.createZero();
