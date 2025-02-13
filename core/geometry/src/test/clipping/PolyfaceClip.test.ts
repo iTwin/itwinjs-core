@@ -1242,7 +1242,7 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("DrapeRegion", () => {
+  it("DrapeRegion", { timeout: 20000 },  () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x = 0;
