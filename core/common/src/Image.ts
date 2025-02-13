@@ -143,11 +143,21 @@ export class ImageSource {
   }
 }
 
+/** An [[ImageSource]] encoded in binary form as a Jpeg or Png, as opposed to one encoded
+ * in string format as an Svg.
+ * Only binary ImageSources can be used for [[Texture]]s stored in [[IModelDb]]s.
+ * @public
+ */
 export interface BinaryImageSource {
+  /** The format in which the [[data]] is encoded. */
   readonly format: ImageSourceFormat.Jpeg | ImageSourceFormat.Png;
+  /** The image data encoded according to [[format]]. */
   readonly data: Uint8Array;
 }
 
+/** Returns true if `source` is a [[BinaryImageSource]].
+ * @public
+ */
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource {
   return source.format !== ImageSourceFormat.Svg && source.data instanceof Uint8Array;
 }
