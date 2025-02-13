@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";

@@ -61,7 +61,7 @@ function processTextRun(run: RunLayout, transform: Transform, context: GeometryC
   ts.transformInPlace(transform);
 
   setColor(run.style.color, context);
-  context.entries.push({ text: ts});
+  context.entries.push({ text: ts });
 }
 
 function createFractionTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
@@ -121,7 +121,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   });
 
   if (source.denominator.length > 0) {
-    context.entries.push({ text: createFractionTextString(source.denominator, run,denominatorOffset, transform) });
+    context.entries.push({ text: createFractionTextString(source.denominator, run, denominatorOffset, transform) });
   }
 }
 
@@ -146,6 +146,29 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
   }
 
   if (debugAnchorPt) {
+
+    const marginsLx = layout.marginRange.low.x - debugAnchorPt.x;
+    const marginsLy = layout.marginRange.low.y - debugAnchorPt.y;
+    const marginsHx = layout.marginRange.high.x - debugAnchorPt.x;
+    const marginsHy = layout.marginRange.high.y - debugAnchorPt.y;
+
+    context.entries.push({
+      color: ColorDef.blue.toJSON(),
+    });
+
+    context.entries.push({
+      separator: {
+        startPoint: [marginsLx, 0, 0],
+        endPoint: [marginsHx, 0, 0],
+      },
+    });
+    context.entries.push({
+      separator: {
+        startPoint: [0, marginsLy, 0],
+        endPoint: [0, marginsHy, 0],
+      },
+    });
+
     // Draw lines representing the horizontal and vertical ranges, intersecting at the anchor point.
     context.entries.push({
       color: ColorDef.red.toJSON(),
