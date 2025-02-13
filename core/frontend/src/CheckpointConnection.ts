@@ -74,6 +74,7 @@ export class CheckpointConnection extends IModelConnection {
     return {
       ...(await new IModelReadHTTPClient(
         `http://localhost:3001/itwins/${iModelToken.iTwinId}/imodels/${iModelToken.iModelId}/changesets/${iModelToken.changeset?.id || "0"}/`,
+        `http://localhost:3002/itwins/${iModelToken.iTwinId}/imodels/${iModelToken.iModelId}/changesets/${iModelToken.changeset?.id || "0"}/`,
         IModelApp,
       ).getConnectionProps()),
       ...iModelToken,
