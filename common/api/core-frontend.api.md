@@ -1273,8 +1273,6 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     get supportsMapFeatureInfo(): boolean;
 }
 
-    addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void>;
-    // @deprecated (undocumented)
 // @internal
 export interface ArcGISServiceMetadata {
     accessTokenRequired: boolean;
@@ -1404,8 +1402,6 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     type: number;
 }
 
-    addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void>;
-    // @deprecated (undocumented)
 // @internal
 export class BackgroundMapGeometry {
     constructor(_bimElevationBias: number, globeMode: GlobeMode, _iModel: IModelConnection);
@@ -1667,8 +1663,6 @@ export class BingLocationProvider {
     getLocation(query: string): Promise<GlobalLocation | undefined>;
 }
 
-    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
-    // @deprecated (undocumented)
 // @public
 export class BlankConnection extends IModelConnection {
     close(): Promise<void>;
@@ -5515,8 +5509,6 @@ export enum ManipulatorToolEvent {
     Suspend = 3,
     // (undocumented)
     Unsuspend = 4
-    addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void>;
-    // @deprecated (undocumented)
 }
 
 // @public
@@ -8185,8 +8177,6 @@ export class RealityTileTree extends TileTree {
     readonly yAxisUp: boolean;
 }
 
-    addAttributions(cards: HTMLTableElement): Promise<void>;
-    // @deprecated (undocumented)
 // @beta
 export function registerWorker<T>(impl: WorkerImplementation<T>): void;
 
