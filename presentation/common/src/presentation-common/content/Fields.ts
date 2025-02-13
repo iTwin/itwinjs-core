@@ -9,7 +9,6 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
   ClassInfo,
-  ClassInfoJSON,
   CompressedClassInfoJSON,
   NavigationPropertyInfo,
   PropertyInfo,
@@ -48,8 +47,8 @@ export interface BaseFieldJSON {
  * Data structure for a [[PropertiesField]] serialized to JSON.
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
+
+export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends BaseFieldJSON {
   properties: PropertyJSON<TClassInfoJSON>[];
 }
 
@@ -73,8 +72,7 @@ export interface StructPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends P
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
+export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfo> extends BaseFieldJSON {
   contentClassInfo: TClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
   relationshipMeaning?: RelationshipMeaning;
@@ -87,7 +85,7 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
  * JSON representation of a [[Field]]
  * @public
  */
-export type FieldJSON<TClassInfoJSON = ClassInfoJSON> =
+export type FieldJSON<TClassInfoJSON = ClassInfo> =
   | BaseFieldJSON
   | PropertiesFieldJSON<TClassInfoJSON>
   | ArrayPropertiesFieldJSON<TClassInfoJSON>
@@ -265,8 +263,16 @@ export class Field {
     return clone;
   }
 
-  /** Serialize this object to JSON */
+  /**
+   * Serialize this object to JSON.
+   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   */
   public toJSON(): FieldJSON {
+    return this.toCompressedJSON({});
+  }
+
+  /** Serialize this object to compressed JSON */
+  public toCompressedJSON(_classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
     return omitUndefined({
       category: this.category.name,
       name: this.name,
@@ -280,26 +286,31 @@ export class Field {
     });
   }
 
-  /** Serialize this object to compressed JSON */
-  public toCompressedJSON(_classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
-    return this.toJSON();
-  }
-
-  /** Deserialize [[Field]] from JSON */
+  /**
+   * Deserialize [[Field]] from JSON.
+   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   */
   public static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined {
     if (!json) {
       return undefined;
     }
     if (isPropertiesField(json)) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return PropertiesField.fromJSON(json, categories);
     }
     if (isNestedContentField(json)) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return NestedContentField.fromJSON(json, categories);
+      return new NestedContentField({
+        ...json,
+        ...fromNestedContentFieldJSON(json, categories),
+        nestedFields: json.nestedFields
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          .map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories))
+          .filter((nestedField): nestedField is Field => !!nestedField),
+      });
     }
     return new Field({
       ...json,
-      category: Field.getCategoryFromFieldJson(json, categories),
+      category: this.getCategoryFromFieldJson(json, categories),
     });
   }
 
@@ -320,16 +331,12 @@ export class Field {
     }
     return new Field({
       ...json,
-      category: Field.getCategoryFromFieldJson(json, categories),
+      category: this.getCategoryFromFieldJson(json, categories),
     });
   }
 
   protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories: CategoryDescription[]): CategoryDescription {
-    const category = categories.find((c) => c.name === fieldJson.category);
-    if (!category) {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid content field category`);
-    }
-    return category;
+    return getCategoryFromFieldJson(fieldJson, categories);
   }
 
   /** Resets field's parent. */
@@ -452,9 +459,13 @@ export class PropertiesField extends Field {
     return clone;
   }
 
-  /** Serialize this object to JSON */
+  /**
+   * Serialize this object to JSON
+   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   */
   public override toJSON(): PropertiesFieldJSON {
     return {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ...super.toJSON(),
       properties: this.properties,
     };
@@ -468,15 +479,20 @@ export class PropertiesField extends Field {
     };
   }
 
-  /** Deserialize [[PropertiesField]] from JSON */
+  /**
+   * Deserialize [[PropertiesField]] from JSON.
+   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   */
   public static override fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined {
     if (!json) {
       return undefined;
     }
     if (isArrayPropertiesField(json)) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ArrayPropertiesField.fromJSON(json, categories);
     }
     if (isStructPropertiesField(json)) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return StructPropertiesField.fromJSON(json, categories);
     }
     return new PropertiesField({
@@ -643,10 +659,15 @@ export class ArrayPropertiesField extends PropertiesField {
     return clone;
   }
 
-  /** Serialize this object to JSON */
+  /**
+   * Serialize this object to JSON.
+   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   */
   public override toJSON(): ArrayPropertiesFieldJSON {
     return {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ...super.toJSON(),
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       itemsField: this.itemsField.toJSON(),
     };
   }
@@ -659,11 +680,15 @@ export class ArrayPropertiesField extends PropertiesField {
     };
   }
 
-  /** Deserialize [[ArrayPropertiesField]] from JSON */
+  /**
+   * Deserialize [[ArrayPropertiesField]] from JSON.
+   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   */
   public static override fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField {
     return new ArrayPropertiesField({
       ...json,
       category: this.getCategoryFromFieldJson(json, categories),
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       itemsField: PropertiesField.fromJSON(json.itemsField, categories)!,
     });
   }
@@ -761,10 +786,15 @@ export class StructPropertiesField extends PropertiesField {
     return clone;
   }
 
-  /** Serialize this object to JSON */
+  /**
+   * Serialize this object to JSON.
+   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   */
   public override toJSON(): StructPropertiesFieldJSON {
     return {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ...super.toJSON(),
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       memberFields: this.memberFields.map((m) => m.toJSON()),
     };
   }
@@ -777,11 +807,15 @@ export class StructPropertiesField extends PropertiesField {
     };
   }
 
-  /** Deserialize [[StructPropertiesField]] from JSON */
+  /**
+   * Deserialize [[StructPropertiesField]] from JSON.
+   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   */
   public static override fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField {
     return new StructPropertiesField({
       ...json,
       category: this.getCategoryFromFieldJson(json, categories),
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       memberFields: json.memberFields.map((m) => PropertiesField.fromJSON(m, categories)!),
     });
   }
@@ -964,14 +998,19 @@ export class NestedContentField extends Field {
     return getFieldByName(this.nestedFields, name, recurse);
   }
 
-  /** Serialize this object to JSON */
+  /**
+   * Serialize this object to JSON.
+   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   */
   public override toJSON(): NestedContentFieldJSON {
     return {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ...super.toJSON(),
       contentClassInfo: this.contentClassInfo,
       pathToPrimaryClass: this.pathToPrimaryClass,
       relationshipMeaning: this.relationshipMeaning,
       actualPrimaryClassIds: this.actualPrimaryClassIds,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       ...(this.autoExpand ? { autoExpand: true } : undefined),
     };
@@ -984,26 +1023,12 @@ export class NestedContentField extends Field {
     return {
       ...super.toCompressedJSON(classesMap),
       contentClassInfo: id,
+      relationshipMeaning: this.relationshipMeaning,
+      actualPrimaryClassIds: this.actualPrimaryClassIds,
       pathToPrimaryClass: this.pathToPrimaryClass.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
       nestedFields: this.nestedFields.map((field) => field.toCompressedJSON(classesMap)),
+      ...(this.autoExpand ? { autoExpand: true } : undefined),
     };
-  }
-
-  /**
-   * Deserialize [[NestedContentField]] from JSON
-   * @deprecated in 3.x. Use [[NestedContentField.fromCompressedJSON]]
-   */
-  public static override fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined {
-    if (!json) {
-      return undefined;
-    }
-    return new NestedContentField({
-      ...json,
-      ...this.fromCommonJSON(json, categories),
-      nestedFields: json.nestedFields
-        .map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories))
-        .filter((nestedField): nestedField is Field => !!nestedField),
-    });
   }
 
   /** Deserialize a [[NestedContentField]] from compressed JSON. */
@@ -1015,7 +1040,7 @@ export class NestedContentField extends Field {
     assert(classesMap.hasOwnProperty(json.contentClassInfo));
     return new NestedContentField({
       ...json,
-      ...this.fromCommonJSON(json, categories),
+      ...fromNestedContentFieldJSON(json, categories),
       category: this.getCategoryFromFieldJson(json, categories),
       nestedFields: json.nestedFields
         .map((nestedFieldJson: FieldJSON) => Field.fromCompressedJSON(nestedFieldJson, classesMap, categories))
@@ -1023,16 +1048,6 @@ export class NestedContentField extends Field {
       contentClassInfo: { id: json.contentClassInfo, ...classesMap[json.contentClassInfo] },
       pathToPrimaryClass: json.pathToPrimaryClass.map((stepJson) => RelatedClassInfo.fromCompressedJSON(stepJson, classesMap)),
     });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[]) {
-    return {
-      category: this.getCategoryFromFieldJson(json, categories),
-      relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
-      actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
-      autoExpand: json.autoExpand,
-    };
   }
 
   /** Resets parent of this field and all nested fields. */
@@ -1171,5 +1186,22 @@ function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON
     ...leftOverPropertyJSON,
     classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },
     ...(navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.fromCompressedJSON(navigationPropertyInfo, classesMap) } : undefined),
+  };
+}
+
+function getCategoryFromFieldJson(fieldJson: { category: string }, categories: CategoryDescription[]): CategoryDescription {
+  const category = categories.find((c) => c.name === fieldJson.category);
+  if (!category) {
+    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid content field category`);
+  }
+  return category;
+}
+
+function fromNestedContentFieldJSON(json: NestedContentFieldJSON<ClassInfo | string>, categories: CategoryDescription[]) {
+  return {
+    category: getCategoryFromFieldJson(json, categories),
+    relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
+    actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
+    autoExpand: json.autoExpand,
   };
 }

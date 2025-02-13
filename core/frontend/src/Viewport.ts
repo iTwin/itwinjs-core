@@ -38,12 +38,13 @@ import { ToolTipOptions } from "./NotificationManager";
 import { PerModelCategoryVisibility } from "./PerModelCategoryVisibility";
 import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FrameStats, FrameStatsCollector } from "./render/FrameStats";
-import { AnimationBranchStates } from "./render/GraphicBranch";
+import { FrameStats } from "./render/FrameStats";
+import { FrameStatsCollector } from "./internal/render/FrameStatsCollector";
+import { AnimationBranchStates } from "./internal/render/AnimationBranchState";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
-import { createRenderPlanFromViewport } from "./render/RenderPlan";
+import { createRenderPlanFromViewport } from "./internal/render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -61,7 +62,8 @@ import { ViewPose } from "./ViewPose";
 import { ViewRect } from "./common/ViewRect";
 import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
-import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
+import { QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
+import { queryVisibleFeatures } from "./internal/render/QueryVisibileFeatures";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
@@ -260,6 +262,14 @@ export interface ReadPixelsArgs {
   excludeNonLocatable?: boolean;
   /** An optional set of Ids of elements that should not be drawn, potentially revealing other geometry they would otherwise obscure. */
   excludedElements?: Iterable<Id64String>;
+}
+
+/** Arguments supplied to [[Viewport.readImageToCanvas]].
+ * @public
+ */
+export interface ReadImageToCanvasOptions {
+  /** If true, canvas decorations will not be included in the saved image. */
+  omitCanvasDecorations?: boolean;
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
@@ -2708,10 +2718,27 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
-   * @see [[readImageBuffer]] to obtain the image as an array of RGBA pixels.
-   */
-  public readImageToCanvas(): HTMLCanvasElement {
-    return this.target.readImageToCanvas();
+  * When using this overload, the returned image will not include canvas decorations if only one viewport is active.
+  * If multiple viewports are active, the returned image will always include canvas decorations.
+  * @deprecated in 5.0 Use the overload accepting a ReadImageToCanvasOptions.
+  */
+  public readImageToCanvas(): HTMLCanvasElement;
+
+  /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
+  * This overload allows for specifying whether canvas decorations will be omitted from the returned image by passing in [[ReadImageToCanvasOptions]].
+  * The canvas decorations will be consistently omitted or included regardless of the number of active viewports.
+  * @param options Options for reading the image to the canvas.
+  */
+ // eslint-disable-next-line @typescript-eslint/unified-signatures
+  public readImageToCanvas(options: ReadImageToCanvasOptions): HTMLCanvasElement;
+
+  /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
+  * @see [[readImageBuffer]] to obtain the image as an array of RGBA pixels.
+  * @internal
+  */
+  public readImageToCanvas(options?: ReadImageToCanvasOptions): HTMLCanvasElement {
+    const canvas = (this instanceof ScreenViewport && !options?.omitCanvasDecorations) ? this.canvas : undefined;
+    return this.target.readImageToCanvas(canvas);
   }
 
   /** Used internally by `waitForSceneCompletion`.

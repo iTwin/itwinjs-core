@@ -12,8 +12,9 @@ import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils";
 
 import { fakeJsonFetch } from "../TestUtils";
 import { LogoDecoration } from "../../GoogleMaps/GoogleMapDecorator";
-import { DecorateContext, Decorations, IconSprites, IModelApp, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite, TilePatch } from "@itwin/core-frontend";
+import { DecorateContext, Decorations, IconSprites, IModelApp, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
+import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
 
 class FakeMapTile extends MapTile  {
@@ -204,5 +205,6 @@ describe.only("GoogleMapsProvider", () => {
 
     expect(addCanvasDecorationStub.called).to.be.true;
   });
+
 
 });

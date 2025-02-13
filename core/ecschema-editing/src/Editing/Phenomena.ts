@@ -17,6 +17,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Phenomenon.
  */
 export class Phenomena extends SchemaItems {
+  protected override get itemTypeClass(): typeof Phenomenon {
+    return Phenomenon;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Phenomenon, schemaEditor);
   }

@@ -718,20 +718,25 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
     return { emptyNestedItem: true, convertedItem: item };
   }
 
-  const nextFieldValues: { raw: ValuesArray; display: DisplayValuesArray } = { raw: [], display: [] };
-  value.forEach((ncv) => {
-    const nextRawValue = ncv.values[nextField.name];
-    const nextDisplayValue = ncv.displayValues[nextField.name];
-    if (nextField.isNestedContentField()) {
+  let nextFieldValues: { raw: PresentationValuesArray | NestedContentValue[]; display: DisplayValuesArray } = { raw: [], display: [] };
+  if (nextField.isNestedContentField()) {
+    const nextNestedContent: NestedContentValue[] = [];
+    value.forEach((ncv) => {
+      const nextRawValue = ncv.values[nextField.name];
       if (nextRawValue) {
         assert(PresentationValue.isNestedContent(nextRawValue));
-        nextFieldValues.raw.push(...nextRawValue);
+        nextNestedContent.push(...nextRawValue);
       }
-    } else {
-      nextFieldValues.raw.push(nextRawValue);
-      nextFieldValues.display.push(nextDisplayValue);
-    }
-  });
+    });
+    nextFieldValues.raw = nextNestedContent;
+  } else {
+    const nextValues: { raw: PresentationValuesArray; display: DisplayValuesArray } = { raw: [], display: [] };
+    value.forEach((ncv) => {
+      nextValues.raw.push(ncv.values[nextField.name]);
+      nextValues.display.push(ncv.displayValues[nextField.name]);
+    });
+    nextFieldValues = nextValues;
+  }
   const convertedItem = new Item({
     ...item,
     values: { [nextField.name]: nextFieldValues.raw },
@@ -782,7 +787,8 @@ function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: 
     const values: ValuesMap = { ...ncv.values };
     const displayValues: DisplayValuesMap = { ...ncv.displayValues };
     const mergedFieldNames: string[] = [...ncv.mergedFieldNames];
-    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.labelDefinition;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.label ?? ncv.labelDefinition;
 
     fieldHierarchy.childFields.forEach((childFieldHierarchy) => {
       const childFieldName = childFieldHierarchy.field.name;

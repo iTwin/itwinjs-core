@@ -23,8 +23,6 @@ public;enum;PresentationBackendLoggerCategory
 public;enum;PresentationBackendNativeLoggerCategory
 public;class;PresentationManager
 public;interface;PresentationManagerCachingConfig
-public;enum;PresentationManagerMode
-deprecated;enum;PresentationManagerMode
 public;interface;PresentationManagerProps
 public;interface;PresentationProps
 public;type;PresentationPropsBase

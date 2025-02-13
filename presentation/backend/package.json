@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "5.0.0-dev.52",
+  "version": "5.0.0-dev.62",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -34,7 +34,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
+    "test": "mocha --config ./.mocharc.json",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
     "prettier:fix": "prettier --write ."
   },
@@ -70,6 +70,7 @@
     "@types/sinon": "^17.0.2",
     "@types/sinon-chai": "^3.2.0",
     "@types/sinonjs__fake-timers": "^8.1.5",
+    "@types/source-map-support": "^0.4.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "chai-jest-snapshot": "^2.0.0",

@@ -39,8 +39,9 @@ import {
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
 } from "../common/gltf/GltfSchema";
 import { PickableGraphicOptions } from "../common/render/BatchOptions";
-import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
+import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { GraphicTemplate } from "../render/GraphicTemplate";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
@@ -1952,7 +1953,7 @@ export abstract class GltfReader {
       this._dracoMeshes.set(ext, mesh);
   }
 
-  private resolveUrl(uri: string): string | undefined {
+  protected resolveUrl(uri: string): string | undefined {
     try {
       const resolved = new URL(uri, this._baseUrl);
       resolved.search = this._baseUrl?.search ?? "";
@@ -2049,6 +2050,7 @@ export abstract class GltfReader {
     if (!image)
       return false;
 
+
     const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
     const textureType = this.getTextureType(sampler);
@@ -2059,7 +2061,6 @@ export abstract class GltfReader {
         transparency: isTransparent ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
-
     return renderTexture ?? false;
   }
 

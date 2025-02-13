@@ -337,7 +337,6 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       expect(formattedValue.length).toBeGreaterThan(0);
       expect(formattedValue).toEqual(testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });

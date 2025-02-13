@@ -17,6 +17,7 @@ import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { deserializeInfoXml, deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
+import { Mixin, RelationshipClass } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -687,8 +688,8 @@ describe("Full Schema Deserialization", () => {
         visitClass: sinon.spy(async (c: AnyClass) => {
           if (c.schemaItemType === SchemaItemType.EntityClass && c.baseClass)
             descriptions.push((await c.baseClass).description!);
-          else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
-            descriptions.push((await c.appliesTo).description!);
+          else if (Mixin.isMixin(c))
+            descriptions.push((await c.appliesTo!).description!);
         }) as any,
       };
 
@@ -738,8 +739,8 @@ describe("Full Schema Deserialization", () => {
         visitClass: sinon.spy(async (c: AnyClass) => {
           if (c.schemaItemType === SchemaItemType.EntityClass && c.baseClass)
             descriptions.push((await c.baseClass).description!);
-          else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
-            descriptions.push((await c.appliesTo).description!);
+          else if (Mixin.isMixin(c))
+            descriptions.push((await c.appliesTo!).description!);
         }) as any,
       };
 
@@ -807,7 +808,7 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.schemaItemType === SchemaItemType.RelationshipClass)
+          if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
             const prop = [...c.properties!][0] as NavigationProperty;
@@ -880,7 +881,7 @@ describe("Full Schema Deserialization", () => {
       const descriptions: string[] = [];
       mockVisitor = {
         visitClass: sinon.spy(async (c: AnyClass) => {
-          if (c.schemaItemType === SchemaItemType.RelationshipClass)
+          if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
             const prop = [...c.properties!][0] as NavigationProperty;

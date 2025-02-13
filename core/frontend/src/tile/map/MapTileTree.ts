@@ -20,7 +20,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
-import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
+import { RenderPlanarClassifier } from "../../internal/render/RenderPlanarClassifier";
 import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
