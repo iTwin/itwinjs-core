@@ -63,7 +63,7 @@ export interface V2CheckpointAccessProps {
 }
 
 /**
- * A Map from `Id64String` to `CommonLockState`.
+ * Maps element Ids to their corresponding [LockState]($common)s.
  * @public
  */
 export type LockMap = Map<Id64String, CommonLockState>;
