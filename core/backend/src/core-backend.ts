@@ -141,6 +141,11 @@ export * from "./internal/cross-package";
  */
 
 /**
+ * @docs-group-description Images
+ * APIs for encoding and decoding images
+ */
+
+/**
  * @docs-group-description IModelHost
  * Classes for configuring and administering the backend [host]($docs/learning/backend/IModelHost.md).
  * See [the learning article]($docs/learning/backend/IModelHost.md).
