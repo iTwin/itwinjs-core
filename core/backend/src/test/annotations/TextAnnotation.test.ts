@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef,  FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -702,6 +702,48 @@ describe("layoutTextBlock", () => {
         }
       }
     }
+  });
+
+  it("adds margins", function () {
+    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: TextBlockMargins) => {
+      expect(marginRange.low.x).to.equal(layoutRange.low.x - (margins.left ?? 0));
+      expect(marginRange.high.x).to.equal(layoutRange.high.x + (margins.right ?? 0));
+      expect(marginRange.low.y).to.equal(layoutRange.low.y - (margins.bottom ?? 0));
+      expect(marginRange.high.y).to.equal(layoutRange.high.y + (margins.top ?? 0));
+    }
+
+    const makeTextBlock = (margins: TextBlockMargins) => {
+      const textblock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 }, margins });
+      textblock.appendRun(makeTextRun("abc"));
+      textblock.appendRun(makeTextRun("defg"));
+      return textblock;
+    }
+
+    let block = makeTextBlock({});
+    let layout = doLayout(block);
+
+    // Margins should be 0 by default
+    expect(layout.marginRange.isAlmostEqual(layout.range)).to.be.true;
+    expectMargins(layout.range, layout.marginRange, {});
+
+    // All margins should be applied to the range
+    block = makeTextBlock({ left: 1, right: 2, top: 3, bottom: 4 })
+    layout = doLayout(block);
+
+    expectMargins(layout.range, layout.marginRange, { left: 1, right: 2, top: 3, bottom: 4 });
+
+    // Just horisontal margins should be applied
+    block = makeTextBlock({ left: 1, right: 2 });
+    layout = doLayout(block);
+
+    expectMargins(layout.range, layout.marginRange, { left: 1, right: 2 });
+
+    // Just vertical margins should be applied
+    block = makeTextBlock({ top: 1, bottom: 2 });
+    layout = doLayout(block);
+
+    expectMargins(layout.range, layout.marginRange, { top: 1, bottom: 2 });
+
   });
 
   describe("grapheme offsets", () => {
