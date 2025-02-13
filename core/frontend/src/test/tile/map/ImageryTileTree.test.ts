@@ -58,7 +58,7 @@ describe("ImageryTileTree", () => {
     vi.restoreAllMocks();
   });
 
-  it.only("tree supplier", async () => {
+  it("tree supplier", async () => {
     const baseProps: ImageMapLayerProps = { formatId: "Custom1", url: "https://dummy.com", name: "CustomLayer", subLayers: [{name: "sub0", visible: true}]};
     const dataset: DatasetEntry[] = [
       {lhs: {...baseProps}, rhs: {...baseProps}, expectSameTileTree:true},
@@ -77,9 +77,7 @@ describe("ImageryTileTree", () => {
       {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3,4]}}, expectSameTileTree:false},
       {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:true},
     ];
-    let i = 1;
     for (const entry of dataset) {
-      console.log(`Test ${i++}`);
       const settingsLhs = ImageMapLayerSettings.fromJSON(entry.lhs);
       const treeRefLhs = new ImageryMapLayerTreeReference({ layerSettings: settingsLhs, layerIndex: 0, iModel: imodel });
       const treeOwnerLhs = treeRefLhs.treeOwner;

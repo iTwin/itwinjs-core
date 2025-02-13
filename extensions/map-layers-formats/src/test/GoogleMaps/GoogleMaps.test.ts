@@ -44,7 +44,7 @@ const minCreateSessionOptions: CreateSessionOptions = {mapType: "satellite", lan
 const createSessionOptions2: CreateSessionOptions = {...minCreateSessionOptions, layerTypes: ["layerRoadmap"]};
 
 const defaultPngSession = {tileWidth: 256, tileHeight: 256, imageFormat: "image/png", expiry: 0, session: "dummySession"};
-describe.only("GoogleMapsProvider", () => {
+describe("GoogleMapsProvider", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
