@@ -1,7 +1,6 @@
 sep=;
 Release Tag;API Item Type;API Item Name
 beta;class;FileSchemaKey
-beta;class;PublishedSchemaXmlFileLocater
 beta;class;SchemaFileLocater
 beta;class;SchemaJsonFileLocater
 beta;namespace;SchemaXml

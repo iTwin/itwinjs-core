@@ -292,19 +292,16 @@ class ArcChainErrorProcessor extends QuadrantFractionsProcessor {
 }
 
 /**
- * Processor for computing an optimal refinement of a single Q1 ordered interval [f0,f1] by perturbing an interior
- * seed fraction f.
- * * Typically the caller (cf. [[AdaptiveSubdivisionQ1ErrorProcessor.announceArc]] processes a
- * QuadrantFractions `q` with `q.quadrant` = 1 until convergence. The `q.fractions` array is expected to have
- * one of two forms:
- *   * [fPrev, f0, f, f1], where fPrev is from the adjacent interval (possibly just refined), or
- *   * [f0, f, f1], if `q.interpolateStartTangent === true`.
- * * This processor implements a bisection algorithm that iteratively shrinks a sub-interval that brackets f,
- * starting with [f0,f1]:
- *   * During processing, `announceArc` will be called twice to compute the approximation errors of the circular
- * arcs on either side of f in the current bracket.
- *   * In `announceQuadrantEnd` if these two errors are almost equal, we are done refining [f0,f1]. Otherwise,
- * we move f halfway to the endpoint of the bracket that decreases the error delta, and shrink our bracket.
+ * Processor for refining a single Q1 ordered interval [f0,f1] by perturbing an interior fraction f.
+ * * This processor expects to repeatedly process a QuadrantFractions `q` with `q.quadrant` = 1 and fractions array
+ * [fPrev, f0, f, f1], where fPrev is from the previously processed (possibly refined) adjacent interval; however, if
+ * `q.interpolateStartTangent === true`, then no fPrev is necessary and [f0, f, f1] is expected.
+ * * This is enough info to compute the two circular arcs spanning [f0,f] and [f,f1] and compare their approximation
+ * errors.
+ * * The basic idea is to perturb f so that the difference in the two arcs' errors is minimized.
+ * * This processor keeps track of a bracket containing f so that when the caller repeatedly processes `q` via
+ * [[EllipticalArcApproximationContext.processQuadrantFractions]], a bisection algorithm plays out, informed by the
+ * heuristic that moving f toward one end of its bracket decreases the error of the approximating arc on that side of f.
  * @internal
  */
 class AdaptiveSubdivisionQ1IntervalErrorProcessor extends QuadrantFractionsProcessor {
@@ -382,17 +379,14 @@ class AdaptiveSubdivisionQ1IntervalErrorProcessor extends QuadrantFractionsProce
 /**
  * Processor for computing samples in Q1 for a subdivision-based arc chain approximation.
  * * The basic idea is to build a refinement of `q.fractions` for a QuadrantFractions q with q.quadrant = 1.
- *   * In `announceQuadrantBegin` we start off the refinement with a copy of `q.fractions`.
- *   * In `announceArc` we are called to process the interval [f0,f1] in `q.fractions`. First we test if the
- * announced arc's approximation error over [f0,f1] exceeds maxError.
- *     * If so, we employ [[AdaptiveSubdivisionQ1IntervalErrorProcessor]] to compute an interior fraction f
- * that best refines the interval, which becomes [f0,f,f1].
- *     * Otherwise, the fraction span [f0,f1] is unchanged---no additional samples are needed to decrease the
- * approximation error.
- *   * In `announceQuadrantEnd`, `q.fractions` is updated in place with the computed refinement.
- *   * The caller (e.g., [[AdaptiveSubdivisionSampler.computeRadiansStrictlyInsideQuadrant1]]) typically
- * re-processes `q` until `isRefined` returns false, at which point construction of an approximation that is
- * guaranteed not to exceed the desired error can commence.
+ *   * Start off the refinement with a copy of `q.fractions`.
+ *   * When an announced arc exceeds a given maximum approximation error, compute a fraction f in the span
+ * such that the error of arcs on either side of f would be almost equal, then add f to the refinement.
+ *   * If the announced arc does not exceed the maxError, its associated fraction span remains unchanged---no
+ * additional samples are needed to decrease approximation error.
+ *   * After `q` processing completes, `q.fractions` is updated in place with the computed refinement.
+ *   * The caller typically re-processes `q` until `isRefined` returns false, at which point construction of an
+ * approximation that is guaranteed not to exceed the desired error can commence.
  * @internal
  */
 class AdaptiveSubdivisionQ1ErrorProcessor extends QuadrantFractionsProcessor {

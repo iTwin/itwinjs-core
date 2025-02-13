@@ -55,11 +55,6 @@ export interface PushChangesArgs extends TokenArg {
   pushRetryCount?: number;
   /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
   pushRetryDelay?: BeDuration;
-  /**
-   *  For testing purpose
-   * @internal
-   */
-  noFastForward?: true;
 }
 
 /**
@@ -79,11 +74,6 @@ export type PullChangesArgs = ToChangesetArgs & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
-  /**
-   *  For testing purpose
-   * @internal
-   */
-  noFastForward?: true;
 };
 
 /** Arguments for [[BriefcaseManager.revertTimelineChanges]]
@@ -442,11 +432,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps) {
     if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    db[_nativeDb].applyChangeset(changesetFile, fastForward);
+    db[_nativeDb].applyChangeset(changesetFile);
     db.changeset = db[_nativeDb].getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -517,10 +507,6 @@ export class BriefcaseManager {
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
 
-    if (db[_nativeDb].hasPendingTxns() && reverse) {
-      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changesets when there are pending changes");
-    }
-
     // Download change sets
     const changesets = await IModelHost.hubAccess.downloadChangesets({
       accessToken: arg.accessToken,
@@ -536,52 +522,12 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
-
-    let appliedChangesets = -1;
-    if (db[_nativeDb].hasPendingTxns() && !reverse && !arg.noFastForward) {
-      // attempt to perform fast forward
-      for (const changeset of changesets) {
-        // do not waste time on schema changesets. They cannot be fastforwarded.
-        if (changeset.changesType === ChangesetType.Schema || changeset.changesType === ChangesetType.SchemaSync)
-          break;
-
-        try {
-          const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-          Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description} using fast forward method`);
-          await this.applySingleChangeset(db, changeset, true);
-          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-          appliedChangesets++;
-          db.saveChanges();
-        } catch {
-          db.abandonChanges();
-          break;
-        }
-      }
+    for (const changeset of changesets) {
+      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+      Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
+      await this.applySingleChangeset(db, changeset);
+      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
     }
-
-    if (appliedChangesets < changesets.length - 1) {
-      db[_nativeDb].pullMergeBegin();
-      for (const changeset of changesets.filter((_, index) => index > appliedChangesets)) {
-        const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-        Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-        try {
-          await this.applySingleChangeset(db, changeset, false);
-          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-        } catch (err: any) {
-          if (err instanceof Error) {
-            Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
-          }
-          db.abandonChanges();
-          db[_nativeDb].pullMergeEnd();
-          throw err;
-        }
-      }
-      db[_nativeDb].pullMergeEnd();
-      if (!db.isReadonly) {
-        db.saveChanges("Merge.");
-      }
-    }
-
     // notify listeners
     db.notifyChangesetApplied();
   }

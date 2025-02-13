@@ -5,6 +5,7 @@
 import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
+import viteInspect from "vite-plugin-inspect";
 import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
 import rollupVisualizer from "rollup-plugin-visualizer";
@@ -122,6 +123,8 @@ export default defineConfig(() => {
         copyOnce: true, // only during initial build or on change
         hook: "buildStart",
       }),
+      // open http://localhost:3000/__inspect/ to debug vite plugins
+      ...(mode === "development" ? [viteInspect({ build: true })] : []),
       envCompatible({
         prefix: "IMJS_",
       }),

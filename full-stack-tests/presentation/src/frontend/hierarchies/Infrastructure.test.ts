@@ -4,12 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
-import { TestIModelConnection } from "../../IModelSetupUtils";
 
 describe("Hierarchies", () => {
   before(async () => {
@@ -26,7 +25,7 @@ describe("Hierarchies", () => {
 
     before(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = TestIModelConnection.openFile(testIModelName);
+      imodel = await SnapshotConnection.openFile(testIModelName);
     });
 
     after(async () => {

@@ -181,11 +181,11 @@ export class SchemaContextEditor {
 
   /** @internal */
   public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
-    if(Schema.isSchema(schemaOrKey)) {
-      schemaOrKey = schemaOrKey.schemaKey;
-    }
+    const schema = Schema.isSchema(schemaOrKey)
+      ? schemaOrKey
+      : await this.getSchema(schemaOrKey);
 
-    const schemaItem = await this.schemaContext.getSchemaItem<T>(schemaItemKey);
+    const schemaItem = await schema.lookupItem<T>(schemaItemKey);
     if (schemaItem === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
 

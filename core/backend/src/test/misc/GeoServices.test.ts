@@ -840,7 +840,7 @@ describe("GeoServices", () => {
     };
 
     it("should get all CRS", async () => {
-      await validateCRSList(11975, validationRange);
+      await validateCRSList(11874, validationRange);
     });
 
     it("should return CRS that are in the specified range (1)", async () => {

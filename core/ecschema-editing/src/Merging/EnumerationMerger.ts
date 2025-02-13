@@ -19,7 +19,7 @@ export async function addEnumeration(context: SchemaMergeContext, change: Enumer
     throw new Error("Enumerations must define whether enumeration is strict.");
   }
   if (change.difference.enumerators === undefined) {
-    throw new Error("Enumerations must define at least one enumerator.");
+    throw new Error("Enumerations must define at least ine enumerator.");
   }
 
   await context.editor.enumerations.createFromProps(context.targetSchemaKey, {

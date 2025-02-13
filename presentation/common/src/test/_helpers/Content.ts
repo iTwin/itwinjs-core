@@ -239,6 +239,7 @@ export function createTestNestedContentField(props: {
  */
 export function createTestContentDescriptor(props: Partial<DescriptorSource> & { fields: Field[] }) {
   return new Descriptor({
+    connectionId: "",
     displayType: "",
     contentFlags: 0,
     selectClasses: [createTestSelectClassInfo()],
@@ -251,7 +252,6 @@ export function createTestContentDescriptor(props: Partial<DescriptorSource> & {
  * @internal Used for testing only.
  */
 export function createTestContentItem(props: {
-  inputKeys?: InstanceKey[];
   primaryKeys?: InstanceKey[];
   label?: LabelDefinition | string;
   imageId?: string;
@@ -261,7 +261,7 @@ export function createTestContentItem(props: {
   mergedFieldNames?: string[];
   extendedData?: { [key: string]: any };
 }) {
-  const item = new Item(
+  return new Item(
     props.primaryKeys ?? [createTestECInstanceKey()],
     props.label ?? "",
     props.imageId ?? "",
@@ -271,8 +271,4 @@ export function createTestContentItem(props: {
     props.mergedFieldNames ?? [],
     props.extendedData,
   );
-  if (props.inputKeys) {
-    item.inputKeys = props.inputKeys;
-  }
-  return item;
 }

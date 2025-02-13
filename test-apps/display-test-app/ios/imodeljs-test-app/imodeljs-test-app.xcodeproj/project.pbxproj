@@ -381,7 +381,6 @@
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -405,7 +404,6 @@
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -455,7 +453,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-				version = 5.0.39;
+				version = 4.10.21;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

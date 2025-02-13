@@ -84,38 +84,34 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
   }
 
   /**
-   * Recurse through `geometry.children` to find linestrings.
-   * For each linestring, compute and store the normal of the rotational surface resulting from sweeping the
-   * geometry around `axis` through a positive angle, using:
+   * Recurse through geometry.children to find linestrings.
+   * In each linestring, compute the surface normal annotation from
    *  * the curve tangent stored in the linestring
    *  * the axis of rotation
-   *  * a default V vector to be used when the linestring point is close to the axis
-   * @param geometry profile curve (e.g., linestring, parity region). The orientation of the curve should be such that
-   * the computed normal lies in the same half-space as the rotational sweep direction.
-   * @param axis rotational axis
-   * @param defaultVectorFromAxis default vector perpendicular to `axis` (e.g., sweepVector)
+   *  * a default V vector to be used when the linestring point is close to the axis.
+   * @param geometry
+   * @param axis
+   * @param defaultVectorV
    */
-  public static buildRotationalNormalsInLineStrings(geometry: AnyCurve, axis: Ray3d, defaultVectorFromAxis: Vector3d): void {
+  public static buildRotationalNormalsInLineStrings(geometry: AnyCurve, axis: Ray3d, defaultVectorFromAxis: Vector3d) {
     if (geometry instanceof LineString3d) {
       const points = geometry.packedPoints;
       const derivatives = geometry.packedDerivatives;
       const normals = geometry.ensureEmptySurfaceNormals();
       if (derivatives && normals) {
         const vectorU = Vector3d.create();
-        const vectorV = Vector3d.create();
+        const vectorV = Vector3d.create();  // v direction (forwward along sweep) for surface of rotation.
         const xyz = Point3d.create();
         const n = points.length;
         for (let i = 0; i < n; i++) {
           points.getPoint3dAtUncheckedPointIndex(i, xyz);
           axis.perpendicularPartOfVectorToTarget(xyz, vectorU);
-          // compute the positive sweep direction. ASSUME: the rotational sweep angle is positive!
           if (vectorU.isAlmostZero)
             axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
           else
             axis.direction.crossProduct(vectorU, vectorV);
-          // ASSUME: orientation-based profile normal is in the same half-space as vectorV
-          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vectorU
-          vectorU.crossProduct(vectorV, vectorV);  // reuse vectorV
+          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
+          vectorU.crossProduct(vectorV, vectorV);  // reuse vector V as normal!
           vectorV.normalizeInPlace();
           normals.push(vectorV);
         }

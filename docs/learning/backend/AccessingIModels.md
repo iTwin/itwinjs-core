@@ -31,6 +31,10 @@ The first method creates a Snapshot iModel from an existing iModel into the supp
 
 The second method creates an *empty* Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `SnapshotDb` may be used to populate the Snapshot, but once closed it becomes immutable.
 
+#### Create Snapshots with *iTwin Snapshot*
+
+[iTwin Snapshot](../tutorials/create-test-imodel-offline.md), is a free tool for creating snapshots. iTwin Snapshot was designed for developers to quickly generate snapshots for use in iTwin.js development.
+
 ### Important properties of Snapshot iModels
 
 - They are "real" iModels. There are no limitations on size or content of Snapshot iModels.

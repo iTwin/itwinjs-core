@@ -80,14 +80,10 @@ export type GraphicRepresentation = {
   url: string;
 });
 
-/** Creates a URL used to query for Graphic Representations
- * @internal
- */
-export function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean, numExports?: number }): string {
+/** Creates a URL used to query for Graphic Representations */
+function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
   const prefix = args.urlPrefix ?? "";
-  const numExports = args.numExports ?? 5;
-  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc&$top=${numExports}`;
-
+  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc&$top=5`;
   if (args.changeId)
     url = `${url}&changesetId=${args.changeId}`;
 
@@ -122,8 +118,6 @@ export interface QueryGraphicRepresentationsArgs {
   includeIncomplete?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
-  /** Number of exports to query */
-  numExports?: number;
 }
 
 /** Query Graphic Representations matching the specified criteria, sorted from most-recently- to least-recently-produced.
@@ -172,7 +166,7 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     SessionId: args.sessionId,
   };
 
-  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN, numExports: args.numExports });
+  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
   while (url) {
     let result;
     try {

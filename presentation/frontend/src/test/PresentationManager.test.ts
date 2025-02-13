@@ -77,7 +77,7 @@ import {
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

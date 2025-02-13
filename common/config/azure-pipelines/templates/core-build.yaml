@@ -25,10 +25,10 @@ parameters:
     default: false
 
 steps:
-  - task: UseNode@1
+  - task: NodeTool@0
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
-      version: ${{ parameters.nodeVersion }}
+      versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
 
   - script: |

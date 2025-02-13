@@ -9,10 +9,10 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
 import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 import sinon from "sinon";
 import { Presentation } from "../../presentation-frontend/Presentation";
 import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();

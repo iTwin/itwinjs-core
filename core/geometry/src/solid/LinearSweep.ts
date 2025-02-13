@@ -87,10 +87,7 @@ export class LinearSweep extends SolidPrimitive {
   public clone(): LinearSweep {
     return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);
   }
-  /**
-   * Apply a transform to the curves and sweep vector
-   * * This fails if the transformation is singular.
-   */
+  /** apply a transform to the curves and sweep vector */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
@@ -109,13 +106,11 @@ export class LinearSweep extends SolidPrimitive {
   public getConstructiveFrame(): Transform | undefined {
     return this._contour.localToWorld.cloneRigid();
   }
-  /**
-   * Return a transformed clone.
-   * * This fails if the transformation is singular.
-   */
-  public cloneTransformed(transform: Transform): LinearSweep | undefined {
+  /** Return a transformed clone */
+  public cloneTransformed(transform: Transform): LinearSweep {
     const result = this.clone();
-    return result.tryTransformInPlace(transform) ? result : undefined;
+    result.tryTransformInPlace(transform);
+    return result;
   }
   /** Test for near-equality of coordinates in `other` */
   public override isAlmostEqual(other: GeometryQuery): boolean {

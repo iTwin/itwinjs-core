@@ -26,7 +26,6 @@ import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
 import { RendererDescription } from "./Renderer";
 import { TypeDescription } from "./TypeDescription";
-import { omitUndefined } from "../Utils";
 
 /**
  * Data structure for a [[Field]] serialized to JSON.
@@ -41,7 +40,7 @@ export interface BaseFieldJSON {
   priority: number;
   renderer?: RendererDescription;
   editor?: EditorDescription;
-  extendedData?: { [key: string]: unknown };
+  extendedData?:  { [key: string]: unknown };
 }
 
 /**
@@ -146,7 +145,7 @@ export class Field {
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
   /** Extended data associated with this field */
-  public extendedData?: { [key: string]: unknown };
+  public extendedData?:  { [key: string]: unknown };
   /** Parent field */
   private _parent?: NestedContentField;
 
@@ -171,7 +170,7 @@ export class Field {
     priority: number,
     editor?: EditorDescription,
     renderer?: RendererDescription,
-    extendedData?: { [key: string]: unknown },
+    extendedData?: { [key: string] : unknown }
   ) {
     this.category = category;
     this.name = name;
@@ -213,7 +212,7 @@ export class Field {
 
   /** Serialize this object to JSON */
   public toJSON(): FieldJSON {
-    return omitUndefined({
+    return {
       category: this.category.name,
       name: this.name,
       label: this.label,
@@ -222,8 +221,8 @@ export class Field {
       priority: this.priority,
       renderer: this.renderer,
       editor: this.editor,
-      extendedData: this.extendedData,
-    });
+      extendedData: this.extendedData
+    };
   }
 
   /** Serialize this object to compressed JSON */
@@ -777,7 +776,7 @@ export class NestedContentField extends Field {
       relationshipMeaning: this.relationshipMeaning,
       actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
-      ...(this.autoExpand ? { autoExpand: true } : undefined),
+      autoExpand: this.autoExpand,
     };
   }
 

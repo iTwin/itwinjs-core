@@ -61,7 +61,8 @@ export class PlanProjectionSettings {
     return new PlanProjectionSettings(props);
   }
 
-  private constructor(props: PlanProjectionSettingsProps) {
+  /** @internal */
+  public constructor(props: PlanProjectionSettingsProps) {
     this.elevation = props.elevation;
     this.overlay = true === props.overlay;
     this.enforceDisplayPriority = true === props.enforceDisplayPriority;

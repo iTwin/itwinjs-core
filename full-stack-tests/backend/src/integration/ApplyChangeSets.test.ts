@@ -96,7 +96,7 @@ function applyChangesetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: C
     ++count;
     Logger.logInfo(HubUtility.logCategory, `Started applying Changeset: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
     try {
-      nativeDb.applyChangeset(changeSet, false);
+      nativeDb.applyChangeset(changeSet);
       Logger.logInfo(HubUtility.logCategory, "Successfully applied Changeset", () => ({ ...changeSet, status }));
     } catch (err: any) {
       Logger.logError(HubUtility.logCategory, `Error applying Changeset ${err.errorNumber}`, () => ({ ...changeSet }));

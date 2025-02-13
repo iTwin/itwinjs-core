@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
-import { IModelConnection, ScreenViewport, ViewCreator3d } from "@itwin/core-frontend";
+import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d} from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

@@ -7,8 +7,8 @@ import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
-import { GltfDataBuffer, GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
+import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
+import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../core-frontend";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -86,10 +86,6 @@ function expectBinaryData(reader: GltfGraphicsReader, expected: Uint8Array | und
     expect(Array.from(reader.binaryData!)).toEqual(Array.from(expected));
 }
 
-function convertToHexColorString(gltfColorBufferSplice: GltfDataBuffer): string {
-  return `#${Array.from(gltfColorBufferSplice).map((n) => n.toString(16).padStart(2, "0")).join("")}`;
-}
-
 describe("GltfReader", () => {
   let iModel: IModelConnection;
 
@@ -105,7 +101,7 @@ describe("GltfReader", () => {
 
   function createReader(gltf: Uint8Array | GltfDocument, idMap: BatchedTileIdMap | undefined = undefined): GltfGraphicsReader | undefined {
     const props = GltfReaderProps.create(gltf, true);
-    return props ? new GltfGraphicsReader(props, { gltf, iModel, idMap, pickableOptions: {id: "0x01"} }) : undefined;
+    return props ? new GltfGraphicsReader(props, { gltf, iModel, idMap }) : undefined;
   }
 
   it("accepts minimal glb", () => {
@@ -896,274 +892,6 @@ describe("GltfReader", () => {
   }
 }`);
 
-// this mesh contains two objects with different colors (physical colors of each object should match the colors defined in object's feature property table)
-const meshFeaturesExt: GltfDocument = JSON.parse(`
-{
-  "extensions": {
-    "EXT_structural_metadata": {
-      "schema": {
-        "id": "schema",
-        "classes": {
-          "class0": {
-            "properties": {
-              "color0": {
-                "type": "STRING"
-              },
-              "id": {
-                "type": "SCALAR",
-                "componentType": "INT32"
-              },
-              "height": {
-                "type": "SCALAR",
-                "componentType": "FLOAT64"
-              }
-            }
-          },
-          "class1": {
-            "properties": {
-              "color1": {
-                "type": "STRING"
-              },
-              "id": {
-                "type": "SCALAR",
-                "componentType": "INT32"
-              },
-              "height": {
-                "type": "SCALAR",
-                "componentType": "FLOAT64"
-              }
-            }
-          }
-        }
-      },
-      "propertyTables": [
-        {
-          "class": "class0",
-          "count": 4,
-          "properties": {
-            "color0": {
-              "values": 4,
-              "stringOffsets": 5
-            },
-            "id": {
-              "values": 6
-            },
-            "height": {
-              "values": 7
-            }
-          }
-        },
-        {
-          "class": "class1",
-          "count": 4,
-          "properties": {
-            "color1": {
-              "values": 4,
-              "stringOffsets": 5
-            },
-            "id": {
-              "values": 6
-            },
-            "height": {
-              "values": 7
-            }
-          }
-        }
-      ]
-    }
-  },
-  "extensionsUsed": [
-    "EXT_structural_metadata",
-    "EXT_mesh_features"
-  ],
-  "accessors": [
-    {
-      "bufferView": 0,
-      "byteOffset": 0,
-      "componentType": 5123,
-      "count": 132,
-      "type": "SCALAR",
-      "max": [
-        71
-      ],
-      "min": [
-        0
-      ]
-    },
-    {
-      "bufferView": 3,
-      "byteOffset": 0,
-      "componentType": 5126,
-      "count": 72,
-      "type": "VEC3",
-      "max": [
-        1,
-        1,
-        1
-      ],
-      "min": [
-        -1,
-        -1,
-        -1
-      ]
-    },
-    {
-      "bufferView": 3,
-      "byteOffset": 864,
-      "componentType": 5126,
-      "count": 72,
-      "type": "VEC3",
-      "max": [
-        0.84034216,
-        0.97562474,
-        0.86005926
-      ],
-      "min": [
-        -0.85006464,
-        -0.84470725,
-        -0.86005926
-      ]
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 0,
-      "componentType": 5121,
-      "count": 72,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 0,
-      "componentType": 5121,
-      "normalized": true,
-      "count": 72,
-      "type": "VEC4",
-      "max": [
-        255,
-        255,
-        0,
-        255
-      ],
-      "min": [
-        0,
-        0,
-        0,
-        255
-      ]
-    }
-  ],
-  "asset": {
-    "version": "2.0"
-  },
-  "buffers": [
-    {
-      "uri": "data:application/octet-stream;base64,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",
-      "byteLength": 2448
-    }
-  ],
-  "bufferViews": [
-    {
-      "buffer": 0,
-      "byteOffset": 0,
-      "byteLength": 264,
-      "target": 34963
-    },
-    {
-      "buffer": 0,
-      "byteOffset": 264,
-      "byteLength": 72,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteOffset": 336,
-      "byteLength": 288,
-      "byteStride": 4,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteOffset": 624,
-      "byteLength": 1728,
-      "byteStride": 12,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteOffset": 2352,
-      "byteLength": 28
-    },
-    {
-      "buffer": 0,
-      "byteOffset": 2380,
-      "byteLength": 20
-    },
-    {
-      "buffer": 0,
-      "byteOffset": 2400,
-      "byteLength": 16
-    },
-    {
-      "buffer": 0,
-      "byteOffset": 2416,
-      "byteLength": 32
-    }
-  ],
-  "materials": [
-    {
-      "pbrMetallicRoughness": {
-        "metallicFactor": 0
-      }
-    }
-  ],
-  "meshes": [
-    {
-      "primitives": [
-        {
-          "extensions": {
-            "EXT_mesh_features": {
-              "featureIds": [
-                {
-                  "featureCount": 4,
-                  "attribute": 0,
-                  "propertyTable": 0
-                },
-                {
-                  "featureCount": 4,
-                  "attribute": 0,
-                  "propertyTable": 1
-                }
-              ]
-            }
-          },
-          "attributes": {
-            "POSITION": 1,
-            "NORMAL": 2,
-            "_FEATURE_ID_0": 3,
-            "COLOR_0": 4
-          },
-          "indices": 0,
-          "material": 0,
-          "mode": 4
-        }
-      ]
-    }
-  ],
-  "nodes": [
-    {
-      "mesh": 0
-    }
-  ],
-  "scene": 0,
-  "scenes": [
-    {
-      "nodes": [
-        0
-      ]
-    }
-  ]
-}`);
-
   const compareArrays = (a: any[], b: any[]) => {
     for (let i = 0; i < a.length; i++) {
       if(Array.isArray(a[i])){
@@ -1249,149 +977,96 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       }
     });
 
-    describe("EXT_instance_features", () => {
-      it("parses instance features", async () => {
-        const idMap = new BatchedTileIdMap(iModel);
+    it("parses instance features", async () => {
+      const idMap = new BatchedTileIdMap(iModel);
 
-        const reader = createReader(instanceFeaturesExt, idMap)!;
-        expect(reader).toBeDefined();
+      const reader = createReader(instanceFeaturesExt, idMap)!;
+      expect(reader).toBeDefined();
 
-        const result = await reader.read();
-        expect(result).toBeDefined();
+      const result = await reader.read();
+      expect(result).toBeDefined();
 
-        let entryCount = 0;
-        for(const entry of idMap.entries()) {
-          expect(entry).toBeDefined();
+      let entryCount = 0;
+      for(const entry of idMap.entries()) {
+        expect(entry).toBeDefined();
 
-          // Expect empty property set for noData = 4 | -4 | "four"
-          if(entryCount === 3){
-            expect(JSON.stringify(entry.properties.propertySet0) === JSON.stringify({})).toBe(true);
-          } else {
-            let propertyCount0 = 0;
-            for(const [key, value] of Object.entries(entry.properties.propertySet0)){
-              if(key === "UINT8_VALUES") {
-                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "UINT16_VALUES") {
-                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "UINT32_VALUES") {
-                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "UINT64_VALUES") {
-                expect(value === expectedValuesBigUnsigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "INT8_VALUES") {
-                expect(value === expectedValuesSigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "INT16_VALUES") {
-                expect(value === expectedValuesSigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "INT32_VALUES") {
-                expect(value === expectedValuesSigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "INT64_VALUES") {
-                expect(value === expectedValuesBigSigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "FLOAT32_VALUES") {
-                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "FLOAT64_VALUES") {
-                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-                propertyCount0++;
-              } else if(key === "STRING_VALUES") {
-                expect(value === expectedValuesString[entryCount]).toBe(true);
-                propertyCount0++;
-              }
+        // Expect empty property set for noData = 4 | -4 | "four"
+        if(entryCount === 3){
+          expect(JSON.stringify(entry.properties.propertySet0) === JSON.stringify({})).toBe(true);
+        } else {
+          let propertyCount0 = 0;
+          for(const [key, value] of Object.entries(entry.properties.propertySet0)){
+            if(key === "UINT8_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "UINT16_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "UINT32_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "UINT64_VALUES") {
+              expect(value === expectedValuesBigUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT8_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT16_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT32_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT64_VALUES") {
+              expect(value === expectedValuesBigSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "FLOAT32_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "FLOAT64_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "STRING_VALUES") {
+              expect(value === expectedValuesString[entryCount]).toBe(true);
+              propertyCount0++;
             }
-            expect(propertyCount0 === 11).toBe(true);
           }
-
-          // Expect empty property set for null feature id = 3
-          if(instanceFeatures[entryCount] === 3){
-            expect(JSON.stringify(entry.properties.propertySet1) === JSON.stringify({})).toBe(true);
-          } else {
-            let propertyCount1 = 0;
-            for(const [key, value] of Object.entries(entry.properties.propertySet1)){
-              const array = value as any[];
-              if(key === "UINT8_VEC2_VALUES") {
-                expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]])).toBe(true);
-                propertyCount1++;
-              } else if(key === "UINT8_VEC3_VALUES") {
-                expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]])).toBe(true);
-                propertyCount1++;
-              } else if(key === "UINT8_VEC4_VALUES") {
-                expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
-                propertyCount1++;
-              } else if(key === "UINT8_MAT2_VALUES") {
-                expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
-                propertyCount1++;
-              } else if(key === "UINT8_MAT3_VALUES") {
-                expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]])).toBe(true);
-                propertyCount1++;
-              }else if(key === "UINT8_MAT4_VALUES") {
-                expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]])).toBe(true);
-                propertyCount1++;
-              }
-            }
-            expect(propertyCount1 === 6).toBe(true);
-          }
-
-          entryCount ++;
+          expect(propertyCount0 === 11).toBe(true);
         }
-        expect(entryCount === 4).toBe(true);
-      });
-    });
 
-    describe("EXT_mesh_features", () => {
-      it("feature indices should map to correct vertices", async () => {
-        const elementIdToStructuralMetadataMap = new BatchedTileIdMap(iModel);
-
-        const reader = createReader(meshFeaturesExt, elementIdToStructuralMetadataMap)!;
-        expect(reader).toBeDefined();
-
-        const result = await reader.read();
-        expect(result).toBeDefined();
-        expect((result.graphic as any).branch.entries[0].graphic.meshData.hasFeatures).toBe(true);
-
-        const idMapEntries = Array.from(elementIdToStructuralMetadataMap.entries());
-        const uniqueEntriesSize = idMapEntries.length;
-        expect(uniqueEntriesSize).toEqual(2);
-
-        const attributes = (meshFeaturesExt as any).meshes[0].primitives[0].attributes;
-        const colorBufferView = reader.getBufferView(attributes, `COLOR_0`);
-        const colorBuffer = colorBufferView?.toBufferData(GltfDataType.UInt32);
-        expect(colorBuffer).toBeDefined();
-
-        const extractedFeatureIndices = reader.meshes?.primitive.features?.indices;
-        expect(extractedFeatureIndices).toBeDefined();
-        expect(extractedFeatureIndices!.length).toEqual(colorBuffer!.count); // each mesh vertex should have a feature index
-
-        const elementIdToFeatureIndexMap = reader.meshElementIdToFeatureIndex;
-        expect(elementIdToFeatureIndexMap.size).toEqual(uniqueEntriesSize);
-        expect(elementIdToFeatureIndexMap.size).toEqual(new Set(elementIdToFeatureIndexMap.values()).size); // all key-value pairs should be unique
-        const featureIndexToStructuralMetadataMap = new Map(idMapEntries
-          .map(({id, properties}) => [elementIdToFeatureIndexMap.get(id), properties] as [number, Record<string, any>]));
-
-        const featureIndexToColorMap = new Map<number, string>();
-        extractedFeatureIndices!.forEach((featureIndex, i) => {
-          const color = colorBuffer!.buffer.slice(i*4, i*4+3);
-          const colorHex = convertToHexColorString(color);
-          if (featureIndexToColorMap.has(featureIndex)) {
-            const existingColorHex = featureIndexToColorMap.get(featureIndex);
-            expect(existingColorHex).toEqual(colorHex); // all vertices with the same feature index should map to the same object (physical color indicates object)
-          } else {
-            featureIndexToColorMap.set(featureIndex, colorHex);
+        // Expect empty property set for null feature id = 3
+        if(instanceFeatures[entryCount] === 3){
+          expect(JSON.stringify(entry.properties.propertySet1) === JSON.stringify({})).toBe(true);
+        } else {
+          let propertyCount1 = 0;
+          for(const [key, value] of Object.entries(entry.properties.propertySet1)){
+            const array = value as any[];
+            if(key === "UINT8_VEC2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_VEC3_VALUES") {
+              expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_VEC4_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_MAT2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_MAT3_VALUES") {
+              expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            }else if(key === "UINT8_MAT4_VALUES") {
+              expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            }
           }
+          expect(propertyCount1 === 6).toBe(true);
+        }
 
-          const properties = featureIndexToStructuralMetadataMap.get(featureIndex);
-          expect(properties?.class0?.color0).toBeDefined();
-          expect(properties?.class0?.color0).toEqual(colorHex); // physical color of the object should match the color defined in the feature property table
-          expect(properties?.class1?.color1).toBeDefined();
-          expect(properties?.class1?.color1).toEqual(colorHex); // multiple feature property tables should be supported
-        });
-        expect(featureIndexToColorMap.size).toEqual(uniqueEntriesSize);
-      });
+        entryCount ++;
+      }
+      expect(entryCount === 4).toBe(true);
     });
   });
 });

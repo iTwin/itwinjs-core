@@ -28,7 +28,7 @@ import { getFieldByLabel } from "../Utils";
 describe("PresentationManager", () => {
   let imodel: IModelDb;
   before(async () => {
-    await initialize({ imodelAppProps: { localization: testLocalization } });
+    await initialize({ localization: testLocalization });
     imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
@@ -173,17 +173,6 @@ describe("PresentationManager", () => {
       await using(new PresentationManager(), async (manager) => {
         const properties: ElementProperties[] = [];
         const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
-        for await (const items of iterator()) {
-          properties.push(...items);
-        }
-        expect(properties).to.matchSnapshot();
-      });
-    });
-
-    it("returns properties of specific elements by element ID", async () => {
-      await using(new PresentationManager(), async (manager) => {
-        const properties: ElementProperties[] = [];
-        const { iterator } = await manager.getElementProperties({ imodel, elementIds: ["0x74", "0x1", "0x75"] });
         for await (const items of iterator()) {
           properties.push(...items);
         }

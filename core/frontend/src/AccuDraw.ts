@@ -25,7 +25,7 @@ import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
-import { FormatterSpec, FormatType, ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
+import { ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
 import { GraphicType } from "./common/render/GraphicType";
 
 // cspell:ignore dont primitivetools
@@ -268,10 +268,8 @@ export class AccuDraw {
       this.onCompassDisplayChange(wasActive ? "hide" : "show");
   }
 
-  /** The current compass mode */
-  public compassMode = CompassMode.Rectangular;
-  /** The current compass rotation */
-  public rotationMode = RotationMode.View;
+  public compassMode = CompassMode.Rectangular; // Compass mode
+  public rotationMode = RotationMode.View; // Compass rotation
   /** @internal */
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
   /** @internal */
@@ -292,8 +290,8 @@ export class AccuDraw {
   private readonly _angleRoundOff = new RoundOff(); // angle round off enabled and unit
   /** @internal */
   public readonly flags = new Flags(); // current state flags
-  private readonly _fieldLocked: [boolean, boolean, boolean, boolean, boolean] = [false, false, false, false, false]; // locked state of fields
-  private readonly _keyinStatus: [KeyinStatus, KeyinStatus, KeyinStatus, KeyinStatus, KeyinStatus] = [KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic]; // state of input field
+  private readonly _fieldLocked: boolean[] = []; // locked state of fields
+  private readonly _keyinStatus: KeyinStatus[] = []; // state of input field
   /** @internal */
   public readonly savedStateViewTool = new SavedState(); // Restore point for shortcuts/tools...
   /** @internal */
@@ -350,25 +348,16 @@ export class AccuDraw {
   /** @internal */
   protected readonly _fillColorNoFocus = ColorDef.create(ColorByName.lightGrey);
 
-  /** When true improve behavior for +/- input when cursor switches side and try to automatically manage focus */
+  // User Preference Settings...
   public smartKeyin = true;
-  /** When true the compass follows the origin hint as opposed to remaining at a fixed location */
   public floatingOrigin = true;
-  /** When true the z input field will remain locked with it's current value after a data button  */
   public stickyZLock = false;
-  /** When true the compass is always active and on screen instead of following the current tools request to activate */
   public alwaysShowCompass = false;
-  /** When true all tool hints are applied as opposed to only selected hints */
   public contextSensitive = true;
-  /** When true the current point is adjusted to the x and y axes when within a close tolerance */
   public axisIndexing = true;
-  /** When true the current point is adjusted to the last locked distance value when within a close tolerance */
   public distanceIndexing = true;
-  /** When true locking the angle also moves focus to the angle input field */
   public autoFocusFields = true;
-  /** When true fully specifying a point by entering both distance and angle in polar mode or XY[Z] in rectangular mode, the point is automatically accepted */
   public autoPointPlacement = false;
-
   private static _tempRot = new Matrix3d();
 
   /** @internal */
@@ -382,13 +371,9 @@ export class AccuDraw {
     return rMatrix;
   }
 
-  /** When true AccuDraw is enabled by the application and can be used by interactive tools */
-  public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
-  /** When true the compass is displayed and adjusting input points for the current interactive tool */
   public get isActive(): boolean { return CurrentState.Active === this.currentState; }
-  /** When true the compass is not displayed or adjusting points, but it can be automatically activated by the current interactive tool or via shortcuts */
+  public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
   public get isInactive(): boolean { return (CurrentState.Inactive === this.currentState); }
-  /** When true the compass is not displayed or adjusting points, the current interactive tool has disabled automatic activation, but can still be enabled via shortcuts */
   public get isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
 
   /** Get the current lock state for the supplied input field */
@@ -396,12 +381,8 @@ export class AccuDraw {
   /** @internal */
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
 
-  /** Get whether AccuDraw currently has input focus */
-  public get hasInputFocus() { return true; }
-  /** Called to request input focus be set to AccuDraw. Focus is managed by AccuDraw UI. */
+  /** Implement this method to set focus to the AccuDraw UI. */
   public grabInputFocus() { }
-  /** Get default focus item for the current compass mode */
-  public defaultFocusItem(): ItemField { return (CompassMode.Polar === this.compassMode ? ItemField.DIST_Item : this.newFocus); }
 
   /** @internal */
   public activate(): void {
@@ -889,23 +870,13 @@ export class AccuDraw {
     // animator -> ChangeOfRotation(Matrix3d:: FromColumnVectors(oldRotation[0], oldRotation[1], oldRotation[2]));
   }
 
-  /**
-   * Enable AccuDraw so that it can be used by interactive tools.
-   * This method is public to allow applications to provide a user interface to enable/disable AccuDraw.
-   * @note Should not be called by interactive tools, those should use [[AccuDrawHintBuilder]]. AccuDraw is enabled for applications by default.
-   * @see [[disableForSession]]
-   */
+  /** @internal */
   public enableForSession(): void {
     if (CurrentState.NotEnabled === this.currentState)
       this.currentState = CurrentState.Inactive;
   }
 
-  /**
-   * Disable AccuDraw so that it can not be used by interactive tools.
-   * This method is public to allow applications to provide a user interface to enable/disable AccuDraw.
-   * @note Should not be called by interactive tools, those should use [[AccuDrawHintBuilder]]. AccuDraw is enabled for applications by default.
-   * @see [[enableForSession]]
-   */
+  /** @internal */
   public disableForSession(): void {
     this.currentState = CurrentState.NotEnabled;
     this.flags.redrawCompass = true; // Make sure decorators are called so we don't draw (i.e. erase AccuDraw compass)
@@ -1034,11 +1005,6 @@ export class AccuDraw {
     return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
   }
 
-  /** Allow the AccuDraw user interface to supply the distance parser */
-  public getLengthFormatter(): FormatterSpec | undefined {
-    return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
-  }
-
   private stringToDistance(str: string): QuantityParseResult {
     const parserSpec = this.getLengthParser();
     if (parserSpec)
@@ -1046,29 +1012,13 @@ export class AccuDraw {
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
-  private stringFromDistance(distance: number): string {
-    const formatterSpec = this.getLengthFormatter();
-    let formattedValue = distance.toString();
-    if (formatterSpec)
-      formattedValue = IModelApp.quantityFormatter.formatQuantity(distance, formatterSpec);
-    return formattedValue;
-  }
-
   /** Allow the AccuDraw user interface to specify bearing */
-  public get isBearingMode(): boolean { return this.getAngleParser()?.format.type === FormatType.Bearing; }
-
-  /** Allow the AccuDraw user interface to specify bearing directions are always in xy plane */
-  public get bearingFixedToPlane2d() { return this.flags.bearingFixToPlane2D; }
-  public set bearingFixedToPlane2d(enable: boolean) { this.flags.bearingFixToPlane2D = enable; }
+  public get isBearingMode(): boolean { return false; }
 
   /** Allow the AccuDraw user interface to supply the angle/direction parser */
   public getAngleParser(): ParserSpec | undefined {
+    // TODO: Use QuantityType.Angle when isBearingMode=false and "Bearing" for isBearingMode=true.
     return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
-  }
-
-  /** Allow the AccuDraw user interface to supply the angle/direction formatter */
-  public getAngleFormatter(): FormatterSpec | undefined {
-    return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
   }
 
   private stringToAngle(inString: string): QuantityParseResult {
@@ -1076,35 +1026,6 @@ export class AccuDraw {
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
     return { ok: false, error: ParseError.InvalidParserSpec };
-  }
-
-  private stringFromAngle(angle: number): string {
-    if (this.isBearingMode && this.flags.bearingFixToPlane2D) {
-      const point = Vector3d.create(this.axes.x.x, this.axes.x.y, 0.0);
-
-      point.normalizeInPlace();
-      let adjustment = Math.acos(point.x);
-
-      if (point.y < 0.0)
-        adjustment = -adjustment;
-      angle += adjustment;
-    }
-
-    const formatterSpec = this.getAngleFormatter();
-    let formattedValue = angle.toString();
-    if (formatterSpec)
-      formattedValue = IModelApp.quantityFormatter.formatQuantity(angle, formatterSpec);
-    return formattedValue;
-  }
-
-  /** Can be called by sub-classes to get a formatted value to display for an AccuDraw input field
-   * @see [[onFieldValueChange]]
-   */
-  public getFormattedValueByIndex(index: ItemField): string {
-    const value = IModelApp.accuDraw.getValueByIndex(index);
-    if (ItemField.ANGLE_Item === index)
-      return this.stringFromAngle(value);
-    return this.stringFromDistance(value);
   }
 
   private updateFieldValue(index: ItemField, input: string): BentleyStatus {
@@ -1181,7 +1102,7 @@ export class AccuDraw {
 
   /** @internal */
   public unlockAllFields(): void {
-    this.locked = LockedStates.NONE_LOCKED;;
+    this.locked = 0;
 
     if (CompassMode.Polar === this.compassMode) {
       if (this._fieldLocked[ItemField.DIST_Item])
@@ -1590,7 +1511,6 @@ export class AccuDraw {
 
   /** @internal */
   public changeCompassMode(animate: boolean = false): void {
-    this.unlockAllFields(); // Clear locks for the current mode and send change notifications...
     this.setCompassMode(CompassMode.Polar === this.compassMode ? CompassMode.Rectangular : CompassMode.Polar);
 
     const viewport = this.currentView;
@@ -2273,7 +2193,9 @@ export class AccuDraw {
   public onFieldLockChange(_index: ItemField) { }
   /** Called after input field value changes */
   public onFieldValueChange(_index: ItemField) { }
-  /** Called to request focus change to the specified input field */
+  /** Whether AccuDraw currently has input focus */
+  public get hasInputFocus() { return true; }
+  /** Set focus to the specified input field */
   public setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
@@ -2904,38 +2826,9 @@ export class AccuDraw {
   /** @internal */
   public onEndDynamics(): boolean { return this.downgradeInactiveState(); }
 
-  /** Can be called by sub-classes as the default implementation of onMotion.
-   * @see [[onMotion]]
-   * @note Input fields are expected to call [[AccuDrawShortcuts.itemFieldNewInput]] when the user enters a value that is not a shortcut
-   * and call [[AccuDrawShortcuts.itemFieldCompletedInput]] when a value is accepted, such as when focusing out of the field. This is
-   * required for processMotion to correctly handle updating dynamic field values to reflect the current cursor location.
-   */
-  public processMotion(): void {
-    if (this.flags.dialogNeedsUpdate || !this.isActive) {
-      if (this.isActive && this.smartKeyin) {
-        // NOTE: fixPointRectangular sets newFocus to either x or y based on which axis is closer to the input point...
-        if (CompassMode.Rectangular === this.compassMode && !this.dontMoveFocus && !this.getFieldLock(this.newFocus))
-          this.setFocusItem(this.newFocus);
-      }
-
-      const sendDynamicFieldValueChange = (item: ItemField): void => {
-        if (KeyinStatus.Dynamic === this.getKeyinStatus(item))
-          this.onFieldValueChange(item);
-      };
-
-      // NOTE: Shows the current deltas for rectangular mode when active and current coordinate when not active...
-      sendDynamicFieldValueChange(ItemField.X_Item);
-      sendDynamicFieldValueChange(ItemField.Y_Item);
-      sendDynamicFieldValueChange(ItemField.Z_Item);
-      sendDynamicFieldValueChange(ItemField.ANGLE_Item);
-      sendDynamicFieldValueChange(ItemField.DIST_Item);
-    }
-  }
-
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
    * axis isn't locked to support "smart lock".
-   * @see [[processMotion]]
    */
   public onMotion(_ev: BeButtonEvent): void { }
 
@@ -3391,14 +3284,6 @@ export class AccuDrawHintBuilder {
 
   /** Whether AccuDraw compass is currently displayed and points are being adjusted */
   public static get isActive(): boolean { return IModelApp.accuDraw.isActive; }
-
-  /**
-   * Immediately process pending hints and update tool dynamics using the adjusted point when not called from a button down event.
-   * @note Provided to help with exceptions cases, such as starting an InputCollector from the active tool's drag event, that are not handled by normal hint processing.
-   * A typical interactive tool should not call this method and should only be calling sendHints.
-   * @see [[sendHints]]
-   */
-  public static processHintsImmediate(): void { return IModelApp.accuDraw.refreshDecorationsAndDynamics(); }
 
   /**
    * Provide hints to AccuDraw using the current builder state.

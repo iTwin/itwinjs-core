@@ -55,3 +55,4 @@ public;interface;SelectionManagerProps
 public;class;SelectionScopesManager
 public;interface;SelectionScopesManagerProps
 internal;class;ToolSelectionSyncHandler
+internal;const;TRANSIENT_ELEMENT_CLASSNAME

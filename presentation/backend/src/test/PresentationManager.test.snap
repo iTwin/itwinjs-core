@@ -52,17 +52,19 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
+        "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Uzbekistan",
         "priority": 0,
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -125,17 +127,19 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
+        "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Investor",
         "priority": 0,
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -198,17 +202,19 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
+        "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Virginia",
         "priority": 0,
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -269,7 +275,6 @@ Object {
     "contentFlags": 0,
     "displayType": "test",
     "fields": Array [],
-    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -330,6 +335,8 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
+        "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
         "name": "e-markets",
@@ -343,13 +350,13 @@ Object {
             },
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "double",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -412,6 +419,8 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
+        "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
         "name": "HTTP",
@@ -425,13 +434,13 @@ Object {
             },
           },
         ],
+        "renderer": undefined,
         "type": Object {
           "typeName": "double",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -494,17 +503,19 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
+        "editor": undefined,
+        "extendedData": undefined,
         "isReadonly": false,
         "label": "Not specified",
         "name": "Legacy",
         "priority": 0,
+        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
-    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -564,6 +575,7 @@ Object {
           "some_param": 17857,
         },
       },
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "generating",
       "name": "Primitive property field with editor",
@@ -590,6 +602,7 @@ Object {
           },
         },
       ],
+      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -597,6 +610,8 @@ Object {
     },
     Object {
       "category": "test-category",
+      "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": true,
       "label": "bus Strategist Facilitator",
       "name": "Complex array of structs property field",
@@ -615,6 +630,7 @@ Object {
           },
         },
       ],
+      "renderer": undefined,
       "type": Object {
         "memberType": Object {
           "members": Array [
@@ -651,16 +667,21 @@ Object {
       "autoExpand": true,
       "category": "test-category",
       "contentClassInfo": "0x1",
+      "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "24/7 Home Loan Account stable",
       "name": "Nested content field",
       "nestedFields": Array [
         Object {
           "category": "test-category",
+          "editor": undefined,
+          "extendedData": undefined,
           "isReadonly": true,
           "label": "Avon Planner Ways",
           "name": "Simple property field",
           "priority": 27093,
+          "renderer": undefined,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -679,6 +700,7 @@ Object {
       ],
       "priority": 77648,
       "relationshipMeaning": "RelatedInstance",
+      "renderer": undefined,
       "type": Object {
         "members": Array [
           Object {
@@ -1303,7 +1325,6 @@ Object {
   "contentFlags": 0,
   "displayType": "",
   "fields": Array [],
-  "inputKeysHash": "",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": false,

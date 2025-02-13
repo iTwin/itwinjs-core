@@ -4,11 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ClientDiagnostics } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
-import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("Diagnostics", async () => {
   let imodel: IModelConnection;
@@ -16,7 +15,7 @@ describe("Diagnostics", async () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = TestIModelConnection.openFile(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 
@@ -57,7 +56,7 @@ describe("Learning Snippets", () => {
 
     before(async () => {
       await initialize();
-      imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     });
 
     after(async () => {

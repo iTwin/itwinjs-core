@@ -6,11 +6,10 @@ import { Point3d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
   CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, PanViewTool,
-  RenderPlan, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync,
+  RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
 } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs
 
@@ -32,8 +31,8 @@ describe("Viewport", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend(undefined, true);
-    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel2 = await TestSnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel2 = await SnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -116,26 +115,22 @@ describe("Viewport", () => {
   });
 
   it("loadFontMap", async () => {
-    const fonts1 = await imodel.loadFontMap(); // eslint-disable-line @typescript-eslint/no-deprecated
+    const fonts1 = await imodel.loadFontMap();
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
     assert.equal(1, fonts1.getFont("Arial")!.id, "get Font 1, by name");
-    assert.equal(1, fonts1.getFont("arial")!.id, "get Font 1, by name case insensitive");
     assert.equal(FontType.Rsc, fonts1.getFont(2)!.type, "get font 2 type is Rsc");
     assert.equal("Font0", fonts1.getFont(2)!.name, "get Font 2 name");
     assert.equal(2, fonts1.getFont("Font0")!.id, "get Font 2, by name");
-    assert.equal(2, fonts1.getFont("fOnt0")!.id, "get Font 2, by name case insensitive");
     assert.equal(FontType.Shx, fonts1.getFont(3)!.type, "get font 1 type is Shx");
     assert.equal("ShxFont0", fonts1.getFont(3)!.name, "get Font 3 name");
     assert.equal(3, fonts1.getFont("ShxFont0")!.id, "get Font 3, by name");
-    assert.equal(3, fonts1.getFont("shxfont0")!.id, "get Font 3, by name case insensitive");
     assert.equal(FontType.TrueType, fonts1.getFont(4)!.type, "get font 4 type is TrueType");
     assert.equal("Calibri", fonts1.getFont(4)!.name, "get Font 4 name");
-    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 4, by name");
-    assert.equal(4, fonts1.getFont("cAlIbRi")!.id, "get Font 4, by name case insensitive");
+    assert.equal(4, fonts1.getFont("Calibri")!.id, "get Font 3, by name");
     assert.isUndefined(fonts1.getFont("notfound"), "attempt lookup of a font that should not be found");
-    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap"); // eslint-disable-line @typescript-eslint/no-deprecated
+    assert.deepEqual(new FontMap(fonts1.toJSON()), fonts1, "toJSON on FontMap");
   });
 
   it("creates a RenderPlan from a viewport", () => {

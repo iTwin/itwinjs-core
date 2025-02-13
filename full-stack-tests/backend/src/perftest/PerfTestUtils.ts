@@ -6,8 +6,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import {
+  BriefcaseIdValue, Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+} from "@itwin/core-common";
 import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 
 export class PerfTestDataMgr {

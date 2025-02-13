@@ -7,7 +7,7 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   buildElementProperties,
@@ -151,9 +151,14 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   private async getIModel(token: IModelRpcProps): Promise<IModelDb> {
-    const imodel = IModelDb.findByKey(token.key);
-    // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
-    await imodel.refreshContainerForRpc(RpcTrace.expectCurrentActivity.accessToken);
+    let imodel: IModelDb;
+    try {
+      imodel = IModelDb.findByKey(token.key);
+      // call refreshContainer, just in case this is a V2 checkpoint whose sasToken is about to expire, or its default transaction is about to be restarted.
+      await imodel.refreshContainerForRpc(RpcTrace.expectCurrentActivity.accessToken);
+    } catch {
+      throw new PresentationError(PresentationStatus.InvalidArgument, "IModelRpcProps doesn't point to a valid iModel");
+    }
     return imodel;
   }
 
@@ -165,7 +170,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 
-    const imodel = await this.getIModel(token);
+    let imodel: IModelDb;
+    try {
+      imodel = await this.getIModel(token);
+    } catch (e) {
+      assert(e instanceof Error);
+      return this.errorResponse(PresentationStatus.InvalidArgument, e.message);
+    }
 
     let resultPromise = this._pendingRequests.getValue(requestKey);
     if (resultPromise) {
@@ -214,12 +225,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       // initiate request
       resultPromise = request(managerRequestOptions)
         .then((result) => this.successResponse(result, diagnostics))
-        .catch((e: unknown) => {
-          if (e instanceof PresentationError) {
-            return this.errorResponse(e.errorNumber, e.message, diagnostics);
-          }
-          throw e;
-        });
+        .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message, diagnostics));
 
       // store the request promise
       this._pendingRequests.addValue(requestKey, resultPromise);
@@ -237,32 +243,25 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     let timeout: NodeJS.Timeout;
     const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
-        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-        reject("timeout");
+        reject(new Error());
       }, this._requestTimeout);
     });
 
     Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Returning a promise with a timeout of ${this._requestTimeout}.`);
     return Promise.race([resultPromise, timeoutPromise])
-      .catch<PresentationRpcResponseData>((e: unknown) => {
-        if (e === "timeout") {
-          // note: error responses from the manager get handled when creating `resultPromise`, so we can only get here due
-          // to a timeout exception
-          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
-          return this.errorResponse(PresentationStatus.BackendTimeout);
-        }
-        // ...or an error that we don't want to reveal - let RPC system handle it.
-        throw e;
+      .catch<PresentationRpcResponseData>(() => {
+        // note: error responses from the manager get handled when creating `resultPromise`, so we can only get here due
+        // to a timeout exception
+        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
+        return this.errorResponse(PresentationStatus.BackendTimeout);
       })
       .then((response: PresentationRpcResponseData<TResult>) => {
         if (response.statusCode !== PresentationStatus.BackendTimeout) {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request completed, returning result.`);
           this._pendingRequests.deleteValue(requestKey);
         }
-        return response;
-      })
-      .finally(() => {
         clearTimeout(timeout);
+        return response;
       });
   }
 
@@ -413,7 +412,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     token: IModelRpcProps,
     requestOptions: Paged<ContentRpcRequestOptions>,
   ): PresentationRpcResponse<PagedResponse<ItemJSON>> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const response = await this.getPagedContent(token, requestOptions);
     if (response.statusCode !== PresentationStatus.Success) {
       return this.errorResponse(response.statusCode, response.errorMessage, response.diagnostics);

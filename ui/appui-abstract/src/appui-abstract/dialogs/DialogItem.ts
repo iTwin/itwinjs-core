@@ -23,6 +23,10 @@ export interface EditorPosition {
   rowPriority: number;
   /** Determines the column position for the type editor */
   columnIndex: number;
+  /** Number of columns to occupy. Defaults to 1
+   * @deprecated in 2.19. No longer necessary, ignored.
+   */
+  columnSpan?: number;
 }
 
 /** [[BaseDialogItem]] contains only the members necessary to create a PropertyRecord.

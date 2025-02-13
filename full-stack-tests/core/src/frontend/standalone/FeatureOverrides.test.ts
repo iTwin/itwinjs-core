@@ -5,10 +5,9 @@
 import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
-import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
+import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
 import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl";
 import { TestUtility } from "../TestUtility";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -30,7 +29,7 @@ describe("FeatureOverrides", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
-    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -61,7 +60,7 @@ describe("FeatureOverrides", () => {
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
     const hls = new HiliteSet(imodel);
-    hls.add({ elements: "0x1" });
+    hls.setHilite("0x1", true);
     vp.target.setHiliteSet(hls);
     ovr.update(table);
     expect(ovr.anyHilited).to.be.true;
@@ -88,7 +87,7 @@ describe("FeatureOverrides", () => {
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
     const hls = new HiliteSet(imodel);
-    hls.add({ elements: "0x1" });
+    hls.setHilite("0x1", true);
     vp.target.setHiliteSet(hls);
     ovr.update(table);
     expect(ovr.anyHilited).to.be.true;

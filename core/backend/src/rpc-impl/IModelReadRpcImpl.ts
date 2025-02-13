@@ -258,7 +258,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.views.getViewStateProps(viewDefinitionId, options);
   }
 
-  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> { // eslint-disable-line @typescript-eslint/no-deprecated
+  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
     const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb[_nativeDb].readFontMap();
   }

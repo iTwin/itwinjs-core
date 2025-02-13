@@ -5,20 +5,19 @@
 import { expect } from "chai";
 import deepEqual from "deep-equal";
 import { sort } from "fast-sort";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { InstanceKey, NodeKey, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { printRuleset } from "../../Utils";
 import { collect } from "../../../Utils";
-import { TestIModelConnection } from "../../../IModelSetupUtils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {

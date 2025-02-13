@@ -23,7 +23,7 @@ import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInt
 
 class ElectronIpc implements IpcSocketBackend {
   public addListener(channel: string, listener: IpcListener): RemoveFunction {
-    ElectronHost.ipcMain.addListener(channel, listener);
+    ElectronHost.ipcMain.addListener(channel, listener as any);
     return () => ElectronHost.ipcMain.removeListener(channel, listener);
   }
   public removeListener(channel: string, listener: IpcListener) {
@@ -68,12 +68,9 @@ export interface ElectronHostOpts extends NativeHostOpts {
 
 /** @beta */
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
-  /** Name used to construct key for saving window size, position and maximize status to the settings store */
   storeWindowName?: string;
   /** The style of window title bar. Default is `default`. */
   titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
-  /** Web page settings */
-  webPreferences?: Omit<WebPreferences, "preload" | "experimentalFeatures" | "nodeIntegration" | "contextIsolation" | "sandbox" | "nodeIntegrationInWorker" | "nodeIntegrationInSubFrames">;
 }
 
 /** the size and position of a window as stored in the settings file.
@@ -91,6 +88,9 @@ export interface WindowSizeAndPositionProps {
  * @beta
  */
 export class ElectronHost {
+  private static readonly _deprecatedSizeAndPosStoreKey = "windowPos";
+  private static readonly _sizeAndPosStoreKey = "windowSizeAndPos";
+
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
   private static _electron: typeof ElectronModule;
@@ -107,13 +107,13 @@ export class ElectronHost {
   private constructor() { }
 
   /**
-   * Converts an "electron://frontend/" URL to an "file://{absolute file path}" URL.
+   * Converts an "electron://frontend/" URL to an absolute file path.
    *
    * We use this protocol in production builds because our frontend must be built with absolute URLs,
    * however, since we're loading everything directly from the install directory, we cannot know the
    * absolute path at build time.
    */
-  private static transformElectronUrlToFileUrl(requestedUrl: string): string {
+  private static parseElectronUrl(requestedUrl: string): string {
     // Note that the "frontend/" path is arbitrary - this is just so we can handle *some* relative URLs...
     let assetPath = requestedUrl.substring(this._electronFrontend.length);
     if (assetPath.length === 0)
@@ -128,7 +128,7 @@ export class ElectronHost {
     }
     if (!assetPath.startsWith(this.webResourcesPath))
       throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
-    return `file://${assetPath}`;
+    return assetPath;
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
@@ -160,23 +160,28 @@ export class ElectronHost {
     /** Monitors and saves main window size, position and maximized state */
     if (options?.storeWindowName) {
       const mainWindow = this._mainWindow;
-      const windowName = options.storeWindowName;
-      const saveWindowPosition = () => {
+      const name = options.storeWindowName;
+      const saveWindowPosition = (key: string) => {
         const bounds: WindowSizeAndPositionProps = mainWindow.getBounds();
-        NativeHost.settingsStore.setData(`windowSizeAndPos-${windowName}`, JSON.stringify(bounds));
+        NativeHost.settingsStore.setData(`${key}-${name}`, JSON.stringify(bounds));
       };
       const saveMaximized = (maximized: boolean) => {
-        NativeHost.settingsStore.setData(`windowMaximized-${windowName}`, maximized);
+        if (!maximized)
+          saveWindowPosition(this._deprecatedSizeAndPosStoreKey);
+        NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
       };
 
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
       saveMaximized(mainWindow.isMaximized());
 
-      const debouncedSaveWindowSizeAndPos = debounce(() => saveWindowPosition());
+      mainWindow.on("resized", () => saveWindowPosition(this._deprecatedSizeAndPosStoreKey));
+      mainWindow.on("moved", () => saveWindowPosition(this._deprecatedSizeAndPosStoreKey));
+
+      const debouncedSaveWindowSizeAndPos = debounce(() => saveWindowPosition(this._sizeAndPosStoreKey));
       mainWindow.on("resize", () => debouncedSaveWindowSizeAndPos());
       mainWindow.on("move", () => debouncedSaveWindowSizeAndPos());
-      saveWindowPosition();
+      saveWindowPosition(this._sizeAndPosStoreKey);
     }
   }
 
@@ -185,9 +190,22 @@ export class ElectronHost {
 
   /**
    * Gets window size and position for a window, by name, from settings file, if present.
+   * @note Size and position values in the settings file will be updated differently depending on platform.
+   *       On Linux values are only updated on window "unmaximize".
+   *       On Windows and MacOS values are also updated on window manual resize or move.
+   *       To get consistent behavior across different platforms, use [[ElectronHost.getWindowSizeAndPositionSetting]].
+   * @deprecated in 3.6. Use [[ElectronHost.getWindowSizeAndPositionSetting]].
+   */
+  public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
+    const saved = NativeHost.settingsStore.getString(`${this._deprecatedSizeAndPosStoreKey}-${windowName}`);
+    return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
+  }
+
+  /**
+   * Gets window size and position for a window, by name, from settings file, if present.
    */
   public static getWindowSizeAndPositionSetting(windowName: string): WindowSizeAndPositionProps | undefined {
-    const saved = NativeHost.settingsStore.getString(`windowSizeAndPos-${windowName}`);
+    const saved = NativeHost.settingsStore.getString(`${this._sizeAndPosStoreKey}-${windowName}`);
     return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
   }
 
@@ -232,7 +250,7 @@ export class ElectronHost {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      this.electron.protocol.handle("electron", async (request) => ElectronHost.electron.net.fetch(this.transformElectronUrlToFileUrl(request.url)));
+      this.electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-deprecated
     }
 
     this._openWindow(windowOptions);

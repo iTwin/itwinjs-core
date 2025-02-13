@@ -36,12 +36,8 @@ export const electronHostTestSuite: TestSuite = {
       func: testOpenMainWindow,
     },
     {
-      title: "Should open provided Web URL in main window.",
-      func: testMainWindowOpenedWithWebUrl,
-    },
-    {
-      title: "Should open local index.html in main window.",
-      func: testMainWindowOpenedWithLocalFile,
+      title: "Should open provided URL in main window.",
+      func: testMainWindowUrl,
     },
     {
       title: "Should save main window size, position and maximized flag.",
@@ -123,7 +119,7 @@ async function testOpenMainWindow() {
   assert(ElectronHost.mainWindow?.id === windows[0].id);
 }
 
-async function testMainWindowOpenedWithWebUrl() {
+async function testMainWindowUrl() {
   const url = "https://www.itwinjs.org/";
 
   await ElectronHost.startup({
@@ -138,32 +134,6 @@ async function testMainWindowOpenedWithWebUrl() {
 
   await new Promise((resolve) => window.webContents.once("did-finish-load", () => resolve(undefined)));
   assert(url === window.webContents.getURL());
-
-  const html: string = await window.webContents.executeJavaScript('document.documentElement.outerHTML');
-  assert(html.includes("iTwin.js"));
-}
-
-async function testMainWindowOpenedWithLocalFile() {
-  await ElectronHost.startup({
-    electronHost: {
-      webResourcesPath: path.join(__dirname, "..", "assets"),
-    },
-  });
-
-  await ElectronHost.openMainWindow();
-
-  assert(ElectronHost.electron.protocol.isProtocolHandled("electron"));
-  assert(ElectronHost.mainWindow !== undefined);
-
-  const window = ElectronHost.mainWindow;
-  await new Promise((resolve) => window.webContents.once("did-finish-load", () => resolve(undefined)));
-
-  const url = window.webContents.getURL();
-  assert(url.startsWith("electron://"));
-  assert(url.endsWith("index.html"));
-
-  const html: string = await window.webContents.executeJavaScript('document.documentElement.outerHTML');
-  assert(html.includes("Electron test window"));
 }
 
 async function testWindowSizeSettings() {

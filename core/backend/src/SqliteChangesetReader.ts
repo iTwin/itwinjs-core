@@ -119,20 +119,6 @@ export class SqliteChangesetReader implements IDisposable {
     return reader;
   }
   /**
-   * Open txn change in iModel.
-   * @param args iModel and other options.
-   * @returns SqliteChangesetReader instance
-   */
-  public static openTxn(args: { txnId: Id64String } & SqliteChangesetReaderArgs): SqliteChangesetReader {
-    if (args.db instanceof ECDb) {
-      throw new Error("ECDb does not support openTxn");
-    }
-    const reader = new SqliteChangesetReader(args.db);
-    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false);
-    return reader;
-  }
-  /**
    * Writes the changeset to a file.
    * @note can be use with openGroup() or openLocalChanges() to persist changeset.
    * @param args - The arguments for writing to the file.

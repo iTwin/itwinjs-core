@@ -31,7 +31,7 @@ describe("Server-based locks", () => {
     const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
     assert.isFalse(sourceDb.locks.isServerBased);
     await ExtensiveTestScenario.prepareDb(sourceDb);
-    await ExtensiveTestScenario.populateDb(sourceDb);
+    ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.saveChanges();
     sourceDb.close();
     return dbName;

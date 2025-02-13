@@ -9,7 +9,7 @@
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
+import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
@@ -17,14 +17,20 @@ import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
+import { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of an ECEntityClass.
  * @beta
  */
 export class EntityClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.EntityClass;
+  public override readonly schemaItemType!: SchemaItemType.EntityClass;
   protected _mixins?: LazyLoadedMixin[];
+
+  constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
+    super(schema, name, modifier);
+    this.schemaItemType = SchemaItemType.EntityClass;
+  }
 
   public get mixins(): LazyLoadedMixin[] {
     if (!this._mixins)

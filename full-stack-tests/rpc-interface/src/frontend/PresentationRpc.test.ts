@@ -23,7 +23,7 @@ describe("PresentationRpcInterface tests", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    const accessToken = testContext.serviceAuthToken;
+    const accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });

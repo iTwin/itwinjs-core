@@ -6,8 +6,8 @@
  * @module Relationships
  */
 
-import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";

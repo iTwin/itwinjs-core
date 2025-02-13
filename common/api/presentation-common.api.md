@@ -49,14 +49,6 @@ export interface ArrayPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends Pr
 }
 
 // @public
-export interface ArrayPropertyValueConstraints {
-    // (undocumented)
-    maxOccurs?: number;
-    // (undocumented)
-    minOccurs?: number;
-}
-
-// @public
 export interface ArrayTypeDescription extends BaseTypeDescription {
     memberType: TypeDescription;
     valueFormat: PropertyValueFormat.Array;
@@ -1727,23 +1719,11 @@ export interface LocalizationHelperProps {
 }
 
 // @public
-export interface MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
+export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
     batchSize?: number;
     contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
-}
-
-// @public
-export interface MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent = ElementProperties> extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
     elementClasses?: string[];
 }
-
-// @public
-export interface MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent = ElementProperties> extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
-    elementIds?: Id64String[];
-}
-
-// @public
-export type MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> = MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent> | MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent>;
 
 // @public
 export interface MultiSchemaClassesSpecification {
@@ -2131,14 +2111,6 @@ export interface NodeUpdateInfoJSON {
 }
 
 // @public
-export interface NumericPropertyValueConstraints {
-    // (undocumented)
-    maximumValue?: number;
-    // (undocumented)
-    minimumValue?: number;
-}
-
-// @public
 type Omit_2<T, K> = Pick<T, Exclude<keyof T, K>>;
 export { Omit_2 as Omit }
 
@@ -2223,45 +2195,45 @@ export type PresentationQueryBinding = IdBinding | IdSetBinding | ECValueBinding
 export class PresentationRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
-    // @deprecated (undocumented)
+    // (undocumented)
     computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{
         total: number;
         items: KeySetJSON;
     }>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinition>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getNodesDescriptor(_token: IModelRpcProps, _options: HierarchyLevelDescriptorRpcRequestOptions): PresentationRpcResponse<string | DescriptorJSON | undefined>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getPagedContent(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<{
         descriptor: DescriptorJSON;
         contentSet: PagedResponse<ItemJSON>;
     } | undefined>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getPagedDisplayLabelDefinitions(_token: IModelRpcProps, _options: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinition>>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>>;
-    // @deprecated (undocumented)
+    // (undocumented)
     getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
     static interfaceVersion: string;
@@ -2480,7 +2452,6 @@ export enum PropertyGroupingValue {
 // @public
 export interface PropertyInfo {
     classInfo: ClassInfo;
-    constraints?: PropertyValueConstraints;
     enumerationInfo?: EnumerationInfo;
     extendedType?: string;
     kindOfQuantity?: KindOfQuantityInfo;
@@ -2554,9 +2525,6 @@ export interface PropertySortingRule extends SortingRuleBase {
 export interface PropertySpecification extends PropertyOverrides {
     name: string;
 }
-
-// @public
-export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
 
 // @public
 export enum PropertyValueFormat {
@@ -3129,14 +3097,6 @@ export interface StartStructProps {
     parentFieldName?: string;
     rawValues: ValuesMap;
     valueType: TypeDescription;
-}
-
-// @public
-export interface StringPropertyValueConstraints {
-    // (undocumented)
-    maximumLength?: number;
-    // (undocumented)
-    minimumLength?: number;
 }
 
 // @public

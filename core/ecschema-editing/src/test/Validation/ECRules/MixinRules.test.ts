@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DelayedPromiseWithProps, ECClass, EntityClass, Mixin, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, EntityClass, Mixin, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableEntityClass } from "../../../Editing/Mutable/MutableEntityClass";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 import * as Rules from "../../../Validation/ECRules";
-import { MutableClass } from "../../../Editing/Mutable/MutableClass";
 
 describe("Mixin Rule Tests", () => {
   let schema: Schema;
@@ -29,7 +28,7 @@ describe("Mixin Rule Tests", () => {
     const mixin = new TestMixin(schema, "TestMixin", constraintClass);
     const entityClass = new EntityClass(schema, "TestClass");
     (entityClass as MutableEntityClass).addMixin(mixin);
-    await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(constraintClass.key, async () => constraintClass));
+    entityClass.baseClass = new DelayedPromiseWithProps(constraintClass.key, async () => constraintClass);
 
     const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
     for await (const _diagnostic of result) {
@@ -74,7 +73,7 @@ describe("Mixin Rule Tests", () => {
     const mixin = new TestMixin(schema, "TestMixin", constraintClass);
     const entityClass = new EntityClass(schema, "TestClass");
     (entityClass as MutableEntityClass).addMixin(mixin);
-    await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
     const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
 

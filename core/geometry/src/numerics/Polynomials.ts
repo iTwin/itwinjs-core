@@ -1007,11 +1007,11 @@ export class AnalyticRoots {
    *   * -1 -- beta, gamma are zero, alpha is not.There is no line defined.There are no solutions.
    *   * 0 -- the line is well defined, but passes completely outside the unit circle.
    *     * In this case, (c1, s1) is the circle point closest to the line and(c2, s2) is the line point closest to the circle.
-   *   * 1 -- the line is tangent to the unit circle.
-   *     * Tangency is determined by tolerances, which calls a "close approach" point a tangency.
-   *       * (c1, s1) is the closest circle point
-   *       * (c2, s2) is the line point.
-   *   * 2 -- two simple intersections.
+   * * 1 -- the line is tangent to the unit circle.
+   *   * Tangency is determined by tolerances, which calls a "close approach" point a tangency.
+   *    * (c1, s1) is the closest circle point
+   *    * (c2, s2) is the line point.
+   * * 2 -- two simple intersections.
    * @param alpha constant coefficient on line
    * @param beta x cosine coefficient on line
    * @param gamma y sine coefficient on line
@@ -1172,7 +1172,7 @@ export class TrigPolynomial {
       degree--;
     const roots = new GrowableFloat64Array();
     if (degree === -1) {
-      // p(t) is identically zero (degenerate); do nothing.
+      // do nothing
     } else {
       if (degree === 0) {
         // p(t) is a nonzero constant; no roots but not degenerate.

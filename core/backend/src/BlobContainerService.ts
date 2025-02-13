@@ -68,29 +68,22 @@ export namespace BlobContainer {
     json?: SettingsContainer;
   }
 
-  /**
-   * Properties returned by queryContainersMetadata
-   */
-  export interface MetadataResponse extends Metadata {
-    containerId: string;
-  }
-
   /** Properties returned by `Service.requestToken` */
   export interface TokenProps {
     /**
-     * Expiring token that provides the requested access to the container. Should be used in all subsequent requests for blobs within the container,
+     * expiring token that provides the requested access to the container. Should be used in all subsequent requests for blobs within the container,
      * and must be refreshed before it expires
      */
     token: ContainerToken;
-    /** Scope of the container. */
+    /** scope of the container. */
     scope: Scope;
-    /** Name of the blob storage provider. */
+    /** name of the blob storage provider. */
     provider: Provider;
     /** Time at which the token will expire. The token should be refreshed (that is, a new token should be requested) before this time. */
     expiration: Date;
     /** Metadata of the container. */
     metadata: Metadata;
-    /** Base URI of the storage account that hosts the container */
+    /** Base URI of container */
     baseUri: string;
   }
 
@@ -122,7 +115,7 @@ export namespace BlobContainer {
   export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
 
   /** Information required to request an access token for a container. */
-  export interface RequestTokenProps extends Omit<AccessContainerProps, "baseUri"> {
+  export interface RequestTokenProps extends Omit<AccessContainerProps,"baseUri">  {
     /** the level of access requested. If not specified, defaults to `"writeIfPossible"`. */
     accessLevel?: RequestAccessLevel;
     /** the number of seconds before the token should expire.
@@ -146,20 +139,6 @@ export namespace BlobContainer {
     containerId?: ContainerId;
   }
 
-  /**
-   * Query Parameters for querying containers
-   */
-  export interface QueryContainerProps {
-    /** the iTwinId of the containers to query */
-    iTwinId: GuidString;
-    /** optional iModelId of the containers to query */
-    iModelId?: GuidString;
-    /** optional containerType of the containers to query */
-    containerType?: GuidString;
-    /** optional label of the containers to query */
-    label?: GuidString;
-  }
-
   /** Methods to create, delete, and access blob containers. */
   export interface ContainerService {
     /**  Create a new blob container. Throws on failure (e.g. access denied or container already exists.) */
@@ -174,11 +153,8 @@ export namespace BlobContainer {
     /** query the Scope for a container */
     queryScope(container: AccessContainerProps): Promise<Scope>;
 
-    /** query the Metadata for a specific container */
+    /** query the Metadata for a container */
     queryMetadata(container: AccessContainerProps): Promise<Metadata>;
-
-    /** Returns all containers and their metadata associated with a given iTwinId. Can be further queried by label and containerType. */
-    queryContainersMetadata(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
 
     /** update the json properties of this container */
     updateJson(container: AccessContainerProps, json: SettingsContainer): Promise<void>;

@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
 import {
+  BentleyStatus,
   HttpServerRequest,
   IModelError,
   MarshalingBinaryMarker,

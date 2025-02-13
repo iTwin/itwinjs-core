@@ -128,7 +128,7 @@ describe("DisplayStyleSettings", () => {
         return count;
       };
 
-      const makeSettings = (props: PlanProjectionSettingsProps) => PlanProjectionSettings.fromJSON(props);
+      const makeSettings = (props: PlanProjectionSettingsProps) => new PlanProjectionSettings(props);
 
       settings.setPlanProjectionSettings("0x1", makeSettings({ elevation: 1 }));
       expect(settings.planProjectionSettings).not.to.be.undefined;

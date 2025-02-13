@@ -76,11 +76,14 @@ export class CheckpointConnection extends IModelConnection {
     return connection;
   }
 
-  private static async callOpen(iModelToken: IModelRpcOpenProps, iModelReadHttpApi: IModelReadHTTPClient): Promise<IModelConnectionProps> {
+  private static async callOpen(iModelToken: IModelRpcOpenProps, _iModelReadHttpApi: IModelReadHTTPClient): Promise<IModelConnectionProps> {
     Logger.logTrace(loggerCategory, `IModelConnection.open`, iModelToken);
 
     return {
-      ...(await iModelReadHttpApi.getConnectionProps()),
+      ...(await new IModelReadHTTPClient(
+        `http://localhost:3001/itwins/${iModelToken.iTwinId}/imodels/${iModelToken.iModelId}/changesets/${iModelToken.changeset?.id || "0"}/`,
+        IModelApp,
+      ).getConnectionProps()),
       ...iModelToken,
       key: `${iModelToken.iModelId}:${iModelToken.changeset?.id ?? ""}`,
     };

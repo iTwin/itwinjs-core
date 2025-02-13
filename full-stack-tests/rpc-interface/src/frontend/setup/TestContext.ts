@@ -7,7 +7,9 @@ import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
-import { getServiceAuthTokenFromBackend, TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import {
+  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
@@ -18,8 +20,8 @@ declare const PACKAGE_VERSION: string;
 
 /* eslint-disable no-console */
 export class TestContext {
+  public adminUserAccessToken!: AccessToken;
   public clientAccessToken?: AccessToken;
-  public serviceAuthToken!: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;
@@ -58,17 +60,16 @@ export class TestContext {
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
-    if (this.settings?.clientConfiguration && this.settings.clientConfiguration.clientId) {
-      this.serviceAuthToken = await getServiceAuthTokenFromBackend({
-        clientId: this.settings.clientConfiguration.clientId,
-        clientSecret: this.settings.clientConfiguration.clientSecret,
-        scope: this.settings.clientConfiguration.scope,
-        authority: `https://${
-          process.env.IMJS_URL_PREFIX === "dev-"
-            ? "qa-"
-            : process.env.IMJS_URL_PREFIX ?? ""
-        }ims.bentley.com`,
-      });
+    if (undefined !== this.settings.oidcClientId) {
+      this.adminUserAccessToken = await getAccessTokenFromBackend({
+        email: this.settings.users[0].email,
+        password: this.settings.users[0].password,
+      } as TestUserCredentials, {
+        clientId: this.settings.oidcClientId,
+        redirectUri: this.settings.oidcRedirect,
+        scope: this.settings.oidcScopes,
+        authority: this.settings.oidcAuthority,
+      } as TestBrowserAuthorizationClientConfiguration);
     }
 
     if (undefined !== this.settings.clientConfiguration)
@@ -80,16 +81,15 @@ export class TestContext {
     await NoRenderApp.startup({
       applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
-      authorizationClient: new TestFrontendAuthorizationClient(this.serviceAuthToken),
+      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
       hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
-    this.iModelWithChangesets = await IModelSession.create(this.serviceAuthToken, this.settings.iModel);
-
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
     this.iTwinId = this.iModelWithChangesets.iTwinId;
-
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(this.serviceAuthToken, this.settings.writeIModel);
+      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
 
+    console.log("TestSetup: Done");
   }
 }

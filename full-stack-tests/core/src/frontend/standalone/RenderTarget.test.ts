@@ -6,14 +6,13 @@ import { expect } from "chai";
 import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
-  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SpatialViewState, Viewport, ViewRect,
+  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
 } from "@itwin/core-frontend";
 import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import {
   Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
 } from "../TestViewport";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -25,7 +24,7 @@ describe("Vertex buffer objects", () => {
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
     await TestUtility.startFrontend({ renderSys: renderSysOpts });
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -93,7 +92,7 @@ describe("RenderTarget", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

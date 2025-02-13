@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ColorDef, RenderMode } from "@itwin/core-common";
-import { IModelConnection, ViewRect } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection, ViewRect } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Wait for scene completion", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

@@ -7,11 +7,11 @@
  * @module Renderer
  */
 
-import { ProcessDetector } from "@itwin/core-bentley";
+import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { _callIpcChannel, IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
-import { electronIpcStrings } from "../common/ElectronIpcInterface";
+import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 import type { ITwinElectronApi } from "../common/ITwinElectronApi";
 
@@ -77,6 +77,16 @@ export class ElectronApp {
     this._ipc = undefined;
     await NativeApp.shutdown();
     ElectronRpcManager.terminateFrontend();
+  }
+
+  /**
+   * Call an asynchronous method in the [Electron.Dialog](https://www.electronjs.org/docs/api/dialog) interface from a previously initialized ElectronFrontend.
+   * @param methodName the name of the method to call
+   * @param args arguments to method
+   * @deprecated in 3.x. use [[dialogIpc]]
+   */
+  public static async callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
+    return IpcApp[_callIpcChannel](electronIpcStrings.dialogChannel, "callDialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
   }
 
   /** Proxy object for calling methods of `Electron.Dialog` */

@@ -5,10 +5,10 @@ parameters:
 steps:
   - template: setup-integration-users.yaml
 
-  - task: UseNode@1
+  - task: NodeTool@0
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
-      version: "${{ parameters.nodeVersion }}"
+      versionSpec: "${{ parameters.nodeVersion }}"
       checkLatest: true
 
   - script: "git config --local user.email imodeljs-admin@users.noreply.github.com"

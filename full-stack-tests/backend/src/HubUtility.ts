@@ -214,7 +214,7 @@ export class HubUtility {
       const startTime = new Date().getTime();
       let csResult = ChangeSetStatus.Success;
       try {
-        nativeDb.applyChangeset(changeSet, false);
+        nativeDb.applyChangeset(changeSet);
       } catch (err: any) {
         csResult = err.errorNumber;
       }

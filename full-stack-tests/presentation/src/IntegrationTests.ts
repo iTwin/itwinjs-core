@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import * as cpx from "cpx2";
 import * as fs from "fs";
 import Backend from "i18next-http-backend";
 import * as path from "path";
@@ -10,7 +11,16 @@ import rimraf from "rimraf";
 import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
-import { EmptyLocalization, IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
+import {
+  AuthorizationClient,
+  EmptyLocalization,
+  IModelReadRpcInterface,
+  Localization,
+  RpcConfiguration,
+  RpcDefaultConfiguration,
+  RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
@@ -45,10 +55,43 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", ".env"));
 
+const copyITwinBackendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath)
+    .map((packageName) => {
+      const packagePath = path.resolve(iTwinPackagesPath, packageName);
+      return path.join(packagePath, "lib", "cjs", "assets");
+    })
+    .filter((assetsPath) => {
+      return fs.existsSync(assetsPath);
+    })
+    .forEach((src) => {
+      cpx.copySync(`${src}/**/*`, outputDir);
+    });
+};
+
+const copyITwinFrontendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath)
+    .map((packageName) => {
+      const packagePath = path.resolve(iTwinPackagesPath, packageName);
+      return path.join(packagePath, "lib", "public");
+    })
+    .filter((assetsPath) => {
+      return fs.existsSync(assetsPath);
+    })
+    .forEach((src) => {
+      cpx.copySync(`${src}/**/*`, outputDir);
+    });
+};
+
 class IntegrationTestsApp extends NoRenderApp {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     await NoRenderApp.startup(opts);
     await IModelApp.localization.changeLanguage("en-PSEUDO");
+    cpx.copySync(`assets/**/*`, "lib/assets");
+    copyITwinBackendAssets("lib/assets");
+    copyITwinFrontendAssets("lib/public");
   }
 }
 
@@ -60,10 +103,11 @@ export function setupTestsOutputDirectory() {
   return outputRoot;
 }
 
-export const initialize = async (props?: {
-  presentationBackendProps?: PresentationBackendProps;
-  presentationFrontendProps?: PresentationFrontendProps;
-  imodelAppProps?: IModelAppOptions;
+const initializeCommon = async (props: {
+  backendTimeout?: number;
+  frontendTimeout?: number;
+  authorizationClient?: AuthorizationClient;
+  localization?: Localization;
 }) => {
   // init logging
   Logger.initializeToConsole();
@@ -81,7 +125,7 @@ export const initialize = async (props?: {
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
-    requestTimeout: DEFAULT_BACKEND_TIMEOUT,
+    requestTimeout: props.backendTimeout,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
@@ -90,18 +134,17 @@ export const initialize = async (props?: {
         mode: HierarchyCacheMode.Memory,
       },
     },
-    ...props?.presentationBackendProps,
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {
+      requestTimeout: props.frontendTimeout,
       activeLocale: "en-PSEUDO",
     },
-    ...props?.presentationFrontendProps,
   };
 
   const frontendAppOptions: IModelAppOptions = {
-    localization: new EmptyLocalization(),
-    ...props?.imodelAppProps,
+    authorizationClient: props.authorizationClient,
+    localization: props.localization ?? new EmptyLocalization(),
   };
 
   const presentationTestingInitProps: PresentationInitProps = {
@@ -120,6 +163,13 @@ export const initialize = async (props?: {
 
   // eslint-disable-next-line no-console
   console.log(`[${new Date().toISOString()}] Tests initialized`);
+};
+
+export const initialize = async (props?: { backendTimeout?: number; frontendTimeout?: number; localization?: Localization }) => {
+  await initializeCommon({
+    backendTimeout: DEFAULT_BACKEND_TIMEOUT,
+    ...props,
+  });
 };
 
 export const terminate = async () => {
@@ -180,7 +230,7 @@ async function initializePresentation(props: PresentationInitProps) {
   }
 
   // set up rpc interfaces
-  initializeRpcInterfaces([IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
 
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory

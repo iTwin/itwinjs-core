@@ -6,9 +6,7 @@
  * @module Merging
  */
 
-import type { ECClass, SchemaItem } from "@itwin/ecschema-metadata";
 import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
-import { NameMapping } from "./NameMapping";
 import { applyRenamePropertyEdit, applyRenameSchemaItemEdit } from "./RenameEditHandler";
 import { applySkipEdit } from "./SkipEditHandler";
 
@@ -82,35 +80,35 @@ abstract class Editor {
 
 class PropertyEditor extends Editor {
 
-  public rename(ecClass: ECClass, propertyName: string, newName: string) {
+  public rename(schemaName: string, className: string, propertyName: string, newName: string) {
     this.add({
       type: SchemaEditType.RenameProperty,
-      key: `${ecClass.fullName}.${propertyName}`,
+      key: `${schemaName}.${className}.${propertyName}`,
       value: newName,
     });
   }
 
-  public skip(ecClass: ECClass, propertyName: string) {
+  public skip(schemaName: string, className: string, propertyName: string) {
     this.add({
       type: SchemaEditType.Skip,
-      key: `${ecClass.fullName}.${propertyName}`,
+      key: `${schemaName}.${className}.${propertyName}`,
     });
   }
 }
 
 class ItemEditor extends Editor {
-  public rename(schemaItem: SchemaItem, newName: string) {
+  public rename(schemaName: string, itemName: string, newName: string) {
     this.add({
       type: SchemaEditType.RenameSchemaItem,
-      key: schemaItem.key.fullName,
+      key: `${schemaName}.${itemName}`,
       value: newName,
     });
   }
 
-  public skip(schemaItem: SchemaItem) {
+  public skip(schemaName: string, itemName: string) {
     this.add({
       type: SchemaEditType.Skip,
-      key: schemaItem.fullName,
+      key: `${schemaName}.${itemName}`,
     });
   }
 }
@@ -120,7 +118,7 @@ class ItemEditor extends Editor {
  * is to support saving of edits and load them again if needed.
  * @alpha
  */
-export class SchemaEdits implements Iterable<AnySchemaEdits> {
+export class SchemaEdits {
   private readonly _edits: Array<AnySchemaEdits>;
 
   public readonly properties: PropertyEditor;
@@ -143,27 +141,26 @@ export class SchemaEdits implements Iterable<AnySchemaEdits> {
   /**
    * @internal
    */
-  public async applyTo(differenceResult: SchemaDifferenceResult, nameMapping: NameMapping): Promise<void> {
+  public async applyTo(differenceResult: SchemaDifferenceResult): Promise<void> {
+    const postProcessing: Array<() => void> = [];
     for (const schemaEdit of this._edits) {
       if (schemaEdit.type === SchemaEditType.RenameSchemaItem) {
-        applyRenameSchemaItemEdit(differenceResult, schemaEdit);
-        nameMapping.addItemMapping(schemaEdit.key, schemaEdit.value);
+        applyRenameSchemaItemEdit(differenceResult, schemaEdit, postProcessing.push.bind(postProcessing));
       }
       if (schemaEdit.type === SchemaEditType.RenameProperty) {
         applyRenamePropertyEdit(differenceResult, schemaEdit);
-        nameMapping.addPropertyMapping(schemaEdit.key, schemaEdit.value);
       }
       if (schemaEdit.type === SchemaEditType.Skip) {
         applySkipEdit(differenceResult, schemaEdit);
       }
     }
+
+    for (const callback of postProcessing) {
+      callback();
+    }
   }
 
   public toJSON(): ReadonlyArray<AnySchemaEdits> {
     return this._edits;
-  }
-
-  public [Symbol.iterator](): Iterator<AnySchemaEdits> {
-    return this._edits[Symbol.iterator]();
   }
 }

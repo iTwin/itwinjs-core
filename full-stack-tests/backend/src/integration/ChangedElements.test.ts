@@ -9,10 +9,13 @@ import { Range3d } from "@itwin/core-geometry";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
 import { BriefcaseManager, ChangedElementsDb, IModelDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
+import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedElementsManager";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 describe("ChangedElements", () => {
   let accessToken: AccessToken;
@@ -34,7 +37,7 @@ describe("ChangedElements", () => {
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
-    const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
+    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
 
@@ -119,12 +122,12 @@ describe("ChangedElements", () => {
     cache.closeDb();
     cache.cleanCaches();
 
+    // Test the ChangedElementsManager
     // Check that the changesets should still be in the cache
-    const changedElementsDb = ChangedElementsDb.openDb(filePath);
-    assert.isTrue(changedElementsDb.isProcessed(startChangesetId));
-    assert.isTrue(changedElementsDb.isProcessed(endChangesetId));
+    assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelId, startChangesetId));
+    assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelId, endChangesetId));
     // Check that we can get elements
-    changes = changedElementsDb.getChangedElements(startChangesetId, endChangesetId);
+    changes = ChangedElementsManager.getChangedElements(iModel.iModelId, startChangesetId, endChangesetId);
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
     assert.isTrue(changes!.elements.length === changes!.classIds.length);
@@ -141,7 +144,7 @@ describe("ChangedElements", () => {
       assert.isTrue(changes!.elements.length === changes!.modelIds.length);
 
     // Test change data full return type and ensure format is correct
-    const changeData = changedElementsDb.getChangeData(startChangesetId, endChangesetId);
+    const changeData = ChangedElementsManager.getChangeData(iModel.iModelId, startChangesetId, endChangesetId);
     assert.isTrue(changeData !== undefined);
     assert.isTrue(changeData!.changedElements !== undefined);
     assert.isTrue(changeData!.changedModels !== undefined);
@@ -157,8 +160,7 @@ describe("ChangedElements", () => {
 
     assert.isTrue(changeData!.changedModels.modelIds.length === changeData!.changedModels.bboxes.length);
 
-    changedElementsDb.closeDb();
-    changedElementsDb.cleanCaches();
+    ChangedElementsManager.cleanUp();
   });
 
   it("Create ChangedElements Cache and process changesets while rolling Db", async () => {
@@ -170,7 +172,7 @@ describe("ChangedElements", () => {
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
-    const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
+    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
 
@@ -226,6 +228,8 @@ describe("ChangedElements", () => {
     cache.closeDb();
     cache.cleanCaches();
 
+    ChangedElementsManager.cleanUp();
+
     newIModel.closeFile();
   });
 
@@ -238,7 +242,7 @@ describe("ChangedElements", () => {
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
-    const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
+    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
 
@@ -294,6 +298,8 @@ describe("ChangedElements", () => {
     cache.closeDb();
     cache.cleanCaches();
 
+    ChangedElementsManager.cleanUp();
+
     newIModel.closeFile();
   });
 
@@ -308,7 +314,7 @@ describe("ChangedElements", () => {
     const endChangesetId = changesets[changesets.length - 1].id;
     assert.exists(iModel);
 
-    const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
+    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
 
@@ -378,5 +384,6 @@ describe("ChangedElements", () => {
     // Destroy the cache
     cache.closeDb();
     cache.cleanCaches();
+    ChangedElementsManager.cleanUp();
   });
 });

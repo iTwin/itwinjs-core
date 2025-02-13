@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "5.0.0-dev.44",
+  "version": "5.0.0-dev.0",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
@@ -9,11 +9,11 @@
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./src/public/**/*\" ./lib/public",
     "cover": "nyc npm -s test",
-    "docs": "betools docs --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts,**/*.gen.ts",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts,**/*.gen.ts",
     "extract-api": "betools extract-api --entry=map-layers-formats",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",

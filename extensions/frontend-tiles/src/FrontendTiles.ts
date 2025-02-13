@@ -73,8 +73,6 @@ export interface QueryMeshExportsArgs {
   includeIncomplete?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
-  /** Number of exports to query */
-  numExports?: number;
 }
 
 /** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
@@ -96,7 +94,6 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
     urlPrefix: args.urlPrefix,
     includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
-    numExports: args.numExports,
   };
 
   for await (const data of queryGraphicRepresentations(graphicsArgs)) {

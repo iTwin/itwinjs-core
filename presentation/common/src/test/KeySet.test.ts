@@ -280,15 +280,6 @@ describe("KeySet", () => {
       expect(set.guid).to.not.eq(guidBefore);
     });
 
-    it("converts instance key class name into `Schema:Class` format", () => {
-      const set = new KeySet([{ className: "Schema.Class", id: "0x1" }]);
-      const key = { className: "Schema.Class", id: "0x2" };
-      set.add(key);
-      expect(set.instanceKeysCount).to.eq(2);
-      expect(set.has(key)).to.be.true;
-      set.instanceKeys.forEach((_, className) => expect(className).to.eq("Schema:Class"));
-    });
-
     it("doesn't add the same instance key", () => {
       const key = createRandomECInstanceKey();
       const set = new KeySet([key]);

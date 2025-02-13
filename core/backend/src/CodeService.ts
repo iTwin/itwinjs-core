@@ -162,8 +162,6 @@ export namespace CodeService {
   export interface InternalWriteMethods extends WriteMethods {
     /**  @internal */
     reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
-    /** @internal */
-    reserveEmbeddedFaceDataId(facesKey: string): Promise<number>;
     /**  @internal */
     reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
   }

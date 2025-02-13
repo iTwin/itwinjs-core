@@ -6,8 +6,8 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Geometry, Range2d } from "@itwin/core-geometry";
+import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
@@ -36,11 +36,8 @@ export interface ComputeRangesForTextLayoutArgs {
  */
 export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) => TextLayoutRanges;
 
-/** A function that looks up the font Id corresponding to a [FontFamilyDescriptor]($common).
- * If no type is provided, the function can return a font of any type matching `name` (there may be more than one, of different types).
- * @internal
- */
-export type FindFontId = (name: string, type?: FontType) => FontId;
+/** @internal */
+export type FindFontId = (name: string) => FontId;
 
 /** @internal */
 export type FindTextStyle = (name: string) => TextStyleSettings;
@@ -72,7 +69,7 @@ export interface LayoutTextBlockArgs {
  * @internal
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
-  const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
+  const findFontId = args.findFontId ?? ((name) => args.iModel.fontMap.getFont(name)?.id ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
   // ###TODO finding text styles in workspaces.
@@ -114,7 +111,7 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
  */
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[] {
   const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
-  const findFontId = args.findFontId ?? ((name, type) => iModel.fonts.findId({ name, type }) ?? 0);
+  const findFontId = args.findFontId ?? ((name) => iModel.fontMap.getFont(name)?.id ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
   const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
   const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
@@ -360,7 +357,7 @@ export class RunLayout {
     return this.source.type === "text";
   }
 
-  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number }): RunLayout {
+  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
     assert(this.canWrap());
 
     return new RunLayout({
@@ -563,7 +560,7 @@ export class TextBlockLayout {
 
         const runWidth = run.range.xLength();
         const lineWidth = curLine.range.xLength();
-        if (runWidth + lineWidth < doc.width || Geometry.isAlmostEqualNumber(runWidth + lineWidth, doc.width, Geometry.smallMetricDistance)) {
+        if (runWidth + lineWidth <= doc.width) {
           curLine.append(run);
           continue;
         }

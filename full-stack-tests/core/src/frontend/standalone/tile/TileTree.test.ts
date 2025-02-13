@@ -6,12 +6,11 @@ import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, Tile, TileContent, TileDrawArgs, TileLoadPriority,
+  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
   TileRequest, TileRequestChannel, TileTree,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../../TestUtility";
-import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -74,7 +73,7 @@ describe("TileTreeSupplier", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -148,7 +147,7 @@ describe("requestTileTreeProps", () => {
   before(async () => {
     const tileAdmin = { maxActiveTileTreePropsRequests };
     await TestUtility.startFrontend({ tileAdmin });
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -266,6 +265,6 @@ describe("requestTileTreeProps", () => {
     overrideRequestTileTreeProps(undefined);
 
     // We closed the iModel. Reopen it for use by subsequent tests.
-    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 });

@@ -79,8 +79,10 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.PropertyCategoryDelta:
       case SchemaCompareCodes.RelationshipDelta:
       case SchemaCompareCodes.UnitDelta:
-      case SchemaCompareCodes.EnumerationDelta:
         return this.visitChangedSchemaItem(diagnostic);
+
+      case SchemaCompareCodes.EnumerationDelta:
+        return this.visitChangedEnumeration(diagnostic);
 
       case SchemaCompareCodes.EnumeratorDelta:
         return this.visitChangedEnumerator(diagnostic);
@@ -193,6 +195,15 @@ export class SchemaDiagnosticVisitor {
     (modifyEntry.difference as any)[propertyName] = sourceValue;
   }
 
+  private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
+    const enumeration = diagnostic.ecDefinition as Enumeration;
+    if (this.schemaItemPathDifferences.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
+      return;
+    }
+
+    return this.visitChangedSchemaItem(diagnostic);
+  }
+
   private visitMissingEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
@@ -248,7 +259,7 @@ export class SchemaDiagnosticVisitor {
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
       itemName: property.class.name,
-      path:  property.name,
+      path: property.name,
       difference: property.toJSON() as AnyPropertyProps,
     });
   }

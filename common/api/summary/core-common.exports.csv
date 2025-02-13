@@ -289,13 +289,9 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
-public;interface;FontFamilyDescriptor
-beta;interface;FontFamilySelector
 public;type;FontId
 public;class;FontMap
-deprecated;class;FontMap
 public;interface;FontMapProps
-deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
 internal;interface;FormDataCommon
@@ -423,6 +419,8 @@ public;class;IModel
 public;type;IModelConnectionProps
 beta;interface;IModelCoordinatesRequestProps
 beta;interface;IModelCoordinatesResponseProps
+public;interface;IModelEncryptionProps
+deprecated;interface;IModelEncryptionProps
 public;class;IModelError
 public;type;IModelErrorNumber
 public;class;IModelNotFoundResponse
@@ -466,7 +464,7 @@ internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
 public;function;isPowerOfTwo
-public;function;isValidImageSourceFormat
+internal;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 beta;interface;ITwinError
 beta;namespace;ITwinError
@@ -506,7 +504,7 @@ public;interface;MaterialProps
 internal;class;MeshEdge
 internal;class;MeshEdges
 internal;class;MeshPolyline
-internal;type;MeshPolylineList
+internal;class;MeshPolylineList
 public;class;ModelClipGroup
 public;interface;ModelClipGroupProps
 public;class;ModelClipGroups
@@ -641,6 +639,9 @@ public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
 public;namespace;Quantization
+internal;function;isInRange
+internal;function;isQuantizable
+internal;function;isQuantized
 public;class;QueryBinder
 public;interface;QueryLimit
 public;interface;QueryOptions
@@ -760,7 +761,6 @@ beta;class;RpcRoutingToken
 internal;interface;RpcSerializedValue
 internal;namespace;RpcSerializedValue
 internal;class;RpcSessionInvocation
-alpha;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
 beta;interface;RunLayoutResult
@@ -798,7 +798,6 @@ public;interface;SkySphereImageProps
 internal;interface;SnapRequestProps
 internal;interface;SnapResponseProps
 internal;class;SnapshotIModelRpcInterface
-deprecated;class;SnapshotIModelRpcInterface
 public;interface;SnapshotOpenOptions
 public;class;SolarLight
 public;interface;SolarLightProps
@@ -943,5 +942,7 @@ internal;class;WebAppRpcProtocol
 internal;class;WebAppRpcRequest
 public;interface;WhiteOnWhiteReversalProps
 public;class;WhiteOnWhiteReversalSettings
+internal;class;WipRpcInterface
+deprecated;class;WipRpcInterface
 public;class;XyzRotation
 public;interface;XyzRotationProps

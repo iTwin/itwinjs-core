@@ -31,7 +31,7 @@ describe("DeleteDefinitionElements", () => {
     const iModelFile: string = IModelTestUtils.prepareOutputFile("DeleteDefinitionElements", "DeleteDefinitionElements.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "DeleteDefinitionElements" } });
     await ExtensiveTestScenario.prepareDb(iModelDb);
-    await ExtensiveTestScenario.populateDb(iModelDb);
+    ExtensiveTestScenario.populateDb(iModelDb);
 
     // Get ElementIds of DefinitionElements created by populateDb
     const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;

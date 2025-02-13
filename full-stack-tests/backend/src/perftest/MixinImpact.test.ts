@@ -10,7 +10,7 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Impact of Mixins", () => {
@@ -126,7 +126,6 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `mixin_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -164,7 +163,6 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), ((2 * seedCount * hCount) + seedCount));
         seedIModel.close();
-        await IModelHost.shutdown();
       }
     }
   });
@@ -172,15 +170,6 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
   });
-
-  beforeEach(async () => {
-    await IModelHost.startup();
-  });
-
-  afterEach(async () => {
-    await IModelHost.shutdown();
-  });
-
   it("Read", async () => {
     for (const hCount of hierarchyCounts) {
       const seedFileName = path.join(outDir, `mixin_${hCount}.bim`);

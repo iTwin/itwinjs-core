@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("IModelConnection.Categories", () => {
   const c1 = "0x17";
@@ -27,7 +26,7 @@ describe("IModelConnection.Categories", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await TestSnapshotConnection.openFile("test.bim");
+    imodel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {

@@ -291,8 +291,4 @@ export class GrowableFloat64Array {
     this._inUse = numAccepted;
   }
 
-  /** reverse the order of values. */
-  public reverseInPlace() {
-    this._data.reverse();
-  }
 }

@@ -30,7 +30,7 @@ export type AnyEnumerator = Enumerator<string | number>;
  * @beta
  */
 export class Enumeration extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.Enumeration;
+  public override readonly schemaItemType!: SchemaItemType.Enumeration;
   protected _type?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
@@ -41,6 +41,7 @@ export class Enumeration extends SchemaItem {
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name);
+    this.schemaItemType = SchemaItemType.Enumeration;
     this._type = primitiveType;
     this._isStrict = true;
     this._enumerators = [];

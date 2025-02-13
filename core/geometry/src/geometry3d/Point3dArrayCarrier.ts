@@ -27,7 +27,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   }
   /** Test if `index` is a valid index into the array. */
   public isValidIndex(index: number): boolean {
-    return this.isIndexValid(index);
+    return index >= 0 && index < this.data.length;
   }
   /**
    * Access by index, returning strongly typed Point3d
