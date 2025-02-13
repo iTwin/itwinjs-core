@@ -416,13 +416,13 @@ export type TextBlockJustification = "left" | "center" | "right";
  */
 export interface TextBlockMargins {
   /** The left margin. Default: 0 */
-  left: number;
+  left?: number;
   /** The right margin. Default: 0 */
-  right: number;
+  right?: number;
   /** The top margin. Default: 0 */
-  top: number;
+  top?: number;
   /** The bottom margin. Default: 0 */
-  bottom: number;
+  bottom?: number;
 };
 
 /** JSON representation of a [[TextBlock]].
@@ -437,7 +437,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
   /** The alignment of the document content. Default: "left". */
   justification?: TextBlockJustification;
   /** The alignment of the document content. Default: "left". */
-  margins?: Partial<TextBlockMargins>;
+  margins?: TextBlockMargins;
   /** The paragraphs within the text block. Default: an empty array. */
   paragraphs?: ParagraphProps[];
 }
@@ -465,12 +465,7 @@ export class TextBlock extends TextBlockComponent {
     super(props);
     this.width = props.width ?? 0;
     this.justification = props.justification ?? "left";
-    this.margins = {
-      left: props.margins?.left ?? 0,
-      right: props.margins?.right ?? 0,
-      top: props.margins?.top ?? 0,
-      bottom: props.margins?.bottom ?? 0
-    };
+    this.margins = props.margins ?? { left: 0, right: 0, top: 0, bottom: 0 };
     this.paragraphs = props.paragraphs?.map((x) => Paragraph.create(x)) ?? [];
   }
 
