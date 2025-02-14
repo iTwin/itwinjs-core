@@ -602,23 +602,21 @@ describe("Schema", () => {
         expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
         expect(schemaItems.next().done).to.equal(true);
       });
-    });
-
-    describe("getClasses", () => {
-      let schemaClasses: IterableIterator<ECClass>;
-
-      before(() => {
-        schemaClasses = testSchema.getClasses();
-      });
 
       it("should return only class items in schema", async () => {
-        const classArray = Array.from(testSchema.getClasses());
+        const classArray = Array.from(testSchema.getItems(ECClass));
         expect(classArray.length).to.eql(3);
 
-        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.EntityClass);
-        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.Mixin);
-        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.StructClass);
-        expect(schemaClasses.next().done).to.eql(true);
+        expect(classArray[0].schemaItemType).to.eql(SchemaItemType.EntityClass);
+        expect(classArray[1].schemaItemType).to.eql(SchemaItemType.Mixin);
+        expect(classArray[2].schemaItemType).to.eql(SchemaItemType.StructClass);
+      });
+
+      it("should return only enumeration items in schema", async () => {
+        const classArray = Array.from(testSchema.getItems(Enumeration));
+        expect(classArray.length).to.eql(1);
+
+        expect(classArray[0].schemaItemType).to.eql(SchemaItemType.Enumeration);
       });
     });
   });
