@@ -706,7 +706,7 @@ export class BSpline1dNd {
     basisBuffer: Float64Array;
     basisBuffer1: Float64Array;
     basisBuffer2: Float64Array;
-    static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined;
+    static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd;
     get degree(): number;
     evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): boolean;
     evaluateBuffersAtKnot(u: number, numDerivative?: number): void;
@@ -723,7 +723,7 @@ export class BSpline1dNd {
     poleBuffer2: Float64Array;
     poleLength: number;
     reverseInPlace(): void;
-    spanFractionToKnot(span: number, localFraction: number): number;
+    spanFractionToKnot(spanIndex: number, spanFraction: number): number;
     sumPoleBuffer1ForSpan(spanIndex: number): void;
     sumPoleBuffer2ForSpan(spanIndex: number): void;
     sumPoleBufferForSpan(spanIndex: number): void;
@@ -784,7 +784,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     copyPoints(): any[];
     copyPointsFloat64Array(): Float64Array;
     static create(poleArray: Float64Array | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
-    // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
     static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
