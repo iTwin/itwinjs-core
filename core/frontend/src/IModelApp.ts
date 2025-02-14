@@ -178,7 +178,7 @@ interface IModelAppForDebugger {
  * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called and awaited.
  * Applications may customize the frontend behavior of iTwin.js by supplying options to [[IModelApp.startup]].
  *
- * @public
+ * @stable
  */
 export class IModelApp {
   private static _initialized = false;

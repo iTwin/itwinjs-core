@@ -45,13 +45,6 @@ const rushCommon = () => {
   return resolved;
 };
 
-const rushCore = () => {
-  let resolved;
-  if (!resolved)
-    resolved = resolveRoot("core");
-  return resolved;
-};
-
 const apiReportFolder = argv.apiReportFolder ?? path.join(rushCommon(), "/api");
 const apiReportTempFolder = argv.apiReportTempFolder ?? path.join(rushCommon(), "/temp/api");
 const apiSummaryFolder = argv.apiSummaryFolder ?? path.join(rushCommon(), "/api/summary");
@@ -72,10 +65,10 @@ const config = {
     includeForgottenExports: !!includeUnexportedApis,
   },
   docModel: {
-    enabled: true
+    enabled: false
   },
   dtsRollup: {
-    enabled: false
+    enabled: true
   },
   tsdocMetadata: {
     enabled: false
@@ -114,6 +107,10 @@ const config = {
       "ae-unresolved-inheritdoc-base": {
         logLevel: "error",
         addToApiReportFile: true
+      },
+      "ae-missing-getter": {
+        logLevel: "none",
+        addToApiReportFile: true
       }
     }
   }
@@ -134,7 +131,7 @@ const args = [
 if (!isCI)
   args.push("-l");
 
-spawn(require.resolve(".bin/api-extractor"), args).then(async (code) => {
+spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
   if (fs.existsSync(configFileName))
     fs.unlinkSync(configFileName);
 
@@ -147,15 +144,6 @@ spawn(require.resolve(".bin/api-extractor"), args).then(async (code) => {
     "--apiSignature", path.resolve(path.join(apiReportFolder, `${entryPointFileName}.api.md`)),
     "--outDir", path.resolve(apiSummaryFolder),
   ];
-
-  // Generate Documents
-  const generateDocumentArgs = [
-    path.resolve(__dirname, "document-api.js"),
-    "--inDir", path.join(rushCore(), "/frontend"),
-    "--outDir", path.resolve(apiReportFolder),
-  ];
-
-  await spawn("node", generateDocumentArgs);
 
   spawn("node", extractSummaryArgs).then((code) => {
     process.exit(code);
