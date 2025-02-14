@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add `compareSimpleTypes` and `compareSimpleArrays` to compare simple data.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

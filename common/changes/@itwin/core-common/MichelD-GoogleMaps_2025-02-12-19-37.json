@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add new `properties` property to `ImageMapLayerSettings` class.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

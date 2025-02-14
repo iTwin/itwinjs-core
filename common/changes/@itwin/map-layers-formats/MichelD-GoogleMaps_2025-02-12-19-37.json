@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "Added Google Maps 2D tiles support.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats"
+}
