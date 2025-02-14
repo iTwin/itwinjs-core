@@ -464,9 +464,8 @@ export class Ray3d implements BeJSONFunctions {
         v = 0.0;
       else
         return undefined;  // ray does not intersect the triangle
-    } else if (u + v > 1.0) {
-      if (u + v > 1.0 + parameterTol)
-        return undefined;  // ray does not intersect the triangle
+    } else if (u + v > 1.0 + parameterTol) {
+      return undefined;  // ray does not intersect the triangle
     }
     // at this stage, we know the line (parameterized as the ray) intersects the triangle
     const t = f * edge2.dotProduct(q);
