@@ -1462,7 +1462,8 @@ export enum PropertyType {
 }
 
 // @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+
 
 // @beta (undocumented)
 export namespace PropertyTypeUtils {
@@ -1692,7 +1693,7 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected createInvertedUnitSync(name: string): InvertedUnit;
     // @alpha (undocumented)
-    protected createItem<T extends SchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T;
+    protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T;
     protected createKindOfQuantity(name: string): Promise<KindOfQuantity>;
     // (undocumented)
     protected createKindOfQuantitySync(name: string): KindOfQuantity;
@@ -1741,6 +1742,7 @@ export class Schema implements CustomAttributeContainerProps {
     fromJSONSync(schemaProps: SchemaProps): void;
     static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema;
     get fullName(): string;
+    getClasses(): IterableIterator<ECClass>;
     getConstant(name: string): Promise<Constant | undefined>;
     getCustomAttributeClass(name: string): Promise<CustomAttributeClass | undefined>;
     getEntityClass(name: string): Promise<EntityClass | undefined>;
@@ -1750,9 +1752,7 @@ export class Schema implements CustomAttributeContainerProps {
     getItem(name: string): Promise<SchemaItem | undefined>;
     // (undocumented)
     getItem<T extends typeof SchemaItem>(name: string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-    getItems(): IterableIterator<SchemaItem>;
-    // (undocumented)
-    getItems<T extends typeof SchemaItem>(itemConstructor: T): IterableIterator<InstanceType<T>>;
+    getItems<T extends AnySchemaItem>(): IterableIterator<T>;
     getItemSync(name: string): SchemaItem | undefined;
     // (undocumented)
     getItemSync<T extends typeof SchemaItem>(name: string, itemConstructor: T): InstanceType<T> | undefined;
