@@ -153,7 +153,7 @@ import { IModelConnectionProps } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelRpcProps } from '@itwin/core-common';
-import { IModelStatus } from '@itwin/core-common';
+import { IModelStatus } from '@itwin/core-bentley';
 import { IModelTileTreeId } from '@itwin/core-common';
 import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';

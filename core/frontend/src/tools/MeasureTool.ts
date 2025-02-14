@@ -6,13 +6,9 @@
  * @module Measure
  */
 
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
-import {
-  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
-} from "@itwin/core-geometry";
-import {
-  BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
-} from "@itwin/core-common";
+import { BentleyStatus, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps } from "@itwin/core-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
