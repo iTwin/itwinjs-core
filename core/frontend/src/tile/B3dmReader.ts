@@ -26,7 +26,6 @@ export class B3dmReader extends GltfReader {
   private _batchIdRemap = new Map<number, number>();
   private _colors?: Array<number>;
   private readonly _modelId: Id64String;
-  private readonly _tile?: RealityTile;
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
     system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform,
@@ -65,10 +64,9 @@ export class B3dmReader extends GltfReader {
     , shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false, tile?: RealityTile) {
     super({
       props, iModel, system, shouldAbort, deduplicateVertices,
-      is2d: !is3d, idMap: _idMap,
+      is2d: !is3d, idMap: _idMap, tile
     });
     this._modelId = modelId;
-    this._tile = tile;
   }
 
   public async read(): Promise<GltfReaderResult> {
@@ -149,7 +147,7 @@ export class B3dmReader extends GltfReader {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 
-    return this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias, undefined, this._tile);
+    return this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias, undefined);
   }
 
   protected override readBatchTable(mesh: Mesh, json: GltfMeshPrimitive) {

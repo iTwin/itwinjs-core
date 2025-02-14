@@ -140,7 +140,7 @@ export abstract class RealityTileLoader {
 
         break;
       case TileFormat.I3dm:
-        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
+        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices, tile);
         break;
       case TileFormat.Gltf:
         const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
@@ -153,6 +153,7 @@ export abstract class RealityTileLoader {
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
             idMap: this.getBatchIdMap(),
+            tile
           });
         }
 

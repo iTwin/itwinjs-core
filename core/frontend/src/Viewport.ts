@@ -947,15 +947,16 @@ export abstract class Viewport implements Disposable, TileUser {
     );
 
     for (const newRef of newRealityRefs) {
+      // TODO:
       if (newRef.getMapLayerCount() > 1) {
-          return true; // Always return true if map layer count is greater than 1
+        return true; // Always return true if map layer count is greater than 1
       }
 
       // If newRef has only one map layer(bg map), check if the previous view has the same map layer count
       for (const prevRef of prevRealityRefs) {
-          if (newRef.getMapLayerCount() !== prevRef.getMapLayerCount()) {
-            return true;
-          }
+        if (newRef.getMapLayerCount() !== prevRef.getMapLayerCount()) {
+          return true;
+        }
       }
     }
     return false;
@@ -1828,7 +1829,7 @@ export abstract class Viewport implements Disposable, TileUser {
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
       this._changeFlags.setViewState();
-      console.log(this.compareMapLayerCounts(prevView, view));
+
       if (this.compareMapLayerCounts(prevView, view)) {
         this.refreshRealityTile();
       }

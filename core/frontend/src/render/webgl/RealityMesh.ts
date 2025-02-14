@@ -29,7 +29,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
-import { MapCartoRectangle, PlanarProjection, PlanarTilePatch } from "../../tile/internal";
+import { MapCartoRectangle, PlanarProjection, PlanarTilePatch, RealityModelTileTree, RealityTile } from "../../tile/internal";
 
 const scratchOverlapRange = Range2d.createNull();
 const scratchBytes = new Uint8Array(4);
@@ -304,7 +304,9 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     const params = RealityMeshGeometryParams.fromRealityMesh(realityMesh);
     if (!params) return undefined;
 
-    const { layerClassifiers, tile, texture: meshTexture, featureID } = realityMesh;
+    const { texture: meshTexture, featureID } = realityMesh;
+    const tile = realityMesh.tile as RealityTile;
+    const layerClassifiers = (tile?.tree as RealityModelTileTree)?.layerClassifiers;
     const texture = meshTexture ? new TerrainTexture(meshTexture, featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
     if (!layerClassifiers?.size || !tile) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
