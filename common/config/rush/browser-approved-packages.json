@@ -949,6 +949,10 @@
     {
       "name": "yargs",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
+    },
+    {
+      "name": "zx",
+      "allowedCategories": [ "backend" ]
     }
   ]
 }
