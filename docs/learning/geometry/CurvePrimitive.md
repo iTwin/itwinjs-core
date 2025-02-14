@@ -128,6 +128,6 @@ Examples with json fragments
 
 ![>](./figs/CurvePrimitives/EllipticAxisVariants.png)
 
-# bspline curves
+# B-spline curves
 
 See [BSpline.md](BSpline.md)

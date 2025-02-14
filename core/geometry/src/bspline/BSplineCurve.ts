@@ -468,7 +468,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   public copyPoints(): any[] {
     return Point3dArray.unpackNumbersToNestedArrays(this._bcurve.packedData, 3);
   }
-  /** Return a simple array of poles coordinates. */
+  /** Return a simple array of poles' coordinates. */
   public copyPointsFloat64Array(): Float64Array {
     return this._bcurve.packedData.slice();
   }

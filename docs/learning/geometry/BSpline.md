@@ -22,10 +22,6 @@ N_{i,j}(t) = \frac{t - t_i}{t_{i+j} - t_i} N_{i,j-1}(t) + \frac{t_{i+j+1} - t}{t
 ```
 The sequence $\{t_i\}$ is a non-decreasing vector of $k+n$ numbers called knots, which determine where the polynomial spans of the curve join in parameter space, and with what degree of continuity.
 
-Please note that we always have:
-
-              order + number of control points = number of knots + 2
-
 ## Control Points
 
 The control points of a B-spline curve, and the line string (aka "control polygon") they form, have remarkable properties for computation:
