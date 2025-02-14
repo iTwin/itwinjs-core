@@ -11,7 +11,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
 /**
- * Bspline knots and poles for 1d-to-Nd.
+ * Knots and poles for a B-spline function mapping R to R^n.
  * * The "pole" (aka control point) of this class is a block of `poleLength` numbers.
  * * Derived classes (not this class) assign meaning such as x,y,z,w.
  * * For instance, an instance of this class with `poleLength===3` does not know if its poles are x,y,z or
