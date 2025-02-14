@@ -7,12 +7,11 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, Id64String, Logger } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   buildElementProperties,
   ClientDiagnostics,
-  ComputeSelectionRequestOptions,
   ComputeSelectionRpcRequestOptions,
   ContentDescriptorRpcRequestOptions,
   ContentFlags,
@@ -34,7 +33,6 @@ import {
   HierarchyLevel,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
-  isComputeSelectionRequestOptions,
   ItemJSON,
   KeySet,
   KeySetJSON,
@@ -507,21 +505,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     );
   }
 
-  public override async computeSelection(
-    token: IModelRpcProps,
-    requestOptions: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions,
-    ids?: Id64String[],
-    scopeId?: string,
-  ): PresentationRpcResponse<KeySetJSON> {
+  public override async computeSelection(token: IModelRpcProps, requestOptions: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON> {
     return this.makeRequest(token, "computeSelection", requestOptions, async (options) => {
-      if (!isComputeSelectionRequestOptions(options)) {
-        options = {
-          ...options,
-          elementIds: ids!,
-          scope: { id: scopeId! },
-        };
-      }
-      const keys = await this.getManager(requestOptions.clientId).computeSelection(options as ComputeSelectionRequestOptions<IModelDb>);
+      const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
       return keys.toJSON();
     });
   }
