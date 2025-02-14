@@ -541,9 +541,15 @@ export class TextBlock extends TextBlockComponent {
       return false;
     }
 
-    if (this.width !== other.width || this.justification !== other.justification || this.margins !== other.margins || this.paragraphs.length !== other.paragraphs.length) {
+    if (this.width !== other.width || this.justification !== other.justification || this.paragraphs.length !== other.paragraphs.length) {
       return false;
     }
+
+    const marginsAreEqual = Object.entries(this.margins).every(([key, value]) =>
+      value === (other.margins as any)[key]
+    );
+
+    if (!marginsAreEqual) return false;
 
     return this.paragraphs.every((paragraph, index) => paragraph.equals(other.paragraphs[index]));
   }
