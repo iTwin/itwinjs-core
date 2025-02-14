@@ -482,7 +482,7 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     intersectionPoint = ray.intersectionWithTriangle(triangle.points[0], triangle.points[1], triangle.points[2]);
     ck.testUndefined(intersectionPoint, "expect no intersection when ray direction is (0,0,0)");
 
-    origin = Point3d.create(10, 0, 0);
+    origin = Point3d.create(11, 0, 0);
     direction = Vector3d.create(1, 1, 1);
     ray = Ray3d.create(origin, direction);
     intersectionPoint = ray.intersectionWithTriangle(triangle.points[0], triangle.points[1], triangle.points[2]);
@@ -629,6 +629,43 @@ describe("Ray3d.IntersectionWithTriangle", () => {
       )) {
         expect(ck.getNumErrors()).toBe(0);
       }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("Ray3d.IntersectRayOriginOnTriangle", () => {
+    const ck = new Checker();
+
+    const numSamples = 6;
+    const origins = [
+      new Point3d(-2, 40, 82), new Point3d(2, 70, 0), new Point3d(-32, 6, -43),
+      new Point3d(13, -59, 2), new Point3d(47, 0, -85), new Point3d(-61, -79, 48),
+    ];
+    const directions = [
+      new Vector3d(-5, 41, -2), new Vector3d(31, 90, 66), new Vector3d(-93, -82, -12),
+      new Vector3d(-6, 0, 23), new Vector3d(-38, -74, 51), new Vector3d(61, 61, 64),
+    ];
+    const triangles: BarycentricTriangle[] = [
+      BarycentricTriangle.create(new Point3d(9, -26, 93), new Point3d(75, 36, 93), new Point3d(-87, 92, 63)),
+      BarycentricTriangle.create(new Point3d(-17, 39, 5), new Point3d(73, 84, -30), new Point3d(-55, 94, 28)),
+      BarycentricTriangle.create(new Point3d(-58, -28, -82), new Point3d(-20, 4, -23), new Point3d(-50, 9, -73)),
+      BarycentricTriangle.create(new Point3d(56, -29, -90), new Point3d(6, -1, 89), new Point3d(13, -59, 2)),
+      BarycentricTriangle.create(new Point3d(64, -39, -84), new Point3d(-50, -100, 17), new Point3d(-47, -10, -16)),
+      BarycentricTriangle.create(new Point3d(57, 10, -92), new Point3d(-10, -28, -85), new Point3d(-42, -60, 79)),
+    ];
+
+    for (let i = 0; i < numSamples; i++) {
+      const ray = Ray3d.create(origins[i], directions[i])
+      const intersectionPointFast = ray.intersectionWithTriangle(
+        triangles[i].points[0], triangles[i].points[1], triangles[i].points[2],
+      )!;
+      const intersectionPointSlow = triangles[i].intersectRay3d(ray).world;
+
+      ck.testPoint3d(
+        intersectionPointFast,
+        intersectionPointSlow,
+        "intersection points calculated by Ray3d and BarycentricTriangle classes are equal",
+      );
     }
     expect(ck.getNumErrors()).toBe(0);
   });
