@@ -213,7 +213,7 @@ export class SimpleFactory {
         return g.Matrix4d.createIdentity();
       case 2:
         return g.Matrix4d.createTranslationAndScaleXYZ(1, 3, 2, 3, 2, 4);
-      case 2:
+      case 3:
         return g.Matrix4d.createRowValues(
           12, 1, 0.2, 0.1,
           0.13, 10, 1.1, 2,

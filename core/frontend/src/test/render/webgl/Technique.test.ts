@@ -88,14 +88,13 @@ describe("Techniques", () => {
     target.techniques.draw(drawParams);
   });
 
-  // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
-  // A timeout of zero means no timeout.
-  const compileTimeout = 0;
   async function compileAllShaders(): Promise<void> {
     expect(System.instance.techniques.compileShaders()).toBe(true);
   }
 
-  it("should compile all shader programs", { timeout: compileTimeout || undefined }, async () => {
+  // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
+  // A timeout of zero means no timeout.
+  it("should compile all shader programs", { timeout: 0 }, async () => {
     await compileAllShaders();
   });
 
