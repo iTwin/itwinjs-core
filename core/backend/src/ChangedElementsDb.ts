@@ -14,7 +14,7 @@ import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { _hubAccess, _nativeDb } from "./internal/Symbols";
 
 /**
  * Options for processChangesets function
@@ -105,9 +105,9 @@ export class ChangedElementsDb implements Disposable {
    */
   public async processChangesets(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost[_hubAccess].queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
+    const end = (await IModelHost[_hubAccess].queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
@@ -134,9 +134,9 @@ export class ChangedElementsDb implements Disposable {
    */
   public async processChangesetsAndRoll(accessToken: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost[_hubAccess].queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
+    const end = (await IModelHost[_hubAccess].queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
