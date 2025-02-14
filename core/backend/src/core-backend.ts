@@ -38,6 +38,7 @@ export * from "./FontFile";
 export * from "./GeoCoordConfig";
 export * from "./GeographicCRSServices";
 export * from "./HubMock";
+export * from "./ImageSourceConversion";
 export * from "./IModelCloneContext";
 export * from "./IModelDb";
 export * from "./IModelDbFonts";
@@ -137,6 +138,11 @@ export * from "./internal/cross-package";
 /**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
+ */
+
+/**
+ * @docs-group-description Images
+ * APIs for encoding and decoding images
  */
 
 /**
