@@ -12,7 +12,7 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
-import { NativeLibrary } from "@bentley/imodeljs-native";
+import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
@@ -287,6 +287,13 @@ export class IModelHost {
   private static _cacheDir = "";
   private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
+
+  /** Provides access to the entirely internal, low-level, unstable APIs provided by @bentley/imodel-native.
+ * Should not be used outside of @itwin/core-backend, and certainly not outside of the itwinjs-core repository
+ * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelHost's public API instead.
+ * @internal
+ */
+  public static get platform(): typeof IModelJsNative { return IModelNative.platform; }
 
   public static configuration?: IModelHostOptions;
 
@@ -644,7 +651,7 @@ export class IModelHost {
   }
 
   /** @internal */
-  public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string {
+  public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean; }): string {
     return IModelNative.platform.computeSchemaChecksum(arg);
   }
 }
