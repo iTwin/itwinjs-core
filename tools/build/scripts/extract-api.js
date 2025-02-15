@@ -68,7 +68,7 @@ const config = {
     enabled: false
   },
   dtsRollup: {
-    enabled: false
+    enabled: true
   },
   tsdocMetadata: {
     enabled: false
@@ -106,6 +106,10 @@ const config = {
       },
       "ae-unresolved-inheritdoc-base": {
         logLevel: "error",
+        addToApiReportFile: true
+      },
+      "ae-missing-getter": {
+        logLevel: "none",
         addToApiReportFile: true
       }
     }
