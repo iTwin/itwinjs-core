@@ -10,8 +10,8 @@ import { assert, DbResult, GuidString, Id64String } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { ECDb } from "./ECDb";
-import { IModelNative } from "./internal/NativePlatform";
+import { ECDb } from "./ECDb.js";
+import { IModelNative } from "./internal/NativePlatform.js";
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *

@@ -12,8 +12,8 @@ import {
 } from "@itwin/core-common";
 import {
   _nativeDb, GenericSchema, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("generateElementMeshes", () => {
   let imodel: SnapshotDb;

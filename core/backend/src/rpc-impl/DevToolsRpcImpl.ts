@@ -7,7 +7,7 @@
  */
 import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
-import { DevTools, DevToolsStatsFormatter } from "../DevTools";
+import { DevTools, DevToolsStatsFormatter } from "../DevTools.js";
 
 /** The backend implementation of DevToolsRpcInterface.
  * @internal

@@ -5,17 +5,17 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as sinon from "sinon";
-import { BriefcaseDb, IModelDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { BriefcaseDb, IModelDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 import { FontFace, FontType, RscFontEncodingProps } from "@itwin/core-common";
-import { FontFile } from "../../FontFile";
+import { FontFile } from "../../FontFile.js";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { _faceProps, _getData } from "../../internal/Symbols";
-import { CodeService } from "../../CodeService";
-import { HubMock } from "../../HubMock";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { BriefcaseManager } from "../../BriefcaseManager";
-import { QueryMappedFamiliesArgs } from "../../IModelDbFonts";
+import { _faceProps, _getData } from "../../internal/Symbols.js";
+import { CodeService } from "../../CodeService.js";
+import { HubMock } from "../../HubMock.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { BriefcaseManager } from "../../BriefcaseManager.js";
+import { QueryMappedFamiliesArgs } from "../../IModelDbFonts.js";
 
 describe("IModelDbFonts", () => {
   let db: IModelDb;

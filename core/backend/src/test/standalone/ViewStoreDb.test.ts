@@ -7,9 +7,9 @@ import { expect } from "chai";
 import { Suite } from "mocha";
 import { join } from "path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
-import { ViewStore } from "../../ViewStore";
+import { ViewStore } from "../../ViewStore.js";
 import { ThumbnailFormatProps } from "@itwin/core-common";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);

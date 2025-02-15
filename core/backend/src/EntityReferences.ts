@@ -8,11 +8,11 @@
 
 import { ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, ModelProps } from "@itwin/core-common";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import type { Entity } from "./Entity";
-import { Model } from "./Model";
-import { Element } from "./Element";
-import { ElementAspect } from "./ElementAspect";
-import { Relationship, RelationshipProps } from "./Relationship";
+import type { Entity } from "./Entity.js";
+import { Model } from "./Model.js";
+import { Element } from "./Element.js";
+import { ElementAspect } from "./ElementAspect.js";
+import { Relationship, RelationshipProps } from "./Relationship.js";
 import * as assert from "assert";
 
 /** Concrete classes that can be created, with the notable exception of CodeSpecs since it is does not derive from Entity

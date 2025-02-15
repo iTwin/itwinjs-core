@@ -11,7 +11,6 @@ import {
 import * as chai from "chai";
 import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "..";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -19,11 +18,12 @@ import {
   IModelHost,
   SpatialCategory,
   SqliteChangesetReader
-} from "../../core-backend";
-import { HubMock } from "../../HubMock";
-import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { HubMock } from "../../HubMock.js";
+import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs.js";
+import { HubWrappers, IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
 import { restore } from "sinon";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 chai.use(chaiAsPromised);
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {

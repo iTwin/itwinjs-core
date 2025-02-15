@@ -21,18 +21,18 @@ import {
   ViewStoreRpc,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { SpatialCategory } from "../Category";
-import { ConcurrentQuery } from "../ConcurrentQuery";
-import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
-import { generateGeometrySummaries } from "../GeometrySummary";
-import { IModelDb } from "../IModelDb";
-import { DictionaryModel } from "../Model";
-import { PromiseMemoizer } from "../PromiseMemoizer";
-import { RpcTrace } from "../rpc/tracing";
-import { ViewStateHydrator } from "../ViewStateHydrator";
-import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { _nativeDb } from "../internal/Symbols";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { SpatialCategory } from "../Category.js";
+import { ConcurrentQuery } from "../ConcurrentQuery.js";
+import { CustomViewState3dCreator } from "../CustomViewState3dCreator.js";
+import { generateGeometrySummaries } from "../GeometrySummary.js";
+import { IModelDb } from "../IModelDb.js";
+import { DictionaryModel } from "../Model.js";
+import { PromiseMemoizer } from "../PromiseMemoizer.js";
+import { RpcTrace } from "../rpc/tracing.js";
+import { ViewStateHydrator } from "../ViewStateHydrator.js";
+import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility.js";
+import { _nativeDb } from "../internal/Symbols.js";
 
 interface ViewStateRequestProps {
   accessToken: AccessToken;

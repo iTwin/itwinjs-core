@@ -11,8 +11,8 @@ import {
 } from "@itwin/core-common";
 import {
   _nativeDb, GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 // The only geometry in our geometry streams will be squares of 1 meter in x and y, with origin at (pos, 0, 0).
 interface Primitive { pos: number }

@@ -6,8 +6,8 @@
 import { CompressedId64Set, Id64Array, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
 import { CustomViewState3dCreatorOptions, CustomViewState3dProps } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelDb } from "./IModelDb";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { IModelDb } from "./IModelDb.js";
 
 const loggerCategory = BackendLoggerCategory.CustomViewState3dCreator;
 

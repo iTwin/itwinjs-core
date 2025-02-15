@@ -8,8 +8,8 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
-import type { IModelDb } from "./IModelDb";
-import { Schema } from "./Schema";
+import type { IModelDb } from "./IModelDb.js";
+import { Schema } from "./Schema.js";
 import { EntityClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].

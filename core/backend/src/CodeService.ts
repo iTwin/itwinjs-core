@@ -5,10 +5,10 @@
 
 import { BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { CodeProps, FontId, FontType } from "@itwin/core-common";
-import { CloudSqlite } from "./CloudSqlite";
-import { IModelDb } from "./IModelDb";
-import { SettingsContainer } from "./workspace/Settings";
-import { VersionedSqliteDb } from "./SQLiteDb";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { IModelDb } from "./IModelDb.js";
+import { SettingsContainer } from "./workspace/Settings.js";
+import { VersionedSqliteDb } from "./SQLiteDb.js";
 
 /**
  * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.

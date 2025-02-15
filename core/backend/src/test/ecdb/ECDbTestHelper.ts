@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { Guid } from "@itwin/core-bentley";
-import { ECDb } from "../../ECDb";
-import { IModelJsFs } from "../../IModelJsFs";
+import { ECDb } from "../../ECDb.js";
+import { IModelJsFs } from "../../IModelJsFs.js";
 
 export class ECDbTestHelper {
 

@@ -6,13 +6,13 @@
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
 
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
-import { DocumentPartition, Sheet } from "../../Element";
+import { IModelDb, SnapshotDb } from "../../IModelDb.js";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils.js";
+import { DocumentPartition, Sheet } from "../../Element.js";
 import { expect } from "chai";
-import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model";
-import { ElementOwnsChildElements, SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "../../NavigationRelationship";
-import { SheetIndex, SheetIndexFolder, SheetIndexReference, SheetReference } from "../../SheetIndex";
+import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model.js";
+import { ElementOwnsChildElements, SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "../../NavigationRelationship.js";
+import { SheetIndex, SheetIndexFolder, SheetIndexReference, SheetReference } from "../../SheetIndex.js";
 
 export const getOrCreateDocumentList = async (iModel: IModelDb): Promise<Id64String> => {
   const documentListName = "SheetList";

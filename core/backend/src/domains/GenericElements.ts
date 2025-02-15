@@ -14,11 +14,11 @@ import {
 import {
   Document, GraphicalElement2d, GraphicalElement3d, GraphicalPartition3d, GraphicalType2d, GroupInformationElement, GroupInformationPartition,
   PhysicalElement, PhysicalType, SpatialLocationElement,
-} from "../Element";
-import { IModelDb } from "../IModelDb";
-import { PhysicalMaterial } from "../Material";
-import { GraphicalModel3d, GroupInformationModel } from "../Model";
-import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
+} from "../Element.js";
+import { IModelDb } from "../IModelDb.js";
+import { PhysicalMaterial } from "../Material.js";
+import { GraphicalModel3d, GroupInformationModel } from "../Model.js";
+import { SubjectOwnsPartitionElements } from "../NavigationRelationship.js";
 
 /** A graphical detailing symbol that is placed on a [[Drawing]] or [[Sheet]].
  * @public

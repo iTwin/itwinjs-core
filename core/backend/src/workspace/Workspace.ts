@@ -8,12 +8,12 @@
 
 import { AccessToken, BeEvent, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { CloudSqlite } from "../CloudSqlite";
-import { SQLiteDb } from "../SQLiteDb";
-import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./Settings";
+import { CloudSqlite } from "../CloudSqlite.js";
+import { SQLiteDb } from "../SQLiteDb.js";
+import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./Settings.js";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { _implementationProhibited } from "../internal/Symbols";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { _implementationProhibited } from "../internal/Symbols.js";
 
 /** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's [[WorkspaceDb]]s.
  * A valid `WorkspaceContainerId` must conform to the following constraints:

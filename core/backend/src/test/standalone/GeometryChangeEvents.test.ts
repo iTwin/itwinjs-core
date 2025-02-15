@@ -11,8 +11,8 @@ import {
 import {
   _nativeDb,
   ChannelControl, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("Model geometry changes", () => {
   let imodel: StandaloneDb;

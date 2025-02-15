@@ -7,10 +7,10 @@
  */
 import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { DefinitionModel, Model } from "./Model";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { DefinitionContainer, DefinitionElement, DefinitionPartition, Element, Subject } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { DefinitionModel, Model } from "./Model.js";
 
 const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 

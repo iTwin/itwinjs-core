@@ -7,8 +7,8 @@
  * @module iModels
  */
 
-import { LockControl } from "../LockControl";
-import { _close, _elementWasCreated, _implementationProhibited, _releaseAllLocks } from "./Symbols";
+import { LockControl } from "../LockControl.js";
+import { _close, _elementWasCreated, _implementationProhibited, _releaseAllLocks } from "./Symbols.js";
 
 /** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
 class NoLocks implements LockControl {

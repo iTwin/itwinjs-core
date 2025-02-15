@@ -7,11 +7,11 @@
  */
 
 import { RpcMultipart, WebAppRpcLogging, WebAppRpcRequest } from "@itwin/core-common";
-import { appendToMultipartForm, createMultipartStream, parseMultipartRequest } from "./rpc/multipart";
-import { initializeTracing } from "./rpc/tracing";
-import { WebAppRpcLoggingBackend } from "./rpc/web/logging";
-import { parseRequest } from "./rpc/web/request";
-import { sendResponse } from "./rpc/web/response";
+import { appendToMultipartForm, createMultipartStream, parseMultipartRequest } from "./rpc/multipart.js";
+import { initializeTracing } from "./rpc/tracing.js";
+import { WebAppRpcLoggingBackend } from "./rpc/web/logging.js";
+import { parseRequest } from "./rpc/web/request.js";
+import { sendResponse } from "./rpc/web/response.js";
 
 let initialized = false;
 /** @internal */

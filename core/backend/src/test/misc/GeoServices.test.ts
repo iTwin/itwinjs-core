@@ -7,10 +7,10 @@ import { assert } from "chai";
 import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
-import { IModelNative } from "../../internal/NativePlatform";
+import { IModelNative } from "../../internal/NativePlatform.js";
 import { Geometry, Range2d, Range2dProps } from "@itwin/core-geometry";
-import { GeoCoordConfig } from "../../GeoCoordConfig";
-import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
+import { GeoCoordConfig } from "../../GeoCoordConfig.js";
+import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices.js";
 
 // spell-checker: disable
 

@@ -20,10 +20,10 @@ import {
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
-import { createBRepDataProps } from "../GeometryTestUtil";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { Timer } from "../TestUtils";
+import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, Subject } from "../../core-backend.js";
+import { createBRepDataProps } from "../GeometryTestUtil.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { Timer } from "../TestUtils.js";
 
 function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);

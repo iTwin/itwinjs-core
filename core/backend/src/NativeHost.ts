@@ -12,11 +12,11 @@ import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
   OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
-import { BriefcaseManager, RequestNewBriefcaseArg } from "./BriefcaseManager";
-import { Downloads, ProgressFunction, ProgressStatus } from "./CheckpointManager";
-import { IModelHost } from "./IModelHost";
-import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
-import { NativeAppStorage } from "./NativeAppStorage";
+import { BriefcaseManager, RequestNewBriefcaseArg } from "./BriefcaseManager.js";
+import { Downloads, ProgressFunction, ProgressStatus } from "./CheckpointManager.js";
+import { IModelHost } from "./IModelHost.js";
+import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost.js";
+import { NativeAppStorage } from "./NativeAppStorage.js";
 
 /**
  * Implementation of NativeAppFunctions

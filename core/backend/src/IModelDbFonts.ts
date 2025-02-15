@@ -7,8 +7,8 @@
  */
 
 import { FontFamilyDescriptor, FontFamilySelector, FontId, FontProps } from "@itwin/core-common";
-import { _implementationProhibited } from "./internal/Symbols";
-import { FontFile } from "./FontFile";
+import { _implementationProhibited } from "./internal/Symbols.js";
+import { FontFile } from "./FontFile.js";
 
 /** Arguments supplied to [[IModelDbFonts.embedFontFile]].
  * @beta

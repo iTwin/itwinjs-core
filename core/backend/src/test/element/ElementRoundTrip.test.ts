@@ -9,9 +9,9 @@ import {
   Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
-import { ElementRefersToElements } from "../../Relationship";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend.js";
+import { ElementRefersToElements } from "../../Relationship.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

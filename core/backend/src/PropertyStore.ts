@@ -7,10 +7,10 @@
  * @module SQLiteDb
  */
 
-import { BlobContainer } from "./BlobContainerService";
-import { CloudSqlite } from "./CloudSqlite";
-import { VersionedSqliteDb } from "./SQLiteDb";
-import { SettingsContainer } from "./workspace/Settings";
+import { BlobContainer } from "./BlobContainerService.js";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { VersionedSqliteDb } from "./SQLiteDb.js";
+import { SettingsContainer } from "./workspace/Settings.js";
 
 /** @beta */
 export namespace PropertyStore {

@@ -6,12 +6,12 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
-import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager.js";
+import { IModelDb, SnapshotDb } from "../../IModelDb.js";
 import { Logger } from "@itwin/core-bentley";
-import { IModelHost } from "../../IModelHost";
-import { HubMock } from "../../HubMock";
-import { _nativeDb } from "../../internal/Symbols";
+import { IModelHost } from "../../IModelHost.js";
+import { HubMock } from "../../HubMock.js";
+import { _nativeDb } from "../../internal/Symbols.js";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());

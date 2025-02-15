@@ -16,12 +16,12 @@ import {
   SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
-import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _elementWasCreated, _verifyChannel } from "./internal/Symbols";
+import { Entity } from "./Entity.js";
+import { IModelDb } from "./IModelDb.js";
+import { IModelElementCloneContext } from "./IModelElementCloneContext.js";
+import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model.js";
+import { SubjectOwnsSubjects } from "./NavigationRelationship.js";
+import { _elementWasCreated, _verifyChannel } from "./internal/Symbols.js";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta

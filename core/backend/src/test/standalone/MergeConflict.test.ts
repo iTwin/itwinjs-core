@@ -12,8 +12,7 @@ import {
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "../";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../HubMock.js";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -21,10 +20,11 @@ import {
   ExternalSourceAspect,
   SpatialCategory,
   SqliteChangeOp,
-} from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
+} from "../../core-backend.js";
+import { HubWrappers, IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs.js";
 import { stub } from "sinon";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 chai.use(chaiAsPromised);
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {

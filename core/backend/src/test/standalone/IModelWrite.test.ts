@@ -15,19 +15,19 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { HubWrappers, KnownTestLocations } from "../";
-import { DrawingCategory } from "../../Category";
-import { ECSqlStatement } from "../../ECSqlStatement";
-import { HubMock } from "../../HubMock";
+import { DrawingCategory } from "../../Category.js";
+import { ECSqlStatement } from "../../ECSqlStatement.js";
+import { HubMock } from "../../HubMock.js";
 import {
   _nativeDb,
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
   CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
-} from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
+} from "../../core-backend.js";
+import { HubWrappers, IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { ServerBasedLocks } from "../../internal/ServerBasedLocks.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 chai.use(chaiAsPromised);
 
