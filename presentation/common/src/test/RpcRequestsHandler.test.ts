@@ -668,6 +668,7 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
     it("forwards getSelectionScopes call", async () => {
       const handlerOptions: SelectionScopeRequestOptions<IModelRpcProps> = {
         imodel: token,
@@ -677,7 +678,6 @@ describe("RpcRequestsHandler", () => {
       };
       const result = [createRandomSelectionScope()];
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getSelectionScopes(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -698,12 +698,12 @@ describe("RpcRequestsHandler", () => {
       };
       const result = new KeySet().toJSON();
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.computeSelection(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
       expect(await handler.computeSelection(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 });
