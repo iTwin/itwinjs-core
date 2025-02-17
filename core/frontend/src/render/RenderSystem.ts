@@ -11,7 +11,7 @@ import {
   ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, RenderTextureParams, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ClipVector, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -43,7 +43,7 @@ import { GraphicType } from "../common/render/GraphicType";
 import { BatchOptions } from "../common/render/BatchOptions";
 import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
 import { GraphicDescriptionContextPropsImpl, WorkerGraphicDescriptionContextPropsImpl } from "../common/internal/render/GraphicDescriptionContextImpl";
-import { _featureTable, _implementationProhibited, _renderSystem, _textures, _transformCenter, _transforms } from "../common/internal/Symbols";
+import { _featureIds, _featureTable, _implementationProhibited, _range, _renderSystem, _symbologyOverrides, _textures, _transformCenter, _transforms } from "../common/internal/Symbols";
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
@@ -112,6 +112,12 @@ export interface RenderInstances {
   readonly [_transforms]: Float32Array;
   /** @internal */
   readonly [_featureTable]?: PackedFeatureTable;
+  /**@internal */
+  readonly [_symbologyOverrides]?: Uint8Array;
+  /**@internal */
+  readonly [_featureIds]?: Uint8Array;
+  /**@internal */
+  readonly [_range]? : LowAndHighXYZ;
 }
 
 /** Arguments supplied to [[RenderSystem.createGraphicFromDescription]].

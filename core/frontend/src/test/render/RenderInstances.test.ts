@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
-import { InstanceBuffers, InstanceBuffersData } from "../../internal/render/webgl/InstancedGeometry";
+import { InstanceBuffers, InstanceBuffersData, RenderInstancesImpl } from "../../internal/render/webgl/InstancedGeometry";
 import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
 import { GraphicType } from "../../common";
 import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures } from "../openBlankViewport";
-import { GraphicBranch, readGltfTemplate, StandardViewId } from "../../core-frontend";
-import { _featureTable } from "../../common/internal/Symbols";
+import { GraphicBranch, GraphicTemplate, readGltfTemplate, StandardViewId } from "../../core-frontend";
+import { _featureTable, _transformCenter, _transforms } from "../../common/internal/Symbols";
+import { System } from "../../internal/render/webgl/System";
 
 describe("RenderInstancesParamsBuilder", () => {
   it("throws if no instances supplied", () => {
@@ -340,5 +341,169 @@ describe("RenderInstances", () => {
     expect(green).greaterThan(red);
     // most of view is background
     expect(background).greaterThan(green);
+  });
+
+  it("rotates instance transformations if a gltf template", async () => {
+    function mockCreateGraphicFromTemplate(tmp: GraphicTemplate, inst: RenderInstancesImpl): RenderInstancesImpl | undefined {
+      if (tmp.isGltf)
+        return System.instance.rotateTransformsAndRecreateInstances(inst);
+      return undefined;
+    }
+
+    function isNegativeZero(x: number): boolean {
+      return 1 / x === -Infinity;
+    }
+
+    // a single white triangle from https://github.com/KhronosGroup/glTF-Sample-Models/tree/main/2.0/Triangle
+    const gltfJson = `{
+      "scene" : 0,
+      "scenes" : [
+        {
+          "nodes" : [ 0 ]
+        }
+      ],
+
+      "nodes" : [
+        {
+          "mesh" : 0
+        }
+      ],
+
+      "meshes" : [
+        {
+          "primitives" : [ {
+            "attributes" : {
+              "POSITION" : 1
+            },
+            "indices" : 0
+          } ]
+        }
+      ],
+
+      "buffers" : [
+        {
+          "uri" : "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=",
+          "byteLength" : 44
+        }
+      ],
+      "bufferViews" : [
+        {
+          "buffer" : 0,
+          "byteOffset" : 0,
+          "byteLength" : 6,
+          "target" : 34963
+        },
+        {
+          "buffer" : 0,
+          "byteOffset" : 8,
+          "byteLength" : 36,
+          "target" : 34962
+        }
+      ],
+      "accessors" : [
+        {
+          "bufferView" : 0,
+          "byteOffset" : 0,
+          "componentType" : 5123,
+          "count" : 3,
+          "type" : "SCALAR",
+          "max" : [ 2 ],
+          "min" : [ 0 ]
+        },
+        {
+          "bufferView" : 1,
+          "byteOffset" : 0,
+          "componentType" : 5126,
+          "count" : 3,
+          "type" : "VEC3",
+          "max" : [ 1.0, 1.0, 0.0 ],
+          "min" : [ 0.0, 0.0, 0.0 ]
+        }
+      ],
+
+      "asset" : {
+        "version" : "2.0"
+      }
+    }`;
+
+    using vp = openBlankViewport({ height: 100, width: 100 });
+    vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: false, lighting: false });
+    vp.view.setStandardRotation(StandardViewId.Iso);
+    const viewVolume = Range3d.create(vp.iModel.projectExtents.center);
+    viewVolume.expandInPlace(5);
+    vp.view.lookAtVolume(viewVolume, vp.viewRect.aspect);
+    vp.synchWithView({ animateFrustumChange: false });
+    vp.displayStyle.backgroundColor = ColorDef.black;
+
+    const id = "0x1";
+    const modelId = "0x2";
+    const gltfTemplate = await readGltfTemplate({
+      gltf: JSON.parse(gltfJson),
+      iModel: vp.iModel,
+      pickableOptions: { id, modelId },
+    });
+
+    const template = gltfTemplate!.template;
+    expect(template).toBeDefined();
+
+    const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
+    instancesBuilder.add({
+      feature: "0x3",
+      transform: Transform.createTranslationXYZ(-10, 0, 0),
+    });
+    instancesBuilder.add({
+      feature: "0x4",
+      transform: Transform.createTranslationXYZ(10, 0, 0),
+    });
+    instancesBuilder.add({
+      feature: "0x5",
+      transform: Transform.createTranslationXYZ(0, 10, 0),
+    });
+    instancesBuilder.add({
+      feature: "0x6",
+      transform: Transform.createTranslationXYZ(0, -10, 0),
+    });
+    instancesBuilder.add({
+      feature: "0x5",
+      transform: Transform.createTranslationXYZ(0, 0, 10),
+    });
+    instancesBuilder.add({
+      feature: "0x6",
+      transform: Transform.createTranslationXYZ(0, 0, -10),
+    });
+    const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())! as RenderInstancesImpl;
+    expect(instances).toBeDefined();
+
+    const originalTransforms = Array.from(instances[_transforms]);
+    const originalCenter = new Point3d(instances[_transformCenter].x, instances[_transformCenter].y, instances[_transformCenter].z);
+    expect(originalTransforms).toBeDefined();
+    expect(originalCenter).toBeDefined();
+
+    const recreatedInstances = mockCreateGraphicFromTemplate(template, instances)!;
+    expect(recreatedInstances).toBeDefined();
+
+    const rotatedTransforms = recreatedInstances[_transforms];
+    const rotatedCenter = recreatedInstances[_transformCenter];
+    expect(rotatedTransforms).toBeDefined();
+    expect(rotatedCenter).toBeDefined();
+
+    const numInstances = originalTransforms.length / 12;
+    for (let i = 0; i < numInstances; i++) {
+      const instanceIdx = i * 12;
+      const originalX = originalTransforms[instanceIdx + 3];
+      const originalY = originalTransforms[instanceIdx + 7];
+      const originalZ = originalTransforms[instanceIdx + 11];
+
+      const rotatedX = rotatedTransforms[instanceIdx + 3];
+      const rotatedY = rotatedTransforms[instanceIdx + 7];
+      const rotatedZ = rotatedTransforms[instanceIdx + 11];
+
+      expect(rotatedX).toEqual(originalX);
+      expect(isNegativeZero(rotatedY) ? 0 : rotatedY).toEqual(isNegativeZero(originalZ) ? 0 : originalZ);
+      expect(isNegativeZero(rotatedZ) ? 0 : rotatedZ).toEqual(isNegativeZero(-originalY) ? 0 : -originalY);
+    }
+    expect(rotatedCenter.x).toEqual(originalCenter.x);
+    expect(isNegativeZero(rotatedCenter.y) ? 0 : rotatedCenter.x).toEqual(isNegativeZero(originalCenter.z) ? 0 : originalCenter.z);
+    expect(isNegativeZero(rotatedCenter.z) ? 0 : rotatedCenter.x).toEqual(isNegativeZero(-originalCenter.y) ? 0 : -originalCenter.y);
   });
 });

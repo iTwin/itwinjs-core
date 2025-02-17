@@ -19,7 +19,7 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Matrix4 } from "./Matrix";
 import { RenderInstances } from "../../../render/RenderSystem";
-import { _featureTable, _implementationProhibited, _renderSystem, _transformCenter, _transforms } from "../../../common/internal/Symbols";
+import { _featureIds, _featureTable, _implementationProhibited, _range, _renderSystem, _symbologyOverrides, _transformCenter, _transforms } from "../../../common/internal/Symbols";
 import { BatchType, PackedFeatureTable } from "@itwin/core-common";
 import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
 
@@ -148,6 +148,10 @@ export namespace RenderInstancesImpl {
       [_transforms]: params.instances.transforms,
       [_transformCenter]: params.instances.transformCenter,
       [_featureTable]: featureTable,
+      [_symbologyOverrides]: params.instances.symbologyOverrides,
+      [_featureIds]: params.instances.featureIds,
+      [_range]: params.instances.range,
+
     };
   }
 }
