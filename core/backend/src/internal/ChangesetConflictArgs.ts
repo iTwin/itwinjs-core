@@ -8,8 +8,8 @@
  */
 
 import { DbChangeStage, DbConflictCause, DbOpcode, DbValueType, Id64String } from "@itwin/core-bentley";
-import { SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "../SqliteChangesetReader";
-import { IModelDb } from "../IModelDb";
+import { SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "../SqliteChangesetReader.js";
+import { IModelDb } from "../IModelDb.js";
 
 export interface DbChangesetConflictArgs {
   cause: DbConflictCause;

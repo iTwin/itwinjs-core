@@ -7,14 +7,14 @@ import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } fr
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import * as path from "node:path";
-import { DrawingCategory } from "../../Category";
-import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { HubMock } from "../../HubMock";
-import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
-import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
-import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { _nativeDb, ChannelControl } from "../../core-backend";
+import { DrawingCategory } from "../../Category.js";
+import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor.js";
+import { HubMock } from "../../HubMock.js";
+import { BriefcaseDb, SnapshotDb } from "../../IModelDb.js";
+import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader.js";
+import { HubWrappers, IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { _nativeDb, ChannelControl } from "../../core-backend.js";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;

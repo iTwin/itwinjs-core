@@ -7,9 +7,9 @@
  */
 
 import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
-import { AnnotationElement2d, GraphicalElement3d } from "./Element";
-import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
+import { IModelDb } from "./IModelDb.js";
+import { AnnotationElement2d, GraphicalElement3d } from "./Element.js";
+import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry.js";
 import { Id64String } from "@itwin/core-bentley";
 
 function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation, subCategory: Id64String | undefined): boolean {

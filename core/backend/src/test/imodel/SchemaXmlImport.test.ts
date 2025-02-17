@@ -5,10 +5,10 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { PhysicalElement, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { PhysicalElement, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("Schema XML Import Tests", () => {
   let imodel: SnapshotDb;

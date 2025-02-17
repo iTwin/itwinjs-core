@@ -6,9 +6,9 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { ECDbTestHelper } from "./ECDbTestHelper";
+import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { ECDbTestHelper } from "./ECDbTestHelper.js";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;

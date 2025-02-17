@@ -3,20 +3,42 @@
   "version": "5.0.0-dev.64",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
+  "module": "lib/esm/core-backend.js",
   "typings": "lib/cjs/core-backend",
   "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./lib/cjs/core-backend.d.ts",
+      "require": {
+        "default": "./lib/cjs/core-backend.js",
+        "types": "./lib/cjs/core-backend.d.ts"
+      },
+      "import": {
+        "default": "./lib/esm/core-backend.js",
+        "types": "./lib/esm/core-backend.d.ts"
+      }
+    }
+  },
   "engines": {
     "node": "^20.0.0 || ^22.0.0"
   },
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets && npm run -s copy:ecsqltestmdfiles",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build": "npm run -s build:cjs && npm run -s build:esm && node scripts/specify-package-json.mjs && npm run -s copy:assets && npm run -s copy:test-assets && npm run -s copy:ecsqltestmdfiles",
+    "build:cjs": "tsc 1>&2 --project tsconfig.cjs.json",
+    "build:esm": "tsc 1>&2 --project tsconfig.esm.json",
+    "build:clean": "npm run -s clean && npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json  ../../tools/internal/ios/core-test-runner/build ../../tools/internal/lib",
     "docs": "betools docs --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson --excludeGlob=**/*.d.ts",
-    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",
-    "copy:ecsqltestmdfiles": "cpx \"./src/test/ecsql/queries/*\" ./lib/cjs/test/ecsql/queries",
+    "copy:assets": "npm run -s copy:assets:cjs && npm run -s copy:assets:esm",
+    "copy:assets:cjs": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",
+    "copy:assets:esm": "cpx \"./src/assets/**/*\" ./lib/esm/assets",
+    "copy:ecsqltestmdfiles": "npm run -s copy:ecsqltestmdfiles:cjs && npm run -s copy:ecsqltestmdfiles:esm",
+    "copy:ecsqltestmdfiles:cjs": "cpx \"./src/test/ecsql/queries/*\" ./lib/cjs/test/ecsql/queries",
+    "copy:ecsqltestmdfiles:esm": "cpx \"./src/test/ecsql/queries/*\" ./lib/esm/test/ecsql/queries",
     "copy:config": "internal-tools copy-config",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
+    "copy:test-assets": "npm run -s copy:test-assets:cjs && npm run -s copy:test-assets:esm",
+    "copy:test-assets:cjs": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
+    "copy:test-assets:esm": "cpx \"./src/test/assets/**/*\" ./lib/esm/test/assets",
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -98,7 +120,8 @@
     "typescript": "~5.6.2",
     "marked": "^14.1.3",
     "sql-formatter": "^15.4.6",
-    "webpack": "^5.97.1"
+    "webpack": "^5.97.1",
+    "zx": "^8.3.2"
   },
   "dependencies": {
     "@bentley/imodeljs-native": "5.0.59",

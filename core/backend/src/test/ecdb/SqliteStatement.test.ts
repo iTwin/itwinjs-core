@@ -6,10 +6,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../core-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { ECDbTestHelper } from "./ECDbTestHelper";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../core-backend.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { ECDbTestHelper } from "./ECDbTestHelper.js";
+import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
 
 describe("SqliteStatement", () => {
   const outDir = KnownTestLocations.outputDir;

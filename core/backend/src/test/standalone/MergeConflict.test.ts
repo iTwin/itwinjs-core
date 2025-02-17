@@ -12,8 +12,7 @@ import {
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "../";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../HubMock.js";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -21,11 +20,13 @@ import {
   ExternalSourceAspect,
   SpatialCategory,
   SqliteChangeOp,
-} from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
+} from "../../core-backend.js";
+import { HubWrappers, IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs.js";
+import { stub } from "sinon";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 chai.use(chaiAsPromised);
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
@@ -446,7 +447,7 @@ describe("Merge conflict & locking", () => {
 
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
 
-    const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
+    const onChangesetConflictStub = stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     /* we should be able to apply all changesets */
     await b3.pullChanges();
     expect(onChangesetConflictStub.callCount).eq(0, "native conflict handler should not be called BriefcaseDb.onChangesetConflict()");

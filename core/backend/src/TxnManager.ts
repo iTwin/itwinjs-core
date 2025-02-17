@@ -11,13 +11,13 @@ import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
-import { IpcHost } from "./IpcHost";
-import { Relationship, RelationshipProps } from "./Relationship";
-import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
-import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { BriefcaseDb, StandaloneDb } from "./IModelDb.js";
+import { IpcHost } from "./IpcHost.js";
+import { Relationship, RelationshipProps } from "./Relationship.js";
+import { SqliteStatement } from "./SqliteStatement.js";
+import { _nativeDb } from "./internal/Symbols.js";
+import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs.js";
 
 /** A string that identifies a Txn.
  * @public

@@ -6,17 +6,17 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
-import { Schemas } from "../Schema";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { BriefcaseManager } from "../BriefcaseManager.js";
+import { SnapshotDb } from "../IModelDb.js";
+import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost.js";
+import { Schemas } from "../Schema.js";
+import { KnownTestLocations } from "./KnownTestLocations.js";
 import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { TestUtils } from "./TestUtils";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { TestUtils } from "./TestUtils.js";
+import { IModelTestUtils } from "./IModelTestUtils.js";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
+import { overrideSyncNativeLogLevels } from "../internal/NativePlatform.js";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };

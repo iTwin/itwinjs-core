@@ -12,12 +12,12 @@ import {
   AcquireNewBriefcaseIdArg,
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CheckpointArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
-} from "./BackendHubAccess";
-import { CheckpointProps, ProgressFunction, ProgressStatus } from "./CheckpointManager";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { LocalHub } from "./LocalHub";
-import { TokenArg } from "./IModelDb";
+} from "./BackendHubAccess.js";
+import { CheckpointProps, ProgressFunction, ProgressStatus } from "./CheckpointManager.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { LocalHub } from "./LocalHub.js";
+import { TokenArg } from "./IModelDb.js";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)

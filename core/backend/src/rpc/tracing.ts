@@ -11,8 +11,8 @@
 import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
 import { RpcActivity, RpcInvocation } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { IModelHost } from "../IModelHost";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { IModelHost } from "../IModelHost.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

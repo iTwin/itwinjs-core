@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Setting } from "../../workspace/Settings";
+import { Setting } from "../../workspace/Settings.js";
 
 describe("Setting", () => {
   describe("areEqual", () => {

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { IModelDb, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
 
 // cspell:ignore mirukuru ibim
 

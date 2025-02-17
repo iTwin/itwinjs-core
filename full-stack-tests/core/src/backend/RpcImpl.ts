@@ -5,8 +5,7 @@
 
 import * as nock from "nock";
 import * as path from "path";
-import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
-import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
+import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, V1CheckpointManager, ViewStore } from "@itwin/core-backend";
 import { IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
 import { AzuriteTest } from "./AzuriteTest";

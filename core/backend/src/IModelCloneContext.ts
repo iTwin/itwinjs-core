@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { IModelElementCloneContext } from "./IModelElementCloneContext.js";
 
 // re-export both the type and the value of the class, and deprecate both
 

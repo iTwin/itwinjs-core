@@ -9,12 +9,12 @@ import { extname } from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { SettingsPriority } from "../../workspace/Settings";
-import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
-import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
-import { _nativeDb } from "../../internal/Symbols";
+import { SettingsPriority } from "../../workspace/Settings.js";
+import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace.js";
+import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl.js";
+import { _nativeDb } from "../../internal/Symbols.js";
 
 describe("WorkspaceFile", () => {
 

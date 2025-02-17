@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec } from "@itwin/core-common";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { StandaloneDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { StandaloneDb } from "../../IModelDb.js";
 
 describe("CodeSpec", () => {
   let imodel: StandaloneDb;

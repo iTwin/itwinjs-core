@@ -14,8 +14,8 @@ import {
   _nativeDb, GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb,
   SpatialCategory,
   SubjectOwnsPartitionElements,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 let uniqueId = 0;
 

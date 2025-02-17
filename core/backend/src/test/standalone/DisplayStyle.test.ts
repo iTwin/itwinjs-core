@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import { CompressedId64Set, Guid } from "@itwin/core-bentley";
 import { DisplayStyle3dSettingsProps, DisplayStyleSettingsProps, IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
-import { DisplayStyle3d, IModelElementCloneContext, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { DisplayStyle3d, IModelElementCloneContext, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("DisplayStyle", () => {
   it("preserves skybox", () => {

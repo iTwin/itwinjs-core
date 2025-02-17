@@ -8,7 +8,7 @@
 
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { ClassRegistry } from "./ClassRegistry";
+import { ClassRegistry } from "./ClassRegistry.js";
 import { ECVersion, SchemaKey } from "@itwin/ecschema-metadata";
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).

@@ -13,9 +13,9 @@ import {
   UpgradeOptions,
 } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { IModelNative } from "../../internal/NativePlatform";
+import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend.js";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils.js";
+import { IModelNative } from "../../internal/NativePlatform.js";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);

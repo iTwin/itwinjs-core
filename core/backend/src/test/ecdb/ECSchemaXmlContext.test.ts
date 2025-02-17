@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { ECSchemaXmlContext, SchemaKey } from "../../ECSchemaXmlContext";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { ECSchemaXmlContext, SchemaKey } from "../../ECSchemaXmlContext.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
 
 describe("ECSchemaXmlContext", () => {
 

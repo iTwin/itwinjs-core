@@ -12,8 +12,8 @@ import {
   LockState as CommonLockState, IModelError, IModelVersion,
   LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
-import type { TokenArg } from "./IModelDb";
+import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager.js";
+import type { TokenArg } from "./IModelDb.js";
 
 /** Exception thrown if lock cannot be acquired.
  * @beta

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
-import { Drawing, SectionDrawing } from "../../Element";
-import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { Drawing, SectionDrawing } from "../../Element.js";
+import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model.js";
+import { SnapshotDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("SectionDrawing", () => {
   let imodel: SnapshotDb;

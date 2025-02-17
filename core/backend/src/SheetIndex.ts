@@ -7,10 +7,10 @@
  */
 
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, EntityReferenceSet, IModelError, RelatedElementProps, SheetIndexEntryProps, SheetIndexFolderProps, SheetIndexReferenceProps, SheetReferenceProps } from "@itwin/core-common";
-import { InformationReferenceElement, Sheet } from "./Element";
-import { IModelDb } from "./IModelDb";
+import { InformationReferenceElement, Sheet } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
-import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "./NavigationRelationship";
+import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "./NavigationRelationship.js";
 
 /** Arguments used to create a [[SheetIndexEntry]].
  * @beta

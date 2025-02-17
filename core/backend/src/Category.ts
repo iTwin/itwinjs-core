@@ -10,9 +10,9 @@ import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
 } from "@itwin/core-common";
-import { DefinitionElement } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { CategoryOwnsSubCategories } from "./NavigationRelationship";
+import { DefinitionElement } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { CategoryOwnsSubCategories } from "./NavigationRelationship.js";
 
 /** Defines the appearance for graphics in Geometric elements
  * @public

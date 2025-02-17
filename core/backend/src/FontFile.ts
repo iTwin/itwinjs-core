@@ -8,8 +8,8 @@
 
 import { FontFace, FontType, LocalFileName, RscFontEncodingProps } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { _faceProps, _getData, _implementationProhibited, _key } from "./internal/Symbols";
-import { rscFontFileFromBlob, shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontFileImpl"; 
+import { _faceProps, _getData, _implementationProhibited, _key } from "./internal/Symbols.js";
+import { rscFontFileFromBlob, shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontFileImpl.js"; 
 
 /** A container for one or more [font faces]($docs/learning/backend/Fonts.md), often originating as a file on disk.
  * @see [[FontFile.createFromTrueTypeFileName]] and [[FontFile.createFromShxFontBlob]] to create a font file.

@@ -7,11 +7,11 @@
  */
 
 import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { Entity } from "./Entity.js";
+import { IModelDb } from "./IModelDb.js";
+import { ECSqlStatement } from "./ECSqlStatement.js";
 import { DbResult, Id64String } from "@itwin/core-bentley";
-import { _verifyChannel } from "./internal/Symbols";
+import { _verifyChannel } from "./internal/Symbols.js";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta

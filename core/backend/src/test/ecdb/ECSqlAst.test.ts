@@ -56,8 +56,8 @@ import {
   UsingRelationshipJoinExpr,
   WhereClauseExp,
 } from "@itwin/ecsql-common";
-import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 import { DbResult } from "@itwin/core-bentley";
 
 describe("ECSql Abstract Syntax Tree", () => {

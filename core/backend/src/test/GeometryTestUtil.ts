@@ -10,7 +10,7 @@ import {
 import {
   BRepEntity, ColorDef,
 } from "@itwin/core-common";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { IModelTestUtils } from "./IModelTestUtils.js";
 
 export const brepData: { data: string } = JSON.parse(
   fs.readFileSync(IModelTestUtils.resolveAssetFile("brepdata1.json"), {

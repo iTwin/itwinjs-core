@@ -11,7 +11,6 @@ import {
 import * as chai from "chai";
 import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "..";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -19,12 +18,13 @@ import {
   IModelHost,
   SpatialCategory,
   SqliteChangesetReader
-} from "../../core-backend";
-import { HubMock } from "../../HubMock";
-import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { HubMock } from "../../HubMock.js";
+import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs.js";
+import { HubWrappers, IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { restore } from "sinon";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 chai.use(chaiAsPromised);
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -67,7 +67,7 @@ describe("Change merge method", () => {
     openB1: async (noLock?: true) => { return ctx.openBriefcase("user1", noLock); },
     openB2: async (noLock?: true) => { return ctx.openBriefcase("user2", noLock); },
     openB3: async (noLock?: true) => { return ctx.openBriefcase("user3", noLock); },
-  }
+  };
 
   async function insertPhysicalObject(b: BriefcaseDb,) {
     await b.locks.acquireLocks({ shared: ctx.modelId });
@@ -80,7 +80,7 @@ describe("Change merge method", () => {
   });
 
   after(async () => {
-    HubMock.shutdown()
+    HubMock.shutdown();
     //await IModelHost.shutdown();
   });
 
@@ -111,7 +111,7 @@ describe("Change merge method", () => {
   });
 
   afterEach(async () => {
-    sinon.restore();
+    restore();
   });
 
   it("rebase events (noFastForward:true)", async () => {
@@ -119,7 +119,7 @@ describe("Change merge method", () => {
      * Fastforward will not trigger rebase events as rebase was not required to merge changes.
      * In this test we will test rebase events when noFastForward is set to true. Which mean rebase is required to merge changes.
      */
-    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
+    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd"; }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
@@ -277,7 +277,7 @@ describe("Change merge method", () => {
      * Fastforward will not trigger rebase events as rebase was not required to merge changes.
      * In this test we will test rebase events when noFastForward is set to false. Which mean rebase is not required to merge changes.
      */
-    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
+    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd"; }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);

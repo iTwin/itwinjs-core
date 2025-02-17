@@ -5,20 +5,19 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
+import { restore as sinonRestore, type SinonSpy, spy as sinonSpy } from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
-import { ClassRegistry } from "../../ClassRegistry";
-import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
+import { ClassRegistry } from "../../ClassRegistry.js";
+import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect.js";
 import {
   _nativeDb, ChannelControl, ChannelKey, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition,
   FunctionalSchema, InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg,
   OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb,
-} from "../../core-backend";
-import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import Sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+} from "../../core-backend.js";
+import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";
@@ -276,7 +275,7 @@ describe("Functional Domain", () => {
 
     const testChannelKey1 = "channel 1 for tests";
     const testChannelKey2 = "channel 2 for tests";
-    function testChannel<T>(channelKey: ChannelKey, fn: () => T, spies: Sinon.SinonSpy[]) {
+    function testChannel<T>(channelKey: ChannelKey, fn: () => T, spies: SinonSpy[]) {
       iModelDb.channels.removeAllowedChannel(channelKey);
       expect(fn).throws("not allowed");
       iModelDb.channels.addAllowedChannel(channelKey);

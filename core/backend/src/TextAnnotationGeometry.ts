@@ -7,10 +7,10 @@
  */
 
 import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
-import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
+import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout.js";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
-import { IModelDb } from "./IModelDb";
+import { IModelDb } from "./IModelDb.js";
 
 interface GeometryContext {
   curColor?: TextStyleColor;

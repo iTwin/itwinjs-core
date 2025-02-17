@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend";
-import { KnownTestLocations } from "../../KnownTestLocations";
+import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend.js";
+import { KnownTestLocations } from "../../KnownTestLocations.js";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
-import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
+import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser.js";
 import * as path from "path";
 import * as fs from "fs";
-import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
+import { ECSqlDatasets } from "../dataset/ECSqlDatasets.js";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 
 enum TestDataset {

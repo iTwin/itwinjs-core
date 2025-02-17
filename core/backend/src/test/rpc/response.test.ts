@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { SinonStub, stub } from "sinon";
 import { Readable, Writable } from "stream";
 import { HttpServerRequest, HttpServerResponse, RpcRequestFulfillment, RpcRequestStatus, SerializedRpcRequest, WebAppRpcProtocol } from "@itwin/core-common";
-import { sendResponse } from "../../rpc/web/response";
+import { sendResponse } from "../../rpc/web/response.js";
 import { brotliDecompressSync, unzipSync } from "node:zlib";
 
 /* eslint-disable @typescript-eslint/no-deprecated */

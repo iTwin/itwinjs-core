@@ -14,9 +14,9 @@ import {
   ChangeInstanceKey,
   ChannelControl,
   IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
-} from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { IModelNative } from "../../internal/NativePlatform";
+} from "../../core-backend.js";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils.js";
+import { IModelNative } from "../../internal/NativePlatform.js";
 
 /// cspell:ignore accum
 

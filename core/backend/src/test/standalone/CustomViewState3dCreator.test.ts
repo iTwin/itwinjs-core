@@ -5,10 +5,10 @@
 
 import { assert } from "chai";
 import { CustomViewState3dProps } from "@itwin/core-common";
-import { SnapshotDb } from "../../IModelDb";
+import { SnapshotDb } from "../../IModelDb.js";
 import { CompressedId64Set, Id64String} from "@itwin/core-bentley";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { CustomViewState3dCreator } from "../../CustomViewState3dCreator";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { CustomViewState3dCreator } from "../../CustomViewState3dCreator.js";
 import { Range3d } from "@itwin/core-geometry";
 
 describe("CustomViewState3dCreator", () => {

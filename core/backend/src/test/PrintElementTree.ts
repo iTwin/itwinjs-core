@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String, Logger } from "@itwin/core-bentley";
-import { IModelDb } from "../IModelDb";
-import { Model } from "../Model";
-import { Element } from "../Element";
+import { IModelDb } from "../IModelDb.js";
+import { Model } from "../Model.js";
+import { Element } from "../Element.js";
 
 export function fmtElement(iModel: IModelDb, elementId: Id64String): string {
   const el = iModel.elements.getElement(elementId);
