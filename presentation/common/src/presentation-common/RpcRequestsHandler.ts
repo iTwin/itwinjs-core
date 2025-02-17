@@ -239,17 +239,14 @@ export class RpcRequestsHandler {
     return this.request<PagedResponse<LabelDefinition>, typeof options>(this.rpcClient.getPagedDisplayLabelDefinitions.bind(this.rpcClient), options);
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<SelectionScope[], typeof options>(this.rpcClient.getSelectionScopes.bind(this.rpcClient), options);
   }
   public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON> {
-    return this.request<KeySetJSON, typeof options>(
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.rpcClient.computeSelection.bind(this.rpcClient),
-      options,
-    );
+    return this.request<KeySetJSON, typeof options>(this.rpcClient.computeSelection.bind(this.rpcClient), options);
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 }
 
 function isOptionsWithRuleset(options: object): options is { rulesetOrId: Ruleset } {
