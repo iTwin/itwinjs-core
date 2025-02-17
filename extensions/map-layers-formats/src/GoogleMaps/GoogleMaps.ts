@@ -1,3 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module MapLayersFormats
+ */
+
 import { BaseMapLayerSettings, ImageMapLayerSettings } from "@itwin/core-common";
 import { MapCartoRectangle } from "@itwin/core-frontend";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
