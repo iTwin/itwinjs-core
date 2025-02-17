@@ -51,13 +51,8 @@
     "@itwin/object-storage-core": "^2.2.5",
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
-<<<<<<< HEAD
     "@types/node": "~18.16.20",
-    "@vitest/coverage-v8": "^2.1.0",
-=======
-    "@types/node": "~20.17.0",
     "@vitest/coverage-v8": "^3.0.5",
->>>>>>> ffa6c0f45c (Use vitest v3, Resolve GHSA-9crc-q9x8-ghqq  (#7340))
     "eslint": "^9.13.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
