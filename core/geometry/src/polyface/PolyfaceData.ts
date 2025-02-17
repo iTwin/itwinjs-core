@@ -176,6 +176,8 @@ export class PolyfaceData {
     result.edgeVisible = this.edgeVisible.slice();
     result.twoSided = this.twoSided;
     result.expectedClosure = this.expectedClosure;
+    if (this.edgeMateIndex)
+      result.edgeMateIndex = this.edgeMateIndex.slice();
     return result;
   }
   /** Test for equal indices and nearly equal coordinates. */
@@ -206,6 +208,7 @@ export class PolyfaceData {
       return false;
     if (this.expectedClosure !== other.expectedClosure)
       return false;
+    // NOTE: edgeMateIndex is derived, and thus ignored
     return true;
   }
   /** Ask if normals are required in this mesh. */
@@ -396,6 +399,13 @@ export class PolyfaceData {
         this.auxData.indices[i] = other.auxData.indices[index0 + i];
       for (let i = 0; i < numWrap; i++)
         this.auxData.indices[numEdge + i] = this.auxData.indices[i];
+      // copy wrapped edgeMateIndex
+      if (this.edgeMateIndex && other.edgeMateIndex) {
+        for (let i = 0; i < numEdge; i++)
+          this.edgeMateIndex[i] = other.edgeMateIndex[index0 + i];
+        for (let i = 0; i < numWrap; i++)
+          this.edgeMateIndex[numEdge + i] = this.edgeMateIndex[i];
+      }
     }
   }
   /** Trim the `data` arrays to the stated `length`. */
@@ -420,6 +430,7 @@ export class PolyfaceData {
           PolyfaceData.trimArray(data.values, channel.entriesPerValue * length);
       }
     }
+    PolyfaceData.trimArray(this.edgeMateIndex, length);
   }
   /**
    * Resize all data and index arrays to the specified `length`.
@@ -460,6 +471,9 @@ export class PolyfaceData {
         if (this.auxData.indices)
           this.auxData.indices.push(-1);
       }
+      if (this.edgeMateIndex)
+        while (this.edgeMateIndex.length < length)
+          this.edgeMateIndex.push(undefined);
     } else if (length < this.point.length) {
       this.point.resize(length);
       this.pointIndex.length = length;
@@ -485,6 +499,8 @@ export class PolyfaceData {
         if (this.auxData.indices)
           this.auxData.indices.length = length;
       }
+      if (this.edgeMateIndex)
+        this.edgeMateIndex.length = length;
     }
   }
   /**

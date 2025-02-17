@@ -493,10 +493,10 @@ export namespace IModelJson {
    * @public
    */
   export interface AuxChannelDataProps {
-  /** The input value for this data. */
-  input: number;
-  /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
-  values: number[];
+    /** The input value for this data. */
+    input: number;
+    /** The vertex values for this data. A single value per vertex for scalar and distance types and 3 values (x,y,z) for normal or vector channels. */
+    values: number[];
   }
   /**
    * Interface for a channel of analytical mesh data.
@@ -504,14 +504,14 @@ export namespace IModelJson {
    * @public
    */
   export interface AuxChannelProps {
-  /** An array of analytical data at one or more input values. */
-  data: AuxChannelDataProps[];
-  /** The type of data stored in this channel. */
-  dataType: AuxChannelDataType;
-  /** Optional channel name. */
-  name?: string;
-  /** Optional input name. */
-  inputName?: string;
+    /** An array of analytical data at one or more input values. */
+    data: AuxChannelDataProps[];
+    /** The type of data stored in this channel. */
+    dataType: AuxChannelDataType;
+    /** Optional channel name. */
+    name?: string;
+    /** Optional input name. */
+    inputName?: string;
   }
   /**
    * Interface for analytical mesh data.
@@ -519,10 +519,10 @@ export namespace IModelJson {
    * @public
   */
   export interface AuxDataProps {
-  /** Array with one or more channels of auxiliary data. */
-  channels: AuxChannelProps[];
-  /** Indices mapping channel data to the mesh facets (must be parallel to mesh indices). */
-  indices: number[];
+    /** Array with one or more channels of auxiliary data. */
+    channels: AuxChannelProps[];
+    /** Indices mapping channel data to the mesh facets (must be parallel to mesh indices). */
+    indices: number[];
   }
   /**
    * Interface for extra data attached to an indexed mesh.
@@ -582,6 +582,12 @@ export namespace IModelJson {
     auxData?: AuxDataProps;
     /** Optional array of tagged geometry (such as to request subdivision surface) */
     tags?: TaggedNumericDataProps;
+
+    /**
+     * Optional edge -> edgeMate map, parallel to the other index arrays.
+     * * Each entry is a zero-based index, or -1 face loop terminator, or -2 to indicate "no edge mate".
+     */
+    edgeMateIndex?: [number];
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -978,6 +984,17 @@ export namespace IModelJson {
           (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
           () => { polyface.terminateFacet(false); });
 
+        if (data.hasOwnProperty("edgeMateIndex") && Array.isArray(data.edgeMateIndex)) {
+          const edgeMateIndex: Array<number | undefined> = [];
+          if (!SerializationHelpers.announceCompressedZeroBasedReflexiveIndices(data.edgeMateIndex, numPerFace,
+            SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
+            (i: number | undefined) => edgeMateIndex.push(i),
+          )) {
+            assert(false, "unable to deserialize json edgeMateIndex array");
+          }
+          polyface.data.edgeMateIndex = edgeMateIndex;
+        }
+
         if (!polyface.validateAllIndices())
           return undefined;
 
@@ -987,6 +1004,7 @@ export namespace IModelJson {
         if (data.hasOwnProperty("tags"))
           polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
 
+        // NOTE: faceData is ignored
         return polyface;
       }
       return undefined;
@@ -1722,6 +1740,7 @@ export namespace IModelJson {
       const normalIndex = [];
       const paramIndex = [];
       const colorIndex = [];
+      const edgeMateIndex = [];
 
       let n;
       while (visitor.moveToNextFacet()) {
@@ -1747,13 +1766,19 @@ export namespace IModelJson {
           for (let i = 0; i < n; i++) colorIndex.push(1 + visitor.clientColorIndex(i));
           colorIndex.push(0);
         }
+        if (visitor.edgeMateIndex) {
+          for (const edgeMate of visitor.edgeMateIndex)
+            edgeMateIndex.push(undefined === edgeMate ? SerializationHelpers.EdgeMateIndex.NoEdgeMate : edgeMate);
+          edgeMateIndex.push(SerializationHelpers.EdgeMateIndex.BlockSeparator);
+        }
       }
+
       let taggedNumericData;
       if (pf.data.taggedNumericData) {
         taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
       }
-      // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
+
       if (pf.expectedClosure !== 0)
         contents.expectedClosure = pf.expectedClosure;
       if (pf.twoSided)
@@ -1761,20 +1786,31 @@ export namespace IModelJson {
       if (pf.data.auxData)
         contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 
-      if (pf.data.color) contents.color = colors;
-      if (pf.data.colorIndex) contents.colorIndex = colorIndex;
+      if (pf.data.color)
+        contents.color = colors;
+      if (pf.data.colorIndex)
+        contents.colorIndex = colorIndex;
 
-      if (pf.data.normal) contents.normal = normals;
-      if (pf.data.normalIndex) contents.normalIndex = normalIndex;
+      if (pf.data.normal)
+        contents.normal = normals;
+      if (pf.data.normalIndex)
+        contents.normalIndex = normalIndex;
 
-      if (pf.data.param) contents.param = params;
-      if (pf.data.paramIndex) contents.paramIndex = paramIndex;
+      if (pf.data.param)
+        contents.param = params;
+      if (pf.data.paramIndex)
+        contents.paramIndex = paramIndex;
 
       contents.point = points;
       contents.pointIndex = pointIndex;
 
       if (taggedNumericData)
         contents.tags = taggedNumericData;
+
+      if (pf.data.edgeMateIndex)
+        contents.edgeMateIndex = edgeMateIndex;
+
+      // NOTE: pf.data.face is not persistent
       return { indexedMesh: contents };
     }
 

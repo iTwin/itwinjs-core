@@ -307,6 +307,26 @@ export class NumberArray {
     }
     return bytes[0] | bytes[1] | bytes[2] | bytes[3];
   }
+
+  /**
+   * Given an array of strictly increasing numbers, find the index of the largest number that is less than or equal
+   * to `value`.
+   * * Get an initial estimate by proportions of `value` and the first and last entries.
+   * * Linear search from there for final value.
+   * * For regularly spaced numbers (e.g., `data` is the `_facetStart` indices for a triangulated [[IndexedPolyface]]),
+   * the proportional estimate will be immediately correct.
+   */
+  public static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined {
+    const lastQ = data.length - 1;
+    if (lastQ <= 0 || value < 0 || value >= data[lastQ])
+      return undefined;
+    let q = Math.floor((value * lastQ) / data[lastQ]);
+    while (data[q] > value)
+      q--;
+    while (data[q + 1] <= value)
+      q++;
+    return q;
+  }
 }
 
 /**

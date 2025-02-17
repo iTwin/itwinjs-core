@@ -2624,6 +2624,7 @@ export namespace IModelJson {
         auxData?: AuxDataProps;
         color?: [number];
         colorIndex?: [number];
+        edgeMateIndex?: [number];
         expectedClosure?: number;
         normal?: [XYZProps];
         normalIndex?: [number];
@@ -2836,7 +2837,6 @@ export class IndexedPolyface extends Polyface {
     reverseIndices(): void;
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
-    static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined;
     setNewFaceData(endFacetIndex?: number): boolean;
     terminateFacet(validateAllIndices?: boolean): string[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
@@ -3828,6 +3828,7 @@ export class NumberArray {
     static maxAbsTwo(a1: number, a2: number): number;
     static pack(source: number[] | number[][] | number[][][]): Float64Array;
     static preciseSum(data: number[]): number;
+    static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined;
     static sum(data: number[] | Float64Array): number;
     static unpack2d(source: Float64Array, numPerBlock: number): number[][] | undefined;
     static unpack3d(source: Float64Array, numPerRow: number, numPerBlock: number): number[][][] | undefined;
@@ -5544,6 +5545,7 @@ export class Segment1d {
 
 // @public
 export namespace SerializationHelpers {
+    export function announceCompressedZeroBasedReflexiveIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number, nullValue: number, announceRemappedIndex: (i0: number | undefined) => any): boolean;
     export function announceZeroBasedIndicesFromSignedOneBasedIndices(sourceIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number, flag?: boolean) => any, terminateBlock?: () => any): void;
     export function announceZeroBasedIndicesWithExternalBlocking(sourceIndices: Int32Array, blockingIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number) => any, terminateBlock?: () => any): void;
     export interface BSplineCurveData {
@@ -5575,6 +5577,10 @@ export namespace SerializationHelpers {
     export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData;
     export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData;
     export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData;
+    export enum EdgeMateIndex {
+        BlockSeparator = -1,
+        NoEdgeMate = -2
+    }
     export class Export {
         static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean;
         static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean;
