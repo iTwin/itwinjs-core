@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Deprecate unified selection related APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
