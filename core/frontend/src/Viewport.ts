@@ -49,7 +49,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityModelTileTree, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -65,6 +65,7 @@ import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeature
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
+import { Target } from "./render/webgl/Target";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -938,23 +939,22 @@ export abstract class Viewport implements Disposable, TileUser {
    * @internal
    */
   private compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
-
     const prevLayers = prevView.displayStyle.getMapLayers(false);
     const newLayers = newView.displayStyle.getMapLayers(false);
 
     const prevModelIds: string[] = [];
     const newModelIds: string[] = [];
 
-    // Extract model IDs from the previous layers using a for loop
+    // Extract model IDs from the previous layers in reality tile using a for loop
     for (const layer of prevLayers) {
-        if (layer instanceof ModelMapLayerSettings) {
+        if (layer instanceof ModelMapLayerSettings && layer.toRealityData === true) {
             prevModelIds.push(layer.modelId);
         }
     }
 
-    // Extract model IDs from the new layers using a for loop
+    // Extract model IDs from the new layers in reality tile using a for loop
     for (const layer of newLayers) {
-        if (layer instanceof ModelMapLayerSettings) {
+        if (layer instanceof ModelMapLayerSettings && layer.toRealityData === true) {
             newModelIds.push(layer.modelId);
         }
     }
@@ -1835,13 +1835,19 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateController();
-    this.target.reset();
+
+    const isMapLayerChanged = undefined !== prevView && this.compareMapLayer(prevView, view);
+    if (this.target.reset.length > 0) {
+      (this.target as Target).reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
+    } else {
+      this.target.reset();
+    }
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
       this._changeFlags.setViewState();
 
-      if (this.compareMapLayer(prevView, view)) {
+      if (isMapLayerChanged) {
         this.refreshRealityTile();
       }
     }
