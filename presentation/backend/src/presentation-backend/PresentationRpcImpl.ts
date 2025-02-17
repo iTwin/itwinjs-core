@@ -499,6 +499,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     });
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   public override async getSelectionScopes(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
     return this.makeRequest(token, "getSelectionScopes", requestOptions, async (options) =>
       this.getManager(requestOptions.clientId).getSelectionScopes(options),
@@ -511,6 +512,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       return keys.toJSON();
     });
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 }
 
 const enforceValidPageSize = <TOptions extends Paged<object>>(
