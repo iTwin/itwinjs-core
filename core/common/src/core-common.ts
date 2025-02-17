@@ -77,6 +77,7 @@ export * from "./ipc/IpcSocket";
 export * from "./ipc/IpcWebSocket";
 export * from "./ipc/IpcWebSocketTransport";
 export * from "./ipc/IpcSession";
+export * from "./ipc/IpcUtils";
 export * from "./IpcAppProps";
 export * from "./LightSettings";
 export * from "./LinePixels";

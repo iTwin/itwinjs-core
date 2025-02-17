@@ -21,6 +21,9 @@ import {
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import type { IModelReadAPI, IModelReadIpcAPI, QueryRequest } from "@itwin/imodelread-common";
+import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
+import { IModelReadHTTPClient} from "@itwin/imodelread-client-http";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -35,6 +38,7 @@ import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
+import { IpcApp } from "./IpcApp";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -59,6 +63,7 @@ export interface BlankConnectionProps {
  * @extensions
  */
 export abstract class IModelConnection extends IModel {
+  private readonly _iModelReadApi: IModelReadAPI;
   /** The [[ModelState]]s in this IModelConnection. */
   public readonly models: IModelConnection.Models;
   /** The [[ElementState]]s in this IModelConnection. */
@@ -215,6 +220,13 @@ export abstract class IModelConnection extends IModel {
   /** @internal */
   protected constructor(iModelProps: IModelConnectionProps) {
     super(iModelProps);
+    this._iModelReadApi = IpcApp.isValid
+    ? new IpcIModelRead(iModelProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead"))
+    : new IModelReadHTTPClient(
+      `http://localhost:3001/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
+      `http://localhost:3002/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
+      IModelApp,
+    );
     super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -265,6 +277,7 @@ export abstract class IModelConnection extends IModel {
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @public
+   * @deprecated in 4.10. Use [[runQuery]] instead.
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
@@ -315,6 +328,10 @@ export abstract class IModelConnection extends IModel {
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
       yield reader.formatCurrentRow();
+  }
+
+  public runQuery(query:QueryRequest): AsyncIterable<object> {
+    return this._iModelReadApi.runQuery(query);
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
@@ -388,12 +405,14 @@ export abstract class IModelConnection extends IModel {
     return this[_requestSnap](props);
   }
 
-  private _toolTipRpc = new OneAtATimeAction<string[]>(async (id: string) => IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id));
+  private _getTooltip = new OneAtATimeAction<string[]>(async (id: string) =>
+    this._iModelReadApi.getTooltipMessage(id).then((res) => res.lines),
+  );
   /** Request a tooltip from the backend.
    * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
   public async getToolTipMessage(id: Id64String): Promise<string[]> {
-    return this.isOpen ? this._toolTipRpc.request(id) : [];
+    return this.isOpen ? this._getTooltip.request(id) : [];
   }
 
   /** Request element clip containment status from the backend. */

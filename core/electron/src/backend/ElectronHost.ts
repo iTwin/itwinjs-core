@@ -23,7 +23,7 @@ import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInt
 
 class ElectronIpc implements IpcSocketBackend {
   public addListener(channel: string, listener: IpcListener): RemoveFunction {
-    ElectronHost.ipcMain.addListener(channel, listener);
+    ElectronHost.ipcMain.addListener(channel, listener as any);
     return () => ElectronHost.ipcMain.removeListener(channel, listener);
   }
   public removeListener(channel: string, listener: IpcListener) {
