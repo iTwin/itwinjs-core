@@ -34,6 +34,7 @@ export interface DtaBooleanConfiguration {
   ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
   noElectronAuth?: boolean; // if true, don't initialize auth client. It currently has a bug that produces an exception on every attempt to obtain access token, i.e., every RPC call.
   noImdlWorker?: boolean; // if true, parse iMdl content on main thread instead of web worker (easier to debug).
+  googleMapsUi?: boolean; // if set, a Google Maps toolbar icon will be displayed in the UI
 }
 
 export interface DtaStringConfiguration {
@@ -56,7 +57,6 @@ export interface DtaStringConfiguration {
   oidcScope?: string; // default is undefined, used for auth setup
   oidcRedirectUri?: string; // default is undefined, used for auth setup
   frontendTilesUrlTemplate?: string; // if set, specifies url for @itwin/frontend-tiles to obtain tile trees for spatial views.  See README.md
-  googleMapsUi?: boolean; // if set, a Google Maps toolbar icon will be displayed in the UI
 }
 
 export interface DtaNumberConfiguration {
