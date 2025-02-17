@@ -436,7 +436,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
   width?: number;
   /** The alignment of the document content. Default: "left". */
   justification?: TextBlockJustification;
-  /** The margins to surround the document content. Default: 0 margins on each sides */
+  /** The margins to surround the document content. Default: 0 margins on all sides */
   margins?: TextBlockMargins;
   /** The paragraphs within the text block. Default: an empty array. */
   paragraphs?: ParagraphProps[];
