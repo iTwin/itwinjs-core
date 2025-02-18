@@ -75,6 +75,18 @@ function makeImage(wantAlpha: boolean): ImageBuffer {
   return img;
 }
 
+function expectEqualImageBuffers(a: ImageBuffer, b: ImageBuffer, pixelTolerance = 0): void {
+  expect(a.format).to.equal(b.format);
+  expect(a.width).to.equal(b.width);
+  expect(a.height).to.equal(b.height);
+  expect(a.data.length).to.equal(b.data.length);
+  for (let i = 0; i < a.data.length; i++) {
+    const x = a.data[i];
+    const y = b.data[i];
+    expect(Math.abs(x - y)).most(pixelTolerance);
+  }
+}
+
 describe.only("ImageSource conversion", () => {
   describe("imageBufferFromImageSource", () => {
     it("decodes PNG", () => {
@@ -113,8 +125,11 @@ describe.only("ImageSource conversion", () => {
       const jpeg = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Jpeg })!;
       expect(jpeg.format).to.equal(ImageSourceFormat.Jpeg);
 
-      expect(imageBufferFromImageSource({ source: png })).to.deep.equal(image);
-      expect(imageBufferFromImageSource({ source: jpeg })).to.deep.equal(image);
+      // PNG is lossless
+      expectEqualImageBuffers(imageBufferFromImageSource({ source: png })!, image);
+
+      // JPEG is lossy
+      expectEqualImageBuffers(imageBufferFromImageSource({ source: jpeg })!, image, 2);
     });
 
     it("defaults to PNG IFF alpha channel is present", () => {
