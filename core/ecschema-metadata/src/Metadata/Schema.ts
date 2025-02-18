@@ -14,7 +14,7 @@ import { XmlParser } from "../Deserialization/XmlParser";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { ECClassModifier, isSupportedSchemaItemType, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
+import { AnyClass, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { ECName } from "../ECName";
 import { ECClass, StructClass } from "./Class";
@@ -228,7 +228,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
+  protected createItem<T extends SchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;
@@ -636,20 +636,15 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Returns an iterator over all of the items in this schema.
    */
-  public getItems<T extends AnySchemaItem>(): IterableIterator<T> {
+  public getItems(): IterableIterator<SchemaItem>;
+  public getItems<T extends typeof SchemaItem>(itemConstructor: T): IterableIterator<InstanceType<T>>;
+  public * getItems<T extends typeof SchemaItem>(itemConstructor?: T): IterableIterator<InstanceType<T> | SchemaItem> {
     if (!this._items)
-      return new Map<string, SchemaItem>().values() as IterableIterator<T>;
+      return;
 
-    return this._items.values() as IterableIterator<T>;
-  }
-
-  /**
-   * Returns an iterator over all ECClasses within this schema
-   */
-  public *getClasses(): IterableIterator<ECClass> {
-    for (const [, value] of this._items) {
-      if (ECClass.isECClass(value))
-        yield value;
+    for (const item of this._items.values()) {
+      if (itemConstructor === undefined || isSupportedSchemaItemType(item.schemaItemType, itemConstructor.schemaItemType))
+        yield item;
     }
   }
 

@@ -79,7 +79,6 @@ export const initialize = async (props?: {
     id: `test-${Guid.createValue()}`,
     requestTimeout: DEFAULT_BACKEND_TIMEOUT,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
-    defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {

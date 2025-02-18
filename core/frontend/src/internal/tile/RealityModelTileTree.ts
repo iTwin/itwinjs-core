@@ -31,6 +31,7 @@ import {
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
+import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -265,12 +266,13 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
   public is3d = true;
   public loader: RealityModelTileLoader;
   public rootTile: RealityTileParams;
+  public baseUrl?: string;
 
   public get location() { return this.loader.tree.location; }
   public get yAxisUp() { return this.loader.tree.yAxisUp; }
   public get priority() { return this.loader.priority; }
 
-  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined) {
+  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined, baseUrl?: string) {
     this.loader = loader;
     this.id = tileTreeId;
     this.modelId = modelId;
@@ -283,6 +285,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
       additiveRefinement: undefined !== refine ? "ADD" === refine : undefined,
       usesGeometricError: loader.tree.rdSource.usesGeometricError,
     });
+    this.baseUrl = baseUrl;
   }
 }
 
@@ -693,7 +696,9 @@ export namespace RealityModelTileTree {
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
       const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel), opts);
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
-      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
+      //The full tileset url is needed so that it includes the url's search parameters if any are present
+      const baseUrl = rdSource instanceof RealityDataSourceTilesetUrlImpl ? rdSource.getTilesetUrl() : undefined;
+      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef, baseUrl);
       return new RealityModelTileTree(params);
     }
     return undefined;

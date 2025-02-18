@@ -8,7 +8,7 @@ import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileF
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
-import { GltfDataBuffer, GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
+import { GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../tile/internal";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -1392,6 +1392,207 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
         });
         expect(featureIndexToColorMap.size).toEqual(uniqueEntriesSize);
       });
+    });
+  });
+
+  describe("Reality Tile Loader", () => {
+    //These tests emulate way a reader is created by the reality tile loader
+
+    const gltf: GltfDocument = JSON.parse(`{
+  "scene": 0,
+  "scenes" : [ {
+    "nodes" : [ 0 ]
+  } ],
+  "nodes" : [ {
+    "mesh" : 0
+  } ],
+  "meshes" : [ {
+    "primitives" : [ {
+      "attributes" : {
+        "POSITION" : 1,
+        "TEXCOORD_0" : 2
+      },
+      "indices" : 0,
+      "material" : 0
+    } ]
+  } ],
+
+  "materials" : [ {
+    "pbrMetallicRoughness" : {
+      "baseColorTexture" : {
+        "index" : 0
+      },
+      "metallicFactor" : 0.0,
+      "roughnessFactor" : 1.0
+    }
+  } ],
+
+  "textures" : [ {
+    "sampler" : 0,
+    "source" : 0
+  } ],
+  "images" : [ {
+    "uri" : "textures/testTexture.png"
+  } ],
+  "samplers" : [ {
+    "magFilter" : 9729,
+    "minFilter" : 9987,
+    "wrapS" : 33648,
+    "wrapT" : 33648
+  } ],
+
+  "buffers" : [ {
+    "uri" : "http://www.sometestsite.com/tileset.json?someParams=1",
+    "byteLength" : 108
+  } ],
+  "bufferViews" : [ {
+    "buffer" : 0,
+    "byteOffset" : 0,
+    "byteLength" : 12,
+    "target" : 34963
+  }, {
+    "buffer" : 0,
+    "byteOffset" : 12,
+    "byteLength" : 96,
+    "byteStride" : 12,
+    "target" : 34962
+  } ],
+  "accessors" : [ {
+    "bufferView" : 0,
+    "byteOffset" : 0,
+    "componentType" : 5123,
+    "count" : 6,
+    "type" : "SCALAR",
+    "max" : [ 3 ],
+    "min" : [ 0 ]
+  }, {
+    "bufferView" : 1,
+    "byteOffset" : 0,
+    "componentType" : 5126,
+    "count" : 4,
+    "type" : "VEC3",
+    "max" : [ 1.0, 1.0, 0.0 ],
+    "min" : [ 0.0, 0.0, 0.0 ]
+  }, {
+    "bufferView" : 1,
+    "byteOffset" : 48,
+    "componentType" : 5126,
+    "count" : 4,
+    "type" : "VEC2",
+    "max" : [ 1.0, 1.0 ],
+    "min" : [ 0.0, 0.0 ]
+  } ],
+
+  "asset" : {
+    "version" : "2.0"
+  }
+    }`);
+
+    class TestReader extends GltfReader {
+      public constructor(iModelConnection: IModelConnection, url?: URL) {
+        const props = GltfReaderProps.create(gltf, true, url);
+        if (!props)
+          throw new Error("Failed to create GltfReaderProps");
+        const args: GltfReaderArgs = {
+          props,
+          iModel: iModelConnection,
+        }
+        super(args);
+      }
+
+      public async read(): Promise<GltfReaderResult> {
+        throw new Error("Method not implemented.");
+      }
+
+      public resolve(url: string): string | undefined {
+        return this.resolveUrl(url);
+      }
+    }
+
+    async function createTestReader(gltfDoc: GltfDocument, baseUrl?: string): Promise<TestReader | undefined> {
+      await IModelApp.startup({ localization: new EmptyLocalization() });
+      const iModelConnection = createBlankConnection();
+      let url;
+      if (baseUrl) {
+        try {
+          url = new URL(baseUrl);
+        } catch {
+          url = undefined;
+        }
+      }
+      const props = GltfReaderProps.create(gltfDoc, true, url);
+      return props ? new TestReader(iModelConnection, url) : undefined;
+    }
+
+    function isValidUrl(url: string) {
+      try {
+        new URL(url);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    it("should resolve a relative texture url when a base url is defined", async () => {
+      const reader = await createTestReader(gltf, "http://www.sometestsite.com/tileset.json");
+      expect(reader).to.be.not.undefined;
+      if (!reader)
+        return;
+
+      let texture;
+      if (gltf.images)
+        texture = gltf.images[0];
+      const textureUri = texture?.uri;
+      if (!textureUri)
+        return;
+
+      const urlToFetch = reader.resolve(textureUri);
+      if (!urlToFetch)
+        return;
+
+      expect(isValidUrl(urlToFetch)).to.be.true;
+      expect(urlToFetch).to.be.equal("http://www.sometestsite.com/textures/testTexture.png");
+    });
+
+    it("should resolve a relative texture url when a base url with query params is defined", async () => {
+      const reader = await createTestReader(gltf, "http://www.sometestsite.com/tileset.json?someParams=1");
+      expect(reader).to.be.not.undefined;
+      if (!reader)
+        return;
+
+      let texture;
+      if (gltf.images)
+        texture = gltf.images[0];
+      const textureUri = texture?.uri;
+      if (!textureUri)
+        return;
+
+      const urlToFetch = reader.resolve(textureUri);
+      if (!urlToFetch)
+        return;
+
+      expect(isValidUrl(urlToFetch)).to.be.true;
+      expect(urlToFetch).to.be.equal("http://www.sometestsite.com/textures/testTexture.png?someParams=1");
+    });
+
+    it ("should not resolve a relative texture url when a base url is not provided", async () => {
+      const reader = await createTestReader(gltf);
+      expect(reader).to.be.not.undefined;
+      if (!reader)
+        return;
+
+      let texture;
+      if (gltf.images)
+        texture = gltf.images[0];
+      const textureUri = texture?.uri;
+      if (!textureUri)
+        return;
+
+      const urlToFetch = reader.resolve(textureUri);
+      if (!urlToFetch)
+        return;
+
+      expect(isValidUrl(urlToFetch)).to.be.false;
     });
   });
 });
