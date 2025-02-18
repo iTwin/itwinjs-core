@@ -54,7 +54,7 @@
     "@itwin/imodels-client-authoring": "^5.8.1",
     "@itwin/imodels-client-management": "^5.8.1",
     "@itwin/reality-data-client": "^1.2.1",
-    "@itwin/oidc-signin-tool": "^4.4.0",
+    "@itwin/oidc-signin-tool": "^4.4.1",
     "body-parser": "^1.20.3"
   },
   "devDependencies": {
