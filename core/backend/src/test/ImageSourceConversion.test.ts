@@ -41,8 +41,8 @@ function getPixel(img: ImageBuffer, x: number, y: number): number {
 function expectImagePixels(img: ImageBuffer, expected: number[]): void {
   expect(img.width * img.height).to.equal(expected.length);
   const actual = [];
-  for (let x = 0; x < img.width; x++) {
-    for (let y = 0; y < img.height; y++) {
+  for (let y = 0; y < img.height; y++) {
+    for (let x = 0; x < img.width; x++) {
       actual.push(getPixel(img, x, y));
     }
   }
@@ -54,7 +54,7 @@ function expectImagePixels(img: ImageBuffer, expected: number[]): void {
 // White Red  Red
 // Red   Blue Red
 // Red   Red  Green
-// If an alpha channel is requested, alpha will start at 0 and increase by 1 per subsequent pixel.
+// If an alpha channel is requested, alpha will be 0x7f
 function makeImage(wantAlpha: boolean): ImageBuffer {
   const format = wantAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb;
   const pixelSize = wantAlpha ? 4 : 3;
@@ -67,7 +67,7 @@ function makeImage(wantAlpha: boolean): ImageBuffer {
     data[s + 1] = (value >> 8) & 0xff;
     data[s + 2] = (value >> 16) & 0xff;
     if (wantAlpha) {
-      data[s + 3] = i;
+      data[s + 3] = 0x7f;
     }
   }
 
@@ -141,9 +141,13 @@ describe.only("ImageSource conversion", () => {
     });
 
     it("flips vertically IFF specified", () => {
-      const image = makeImage(true);
-      const source = imageSourceFromImageBuffer({ image, flipVertically: true })!;
-      const output = imageBufferFromImageSource({ source })!;
+      let image = makeImage(false);
+      let source = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Png })!;
+      let output = imageBufferFromImageSource({ source })!;
+      expectImagePixels(output, [...top, ...middle, ...bottom ]);
+
+      source = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Png, flipVertically: true })!;
+      output = imageBufferFromImageSource({ source })!;
       expectImagePixels(output, [...bottom, ...middle, ...top ]);
     });
 
