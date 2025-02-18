@@ -19,8 +19,6 @@ export interface ImageBufferFromImageSourceArgs {
    * If unspecified, it defaults to [ImageBufferFormat.Rgb]($common) unless an alpha channel is present in [[source]].
    */
   targetFormat?: ImageBufferFormat.Rgb | ImageBufferFormat.Rgba;
-  /** If true, invert the order of the rows of the decoded image. */
-  flipVertically?: boolean;
 }
 
 /** Decode a [BinaryImageSource]($common) into an [ImageBuffer]($common).
@@ -33,7 +31,7 @@ export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs)
     args.source.format,
     args.source.data,
     args.targetFormat ?? 255,
-    args.flipVertically ?? false
+    false
   );
 
   if (!ret) {
