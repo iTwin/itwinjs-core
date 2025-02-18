@@ -6,6 +6,7 @@ settings:
 
 overrides:
   cross-spawn: ^7.0.5
+  elliptic: ^6.6.1
 
 pnpmfileChecksum: avk5jcsa6uxo2n5cahoirjiuw4
 
