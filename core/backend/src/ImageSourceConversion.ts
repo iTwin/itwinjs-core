@@ -45,27 +45,34 @@ export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs)
  * @public
  */
 export interface ImageSourceFromImageBufferArgs {
-  /** The image to be encoded. */
-  image: Pick<ImageBuffer, "data" | "width" | "height"> & { format: ImageBufferFormat.Rgba | ImageBufferFormat.Rgb },
+  /** The image to be encoded.
+   * The image must be in [ImageBufferFormat.Rgb]($common) or [ImageBufferFormat.Rgba]($common) - [ImageBufferFormat.Alpha]($common) cannot be converted to an [ImageSource]($common).
+   */
+  image: ImageBuffer;
   /** The desired encoding for the resultant [BinaryImageSource]($common).
    * Defaults to [ImageSourceFormat.Jpeg]($common) unless an alpha channel is present in [[image]].
    */
-  targetFormat?: ImageSourceFormat.Png | ImageSourceFormat.Jpeg,
+  targetFormat?: ImageSourceFormat.Png | ImageSourceFormat.Jpeg;
   /** If true, invert the order of the rows of the encoded image. */
-  flipVertically?: boolean,
+  flipVertically?: boolean;
   /** If [[targetFormat]] is (or defaults to) [ImageSourceFormat.Jpeg]($common), an integer between 0 and 100 indicating
    * the desired trade-off between image compression and image fidelity. This is a scale where 0 sacrifices image quality
    * in favor of minimizing the size of the encoded image, and 100 minimizes compression artifacts at the expense of size.
    * Default: 100.
    */
-  jpegQuality?: number,
+  jpegQuality?: number;
 }
 
 /** Encode an [ImageBuffer]($common) into a [BinaryImageSource]($common).
  * Returns `undefined` if encoding fails, typically because the input was invalid.
+ * @throws Error if the ImageBuffer is of [ImageBufferFormat.Alpha]($common).
  * @public
  */
 export function imageSourceFromImageBuffer(args: ImageSourceFromImageBufferArgs): BinaryImageSource | undefined {
+  if (args.image.format === ImageBufferFormat.Alpha) {
+    throw new Error("imageSourceFromImageBuffer cannot be used with alpha-only images");
+  }
+
   return IModelNative.platform.imageSourceFromImageBuffer(
     args.image.format,
     args.image.data,

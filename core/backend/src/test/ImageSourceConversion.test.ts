@@ -7,7 +7,6 @@ import { expect } from "chai";
 import { imageBufferFromImageSource, imageSourceFromImageBuffer } from "../ImageSourceConversion";
 import { samplePngTexture } from "./imageData";
 import { BinaryImageSource, ImageBuffer, ImageBufferFormat, ImageSourceFormat } from "@itwin/core-common";
-import { assert } from "@itwin/core-bentley";
 
 // samplePngTexture encodes this image:
 // White Red  Red
@@ -56,7 +55,7 @@ function expectImagePixels(img: ImageBuffer, expected: number[]): void {
 // Red   Blue Red
 // Red   Red  Green
 // If an alpha channel is requested, alpha will start at 0 and increase by 1 per subsequent pixel.
-function makeImage(wantAlpha: boolean): ImageBuffer & { format: ImageBufferFormat.Rgb | ImageBufferFormat.Rgba } {
+function makeImage(wantAlpha: boolean): ImageBuffer {
   const format = wantAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb;
   const pixelSize = wantAlpha ? 4 : 3;
   const data = new Uint8Array(pixelSize * 9);
@@ -73,7 +72,6 @@ function makeImage(wantAlpha: boolean): ImageBuffer & { format: ImageBufferForma
   }
 
   const img = ImageBuffer.create(data, format, 3);
-  assert(img.format !== ImageBufferFormat.Alpha);
   return img;
 }
 
@@ -108,15 +106,22 @@ describe.only("ImageSource conversion", () => {
   });
 
   describe("imageSourceFromImageBuffer", () => {
-    it("flips vertically IFF specified", () => {
-      
-    });
-
     it("encodes to specified format", () => {
-      
+      const image = makeImage(false);
+      const png = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Png })!;
+      expect(png.format).to.equal(ImageSourceFormat.Png);
+      const jpeg = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Jpeg })!;
+      expect(jpeg.format).to.equal(ImageSourceFormat.Jpeg);
+
+      expect(imageBufferFromImageSource({ source: png })).to.deep.equal(image);
+      expect(imageBufferFromImageSource({ source: jpeg })).to.deep.equal(image);
     });
 
     it("defaults to PNG IFF alpha channel is present", () => {
+      
+    });
+
+    it("flips vertically IFF specified", () => {
       
     });
 
