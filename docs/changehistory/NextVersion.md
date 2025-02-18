@@ -111,17 +111,17 @@ ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
 ```
 
 Can also be attached as a map-layer:
-```typescript
-ds.attachMapLayer({
-  mapLayerIndex: {index: 0, isOverlay: false},
-  settings: GoogleMaps.createMapLayerSettings("GoogleMaps")});
+
+```ts
+[[include:GoogleMaps_AttachMapLayerSimple]]
 ```
+
   > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+
+```ts
+[[include:GoogleMaps_SetGoogleMapsApiKey]]
 ```
-   mapLayerOptions: {
-          GoogleMaps: { key: "key", value: "YOUR_KEY_HERE" }
-        }
-```
+
 ## API deprecations
 
 ### @itwin/core-bentley
@@ -148,7 +148,7 @@ ds.attachMapLayer({
   }
   ```
 
-  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement *both* `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - *either* with [IDisposable.dispose]($core-bentley) *or* `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
 
 ### @itwin/core-common
 
@@ -554,7 +554,7 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the *fast-forward* method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
