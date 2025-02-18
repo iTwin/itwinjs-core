@@ -99,11 +99,19 @@ describe.only("ImageSource conversion", () => {
     });
 
     it("preserves alpha channel if RGBA requested", () => {
-      
+      const image = makeImage(true);
+      const source = imageSourceFromImageBuffer({ image })!;
+      const result = imageBufferFromImageSource({ source, targetFormat: ImageBufferFormat.Rgba })!;
+      expect(result.format).to.equal(ImageBufferFormat.Rgba);
+      expectImagePixels(result, [...top, ...middle, ...bottom].map((x) => (x | 0x7f000000) >>> 0));
     });
 
     it("strips alpha channel if RGB requested", () => {
-      
+      const image = makeImage(true);
+      const source = imageSourceFromImageBuffer({ image })!;
+      const result = imageBufferFromImageSource({ source, targetFormat: ImageBufferFormat.Rgb })!;
+      expect(result.format).to.equal(ImageBufferFormat.Rgb);
+      expectImagePixels(result, [...top, ...middle, ...bottom]);
     });
 
     it("sets alpha to 255 if RGBA requested for ImageSource lacking transparency", () => {
@@ -113,7 +121,10 @@ describe.only("ImageSource conversion", () => {
     });
     
     it("defaults to RGBA IFF alpha channel is present", () => {
-      
+      const transparent = imageSourceFromImageBuffer({ image: makeImage(true), targetFormat: ImageSourceFormat.Png })!;
+      expect(imageBufferFromImageSource({ source: transparent })!.format).to.equal(ImageBufferFormat.Rgba);
+      const opaque = imageSourceFromImageBuffer({ image: makeImage(false), targetFormat: ImageSourceFormat.Png })!;
+      expect(imageBufferFromImageSource({ source: opaque })!.format).to.equal(ImageBufferFormat.Rgb);
     });
   });
 
@@ -151,7 +162,7 @@ describe.only("ImageSource conversion", () => {
       expectImagePixels(output, [...bottom, ...middle, ...top ]);
     });
 
-    it("compresses JPEG losslessly unless quality < 100 is specified", () => {
+    it("trades quality for size when encoding JPEG", () => {
       
     });
   });
