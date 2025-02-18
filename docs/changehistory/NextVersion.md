@@ -100,7 +100,7 @@ The unified selection system has been part of `@itwin/presentation-frontend` for
 
 ### Google Maps 2D tiles API
 
-The `itwin\map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
+The `itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
 
 To enable it as a base map, it's simple as:
 
@@ -168,7 +168,7 @@ Can also be attached as a map-layer:
 
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
-- Deprecated [addLogoCards]($core-frontend)-related APIs:
+- Deprecated synchronous [addLogoCards]($core-frontend)-related APIs in favor of new asynchronous ones:
   - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
   - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
