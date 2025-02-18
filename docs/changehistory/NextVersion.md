@@ -168,7 +168,7 @@ ds.attachMapLayer({
 
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
-- Deprecated [addLogoCards]($core-frontend)-related APIs:
+- Deprecated synchronous [addLogoCards]($core-frontend)-related APIs in favor of new asynchronous ones:
   - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
   - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
