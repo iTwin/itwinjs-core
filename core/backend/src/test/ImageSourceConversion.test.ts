@@ -87,6 +87,16 @@ function expectEqualImageBuffers(a: ImageBuffer, b: ImageBuffer, pixelTolerance 
   }
 }
 
+function computeMaxCompressionError(compressed: ImageBuffer, original: ImageBuffer): number {
+  expect(compressed.data.length).to.equal(original.data.length);
+  let max = 0;
+  for (let i = 0; i < compressed.data.length; i++) {
+    max = Math.max(max, Math.abs(compressed.data[i] - original.data[i]));
+  }
+
+  return max;
+}
+
 describe.only("ImageSource conversion", () => {
   describe("imageBufferFromImageSource", () => {
     it("decodes PNG", () => {
@@ -163,7 +173,21 @@ describe.only("ImageSource conversion", () => {
     });
 
     it("trades quality for size when encoding JPEG", () => {
-      
+      const image = makeImage(false);
+      const low = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Jpeg, jpegQuality: 50 })!;
+      const medium = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Jpeg, jpegQuality: 75 })!;
+      const high = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Jpeg, jpegQuality: 100 })!;
+      expect(low.data.length).lessThan(medium.data.length);
+      expect(medium.data.length).lessThan(high.data.length);
+
+      const highImg = imageBufferFromImageSource({ source: high })!;
+      const lowImg = imageBufferFromImageSource({ source: low })!;
+      const mediumImg = imageBufferFromImageSource({ source: medium })!;
+
+      expect(computeMaxCompressionError(highImg, image)).to.equal(2);
+      const mediumError = computeMaxCompressionError(mediumImg, image);
+      expect(mediumError).greaterThan(2);
+      expect(computeMaxCompressionError(lowImg, image)).greaterThan(mediumError);
     });
   });
 });
