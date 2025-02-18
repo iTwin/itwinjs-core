@@ -32,7 +32,7 @@ function getPixel(img: ImageBuffer, x: number, y: number): number {
   for (let offset = 0; offset < pixelSize; offset++) {
     let val = img.data[start + offset];
     val = (val << (offset * 8)) >>> 0;
-    pixel |= val;
+    pixel = (pixel | val) >>> 0;
   }
 
   return pixel;
@@ -106,10 +106,10 @@ describe.only("ImageSource conversion", () => {
       
     });
 
-    it("sets alpha to zero if RGBA requested for ImageSource lacking transparency", () => {
+    it("sets alpha to 255 if RGBA requested for ImageSource lacking transparency", () => {
       const img = imageBufferFromImageSource({ source: samplePng, targetFormat: ImageBufferFormat.Rgba })!;
       expect(img.format).to.equal(ImageBufferFormat.Rgba);
-      expectImagePixels(img, [...top, ...middle, ...bottom]);
+      expectImagePixels(img, [...top, ...middle, ...bottom].map((x) => ((x | 0xff000000) >>> 0)));
     });
     
     it("defaults to RGBA IFF alpha channel is present", () => {
@@ -133,11 +133,18 @@ describe.only("ImageSource conversion", () => {
     });
 
     it("defaults to PNG IFF alpha channel is present", () => {
-      
+      const transparent = makeImage(true);
+      expect(imageSourceFromImageBuffer({ image: transparent })!.format).to.equal(ImageSourceFormat.Png);
+
+      const opaque = makeImage(false);
+      expect(imageSourceFromImageBuffer({ image: opaque })!.format).to.equal(ImageSourceFormat.Jpeg);
     });
 
     it("flips vertically IFF specified", () => {
-      
+      const image = makeImage(true);
+      const source = imageSourceFromImageBuffer({ image, flipVertically: true })!;
+      const output = imageBufferFromImageSource({ source })!;
+      expectImagePixels(output, [...bottom, ...middle, ...top ]);
     });
 
     it("compresses JPEG losslessly unless quality < 100 is specified", () => {
