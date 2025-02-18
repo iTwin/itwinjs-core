@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { imageBufferFromImageSource, imageSourceFromImageBuffer } from "../ImageSourceConversion";
 import { samplePngTexture } from "./imageData";
 import { BinaryImageSource, ImageBuffer, ImageBufferFormat, ImageSourceFormat } from "@itwin/core-common";
+import { assert } from "@itwin/core-bentley";
 
 // samplePngTexture encodes this image:
 // White Red  Red
@@ -50,10 +51,36 @@ function expectImagePixels(img: ImageBuffer, expected: number[]): void {
   expect(actual).to.deep.equal(expected);
 }
 
+// Make an ImageBuffer as
+// White Red  Red
+// Red   Blue Red
+// Red   Red  Green
+// If an alpha channel is requested, alpha will start at 0 and increase by 1 per subsequent pixel.
+function makeImage(wantAlpha: boolean): ImageBuffer & { format: ImageBufferFormat.Rgb | ImageBufferFormat.Rgba } {
+  const format = wantAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb;
+  const pixelSize = wantAlpha ? 4 : 3;
+  const data = new Uint8Array(pixelSize * 9);
+  const lut = [white, red, red, red, blue, red, red, red, green];
+  for (let i = 0; i < 9; i++) {
+    let value = lut[i];
+    const s = i * pixelSize;
+    data[s + 0] = value & 0xff;
+    data[s + 1] = (value >> 8) & 0xff;
+    data[s + 2] = (value >> 16) & 0xff;
+    if (wantAlpha) {
+      data[s + 3] = i;
+    }
+  }
+
+  const img = ImageBuffer.create(data, format, 3);
+  assert(img.format !== ImageBufferFormat.Alpha);
+  return img;
+}
+
 describe.only("ImageSource conversion", () => {
   describe("imageBufferFromImageSource", () => {
     it("decodes PNG", () => {
-      let buf = imageBufferFromImageSource({ source: samplePng })!;
+      const buf = imageBufferFromImageSource({ source: samplePng })!;
       expect(buf).not.to.be.undefined;
       expect(buf.width).to.equal(3);
       expect(buf.height).to.equal(3);
@@ -61,7 +88,7 @@ describe.only("ImageSource conversion", () => {
       expectImagePixels(buf, [...top, ...middle, ...bottom]);
     });
 
-    it("preserves alpha channel if specified if RGBA requested", () => {
+    it("preserves alpha channel if RGBA requested", () => {
       
     });
 
@@ -69,6 +96,12 @@ describe.only("ImageSource conversion", () => {
       
     });
 
+    it("sets alpha to zero if RGBA requested for ImageSource lacking transparency", () => {
+      const img = imageBufferFromImageSource({ source: samplePng, targetFormat: ImageBufferFormat.Rgba })!;
+      expect(img.format).to.equal(ImageBufferFormat.Rgba);
+      expectImagePixels(img, [...top, ...middle, ...bottom]);
+    });
+    
     it("defaults to RGBA IFF alpha channel is present", () => {
       
     });
