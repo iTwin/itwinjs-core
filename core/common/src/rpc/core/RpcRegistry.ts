@@ -35,6 +35,9 @@ export const CURRENT_REQUEST = Symbol.for("@itwin/core-common/RpcRequest/__curre
 /** @internal */
 export const CURRENT_INVOCATION = Symbol.for("@itwin/core-common/RpcInvocation/__current__");
 
+declare const self: any;
+declare const window: any;
+
 /** @internal */
 export class RpcRegistry {
   private static _instance: RpcRegistry;
@@ -44,7 +47,7 @@ export class RpcRegistry {
 
   public static get instance() {
     if (!RpcRegistry._instance) {
-      const globalObj: any = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
+      const globalObj: any = global ?? self ?? window ?? {};
       if (!globalObj[REGISTRY])
         globalObj[REGISTRY] = new RpcRegistry();
 
