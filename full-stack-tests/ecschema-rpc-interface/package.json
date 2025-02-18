@@ -40,7 +40,11 @@
     "@itwin/imodels-access-frontend": "^5.2.1",
     "@itwin/imodels-client-authoring": "^5.8.1",
     "@itwin/imodels-client-management": "^5.8.1",
+<<<<<<< HEAD
     "@itwin/oidc-signin-tool": "^4.3.7",
+=======
+    "@itwin/oidc-signin-tool": "^4.4.1",
+>>>>>>> d29b1980f7 (Resolve GHSA-vjh7-7g9h-fjfh (#7716))
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.3.10",

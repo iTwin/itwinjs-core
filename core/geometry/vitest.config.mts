@@ -4,6 +4,10 @@ export default defineConfig({
     dir: "src/test",
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/filename.test.ts"], // to honor it/describe.only
+<<<<<<< HEAD
+=======
+    testTimeout: 80000, // Some tests can take much longer than the default 5 seconds when run in parallel.
+>>>>>>> d29b1980f7 (Resolve GHSA-vjh7-7g9h-fjfh (#7716))
     coverage: {
       provider: "v8",
       include: [
