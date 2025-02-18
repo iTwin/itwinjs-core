@@ -7,7 +7,7 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, Logger } from "@itwin/core-bentley";
+import { BeEvent, ErrorCategory, Logger, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcPendingResponse } from "@itwin/core-common";
 import {
   buildElementProperties,
@@ -84,6 +84,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
   private _requestTimeout: number;
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
   private _cancelEvents: Map<string, BeEvent<() => void>>;
+  private _statusHandler: (e: Error) => StatusCategory | undefined;
 
   public constructor(props?: { requestTimeout?: number }) {
     super();
@@ -106,10 +107,14 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       },
     });
     this._cancelEvents = new Map<string, BeEvent<() => void>>();
+
+    this._statusHandler = createStatusCategoryHandler();
+    StatusCategory.handlers.add(this._statusHandler);
   }
 
   public [Symbol.dispose]() {
     this._pendingRequests[Symbol.dispose]();
+    StatusCategory.handlers.delete(this._statusHandler);
   }
 
   public get requestTimeout() {
@@ -208,14 +213,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       }
 
       // initiate request
-      resultPromise = request(managerRequestOptions)
-        .then((result) => this.successResponse(result, diagnostics))
-        .catch((e: unknown) => {
-          if (e instanceof PresentationError) {
-            return this.errorResponse(e.errorNumber, e.message, diagnostics);
-          }
-          throw e;
-        });
+      resultPromise = request(managerRequestOptions).then((result) => this.successResponse(result, diagnostics));
 
       // store the request promise
       this._pendingRequests.addValue(requestKey, resultPromise);
@@ -518,3 +516,36 @@ const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
   const requestedSize = size ?? 0;
   return requestedSize === 0 || requestedSize > maxPageSize ? maxPageSize : requestedSize;
 };
+
+// not testing temporary solution
+// istanbul ignore next
+function createStatusCategoryHandler() {
+  return (e: Error) => {
+    if (e instanceof PresentationError) {
+      switch (e.errorNumber) {
+        case PresentationStatus.NotInitialized:
+          return new (class extends ErrorCategory {
+            public name = "Internal server error";
+            public code = 500;
+          })();
+        case PresentationStatus.Canceled:
+          return new (class extends SuccessCategory {
+            public name = "Cancelled";
+            public code = 204;
+          })();
+        case PresentationStatus.ResultSetTooLarge:
+          return new (class extends ErrorCategory {
+            public name = "Result set is too large";
+            public code = 413;
+          })();
+        case PresentationStatus.Error:
+        case PresentationStatus.InvalidArgument:
+          return new (class extends ErrorCategory {
+            public name = "Invalid request props";
+            public code = 422;
+          })();
+      }
+    }
+    return undefined;
+  };
+}

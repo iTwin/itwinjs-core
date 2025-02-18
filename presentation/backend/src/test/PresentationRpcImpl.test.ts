@@ -226,12 +226,7 @@ describe("PresentationRpcImpl", () => {
         refreshContainerForRpc: sinon.stub(),
       } as unknown as IModelDb);
     using impl = new PresentationRpcImpl();
-    expect(await impl.getSelectionScopes(imodelToken, {})).to.deep.eq({
-      statusCode: PresentationStatus.Error,
-      errorMessage: "test error",
-      result: undefined,
-      diagnostics: undefined,
-    });
+    await expect(impl.getSelectionScopes(imodelToken, {})).to.eventually.be.rejectedWith(PresentationError, "test error");
   });
 
   it("re-throws generic errors", async () => {
@@ -478,10 +473,9 @@ describe("PresentationRpcImpl", () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith(PresentationError, "test error");
         presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
-        expect(actualResult.errorMessage).to.eq("test error");
       });
 
       it("should return error result if manager throws and `requestTimeout` is set to 0", async () => {
@@ -502,10 +496,9 @@ describe("PresentationRpcImpl", () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith(PresentationError, "test error");
         presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
-        expect(actualResult.errorMessage).to.eq("test error");
       });
     });
 
