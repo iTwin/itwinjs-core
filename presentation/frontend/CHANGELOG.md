@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Fri, 24 Jan 2025 08:05:17 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Feb 2025 17:30:07 GMT and should not be manually modified.
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+### Updates
+
+- Fix selection changes not being handled when using multiple connections to the same iModel
 
 ## 4.10.6
 Fri, 24 Jan 2025 08:02:40 GMT
