@@ -9,7 +9,7 @@
 import { firstValueFrom } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { Id64Array } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
@@ -41,7 +41,6 @@ import {
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
-  isComputeSelectionRequestOptions,
   isSingleElementPropertiesRequestOptions,
   Item,
   KeySet,
@@ -72,25 +71,6 @@ import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils";
-
-/**
- * Presentation manager working mode.
- * @public
- * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
- */
-export enum PresentationManagerMode {
-  /**
-   * Presentation manager assumes iModels are opened in read-only mode and avoids doing some work
-   * related to reacting to changes in iModels.
-   */
-  ReadOnly,
-
-  /**
-   * Presentation manager assumes iModels are opened in read-write mode and it may need to
-   * react to changes. This involves some additional work and gives slightly worse performance.
-   */
-  ReadWrite,
-}
 
 /**
  * Presentation hierarchy cache mode.
@@ -250,13 +230,6 @@ export interface PresentationAssetsRootConfig {
    * Path to `presentation-backend` assets. Relative paths start from `process.cwd()`.
    */
   backend: string;
-
-  /**
-   * Path to `presentation-common` assets.
-   *
-   * @deprecated in 3.x. This path is not used anymore
-   */
-  common: string;
 }
 
 /**
@@ -302,22 +275,6 @@ export interface PresentationManagerProps {
   supplementalRulesetDirectories?: string[];
 
   /**
-   * A list of directories containing application's locale-specific localized
-   * string files (in simplified i18next v3 format)
-   *
-   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
-   */
-  localeDirectories?: string[];
-
-  /**
-   * Sets the active locale to use when localizing presentation-related
-   * strings. It can later be changed through [[PresentationManager.activeLocale]].
-   *
-   * @deprecated in 3.x. Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
-   */
-  defaultLocale?: string;
-
-  /**
    * Sets the active unit system to use for formatting property values with
    * units. Default presentation units are used if this is not specified. The active unit
    * system can later be changed through [[PresentationManager.activeUnitSystem]] or overriden for each request
@@ -332,27 +289,9 @@ export interface PresentationManagerProps {
   defaultFormats?: FormatsMap;
 
   /**
-   * Should schemas preloading be enabled. If true, presentation manager listens
-   * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
-   *
-   * @deprecated in 3.x. Use [[PresentationProps.enableSchemasPreload]] instead.
-   */
-  enableSchemasPreload?: boolean;
-
-  /**
    * A number of worker threads to use for handling presentation requests. Defaults to `2`.
    */
   workerThreadsCount?: number;
-
-  /**
-   * Presentation manager working mode. Backends that use iModels in read-write mode should
-   * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
-   *
-   * Defaults to [[PresentationManagerMode.ReadWrite]].
-   *
-   * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
-   */
-  mode?: PresentationManagerMode; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /**
    * The interval (in milliseconds) used to poll for presentation data changes. If not set, presentation
@@ -422,19 +361,12 @@ export class PresentationManager {
   private _localizationHelper: LocalizationHelper;
 
   /**
-   * Get / set active locale used for localizing presentation data
-   * @deprecated in 3.x. Use [[PresentationManagerProps.getLocalizedString]] to localize data returned by [[PresentationManager]].
-   */
-  public activeLocale: string | undefined;
-
-  /**
    * Creates an instance of PresentationManager.
    * @param props Optional configuration properties.
    */
   constructor(props?: PresentationManagerProps) {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
-    this.activeLocale = this._props.defaultLocale; // eslint-disable-line @typescript-eslint/no-deprecated
 
     this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
   }
@@ -810,37 +742,21 @@ export class PresentationManager {
   /**
    * Retrieves available selection scopes.
    * @public
+   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]> {
     return SelectionScopesHelper.getSelectionScopes();
   }
 
   /**
-   * Computes selection set based on provided selection scope.
-   * @public
-   * @deprecated in 3.x. Use overload with `ComputeSelectionRequestOptions` parameter.
-   */
-  public async computeSelection(
-    requestOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[]; scopeId: string } & BackendDiagnosticsAttribute,
-  ): Promise<KeySet>;
-  /**
    * Computes selection based on provided element IDs and selection scope.
    * @public
+   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
-  // eslint-disable-next-line @typescript-eslint/unified-signatures
-  public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
-  public async computeSelection(
-    requestOptions: ((SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[]; scopeId: string }) | ComputeSelectionRequestOptions<IModelDb>) &
-      BackendDiagnosticsAttribute,
-  ): Promise<KeySet> {
-    return SelectionScopesHelper.computeSelection(
-      isComputeSelectionRequestOptions(requestOptions)
-        ? requestOptions
-        : (function () {
-            const { ids, scopeId, ...rest } = requestOptions;
-            return { ...rest, elementIds: ids, scope: { id: scopeId } };
-          })(),
-    );
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet> {
+    return SelectionScopesHelper.computeSelection(requestOptions);
   }
 
   /**

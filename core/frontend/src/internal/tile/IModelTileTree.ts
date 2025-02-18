@@ -332,6 +332,7 @@ class RootTile extends Tile {
 }
 
 /** A TileTree whose contents are derived from geometry stored in a Model in an IModelDb.
+ * @internal exported strictly for display-test-app until we remove CommonJS support.
  */
 export class IModelTileTree extends TileTree {
   public readonly decoder: ImdlDecoder;
