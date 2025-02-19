@@ -97,7 +97,7 @@ function computeMaxCompressionError(compressed: ImageBuffer, original: ImageBuff
   return max;
 }
 
-describe.only("ImageSource conversion", () => {
+describe("ImageSource conversion", () => {
   describe("imageBufferFromImageSource", () => {
     it("decodes PNG", () => {
       const buf = imageBufferFromImageSource({ source: samplePng })!;
