@@ -12,7 +12,7 @@ Table of contents:
 
 `ECSqlStatement` is deprecated in 4.11 Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend)
 
-Following are related classes to ECSqlStatement that are also mark depercate
+Following are related classes to ECSqlStatement that are also marked depercated
   * `ECEnumValue`
   * `ECSqlValue`
   * `ECSqlValueIterator`
