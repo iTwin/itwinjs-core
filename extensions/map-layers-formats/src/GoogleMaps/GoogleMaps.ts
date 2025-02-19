@@ -11,11 +11,21 @@ import { MapCartoRectangle } from "@itwin/core-frontend";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
 
 
-/** @beta*/
+/**
+ * The type of base map.
+ * @beta*/
 export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
-/** @beta*/
+
+/**
+ *  Layer types that can be added to the map.
+ * @beta
+ * */
 export type GoogleMapsMapTypes =  "roadmap"|"satellite"|"terrain";
-/** @beta*/
+
+/**
+ * Scale factors that can be applied to labels and objects in the map.
+ * @beta
+ * */
 export type GoogleMapsScaleFactors =  "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 /**

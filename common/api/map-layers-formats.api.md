@@ -91,13 +91,13 @@ export interface GoogleMapsCreateSessionOptions {
     scale?: GoogleMapsScaleFactors;
 }
 
-// @beta (undocumented)
+// @beta
 export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
 
-// @beta (undocumented)
+// @beta
 export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
 
-// @beta (undocumented)
+// @beta
 export type GoogleMapsScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 // @beta
