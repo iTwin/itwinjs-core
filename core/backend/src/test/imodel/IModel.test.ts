@@ -60,10 +60,12 @@ describe("iModel", () => {
   let imodel5: SnapshotDb;
   let originalEnv: any;
 
-  before(async () => {
+  before(() => {
     originalEnv = { ...process.env };
-
     IModelTestUtils.registerTestBimSchema();
+  });
+
+  beforeEach(async () => {
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
@@ -76,15 +78,15 @@ describe("iModel", () => {
 
   after(() => {
     process.env = originalEnv;
+  });
+
+  afterEach(() => {
+    sinon.restore();
     imodel1.close();
     imodel2.close();
     imodel3.close();
     imodel4.close();
     imodel5.close();
-  });
-
-  afterEach(() => {
-    sinon.restore();
   });
 
   /** Roundtrip the entity through a json string and back to a new entity. */
