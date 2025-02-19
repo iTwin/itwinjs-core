@@ -127,6 +127,7 @@ internal;enum;RepositoryStatus
 public;type;RequireAtLeastOne
 beta;enum;RpcInterfaceStatus
 public;function;shallowClone
+beta;type;SimpleTypesArray
 public;class;SortedArray
 public;enum;SpanKind
 deprecated;enum;SpanKind

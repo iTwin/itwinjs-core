@@ -58,17 +58,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     get tileSize(): number;
 }
 
-// @beta
-export interface CreateSessionOptions {
-    apiOptions?: string[];
-    language: string;
-    layerTypes?: LayerTypes[];
-    mapType: MapTypes;
-    overlay?: boolean;
-    region: string;
-    scale?: ScaleFactors;
-}
-
 // @internal (undocumented)
 export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
     // (undocumented)
@@ -87,9 +76,29 @@ export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
 
 // @beta
 export const GoogleMaps: {
-    createMapLayerSettings: (name?: string, opts?: CreateSessionOptions) => ImageMapLayerSettings;
-    createBaseLayerSettings: (opts?: CreateSessionOptions) => BaseMapLayerSettings;
+    createMapLayerSettings: (name?: string, opts?: GoogleMapsCreateSessionOptions) => ImageMapLayerSettings;
+    createBaseLayerSettings: (opts?: GoogleMapsCreateSessionOptions) => BaseMapLayerSettings;
 };
+
+// @beta
+export interface GoogleMapsCreateSessionOptions {
+    apiOptions?: string[];
+    language: string;
+    layerTypes?: GoogleMapsLayerTypes[];
+    mapType: GoogleMapsMapTypes;
+    overlay?: boolean;
+    region: string;
+    scale?: GoogleMapsScaleFactors;
+}
+
+// @beta (undocumented)
+export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
+
+// @beta (undocumented)
+export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
+
+// @beta (undocumented)
+export type GoogleMapsScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 // @beta
 export interface GoogleMapsSession {
@@ -99,9 +108,6 @@ export interface GoogleMapsSession {
     tileHeight: number;
     tileWidth: number;
 }
-
-// @beta (undocumented)
-export type LayerTypes = "layerRoadmap" | "layerStreetview";
 
 // @beta
 export class MapFeatureInfoTool extends PrimitiveTool {
@@ -157,9 +163,6 @@ export interface MapLayersFormatsConfig {
     localization?: Localization;
 }
 
-// @beta (undocumented)
-export type MapTypes = "roadmap" | "satellite" | "terrain";
-
 // @beta
 export interface MaxZoomRectangle {
     // (undocumented)
@@ -173,9 +176,6 @@ export interface MaxZoomRectangle {
     // (undocumented)
     west: number;
 }
-
-// @beta (undocumented)
-export type ScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 // @beta
 export interface ViewportInfo {

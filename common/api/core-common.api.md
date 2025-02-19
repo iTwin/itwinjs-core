@@ -5731,10 +5731,10 @@ export interface MapLayerKey {
 // @public
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
 
-// @beta (undocumented)
-export type MapLayerProviderArrayProperty = Array<number | string | boolean>;
+// @beta
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
 
-// @beta (undocumented)
+// @beta
 export interface MapLayerProviderProperties {
     // (undocumented)
     [key: string]: number | string | boolean | MapLayerProviderArrayProperty;
