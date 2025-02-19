@@ -224,7 +224,6 @@ export abstract class IModelConnection extends IModel {
     ? new IpcIModelRead(iModelProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead"))
     : new IModelReadHTTPClient(
       `http://localhost:3001/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
-      `http://localhost:3002/itwins/${iModelProps.iTwinId}/imodels/${iModelProps.iModelId}/changesets/${iModelProps.changeset?.id || "latest"}/`,
       IModelApp,
     );
     super.initialize(iModelProps.name!, iModelProps);
