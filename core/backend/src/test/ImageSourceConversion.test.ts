@@ -61,7 +61,7 @@ function makeImage(wantAlpha: boolean): ImageBuffer {
   const data = new Uint8Array(pixelSize * 9);
   const lut = [white, red, red, red, blue, red, red, red, green];
   for (let i = 0; i < 9; i++) {
-    let value = lut[i];
+    const value = lut[i];
     const s = i * pixelSize;
     data[s + 0] = value & 0xff;
     data[s + 1] = (value >> 8) & 0xff;
@@ -162,7 +162,7 @@ describe("ImageSource conversion", () => {
     });
 
     it("flips vertically IFF specified", () => {
-      let image = makeImage(false);
+      const image = makeImage(false);
       let source = imageSourceFromImageBuffer({ image, targetFormat: ImageSourceFormat.Png })!;
       let output = imageBufferFromImageSource({ source })!;
       expectImagePixels(output, [...top, ...middle, ...bottom ]);

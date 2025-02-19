@@ -3136,7 +3136,6 @@ export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs)
 
 // @public
 export interface ImageBufferFromImageSourceArgs {
-    flipVertically?: boolean;
     source: BinaryImageSource;
     targetFormat?: ImageBufferFormat.Rgb | ImageBufferFormat.Rgba;
 }
@@ -3147,9 +3146,7 @@ export function imageSourceFromImageBuffer(args: ImageSourceFromImageBufferArgs)
 // @public
 export interface ImageSourceFromImageBufferArgs {
     flipVertically?: boolean;
-    image: Pick<ImageBuffer, "data" | "width" | "height"> & {
-        format: ImageBufferFormat.Rgba | ImageBufferFormat.Rgb;
-    };
+    image: ImageBuffer;
     jpegQuality?: number;
     targetFormat?: ImageSourceFormat.Png | ImageSourceFormat.Jpeg;
 }
