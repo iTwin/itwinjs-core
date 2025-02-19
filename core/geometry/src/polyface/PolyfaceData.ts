@@ -208,7 +208,8 @@ export class PolyfaceData {
       return false;
     if (this.expectedClosure !== other.expectedClosure)
       return false;
-    // NOTE: edgeMateIndex is derived, and thus ignored
+    if (!NumberArray.isExactEqual(this.edgeMateIndex, other.edgeMateIndex))
+      return false;
     return true;
   }
   /** Ask if normals are required in this mesh. */
@@ -399,13 +400,13 @@ export class PolyfaceData {
         this.auxData.indices[i] = other.auxData.indices[index0 + i];
       for (let i = 0; i < numWrap; i++)
         this.auxData.indices[numEdge + i] = this.auxData.indices[i];
-      // copy wrapped edgeMateIndex
-      if (this.edgeMateIndex && other.edgeMateIndex) {
-        for (let i = 0; i < numEdge; i++)
-          this.edgeMateIndex[i] = other.edgeMateIndex[index0 + i];
-        for (let i = 0; i < numWrap; i++)
-          this.edgeMateIndex[numEdge + i] = this.edgeMateIndex[i];
-      }
+    }
+    // copy wrapped edgeMateIndex
+    if (this.edgeMateIndex && other.edgeMateIndex) {
+      for (let i = 0; i < numEdge; i++)
+        this.edgeMateIndex[i] = other.edgeMateIndex[index0 + i];
+      for (let i = 0; i < numWrap; i++)
+        this.edgeMateIndex[numEdge + i] = this.edgeMateIndex[i];
     }
   }
   /** Trim the `data` arrays to the stated `length`. */
