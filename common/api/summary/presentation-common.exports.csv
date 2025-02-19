@@ -60,6 +60,7 @@ public;type;ContentSpecification
 public;interface;ContentSpecificationBase
 public;enum;ContentSpecificationTypes
 public;type;ContentUpdateInfo
+internal;function;createCancellableTimeoutPromise
 public;function;createFieldHierarchies
 public;type;CustomizationRule
 public;interface;CustomNodeSpecification
