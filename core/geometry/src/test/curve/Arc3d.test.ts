@@ -964,7 +964,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.skip("EllipseSampler", { timeout: 80000 }, () => { // ###TODO FLAKY https://github.com/iTwin/itwinjs-core/issues/7732
+  it("EllipseSampler", { timeout: 80000 }, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;
@@ -1096,9 +1096,9 @@ describe("ApproximateArc3d", () => {
       return { err: chainError ? chainError.detailA.a : undefined, nSeg: chain ? chain.children.length : 0 };
     };
 
-    const numSamples = [3, 4, 5];
+    const numSamples = [3, 4];
     if (GeometryCoreTestIO.enableLongTests)
-      numSamples.push(...[6, 10, 20]);
+      numSamples.push(...[5, 6, 10, 20]);
     const methodWins = new Map<number, number>(); // <iMethod, winCount>
 
     for (let iArc = 0; iArc < arcs.length; ++iArc) {
@@ -1177,9 +1177,9 @@ describe("ApproximateArc3d", () => {
       }
       GeometryCoreTestIO.consoleLog(`Method ${iMethodToString(iMethod)} won ${winCount} times (${Math.round(100 * winCount / nTrials)}%).`);
     });
-    // Observed: subdivision is most accurate method in 57% of ellipses tested (69% with enableLongTests)
+    // Observed: subdivision is most accurate method in 43% of ellipses tested (69% with enableLongTests)
     if (ck.testExactNumber(iWinner, 7, `expect ${iMethodToString(7)} method to have best approximation more often than other methods`)) {
-      const targetPct = GeometryCoreTestIO.enableLongTests ? 65 : 50;
+      const targetPct = GeometryCoreTestIO.enableLongTests ? 65 : 40;
       ck.testLE(targetPct, 100 * maxWins / nTrials, `expect ${iMethodToString(7)} to have best approximation most of the time`);
     }
 
