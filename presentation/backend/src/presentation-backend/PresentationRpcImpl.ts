@@ -7,7 +7,7 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, ErrorCategory, Logger, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
+import { BeEvent, ErrorCategory, Logger, omit, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcPendingResponse } from "@itwin/core-common";
 import {
   buildElementProperties,
@@ -61,6 +61,7 @@ import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
+import { getRulesetIdObject } from "./PresentationManagerDetail";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJsonVersion = require("../../../package.json").version;
@@ -162,12 +163,14 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     TRpcOptions extends { rulesetOrId?: Ruleset | string; clientId?: string; diagnostics?: RpcDiagnosticsOptions; rulesetVariables?: RulesetVariableJSON[] },
     TResult,
   >(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
-    const requestKey = JSON.stringify({ iModelKey: token.key, requestId, requestOptions });
-
-    Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
+    const serializedRequestOptionsForLogging = JSON.stringify({
+      ...omit(requestOptions, ["rulesetOrId"]),
+      ...(requestOptions.rulesetOrId ? { rulesetId: getRulesetIdObject(requestOptions.rulesetOrId).uniqueId } : undefined),
+    });
+    Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${serializedRequestOptionsForLogging}`);
 
     const imodel = await this.getIModel(token);
-
+    const requestKey = JSON.stringify({ iModelKey: token.key, requestId, requestOptions });
     let resultPromise = this._pendingRequests.getValue(requestKey);
     if (resultPromise) {
       Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request already pending`);
