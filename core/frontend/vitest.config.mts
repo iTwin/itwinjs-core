@@ -36,7 +36,7 @@ export default defineConfig({
       reportsDirectory: "./lib/cjs/test/coverage",
     },
     minWorkers: 1,
-    maxWorkers: 1
+    maxWorkers: 3
   },
   plugins: [
     viteStaticCopy({
