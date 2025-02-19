@@ -6,7 +6,7 @@
 import { IModelApp } from "@itwin/core-frontend";
 import {GoogleMaps} from "@itwin/map-layers-formats";
 
-// __PUBLISH_EXTRACT_START__ GoogleMaps_BaseMapSimple
+// __PUBLISH_EXTRACT_START__GoogleMaps_BaseMapSimple
 function setGoogleMapsBaseMap() {
     const vp =  IModelApp.viewManager.selectedView;
     if (vp) {
@@ -15,7 +15,7 @@ function setGoogleMapsBaseMap() {
     }
   }
 // __PUBLISH_EXTRACT_END__
-// __PUBLISH_EXTRACT_START__ GoogleMaps_BaseMapOpts
+// __PUBLISH_EXTRACT_START__GoogleMaps_BaseMapOpts
 function setGoogleMapsBaseMapOpts() {
   const vp =  IModelApp.viewManager.selectedView;
   if (vp) {
@@ -29,7 +29,7 @@ function setGoogleMapsBaseMapOpts() {
   }
 }
 // __PUBLISH_EXTRACT_END__
-// __PUBLISH_EXTRACT_START__ GoogleMaps_AttachMapLayerSimple
+// __PUBLISH_EXTRACT_START__GoogleMaps_AttachMapLayerSimple
 function attachGoogleMapsMapLayerSimple() {
   const vp =  IModelApp.viewManager.selectedView;
   if (vp) {
@@ -40,7 +40,7 @@ function attachGoogleMapsMapLayerSimple() {
   }
 }
 // __PUBLISH_EXTRACT_END__
-// __PUBLISH_EXTRACT_START__ GoogleMaps_AttachMapLayerSimple
+// __PUBLISH_EXTRACT_START__GoogleMaps_AttachMapLayerOpts
 function attachGoogleMapsMapLayerOpts() {
   const vp =  IModelApp.viewManager.selectedView;
   if (vp) {
@@ -58,7 +58,7 @@ function attachGoogleMapsMapLayerOpts() {
   }
 }
 // __PUBLISH_EXTRACT_END__
-// __PUBLISH_EXTRACT_START__ GoogleMaps_SetGoogleMapsApiKey
+// __PUBLISH_EXTRACT_START__GoogleMaps_SetGoogleMapsApiKey
 async function setGoogleMapsApiKey() {
   await IModelApp.startup({
     applicationId: "myAppId",

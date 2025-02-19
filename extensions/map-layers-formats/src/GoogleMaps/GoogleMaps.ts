@@ -155,7 +155,6 @@ export interface ViewportInfoRequestParams {
   zoom: number;
 }
 
-
 /**
  * Google Maps API
  * @beta
@@ -166,11 +165,14 @@ export const GoogleMaps = {
  * Creates Google Maps map-layer settings.
  * @param name Name of the layer (Defaults to "GoogleMaps")
  * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
- * @example
- * const ds = IModelApp.viewManager.selectedView.displayStyle;
- * ds.attachMapLayer({
- *    mapLayerIndex: {index: 0, isOverlay: false},
- *    settings: GoogleMaps.createMapLayerSettings("GoogleMaps")});
+ *
+ * The following examples illustrates how a Googles Map layer can be attached to a viewport:
+ * ```ts
+ * [[include:GoogleMaps_AttachMapLayerSimple]]
+ * ```
+ * ```ts
+ * [[include:GoogleMaps_AttachMapLayerOpts]]
+ * ```
  * @beta
 */
   createMapLayerSettings: (name?: string, opts?: GoogleMapsCreateSessionOptions) => {
@@ -181,9 +183,14 @@ export const GoogleMaps = {
  * Creates Google Maps base layer settings.
  * @param name Name of the layer (Defaults to "GoogleMaps")
  * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
- * @example
- * const ds = IModelApp.viewManager.selectedView.displayStyle;
- * ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
+ *
+ * The following examples illustrates how a Google Maps base layer can be set on a viewport:
+ * ```ts
+ * [[include:GoogleMaps_BaseMapSimple]]
+ * ```
+ * ```ts
+ * [[include:GoogleMaps_BaseMapOpts]]
+ * ```
  * @beta
 */
   createBaseLayerSettings: (opts?: GoogleMapsCreateSessionOptions) => {
