@@ -12,7 +12,11 @@ Object {
       "displayValues": Object {
         "Uzbekistan": "Massachusetts technologies",
       },
-      "imageId": "5ad62fe9-3007-40cc-9951-3043c07a316f",
+      "label": Object {
+        "displayValue": "Handmade",
+        "rawValue": "Cotton",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Handmade",
         "rawValue": "Cotton",
@@ -52,19 +56,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Uzbekistan",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -87,7 +89,11 @@ Object {
       "displayValues": Object {
         "Investor": "protocol Credit Card Account",
       },
-      "imageId": "56fa49e9-7856-4470-9e9b-b341dbd1167c",
+      "label": Object {
+        "displayValue": "Security",
+        "rawValue": "syndicate",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Security",
         "rawValue": "syndicate",
@@ -127,19 +133,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Investor",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -162,7 +166,11 @@ Object {
       "displayValues": Object {
         "Virginia": "Expressway Avon Valley",
       },
-      "imageId": "c36b205f-f9eb-4eb5-b00d-da61efed8ad3",
+      "label": Object {
+        "displayValue": "Electronics",
+        "rawValue": "composite",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Electronics",
         "rawValue": "composite",
@@ -202,19 +210,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
         "name": "Virginia",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -237,7 +243,11 @@ Object {
       "displayValues": Object {
         "6th generation": "Intelligent Fresh Cheese copying Pass",
       },
-      "imageId": "bde282e5-f116-4ef0-bb8b-1fa57dd96dc3",
+      "label": Object {
+        "displayValue": "alarm",
+        "rawValue": "Mobility",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "alarm",
         "rawValue": "Mobility",
@@ -275,6 +285,7 @@ Object {
     "contentFlags": 0,
     "displayType": "test",
     "fields": Array [],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -295,7 +306,11 @@ Object {
         "name": "optimizing",
       },
       "displayValues": Object {},
-      "imageId": "bad90675-1cd6-4a1c-9a48-976928bf2c4c",
+      "label": Object {
+        "displayValue": "Electronics",
+        "rawValue": "Intelligent Plastic Keyboard",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Electronics",
         "rawValue": "Intelligent Plastic Keyboard",
@@ -335,8 +350,6 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
         "name": "e-markets",
@@ -350,13 +363,13 @@ Object {
             },
           },
         ],
-        "renderer": undefined,
         "type": Object {
           "typeName": "double",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -379,7 +392,11 @@ Object {
       "displayValues": Object {
         "HTTP": "1.23",
       },
-      "imageId": "9124abde-51a0-469c-83c9-93b31596571d",
+      "label": Object {
+        "displayValue": "payment",
+        "rawValue": "mesh",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "payment",
         "rawValue": "mesh",
@@ -419,8 +436,6 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
         "name": "HTTP",
@@ -434,13 +449,13 @@ Object {
             },
           },
         ],
-        "renderer": undefined,
         "type": Object {
           "typeName": "double",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -463,7 +478,11 @@ Object {
       "displayValues": Object {
         "Legacy": "Not specified",
       },
-      "imageId": "f4ef32e7-726b-4d52-88e8-f4565aafb241",
+      "label": Object {
+        "displayValue": "Not specified",
+        "rawValue": "Not specified",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Not specified",
         "rawValue": "Not specified",
@@ -503,19 +522,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Not specified",
         "name": "Legacy",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -542,9 +559,9 @@ Object {
       "label": "Source",
       "name": "source:class",
     },
-    "0x1054a000001245d": Object {
-      "label": "Rustic Metal Fish Automotive Cuban Peso Peso Convertible",
-      "name": "Barbados",
+    "0x168660000000187": Object {
+      "label": "Jewelery Avon",
+      "name": "Cuban Peso Peso Convertible",
     },
     "0x2": Object {
       "label": "Target",
@@ -554,13 +571,13 @@ Object {
       "label": "Relationship",
       "name": "relationship:class",
     },
-    "0xab690000009ba9": Object {
-      "label": "back-end",
-      "name": "auxiliary",
+    "0xb2330000004b51": Object {
+      "label": "users Movies",
+      "name": "navigating",
     },
-    "0xea7d000000f2b6": Object {
-      "label": "Assurance turquoise navigating",
-      "name": "Berkshire",
+    "0xd036000000823c": Object {
+      "label": "Barbados protocol Tuna",
+      "name": "Soft",
     },
   },
   "connectionId": "d61dcbd0-3355-426a-9ebf-3eadccd4b8be",
@@ -570,16 +587,15 @@ Object {
     Object {
       "category": "test-category",
       "editor": Object {
-        "name": "multi-byte",
+        "name": "Jewelery",
         "params": Object {
-          "some_param": 17857,
+          "some_param": 56911,
         },
       },
-      "extendedData": undefined,
-      "isReadonly": false,
-      "label": "generating",
+      "isReadonly": true,
+      "label": "Licensed",
       "name": "Primitive property field with editor",
-      "priority": 2036,
+      "priority": 46527,
       "properties": Array [
         Object {
           "property": Object {
@@ -587,22 +603,21 @@ Object {
             "enumerationInfo": Object {
               "choices": Array [
                 Object {
-                  "label": "Games withdrawal",
-                  "value": "27ad4616-5582-41da-b1ef-5896d49bacba",
+                  "label": "utilize Metal",
+                  "value": "627ad461-6558-421d-af1e-f5896d49bacb",
                 },
                 Object {
-                  "label": "payment morph Congo",
-                  "value": "b4e62d6b-c243-4b63-aa44-6b6bcee422bd",
+                  "label": "Dynamic Berkshire",
+                  "value": "483b4e62-d6bc-4243-b63e-a446b6bcee42",
                 },
               ],
               "isStrict": false,
             },
-            "name": "Practical",
+            "name": "Car",
             "type": "string",
           },
         },
       ],
-      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -610,41 +625,38 @@ Object {
     },
     Object {
       "category": "test-category",
-      "editor": undefined,
-      "extendedData": undefined,
-      "isReadonly": true,
-      "label": "bus Strategist Facilitator",
+      "isReadonly": false,
+      "label": "bypassing Assurance parsing",
       "name": "Complex array of structs property field",
-      "priority": 26470,
+      "priority": 59119,
       "properties": Array [
         Object {
           "property": Object {
             "classInfo": "0x1",
             "kindOfQuantity": Object {
-              "label": "Accounts backing up",
-              "name": "Avon",
-              "persistenceUnit": "Senior",
+              "label": "Automotive Refined Concrete Chair Home Loan Account",
+              "name": "Generic Frozen Cheese",
+              "persistenceUnit": "stable",
             },
-            "name": "Tennessee",
+            "name": "connecting",
             "type": "double",
           },
         },
       ],
-      "renderer": undefined,
       "type": Object {
         "memberType": Object {
           "members": Array [
             Object {
-              "label": "multi-byte",
-              "name": "CFA Franc BCEAO",
+              "label": "CFA Franc BCEAO Cheese Minnesota",
+              "name": "Strategist",
               "type": Object {
                 "typeName": "string",
                 "valueFormat": "Primitive",
               },
             },
             Object {
-              "label": "United States Minor Outlying Islands Fields",
-              "name": "Keys",
+              "label": "Applications indigo",
+              "name": "facilitate",
               "type": Object {
                 "memberType": Object {
                   "typeName": "string",
@@ -667,21 +679,16 @@ Object {
       "autoExpand": true,
       "category": "test-category",
       "contentClassInfo": "0x1",
-      "editor": undefined,
-      "extendedData": undefined,
       "isReadonly": false,
-      "label": "24/7 Home Loan Account stable",
+      "label": "solid state Pre-emptive Integration",
       "name": "Nested content field",
       "nestedFields": Array [
         Object {
           "category": "test-category",
-          "editor": undefined,
-          "extendedData": undefined,
           "isReadonly": true,
-          "label": "Avon Planner Ways",
+          "label": "Consultant heuristic",
           "name": "Simple property field",
-          "priority": 27093,
-          "renderer": undefined,
+          "priority": 74122,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -690,29 +697,28 @@ Object {
       ],
       "pathToPrimaryClass": Array [
         Object {
-          "isForwardRelationship": false,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
-          "relationshipInfo": "0x1054a000001245d",
-          "sourceClassInfo": "0xea7d000000f2b6",
-          "targetClassInfo": "0xab690000009ba9",
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": true,
+          "relationshipInfo": "0x168660000000187",
+          "sourceClassInfo": "0xb2330000004b51",
+          "targetClassInfo": "0xd036000000823c",
         },
       ],
-      "priority": 77648,
+      "priority": 50339,
       "relationshipMeaning": "RelatedInstance",
-      "renderer": undefined,
       "type": Object {
         "members": Array [
           Object {
-            "label": "Integration web services",
-            "name": "Integration",
+            "label": "Rue Assurance",
+            "name": "Home Loan Account",
             "type": Object {
               "typeName": "string",
               "valueFormat": "Primitive",
             },
           },
         ],
-        "typeName": "transmitter",
+        "typeName": "web services",
         "valueFormat": "Struct",
       },
     },
@@ -782,7 +788,11 @@ Array [
     "displayValues": Object {
       "test field": "test display value",
     },
-    "imageId": "image id",
+    "label": Object {
+      "displayValue": "Argentine Peso",
+      "rawValue": "Functionality",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "Argentine Peso",
       "rawValue": "Functionality",
@@ -813,7 +823,11 @@ Array [
     "displayValues": Object {
       "test field": "test display value",
     },
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "Director",
+      "rawValue": "Refined",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "Director",
       "rawValue": "Refined",
@@ -844,7 +858,11 @@ Array [
     "displayValues": Object {
       "test field": "test display value",
     },
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "Nebraska",
+      "rawValue": "primary",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "Nebraska",
       "rawValue": "primary",
@@ -873,7 +891,11 @@ Array [
       "name": "Seamless",
     },
     "displayValues": Object {},
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "neural",
+      "rawValue": "grey",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "neural",
       "rawValue": "grey",
@@ -904,7 +926,11 @@ Array [
     "displayValues": Object {
       "test field": "1.23",
     },
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "port",
+      "rawValue": "interactive",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "port",
       "rawValue": "interactive",
@@ -935,7 +961,11 @@ Array [
     "displayValues": Object {
       "test field": "Not specified",
     },
-    "imageId": "image id",
+    "label": Object {
+      "displayValue": "Not specified",
+      "rawValue": "Not specified",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "Not specified",
       "rawValue": "Not specified",
@@ -1056,26 +1086,13 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "children": Array [],
-    "filteringData": Object {
-      "childMatchesCount": 6721,
-      "matchesCount": 18930,
-    },
-    "index": 861,
-    "isMarked": true,
+    "index": 497,
+    "isMarked": false,
     "node": Object {
-      "backColor": "rgb(
-    204,
-    226,
-    70
-  )",
-      "foreColor": "#A867F6",
-      "hasChildren": true,
-      "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
-      "isChecked": true,
-      "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "hasChildren": false,
+      "isEditable": true,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKeys": Array [
           Object {
@@ -1108,21 +1125,16 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "children": Array [],
-    "index": 118,
+    "filteringData": Object {
+      "childMatchesCount": 55970,
+      "matchesCount": 36496,
+    },
+    "index": 802,
     "node": Object {
-      "backColor": "rgb(
-    143,
-    75,
-    113
-  )",
-      "foreColor": "#F60C4B",
-      "hasChildren": true,
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": true,
-      "isChecked": true,
+      "hasChildren": false,
       "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKeys": Array [
           Object {
@@ -1165,7 +1177,7 @@ Array [
         "p1",
       ],
       "type": "ECInstancesNode",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1180,7 +1192,7 @@ Array [
         "p3",
       ],
       "type": "type 2",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test3",
@@ -1194,15 +1206,8 @@ Array [
 exports[`PresentationManager addon results conversion to Presentation objects getNodes returns localized nodes 1`] = `
 Array [
   Object {
-    "backColor": "backColor1",
     "description": "description1",
-    "fontStyle": "fontStyle1",
-    "foreColor": "foreColor1",
     "hasChildren": true,
-    "imageId": "img_1",
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": true,
-    "isChecked": true,
     "isEditable": true,
     "isExpanded": true,
     "isSelectionDisabled": true,
@@ -1213,7 +1218,7 @@ Array [
         "p3",
       ],
       "type": "type1",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "Not specified",
@@ -1227,15 +1232,8 @@ Array [
 exports[`PresentationManager addon results conversion to Presentation objects getNodes returns root nodes 1`] = `
 Array [
   Object {
-    "backColor": "backColor1",
     "description": "description1",
-    "fontStyle": "fontStyle1",
-    "foreColor": "foreColor1",
     "hasChildren": true,
-    "imageId": "img_1",
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": true,
-    "isChecked": true,
     "isEditable": true,
     "isExpanded": true,
     "isSelectionDisabled": true,
@@ -1246,7 +1244,7 @@ Array [
         "p3",
       ],
       "type": "type1",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test1",
@@ -1255,15 +1253,8 @@ Array [
     },
   },
   Object {
-    "backColor": "",
     "description": "description2",
-    "fontStyle": "",
-    "foreColor": "",
     "hasChildren": false,
-    "imageId": "",
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": false,
     "isEditable": false,
     "isExpanded": false,
     "isSelectionDisabled": false,
@@ -1278,7 +1269,7 @@ Array [
         "p1",
       ],
       "type": "ECInstancesNode",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1293,7 +1284,7 @@ Array [
         "p3",
       ],
       "type": "some node",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1325,6 +1316,7 @@ Object {
   "contentFlags": 0,
   "displayType": "",
   "fields": Array [],
+  "inputKeysHash": "",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": false,

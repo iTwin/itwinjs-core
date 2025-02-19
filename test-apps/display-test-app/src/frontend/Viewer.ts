@@ -565,9 +565,9 @@ export class Viewer extends Window {
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
   public override onClosing(): void {
-    this.toolBar.dispose();
+    this.toolBar[Symbol.dispose]();
     if (this._debugWindow) {
-      this._debugWindow.dispose();
+      this._debugWindow[Symbol.dispose]();
       this._debugWindow = undefined;
     }
 

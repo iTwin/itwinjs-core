@@ -35,6 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
+import { _hubAccess } from "../internal/Symbols";
 
 chai.use(chaiAsPromised);
 
@@ -60,7 +61,7 @@ export interface TestRelationshipProps extends RelationshipProps {
 }
 export class TestElementDrivesElement extends ElementDrivesElement {
   public static override get className(): string { return "TestElementDrivesElement"; }
-  public property1!: string;
+  declare public property1: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static override onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
@@ -71,7 +72,7 @@ export interface TestPhysicalObjectProps extends PhysicalElementProps {
 }
 export class TestPhysicalObject extends PhysicalElement {
   public static override get className(): string { return "TestPhysicalObject"; }
-  public intProperty!: number;
+  declare public intProperty: number;
   public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
   public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
   public static override onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
@@ -86,7 +87,7 @@ export enum TestUserType {
   SuperManager
 }
 
-/** A wrapper around the BackendHubAccess API through IModelHost.hubAccess.
+/** A wrapper around the BackendHubAccess API through IModelHost[_hubAccess].
  *
  * All methods in this class should be usable with any BackendHubAccess implementation (i.e. HubMock and IModelHubBackend).
  */
@@ -100,9 +101,9 @@ export class HubWrappers {
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
   public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
     assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
-    let iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    let iModelId = await IModelHost[_hubAccess].queryIModelByName({ accessToken, iTwinId, iModelName });
     if (!iModelId)
-      iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
+      iModelId = await IModelHost[_hubAccess].createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
     return iModelId;
   }
 
@@ -111,36 +112,36 @@ export class HubWrappers {
   */
   public static async recreateIModel(...[arg]: Parameters<BackendHubAccess["createNewIModel"]>): Promise<GuidString> {
     assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const deleteIModel = await IModelHost.hubAccess.queryIModelByName(arg);
+    const deleteIModel = await IModelHost[_hubAccess].queryIModelByName(arg);
     if (undefined !== deleteIModel)
-      await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
+      await IModelHost[_hubAccess].deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
 
     // Create a new iModel
-    return IModelHost.hubAccess.createNewIModel({ description: `Description for ${arg.iModelName}`, ...arg });
+    return IModelHost[_hubAccess].createNewIModel({ description: `Description for ${arg.iModelName}`, ...arg });
   }
 
   /** Delete an IModel from the hub */
   public static async deleteIModel(accessToken: AccessToken, iTwinId: string, iModelName: string): Promise<void> {
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    const iModelId = await IModelHost[_hubAccess].queryIModelByName({ accessToken, iTwinId, iModelName });
     if (undefined === iModelId)
       return;
 
-    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+    await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId, iModelId });
   }
 
   /** Push an iModel to the Hub */
   public static async pushIModel(accessToken: AccessToken, iTwinId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName: locIModelName });
+    const iModelId = await IModelHost[_hubAccess].queryIModelByName({ accessToken, iTwinId, iModelName: locIModelName });
     if (iModelId) {
       if (!overwrite)
         return iModelId;
-      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+      await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId, iModelId });
     }
 
     // Upload a new iModel
-    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, version0: pathname });
+    return IModelHost[_hubAccess].createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, version0: pathname });
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
@@ -164,7 +165,7 @@ export class HubWrappers {
       tokenProps: {
         iTwinId: args.iTwinId,
         iModelId: args.iModelId,
-        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+        changeset: (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
       },
       activity: { accessToken: args.accessToken, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
@@ -192,7 +193,7 @@ export class HubWrappers {
       iTwinId: args.iTwinId,
       iModelId: args.iModelId,
       accessToken: args.accessToken,
-      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+      changeset: (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
@@ -203,7 +204,7 @@ export class HubWrappers {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
+    const changeset = await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
     const openArgs = {
       tokenProps: {
         iTwinId: args.iTwinId,
@@ -229,14 +230,14 @@ export class HubWrappers {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
-    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
+    const briefcases = await IModelHost[_hubAccess].getMyBriefcaseIds({ accessToken, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
         onReachThreshold();
 
       const promises: Promise<void>[] = [];
       briefcases.forEach((briefcaseId) => {
-        promises.push(IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
+        promises.push(IModelHost[_hubAccess].releaseBriefcase({ accessToken, iModelId, briefcaseId }));
       });
       await Promise.all(promises);
     }
@@ -1004,7 +1005,7 @@ export class ExtensiveTestScenario {
     const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
-    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, PlanProjectionSettings.fromJSON({ elevation: 10.0 }));
     displayStyle3d.settings.environment = Environment.fromJSON({
       sky: {
         image: {

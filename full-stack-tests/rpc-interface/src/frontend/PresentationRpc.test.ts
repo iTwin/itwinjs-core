@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
@@ -11,13 +11,13 @@ import { Presentation } from "@itwin/presentation-frontend";
 import { TestContext } from "./setup/TestContext";
 
 describe("PresentationRpcInterface tests", () => {
-
   let imodel: IModelConnection;
 
   before(async function () {
     const testContext = await TestContext.instance();
-    if (!testContext.settings.runPresentationRpcTests)
+    if (!testContext.settings.runPresentationRpcTests) {
       this.skip();
+    }
 
     await Presentation.initialize();
 
@@ -156,15 +156,16 @@ describe("PresentationRpcInterface tests", () => {
   });
 
   it("getSelectionScopes works as expected", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const scopeIds = await Presentation.selection.scopes.getSelectionScopes(imodel);
     expect(scopeIds).to.not.be.undefined;
   });
 
   it("computeSelection works as expected", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const computedSelections = await Presentation.selection.scopes.computeSelection(imodel, ["0x1"], "element");
     expect(computedSelections).to.not.be.undefined;
   });
-
 });
 
 const createNodesRuleset = (): Ruleset => ({
@@ -178,8 +179,8 @@ const createNodesRuleset = (): Ruleset => ({
           classes: {
             schemaName: "BisCore",
             classNames: ["Model"],
+            arePolymorphic: true,
           },
-          arePolymorphic: true,
         },
       ],
     },

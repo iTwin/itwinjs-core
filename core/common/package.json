@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "5.0.0-dev.40",
+  "version": "5.0.0-dev.66",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -51,13 +51,13 @@
     "@itwin/object-storage-core": "^2.2.5",
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
-    "@types/node": "~20.9.5",
-    "@vitest/coverage-v8": "^2.1.0",
+    "@types/node": "~20.17.0",
+    "@vitest/coverage-v8": "^3.0.5",
     "eslint": "^9.13.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.6.2",
-    "vitest": "^2.1.0"
+    "vitest": "^3.0.5"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

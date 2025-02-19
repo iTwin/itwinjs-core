@@ -10,9 +10,9 @@ import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
+import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, LazyLoadedECClass } from "../Interfaces";
+import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
@@ -28,6 +28,7 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
  * @beta
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
+  public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _derivedClasses?: Map<string, LazyLoadedECClass>;
@@ -123,7 +124,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       return undefined;
     }
 
-    return this.schema.lookupItemSync<ECClass>(this.baseClass);
+    return this.schema.lookupItemSync(this.baseClass, ECClass);
   }
 
   /**
@@ -314,7 +315,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = await schema.lookupItem<StructClass>(structType);
+      correctType = await schema.lookupItem(structType, StructClass);
     } else
       correctType = structType;
 
@@ -327,7 +328,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
-      correctType = schema.lookupItemSync<StructClass>(structType);
+      correctType = schema.lookupItemSync(structType, StructClass);
     } else
       correctType = structType;
 
@@ -344,7 +345,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = await schema.lookupItem<Enumeration>(primitiveType);
+        resolvedType = await schema.lookupItem(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)
@@ -367,7 +368,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (typeof (primitiveType) === "string") {
       let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
-        resolvedType = schema.lookupItemSync<Enumeration>(primitiveType);
+        resolvedType = schema.lookupItemSync(primitiveType, Enumeration);
       }
 
       if (resolvedType === undefined)
@@ -461,8 +462,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       if (!baseClass) {
         lazyBase = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
           async () => {
-            const baseItem = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
-            if (undefined === baseItem)
+            const baseItem = await this.schema.lookupItem(ecClassSchemaItemKey);
+            if (undefined === baseItem || !ECClass.isECClass(baseItem))
               throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
             return baseItem;
           });
@@ -501,8 +502,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = (ecClass).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass).mixins[i]);
+        for (let i = (ecClass as HasMixins).mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await (ecClass as HasMixins).mixins[i]);
         }
       }
 
@@ -521,8 +522,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public *getAllBaseClassesSync(): Iterable<AnyClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = (ecClass: AnyClass) => {
-      if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (const m of Array.from(ecClass.getMixinsSync()).reverse()) {
+      if (ecClass.schemaItemType === SchemaItemType.EntityClass) { // cannot use EntityClass typeguard because of circular reference
+        for (const m of Array.from((ecClass as HasMixins).getMixinsSync()).reverse()) {
           baseClasses.push(m);
         }
       }
@@ -779,7 +780,38 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.StructClass;
+  /**
+   * Get the type of item represented by this instance
+   * @beta
+   */
+  public override readonly schemaItemType = StructClass.schemaItemType;
+
+  /**
+   * Get the type of item represented by this class
+   * @beta
+   */
+  public static override get schemaItemType() { return SchemaItemType.StructClass; }
+  /**
+   * Type guard to check if the SchemaItem is of type StructClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a StructClass, false otherwise.
+   */
+  public static isStructClass(item?: SchemaItem): item is StructClass {
+    if (item && item.schemaItemType === SchemaItemType.StructClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type StructClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to StructClass if it is a StructClass, undefined otherwise.
+   */
+  public static assertIsStructClass(item?: SchemaItem): asserts item is StructClass {
+    if (!this.isStructClass(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.StructClass}' (StructClass)`);
+  }
 }
 
 /**

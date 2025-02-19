@@ -614,9 +614,13 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
  */
 export abstract class AuxCoordSystem extends DefinitionElement {
   public static override get className(): string { return "AuxCoordSystem"; }
-  public type!: number;
+  public type?: number;
   public description?: string;
-  public constructor(props: AuxCoordSystemProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: AuxCoordSystemProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.type = props.type;
+    this.description = props.description;
+  }
 }
 
 /** A 2d auxiliary coordinate system.
@@ -625,8 +629,12 @@ export abstract class AuxCoordSystem extends DefinitionElement {
 export class AuxCoordSystem2d extends AuxCoordSystem {
   public static override get className(): string { return "AuxCoordSystem2d"; }
   public origin?: Point2d;
-  public angle!: number;
-  public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
+  public angle?: number;
+  public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.origin = props.origin ? Point2d.fromJSON(props.origin) : undefined;
+    this.angle = props.angle ? Angle.fromJSON(props.angle).degrees : undefined;
+  }
 
   /** Create a Code for a AuxCoordSystem2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -645,10 +653,16 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
 export class AuxCoordSystem3d extends AuxCoordSystem {
   public static override get className(): string { return "AuxCoordSystem3d"; }
   public origin?: Point3d;
-  public yaw!: number;
-  public pitch!: number;
-  public roll!: number;
-  public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
+  public yaw?: number;
+  public pitch?: number;
+  public roll?: number;
+  public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.origin = props.origin ? Point3d.fromJSON(props.origin) : undefined;
+    this.yaw = props.yaw ? Angle.fromJSON(props.yaw).degrees : undefined;
+    this.pitch = props.pitch ? Angle.fromJSON(props.pitch).degrees : undefined;
+    this.roll = props.roll ? Angle.fromJSON(props.roll).degrees : undefined;
+  }
 
   /** Create a Code for a AuxCoordSystem3d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -700,7 +714,10 @@ export class ViewAttachment extends GraphicalElement2d {
 export class LightLocation extends SpatialLocationElement {
   public static override get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
-  public enabled!: boolean;
+  public enabled?: boolean;
 
-  protected constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: LightLocationProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.enabled = props.enabled;
+  }
 }

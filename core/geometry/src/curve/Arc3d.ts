@@ -428,7 +428,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const v1DotV90 = vector1.dotProduct(vector90);
     // solve the standard ellipse equation for the unknown axis length, given local coords of middle (v0.v1/||v0||, v90.v1)
     const v90Len = Geometry.safeDivideFraction(v0Len2 * v1DotV90, Math.sqrt(v0Len2 * v0Len2 - v0DotV1 * v0DotV1), 0);
-    if (Geometry.isSmallMetricDistanceSquared(v90Len))
+    if (Geometry.isSmallMetricDistanceSquared(v90Len)) // tighter than smallMetricDistance to allow flatter long elliptical arcs
       return undefined;
     vector90.scaleInPlace(v90Len);
     return Arc3d.create(center, vector0, vector90, sweep, result);
@@ -1436,6 +1436,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Construct a circular arc chain approximation to the instance elliptical arc.
+   * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximationGeneral and
+   *  https://www.itwinjs.org/sandbox/SaeedTorabi/ArcApproximation
    * @param options bundle of options for sampling an elliptical arc (use default options if undefined).
    * @returns the approximating curve chain, the circular instance, or undefined if construction fails.
    */
