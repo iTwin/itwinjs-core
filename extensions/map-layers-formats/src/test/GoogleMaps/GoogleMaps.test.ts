@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider";
-import { CreateSessionOptions, GoogleMaps, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats";
+import { GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats";
 import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils";
 
 import { fakeJsonFetch } from "../TestUtils";
@@ -36,12 +36,12 @@ const createProvider = (settings: ImageMapLayerSettings) => {
   return new GoogleMapsImageryProvider(settings);
 }
 
-const stubCreateSession = (sandbox:sinon.SinonSandbox,  session: GoogleMapsSession) => sandbox.stub(GoogleMapsUtils, "createSession").callsFake(async function _(_apiKey: string, _opts: CreateSessionOptions) {
+const stubCreateSession = (sandbox:sinon.SinonSandbox,  session: GoogleMapsSession) => sandbox.stub(GoogleMapsUtils, "createSession").callsFake(async function _(_apiKey: string, _opts: GoogleMapsCreateSessionOptions) {
   return session;
 });
 
-const minCreateSessionOptions: CreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
-const createSessionOptions2: CreateSessionOptions = {...minCreateSessionOptions, layerTypes: ["layerRoadmap"]};
+const minCreateSessionOptions: GoogleMapsCreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
+const createSessionOptions2: GoogleMapsCreateSessionOptions = {...minCreateSessionOptions, layerTypes: ["layerRoadmap"]};
 
 const defaultPngSession = {tileWidth: 256, tileHeight: 256, imageFormat: "image/png", expiry: 0, session: "dummySession"};
 describe("GoogleMapsProvider", () => {

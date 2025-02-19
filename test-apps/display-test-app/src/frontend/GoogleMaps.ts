@@ -14,7 +14,7 @@ import {
 import { BackgroundMapType, BaseMapLayerSettings, ContourGroupProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
-import { CreateSessionOptions, GoogleMaps, LayerTypes, MapTypes, ScaleFactors } from "@itwin/map-layers-formats";
+import { GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors } from "@itwin/map-layers-formats";
 
 // size of widget or panel
 const winSize = { top: 0, left: 0, width: 318, height: 300 };
@@ -28,9 +28,9 @@ export class GoogleMapsSettings implements Disposable {
   private _overlay: boolean = false;
   private _newStyle: boolean = false;
   private _mapTypesCombobox: ComboBox;
-  private _mapType: MapTypes;
-  private _scaleFactor: ScaleFactors = "scaleFactor1x";
-  private _layerTypes: LayerTypes[] = [];
+  private _mapType: GoogleMapsMapTypes;
+  private _scaleFactor: GoogleMapsScaleFactors = "scaleFactor1x";
+  private _layerTypes: GoogleMapsLayerTypes[] = [];
   private _lang = "en-US";
 
   private _roadmapLayerCheckox: CheckBox|undefined;
@@ -60,22 +60,22 @@ export class GoogleMapsSettings implements Disposable {
     if (googleLayer) {
       const opts = googleLayer.properties;
       if (opts) {
-        this._mapType = opts.mapType as MapTypes;
-        this._layerTypes = opts.layerTypes as LayerTypes[] ?? [];
+        this._mapType = opts.mapType as GoogleMapsMapTypes;
+        this._layerTypes = opts.layerTypes as GoogleMapsLayerTypes[] ?? [];
         this._lang = opts.language as string ?? "en-US";
-        this._scaleFactor = opts.scale as ScaleFactors ?? "scaleFactor1x";
+        this._scaleFactor = opts.scale as GoogleMapsScaleFactors ?? "scaleFactor1x";
       }
     }
     if (isGoogleBase) {
       const baseSettings = vp.displayStyle.backgroundMapBase as BaseMapLayerSettings;
       const properties = baseSettings.properties;
-      this._mapType = (properties?.mapType??"") as MapTypes;
+      this._mapType = (properties?.mapType??"") as GoogleMapsMapTypes;
 
-      this._layerTypes = (properties?.layerTypes ?? []) as LayerTypes[];
+      this._layerTypes = (properties?.layerTypes ?? []) as GoogleMapsLayerTypes[];
       this._lang = (properties?.language??"") as string;
 
       if (properties?.scale)
-        this._scaleFactor = properties.scale as ScaleFactors;
+        this._scaleFactor = properties.scale as GoogleMapsScaleFactors;
 
       if (properties?.apiOptions){
         const apiOptions = properties.apiOptions as string[];
@@ -112,7 +112,7 @@ export class GoogleMapsSettings implements Disposable {
       id: "google_map_type_cbx",
       value: this._mapType,
       handler: (cbx) => {
-        this._mapType = cbx.value as MapTypes;
+        this._mapType = cbx.value as GoogleMapsMapTypes;
         if (this._mapType === "terrain" && !this._layerTypes.includes("layerRoadmap")) {
           this._layerTypes.push("layerRoadmap");
         }
@@ -207,7 +207,7 @@ export class GoogleMapsSettings implements Disposable {
       id: "google_scale_factors_cbx",
       value: this._scaleFactor,
       handler: (cbx) => {
-        this._scaleFactor = cbx.value as ScaleFactors;
+        this._scaleFactor = cbx.value as GoogleMapsScaleFactors;
       },
     });
     this._element.appendChild(document.createElement("br"));
@@ -284,7 +284,7 @@ export class GoogleMapsSettings implements Disposable {
         url: "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer",
         name: "ESRI World Imagery"
       });
-      const opts: CreateSessionOptions = {
+      const opts: GoogleMapsCreateSessionOptions = {
         mapType: "satellite",
         language: "en-US",
         region: "US",
@@ -295,7 +295,7 @@ export class GoogleMapsSettings implements Disposable {
       this._vp.displayStyle.attachMapLayer({mapLayerIndex: {index: 0, isOverlay: false}, settings: GoogleMaps.createMapLayerSettings("GoogleMaps", opts)});
     } else {
       removeExistingMapLayer(false);
-      const opts: CreateSessionOptions = {
+      const opts: GoogleMapsCreateSessionOptions = {
         mapType: this._mapType,
         layerTypes: this._layerTypes,
         language: this._lang,

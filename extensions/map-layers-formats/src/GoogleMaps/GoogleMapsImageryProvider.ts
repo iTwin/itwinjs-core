@@ -8,7 +8,7 @@
 
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
-import { CreateSessionOptions, GoogleMapsSession, LayerTypes, MapTypes, ScaleFactors } from "./GoogleMaps";
+import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession } from "./GoogleMaps";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
@@ -70,7 +70,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
     this._tileSize = session.tileWidth; // assuming here tiles are square
 
-    const isActivated = await this._decorator.activate(this._settings.properties!.mapType as MapTypes);
+    const isActivated = await this._decorator.activate(this._settings.properties!.mapType as GoogleMapsMapTypes);
     if (!isActivated) {
       const msg = `Failed to activate decorator`;
       Logger.logError(loggerCategory, msg);
@@ -78,7 +78,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  private createCreateSessionOptions(): CreateSessionOptions {
+  private createCreateSessionOptions(): GoogleMapsCreateSessionOptions {
     const layerPropertyKeys = this._settings.properties ? Object.keys(this._settings.properties) : undefined;
     if (layerPropertyKeys === undefined ||
         !layerPropertyKeys.includes("mapType") ||
@@ -89,18 +89,18 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
 
-    const createSessionOptions: CreateSessionOptions = {
-      mapType: this._settings.properties!.mapType as MapTypes,
+    const createSessionOptions: GoogleMapsCreateSessionOptions = {
+      mapType: this._settings.properties!.mapType as GoogleMapsMapTypes,
       region: this._settings.properties!.region as string,
       language: this._settings.properties!.language as string,
     }
 
     if (this._settings.properties?.layerTypes !== undefined) {
-      createSessionOptions.layerTypes = this._settings.properties.layerTypes as LayerTypes[];
+      createSessionOptions.layerTypes = this._settings.properties.layerTypes as GoogleMapsLayerTypes[];
     }
 
     if (this._settings.properties?.scale !== undefined) {
-      createSessionOptions.scale = this._settings.properties.scale as ScaleFactors;
+      createSessionOptions.scale = this._settings.properties.scale as GoogleMapsScaleFactors;
     }
 
     if (this._settings.properties?.overlay !== undefined) {

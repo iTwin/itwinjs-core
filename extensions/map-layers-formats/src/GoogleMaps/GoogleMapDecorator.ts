@@ -1,6 +1,6 @@
 import { CanvasDecoration, DecorateContext, Decorator, IconSprites, IModelApp, Sprite } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { MapTypes } from "./GoogleMaps";
+import { GoogleMapsMapTypes } from "./GoogleMaps";
 
 
 /** A simple decorator that show logo at the a given screen position.
@@ -73,7 +73,7 @@ export class GoogleMapsDecorator implements Decorator {
   public readonly logo = new LogoDecoration();
 
   /** Activate the logo based on the given map type. */
-  public async activate(mapType: MapTypes): Promise<boolean> {
+  public async activate(mapType: GoogleMapsMapTypes): Promise<boolean> {
     // Pick the logo that is the most visible on the background map
     const imageName = mapType === "roadmap" ?
     "google_on_white_hdpi" :

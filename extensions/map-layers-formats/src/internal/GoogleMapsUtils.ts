@@ -8,7 +8,7 @@ import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat"
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerProps, MapLayerProviderProperties } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
-import { CreateSessionOptions, GoogleMapsSession, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps";
+import { GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
@@ -21,7 +21,7 @@ export const GoogleMapsUtils = {
    * @param opts Options to create the session
    * @internal
   */
-  createSession: async (apiKey: string, opts: CreateSessionOptions): Promise<GoogleMapsSession> => {
+  createSession: async (apiKey: string, opts: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession> => {
     const url = `https://tile.googleapis.com/v1/createSession?key=${apiKey}`;
     const request = new Request(url, {method: "POST", body: JSON.stringify(opts)});
     const response = await fetch (request);
@@ -48,7 +48,7 @@ export const GoogleMapsUtils = {
  * @param opts Options to create the session  (Defaults to satellite map type, English language, US region, and roadmap layer type)
  * @internal
 */
-  createMapLayerProps: (name: string = "GoogleMaps", opts?: CreateSessionOptions): ImageMapLayerProps => {
+  createMapLayerProps: (name: string = "GoogleMaps", opts?: GoogleMapsCreateSessionOptions): ImageMapLayerProps => {
     GoogleMapsUtils.registerFormatIfNeeded();
 
     return {
@@ -86,7 +86,7 @@ export const GoogleMapsUtils = {
    * @param opts Options to create the session
    * @internal
   */
-  createPropertiesFromSessionOptions: (opts: CreateSessionOptions): MapLayerProviderProperties => {
+  createPropertiesFromSessionOptions: (opts: GoogleMapsCreateSessionOptions): MapLayerProviderProperties => {
     const properties: MapLayerProviderProperties = {
       mapType: opts.mapType,
       language: opts.language,

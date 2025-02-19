@@ -12,17 +12,17 @@ import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
 
 
 /** @beta*/
-export type LayerTypes = "layerRoadmap" | "layerStreetview";
+export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
 /** @beta*/
-export type MapTypes =  "roadmap"|"satellite"|"terrain";
+export type GoogleMapsMapTypes =  "roadmap"|"satellite"|"terrain";
 /** @beta*/
-export type ScaleFactors =  "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
+export type GoogleMapsScaleFactors =  "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 /**
 * Represents the options to create a Google Maps session.
 * @beta
 */
-export interface CreateSessionOptions {
+export interface GoogleMapsCreateSessionOptions {
     /**
    * The type of base map.
    *
@@ -33,7 +33,7 @@ export interface CreateSessionOptions {
    * `terrain`: Terrain imagery. When selecting `terrain` as the map type, you must also include the `layerRoadmap` layer type.
    * @beta
    * */
-  mapType: MapTypes,
+  mapType: GoogleMapsMapTypes,
   /**
    * An {@link https://en.wikipedia.org/wiki/IETF_language_tag | IETF language tag} that specifies the language used to display information on the tiles. For example, `en-US` specifies the English language as spoken in the United States.
    */
@@ -52,7 +52,7 @@ export interface CreateSessionOptions {
    *
    * @beta
    * */
-  layerTypes?: LayerTypes[];
+  layerTypes?: GoogleMapsLayerTypes[];
 
   /**
    * Scales-up the size of map elements (such as road labels), while retaining the tile size and coverage area of the default tile.
@@ -65,7 +65,7 @@ export interface CreateSessionOptions {
    * `scaleFactor4x`: Quadruples label size and removes minor feature labels.
    * @beta
    * */
-  scale?: ScaleFactors
+  scale?: GoogleMapsScaleFactors
 
   /**
    * A boolean value that specifies whether layerTypes should be rendered as a separate overlay, or combined with the base imagery.
@@ -163,7 +163,7 @@ export const GoogleMaps = {
  *    settings: GoogleMaps.createMapLayerSettings("GoogleMaps")});
  * @beta
 */
-  createMapLayerSettings: (name?: string, opts?: CreateSessionOptions) => {
+  createMapLayerSettings: (name?: string, opts?: GoogleMapsCreateSessionOptions) => {
     return ImageMapLayerSettings.fromJSON(GoogleMapsUtils.createMapLayerProps(name, opts));
   },
 
@@ -176,7 +176,7 @@ export const GoogleMaps = {
  * ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
  * @beta
 */
-  createBaseLayerSettings: (opts?: CreateSessionOptions) => {
+  createBaseLayerSettings: (opts?: GoogleMapsCreateSessionOptions) => {
     return BaseMapLayerSettings.fromJSON(GoogleMapsUtils.createMapLayerProps("GoogleMaps", opts));
   }
 };
