@@ -2594,6 +2594,8 @@ export namespace IModelJson {
         vectorY?: XYZProps;
     }
     export interface CurveCollectionProps extends PlanarRegionProps {
+        bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
+        // @deprecated
         bagofCurves?: [CurveCollectionProps];
         path?: [CurvePrimitiveProps];
     }
@@ -2678,10 +2680,6 @@ export namespace IModelJson {
         center: XYZProps;
         contour: CurveCollectionProps;
         sweepAngle: AngleProps;
-    }
-    export interface RuledSweepProps {
-        capped?: boolean;
-        contour: [CurveCollectionProps];
     }
     export interface RuledSweepProps {
         capped?: boolean;
