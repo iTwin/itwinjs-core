@@ -11,8 +11,12 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
+  - [Display](#graphics)
+    - [Read Image To Canvas](#read-image-to-canvas)
+  - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
+  - [Delete all transactions](#delete-all-transactions)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -49,8 +53,6 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
-  - [Graphics](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
 
 ## Selection set
 
@@ -86,6 +88,18 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
 
+## Display
+
+### Read image to canvas
+
+Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
+
+If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
+
+## Back-end image conversion
+
+@itwin/core-backend provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
+
 ## Presentation
 
 The Presentation system is moving towards a more modular approach, with smaller packages intended for more specific tasks and having less peer dependencies. You can find more details about that in the [README of `@itwin/presentation` repo](https://github.com/iTwin/presentation/blob/master/README.md#the-packages). As part of that move, some Presentation APIs in `@itwin/itwinjs-core` repository, and, more specifically, 3 Presentation packages: `@itwin/presentation-common`, `@itwin/presentation-backend`, and `@itwin/presentation-frontend` have received a number of deprecations for APIs that already have replacements.
@@ -93,6 +107,10 @@ The Presentation system is moving towards a more modular approach, with smaller 
 ### Unified selection move to `@itwin/unified-selection`
 
 The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
+
+## Delete all transactions
+
+[BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
 
 ## API deprecations
 
@@ -592,11 +610,3 @@ class MyElement extends Element {
   ...
 }
 ```
-
-## Graphics
-
-### Read Image To Canvas
-
-Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
-
-If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.

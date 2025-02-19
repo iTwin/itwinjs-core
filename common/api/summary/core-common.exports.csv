@@ -57,6 +57,7 @@ beta;class;BentleyCloudRpcConfiguration
 beta;class;BentleyCloudRpcManager
 beta;interface;BentleyCloudRpcParams
 internal;class;BentleyCloudRpcProtocol
+public;interface;BinaryImageSource
 public;enum;BisCodeSpec
 internal;function;bisectTileRange2d
 internal;function;bisectTileRange3d
@@ -462,6 +463,7 @@ internal;interface;IpcWebSocketMessage
 internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
+public;function;isBinaryImageSource
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
