@@ -964,7 +964,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.skip("EllipseSampler", { timeout: 80000 }, () => { // ###TODO FLAKY https://github.com/iTwin/itwinjs-core/issues/7732
+  it("EllipseSampler", { timeout: 80000 }, () => { // ###TODO FLAKY https://github.com/iTwin/itwinjs-core/issues/7732
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;
