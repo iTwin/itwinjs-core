@@ -7,8 +7,8 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, Logger, omit } from "@itwin/core-bentley";
-import { IModelRpcProps } from "@itwin/core-common";
+import { BeEvent, ErrorCategory, Logger, omit, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcPendingResponse } from "@itwin/core-common";
 import {
   buildElementProperties,
   ClientDiagnostics,
@@ -19,6 +19,7 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
+  createCancellableTimeoutPromise,
   deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   DescriptorJSON,
@@ -84,6 +85,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
   private _requestTimeout: number;
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
   private _cancelEvents: Map<string, BeEvent<() => void>>;
+  private _statusHandler: (e: Error) => StatusCategory | undefined;
 
   public constructor(props?: { requestTimeout?: number }) {
     super();
@@ -106,10 +108,14 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       },
     });
     this._cancelEvents = new Map<string, BeEvent<() => void>>();
+
+    this._statusHandler = createStatusCategoryHandler();
+    StatusCategory.handlers.add(this._statusHandler);
   }
 
   public [Symbol.dispose]() {
     this._pendingRequests[Symbol.dispose]();
+    StatusCategory.handlers.delete(this._statusHandler);
   }
 
   public get requestTimeout() {
@@ -210,14 +216,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       }
 
       // initiate request
-      resultPromise = request(managerRequestOptions)
-        .then((result) => this.successResponse(result, diagnostics))
-        .catch((e: unknown) => {
-          if (e instanceof PresentationError) {
-            return this.errorResponse(e.errorNumber, e.message, diagnostics);
-          }
-          throw e;
-        });
+      resultPromise = request(managerRequestOptions).then((result) => this.successResponse(result, diagnostics));
 
       // store the request promise
       this._pendingRequests.addValue(requestKey, resultPromise);
@@ -232,35 +231,22 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       return resultPromise;
     }
 
-    let timeout: NodeJS.Timeout;
-    const timeoutPromise = new Promise<any>((_resolve, reject) => {
-      timeout = setTimeout(() => {
-        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-        reject("timeout");
-      }, this._requestTimeout);
-    });
-
     Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Returning a promise with a timeout of ${this._requestTimeout}.`);
-    return Promise.race([resultPromise, timeoutPromise])
-      .catch<PresentationRpcResponseData>((e: unknown) => {
-        if (e === "timeout") {
-          // note: error responses from the manager get handled when creating `resultPromise`, so we can only get here due
-          // to a timeout exception
-          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
-          return this.errorResponse(PresentationStatus.BackendTimeout);
-        }
-        // ...or an error that we don't want to reveal - let RPC system handle it.
-        throw e;
-      })
+    const timeout = createCancellableTimeoutPromise(this._requestTimeout);
+    return Promise.race([
+      resultPromise,
+      timeout.promise.then(() => {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw new RpcPendingResponse("Timeout");
+      }),
+    ])
       .then((response: PresentationRpcResponseData<TResult>) => {
-        if (response.statusCode !== PresentationStatus.BackendTimeout) {
-          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request completed, returning result.`);
-          this._pendingRequests.deleteValue(requestKey);
-        }
+        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request completed, returning result.`);
+        this._pendingRequests.deleteValue(requestKey);
         return response;
       })
       .finally(() => {
-        clearTimeout(timeout);
+        timeout.cancel();
       });
   }
 
@@ -533,3 +519,36 @@ const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
   const requestedSize = size ?? 0;
   return requestedSize === 0 || requestedSize > maxPageSize ? maxPageSize : requestedSize;
 };
+
+// not testing temporary solution
+// istanbul ignore next
+function createStatusCategoryHandler() {
+  return (e: Error) => {
+    if (e instanceof PresentationError) {
+      switch (e.errorNumber) {
+        case PresentationStatus.NotInitialized:
+          return new (class extends ErrorCategory {
+            public name = "Internal server error";
+            public code = 500;
+          })();
+        case PresentationStatus.Canceled:
+          return new (class extends SuccessCategory {
+            public name = "Cancelled";
+            public code = 204;
+          })();
+        case PresentationStatus.ResultSetTooLarge:
+          return new (class extends ErrorCategory {
+            public name = "Result set is too large";
+            public code = 413;
+          })();
+        case PresentationStatus.Error:
+        case PresentationStatus.InvalidArgument:
+          return new (class extends ErrorCategory {
+            public name = "Invalid request props";
+            public code = 422;
+          })();
+      }
+    }
+    return undefined;
+  };
+}
