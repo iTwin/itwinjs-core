@@ -5,22 +5,23 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { assert, BeDuration, BeTimePoint, Id64 } from "@itwin/core-bentley";
-import { ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { assert, BeDuration, BeTimePoint } from "@itwin/core-bentley";
+import { Content, Item, KeySet, PageOptions } from "@itwin/presentation-common";
+import { Presentation as PresentationBackend, PresentationManager } from "@itwin/presentation-backend";
+import { Presentation as PresentationFrontend } from "@itwin/presentation-frontend";
+import { initialize } from "../../IntegrationTests";
 import { collect } from "../../Utils";
-import { describeContentTestSuite } from "./Utils";
+import { createContentTestSuite } from "./Utils";
+import { createTestContentDescriptor, createTestContentItem, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 
-describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
+createContentTestSuite({ skipInitialize: true })("Error handling", ({ getDefaultSuiteIModel }) => {
   const frontendTimeout = 50;
 
   before(async () => {
-    await terminate();
     await initialize({
       presentationBackendProps: {
         // this defaults to 0, which means "no timeouts" - reinitialize with non-zero
-        requestTimeout: 9999,
+        requestTimeout: 1,
       },
       presentationFrontendProps: {
         presentation: { requestTimeout: frontendTimeout },
@@ -28,68 +29,60 @@ describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
     });
   });
 
-  async function withRejectingPromiseRace(cb: () => Promise<void>) {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const realRace = Promise.race;
-    // mock `Promise.race` to always reject
-    const raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/prefer-promise-reject-errors
-      (values as Array<Promise<any>>).splice(0, 0, Promise.reject("timeout"));
-      return realRace.call(Promise, values);
-    });
-    try {
-      await cb();
-    } finally {
-      raceStub.restore();
-    }
-  }
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it("waits for frontend timeout when request exceeds the backend timeout time", async () => {
-    const ruleset: Ruleset = {
-      id: "test",
-      rules: [
-        {
-          ruleType: RuleTypes.Content,
-          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
-        },
-      ],
+    // set up `getContentDescriptor` call to never resolve
+    const resolvablePromise = new ResolvablePromise<string | undefined>();
+    using _disposePendingPromise = {
+      [Symbol.dispose]: () => void resolvablePromise.resolve(""),
     };
-    const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
-    const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
-    const keys = new KeySet([key1, key2]);
+    sinon.stub(PresentationBackend, "getManager").returns({
+      getDetail: () => ({
+        getContentDescriptor: async () => resolvablePromise,
+      }),
+    } as unknown as PresentationManager);
+
     const start = BeTimePoint.now();
-    await withRejectingPromiseRace(async () => {
-      await expect(Presentation.presentation.getContentDescriptor({ imodel: await getDefaultSuiteIModel(), rulesetOrId: ruleset, keys, displayType: "Grid" }))
-        .to.be.eventually.rejectedWith(PresentationError)
-        .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
-    });
+    await expect(
+      PresentationFrontend.presentation.getContentDescriptor({
+        imodel: await getDefaultSuiteIModel(),
+        rulesetOrId: "",
+        keys: new KeySet(),
+        displayType: "Grid",
+      }),
+    ).to.eventually.be.rejectedWith(Error, "Processing the request took longer than the configured limit of 50 ms");
     expect(BeTimePoint.now().milliseconds).to.be.greaterThanOrEqual(start.plus(BeDuration.fromMilliseconds(frontendTimeout)).milliseconds);
   });
 
   it("throws a timeout error when iterator request exceeds the backend timeout time", async () => {
-    const ruleset: Ruleset = {
-      id: "test",
-      rules: [
-        {
-          ruleType: RuleTypes.Content,
-          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
-        },
-      ],
+    // set up a content iterator response, where the first page resolves, but the second one doesn't
+    const resolvableItemsPromise = new ResolvablePromise<Item[]>();
+    using _disposePendingPromise = {
+      [Symbol.dispose]: () => void resolvableItemsPromise.resolve([]),
     };
-    const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
-    const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
-    const keys = new KeySet([key1, key2]);
-    const result = await Presentation.presentation.getContentIterator({
+    sinon.stub(PresentationBackend, "getManager").returns({
+      getContentSetSize: async () => 2,
+      getDetail: () => ({
+        getContent: async ({ paging }: { paging?: PageOptions }) =>
+          new Content(
+            createTestContentDescriptor({ fields: [] }),
+            (paging?.start ?? 0) === 0 ? [createTestContentItem({ values: {}, displayValues: {} })] : await resolvableItemsPromise,
+          ),
+      }),
+    } as unknown as PresentationManager);
+
+    const result = await PresentationFrontend.presentation.getContentIterator({
       imodel: await getDefaultSuiteIModel(),
-      rulesetOrId: ruleset,
-      keys,
+      rulesetOrId: "",
+      keys: new KeySet(),
       descriptor: {},
       batchSize: 1,
       maxParallelRequests: 100,
     });
     assert(!!result);
-    await withRejectingPromiseRace(async () => {
-      await expect(collect(result.items)).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.BackendTimeout);
-    });
+    await expect(collect(result.items)).to.eventually.be.rejectedWith(Error, "Processing the request took longer than the configured limit of 50 ms");
   });
 });
