@@ -60,6 +60,36 @@ describe("ECDb", () => {
 
   });
 
+  it("ecsql reader can read uncommitted changes from primary connection", async () => {
+    const fileName = "schemaimport.ecdb";
+    const ecdbPath: string = path.join(outDir, fileName);
+    let id: Id64String;
+    {
+      using testECDb = ECDbTestHelper.createECDb(outDir, fileName,
+        `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+      <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+        </ECEntityClass>
+        </ECSchema>`);
+      assert.isTrue(testECDb.isOpen);
+      id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        assert.isTrue(Id64.isValidId64(res.id!));
+        return res.id!;
+      });
+      expect(id).not.to.be.undefined;
+      const reader = testECDb.createQueryReader("SELECT * FROM [test].[Person] WHERE [Name] ='Mary'");
+      if (await reader.step()) {
+        expect(reader.current.name).equals("Mary");
+      } else {
+        assert.fail("Row not found");
+      }
+      testECDb.saveChanges();
+    }
+  });
   it("should be able to import a schema", () => {
     const fileName = "schemaimport.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
