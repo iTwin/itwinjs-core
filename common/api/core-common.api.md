@@ -6448,6 +6448,7 @@ export interface OpenBriefcaseProps extends OpenDbKey {
 // @beta
 export interface OpenCheckpointArgs {
     readonly changeset?: ChangesetIndexOrId;
+    readonly doPrefetch?: boolean;
     readonly iModelId: GuidString;
     // (undocumented)
     readonly iTwinId: GuidString;
