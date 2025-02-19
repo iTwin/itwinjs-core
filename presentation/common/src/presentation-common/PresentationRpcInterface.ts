@@ -172,12 +172,14 @@ export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<Displ
 /**
  * Data structure for selection scope request options.
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
 /**
  * Request options data structure for computing selection based on given selection scope and element IDs.
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
@@ -304,11 +306,13 @@ export class PresentationRpcInterface extends RpcInterface {
   }
 
   /** @deprecated in 4.10. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
     return this.forward(arguments);
   }
 
   /** @deprecated in 4.10. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON> {
     return this.forward(arguments);
   }

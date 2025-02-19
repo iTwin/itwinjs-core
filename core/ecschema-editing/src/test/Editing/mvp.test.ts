@@ -185,7 +185,7 @@ describe("SchemaEditor tests", () => {
       await testEditor.entities.delete(result);
       element = await testSchema!.getItem("testElements");
       expect(element).to.be.undefined;
-      const classes = testSchema!.getClasses();
+      const classes = testSchema!.getItems(ECClass);
       for (const _class of classes) {
         expect(false, "Expected no classes in the schema.").to.be.true;
       }

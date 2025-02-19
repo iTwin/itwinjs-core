@@ -851,7 +851,7 @@ describe("Arc3d", () => {
       ck.testTrue(arc2.isAlmostEqual(arc3, Geometry.smallAngleRadians, Geometry.smallAngleRadians), "cloneAxisAligned returns expected arc");
 
     // test non-horizontal, ellipse
-    const arc4 = arc0.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1,2,3), Angle.createDegrees(-35))));
+    const arc4 = arc0.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(-35))));
     arc4.matrixRef.scaleColumnsInPlace(1, 0.6, 1);
     drawArc(arc4, x0);
     x0 += 2;
@@ -964,7 +964,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("EllipseSampler", () => {
+  it("EllipseSampler", { timeout: 80000 }, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;

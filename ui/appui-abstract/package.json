@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "5.0.0-dev.62",
+  "version": "5.0.0-dev.66",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",

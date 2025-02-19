@@ -5831,7 +5831,7 @@ export enum MassPropertiesOperation {
     AccumulateVolumes = 2
 }
 
-// @public
+// @public @deprecated
 export interface MassPropertiesPerCandidateRequestProps {
     // (undocumented)
     candidates: CompressedId64Set;
@@ -5839,7 +5839,7 @@ export interface MassPropertiesPerCandidateRequestProps {
     operations: MassPropertiesOperation[];
 }
 
-// @public
+// @public @deprecated
 export interface MassPropertiesPerCandidateResponseProps extends MassPropertiesResponseProps {
     // (undocumented)
     candidate: Id64String;
