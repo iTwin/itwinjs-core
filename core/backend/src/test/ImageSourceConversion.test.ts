@@ -189,6 +189,11 @@ describe("ImageSource conversion", () => {
       expect(mediumError).greaterThan(2);
       expect(computeMaxCompressionError(lowImg, image)).greaterThan(mediumError);
     });
+
+    it("throws if image is in alpha format", () => {
+      const image = ImageBuffer.create(new Uint8Array([1, 2, 3, 4, 5]), ImageBufferFormat.Alpha, 5);
+      expect(() => imageSourceFromImageBuffer({ image })).to.throw("imageSourceFromImageBuffer cannot be used with alpha-only images");
+    });
   });
 });
 
