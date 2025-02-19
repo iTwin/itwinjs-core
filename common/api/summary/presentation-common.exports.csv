@@ -34,7 +34,9 @@ internal;function;compareDiagnosticsSeverities
 public;interface;CompressedClassInfoJSON
 public;type;ComputeDisplayValueCallback
 public;interface;ComputeSelectionRequestOptions
+deprecated;interface;ComputeSelectionRequestOptions
 public;type;ComputeSelectionRpcRequestOptions
+deprecated;type;ComputeSelectionRpcRequestOptions
 public;class;Content
 public;interface;ContentDescriptorRequestOptions
 public;type;ContentDescriptorRpcRequestOptions
@@ -58,6 +60,7 @@ public;type;ContentSpecification
 public;interface;ContentSpecificationBase
 public;enum;ContentSpecificationTypes
 public;type;ContentUpdateInfo
+internal;function;createCancellableTimeoutPromise
 public;function;createFieldHierarchies
 public;type;CustomizationRule
 public;interface;CustomNodeSpecification
@@ -114,6 +117,7 @@ deprecated;type;ElementPropertiesRequestOptions
 public;interface;ElementPropertiesStructArrayPropertyItem
 public;interface;ElementPropertiesStructPropertyItem
 public;interface;ElementSelectionScopeProps
+deprecated;interface;ElementSelectionScopeProps
 public;interface;EnumerationChoice
 public;interface;EnumerationInfo
 public;interface;ExtendedDataRule
@@ -328,9 +332,13 @@ public;interface;SelectClassInfoJSON
 public;interface;SelectedNodeInstancesSpecification
 public;interface;SelectionInfo
 public;interface;SelectionScope
+deprecated;interface;SelectionScope
 public;type;SelectionScopeProps
+deprecated;type;SelectionScopeProps
 public;interface;SelectionScopeRequestOptions
+deprecated;interface;SelectionScopeRequestOptions
 public;type;SelectionScopeRpcRequestOptions
+deprecated;type;SelectionScopeRpcRequestOptions
 internal;interface;SetRulesetVariableParams
 public;interface;SingleElementPropertiesRequestOptions
 public;type;SingleElementPropertiesRpcRequestOptions

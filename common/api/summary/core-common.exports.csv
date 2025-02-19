@@ -499,7 +499,9 @@ internal;interface;MarshalingBinaryMarker
 internal;namespace;MarshalingBinaryMarker
 public;enum;MassPropertiesOperation
 public;interface;MassPropertiesPerCandidateRequestProps
+deprecated;interface;MassPropertiesPerCandidateRequestProps
 public;interface;MassPropertiesPerCandidateResponseProps
+deprecated;interface;MassPropertiesPerCandidateResponseProps
 public;interface;MassPropertiesRequestProps
 public;interface;MassPropertiesResponseProps
 public;interface;MaterialProps
