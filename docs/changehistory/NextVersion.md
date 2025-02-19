@@ -98,7 +98,7 @@ The unified selection system has been part of `@itwin/presentation-frontend` for
 
 ## Google Maps 2D tiles API
 
-The `itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
+The `@itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
 
 To enable it as a base map, it's simple as:
 
