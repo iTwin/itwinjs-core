@@ -5938,6 +5938,7 @@ export class TxnManager {
     cancelTo(txnId: TxnIdString): IModelStatus;
     // @internal (undocumented)
     readonly changeMergeManager: ChangeMergeManager;
+    deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
     getCurrentTxnId(): TxnIdString;
