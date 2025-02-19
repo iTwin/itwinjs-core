@@ -16,6 +16,7 @@ import { CheckpointManager, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
+import { _hubAccess } from "../internal/Symbols";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -45,7 +46,7 @@ export class RpcBriefcaseUtility {
       myBriefcaseIds = [0]; // PullOnly means briefcaseId 0
     } else {
       // check with iModelHub and see if we already have acquired any briefcaseIds
-      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
+      myBriefcaseIds = await IModelHost[_hubAccess].getMyBriefcaseIds({ accessToken, iModelId });
     }
 
     const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
@@ -66,7 +67,7 @@ export class RpcBriefcaseUtility {
               if (db.changeset.id !== tokenProps.changeset?.id) {
                 assert(undefined !== tokenProps.changeset);
                 const toIndex = tokenProps.changeset?.index ??
-                  (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
+                  (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
                 await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
               }
               return db;
