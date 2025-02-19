@@ -13,6 +13,7 @@ matchChildUrls:
 - [Backend](./backend/index.md)
 - [Common](./common/index.md)
 - [Geometry](./geometry/index.md)
+- [Quantity](./quantity/index.md)
 - [Presentation](../presentation/index.md)
 - [UI](../ui/index.md)
 

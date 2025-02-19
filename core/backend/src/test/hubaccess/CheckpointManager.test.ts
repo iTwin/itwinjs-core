@@ -13,6 +13,7 @@ import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubMock } from "../../HubMock";
+import { _hubAccess } from "../../internal/Symbols";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
@@ -142,8 +143,8 @@ describe("Checkpoint Manager", () => {
     snapshot.saveChanges();
     snapshot.close();
 
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
+    sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => undefined);
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);
