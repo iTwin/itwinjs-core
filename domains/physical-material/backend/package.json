@@ -1,6 +1,6 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "5.0.0-dev.65",
+  "version": "5.0.0-dev.66",
   "main": "lib/cjs/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",
   "license": "MIT",
