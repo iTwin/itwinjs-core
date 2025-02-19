@@ -9,7 +9,7 @@ import {
 import { Point3d } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
-import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Cached decorations", () => {

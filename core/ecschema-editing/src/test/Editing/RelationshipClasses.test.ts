@@ -156,7 +156,7 @@ describe("Relationship tests from an existing schema", () => {
     const baseRelClass = await testEditor.schemaContext.getSchemaItem(baseResult) as RelationshipClass;
     const result = await testEditor.relationships.create(testKey, "TestRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseRelClass.key);
 
-    const testRelationship = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(result);
+    const testRelationship = await testEditor.schemaContext.getSchemaItem(result, RelationshipClass);
     expect(await testRelationship?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseRelClass.key));
   });
 
@@ -192,7 +192,7 @@ describe("Relationship tests from an existing schema", () => {
     const baseRelClass = await testEditor.schemaContext.getSchemaItem(baseResult) as RelationshipClass;
     const result = await testEditor.relationships.create(testKey, "TestRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseRelClass.key);
 
-    const testRelationship = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(result);
+    const testRelationship = await testEditor.schemaContext.getSchemaItem(result, RelationshipClass);
     expect(await testRelationship?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseRelClass.key));
   });
 
@@ -200,8 +200,8 @@ describe("Relationship tests from an existing schema", () => {
     const baseClassRes = await testEditor.relationships.create(testKey, "testBaseClass", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
     const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward,baseClassRes);
 
-    const testRel = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(relRes);
-    expect(await testRel?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem<RelationshipClass>(baseClassRes));
+    const testRel = await testEditor.schemaContext.getSchemaItem(relRes, RelationshipClass);
+    expect(await testRel?.baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(baseClassRes, RelationshipClass));
 
     await testEditor.relationships.setBaseClass(relRes, undefined);
     expect(await testRel?.baseClass).to.eql(undefined);
@@ -796,8 +796,8 @@ describe("Relationship tests from an existing schema", () => {
 
     await expect(testEditor.relationships.setBaseClass(relRes, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -829,8 +829,8 @@ describe("Relationship tests from an existing schema", () => {
     const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseClassRes);
     const newBaseClassRes = await testEditor.relationships.create(testKey, "newBaseClass", ECClassModifier.None, StrengthType.Embedding, StrengthDirection.Forward);
 
-    const relClass = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(relRes);
-    const baseClass = await testEditor.schemaContext.getSchemaItem<RelationshipClass>(baseClassRes);
+    const relClass = await testEditor.schemaContext.getSchemaItem(relRes, RelationshipClass);
+    const baseClass = await testEditor.schemaContext.getSchemaItem(baseClassRes, RelationshipClass);
     expect(await relClass?.baseClass).to.eql(baseClass);
 
     await expect(testEditor.relationships.setBaseClass(relRes, newBaseClassRes)).to.be.eventually.rejected.then(function (error) {
@@ -918,8 +918,8 @@ describe("Relationship tests from an existing schema", () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     await expect(testEditor.relationships.create(testKey, "TestRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward, baseClassKey)).to.be.eventually.rejected.then(function (error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${baseClassKey.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 

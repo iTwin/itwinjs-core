@@ -67,6 +67,23 @@
       "console": "integratedTerminal",
     },
     {
+      "name": "Quantity Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/quantity/",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
       "name": "OrbitGT Tests",
       "presentation": {
         "group": "0_CoreTests",
@@ -445,9 +462,8 @@
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -467,9 +483,8 @@
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -489,11 +504,8 @@
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "-r",
-        "jsdom-global/register",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -512,7 +524,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--no-config",
+        "--config",
+        "./.mocharc.json",
         "--no-timeouts"
       ],
       "outFiles": [
@@ -1110,7 +1123,10 @@
         "group": "0_CoreTests",
         "order": 2
       },
-      "configurations": ["Attach to Vitest Browser", "Run Vitest Browser"],
+      "configurations": [
+        "Attach to Vitest Browser",
+        "Run Vitest Browser"
+      ],
       "stopAll": true
     },
     {

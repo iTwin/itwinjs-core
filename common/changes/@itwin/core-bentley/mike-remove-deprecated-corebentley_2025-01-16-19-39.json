@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Removed 3.x deprecated APIs from core-bentley",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

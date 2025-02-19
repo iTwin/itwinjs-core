@@ -60,7 +60,7 @@ export interface TestRelationshipProps extends RelationshipProps {
 }
 export class TestElementDrivesElement extends ElementDrivesElement {
   public static override get className(): string { return "TestElementDrivesElement"; }
-  public property1!: string;
+  declare public property1: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static override onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
@@ -71,7 +71,7 @@ export interface TestPhysicalObjectProps extends PhysicalElementProps {
 }
 export class TestPhysicalObject extends PhysicalElement {
   public static override get className(): string { return "TestPhysicalObject"; }
-  public intProperty!: number;
+  declare public intProperty: number;
   public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
   public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
   public static override onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
@@ -1004,7 +1004,7 @@ export class ExtensiveTestScenario {
     const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
-    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, PlanProjectionSettings.fromJSON({ elevation: 10.0 }));
     displayStyle3d.settings.environment = Environment.fromJSON({
       sky: {
         image: {

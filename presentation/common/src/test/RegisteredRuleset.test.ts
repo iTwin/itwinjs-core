@@ -65,7 +65,7 @@ describe("RegisteredRuleset", () => {
         rules: [],
       };
       const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));
-      registered.dispose();
+      registered[Symbol.dispose]();
       managerMock.verify((x) => x(registered), moq.Times.once());
     });
   });

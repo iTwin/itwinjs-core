@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -13,6 +14,7 @@ import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, Se
 /**
  * Properties for creating [[SelectionScopesManager]].
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface SelectionScopesManagerProps {
   /** RPC handler to use for requesting selection scopes */
@@ -27,6 +29,7 @@ export interface SelectionScopesManagerProps {
  * and can compute logical selection based on element IDs and selection scope.
  *
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export class SelectionScopesManager {
   private _rpcRequestsHandler: RpcRequestsHandler;
@@ -100,6 +103,7 @@ export class SelectionScopesManager {
  * calculating selection with scope.
  *
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
   if (!scope) {
@@ -109,15 +113,4 @@ export function createSelectionScopeProps(scope: SelectionScopeProps | Selection
     return { id: scope };
   }
   return scope;
-}
-
-/**
- * Determines the scope id
- * @param scope Selection scope
- * @public
- * @deprecated in 3.x. This is an internal utility that should've never become public.
- */
-// istanbul ignore next
-export function getScopeId(scope: SelectionScope | string | undefined): string {
-  return createSelectionScopeProps(scope).id;
 }

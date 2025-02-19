@@ -6,7 +6,6 @@
  * @module Core
  */
 
-import { IDisposable } from "@itwin/core-bentley";
 import { Rule } from "./rules/Rule";
 import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 import { VariablesGroup } from "./rules/Variables";
@@ -15,7 +14,7 @@ import { VariablesGroup } from "./rules/Variables";
  * A ruleset that is registered in a ruleset manager.
  * @public
  */
-export class RegisteredRuleset implements IDisposable, Ruleset {
+export class RegisteredRuleset implements Disposable, Ruleset {
   private _ruleset: Ruleset;
   private _uniqueIdentifier: string;
   private _disposeFunc: (ruleset: RegisteredRuleset) => void;
@@ -28,8 +27,14 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   }
 
   /** Dispose registered ruleset. */
-  public dispose() {
+  public [Symbol.dispose]() {
     this._disposeFunc(this);
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   public get uniqueIdentifier() {

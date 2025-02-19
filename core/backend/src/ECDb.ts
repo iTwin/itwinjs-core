@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -30,7 +30,7 @@ export enum ECDbOpenMode {
 /** An ECDb file
  * @public
  */
-export class ECDb implements IDisposable {
+export class ECDb implements Disposable {
   private _nativeDb?: IModelJsNative.ECDb;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
@@ -49,7 +49,7 @@ export class ECDb implements IDisposable {
   /** Call this function when finished with this ECDb object. This releases the native resources held by the
    *  ECDb object.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this._nativeDb)
       return;
 
@@ -73,6 +73,12 @@ export class ECDb implements IDisposable {
     this.clearStatementCache();
     this[_nativeDb].detachDb(alias);
   }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
+  }
+
   /** Create an ECDb
    * @param pathName The path to the ECDb file to create.
    * @throws [IModelError]($common) if the operation failed.
@@ -204,7 +210,7 @@ export class ECDb implements IDisposable {
    */
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
     const stmt = this.prepareStatement(ecsql, logErrors);
-    const release = () => stmt.dispose();
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val = callback(stmt);
       if (val instanceof Promise) {
@@ -272,7 +278,7 @@ export class ECDb implements IDisposable {
    */
   public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
     const stmt = this.prepareSqliteStatement(sql, logErrors);
-    const release = () => stmt.dispose();
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val: T = callback(stmt);
       if (val instanceof Promise) {

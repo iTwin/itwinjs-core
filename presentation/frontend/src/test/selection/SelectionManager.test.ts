@@ -2,10 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { assert, BeDuration, Id64, Id64String, StopWatch, using } from "@itwin/core-bentley";
+import { assert, BeDuration, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
@@ -502,7 +503,7 @@ describe("SelectionManager", () => {
         });
 
         afterEach(() => {
-          syncer.dispose();
+          syncer[Symbol.dispose]();
         });
 
         describe("choosing scope", () => {
@@ -786,9 +787,10 @@ describe("SelectionManager", () => {
 
       it("suspends selection synchronization", () => {
         const spy = sinon.spy(selectionManager, "clearSelection");
-        using(selectionManager.suspendIModelToolSelectionSync(imodel), (_) => {
+        {
+          using _ = selectionManager.suspendIModelToolSelectionSync(imodel);
           ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
-        });
+        }
         expect(spy).to.not.be.called;
 
         ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
@@ -798,9 +800,10 @@ describe("SelectionManager", () => {
       it("does nothing if synchronization is not set up", () => {
         const spy = sinon.spy(selectionManager, "clearSelection");
         selectionManager.setSyncWithIModelToolSelection(imodel, false);
-        using(selectionManager.suspendIModelToolSelectionSync(imodel), (_) => {
+        {
+          using _ = selectionManager.suspendIModelToolSelectionSync(imodel);
           ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
-        });
+        }
         expect(spy).to.not.be.called;
       });
 
@@ -811,9 +814,10 @@ describe("SelectionManager", () => {
         selectionManager.setSyncWithIModelToolSelection(imodel2);
 
         const spy = sinon.spy(selectionManager, "clearSelection");
-        using(selectionManager.suspendIModelToolSelectionSync(imodel2), (_) => {
+        {
+          using _ = selectionManager.suspendIModelToolSelectionSync(imodel2);
           ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [], removals: {} });
-        });
+        }
         expect(spy).to.be.called;
       });
     });

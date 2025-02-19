@@ -5,29 +5,28 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Item, ItemJSON } from "../../presentation-common/content/Item";
-import { NestedContentValueJSON } from "../../presentation-common/content/Value";
+import { createTestContentItem, createTestLabelDefinition } from "../_helpers";
 import { createTestECInstanceKey } from "../_helpers/EC";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
-import { createTestContentItem } from "../_helpers";
+import { NestedContentValue } from "../../presentation-common/content/Value";
 
 describe("Item", () => {
   describe("constructor", () => {
-    it("creates valid item with label", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
-      expect(item).to.matchSnapshot();
+    it("creates valid item with label string", () => {
+      const item = createTestContentItem({ label: "test", values: {}, displayValues: {} });
+      expect(item.label).to.matchSnapshot();
     });
 
     it("creates valid item with label definition", () => {
-      const item = new Item([], createRandomLabelDefinition(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
-      expect(item).to.matchSnapshot();
+      const item = createTestContentItem({ label: createTestLabelDefinition(), values: {}, displayValues: {} });
+      expect(item.label).to.matchSnapshot();
     });
   });
 
   describe("toJSON", () => {
     it("serializes inputKeys", () => {
       const inputKey = createTestECInstanceKey();
-      const item = new Item([], "", "", undefined, {}, {}, []);
-      item.inputKeys = [inputKey];
+      const item = createTestContentItem({ inputKeys: [inputKey], values: {}, displayValues: {} });
       const json = item.toJSON();
       expect(json.inputKeys).to.deep.eq([inputKey]);
     });
@@ -39,7 +38,6 @@ describe("Item", () => {
       testItemJSON = {
         primaryKeys: [],
         labelDefinition: createRandomLabelDefinition(),
-        imageId: faker.random.uuid(),
         classInfo: createRandomECClassInfo(),
         values: {
           key1: faker.random.number(),
@@ -65,40 +63,46 @@ describe("Item", () => {
 
     it("creates valid Item from JSON with inputKeys", () => {
       const inputKey = createTestECInstanceKey();
-      const item = Item.fromJSON({
-        primaryKeys: [],
+      const item = createTestContentItem({
         inputKeys: [inputKey],
-        labelDefinition: createRandomLabelDefinition(),
-        imageId: "",
         values: {},
         displayValues: {},
-        mergedFieldNames: [],
       });
-      expect(item?.inputKeys).to.deep.eq([inputKey]);
+      expect(item.inputKeys).to.deep.eq([inputKey]);
     });
 
-    it("creates valid Item with null values", () => {
+    it("creates valid Item from JSON with extended data", () => {
+      const item = createTestContentItem({
+        extendedData: {
+          x: 123,
+        },
+        values: {},
+        displayValues: {},
+      });
+      expect(item.extendedData).to.deep.eq({ x: 123 });
+    });
+
+    it("creates valid Item with undefined values", () => {
       const item = Item.fromJSON({
         ...testItemJSON,
-        values: { key1: null },
-        displayValues: { key1: null },
+        values: { key1: undefined },
+        displayValues: { key1: undefined },
       });
       expect(item).to.matchSnapshot();
     });
 
     it("creates valid Item with nested content values", () => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const nestedContentValueJSON: NestedContentValueJSON = {
+      const nestedContentValue: NestedContentValue = {
         primaryKeys: [createRandomECInstanceKey()],
-        values: { nested: null },
+        values: { nested: undefined },
         displayValues: { nested: "" },
         mergedFieldNames: [faker.random.word()],
       };
       const item = Item.fromJSON({
         ...testItemJSON,
-        displayValues: { key1: null },
+        displayValues: { key1: undefined },
         values: {
-          key1: [nestedContentValueJSON],
+          key1: [nestedContentValue],
         },
       });
       expect(item).to.matchSnapshot();
@@ -110,32 +114,14 @@ describe("Item", () => {
     });
   });
 
-  describe("listFromJSON", () => {
-    it("parses items from JSON", () => {
-      const items = [
-        createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
-        createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
-      ];
-      expect(Item.listFromJSON(items.map((i) => i.toJSON()))).to.matchSnapshot();
-    });
-
-    it("parses items from serialized JSON string", () => {
-      const items = [
-        createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
-        createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
-      ];
-      expect(Item.listFromJSON(JSON.stringify(items))).to.matchSnapshot();
-    });
-  });
-
   describe("isFieldMerged", () => {
     it("returns false for unmerged field", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      const item = createTestContentItem({ values: {}, displayValues: {}, mergedFieldNames: [] });
       expect(item.isFieldMerged("key")).to.be.false;
     });
 
     it("returns true for merged field", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, ["key"]);
+      const item = createTestContentItem({ values: {}, displayValues: {}, mergedFieldNames: ["key"] });
       expect(item.isFieldMerged("key")).to.be.true;
     });
   });

@@ -17,6 +17,7 @@ import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
+import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -72,8 +73,6 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
-import { ElementGeometryBuilderParams } from '@itwin/core-common';
-import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
@@ -81,6 +80,7 @@ import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
+import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
@@ -118,7 +118,8 @@ import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
+import { ImageBuffer } from '@itwin/core-common';
+import { ImageBufferFormat } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
@@ -204,6 +205,9 @@ import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { RscFontEncodingProps } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaItemKey } from '@itwin/ecschema-metadata';
+import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -290,14 +294,14 @@ export abstract class AuxCoordSystem extends DefinitionElement {
     // (undocumented)
     description?: string;
     // (undocumented)
-    type: number;
+    type?: number;
 }
 
 // @public
 export class AuxCoordSystem2d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
-    angle: number;
+    angle?: number;
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -314,11 +318,11 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
     // (undocumented)
     origin?: Point3d;
     // (undocumented)
-    pitch: number;
+    pitch?: number;
     // (undocumented)
-    roll: number;
+    roll?: number;
     // (undocumented)
-    yaw: number;
+    yaw?: number;
 }
 
 // @public
@@ -644,14 +648,14 @@ export interface ChangedECInstance {
 }
 
 // @internal
-export class ChangedElementsDb implements IDisposable {
+export class ChangedElementsDb implements Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor();
     // (undocumented)
     cleanCaches(): void;
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
-    // (undocumented)
-    dispose(): void;
     getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
     getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
     getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
@@ -715,7 +719,8 @@ export interface ChangesetArg extends IModelIdArg {
 }
 
 // @beta
-export class ChangesetECAdaptor implements IDisposable {
+export class ChangesetECAdaptor implements Disposable {
+    [Symbol.dispose](): void;
     constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
     acceptClass(classFullName: string): ChangesetECAdaptor;
     acceptOp(op: SqliteChangeOp): ChangesetECAdaptor;
@@ -729,7 +734,6 @@ export class ChangesetECAdaptor implements IDisposable {
     deleted?: ChangedECInstance;
     // (undocumented)
     readonly disableMetaData: boolean;
-    dispose(): void;
     inserted?: ChangedECInstance;
     get isDeleted(): boolean;
     isECTable(tableName: string): boolean;
@@ -1782,9 +1786,10 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-export class ECDb implements IDisposable {
+export class ECDb implements Disposable {
     // @internal (undocumented)
     get [_nativeDb](): IModelJsNative.ECDb;
+    [Symbol.dispose](): void;
     constructor();
     abandonChanges(): void;
     attachDb(fileName: string, alias: string): void;
@@ -1794,6 +1799,7 @@ export class ECDb implements IDisposable {
     createDb(pathName: string): void;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
     detachDb(alias: string): void;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
@@ -1908,7 +1914,8 @@ export interface ECSqlRowArg {
 }
 
 // @public
-export class ECSqlStatement implements IterableIterator<any>, IDisposable {
+export class ECSqlStatement implements IterableIterator<any>, Disposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     bindArray(parameter: number | string, val: any[]): void;
     bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
@@ -1930,6 +1937,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: number | string, val: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
@@ -2343,6 +2351,8 @@ export class Entity {
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
+    // @beta
+    getMetaData(): Promise<EntityClass>;
     // @internal @deprecated
     getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
@@ -2358,6 +2368,10 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
+    // @beta
+    static get schemaItemKey(): SchemaItemKey;
+    // @beta
+    get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
     toJSON(): EntityProps;
 }
@@ -2840,8 +2854,6 @@ export abstract class GeometricElement extends Element_2 {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -2940,8 +2952,6 @@ export class GeometryPart extends DefinitionElement {
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
     // (undocumented)
@@ -3123,6 +3133,26 @@ export class HubMock {
     static startup(mockName: LocalDirName, outputDir: string): void;
 }
 
+// @public
+export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs): ImageBuffer | undefined;
+
+// @public
+export interface ImageBufferFromImageSourceArgs {
+    source: BinaryImageSource;
+    targetFormat?: ImageBufferFormat.Rgb | ImageBufferFormat.Rgba;
+}
+
+// @public
+export function imageSourceFromImageBuffer(args: ImageSourceFromImageBufferArgs): BinaryImageSource | undefined;
+
+// @public
+export interface ImageSourceFromImageBufferArgs {
+    flipVertically?: boolean;
+    image: ImageBuffer;
+    jpegQuality?: number;
+    targetFormat?: ImageSourceFormat.Png | ImageSourceFormat.Jpeg;
+}
+
 // @beta @deprecated (undocumented)
 export const IModelCloneContext: typeof IModelElementCloneContext;
 
@@ -3284,6 +3314,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @beta
+    get schemaContext(): SchemaContext;
+    // @beta
     simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
@@ -3431,10 +3463,12 @@ export interface IModelDbFonts {
 
 // @beta
 export class IModelElementCloneContext {
+    [Symbol.dispose](): void;
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
     cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
     static create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext>;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     dump(outputFileName: string): void;
@@ -3815,7 +3849,7 @@ export class LightLocation extends SpatialLocationElement {
     protected constructor(props: LightLocationProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    enabled: boolean;
+    enabled?: boolean;
 }
 
 // @public
@@ -4250,7 +4284,7 @@ export class Model extends Entity {
     // @beta
     protected static onUpdateElement(_arg: OnElementInModelPropsArg): void;
     // (undocumented)
-    readonly parentModel: Id64String;
+    readonly parentModel?: Id64String;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
@@ -4858,6 +4892,8 @@ export class Schema {
     protected constructor();
     // @internal
     static get missingRequiredBehavior(): boolean;
+    // @internal
+    static get schemaKey(): SchemaKey_2;
     static get schemaName(): string;
     // @beta
     static toSemverString(paddedVersion: string): string;
@@ -5406,7 +5442,8 @@ export interface SqliteChange {
 export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
 // @beta
-export class SqliteChangesetReader implements IDisposable {
+export class SqliteChangesetReader implements Disposable {
+    [Symbol.dispose](): void;
     protected constructor(
     db: AnyDb);
     get changeIndex(): number;
@@ -5414,7 +5451,6 @@ export class SqliteChangesetReader implements IDisposable {
     get columnCount(): number;
     readonly db: AnyDb;
     get disableSchemaCheck(): boolean;
-    dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
     getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
     getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
@@ -5566,7 +5602,8 @@ export namespace SQLiteDb {
 }
 
 // @public
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
+export class SqliteStatement implements IterableIterator<any>, Disposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
     bindBlob(parameter: BindParameter, blob: Uint8Array): void;
@@ -5582,6 +5619,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getColumnBytes(colIndex: number): number;
     getColumnCount(): number;
@@ -5927,6 +5965,7 @@ export class TxnManager {
     cancelTo(txnId: TxnIdString): IModelStatus;
     // @internal (undocumented)
     readonly changeMergeManager: ChangeMergeManager;
+    deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
     getCurrentTxnId(): TxnIdString;

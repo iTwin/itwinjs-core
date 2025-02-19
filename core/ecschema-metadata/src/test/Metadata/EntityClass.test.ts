@@ -19,6 +19,50 @@ import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtil
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("EntityClass", () => {
+  describe("type safety checks", () => {
+    const typeCheckJson = createSchemaJsonWithItems({
+      TestEntityClass: {
+        schemaItemType: "EntityClass",
+        label: "Test Entity Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+      },
+      TestPhenomenon: {
+        schemaItemType: "Phenomenon",
+        definition: "LENGTH(1)",
+      },
+    });
+
+    let ecSchema: Schema;
+
+    before(async () => {
+      ecSchema = await Schema.fromJson(typeCheckJson, new SchemaContext());
+      assert.isDefined(ecSchema);
+    });
+
+    it("typeguard and type assertion should work on EntityClass", async () => {
+      const testEntityClass = await ecSchema.getItem("TestEntityClass");
+      assert.isDefined(testEntityClass);
+      expect(EntityClass.isEntityClass(testEntityClass)).to.be.true;
+      expect(() => EntityClass.assertIsEntityClass(testEntityClass)).not.to.throw();
+      // verify against other schema item type
+      const testPhenomenon = await ecSchema.getItem("TestPhenomenon");
+      assert.isDefined(testPhenomenon);
+      expect(EntityClass.isEntityClass(testPhenomenon)).to.be.false;
+      expect(() => EntityClass.assertIsEntityClass(testPhenomenon)).to.throw();
+    });
+
+    it("EntityClass type should work with getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestEntityClass", EntityClass)).to.be.instanceof(EntityClass);
+      expect(ecSchema.getItemSync("TestEntityClass", EntityClass)).to.be.instanceof(EntityClass);
+    });
+
+    it("EntityClass type should reject for other item types on getItem/Sync", async () => {
+      expect(await ecSchema.getItem("TestPhenomenon", EntityClass)).to.be.undefined;
+      expect(ecSchema.getItemSync("TestPhenomenon", EntityClass)).to.be.undefined;
+    });
+  });
+
   describe("get inherited properties", () => {
     let schema: Schema;
 
@@ -40,7 +84,7 @@ describe("EntityClass", () => {
 
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
       expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
@@ -54,7 +98,7 @@ describe("EntityClass", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
-    it("from mixins synchronously", () => {
+    it("from mixins synchronously", async () => {
       const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
       const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
 
@@ -63,7 +107,7 @@ describe("EntityClass", () => {
 
       const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
       (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
-      entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
       expect(entityClass.getPropertySync("MixinPrimProp")).to.be.undefined;
@@ -130,10 +174,10 @@ describe("EntityClass", () => {
       });
 
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
-      const testClass = await ecschema.getItem<ECClass>("TestEntityClass");
+      const testClass = await ecschema.getItem("TestEntityClass", ECClass);
       assert.isDefined(testClass);
 
-      const testEntity = await ecschema.getItem<EntityClass>("TestEntityClass");
+      const testEntity = await ecschema.getItem("TestEntityClass", EntityClass);
       assert.isDefined(testEntity);
 
       expect(testEntity!.name).equal("TestEntityClass");
@@ -162,7 +206,7 @@ describe("EntityClass", () => {
       assert.isTrue(testClass?.schemaItemType === SchemaItemType.EntityClass);
       const entityClass = testClass as EntityClass;
 
-      const mixinClass = await ecschema.getItem<Mixin>("testMixin");
+      const mixinClass = await ecschema.getItem("testMixin", Mixin);
       assert.isDefined(mixinClass);
 
       assert.isDefined(entityClass.mixins);
@@ -231,10 +275,10 @@ describe("EntityClass", () => {
       const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = await ecSchema.getItem<EntityClass>("testClass");
+      const testEntity = await ecSchema.getItem("testClass", EntityClass);
       assert.isDefined(testEntity);
 
-      const testBaseEntity = await ecSchema.getItem<EntityClass>("baseClass");
+      const testBaseEntity = await ecSchema.getItem("baseClass", EntityClass);
       assert.isDefined(testBaseEntity);
 
       assert.isDefined(await testEntity!.baseClass);
@@ -257,10 +301,10 @@ describe("EntityClass", () => {
       const ecSchema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(ecSchema);
 
-      const testEntity = ecSchema.getItemSync<EntityClass>("testClass");
+      const testEntity = ecSchema.getItemSync("testClass", EntityClass);
       assert.isDefined(testEntity);
 
-      const testBaseEntity = ecSchema.getItemSync<EntityClass>("baseClass");
+      const testBaseEntity = ecSchema.getItemSync("baseClass", EntityClass);
       assert.isDefined(testBaseEntity);
 
       const baseClass = testEntity!.getBaseClassSync();
@@ -285,13 +329,13 @@ describe("EntityClass", () => {
       const schema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const entityClass = await schema.getItem<EntityClass>("TestEntityClass");
+      const entityClass = await schema.getItem("TestEntityClass", EntityClass);
       assert.isDefined(entityClass);
 
       const navProp = await entityClass!.getProperty("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = await schema.getItem<RelationshipClass>("NavPropRelationship");
+        const relClass = await schema.getItem("NavPropRelationship", RelationshipClass);
         assert.isTrue(await navProp.relationshipClass === relClass);  // << For some reason type guard was failing..?
       } else {
         assert.fail();
@@ -313,13 +357,13 @@ describe("EntityClass", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
       assert.isDefined(schema);
 
-      const entityClass = schema.getItemSync<EntityClass>("TestEntityClass");
+      const entityClass = schema.getItemSync("TestEntityClass", EntityClass);
       assert.isDefined(entityClass);
 
       const navProp = entityClass!.getPropertySync("testNavProp");
       assert.isDefined(navProp);
       if (navProp && navProp.isNavigation()) {
-        const relClass = schema.getItemSync<RelationshipClass>("NavPropRelationship");
+        const relClass = schema.getItemSync("NavPropRelationship", RelationshipClass);
         assert.isTrue(navProp.getRelationshipClassSync() === relClass);
       } else {
         assert.fail();
@@ -601,7 +645,7 @@ describe("EntityClass", () => {
     it("should properly serialize", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
       assert.isDefined(ecschema);
-      const testClass = await ecschema.getItem<EntityClass>("testClass");
+      const testClass = await ecschema.getItem("testClass", EntityClass);
       assert.isDefined(testClass);
       const serialized = await testClass!.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECEntityClass");

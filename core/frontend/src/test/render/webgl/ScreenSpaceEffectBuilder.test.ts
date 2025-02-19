@@ -9,7 +9,7 @@ import { IModelApp } from "../../../IModelApp";
 import {
   ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType,
 } from "../../../render/ScreenSpaceEffectBuilder";
-import { System } from "../../../render/webgl/System";
+import { System } from "../../../internal/render/webgl/System";
 
 describe("ScreenSpaceEffectBuilder", () => {
   beforeAll(async () => {

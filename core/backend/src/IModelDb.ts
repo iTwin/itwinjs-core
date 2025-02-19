@@ -70,6 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 
 // spell:ignore fontid fontmap
 
@@ -228,6 +229,7 @@ export abstract class IModelDb extends IModel {
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
+  private _schemaContext?: SchemaContext;
   /** @deprecated in 5.0.0. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
@@ -505,7 +507,7 @@ export abstract class IModelDb extends IModel {
    */
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
     const stmt = this.prepareStatement(ecsql, logErrors);
-    const release = () => stmt.dispose();
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val = callback(stmt);
       if (val instanceof Promise) {
@@ -652,7 +654,7 @@ export abstract class IModelDb extends IModel {
    */
   public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
     const stmt = this.prepareSqliteStatement(sql, logErrors);
-    const release = () => stmt.dispose();
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val: T = callback(stmt);
       if (val instanceof Promise) {
@@ -772,6 +774,7 @@ export abstract class IModelDb extends IModel {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this._classMetaDataRegistry = undefined;
+    this._schemaContext = undefined;
   }
 
   /** Update the project extents for this iModel.
@@ -1089,6 +1092,23 @@ export abstract class IModelDb extends IModel {
       this._classMetaDataRegistry = new MetaDataRegistry();
 
     return this._classMetaDataRegistry;
+  }
+
+  /**
+   * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
+   * @beta
+   */
+  public get schemaContext(): SchemaContext {
+    if (this._schemaContext === undefined)
+    {
+      const context = new SchemaContext();
+      // TODO: We probably need a more optimized locater for here
+      const locater = new SchemaJsonLocater((name) => this.getSchemaProps(name));
+      context.addLocater(locater);
+      this._schemaContext = context;
+    }
+
+    return this._schemaContext;
   }
 
   /** Get the linkTableRelationships for this IModel */
@@ -2857,6 +2877,7 @@ export class BriefcaseDb extends IModelDb {
         } finally {
           await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
+        return;
       }
       throw error;
     }

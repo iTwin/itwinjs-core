@@ -8,7 +8,7 @@
 
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { AnimationBranchStates } from "./render/GraphicBranch";
+import { AnimationBranchStates } from "./internal/render/AnimationBranchState";
 import { RenderSystem } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { ViewRect } from "./common/ViewRect";
@@ -40,7 +40,7 @@ export class NullTarget extends RenderTarget {
   public override setFlashed(): void { }
   public setViewRect(): void { }
   public override onResized(): void { }
-  public override dispose(): void { }
+  public override[Symbol.dispose](): void { }
   public updateViewRect(): boolean { return false; }
   public readPixels(): void { }
   public get screenSpaceEffects(): Iterable<string> { return []; }
