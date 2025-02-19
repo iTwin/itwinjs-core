@@ -727,7 +727,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).toBe(true);
 
     const testQuantityData = [
       { magnitude: 1, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, roundFactor: 0, result: "1" },
@@ -765,8 +765,8 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
 
-      assert.isTrue(formattedValue.length > 0);
-      assert.strictEqual(formattedValue, testEntry.result);
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toBe(testEntry.result);
 
       // reset format back to default
       format.roundFactor = 0.0;
