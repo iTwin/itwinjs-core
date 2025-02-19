@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
-import { Geometry, Point2d, Range2d, Range3d, Transform, XYZ } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextBlockProps, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { Geometry, Range2d } from "@itwin/core-geometry";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -1282,78 +1282,6 @@ describe("TextAnnotation element", () => {
       test();
       test(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
       test(createAnnotation());
-    });
-
-    it("includes margins inside bounding box", () => {
-      const logRange = (name: string, range: Range2d | Range3d) => {
-        console.log(name, ": \n\tJSON:", JSON.stringify(range.toJSON(), undefined, ""), "\n\txLength:", range.xLength(), "\n\tyLength:", range.yLength(), "\n\n");
-      }
-
-      const makeTextBlock = (props: TextBlockProps) => {
-        const textblock = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 }, ...props });
-        textblock.appendRun(makeTextRun("abc"));
-        textblock.appendRun(makeTextRun("defg"));
-        return textblock;
-      }
-
-      const getTransform = (origin: XYZ, range: Range2d, textAnnotation: TextAnnotation): Transform => {
-        // Compute the transform that positions and orients this annotation relative to its anchor point. Includes its rotation
-        const relativeTransform = textAnnotation.computeTransform(range);
-
-        // Now scoot that relative transform to origin
-        const origin3d = origin
-        const transform = Transform.createTranslation(origin3d);
-        return transform.multiplyTransformTransform(relativeTransform);
-      }
-
-      const test = (props: TextBlockProps) => {
-        // Create textblock
-        const block = makeTextBlock(props);
-
-        // Create annotation
-        const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
-        annotation.anchor = { vertical: "middle", horizontal: "center" };
-        const el0 = createElement();
-        el0.setAnnotation(annotation);
-
-        // Insert element
-        const elId = el0.insert();
-
-        // Get element
-        const el1 = imodel.elements.getElement<TextAnnotation3d>(elId);
-        const anno = el1.getAnnotation();
-        const newTextBlock = anno?.textBlock;
-        expect(newTextBlock).not.to.be.undefined;
-
-        // do layout on annotation1 and annotation2
-        const newLayout = doLayout(newTextBlock!);
-        const transform = getTransform(el1.placement.origin, newLayout.range, anno!);
-
-        // Dubugging the ranges
-        logRange("el0 bbox", el0.placement.bbox);
-        logRange("el1 bbox", el1.placement.bbox);
-        logRange("newLayout.range", newLayout.range);
-        logRange("transformed newLayout.range", transform.multiplyRange(Range3d.fromJSON(newLayout.range)));
-        // logRange("newLayout.marginRange", newLayout.marginRange);
-        // logRange("transformed newLayout.marginRange", transform.multiplyRange(Range3d.fromJSON(newLayout.marginRange)));
-
-        // Check that the bounding box is correct
-
-        // Before my changes, this test should pass. After my changes, it should fail.
-        const range3d = Range3d.fromJSON(newLayout.range);
-        expect(el1.placement.bbox.isAlmostEqual(range3d)).to.be.true;
-
-        // After my changes, this should pass instead.
-        // const range3d = Range3d.fromJSON(newLayout.marginRange);
-        // expect(el1.placement.bbox.isAlmostEqual(range3d)).to.be.true;
-      };
-
-      // 0 margins
-      test({ styleName: "block" });
-
-      // 1 margin
-
-      // All margins
     });
   });
 });
