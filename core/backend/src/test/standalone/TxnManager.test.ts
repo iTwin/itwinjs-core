@@ -920,4 +920,59 @@ describe("TxnManager", () => {
     assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), e3);
     assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e3);
   });
+
+  describe("deleteAllTxns", () => {
+    it("deletes pending and/or unsaved changes", () => {
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+      expect(imodel.txns.hasPendingTxns).to.be.false;
+      expect(imodel.txns.hasUnsavedChanges).to.be.false;
+
+      imodel.elements.insertElement(props);
+      expect(imodel.txns.hasLocalChanges).to.be.true;
+      expect(imodel.txns.hasPendingTxns).to.be.false;
+      expect(imodel.txns.hasUnsavedChanges).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      expect(imodel.txns.hasLocalChanges).to.be.true;
+      expect(imodel.txns.hasPendingTxns).to.be.true;
+      expect(imodel.txns.hasUnsavedChanges).to.be.false;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      imodel.elements.insertElement(props);
+      expect(imodel.txns.hasLocalChanges).to.be.true;
+      expect(imodel.txns.hasPendingTxns).to.be.true;
+      expect(imodel.txns.hasUnsavedChanges).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+    });
+
+    it("clears undo/redo history", () => {
+      expect(imodel.txns.isRedoPossible).to.be.false;
+      expect(imodel.txns.isUndoPossible).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      expect(imodel.txns.isUndoPossible).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.isUndoPossible).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      imodel.txns.reverseSingleTxn();
+      expect(imodel.txns.isRedoPossible).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.isRedoPossible).to.be.false;
+    });
+  });
 });
