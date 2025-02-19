@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface } from "@itwin/core-common";
+import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics";
@@ -187,12 +187,13 @@ export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<Co
  * Interface used for communication between Presentation backend and frontend.
  * @public
  */
+@RpcOperation.setDefaultPolicy({ retryInterval: () => 0 })
 export class PresentationRpcInterface extends RpcInterface {
   /** The immutable name of the interface. */
   public static readonly interfaceName = "PresentationRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "4.1.0";
+  public static interfaceVersion = "5.0.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
