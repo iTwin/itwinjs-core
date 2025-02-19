@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, Logger,} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerProviderArrayProperty, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -358,12 +358,11 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
                     for (const key of Object.keys(lhs.settings.properties)) {
                       const lhsProp = lhs.settings.properties[key];
                       const rhsProp = rhs.settings.properties[key];
-                      if (typeof lhsProp !== typeof rhsProp) {
-                        cmp = 1;
+                      cmp = compareStrings(typeof lhsProp, typeof rhsProp);
+                      if (0 !== cmp)
                         break;
-                      }
                       if (Array.isArray(lhsProp) || Array.isArray(rhsProp)) {
-                        cmp = compareSimpleArrays(lhsProp as (number | string | boolean)[], rhsProp as (number | string | boolean)[]);
+                        cmp = compareSimpleArrays(lhsProp as MapLayerProviderArrayProperty, rhsProp as MapLayerProviderArrayProperty);
                         if (0 !== cmp)
                           break;
                       } else {

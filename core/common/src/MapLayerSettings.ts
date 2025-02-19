@@ -19,9 +19,16 @@ export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" |
 /** @public */
 export type SubLayerId = string | number;
 
-/** @beta */
-export type  MapLayerProviderArrayProperty = Array<number|string|boolean>;
-/** @beta */
+/**
+ * Type for map layer provider array property.
+ * @beta
+ */
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
+
+/**
+ * Type for map layer provider properties.
+ * @beta
+ */
 export interface MapLayerProviderProperties { [key: string]: number | string | boolean | MapLayerProviderArrayProperty };
 
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].

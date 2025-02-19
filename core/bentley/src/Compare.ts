@@ -93,14 +93,19 @@ export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefin
     return areEqual(t, u);
 }
 
-/** @beta */
+/**
+ * Compare two simples types (number, string, boolean)
+ * This essentially wraps the existing type-specific comparison functions
+ * @beta */
 export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number {
+  let cmp = 0;
+
   // Make sure the types are the same
-  if (typeof lhs !== typeof rhs) {
-    return 1;
+  cmp = compareStrings(typeof lhs, typeof rhs);
+  if (cmp !== 0) {
+     return cmp;
   }
 
-  let cmp = 0;
   // Compare actual values
   switch (typeof lhs) {
     case "number":
@@ -115,9 +120,18 @@ export function compareSimpleTypes(lhs: number | string | boolean, rhs: number |
   }
   return cmp;
 }
+/**
+ * An array of simple types (number, string, boolean)
+ * @beta
+ */
+export type SimpleTypesArray = number[] | string[] | boolean[];
 
-/** @beta */
-export function compareSimpleArrays (lhs?: Array<number | string | boolean>, rhs?: Array<number | string | boolean> ) {
+/**
+ * Compare two arrays of simple types (number, string, boolean)
+ * @beta
+ */
+
+export function compareSimpleArrays (lhs?: SimpleTypesArray, rhs?: SimpleTypesArray ) {
   if (undefined === lhs)
     return undefined === rhs ? 0 : -1;
   else if (undefined === rhs)
