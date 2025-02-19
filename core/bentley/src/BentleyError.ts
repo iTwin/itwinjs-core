@@ -288,6 +288,9 @@ export enum GeoServiceStatus {
   NoDatumConverter = GEOSERVICESTATUS_BASE + 3,
   VerticalDatumConvertError = GEOSERVICESTATUS_BASE + 4,
   CSMapError = GEOSERVICESTATUS_BASE + 5,
+  /**
+   * @deprecated in 5.0. Pending is no longer a valid status.
+   */
   Pending = GEOSERVICESTATUS_BASE + 6,
 }
 
@@ -623,7 +626,7 @@ export class BentleyError extends Error {
       case GeoServiceStatus.NoDatumConverter: return "No datum converter";
       case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
       case GeoServiceStatus.CSMapError: return "CSMap error";
-      case GeoServiceStatus.Pending: return "Pending";
+      case GeoServiceStatus.Pending: return "Pending"; // eslint-disable-line @typescript-eslint/no-deprecated
       case RealityDataStatus.InvalidData: return "Invalid or unknown data";
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:

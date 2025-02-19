@@ -3724,6 +3724,7 @@ export enum GeoCoordStatus {
     NoGCSDefined = 100,
     OutOfMathematicalDomain = 2,
     OutOfUsefulRange = 1,
+    // @deprecated
     Pending = -41556,
     Success = 0,
     VerticalDatumConvertError = 26
