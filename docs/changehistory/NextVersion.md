@@ -13,8 +13,8 @@ Table of contents:
     - [Polyface Traversal](#polyface-traversal)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
-  - [Map layers](#map-layers)
-    - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
+  - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
+  - [Delete all transactions](#delete-all-transactions)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -96,9 +96,7 @@ The Presentation system is moving towards a more modular approach, with smaller 
 
 The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
 
-## Map layers
-
-### Google Maps 2D tiles API
+## Google Maps 2D tiles API
 
 The `itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
 
@@ -121,6 +119,10 @@ Can also be attached as a map-layer:
 ```ts
 [[include:GoogleMaps_SetGoogleMapsApiKey]]
 ```
+
+## Delete all transactions
+
+[BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
 
 ## API deprecations
 
@@ -185,6 +187,7 @@ Added type guards and type assertions for every schema item class (they are on t
 ### @itwin/presentation-common
 
 - All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
+- `PresentationStatus.BackendTimeout` has been deprecated as it's no longer used. The Presentation library now completely relies on RPC system to handle timeouts.
 - `imageId` properties of [CustomNodeSpecification]($presentation-common) and [PropertyRangeGroupSpecification]($presentation-common) have been deprecated. [ExtendedData](../presentation/customization/ExtendedDataUsage.md#customize-tree-node-item-icon) rule should be used instead.
 - `fromJSON` and `toJSON` methods of [Field]($presentation-common), [PropertiesField]($presentation-common), [ArrayPropertiesField]($presentation-common), [StructPropertiesField]($presentation-common) and [NestedContentField]($presentation-common) have been deprecated. Use `fromCompressedJSON` and `toCompressedJSON` methods instead.
 - `ItemJSON.labelDefinition` has been deprecated in favor of newly added optional `label` property.
