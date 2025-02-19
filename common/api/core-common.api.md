@@ -672,6 +672,12 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 }
 
 // @public
+export interface BinaryImageSource {
+    readonly data: Uint8Array;
+    readonly format: ImageSourceFormat.Jpeg | ImageSourceFormat.Png;
+}
+
+// @public
 export enum BisCodeSpec {
     // @internal (undocumented)
     annotationFrameStyle = "bis:AnnotationFrameStyle",
@@ -1096,7 +1102,7 @@ export enum ChangeOpCode {
     Update = 2
 }
 
-// @internal
+// @public
 export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
@@ -5445,6 +5451,9 @@ export abstract class IpcWebSocketTransport {
     // (undocumented)
     protected unwrap(data: any): any;
 }
+
+// @public
+export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
