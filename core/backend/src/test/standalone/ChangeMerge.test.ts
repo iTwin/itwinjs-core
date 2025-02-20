@@ -528,6 +528,8 @@ describe("Change merge method", () => {
     await b2.pullChanges();
 
     const eb2 = b2.elements.tryGetElementProps<PhysicalElementProps>(e1);
+
+    // when placement is changed the element is not deleted after pullChanges();
     assert.isUndefined(eb2);
 
     b1.close();
