@@ -67,7 +67,7 @@ export class ECDb implements Disposable {
   }
   /**
    * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
-   * @param alias identifer that was used to attach the file
+   * @param alias identifer that was used in the call to [[attachDb]]
    */
   public detachDb(alias: string): void {
     this.clearStatementCache();
