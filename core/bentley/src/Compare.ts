@@ -109,14 +109,11 @@ export function compareSimpleTypes(lhs: number | string | boolean, rhs: number |
   // Compare actual values
   switch (typeof lhs) {
     case "number":
-      cmp = compareNumbers(lhs, rhs as number);
-      break;
+      return compareNumbers(lhs, rhs as number);
     case "string":
-      cmp = compareStrings(lhs, rhs as string);
-      break;
+      return compareStrings(lhs, rhs as string);
     case "boolean":
-      cmp = compareBooleans(lhs, rhs as boolean);
-      break;
+      return compareBooleans(lhs, rhs as boolean);
   }
   return cmp;
 }
