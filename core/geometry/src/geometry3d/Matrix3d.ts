@@ -1342,6 +1342,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Matrix3d.createRotationAroundVector(
         upVector,
         Angle.createRadians(fraction * vectorA.planarAngleTo(vectorB, upVector).radians),
+        result,
       );
     }
     // if either vector is zero
@@ -1353,7 +1354,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Matrix3d.createIdentity(result);
     // opposing vectors (cross product = 0, dot product < 0)
     upVector = Matrix3d.createPerpendicularVectorFavorPlaneContainingZ(vectorA, upVector);
-    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
+    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI), result);
   }
   /** Returns a matrix that rotates from vectorA to vectorB. */
   public static createRotationVectorToVector(
@@ -1672,7 +1673,7 @@ export class Matrix3d implements BeJSONFunctions {
     // Note W * N^T is a 3x3 matrix. By associativity of matrix multiplication:
     //   `U1 = (I - W * N^T / W DOT N) * U0`
     // and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
-     const result = Matrix3d.createIdentity();
+    const result = Matrix3d.createIdentity();
     const dot = sweepVector.dotProduct(planeNormal);
     const inverse = Geometry.conditionalDivideCoordinate(1.0, -dot);
     if (inverse !== undefined) {
