@@ -23,5 +23,9 @@ export default defineConfig({
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
     }
+  },
+  optimizeDeps: {
+    include: ["@itwin/core-bentley", "@itwin/core-geometry"],
+    force: true,
   }
 })
