@@ -190,6 +190,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
 * IMJS_BING_MAPS_KEY
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
+* IMJS_BING_MAPS_KEY
+  * If defined, sets a Google Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
 * IMJS_IMODEL_ID
@@ -225,6 +227,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, specifies the GpuMemoryLimit with which to initialize TileAdmin (none, relaxed, default, aggressive; or a specific number of bytes).
 * IMJS_NO_IMDL_WORKER
   * If defined, decoding of iMdl content is performed in the main thread instead of in a web worker. This makes debugging easier.
+* IMJS_GOOGLEMAPS_UI
+  * Enable the Google Maps toolbar button.
 
 ## Key-ins
 
