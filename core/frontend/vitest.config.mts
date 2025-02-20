@@ -35,8 +35,8 @@ export default defineConfig({
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
     },
-    pool: "threads",
-    fileParallelism: true
+    minWorkers: 1,
+    maxWorkers: 3
   },
   plugins: [
     viteStaticCopy({
