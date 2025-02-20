@@ -36,9 +36,9 @@ export const GoogleMapsUtils = {
    * Register the google maps format if it is not already registered.
    * @internal
   */
-  registerFormatIfNeeded: () => {
+  checkFormatRegistered: () => {
     if (!IModelApp.mapLayerFormatRegistry.isRegistered(GoogleMapsMapLayerFormat.formatId)) {
-      IModelApp.mapLayerFormatRegistry.register(GoogleMapsMapLayerFormat);
+      throw new Error(`GoogleMaps format is not registered`);
     }
   },
 
@@ -49,7 +49,7 @@ export const GoogleMapsUtils = {
  * @internal
 */
   createMapLayerProps: (name: string = "GoogleMaps", opts?: GoogleMapsCreateSessionOptions): ImageMapLayerProps => {
-    GoogleMapsUtils.registerFormatIfNeeded();
+    GoogleMapsUtils.checkFormatRegistered();
 
     return {
       formatId: GoogleMapsMapLayerFormat.formatId,

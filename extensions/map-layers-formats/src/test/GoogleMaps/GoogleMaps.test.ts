@@ -51,7 +51,7 @@ describe("GoogleMapsProvider", () => {
     sandbox.stub(LogoDecoration.prototype, "activate").callsFake(async function _(_sprite: Sprite) {
       return Promise.resolve(true);
     });
-    sandbox.stub(GoogleMapsUtils, "registerFormatIfNeeded");
+    sandbox.stub(GoogleMapsUtils, "checkFormatRegistered");
   });
 
   afterEach(async () => {
