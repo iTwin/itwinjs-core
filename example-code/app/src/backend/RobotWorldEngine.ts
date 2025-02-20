@@ -36,6 +36,7 @@ export class RobotWorldEngine {
   }
 
   public static countRobots(iModelDb: IModelDb): number {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) from ${RobotWorld.Class.Robot}`, (stmt: ECSqlStatement): number => {
       if (stmt.step() !== DbResult.BE_SQLITE_ROW)
         return 0;
@@ -50,6 +51,7 @@ export class RobotWorldEngine {
     const selStmt =
       `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(selStmt, (stmt: ECSqlStatement) => {
       stmt.bindRange3d("bbox", robot1.placement.calculateRange());
       stmt.bindId("thisRobot", rid);
@@ -69,6 +71,7 @@ export class RobotWorldEngine {
     const selStmt =
       `SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt WHERE rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox) AND rt.ECInstanceId <> :thisRobot`;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(selStmt, (stmt: ECSqlStatement) => {
       stmt.bindRange3d("bbox", robot1.placement.calculateRange());
       stmt.bindId("thisRobot", rid);

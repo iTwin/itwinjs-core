@@ -431,12 +431,14 @@ describe("SqliteStatement", () => {
       // expect log message when statement fails
       slm = new SequentialLogMatcher();
       slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
       assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
       // now pass suppress log error which mean we should not get the error
       slm = new SequentialLogMatcher();
       slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), ""); // BUG: we do not see error message
       assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
     });

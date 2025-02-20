@@ -44,6 +44,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT COUNT(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -129,6 +130,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     assert.isTrue(Id64.isValidId64(rel1.sourceId), "Relationship does not exist");
     assert.isTrue(Id64.isValidId64(rel1.targetId), "Relationship does not exist");
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement("SELECT * from TestRelationSchema.ADrivesB", (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();

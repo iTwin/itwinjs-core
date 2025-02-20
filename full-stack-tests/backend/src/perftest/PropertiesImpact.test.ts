@@ -38,6 +38,7 @@ function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String
 }
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();

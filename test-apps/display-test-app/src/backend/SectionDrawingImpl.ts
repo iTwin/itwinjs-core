@@ -18,6 +18,7 @@ async function getDrawingProductionListModel(db: BriefcaseDb): Promise<Id64Strin
   let documentListModelId: Id64String | undefined;
 
   // Find it if it already exists.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   db.withPreparedStatement(
     "SELECT ECInstanceId FROM bis.DocumentPartition WHERE CodeValue = ?",
     (stmt) => {
