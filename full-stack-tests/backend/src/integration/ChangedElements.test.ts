@@ -9,6 +9,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
 import { BriefcaseManager, ChangedElementsDb, IModelDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
+import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
@@ -31,7 +32,7 @@ describe("ChangedElements", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
@@ -167,7 +168,7 @@ describe("ChangedElements", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
@@ -235,7 +236,7 @@ describe("ChangedElements", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = BriefcaseManager.getChangedElementsPathName(iModel.iModelId);
@@ -303,7 +304,7 @@ describe("ChangedElements", () => {
       IModelJsFs.removeSync(cacheFilePath);
 
     let iModel: IModelDb = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId: testIModelId });
     const startChangesetId = changesets[0].id;
     const endChangesetId = changesets[changesets.length - 1].id;
     assert.exists(iModel);
