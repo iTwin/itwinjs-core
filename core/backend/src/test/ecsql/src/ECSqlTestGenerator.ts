@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelDb, SnapshotDb } from "../../../core-backend";
-import { DbResult, ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
+import { DbResult } from "@itwin/core-bentley";
+import { ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
