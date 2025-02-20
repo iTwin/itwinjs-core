@@ -6,6 +6,7 @@
 import { DbConflictResolution, Guid } from "@itwin/core-bentley";
 import {
   IModel,
+  PhysicalElementProps,
   SubCategoryAppearance
 } from "@itwin/core-common";
 import * as chai from "chai";
@@ -17,6 +18,7 @@ import {
   ChannelControl,
   DictionaryModel,
   IModelHost,
+  PhysicalElement,
   SpatialCategory,
   SqliteChangesetReader
 } from "../../core-backend";
@@ -503,6 +505,34 @@ describe("Change merge method", () => {
 
     b1.close();
     b2.close();
+  });
+  it.only("delete instance (data conflict) ", async () => {
+    const b1 = await ctx.openB1(true /* = noLock */);
+    const b2 = await ctx.openB2(true /* = noLock */);
+
+    const e1 = await insertPhysicalObject(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `inserted physical object [id=${e1}]` });
+    await b2.pullChanges();
+
+    const eb1 = b1.elements.getElementProps<PhysicalElementProps>(e1);
+    eb1.userLabel = "test1";
+    eb1.placement = { origin: { x: 1, y: 1, z: 1 }, angles: { yaw: 1, pitch: 1, roll: 1 } };
+
+    b1.elements.updateElement(eb1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `update physical object [id=${e1}]` });
+
+    b2.elements.deleteElement(e1);;
+    b2.saveChanges();
+    await b2.pullChanges();
+
+    const eb2 = b2.elements.tryGetElementProps<PhysicalElementProps>(e1);
+    assert.isUndefined(eb2);
+
+    b1.close();
+    b2.close();
+
   });
 });
 
