@@ -156,6 +156,7 @@ describe("Attach/Detach Db", () => {
       }
     ];
     expect(rows).to.deep.equal(expected);
+    master.close();
   });
 
 });
