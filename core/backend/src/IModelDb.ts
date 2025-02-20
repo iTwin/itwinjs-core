@@ -366,7 +366,7 @@ export abstract class IModelDb extends IModel {
     }
   }
   /**
-   * Attach a iModel file to this connection and load and register its schemas.
+   * Attach an iModel file to this connection and load and register its schemas.
    * @param fileName IModel file name
    * @param alias identifier for the attached file. This identifer is used a tablespace executing ECSQL queries.
    */
