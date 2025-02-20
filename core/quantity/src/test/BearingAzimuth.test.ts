@@ -39,7 +39,7 @@ describe("Bearing format tests:", () => {
     };
 
     bearingDMS = new Format("BearingDMS");
-    await bearingDMS.fromJSON(unitsProvider, bearingDMSJson).catch(() => {});
+    await bearingDMS.fromJSON(unitsProvider, bearingDMSJson);
   });
 
   it("should have valid units and format", () => {
@@ -84,11 +84,11 @@ describe("Bearing format tests:", () => {
     };
 
     const bearingDMSWithLabel = new Format("BearingDMSWithLabel");
-    await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson).catch(() => { });
+    await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson);
     expect(bearingDMSWithLabel.hasUnits).to.be.true;
 
     const bearingDecimal = new Format("BearingDecimal");
-    await bearingDecimal.fromJSON(unitsProvider, bearingDecimalJson).catch(() => { });
+    await bearingDecimal.fromJSON(unitsProvider, bearingDecimalJson);
     expect(bearingDecimal.hasUnits).to.be.true;
 
     const bearingDMSFormatter = await FormatterSpec.create("RadToBearingDMS", bearingDMS, unitsProvider, rad);
@@ -256,9 +256,9 @@ describe("Bearing format tests:", () => {
     };
 
     const bearingDMSWithLabel = new Format("BearingDMSWithLabel");
-    await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson).catch(() => { });
+    await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson);
     const bearingDecimal = new Format("BearingDecimal");
-    await bearingDecimal.fromJSON(unitsProvider, bearingDecimalJson).catch(() => { });
+    await bearingDecimal.fromJSON(unitsProvider, bearingDecimalJson);
     const bearingDMSWithLabelParser = await ParserSpec.create(bearingDMSWithLabel, unitsProvider, rad);
     const bearingDecimalParser = await ParserSpec.create(bearingDecimal, unitsProvider, rad);
 
@@ -367,11 +367,11 @@ describe("Azimuth format tests:", () => {
     };
 
     const azimuthDMS = new Format("azimuthDMS");
-    await azimuthDMS.fromJSON(unitsProvider, azimuthDMSJson).catch(() => { });
+    await azimuthDMS.fromJSON(unitsProvider, azimuthDMSJson);
     expect(azimuthDMS.hasUnits).to.be.true;
 
     const azimuthDecimal = new Format("azimuthDecimal");
-    await azimuthDecimal.fromJSON(unitsProvider, azimuthDecimalJson).catch(() => { });
+    await azimuthDecimal.fromJSON(unitsProvider, azimuthDecimalJson);
     expect(azimuthDecimal.hasUnits).to.be.true;
 
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");

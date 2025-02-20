@@ -36,7 +36,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testEntry = { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" };
@@ -72,7 +72,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testEntry = {
@@ -106,7 +106,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -190,7 +190,7 @@ describe("Composite Formats tests:", () => {
         formatData.formatTraits.push("trailZeroes");
 
       const format = new Format("test");
-      await format.fromJSON(unitsProvider, formatData).catch(() => { });
+      await format.fromJSON(unitsProvider, formatData);
       expect(format.hasUnits).to.be.true;
       expect(format.hasFormatTraitSet(FormatTraits.KeepSingleZero)).toEqual(testEntry.keepSingleZero);
       expect(format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint)).toEqual(testEntry.keepDecimalPoint);
@@ -228,7 +228,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -275,7 +275,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -318,7 +318,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -361,7 +361,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -403,7 +403,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -448,7 +448,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -493,7 +493,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -534,7 +534,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -572,7 +572,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -618,7 +618,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -663,7 +663,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
@@ -702,7 +702,7 @@ describe("Composite Formats tests:", () => {
     const format = new Format("test");
     expect(format).toBeDefined();
 
-    await format.fromJSON(unitsProvider, compositeFormat).catch(() => { });
+    await format.fromJSON(unitsProvider, compositeFormat);
     expect(JSON.stringify(format.toJSON().composite)).to.eql(`{"spacer":"","includeZero":true,"units":[{"name":"Units.KM"},{"name":"Units.M","label":""},{"name":"Units.CM","label":"CM"},{"name":"Units.MM","label":"'"}]}`);
   });
 
