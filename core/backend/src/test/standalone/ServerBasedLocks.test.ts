@@ -19,7 +19,7 @@ import { HubMock } from "../../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
-import { _releaseAllLocks } from "../../internal/Symbols";
+import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -77,7 +77,7 @@ describe("Server-based locks", () => {
   };
 
   it("Acquiring locks", async () => {
-    const lockSpy = sinonSpy(IModelHost.hubAccess, "acquireLocks");
+    const lockSpy = sinonSpy(IModelHost[_hubAccess], "acquireLocks");
     let bc1 = await BriefcaseDb.open({ fileName: briefcase1Props.fileName });
     assert.isTrue(bc1.locks.isServerBased);
     bc1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
