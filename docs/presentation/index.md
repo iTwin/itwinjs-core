@@ -8,5 +8,5 @@ The Presentation library provides means to declaratively get data from iModels i
 [!iui tile heading="Content" linkTo="index path=presentation/content/index subPath=/content" contents="Learn presentation rules for producing content for tables, property grids, list views" icon="properties-list.svg"]
 [!iui tile heading="Hierarchies" linkTo="index path=presentation/hierarchies/index subPath=/hierarchies" contents="Learn presentation rules for producing hierarchies" icon="tree.svg"]
 [!iui tile heading="Customization" linkTo="index path=presentation/customization/index subPath=/customization" contents="Learn about customization of how instances are displayed" icon="palette.svg"]
-[!iui tile heading="Unified Selection" linkTo="index path=presentation/unified-selection/index subPath=/unified-selection" contents="Learn about sharing selection across UI components" icon="isolate.svg"]
+[!iui tile heading="Unified Selection (deprecated)" linkTo="index path=presentation/unified-selection/index subPath=/unified-selection" contents="Learn about sharing selection across UI components" icon="isolate.svg"]
 [!iui tile heading="Advanced" linkTo="index path=presentation/advanced/index subPath=/advanced" contents="Learn advanced topics about Presentation Library" icon="puzzle.svg"]

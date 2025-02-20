@@ -14,7 +14,7 @@ jobs:
   - job:
     timeoutInMinutes: 360
     pool:
-      name: iModelTechLnxDeb11
+      name: imodelNative-Debian12
       demands:
         - Agent.OS -equals Linux
     variables:

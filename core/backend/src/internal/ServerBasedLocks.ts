@@ -14,7 +14,7 @@ import { BriefcaseDb } from "../IModelDb";
 import { LockControl } from "../LockControl";
 import { IModelHost } from "../IModelHost";
 import { SQLiteDb } from "../SQLiteDb";
-import { _close, _elementWasCreated, _implementationProhibited, _nativeDb, _releaseAllLocks } from "./Symbols";
+import { _close, _elementWasCreated, _hubAccess, _implementationProhibited, _nativeDb, _releaseAllLocks } from "./Symbols";
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
@@ -93,7 +93,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async [_releaseAllLocks](): Promise<void> {
-    await IModelHost.hubAccess.releaseAllLocks(this.briefcase); // throws if unsuccessful
+    await IModelHost[_hubAccess].releaseAllLocks(this.briefcase); // throws if unsuccessful
     this.clearAllLocks();
   }
 
@@ -177,7 +177,7 @@ export class ServerBasedLocks implements LockControl {
         locks.set(shared, LockState.Shared);
     }
 
-    await IModelHost.hubAccess.acquireLocks(this.briefcase, locks); // throws if unsuccessful
+    await IModelHost[_hubAccess].acquireLocks(this.briefcase, locks); // throws if unsuccessful
     for (const lock of locks)
       this.insertLock(lock[0], lock[1], LockOrigin.Acquired);
     this.lockDb.saveChanges();

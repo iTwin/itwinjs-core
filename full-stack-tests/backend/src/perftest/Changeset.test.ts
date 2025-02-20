@@ -16,6 +16,7 @@
 // import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 // import { Reporter } from "@itwin/perf-tools";
 // import { BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
+// import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 // import { HubWrappers, IModelTestUtils, KnownTestLocations, RevisionUtility } from "@itwin/core-backend/lib/cjs/test/index";
 // import { HubUtility } from "../HubUtility";
 // import { PerfTestUtility } from "./PerfTestUtils";
@@ -50,7 +51,7 @@
 // }
 
 // async function getIModelAfterApplyingCS(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString, iModelId: string) {
-//   const changeSets = await IModelHost.hubAccess.queryChangesets({ iModelId });
+//   const changeSets = await IModelHost[_hubAccess].queryChangesets({ iModelId });
 //   const firstChangeSetId = changeSets[0].id;
 //   const secondChangeSetId = changeSets[1].id;
 
@@ -137,11 +138,11 @@
 // async function pushIModelAfterDataChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
 //   const iModelName = "CodesPushTest";
 //   // delete any existing imodel with given name
-//   const iModelId = await IModelHost.hubAccess.queryIModelByName({ iTwinId, iModelName, accessToken });
+//   const iModelId = await IModelHost[_hubAccess].queryIModelByName({ iTwinId, iModelName, accessToken });
 //   if (iModelId)
-//     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+//     await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId, iModelId });
 //   // create new imodel with given name
-//   const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
+//   const rwIModelId = await IModelHost[_hubAccess].createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
 //   assert.isNotEmpty(rwIModelId);
 //   const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
@@ -162,11 +163,11 @@
 // async function pushIModelAfterSchemaChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
 //   const iModelName = "SchemaPushTest";
 //   // delete any existing imodel with given name
-//   const iModelId = await IModelHost.hubAccess.queryIModelByName({ iTwinId, iModelName, accessToken });
+//   const iModelId = await IModelHost[_hubAccess].queryIModelByName({ iTwinId, iModelName, accessToken });
 //   if (iModelId)
-//     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+//     await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId, iModelId });
 //   // create new imodel with given name
-//   const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
+//   const rwIModelId = await IModelHost[_hubAccess].createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
 //   assert.isNotEmpty(rwIModelId);
 //   const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
@@ -206,12 +207,12 @@
 // async function reverseChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
 //   const iModelName = "reverseChangeTest";
 //   // delete any existing imodel with given name
-//   const iModelId = await IModelHost.hubAccess.queryIModelByName({ iModelName, iTwinId, accessToken });
+//   const iModelId = await IModelHost[_hubAccess].queryIModelByName({ iModelName, iTwinId, accessToken });
 //   if (iModelId)
-//     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+//     await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId, iModelId });
 
 //   // create new imodel with given name
-//   const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
+//   const rwIModelId = await IModelHost[_hubAccess].createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
 //   assert.isNotEmpty(rwIModelId);
 //   const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
@@ -248,12 +249,12 @@
 // async function reinstateChanges(accessToken: AccessToken, reporter: Reporter, iTwinId: GuidString) {
 //   const iModelName = "reinstateChangeTest";
 //   // delete any existing imodel with given name
-//   const iModelId = await IModelHost.hubAccess.queryIModelByName({ iModelName, iTwinId, accessToken });
+//   const iModelId = await IModelHost[_hubAccess].queryIModelByName({ iModelName, iTwinId, accessToken });
 //   if (iModelId)
-//     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+//     await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId, iModelId });
 
 //   // create new imodel with given name
-//   const rwIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
+//   const rwIModelId = await IModelHost[_hubAccess].createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
 //   assert.isNotEmpty(rwIModelId);
 //   const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: rwIModelId });
 
@@ -383,13 +384,13 @@
 //     const accessToken = await TestUtility.getAccessToken(TestUsers.regular);
 
 //     // first get all info and save it
-//     const iModel = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId: iModelInfo.projId, iModelName: iModelInfo.modelName });
+//     const iModel = await IModelHost[_hubAccess].queryIModelByName({ accessToken, iTwinId: iModelInfo.projId, iModelName: iModelInfo.modelName });
 //     if (!iModel)
 //       throw new Error(`IModel with id ${iModelInfo.iModelId} not found`);
 
 //     fs.writeFileSync(path.join(downloadDir, "imodel.json"), JSON.stringify(iModel, undefined, 4));
 
-//     const changesets = await IModelHost.hubAccess.queryChangesets({
+//     const changesets = await IModelHost[_hubAccess].queryChangesets({
 //       accessToken,
 //       iModelId: iModelInfo.modelId,
 //     });
@@ -641,10 +642,10 @@
 
 //   async function lastChangesetToken(iModelId: string): Promise<IModelJsNative.ChangesetFileProps> {
 //     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-//     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+//     const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
 //     const changeset = changesets[changesets.length - 1];
 //     const downloadDir = BriefcaseManager.getChangeSetsPath(iModelId);
-//     const changesetProps = await IModelHost.hubAccess.downloadChangeset({ accessToken, iModelId, targetDir: downloadDir, changeset: { id: changeset.id } });
+//     const changesetProps = await IModelHost[_hubAccess].downloadChangeset({ accessToken, iModelId, targetDir: downloadDir, changeset: { id: changeset.id } });
 //     return { id: changeset.id, parentId: changeset.parentId, pathname: changesetProps.pathname, changesType: changeset.changesType, index: +changeset.index, pushDate: "", userCreated: "", briefcaseId: 0, description: "" };
 //   }
 
@@ -663,7 +664,7 @@
 //     for (const opSize of opSizes) {
 //       for (const baseName of baseNames) {
 //         const iModelName = `${iModelNameBase + baseName}_${opSize.toString()}`;
-//         let iModelId = await IModelHost.hubAccess.queryIModelByName({
+//         let iModelId = await IModelHost[_hubAccess].queryIModelByName({
 //           iTwinId,
 //           iModelName,
 //           accessToken,
@@ -672,7 +673,7 @@
 //           // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
 //           // eslint-disable-next-line no-console
 //           console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
-//           iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
+//           iModelId = await IModelHost[_hubAccess].createNewIModel({ accessToken, iTwinId, iModelName, description: "TestSubject" });
 //           const iModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId });
 
 //           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);
@@ -782,7 +783,7 @@
 //   it("InsertChangeset", async () => {
 //     for (const opSize of opSizes) {
 //       const iModelName = `${iModelNameBase}I_${opSize.toString()}`;
-//       const iModelId = await IModelHost.hubAccess.queryIModelByName({ iTwinId, iModelName, accessToken });
+//       const iModelId = await IModelHost[_hubAccess].queryIModelByName({ iTwinId, iModelName, accessToken });
 //       if (iModelId) {
 //         // eslint-disable-next-line no-console
 //         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
@@ -812,7 +813,7 @@
 //   it("DeleteChangeset", async () => {
 //     for (const opSize of opSizes) {
 //       const iModelName = `${iModelNameBase}D_${opSize.toString()}`;
-//       const iModelId = await IModelHost.hubAccess.queryIModelByName({ iTwinId, iModelName, accessToken });
+//       const iModelId = await IModelHost[_hubAccess].queryIModelByName({ iTwinId, iModelName, accessToken });
 //       if (iModelId) {
 //         // eslint-disable-next-line no-console
 //         console.log(`Downloading iModel ${iModelName} from iModelHub.`);
@@ -841,7 +842,7 @@
 //   it("UpdateChangeset", async () => {
 //     for (const opSize of opSizes) {
 //       const iModelName = `${iModelNameBase}U_${opSize.toString()}`;
-//       const iModelId = await IModelHost.hubAccess.queryIModelByName({ iTwinId, iModelName, accessToken });
+//       const iModelId = await IModelHost[_hubAccess].queryIModelByName({ iTwinId, iModelName, accessToken });
 //       if (iModelId) {
 //         // eslint-disable-next-line no-console
 //         console.log(`Downloading iModel ${iModelName} from iModelHub.`);

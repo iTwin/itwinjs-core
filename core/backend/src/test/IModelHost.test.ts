@@ -17,6 +17,7 @@ import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
+import { _getHubAccess, _hubAccess } from "../internal/Symbols";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -202,8 +203,8 @@ describe("IModelHost", () => {
 
   it("should throw if hubAccess is undefined and getter is called", async () => {
     await IModelHost.startup(opts);
-    expect(IModelHost.getHubAccess()).undefined;
-    expect(() => IModelHost.hubAccess).throws();
+    expect(IModelHost[_getHubAccess]()).undefined;
+    expect(() => IModelHost[_hubAccess]).throws();
   });
 
   it("computeSchemaChecksum", () => {

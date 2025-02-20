@@ -55,9 +55,8 @@ import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { SerializationHelpers } from "./SerializationHelpers";
 
-// cspell:word bagof
 /**
- * `ImodelJson` namespace has classes for serializing and deserialization json objects
+ * `IModelJson` namespace has classes for serializing and deserialization json objects
  * @public
  */
 export namespace IModelJson {
@@ -127,14 +126,20 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for a collection of curves, eg. as used as a swept contour.
+   * Interface for a collection of curves, e.g. as used as a swept contour.
    * @public
    */
   export interface CurveCollectionProps extends PlanarRegionProps {
-    /** A sequence of curves joined head to tail: */
+    /** A sequence of curves joined head to tail. */
     path?: [CurvePrimitiveProps];
-    /** A collection of curves with no required structure or connections: */
+    // cspell:word bagof
+    /**
+     * A collection of curves with no required structure or connections
+     * @deprecated in 5.x. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
+    */
     bagofCurves?: [CurveCollectionProps];
+    /** A collection of curves with no required structure or connections. */
+    bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
   }
 
   /**
@@ -154,7 +159,6 @@ export namespace IModelJson {
     /** `{unionRegion:...}`
      * * A collection of loops and parityRegions
      */
-
     unionRegion?: [PlanarRegionProps];
   }
   /**
@@ -306,13 +310,13 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for a surface with ruled sweeps between corresponding curves on successive contours
+   * Interface for a surface with rule lines between corresponding curves on successive contours
    * @public
    */
   export interface RuledSweepProps {
-    /** The swept curve or region.  An array of curve collections.  */
+    /** An array of swept curves or regions. */
     contour: [CurveCollectionProps];
-    /** flag for circular end caps. */
+    /** Optional capping flag. */
     capped?: boolean;
   }
 
@@ -472,17 +476,6 @@ export namespace IModelJson {
      */
     sweepAngle?: AngleProps;
     /** optional capping flag. If missing, implied false */
-    capped?: boolean;
-  }
-
-  /**
-   * Interface for a ruled sweep.
-   * @public
-   */
-  export interface RuledSweepProps {
-    /** Array of contours */
-    contour: [CurveCollectionProps];
-    /** optional capping flag. */
     capped?: boolean;
   }
 
@@ -801,7 +794,7 @@ export namespace IModelJson {
         return CoordinateXYZ.create(point);
       return undefined;
     }
-    /** Parse TransitionSpiral content (right side) to TransitionSpiral3d. */
+    /** Parse `transitionSpiral` content (right side) to TransitionSpiral3d. */
     public static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined {
       const axes = Reader.parseOrientation(data, true)!;
       const origin = Reader.parsePoint3dProperty(data, "origin");
@@ -872,14 +865,14 @@ export namespace IModelJson {
       return newCurve;
     }
 
-    /** Parse `bcurve` content to an InterpolationCurve3d object. */
+    /** Parse `interpolationCurve` content to an InterpolationCurve3d object. */
     public static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined {
       if (data === undefined)
         return undefined;
       return InterpolationCurve3d.create(data);
     }
 
-    /** Parse `bcurve` content to an Akima curve object. */
+    /** Parse `akimaCurve` content to an Akima curve object. */
     public static parseAkimaCurve3d(data?: any): AkimaCurve3d | undefined {
       if (data === undefined)
         return undefined;
@@ -1232,7 +1225,6 @@ export namespace IModelJson {
           return Reader.parseArcObject(json.arc);
         } else if (json.hasOwnProperty("point")) {
           return Reader.parseCoordinate(json.point);
-
         } else if (json.hasOwnProperty("bcurve")) {
           return Reader.parseBcurve(json.bcurve);
         } else if (json.hasOwnProperty("interpolationCurve")) {

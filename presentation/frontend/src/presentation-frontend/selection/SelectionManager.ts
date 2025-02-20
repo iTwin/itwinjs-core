@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -29,6 +30,7 @@ import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionSc
 /**
  * Properties for creating [[SelectionManager]].
  * @public
+ * @deprecated in 5.0. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
  */
 export interface SelectionManagerProps {
   /** A manager for [selection scopes]($docs/presentation/unified-selection/index#selection-scopes) */
@@ -53,6 +55,7 @@ export interface SelectionManagerProps {
 /**
  * The selection manager which stores the overall selection.
  * @public
+ * @deprecated in 5.0. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
  */
 export class SelectionManager implements ISelectionProvider, Disposable {
   private _imodelKeyFactory: (imodel: IModelConnection) => string;

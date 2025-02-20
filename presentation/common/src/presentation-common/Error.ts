@@ -34,6 +34,8 @@ export enum PresentationStatus {
   /**
    * Timeout for the request was reached which prevented it from being fulfilled. Frontend may
    * repeat the request.
+   *
+   * @deprecated in 5.x. Presentation RPC now relies on `RpcPendingResponse` to handle timeouts.
    */
   BackendTimeout = Error + 7,
 }

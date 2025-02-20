@@ -1,5 +1,7 @@
 # Unified selection
 
+> **Warning:** The page refers to a deprecated unified selection system. Please see [`@itwin/unified-selection`](https://www.npmjs.com/package/@itwin/unified-selection) and [Migrating from `@itwin/presentation-frontend` unified selection API](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) learning page for details on how to migrate to new system.
+
 The purpose of unified selection is to act as a single source of truth of what is selected in an iTwin.js application.
 
 **Contents:**

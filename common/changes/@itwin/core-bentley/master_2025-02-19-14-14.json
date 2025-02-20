@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Deprecated `GeoServiceStatus.Pending`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

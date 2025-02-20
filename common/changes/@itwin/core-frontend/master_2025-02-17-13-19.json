@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Deprecated `IModelConnection.getMassPropertiesPerCandidate`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -1252,12 +1252,20 @@ export class AccuDraw {
     return true;
   }
 
+  private _acosWithLimitCheck(value: number): number {
+    if (value >= 1.0)
+      return 0.0;
+    if (value <= -1.0)
+      return Math.PI;
+    return Math.acos(value);
+  }
+
   private handleDegeneratePolarCase(): void {
     if (!(this.locked & LockedStates.DIST_BM))
       this._distance = 0.0;
 
     if (this.locked & LockedStates.VEC_BM) {
-      this._angle = Math.acos(this.vector.dotProduct(this.axes.x));
+      this._angle = this._acosWithLimitCheck(this.vector.dotProduct(this.axes.x));
     } else if (this.locked & LockedStates.Y_BM) {
       this.vector.setFrom(this.axes.y);
       this._angle = Math.PI / 2.0;
@@ -1268,7 +1276,7 @@ export class AccuDraw {
       this.indexed = this.locked;
     } else {
       // use last good vector
-      this._angle = Math.acos(this.vector.dotProduct(this.axes.x));
+      this._angle = this._acosWithLimitCheck(this.vector.dotProduct(this.axes.x));
     }
     this.origin.plusScaled(this.vector, this._distance, this.point);
   }

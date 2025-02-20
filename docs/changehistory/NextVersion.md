@@ -11,6 +11,12 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
+  - [Display](#graphics)
+    - [Read Image To Canvas](#read-image-to-canvas)
+  - [Back-end image conversion](#back-end-image-conversion)
+  - [Presentation](#presentation)
+    - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
+  - [Delete all transactions](#delete-all-transactions)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -18,6 +24,8 @@ Table of contents:
     - [@itwin/core-frontend](#itwincore-frontend)
     - [@itwin/ecschema-metadata](#itwinecschema-metadata)
     - [@itwin/presentation-common](#itwinpresentation-common)
+    - [@itwin/presentation-backend](#itwinpresentation-backend)
+    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Breaking Changes](#breaking-changes)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Updated minimum requirements](#updated-minimum-requirements)
@@ -33,8 +41,8 @@ Table of contents:
       - [@itwin/core-frontend](#itwincore-frontend-1)
       - [@itwin/core-geometry](#itwincore-geometry)
       - [@itwin/presentation-common](#itwinpresentation-common-1)
-      - [@itwin/presentation-backend](#itwinpresentation-backend)
-      - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+      - [@itwin/presentation-backend](#itwinpresentation-backend-1)
+      - [@itwin/presentation-frontend](#itwinpresentation-frontend-1)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-2)
       - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
@@ -45,8 +53,6 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
-  - [Graphics](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
 
 ## Selection set
 
@@ -81,6 +87,30 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 - [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
+
+## Display
+
+### Read image to canvas
+
+Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
+
+If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
+
+## Back-end image conversion
+
+@itwin/core-backend provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
+
+## Presentation
+
+The Presentation system is moving towards a more modular approach, with smaller packages intended for more specific tasks and having less peer dependencies. You can find more details about that in the [README of `@itwin/presentation` repo](https://github.com/iTwin/presentation/blob/master/README.md#the-packages). As part of that move, some Presentation APIs in `@itwin/itwinjs-core` repository, and, more specifically, 3 Presentation packages: `@itwin/presentation-common`, `@itwin/presentation-backend`, and `@itwin/presentation-frontend` have received a number of deprecations for APIs that already have replacements.
+
+### Unified selection move to `@itwin/unified-selection`
+
+The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
+
+## Delete all transactions
+
+[BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
 
 ## API deprecations
 
@@ -141,14 +171,47 @@ Added type guards and type assertions for every schema item class (they are on t
 ### @itwin/presentation-common
 
 - All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
-
+- `PresentationStatus.BackendTimeout` has been deprecated as it's no longer used. The Presentation library now completely relies on RPC system to handle timeouts.
 - `imageId` properties of [CustomNodeSpecification]($presentation-common) and [PropertyRangeGroupSpecification]($presentation-common) have been deprecated. [ExtendedData](../presentation/customization/ExtendedDataUsage.md#customize-tree-node-item-icon) rule should be used instead.
-
 - `fromJSON` and `toJSON` methods of [Field]($presentation-common), [PropertiesField]($presentation-common), [ArrayPropertiesField]($presentation-common), [StructPropertiesField]($presentation-common) and [NestedContentField]($presentation-common) have been deprecated. Use `fromCompressedJSON` and `toCompressedJSON` methods instead.
-
 - `ItemJSON.labelDefinition` has been deprecated in favor of newly added optional `label` property.
-
 - `NestedContentValue.labelDefinition` has been deprecated in favor of newly added optional `label` property.
+- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
+  - `ComputeSelectionRequestOptions`,
+  - `ComputeSelectionRpcRequestOptions`,
+  - `ElementSelectionScopeProps`,
+  - `SelectionScope`,
+  - `SelectionScopeProps`,
+  - `SelectionScopeRequestOptions`,
+  - `SelectionScopeRpcRequestOptions`.
+
+### @itwin/presentation-backend
+
+- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
+  - `PresentationManager.computeSelection`,
+  - `PresentationManager.getSelectionScopes`.
+
+### @itwin/presentation-frontend
+
+- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
+  - `createSelectionScopeProps`,
+  - `HiliteSet`,
+  - `HiliteSetProvider`,
+  - `HiliteSetProviderProps`,
+  - `ISelectionProvider`,
+  - `Presentation.selection`,
+  - `PresentationProps.selection`,
+  - `SelectionChangeEvent`,
+  - `SelectionChangeEventArgs`,
+  - `SelectionChangesListener`,
+  - `SelectionChangeType`,
+  - `SelectionHandler`,
+  - `SelectionHandlerProps`,
+  - `SelectionHelper`,
+  - `SelectionManager`,
+  - `SelectionManagerProps`,
+  - `SelectionScopesManager`,
+  - `SelectionScopesManagerProps`.
 
 ## Breaking Changes
 
@@ -547,11 +610,3 @@ class MyElement extends Element {
   ...
 }
 ```
-
-## Graphics
-
-### Read Image To Canvas
-
-Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
-
-If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.

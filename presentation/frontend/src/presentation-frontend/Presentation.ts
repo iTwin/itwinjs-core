@@ -18,7 +18,7 @@ import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
 let localization: Localization | undefined;
 let presentationManager: PresentationManager | undefined;
-let selectionManager: SelectionManager | undefined;
+let selectionManager: SelectionManager | undefined; // eslint-disable-line @typescript-eslint/no-deprecated
 let favoritePropertiesManager: FavoritePropertiesManager | undefined;
 const initializationHandlers: Array<() => Promise<(() => void) | void>> = [];
 const terminationHandlers: Array<() => void> = [];
@@ -31,7 +31,13 @@ export interface PresentationProps {
   /** Props for [[PresentationManager]]. */
   presentation?: PresentationManagerProps;
 
-  /** Props for [[SelectionManager]]. */
+  /**
+   * Props for [[SelectionManager]].
+   *
+   * @deprecated in 5.0. The whole unified selection system in this package is deprecated in favor of the new
+   * [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   selection?: Partial<SelectionManagerProps>;
 
   /** Props for [[FavoritePropertiesManager]]. */
@@ -77,6 +83,7 @@ export class Presentation {
       presentationManager = PresentationManager.create(managerProps);
     }
     if (!selectionManager) {
+      /* eslint-disable @typescript-eslint/no-deprecated */
       selectionManager = new SelectionManager({
         ...props?.selection,
         scopes:
@@ -86,6 +93,7 @@ export class Presentation {
             localeProvider: () => this.presentation.activeLocale,
           }),
       });
+      /* eslint-enable @typescript-eslint/no-deprecated */
     }
     if (!favoritePropertiesManager) {
       favoritePropertiesManager = new FavoritePropertiesManager({
@@ -158,7 +166,13 @@ export class Presentation {
     presentationManager = value;
   }
 
-  /** The singleton [[SelectionManager]] */
+  /**
+   * The singleton [[SelectionManager]].
+   *
+   * @deprecated in 5.0. The whole unified selection system in this package is deprecated in favor of the new
+   * [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static get selection(): SelectionManager {
     if (!selectionManager) {
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
@@ -167,6 +181,7 @@ export class Presentation {
   }
 
   /** @internal */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static setSelectionManager(value: SelectionManager) {
     selectionManager = value;
   }

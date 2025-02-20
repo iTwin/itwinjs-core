@@ -23,7 +23,7 @@ import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
-import { _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
@@ -205,7 +205,7 @@ export class BriefcaseManager {
    * it's a good idea to supply different aliases for each of them.
    */
   public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId> {
-    return IModelHost.hubAccess.acquireNewBriefcaseId(arg);
+    return IModelHost[_hubAccess].acquireNewBriefcaseId(arg);
   }
 
   /**
@@ -236,7 +236,7 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.FileAlreadyExists, `Briefcase "${fileName}" already exists`);
 
     const asOf = arg.asOf ?? IModelVersion.latest().toJSON();
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ ...arg, version: IModelVersion.fromJSON(asOf) });
+    const changeset = await IModelHost[_hubAccess].getChangesetFromVersion({ ...arg, version: IModelVersion.fromJSON(asOf) });
     const checkpoint: CheckpointProps = { ...arg, changeset };
 
     try {
@@ -305,7 +305,7 @@ export class BriefcaseManager {
    */
   public static async releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void> {
     if (this.isValidBriefcaseId(briefcase.briefcaseId))
-      return IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
+      return IModelHost[_hubAccess].releaseBriefcase({ accessToken, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
   }
 
   /**
@@ -404,17 +404,17 @@ export class BriefcaseManager {
 
   /** Query the hub for the properties for a ChangesetIndex or ChangesetId  */
   public static async queryChangeset(arg: { iModelId: GuidString, changeset: ChangesetIndexOrId }): Promise<ChangesetProps> {
-    return IModelHost.hubAccess.queryChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
+    return IModelHost[_hubAccess].queryChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
   /** Query the hub for an array of changeset properties given a ChangesetRange */
   public static async queryChangesets(arg: { iModelId: GuidString, range: ChangesetRange }): Promise<ChangesetProps[]> {
-    return IModelHost.hubAccess.queryChangesets({ ...arg, accessToken: await IModelHost.getAccessToken() });
+    return IModelHost[_hubAccess].queryChangesets({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
   /** Query the hub for the ChangesetProps of the most recent changeset */
   public static async getLatestChangeset(arg: { iModelId: GuidString }): Promise<ChangesetProps> {
-    return IModelHost.hubAccess.getLatestChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
+    return IModelHost[_hubAccess].getLatestChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
   }
 
   /** Query the Id of an iModel by name.
@@ -422,7 +422,7 @@ export class BriefcaseManager {
    * @returns the Id of the corresponding iModel, or `undefined` if no such iModel exists.
    */
   public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName(arg);
+    return IModelHost[_hubAccess].queryIModelByName(arg);
   }
 
   /** Deletes a folder and all it's contents.
@@ -460,7 +460,7 @@ export class BriefcaseManager {
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
-      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+      currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     if (!arg.toIndex) {
       throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be specified to revert changesets");
@@ -473,7 +473,7 @@ export class BriefcaseManager {
     }
 
     // Download change sets
-    const changesets = await IModelHost.hubAccess.downloadChangesets({
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({
       accessToken: arg.accessToken,
       iModelId: db.iModelId,
       range: { first: arg.toIndex, end: currentIndex },
@@ -513,7 +513,7 @@ export class BriefcaseManager {
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
-      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+      currentIndex = (await IModelHost[_hubAccess].queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
 
@@ -522,7 +522,7 @@ export class BriefcaseManager {
     }
 
     // Download change sets
-    const changesets = await IModelHost.hubAccess.downloadChangesets({
+    const changesets = await IModelHost[_hubAccess].downloadChangesets({
       accessToken: arg.accessToken,
       iModelId: db.iModelId,
       range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -600,7 +600,7 @@ export class BriefcaseManager {
     while (true) {
       try {
         const accessToken = await IModelHost.getAccessToken();
-        const index = await IModelHost.hubAccess.pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
+        const index = await IModelHost[_hubAccess].pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
         db[_nativeDb].completeCreateChangeset({ index });
         db.changeset = db[_nativeDb].getCurrentChangeset();
         if (!arg.retainLocks)

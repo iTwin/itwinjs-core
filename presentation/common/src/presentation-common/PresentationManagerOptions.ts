@@ -293,15 +293,18 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
 /**
  * Request options used for selection scope related requests
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
   elementIds: Id64String[];
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   scope: SelectionScopeProps;
 }
 

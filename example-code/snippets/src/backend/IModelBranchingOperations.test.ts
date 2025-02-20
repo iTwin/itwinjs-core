@@ -31,7 +31,7 @@ async function initializeBranch(myITwinId: string, masterIModelId: string, myAcc
   const masterDb = await BriefcaseDb.open({ fileName: masterDbProps.fileName });
 
   // create a duplicate of master as a good starting point for our branch
-  const branchIModelId = await IModelHost.hubAccess.createNewIModel({
+  const branchIModelId = await IModelHost.createNewIModel({
     iTwinId: myITwinId,
     iModelName: "my-branch-imodel",
     version0: masterDb.pathName,
@@ -198,7 +198,7 @@ describe.skip("IModelBranchingOperations", () => {
   it("run branching operations", async () => {
     const myAccessToken = await HubWrappers.getAccessToken(TestUserType.Regular);
     const myITwinId = HubMock.iTwinId;
-    const masterIModelId = await IModelHost.hubAccess.createNewIModel({
+    const masterIModelId = await IModelHost.createNewIModel({
       iTwinId: myITwinId,
       iModelName: "my-branch-imodel",
       version0: version0Path,

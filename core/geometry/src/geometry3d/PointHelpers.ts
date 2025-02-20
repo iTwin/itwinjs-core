@@ -697,9 +697,9 @@ export class Point3dArray {
   }
 
   /**
-   * return an 2-dimensional array containing all the values of `data` in arrays of numPerBlock
-   * @param data simple array of numbers
-   * @param numPerBlock number of values in each block at first level down
+   * Return a 2-dimensional array containing all the values of `data` in arrays of numPerBlock
+   * @param data simple array of numbers.
+   * @param numPerBlock number of values in each block at first level down.
    */
   public static unpackNumbersToNestedArrays(data: Float64Array, numPerBlock: number): any[] {
     const result = [];

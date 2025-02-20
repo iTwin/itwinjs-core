@@ -642,8 +642,8 @@ describe("Matrix3d.Factors", () => {
   it("FactorRigidSkew", () => {
     const ck = new Checker();
     const col0 = Vector3d.create(1);
-    const col1 = Vector3d.create(2,1);
-    const col2 = Vector3d.create(1,2,-1);
+    const col1 = Vector3d.create(2, 1);
+    const col2 = Vector3d.create(1, 2, -1);
     const M = Matrix3d.createColumns(col0, col1, col2); // mirror
     const R = Matrix3d.createZero();
     const G = Matrix3d.createZero();
@@ -848,7 +848,8 @@ function testRotateVectorToVector(vectorA: Vector3d, vectorB: Vector3d, ck: Chec
     ck.testTrue(matrix.isRigid(), "rigid rotation");
     const vectorB1 = matrix.multiplyVector(vectorA);
     ck.testParallel(vectorB, vectorB1);
-    const matrix0 = Matrix3d.createPartialRotationVectorToVector(vectorA, fraction, vectorB)!;
+    const matrix0: Matrix3d = Matrix3d.createIdentity();
+    Matrix3d.createPartialRotationVectorToVector(vectorA, fraction, vectorB, matrix0)!;
     const matrix1 = Matrix3d.createPartialRotationVectorToVector(vectorA, 1.0 - fraction, vectorB)!;
     ck.testMatrix3d(matrix, matrix0.multiplyMatrixMatrix(matrix1), "partial rotations accumulate");
   }

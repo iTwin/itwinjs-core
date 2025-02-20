@@ -3407,6 +3407,7 @@ describe("PresentationManager", () => {
     });
   });
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   describe("getSelectionScopes", () => {
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
     const imodel = moq.Mock.ofType<IModelDb>();
@@ -3455,6 +3456,7 @@ describe("PresentationManager", () => {
       expect(result).to.eq(resultKeys);
     });
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   describe("updates handling", () => {
     describe("ipc", () => {

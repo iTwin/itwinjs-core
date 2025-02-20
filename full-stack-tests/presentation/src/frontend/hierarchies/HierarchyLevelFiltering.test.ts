@@ -13,15 +13,14 @@ import {
   HierarchyRequestOptions,
   InstanceKey,
   NodeKey,
-  PresentationError,
   RelationshipDirection,
   Ruleset,
   RulesetVariable,
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
 import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests";
 import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
 
 describe("Hierarchies", () => {
@@ -683,7 +682,7 @@ describe("Hierarchies", () => {
         },
       };
       const iteratorPromise = Presentation.presentation.getNodesIterator(requestParams);
-      await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
+      await expect(iteratorPromise).to.eventually.be.rejectedWith(Error, "Filtering not supported");
     });
   });
 });

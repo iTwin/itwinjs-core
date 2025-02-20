@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "fix bagOfCurves typo and type",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

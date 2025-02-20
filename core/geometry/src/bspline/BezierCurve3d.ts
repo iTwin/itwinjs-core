@@ -18,13 +18,12 @@ import { Point4d } from "../geometry4d/Point4d";
 import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { BezierCurveBase } from "./BezierCurveBase";
 
-// ================================================================================================================
-// ================================================================================================================
-// ================================================================================================================
-// ================================================================================================================
-/** 3d Bezier curve class.
+
+/**
+ * 3d Bezier curve class.
  * * Use BezierCurve3dH if the curve has weights.
  * * The control points (xyz) are managed as the _packedData buffer in the _polygon member of BezierCurveBase.
+ * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/Bezier/
  * @public
  */
 export class BezierCurve3d extends BezierCurveBase {
