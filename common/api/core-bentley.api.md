@@ -571,7 +571,7 @@ export enum GeoServiceStatus {
     OutOfMathematicalDomain = 147458,
     // (undocumented)
     OutOfUsefulRange = 147457,
-    // (undocumented)
+    // @deprecated (undocumented)
     Pending = 147462,
     // (undocumented)
     Success = 0,
