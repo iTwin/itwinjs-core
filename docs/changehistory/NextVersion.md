@@ -614,7 +614,7 @@ class MyElement extends Element {
 
 ## Attach/detach db
 
-Allow to attach a ECDb/IModel to connection and run ECSQL that combines data from both databases.
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
 
 Example of attaching a snapshot to a master file and running a query that combines data from both databases:
 ```ts
