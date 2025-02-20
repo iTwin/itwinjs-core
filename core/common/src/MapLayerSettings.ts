@@ -369,7 +369,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.queryParams = {...this.savedQueryParams};
 
     if (this.properties) {
-      props.properties = {...this.properties};
+      props.properties = structuredClone(this.properties);
     }
 
     return props;

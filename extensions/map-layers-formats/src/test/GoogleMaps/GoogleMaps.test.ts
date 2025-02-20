@@ -173,7 +173,7 @@ describe("GoogleMapsProvider", () => {
     const provider = createProvider(settings);
     await provider.initialize();
 
-    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_non_white_hdpi.png");
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_non_white.png");
   });
 
   it("logo should be activated with the 'on white' logo", async () => {
@@ -186,7 +186,7 @@ describe("GoogleMapsProvider", () => {
     const provider = createProvider(settings);
     await provider.initialize();
 
-    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_white_hdpi.png");
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_white.png");
   });
 
   it("should decorate", async () => {
