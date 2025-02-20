@@ -58,7 +58,7 @@ export class ECDb implements Disposable {
     this._nativeDb = undefined;
   }
   /**
-   * Attach a ECDb file to this connection and load and register its schemas.
+   * Attach an ECDb file to this connection and load and register its schemas.
    * @param fileName ECDb file name
    * @param alias identifier for the attached file. This identifer is used a tablespace executing ECSQL queries.
    */
