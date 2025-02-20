@@ -618,7 +618,7 @@ Allow to attach a ECDb/IModel to connection and run ECSQL that combines data fro
 
 Example of attaching a snapshot to a master file and running a query that combines data from both databases:
 ```ts
- const master = SnapshotDb.openFile(masterFile);
+     const master = SnapshotDb.openFile(masterFile);
     master.attachDb(simulationFile, "SimDb");
 
     const ecsql = `
