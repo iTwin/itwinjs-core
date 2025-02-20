@@ -176,7 +176,6 @@ export abstract class IpcHandler {
       } catch (err: any) {
         let ret: IpcInvokeReturn;
         if (ITwinError.isITwinError(err)) {
-          // TODO: Should metadata be left out? It is left out in the original error implementation..
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { namespace, errorKey, message, stack, metadata, ...rest } = err;
           ret = {
@@ -185,6 +184,7 @@ export abstract class IpcHandler {
               namespace,
               errorKey,
               message,
+              ...(metadata && { metadata }), // Include metadata only when defined
               ...rest,
             },
           };
