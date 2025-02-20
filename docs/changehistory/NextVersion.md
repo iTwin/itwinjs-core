@@ -53,6 +53,7 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
+    - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -609,4 +610,32 @@ class MyElement extends Element {
   declare public property: string;
   ...
 }
+```
+
+## Attach/detach db
+
+Allow to attach a ECDb/IModel to connection and run ECSQL that combines data from both databases.
+
+Example of attaching a snapshot to a master file and running a query that combines data from both databases:
+```ts
+ const master = SnapshotDb.openFile(masterFile);
+    master.attachDb(simulationFile, "SimDb");
+
+    const ecsql = `
+    SELECT ts.TimeFromStart [Time From Start (s)],
+       p.UserLabel [Pipe with Max Flow],
+       MAX(ltvrr.Flow) [Max Flow (L/s)]
+    FROM
+        SimDb.simrescore.TimeStep ts
+        INNER JOIN SimDb.stmswrres.BasicFlowResultRecord ltvrr ON ts.ECInstanceId = ltvrr.TimeStep.Id
+        INNER JOIN swrhyd.Pipe p ON p.ECInstanceId = ltvrr.ElementId
+    GROUP BY
+          ts.ECInstanceId
+    HAVING
+          MAX(ltvrr.Flow) > 1`;
+
+    const reader = master.createQueryReader(ecsql);
+    while (await reader.step()) {
+      // ...
+    }
 ```
