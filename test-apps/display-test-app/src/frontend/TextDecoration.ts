@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
@@ -95,6 +95,10 @@ class TextEditor implements Decorator {
 
   public justify(justification: TextBlockJustification): void {
     this._textBlock.justification = justification;
+  }
+
+  public setMargins(margins: Partial<TextBlockMargins>): void {
+    this._textBlock.margins = { ...this._textBlock.margins, ...margins };
   }
 
   public async update(): Promise<void> {
@@ -284,6 +288,25 @@ export class TextDecorationTool extends Tool {
             break;
           default:
             throw new Error("Expected top, middle, bottom, left, center, or right");
+        }
+        break;
+      }
+      case "margin": {
+        const marginLocation = inArgs[1].toLowerCase();
+        const val = parseInt(inArgs[2], 10);
+        if (isNaN(val)) {
+          throw new Error("Expected a number");
+        }
+
+        switch (marginLocation) {
+          case "left":
+          case "right":
+          case "top":
+          case "bottom":
+            editor.setMargins({ [marginLocation]: val });
+            break;
+          default:
+            throw new Error("Expected left, right, top, or bottom");
         }
         break;
       }
