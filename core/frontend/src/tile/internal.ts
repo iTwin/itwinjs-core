@@ -35,6 +35,8 @@ export * from "./RealityTileTree";
 export * from "./TileTreeSupplier";
 export * from "./TileTreeOwner";
 export * from "./TileTreeReference";
+export * from "./LayerTileTreeReference";
+export * from "./LayerTileTree";
 export * from "./TileGeometryCollector";
 export * from "./TiledGraphicsProvider";
 export * from "./TileAdmin";
