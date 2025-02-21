@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add new async `addAttributions` method  on `TileTreeReference`. Also make sure ImageryTileTree / providers are included when decorating the view.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

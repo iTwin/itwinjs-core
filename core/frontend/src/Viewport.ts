@@ -3206,7 +3206,7 @@ export class ScreenViewport extends Viewport {
     logo.src = `${IModelApp.publicPath}images/imodeljs-icon.svg`;
     logo.alt = "";
 
-    const showLogos = (ev: Event) => {
+    const showLogos = async (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true, rootDiv: this.vpDiv.ownerDocument.body }).modal;
       aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
@@ -3216,10 +3216,11 @@ export class ScreenViewport extends Viewport {
       }
 
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
+      const promises = new Array<Promise<void>>();
       for (const ref of this.getTileTreeRefs()) {
-        ref.addLogoCards(logos, this);
+        promises.push(ref.addAttributions(logos, this));
       }
-
+      await Promise.all(promises);
       ev.stopPropagation();
     };
 
@@ -3461,7 +3462,7 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      for (const ref of this.tiledGraphicsProviderRefs()) {
+      for (const ref of this.getTileTreeRefs()) {
         context.addFromDecorator(ref);
       }
 
