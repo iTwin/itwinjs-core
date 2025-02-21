@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -177,15 +178,15 @@ describe("PresentationRpcImpl", () => {
     using impl = new PresentationRpcImpl({ requestTimeout: 10 });
     using _ = { [Symbol.dispose]: () => Presentation.terminate() };
     let callsCount = 0;
-    const result = new ResolvablePromise<number>();
+    using result = new ResolvablePromise<number>();
     presentationManagerMock
       .setup(async (x) => x.getNodesCount(moq.It.isAny()))
       .callback((props: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & BackendDiagnosticsAttribute) => {
         props.diagnostics!.handler({ logs: [{ scope: `${callsCount++}` }] });
       })
       .returns(async () => result);
-    const response1 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
-    expect(response1.statusCode).to.eq(PresentationStatus.BackendTimeout);
+    const response1 = impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+    await expect(response1).to.eventually.be.rejectedWith("Timeout");
     await result.resolve(123);
     const response2 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
     expect(response2.statusCode).to.eq(PresentationStatus.Success);
@@ -225,12 +226,7 @@ describe("PresentationRpcImpl", () => {
         refreshContainerForRpc: sinon.stub(),
       } as unknown as IModelDb);
     using impl = new PresentationRpcImpl();
-    expect(await impl.getSelectionScopes(imodelToken, {})).to.deep.eq({
-      statusCode: PresentationStatus.Error,
-      errorMessage: "test error",
-      result: undefined,
-      diagnostics: undefined,
-    });
+    await expect(impl.getSelectionScopes(imodelToken, {})).to.eventually.be.rejectedWith(PresentationError, "test error");
   });
 
   it("re-throws generic errors", async () => {
@@ -285,7 +281,7 @@ describe("PresentationRpcImpl", () => {
       // note: all RPC methods go through `makeRequest` that takes care of timeouts and throws - test that here
       // using `getNodesCount` request
 
-      it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
+      it("should throw timeout response without any result if manager request takes more than requestTimeout", async () => {
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
@@ -295,16 +291,14 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           cancelEvent: new BeEvent<() => void>(),
         };
-        const result = new ResolvablePromise<number>();
+        using result = new ResolvablePromise<number>();
         presentationManagerMock
           .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith("Timeout");
         presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.be.undefined;
-        expect(actualResult.statusCode).to.equal(PresentationStatus.BackendTimeout);
-        await result.resolve(999);
       });
 
       it("should return result if `requestTimeout` is set to 0", async () => {
@@ -479,10 +473,9 @@ describe("PresentationRpcImpl", () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith(PresentationError, "test error");
         presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
-        expect(actualResult.errorMessage).to.eq("test error");
       });
 
       it("should return error result if manager throws and `requestTimeout` is set to 0", async () => {
@@ -503,10 +496,9 @@ describe("PresentationRpcImpl", () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith(PresentationError, "test error");
         presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
-        expect(actualResult.errorMessage).to.eq("test error");
       });
     });
 
@@ -1955,28 +1947,6 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("computeSelection", () => {
-      it("[deprecated] calls manager", async () => {
-        const scope = createRandomSelectionScope();
-        const ids = [createRandomId()];
-        const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
-          ...defaultRpcParams,
-        };
-        const managerOptions: WithCancelEvent<ComputeSelectionRequestOptions<IModelDb>> = {
-          imodel: testData.imodelMock.object,
-          elementIds: ids,
-          scope: { id: scope.id },
-          cancelEvent: new BeEvent<() => void>(),
-        };
-        const result = new KeySet();
-        presentationManagerMock
-          .setup(async (x) => x.computeSelection(managerOptions))
-          .returns(async () => result)
-          .verifiable();
-        const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(result.toJSON());
-      });
-
       it("calls manager", async () => {
         const scopeId = "element";
         const ancestorLevel = 123;

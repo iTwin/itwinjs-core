@@ -57,6 +57,7 @@ beta;class;BentleyCloudRpcConfiguration
 beta;class;BentleyCloudRpcManager
 beta;interface;BentleyCloudRpcParams
 internal;class;BentleyCloudRpcProtocol
+public;interface;BinaryImageSource
 public;enum;BisCodeSpec
 internal;function;bisectTileRange2d
 internal;function;bisectTileRange3d
@@ -100,7 +101,7 @@ public;interface;ChangedEntities
 internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
-internal;interface;ChangesetFileProps
+public;interface;ChangesetFileProps
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex
 public;type;ChangesetIndex
@@ -462,6 +463,7 @@ internal;interface;IpcWebSocketMessage
 internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
+public;function;isBinaryImageSource
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
@@ -499,7 +501,9 @@ internal;interface;MarshalingBinaryMarker
 internal;namespace;MarshalingBinaryMarker
 public;enum;MassPropertiesOperation
 public;interface;MassPropertiesPerCandidateRequestProps
+deprecated;interface;MassPropertiesPerCandidateRequestProps
 public;interface;MassPropertiesPerCandidateResponseProps
+deprecated;interface;MassPropertiesPerCandidateResponseProps
 public;interface;MassPropertiesRequestProps
 public;interface;MassPropertiesResponseProps
 public;interface;MaterialProps

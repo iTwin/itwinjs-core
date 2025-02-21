@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module Core
  */
@@ -12,12 +13,10 @@ import {
   ComputeSelectionRequestOptions,
   ElementSelectionScopeProps,
   InstanceKey,
-  isComputeSelectionRequestOptions,
   KeySet,
   PresentationError,
   PresentationStatus,
   SelectionScope,
-  SelectionScopeRequestOptions,
 } from "@itwin/presentation-common";
 import { getElementKey } from "./Utils";
 
@@ -234,43 +233,25 @@ export class SelectionScopesHelper {
     return keys;
   }
 
-  public static async computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
-  public static async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb>): Promise<KeySet>;
-  public static async computeSelection(
-    requestOptions: ComputeSelectionRequestOptions<IModelDb> | SelectionScopeRequestOptions<IModelDb>,
-    elementIds?: Id64String[],
-    scopeId?: string,
-  ): Promise<KeySet> {
-    if (!isComputeSelectionRequestOptions(requestOptions)) {
-      return this.computeSelection({
-        ...requestOptions,
-        elementIds: elementIds!,
-        scope: { id: scopeId! },
-      });
-    }
-
-    switch (requestOptions.scope.id) {
+  public static async computeSelection({ imodel, scope, elementIds }: ComputeSelectionRequestOptions<IModelDb>): Promise<KeySet> {
+    switch (scope.id) {
       case "element":
-        return this.computeElementSelection(
-          requestOptions.imodel,
-          requestOptions.elementIds,
-          (requestOptions.scope as ElementSelectionScopeProps).ancestorLevel ?? 0,
-        );
+        return this.computeElementSelection(imodel, elementIds, (scope as ElementSelectionScopeProps).ancestorLevel ?? 0);
       case "assembly":
-        return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, 1);
+        return this.computeElementSelection(imodel, elementIds, 1);
       case "top-assembly":
-        return this.computeElementSelection(requestOptions.imodel, requestOptions.elementIds, Number.MAX_SAFE_INTEGER);
+        return this.computeElementSelection(imodel, elementIds, Number.MAX_SAFE_INTEGER);
       case "category":
-        return this.computeCategorySelection(requestOptions.imodel, requestOptions.elementIds);
+        return this.computeCategorySelection(imodel, elementIds);
       case "model":
-        return this.computeModelSelection(requestOptions.imodel, requestOptions.elementIds);
+        return this.computeModelSelection(imodel, elementIds);
       case "functional":
       case "functional-element":
-        return this.computeFunctionalElementSelection(requestOptions.imodel, requestOptions.elementIds);
+        return this.computeFunctionalElementSelection(imodel, elementIds);
       case "functional-assembly":
-        return this.computeFunctionalAssemblySelection(requestOptions.imodel, requestOptions.elementIds);
+        return this.computeFunctionalAssemblySelection(imodel, elementIds);
       case "functional-top-assembly":
-        return this.computeFunctionalTopAssemblySelection(requestOptions.imodel, requestOptions.elementIds);
+        return this.computeFunctionalTopAssemblySelection(imodel, elementIds);
     }
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
   }

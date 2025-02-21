@@ -1689,6 +1689,7 @@ export interface BlankConnectionProps {
 // @public
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
+    abandonChanges(): Promise<void>;
     close(): Promise<void>;
     get editingScope(): GraphicalEditingScope | undefined;
     // @beta
@@ -2296,6 +2297,21 @@ export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
     isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
     primaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
     secondaryPropEditorSpecs?: CustomFormatPropEditorSpec[];
+}
+
+// @internal
+export class DebugShaderFile {
+    constructor(filename: string, src: string, isVS: boolean, isGL: boolean, isUsed: boolean);
+    // (undocumented)
+    readonly filename: string;
+    // (undocumented)
+    isGL: boolean;
+    // (undocumented)
+    isUsed: boolean;
+    // (undocumented)
+    isVS: boolean;
+    // (undocumented)
+    readonly src: string;
 }
 
 // @public
@@ -3923,6 +3939,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected resolveResources(): Promise<void>;
     // (undocumented)
+    protected resolveUrl(uri: string): string | undefined;
+    // (undocumented)
     protected readonly _returnToCenter?: Point3d;
     // (undocumented)
     protected get _samplers(): GltfDictionary<GltfSampler>;
@@ -4856,6 +4874,7 @@ export abstract class IModelConnection extends IModel {
     // @internal (undocumented)
     getMapEcefToDb(bimElevationBias: number): Transform;
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @deprecated
     getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
@@ -5028,6 +5047,63 @@ export class IModelRoutingContext {
     route<T>(handler: () => T): T;
     // (undocumented)
     readonly token: RpcRoutingToken;
+}
+
+// @internal
+export class IModelTileTree extends TileTree {
+    // (undocumented)
+    [Symbol.dispose](): void;
+    constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId);
+    // (undocumented)
+    get batchType(): BatchType;
+    // (undocumented)
+    get containsTransformNodes(): boolean;
+    // (undocumented)
+    readonly contentIdProvider: ContentIdProvider;
+    // (undocumented)
+    readonly contentIdQualifier?: string;
+    debugMaxDepth?: number;
+    // (undocumented)
+    readonly decoder: ImdlDecoder;
+    // (undocumented)
+    draw(args: TileDrawArgs): void;
+    // (undocumented)
+    get edgeOptions(): EdgeOptions | false;
+    // (undocumented)
+    readonly geometryGuid?: string;
+    // (undocumented)
+    getTransformNodeRange(nodeId: number): Range3d | undefined;
+    get hiddenElements(): Id64Array;
+    // (undocumented)
+    readonly iModelTileTreeId: IModelTileTreeId;
+    // (undocumented)
+    get is3d(): boolean;
+    // (undocumented)
+    get isContentUnbounded(): boolean;
+    // (undocumented)
+    get loadPriority(): TileLoadPriority;
+    // (undocumented)
+    get maxDepth(): number;
+    // (undocumented)
+    readonly maxInitialTilesToSkip: number;
+    // (undocumented)
+    readonly maxTilesToSkip: number;
+    // (undocumented)
+    prune(): void;
+    // (undocumented)
+    get rootTile(): Tile;
+    // (undocumented)
+    protected _selectTiles(args: TileDrawArgs): Tile[];
+    get staticBranch(): IModelTile;
+    // (undocumented)
+    readonly stringifiedSectionClip?: string;
+    // (undocumented)
+    readonly tileScreenSize: number;
+    get tileState(): "static" | "dynamic" | "interactive" | "disposed";
+    // (undocumented)
+    get timeline(): RenderSchedule.ModelTimeline | undefined;
+    // (undocumented)
+    get viewFlagOverrides(): {};
 }
 
 // @public
@@ -7752,6 +7828,8 @@ export interface RealityDataSource {
     getTileContentType(url: string): "tile" | "tileset";
     // @internal
     getTileJson(name: string): Promise<any>;
+    // @internal
+    getTilesetUrl?(): string | undefined;
     // (undocumented)
     readonly isContextShare: boolean;
     // (undocumented)
@@ -8023,6 +8101,8 @@ export abstract class RealityTileLoader {
 export class RealityTileTree extends TileTree {
     // @internal
     constructor(params: RealityTileTreeParams);
+    // @internal (undocumented)
+    readonly baseUrl?: string;
     // @beta
     get batchTableProperties(): BatchTableProperties | undefined;
     // @internal (undocumented)

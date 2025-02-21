@@ -8,6 +8,7 @@ import { IModelError, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { BriefcaseManager, IModelHost, SnapshotDb } from "@itwin/core-backend";
+import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
@@ -60,7 +61,7 @@ describe("IModelOpen", () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId: testIModelId });
     const numChangeSets = changesets.length;
     assert.isAbove(numChangeSets, 10);
 

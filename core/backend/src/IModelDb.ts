@@ -69,7 +69,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 
 // spell:ignore fontid fontmap
@@ -2862,6 +2862,7 @@ export class BriefcaseDb extends IModelDb {
         } finally {
           await withBriefcaseDb(briefcase, async (db) => db.locks[_releaseAllLocks]());
         }
+        return;
       }
       throw error;
     }
@@ -3257,7 +3258,7 @@ class RefreshV2CheckpointSas {
         throw new Error("checkpoint is not from a cloud container");
 
       assert(undefined !== iModel.iTwinId);
-      const props = await IModelHost.hubAccess.queryV2Checkpoint({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      const props = await IModelHost[_hubAccess].queryV2Checkpoint({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
       if (!props)
         throw new Error("can't reset checkpoint sas token");
 

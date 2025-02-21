@@ -123,7 +123,7 @@ describe("Parsing tests:", () => {
     };
     const format = new Format("test");
     const unitsProvider = new TestUnitsProvider();
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     let i = 0;
     for (const test of tests) {
@@ -264,7 +264,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
@@ -298,7 +298,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
@@ -340,7 +340,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
@@ -381,7 +381,7 @@ describe("Parsing tests:", () => {
     ];
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
@@ -427,7 +427,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
@@ -458,7 +458,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     for (const testEntry of testData) {
@@ -496,7 +496,7 @@ describe("Parsing tests:", () => {
 
     const unitsAndAltLabelsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsAndAltLabelsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsAndAltLabelsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     const persistenceUnit = await unitsAndAltLabelsProvider.findUnitByName("Units.M");
@@ -538,7 +538,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
@@ -586,7 +586,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
@@ -632,7 +632,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
@@ -672,7 +672,7 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     for (const testEntry of testData) {
       const parseResult = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
@@ -814,7 +814,7 @@ describe("Synchronous Parsing tests:", async () => {
     allowMathematicOperations: true,
   };
   const format = new Format("test");
-  await format.fromJSON(unitsProvider, formatData).catch(() => { });
+  await format.fromJSON(unitsProvider, formatData);
 
   const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
   const formatSpec = await FormatterSpec.create("test", format, unitsProvider, outUnit);
@@ -846,7 +846,7 @@ describe("Synchronous Parsing tests:", async () => {
   };
 
   const angleFormat = new Format("testAngle");
-  await angleFormat.fromJSON(unitsProvider, angleFormatData).catch(() => { });
+  await angleFormat.fromJSON(unitsProvider, angleFormatData);
   const outAngleUnit = await unitsProvider.findUnitByName("Units.ARC_DEG");
   const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit, unitsProvider);
   const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
@@ -902,7 +902,7 @@ describe("Synchronous Parsing tests:", async () => {
       allowMathematicOperations: false,
     };
     const formatMathNotAllowed = new Format("test");
-    await formatMathNotAllowed.fromJSON(unitsProvider, formatDataMathNotAllowed).catch(() => { });
+    await formatMathNotAllowed.fromJSON(unitsProvider, formatDataMathNotAllowed);
 
     const testData = [
       "12,345.345 - 1",
@@ -952,7 +952,7 @@ describe("Synchronous Parsing tests:", async () => {
       allowMathematicOperations: true,
     };
     const formatUnitless = new Format("test");
-    await formatUnitless.fromJSON(unitsProvider, formatDataUnitless).catch(() => { });
+    await formatUnitless.fromJSON(unitsProvider, formatDataUnitless);
 
     const testData = [
       { value: "12,345.345 - 1", magnitude: 12345.345 - 1}, // unitless

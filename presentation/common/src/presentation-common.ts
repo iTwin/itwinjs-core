@@ -28,6 +28,7 @@ export {
   ValuesDictionary,
   getInstancesCount,
   deepReplaceNullsToUndefined,
+  createCancellableTimeoutPromise,
 } from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
 export * from "./presentation-common/LocalizationHelper";
