@@ -42,14 +42,14 @@ export class Code implements CodeProps {
   /** The [CodeValue]($docs/bis/guide/fundamentals/codes.md#codevalue-property) of the Element
    * @note Leading and trailing whitespace is invalid so is automatically trimmed.
    */
-  public get value() { return this._value ?? ""; }
-  public set value(val: string) { this._value = val?.trim(); }
+  public get value(): string { return this._value ?? ""; }
+  public set value(val: string | undefined) { this._value = val?.trim(); }
   private _value?: string;
 
   constructor(codeProps: CodeProps) {
     this.spec = Id64.fromJSON(codeProps.spec);
     this.scope = JsonUtils.asString(codeProps.scope);
-    this.value = JsonUtils.asString(codeProps.value);
+    this.value = codeProps.value;
   }
 
   /** Create an empty, non-unique code with no special meaning. */

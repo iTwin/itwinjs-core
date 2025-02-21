@@ -31,7 +31,6 @@ export class SubCategoriesCache {
   private readonly _byCategoryId = new Map<string, Id64Set>();
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
   private readonly _imodel: IModelConnection;
-  private _missingAtTimeOfPreload: Id64Set | undefined;
 
   public constructor(imodel: IModelConnection) { this._imodel = imodel; }
 
