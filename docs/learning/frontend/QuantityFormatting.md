@@ -339,12 +339,14 @@ const parseResult = parserSpec.parseToQuantityValue(inString);
 ```
 
 #### Limitations
-Only plus(`+`) and minus(`-`) signs are supported for now.
-Other operators will end up returning a parsing error or an invalid input result.
+
+There are corner cases and rules we've established surrounding use of math operations, explained further in [Limitations](../quantity/index.md#limitations).
 
 #### Usage
+
 The parsing of mathematical operations is disabled by default.
 To enable it, you can override the default QuantityFormatter. Ex :
+
 ```Typescript
   // App specific
   const quantityType = QuantityType.LengthEngineering;
