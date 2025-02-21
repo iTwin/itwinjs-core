@@ -2000,6 +2000,25 @@ export namespace IModelDb {
      */
     public createElement<T extends Element>(elProps: ElementProps): T { return this._iModel.constructEntity<T>(elProps); }
 
+    /**
+     * Generic insert that inserts an instance of an Element, Model, or Aspect into the iModel.
+     * @param instance Instance to be inserted.
+     * @returns The Id of the instance that was inserted.
+     * @throws [[IModelError]] if unable to insert the element.
+     */
+    public insertInstance(classFullName: string): Id64String {
+      try {
+        const classDef = ClassRegistry.getClass(classFullName, this._iModel);
+        classDef.onInsert({});
+        const id = this._iModel[_nativeDb].insertInstance();
+        classDef.onInserted({});
+        return id;
+      } catch (err: any) {
+        err.message = `Error inserting instance [${err.message}]`;
+        throw err;
+      }
+    }
+
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
