@@ -7,8 +7,15 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
+<<<<<<< HEAD:core/frontend/src/tile/map/ImageryProviders/MapBoxLayerImageryProvider.ts
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
+=======
+import { IModelApp } from "../../../../IModelApp";
+import { MapLayerImageryProvider } from "../../../../tile/internal";
+import { ScreenViewport } from "../../../../Viewport";
+
+>>>>>>> ce418d16d8 (GoogleMaps support (#7604)):core/frontend/src/internal/tile/map/ImageryProviders/MapBoxLayerImageryProvider.ts
 
 /** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
  * @internal
@@ -45,11 +52,17 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     return url;
   }
 
+   /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.mapboxLogoCard) {
       cards.dataset.mapboxLogoCard = "true";
       cards.appendChild(IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") }));
     }
+  }
+
+  public override async addAttributions (cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
   }
 
   // no initialization needed for MapBoxImageryProvider.

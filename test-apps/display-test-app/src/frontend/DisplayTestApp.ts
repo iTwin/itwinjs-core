@@ -319,7 +319,7 @@ async function initView(iModel: IModelConnection | undefined) {
     input: document.getElementById("browserFileSelector") as HTMLInputElement,
   } : undefined;
 
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
+  DisplayTestApp.surface = new Surface(configuration, document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...
@@ -330,6 +330,7 @@ async function initView(iModel: IModelConnection | undefined) {
       iModel,
       defaultViewName: configuration.viewName,
       disableEdges: true === configuration.disableEdges,
+      configuration
     });
 
     viewer.dock(Dock.Full);

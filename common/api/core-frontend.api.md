@@ -5278,6 +5278,8 @@ export class ImageryMapTile extends RealityTile {
 export class ImageryMapTileTree extends RealityTileTree {
     constructor(params: RealityTileTreeParams, _imageryLoader: ImageryTileLoader);
     // (undocumented)
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
     cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle;
@@ -6554,6 +6556,8 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 // @beta
 export abstract class MapLayerImageryProvider {
     constructor(_settings: ImageMapLayerSettings, _usesCachedTiles: boolean);
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void;
     // @internal
     protected appendCustomParams(url: string): string;
@@ -6563,6 +6567,8 @@ export abstract class MapLayerImageryProvider {
     cartoRange?: MapCartoRectangle;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // @internal (undocumented)
+    decorate(_context: DecorateContext): void;
     // @internal
     protected readonly defaultMaximumZoomLevel = 22;
     // @internal
@@ -6801,6 +6807,8 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     constructor(_layerSettings: MapLayerSettings, _layerIndex: number, iModel: IModelConnection);
     // (undocumented)
     canSupplyToolTip(hit: HitDetail): boolean;
+    // (undocumented)
+    decorate(_context: DecorateContext): void;
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     get imageryProvider(): MapLayerImageryProvider | undefined;
@@ -7128,6 +7136,8 @@ export class MapTileTree extends RealityTileTree {
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
     constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
@@ -7142,6 +7152,8 @@ export class MapTileTreeReference extends TileTreeReference {
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
     protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
     // (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // (undocumented)
@@ -11854,6 +11866,8 @@ export class TerrainDisplayOverrides {
 
 // @public
 export abstract class TerrainMeshProvider {
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     forceTileLoad(_tile: MapTile): boolean;
     getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined;
@@ -12819,6 +12833,9 @@ export interface TileTreeParams {
 export abstract class TileTreeReference {
     // (undocumented)
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
+    // @beta
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
     canSupplyToolTip(_hit: HitDetail): boolean;
