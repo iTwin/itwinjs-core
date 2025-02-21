@@ -65,6 +65,8 @@ export interface ECSqlRowArg {
  * @public
  * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
  * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
@@ -834,7 +836,10 @@ export class ECSqlBinder {
  * - [[ECSqlStatement.getValue]]
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
  */
 export interface ECEnumValue {
   schema: string;
@@ -850,7 +855,10 @@ export interface ECEnumValue {
  * - [ECSqlStatement.getValue]($backend)
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
 */
 export class ECSqlValue {
   private _val: IModelJsNative.ECSqlValue;
@@ -930,7 +938,10 @@ export class ECSqlValue {
 /** Iterator over members of a struct [ECSqlValue]($backend) or the elements of an array [ECSqlValue]($backend).
  * See [ECSqlValue.getStructIterator]($backend) or [ECSqlValue.getArrayIterator]($backend).
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
 */
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
@@ -953,7 +964,10 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 /** Information about an ECSQL column in an ECSQL query result.
  * See [ECSqlValue.columnInfo]($backend), [ECSqlStatement.getValue]($backend), [ECSqlStatement]($backend)
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.
