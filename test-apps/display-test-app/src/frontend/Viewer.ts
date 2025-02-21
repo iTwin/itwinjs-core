@@ -30,6 +30,7 @@ import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 import { ContoursPanel } from "./Contours";
+import { testGraphicCreatorMain } from "./GraphicCreator";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -260,6 +261,8 @@ export class Viewer extends Window {
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
     this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
 
+
+
     this.toolBar.addDropDown({
       iconUnicode: "\ue90b", // "model"
       tooltip: "Models",
@@ -415,6 +418,16 @@ export class Viewer extends Window {
       },
       tooltip: "Contour display",
     });
+
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue9fc",
+      click: async () => {
+        // await testCalculator();
+        // await testGraphicCreator(this.viewport);
+        await testGraphicCreatorMain(this.viewport);
+      },
+      tooltip: "Test Worker",
+    }));
 
     this.updateTitle();
     this.updateActiveSettings();

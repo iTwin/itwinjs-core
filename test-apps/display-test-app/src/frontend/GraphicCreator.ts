@@ -131,11 +131,13 @@ export async function  testGraphicCreatorMain(vp: Viewport) {
     points.push(Point3d.create(position.x + width / 2, position.y + length / 2, position.z - 0.05));
     points.push(Point3d.create(position.x + width / 2, position.y - length / 2, position.z - 0.05));
     points.push(Point3d.create(position.x - width / 2, position.y - length / 2, position.z - 0.05));
-    // const linestring = LineString3d.create(points);
-    // const loop = Loop.create(linestring.clone());
+    const linestring = LineString3d.create(points);
+    const loop = Loop.create(linestring.clone());
+    builder.addLoop(loop);
+
     // builder.addLineString(points);
-    // builder.addLoop(loop);
-    builder.addShape(points);
+
+    // builder.addShape(points);
 
 
 
