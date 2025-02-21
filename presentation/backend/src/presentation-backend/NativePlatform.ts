@@ -7,7 +7,7 @@
  */
 
 import { _nativeDb, IModelDb, IModelJsNative, IModelNative } from "@itwin/core-backend";
-import { assert, BeEvent, IDisposable } from "@itwin/core-bentley";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs,
@@ -72,7 +72,7 @@ export interface NativePlatformResponse<TResult> {
 }
 
 /** @internal */
-export interface NativePlatformDefinition extends IDisposable {
+export interface NativePlatformDefinition extends Disposable {
   getImodelAddon(imodel: IModelDb): any;
 
   setupRulesetDirectories(directories: string[]): NativePlatformResponse<void>;
@@ -177,7 +177,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       }
       return this.createSuccessResponse(response);
     }
-    public dispose() {
+    public [Symbol.dispose]() {
       this._nativeAddon.dispose();
     }
     public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {

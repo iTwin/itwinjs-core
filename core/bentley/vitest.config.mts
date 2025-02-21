@@ -1,5 +1,8 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
   test: {
     dir: "src",
     coverage: {
@@ -19,6 +22,8 @@ export default defineConfig({
         "cobertura"
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
-    }
+    },
+    minWorkers: 1,
+    maxWorkers: 3,
   }
 })

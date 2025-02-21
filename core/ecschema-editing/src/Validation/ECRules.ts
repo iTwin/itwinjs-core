@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
-  ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
+  ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
   StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
@@ -706,8 +706,8 @@ async function applyConstraintClassesDeriveFromAbstractConstraint(ecClass: Relat
   for (const classPromise of constraint.constraintClasses) {
     const constraintClass = await classPromise;
 
-    if (constraintClass.schemaItemType === SchemaItemType.Mixin && abstractConstraint.schemaItemType === SchemaItemType.EntityClass) {
-      if (!await (constraintClass).applicableTo(abstractConstraint as EntityClass)) {
+    if (Mixin.isMixin(constraintClass) && EntityClass.isEntityClass(abstractConstraint)) {
+      if (!await (constraintClass).applicableTo(abstractConstraint)) {
         const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
         return new Diagnostics.ConstraintClassesDeriveFromAbstractConstraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
       }

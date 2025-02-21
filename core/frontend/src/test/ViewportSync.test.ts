@@ -29,8 +29,8 @@ describe("TwoWayViewportSync", () => {
   });
 
   afterEach(() => {
-    vp1.dispose();
-    vp2.dispose();
+    vp1[Symbol.dispose]();
+    vp2[Symbol.dispose]();
   });
 
   function isSameFrustum() {
@@ -187,7 +187,7 @@ describe("connectViewports", () => {
 
   afterEach(() => {
     for (const vp of vps)
-      vp.dispose();
+      vp[Symbol.dispose]();
 
     vps.length = 0;
   });

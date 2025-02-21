@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as ws from "ws";
-import { BentleyStatus, IModelError } from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
-import { ProcessDetector } from "@itwin/core-bentley";
+import { BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 
 interface MobileAddon {
   notifyListening: (port: number) => void;
@@ -133,7 +133,7 @@ export class MobileRpcServer {
     MobileRpcServer.interop.handler(message, this._connectionId);
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     clearInterval(this._pingTimer);
     if (this._connection) {
       MobileRpcServer.interop.sendString = () => { };
@@ -184,7 +184,7 @@ export function setupMobileRpc() {
     }
 
     retainUvLoop = setInterval(() => { }, 1000);
-    server.dispose();
+    server[Symbol.dispose]();
     usePendingSender();
     server = null;
     (global as any).__iTwinJsRpcReady = false;
@@ -210,7 +210,7 @@ export function setupMobileRpc() {
       return;
     }
 
-    server.dispose();
+    server[Symbol.dispose]();
     server = null;
   });
 

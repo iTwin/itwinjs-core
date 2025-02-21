@@ -9,7 +9,10 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, DynamicIModelTile, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, OnScreenTarget, TileLoadPriority } from "@itwin/core-frontend";
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, TileLoadPriority
+} from "@itwin/core-frontend";
+import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile";
+import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
@@ -317,7 +320,7 @@ describe("GraphicalEditingScope", () => {
       await expectTreeState(tree1, "static", 0, modelRange);
 
       const tree0 = createTileTree();
-      tree0.dispose();
+      tree0[Symbol.dispose]();
       await expectTreeState(tree0, "disposed", 0, modelRange);
 
       // Enter an editing scope.
@@ -375,13 +378,13 @@ describe("GraphicalEditingScope", () => {
       const tree2 = trees.pop()!;
       await expectTreeState(tree0, "disposed", 0, modelRange);
       await expectTreeState(trees, "interactive", 0, modelRange);
-      tree2.dispose();
+      tree2[Symbol.dispose]();
       await expectTreeState(tree2, "disposed", 0, modelRange);
       await scope.exit();
       await expectTreeState(trees, "static", 0, modelRange);
 
       for (const tree of trees) {
-        tree.dispose();
+        tree[Symbol.dispose]();
         await expectTreeState(tree, "disposed", 0, modelRange);
       }
     });
@@ -461,7 +464,7 @@ describe("GraphicalEditingScope", () => {
 
       // Enter an editing scope.
       const scope = await imodel.enterEditingScope();
-      const tree = createTileTree();
+      using tree = createTileTree();
       await expectTileState(tree, elementRange);
 
       // Move an element (+1 in Y).
@@ -486,8 +489,6 @@ describe("GraphicalEditingScope", () => {
 
       // Terminate the scope.
       await scope.exit();
-
-      tree.dispose();
     });
 
     it("edited elements should be updated by scheduling scripts", async () => {

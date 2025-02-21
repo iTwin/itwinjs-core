@@ -1,18 +1,13 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, Id64String } from "@itwin/core-bentley";
-import { Arc3d, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Sphere, Transform, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
+import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
-  createWorkerProxy,
-  GraphicBranch,
-  GraphicType,
-  HitDetail,
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
-  PaddingPercent, readGltfGraphics, readGltfTemplate, RenderInstancesParamsBuilder, ScreenViewport, TiledGraphicsProvider, TileTreeReference, Tool, Viewport, ViewState,
+  PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
@@ -34,11 +29,15 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { testGraphicCreatorMain } from "./GraphicCreator";
+import { ContoursPanel } from "./Contours";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
-// __PUBLISH_EXTRACT_START__ Worker_CalculatorProxy
+async function zoomToSelectedElements(vp: Viewport, options?: MarginOptions) {
+  const elems = vp.iModel.selectionSet.elements;
+  if (0 < elems.size)
+    await vp.zoomToElements(elems, { animateFrustumChange: true, ...options });
+}
 
 export class ZoomToSelectedElementsTool extends Tool {
   private _margin?: MarginPercent;
@@ -260,16 +259,6 @@ export class Viewer extends Window {
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
     this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
-
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue9fc",
-      click: async () => {
-        // await testCalculator();
-        // await testGraphicCreator(this.viewport);
-        await testGraphicCreatorMain(this.viewport);
-      },
-      tooltip: "Test Worker",
-    }));
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90b", // "model"
@@ -576,9 +565,9 @@ export class Viewer extends Window {
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
   public override onClosing(): void {
-    this.toolBar.dispose();
+    this.toolBar[Symbol.dispose]();
     if (this._debugWindow) {
-      this._debugWindow.dispose();
+      this._debugWindow[Symbol.dispose]();
       this._debugWindow = undefined;
     }
 

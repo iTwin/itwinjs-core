@@ -10,6 +10,20 @@ import { EntityClass } from "../../Metadata/EntityClass";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { AbstractSchemaItemType, SchemaItemType } from "../../ECObjects";
+import { Mixin } from "../../Metadata/Mixin";
+import { ECClass, StructClass } from "../../Metadata/Class";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
+import { RelationshipClass } from "../../Metadata/RelationshipClass";
+import { Enumeration } from "../../Metadata/Enumeration";
+import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
+import { PropertyCategory } from "../../Metadata/PropertyCategory";
+import { Unit } from "../../Metadata/Unit";
+import { InvertedUnit } from "../../Metadata/InvertedUnit";
+import { Constant } from "../../Metadata/Constant";
+import { Phenomenon } from "../../Metadata/Phenomenon";
+import { UnitSystem } from "../../Metadata/UnitSystem";
+import { Format } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -60,7 +74,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON(true, true);
       expect(testClass).to.exist;
@@ -86,7 +100,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON();
       expect(testClass).to.exist;
@@ -113,7 +127,7 @@ describe("SchemaItem", () => {
         },
       };
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
-      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      const testEntity = await ecschema.getItem("ExampleEntity", EntityClass);
       assert.isDefined(testEntity);
       const testClassString = JSON.stringify(testEntity);
       const testClass = JSON.parse(testClassString);
@@ -215,6 +229,30 @@ describe("SchemaItemKey", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
       expect(SchemaItem.isSchemaItem(testSchema)).to.be.false;
       expect(SchemaItem.isSchemaItem("A")).to.be.false;
+    });
+  });
+
+  describe("schemaItemType static property", () => {
+    it("should return correct value on Class", () => {
+      expect(SchemaItem.schemaItemType).to.equal(AbstractSchemaItemType.SchemaItem);
+      expect(ECClass.schemaItemType).to.equal(AbstractSchemaItemType.Class);
+    });
+
+    it("should return proper types for known classes", () => {
+      expect(EntityClass.schemaItemType).to.eql(SchemaItemType.EntityClass);
+      expect(Mixin.schemaItemType).to.eql(SchemaItemType.Mixin);
+      expect(StructClass.schemaItemType).to.eql(SchemaItemType.StructClass);
+      expect(CustomAttributeClass.schemaItemType).to.eql(SchemaItemType.CustomAttributeClass);
+      expect(RelationshipClass.schemaItemType).to.eql(SchemaItemType.RelationshipClass);
+      expect(Enumeration.schemaItemType).to.eql(SchemaItemType.Enumeration);
+      expect(KindOfQuantity.schemaItemType).to.eql(SchemaItemType.KindOfQuantity);
+      expect(PropertyCategory.schemaItemType).to.eql(SchemaItemType.PropertyCategory);
+      expect(Unit.schemaItemType).to.eql(SchemaItemType.Unit);
+      expect(InvertedUnit.schemaItemType).to.eql(SchemaItemType.InvertedUnit);
+      expect(Constant.schemaItemType).to.eql(SchemaItemType.Constant);
+      expect(Phenomenon.schemaItemType).to.eql(SchemaItemType.Phenomenon);
+      expect(UnitSystem.schemaItemType).to.eql(SchemaItemType.UnitSystem);
+      expect(Format.schemaItemType).to.eql(SchemaItemType.Format);
     });
   });
 });

@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef,  FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -301,8 +301,12 @@ describe("layoutTextBlock", () => {
       expect(line.offsetFromDocument.x).to.equal(offset);
     }
 
+    // Two text runs with 7 characters total.
     block.appendRun(makeTextRun("abc"));
     block.appendRun(makeTextRun("defg"));
+
+    // 1 line of text with width 0: left, right, center justification.
+    block.justification = "left";
     expectBlockRange(7, 1);
     expectLineOffset(0, 0);
 
@@ -314,6 +318,22 @@ describe("layoutTextBlock", () => {
     expectBlockRange(7, 1);
     expectLineOffset(0, 0);
 
+    // 1 line of text from a width greater than number of characters: left, right, center justification.
+    block.width = 10;
+
+    block.justification = "left";
+    expectBlockRange(10, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "right";
+    expectBlockRange(10, 1);
+    expectLineOffset(3, 0); // 3 = 10 - 7
+
+    block.justification = "center";
+    expectBlockRange(10, 1);
+    expectLineOffset(1.5, 0); // 1.5 = (10 - 7) / 2
+
+    // 2 line of text from a width less than number of characters: left, right, center justification.
     block.justification = "left";
     block.width = 4;
     expectBlockRange(4, 2);
@@ -330,6 +350,7 @@ describe("layoutTextBlock", () => {
     expectLineOffset(0.5, 0);
     expectLineOffset(0, 1);
 
+    // Testing text longer the the width of the text block.
     block.width = 2;
     block.justification = "left";
     expectBlockRange(4, 2);
@@ -814,19 +835,17 @@ describe("layoutTextBlock", () => {
 
     after(() => iModel.close());
 
-    it("maps font names to Id", () => {
-      const vera = iModel.fontMap.getFont("Vera")!.id;
+    it("maps font names to Id", async () => {
+      const vera = iModel.fonts.findId({ name: "Vera" });
       expect(vera).to.equal(1);
 
-      iModel.addNewFont("Arial");
-      iModel.addNewFont("Comic Sans");
+      const arial = await iModel.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      const comic = await iModel.fonts.acquireId({ name: "Comic Sans", type: FontType.TrueType });
       iModel.saveChanges();
 
-      const arial = iModel.fontMap.getFont("Arial")!.id;
-      const comic = iModel.fontMap.getFont("Comic Sans")!.id;
       expect(arial).to.equal(2);
       expect(comic).to.equal(3);
-      expect(iModel.fontMap.getFont("Consolas")).to.be.undefined;
+      expect(iModel.fonts.findId({ name: "Consolas" })).to.be.undefined;
 
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create({ styleName: "" });
@@ -841,10 +860,8 @@ describe("layoutTextBlock", () => {
       test("Comic Sans", comic);
       test("Consolas", 0);
 
-      // ###TODO: native code uses SQLite's NOCASE collation; TypeScript FontMap does not.
-      // ###TODO: we need to fix the collation to use Unicode; SQLite only applies to ASCII characters.
-      // test("arial", arial);
-      // test("aRIaL", arial);
+      test("arial", arial);
+      test("aRIaL", arial);
     });
 
     function computeDimensions(args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number }): { x: number, y: number } {
@@ -940,8 +957,10 @@ describe("layoutTextBlock", () => {
 });
 
 function mockIModel(): IModelDb {
-  const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
-    fontMap: new FontMap(),
+  const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
+    fonts: {
+      findId: () => 0,
+    } as any,
     computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) }; },
     forEachMetaData: () => undefined,
   };

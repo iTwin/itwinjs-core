@@ -6,10 +6,11 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
+import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
 /**
  * Validates the given array of schema differences and returns a list of conflicts if the
@@ -20,8 +21,8 @@ import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDiffere
  * @returns             An array of conflicts found when validating the difference.
  * @internal
  */
-export async function validateDifferences(differences: AnySchemaDifference[], targetSchema: Schema, sourceSchema: Schema) {
-  const visitor = new SchemaDifferenceValidationVisitor(targetSchema, sourceSchema);
+export async function validateDifferences(differences: AnySchemaDifference[], targetSchema: Schema, sourceSchema: Schema, nameMappings: NameMapping) {
+  const visitor = new SchemaDifferenceValidationVisitor(targetSchema, sourceSchema, nameMappings);
   const walker = new SchemaDifferenceWalker(visitor);
 
   await walker.traverse(differences);
@@ -38,16 +39,30 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
   public readonly conflicts: Array<AnySchemaDifferenceConflict>;
   private readonly _sourceSchema: Schema;
   private readonly _targetSchema: Schema;
+  private readonly _nameMappings: NameMapping;
 
   /** Initializes a new instance of SchemaDifferenceValidationVisitor class. */
-  constructor(targetSchema: Schema, sourceSchema: Schema) {
+  constructor(targetSchema: Schema, sourceSchema: Schema, nameMappings: NameMapping) {
     this.conflicts = [];
     this._targetSchema = targetSchema;
     this._sourceSchema = sourceSchema;
+    this._nameMappings = nameMappings;
   }
 
   private addConflict(conflict: AnySchemaDifferenceConflict) {
     this.conflicts.push(conflict);
+  }
+
+  private async getTargetSchemaItem(name: string): Promise<SchemaItem | undefined> {
+    const itemKey = new SchemaItemKey(name, this._sourceSchema.schemaKey);
+    const mappedKey = this._nameMappings.resolveItemKey(itemKey);
+    return this._targetSchema.getItem(mappedKey.name);
+  }
+
+  private getTargetProperty(itemName: string, propertyName: string): PropertyKey {
+    const classKey = new SchemaItemKey(itemName, this._sourceSchema.schemaKey);
+    const propertyKey = new PropertyKey(propertyName, classKey);
+    return this._nameMappings.resolvePropertyKey(propertyKey);
   }
 
   /**
@@ -153,12 +168,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * Shared validation for all types of ClassItemDifference union.
    */
   private async visitClassDifference(entry: AnyClassItemDifference) {
-    const targetClassItem = await this._targetSchema.getItem<ECClass>(entry.itemName);
+    const targetClassItem = await this.getTargetSchemaItem(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, targetClassItem)) {
       return;
     }
 
-    if (entry.changeType === "modify" && targetClassItem !== undefined) {
+    if (entry.changeType === "modify" && ECClass.isECClass(targetClassItem)) {
       await this.visitClassModifierDifference(entry, targetClassItem);
       await this.visitBaseClassDifference(entry, targetClassItem);
     }
@@ -187,7 +202,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitConstantDifference(entry: ConstantDifference) {
-    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+    await this.visitSchemaItemDifference(entry, await this.getTargetSchemaItem(entry.itemName));
   }
 
   /**
@@ -241,18 +256,18 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEnumerationDifference(entry: EnumerationDifference) {
-    const enumeration = await this._targetSchema.getItem<Enumeration>(entry.itemName);
+    const enumeration = await this.getTargetSchemaItem(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, enumeration)) {
       return;
     }
 
-    if (entry.changeType === "modify" && enumeration !== undefined) {
+    if (entry.changeType === "modify" && Enumeration.isEnumeration(enumeration) && enumeration.type !== undefined) {
       if (entry.difference.type) {
         this.addConflict({
           code: ConflictCode.ConflictingEnumerationType,
           difference: entry,
           source: entry.difference.type,
-          target: primitiveTypeToString(enumeration.type!),
+          target: primitiveTypeToString(enumeration.type),
           description: "Enumeration has a different primitive type.",
         });
       }
@@ -268,7 +283,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       return;
     }
 
-    const enumeration = await this._targetSchema.getItem(entry.itemName) as Enumeration;
+    const enumeration = await this.getTargetSchemaItem(entry.itemName) as Enumeration;
     const enumerator = enumeration.getEnumeratorByName(entry.path);
     if (!enumerator) {
       return;
@@ -290,7 +305,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitFormatDifference(entry: FormatDifference) {
-    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+    await this.visitSchemaItemDifference(entry, await this.getTargetSchemaItem(entry.itemName));
   }
 
   /**
@@ -298,7 +313,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitInvertedUnitDifference(entry: InvertedUnitDifference) {
-    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+    await this.visitSchemaItemDifference(entry, await this.getTargetSchemaItem(entry.itemName));
   }
 
   /**
@@ -306,12 +321,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitKindOfQuantityDifference(entry: KindOfQuantityDifference) {
-    const kindOfQuantity = await this._targetSchema.getItem<KindOfQuantity>(entry.itemName);
+    const kindOfQuantity = await this.getTargetSchemaItem(entry.itemName);
     if (!await this.visitSchemaItemDifference(entry, kindOfQuantity)) {
       return;
     }
 
-    if (entry.changeType === "modify" && kindOfQuantity !== undefined) {
+    if (entry.changeType === "modify" && KindOfQuantity.isKindOfQuantity(kindOfQuantity)) {
       if (entry.difference.persistenceUnit) {
         this.addConflict({
           code: ConflictCode.ConflictingPersistenceUnit,
@@ -337,7 +352,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitPhenomenonDifference(entry: PhenomenonDifference) {
-    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+    await this.visitSchemaItemDifference(entry, await this.getTargetSchemaItem(entry.itemName));
   }
 
   /**
@@ -345,8 +360,9 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitPropertyDifference(entry: ClassPropertyDifference) {
-    const targetClass = await this._targetSchema.getItem(entry.itemName) as ECClass;
-    const targetProperty = await targetClass.getProperty(entry.path);
+    const targetClass = await this.getTargetSchemaItem(entry.itemName) as ECClass;
+    const propertyKey = this.getTargetProperty(entry.itemName, entry.path);
+    const targetProperty = await targetClass.getProperty(propertyKey.propertyName);
 
     const sourceClass = await this._sourceSchema.getItem(entry.itemName) as ECClass;
     const sourceProperty = await sourceClass.getProperty(entry.path) as Property;
@@ -405,7 +421,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitPropertyCategoryDifference(entry: PropertyCategoryDifference) {
-    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+    await this.visitSchemaItemDifference(entry, await this.getTargetSchemaItem(entry.itemName));
   }
 
   /**
@@ -443,7 +459,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitUnitDifference(entry: UnitDifference) {
-    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+    await this.visitSchemaItemDifference(entry, await this.getTargetSchemaItem(entry.itemName));
   }
 
   /**
@@ -451,7 +467,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitUnitSystemDifference(entry: UnitSystemDifference) {
-    await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+    await this.visitSchemaItemDifference(entry, await this.getTargetSchemaItem(entry.itemName));
   }
 
   /**
@@ -459,6 +475,51 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitKindOfQuantityPresentationFormatDifference(_entry: KindOfQuantityPresentationFormatDifference) {
+  }
+
+  /**
+   * Visitor implementation for handling FormatUnitDifference.
+   * @internal
+   */
+  public async visitFormatUnitDifference(entry: FormatUnitDifference) {
+    const targetFormat = await this.getTargetSchemaItem(entry.itemName) as Format;
+
+    if (targetFormat.units === undefined) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingFormatUnit,
+        difference: entry,
+        source: entry.difference[0].name,
+        target: null,
+        description: "The unit cannot be assiged if the format did not have a unit before.",
+      });
+    };
+
+    const targetUnit = targetFormat.units[0][0];
+    const targetPhenomenon = InvertedUnit.isInvertedUnit(targetUnit)
+      ? (await targetUnit.invertsUnit)?.phenomenon
+      : targetUnit.phenomenon;
+
+    const sourceUnit = await this._sourceSchema.lookupItem(entry.difference[0].name) as Unit | InvertedUnit;
+    const sourcePhenomenon = InvertedUnit.isInvertedUnit(sourceUnit)
+      ? (await sourceUnit.invertsUnit)?.phenomenon
+      : sourceUnit.phenomenon;
+
+    if (resolveLazyItemName(targetPhenomenon) !== resolveLazyItemName(sourcePhenomenon)) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingFormatUnitPhenomenon,
+        difference: entry,
+        source: entry.difference[0].name,
+        target: targetUnit.fullName,
+        description: "Format units has a different phenomenon.",
+      });
+    };
+  };
+
+  /**
+   * Visitor implementation for handling FormatUnitLabelDifference.
+   * @internal
+   */
+  public async visitFormatUnitLabelDifference(_entry: FormatUnitLabelDifference) {
   }
 
   /**

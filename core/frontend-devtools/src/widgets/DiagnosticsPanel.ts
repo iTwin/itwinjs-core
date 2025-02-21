@@ -104,7 +104,7 @@ export class DiagnosticsPanel {
 
   public get element(): HTMLElement { return this._element; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this._fpsTracker);
     dispose(this._memoryTracker);
     dispose(this._tileMemoryBreakdown);

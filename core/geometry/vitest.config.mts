@@ -1,9 +1,15 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
   test: {
     dir: "src/test",
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/filename.test.ts"], // to honor it/describe.only
+    testTimeout: 80000, // Some tests can take much longer than the default 5 seconds when run in parallel.
+    minWorkers: 1,
+    maxWorkers: 3,
     coverage: {
       provider: "v8",
       include: [

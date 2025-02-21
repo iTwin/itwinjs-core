@@ -258,7 +258,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.views.getViewStateProps(viewDefinitionId, options);
   }
 
-  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
+  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> { // eslint-disable-line @typescript-eslint/no-deprecated
     const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb[_nativeDb].readFontMap();
   }
@@ -283,7 +283,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.getMassProperties(props);
   }
 
-  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { // eslint-disable-line @typescript-eslint/no-deprecated
     const iModelDb = await getIModelForRpc(tokenProps);
 
     const getSingleCandidateMassProperties = async (candidate: string) => {
@@ -295,7 +295,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
           massPropResults.push(massProperties);
         }
 
-        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate };
+        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate }; // eslint-disable-line @typescript-eslint/no-deprecated
 
         if (massPropResults.some((r) => r.status !== BentleyStatus.ERROR)) {
           singleCandidateResult.status = BentleyStatus.SUCCESS;
@@ -310,7 +310,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       }
     };
 
-    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = [];
+    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = []; // eslint-disable-line @typescript-eslint/no-deprecated
 
     for (const candidate of CompressedId64Set.iterable(props.candidates)) {
       promises.push(getSingleCandidateMassProperties(candidate));

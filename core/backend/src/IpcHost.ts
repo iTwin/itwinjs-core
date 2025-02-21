@@ -264,6 +264,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async saveChanges(key: string, description?: string): Promise<void> {
     IModelDb.findByKey(key).saveChanges(description);
   }
+  public async abandonChanges(key: string): Promise<void> {
+    IModelDb.findByKey(key).abandonChanges();
+  }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
   }
@@ -278,7 +281,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key)[_nativeDb].getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key)[_nativeDb].getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getRedoString();
   }
 
   public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {

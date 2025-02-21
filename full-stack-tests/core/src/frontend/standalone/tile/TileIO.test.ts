@@ -9,13 +9,13 @@ import {
   ModelProps, PackedFeatureTable, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender,
-  RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  GeometricModelState, IModelApp, IModelConnection, RenderGraphic, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
 } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { ImdlModel } from "@itwin/core-frontend/lib/cjs/common/imdl/ImdlModel";
 import { parseImdlDocument } from "@itwin/core-frontend/lib/cjs/common/imdl/ParseImdlDocument";
 import { SurfaceType } from "@itwin/core-frontend/lib/cjs/common/internal/render/SurfaceParams";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { TestRpcInterface } from "../../../common/RpcInterfaces";
 import { TestUtility } from "../../TestUtility";
@@ -27,6 +27,7 @@ import { TILE_DATA_1_3 } from "./data/TileIO.data.1.3";
 import { TILE_DATA_1_4 } from "./data/TileIO.data.1.4";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { changeHeaderLength, changeMajorVersion, changeMinorVersion } from "./data/TileIO.data.fake";
+import { ImdlReader, IModelTileContent, IModelTileTree, iModelTileTreeParamsFromJSON } from "@itwin/core-frontend/lib/cjs/tile/internal";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -74,7 +75,7 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
       renderMode: options?.renderMode ?? RenderMode.SmoothShade,
       visibleEdges: options?.visibleEdges ?? false,
     }),
-    displayStyle: { },
+    displayStyle: {},
   } as unknown as ViewState;
 }
 
@@ -818,7 +819,7 @@ describe("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const document = parseImdlDocument({
+        const document = await parseImdlDocument({
           data: response,
           batchModelId: "0x1c",
           is3d: true,

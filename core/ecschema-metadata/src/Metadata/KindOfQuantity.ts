@@ -15,7 +15,6 @@ import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { OverrideFormat, OverrideFormatProps } from "./OverrideFormat";
-import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 
@@ -23,7 +22,8 @@ import { Unit } from "./Unit";
  * @beta
  */
 export class KindOfQuantity extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.KindOfQuantity;
+  public override readonly schemaItemType = KindOfQuantity.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.KindOfQuantity; }
   protected _relativeError: number = 1.0;
   protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
@@ -35,14 +35,9 @@ export class KindOfQuantity extends SchemaItem {
   public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
-  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) {  this._persistenceUnit = value; }
+  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }
-
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.schemaItemType = SchemaItemType.KindOfQuantity; // Needed to allow both run-time and compile-time check.
-  }
 
   /**
    *
@@ -76,7 +71,7 @@ export class KindOfQuantity extends SchemaItem {
     for (const formatString of presUnitsArr) {
       const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = await this.schema.lookupItem<Format>(presFormatOverride.name);
+      const format = await this.schema.lookupItem(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
@@ -92,11 +87,11 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = await this.schema.lookupItem<Unit | InvertedUnit>(unitOverride[0]);
-          if (undefined === unit)
+          const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
+          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 
@@ -110,7 +105,7 @@ export class KindOfQuantity extends SchemaItem {
     for (const formatString of presUnitsArr) {
       const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = this.schema.lookupItemSync<Format>(presFormatOverride.name);
+      const format = this.schema.lookupItemSync(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
@@ -126,11 +121,11 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = this.schema.lookupItemSync<Unit | InvertedUnit>(unitOverride[0]);
-          if (undefined === unit)
+          const unitOrInverted = this.schema.lookupItemSync(unitOverride[0]);
+          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 
@@ -180,14 +175,17 @@ export class KindOfQuantity extends SchemaItem {
     super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = this.schema.lookupItemSync<Unit>(kindOfQuantityProps.persistenceUnit);
+    const persistenceUnit = this.schema.lookupItemSync(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
-    if (persistenceUnit.schemaItemType !== SchemaItemType.Unit && persistenceUnit.schemaItemType !== SchemaItemType.InvertedUnit)
+    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    if(Unit.isUnit(persistenceUnit))
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    else
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
@@ -197,14 +195,18 @@ export class KindOfQuantity extends SchemaItem {
     await super.fromJSON(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = await this.schema.lookupItem<Unit>(kindOfQuantityProps.persistenceUnit);
+    const persistenceUnit = await this.schema.lookupItem(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
-    if (persistenceUnit.schemaItemType !== SchemaItemType.Unit && persistenceUnit.schemaItemType !== SchemaItemType.InvertedUnit)
+    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    if(Unit.isUnit(persistenceUnit))
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    else
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
@@ -216,6 +218,25 @@ export class KindOfQuantity extends SchemaItem {
    */
   protected setRelativeError(relativeError: number): void {
     this._relativeError = relativeError;
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type KindOfQuantity.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a KindOfQuantity, false otherwise.
+   */
+  public static isKindOfQuantity(item?: SchemaItem): item is KindOfQuantity {
+    return item?.schemaItemType === SchemaItemType.KindOfQuantity;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type KindOfQuantity.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to KindOfQuantity if it is a KindOfQuantity, undefined otherwise.
+   */
+  public static assertIsKindOfQuantity(item?: SchemaItem): asserts item is KindOfQuantity {
+    if (!this.isKindOfQuantity(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.KindOfQuantity}' (KindOfQuantity)`);
   }
 }
 /**

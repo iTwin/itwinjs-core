@@ -7,6 +7,7 @@ import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { SchemaEdits } from "../../ecschema-editing";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -17,6 +18,19 @@ describe("Custom Attribute merge", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
+  };
+
+  const sourceJson = {
+    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    name: "SourceSchema",
+    version: "1.0.0",
+    alias: "source",
     references: [
       { name: "CoreCustomAttributes", version: "01.00.01" },
     ],
@@ -125,7 +139,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedEntity!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -176,7 +190,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedStruct = await mergedSchema.getItem<StructClass>("TestStruct");
+      const mergedStruct = await mergedSchema.getItem("TestStruct", StructClass);
       expect(mergedStruct!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -227,7 +241,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedCA = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
+      const mergedCA = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(mergedCA!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -320,7 +334,7 @@ describe("Custom Attribute merge", () => {
         conflicts: undefined,
       });
 
-      const mergedRel = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+      const mergedRel = await mergedSchema.getItem("TestRelationship", RelationshipClass);
       expect(mergedRel!.toJSON().customAttributes).deep.eq(
         [
           {
@@ -409,7 +423,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedEntity = await mergedSchema.getItem<EntityClass>("TestEntity");
+      const mergedEntity = await mergedSchema.getItem("TestEntity", EntityClass);
       expect(mergedEntity!.toJSON().properties).deep.eq(
         [
           {
@@ -490,7 +504,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedCA = await mergedSchema.getItem<CustomAttributeClass>("TestCA");
+      const mergedCA = await mergedSchema.getItem("TestCA", CustomAttributeClass);
       expect(mergedCA!.toJSON().properties).deep.eq(
         [
           {
@@ -578,7 +592,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedStruct = await mergedSchema.getItem<StructClass>("TestStruct");
+      const mergedStruct = await mergedSchema.getItem("TestStruct", StructClass);
       expect(mergedStruct!.toJSON().properties).deep.eq(
         [
           {
@@ -668,7 +682,7 @@ describe("Custom Attribute merge", () => {
           },
         ],
       });
-      const mergedRel = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+      const mergedRel = await mergedSchema.getItem("TestRelationship", RelationshipClass);
       expect(mergedRel!.toJSON().properties).deep.eq(
         [
           {
@@ -854,7 +868,7 @@ describe("Custom Attribute merge", () => {
       ],
     });
 
-    const mergedRelationship = await mergedSchema.getItem<RelationshipClass>("TestRelationship");
+    const mergedRelationship = await mergedSchema.getItem("TestRelationship", RelationshipClass);
     expect(mergedRelationship!.toJSON().source).deep.eq({
       customAttributes: [
         {
@@ -985,13 +999,13 @@ describe("Custom Attribute merge", () => {
       conflicts: undefined,
     });
 
-    const testClassItem = await mergedSchema.getItem<EntityClass>("TestClass");
+    const testClassItem = await mergedSchema.getItem("TestClass", EntityClass);
     expect(testClassItem!.toJSON()).deep.eq({
       schemaItemType: "EntityClass",
       label: "TestClass",
       customAttributes: [{ className: "TargetSchema.TestCAClass" }, { className: "TargetSchema.AnotherCAClass" }],
     });
-    const anotherClassItem = await mergedSchema.getItem<EntityClass>("AnotherTestClass");
+    const anotherClassItem = await mergedSchema.getItem("AnotherTestClass", EntityClass);
     expect(anotherClassItem!.toJSON()).deep.eq({
       schemaItemType: "EntityClass",
       label: "TestClass",
@@ -1002,6 +1016,707 @@ describe("Custom Attribute merge", () => {
         typeName: "string",
         customAttributes: [{ className: "TargetSchema.TestCAClass", BooleanProperty: true }],
       }],
+    });
+  });
+
+  describe("iterative tests", () => {
+    it("should merge re-mapped custom attribute to schema", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        customAttributes: [
+          ...sourceJson.customAttributes,
+          { className: "SourceSchema.testItem", },
+        ],
+        items: {
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
+      });
+      expect(mergedSchema).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+        return customAttributes.has("TargetSchema.mergedCustomAttribute");
+      });
+    });
+
+    it("should add missing entity class with re-mapped custom attributes", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+            customAttributes: [{
+              className: "SourceSchema.testItem",
+            }],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
+      });
+      await expect(mergedSchema.getItem("testEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+          return customAttributes.has("TargetSchema.mergedCustomAttribute");
+        });
+      });
+    });
+
+    it("should merge re-mapped custom attributes to existing mixin", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testMixin: {
+            schemaItemType: "Mixin",
+            appliesTo: "SourceSchema.testEntity",
+            customAttributes: [{
+              className: "SourceSchema.testItem",
+            }],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testMixin: {
+            schemaItemType: "Mixin",
+            appliesTo: "TargetSchema.testEntity",
+          },
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
+      });
+      await expect(mergedSchema.getItem("testMixin")).to.be.eventually.fulfilled.then(async (mixin) => {
+        expect(mixin).to.exist;
+        expect(mixin).to.have.a.property("schemaItemType").equals(SchemaItemType.Mixin);
+        expect(mixin).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+          return customAttributes.has("TargetSchema.mergedCustomAttribute");
+        });
+      });
+    });
+
+    it("should add a re-mapped struct class with re-mapped custom attributes", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testClass: {
+            schemaItemType: "StructClass",
+            customAttributes: [{
+              className: "SourceSchema.testItem",
+            }],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+          },
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+      const testClass = await sourceSchema.getItem("testClass") as StructClass;
+      schemaEdits.items.rename(testClass, "mergedStruct");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
+      });
+      await expect(mergedSchema.getItem("mergedStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.StructClass);
+        expect(ecClass).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+          return customAttributes.has("TargetSchema.mergedCustomAttribute");
+        });
+      });
+    });
+
+    it("should merge custom attributes to re-mapped custom attribute class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testCAClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+            customAttributes: [{
+              className: "SourceSchema.testCAClass",
+            }],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.CustomAttributeClass);
+        expect(ecClass).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+          return customAttributes.has("TargetSchema.testCAClass");
+        });
+      });
+    });
+
+    it("should merge re-mapped custom attributes to property of entity class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              customAttributes: [{
+                className: "SourceSchema.testItem",
+              }],
+            }],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("testEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.EntityClass);
+        await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+            return customAttributes.has("TargetSchema.mergedCustomAttribute");
+          });
+        });
+      });
+    });
+
+    it("should merge custom attributes to property of re-mapped custom attribute class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testCAClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              customAttributes: [{
+                className: "SourceSchema.testCAClass",
+              }],
+            }],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testCAClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            }],
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+            return customAttributes.has("TargetSchema.testCAClass");
+          });
+        });
+      });
+    });
+
+    it("should merge custom attributes to re-mapped property of re-mapped custom attribute class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testCAClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              customAttributes: [{
+                className: "SourceSchema.testCAClass",
+              }],
+            }],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testCAClass: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+            properties: [{
+              name: "mergedProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            },{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "int",
+            }],
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+      schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+            return customAttributes.has("TargetSchema.testCAClass");
+          });
+        });
+      });
+    });
+
+    it("should merge re-mapped custom attributes to re-mapped property of struct class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "double",
+              customAttributes: [
+                { className: "SourceSchema.testItem", }
+              ],
+            }],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveArrayProperty",
+              typeName: "string",
+            },
+            {
+              name: "mergedProp",
+              type: "PrimitiveProperty",
+              typeName: "double",
+            }],
+          },
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      const testStruct = await sourceSchema.getItem("testStruct") as StructClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+      schemaEdits.properties.rename(testStruct, "testProp", "mergedProp");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("testStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
+            return customAttributes.has("TargetSchema.mergedCustomAttribute");
+          });
+        });
+      });
+    });
+
+    it.skip("should add relationship class with relationship constraint re-mapped custom attributes", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testRelationship: {
+            schemaItemType: "RelationshipClass",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+              customAttributes: [
+                { className: "SourceSchema.testItem", }
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+              customAttributes: [
+                { className: "SourceSchema.testItem", }
+              ],
+            },
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("testRelationship")).to.be.eventually.not.undefined
+        .then((ecClass: RelationshipClass) => {
+          expect(ecClass).to.have.a.nested.property("source.customAttributes").to.satisfy((customAttributes: any) => {
+            expect(customAttributes).to.exist;
+            return customAttributes.has("TargetSchema.mergedCustomAttribute");
+          });
+          expect(ecClass).to.have.a.nested.property("target.customAttributes").to.satisfy((customAttributes: any) => {
+            expect(customAttributes).to.exist;
+            return customAttributes.has("TargetSchema.mergedCustomAttribute");
+          });
+      })
+    });
+
+    it("should add re-mapped custom attributes to re-mapped relationship class constraint", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testRelationship: {
+            schemaItemType: "RelationshipClass",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+              customAttributes: [
+                { className: "SourceSchema.testItem", }
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "SourceSchema.testEntity",
+              ],
+              customAttributes: [
+                { className: "SourceSchema.testItem", }
+              ],
+            },
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          testRelationship: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          mergedRelationship: {
+            schemaItemType: "RelationshipClass",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: {
+              multiplicity: "(0..*)",
+              roleLabel: "refers to",
+              polymorphic: true,
+              constraintClasses: [
+                "TargetSchema.testEntity",
+              ],
+            },
+            target: {
+              multiplicity: "(0..*)",
+              roleLabel: "is referenced by",
+              polymorphic: true,
+              constraintClasses: [
+                "TargetSchema.testEntity",
+              ],
+            },
+          },
+          mergedCustomAttribute: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedCustomAttribute");
+      const testRelationship = await sourceSchema.getItem("testRelationship") as RelationshipClass;
+      schemaEdits.items.rename(testRelationship, "mergedRelationship");
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
+      await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
+        .then((ecClass: RelationshipClass) => {
+          expect(ecClass).to.have.a.nested.property("source.customAttributes").to.satisfy((customAttributes: any) => {
+            return customAttributes.has("TargetSchema.mergedCustomAttribute");
+          });
+          expect(ecClass).to.have.a.nested.property("target.customAttributes").to.satisfy((customAttributes: any) => {
+            return customAttributes.has("TargetSchema.mergedCustomAttribute");
+          });
+      })
     });
   });
 });

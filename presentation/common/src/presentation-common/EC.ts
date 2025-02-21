@@ -43,36 +43,6 @@ export namespace InstanceKey {
     }
     return lhs.id.localeCompare(rhs.id);
   }
-
-  /**
-   * Serialize [[InstanceKey]] to JSON
-   * @deprecated in 3.x. Use [[InstanceKey]].
-   */
-  // istanbul ignore next
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function toJSON(key: InstanceKey): InstanceKeyJSON {
-    return { ...key };
-  }
-
-  /**
-   * Deserialize [[InstanceKey]] from JSON
-   * @deprecated in 3.x. Use [[InstanceKey]].
-   */
-  // istanbul ignore next
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function fromJSON(json: InstanceKeyJSON) {
-    return { ...json };
-  }
-}
-
-/**
- * A serialized version of [[InstanceKey]]
- * @public
- * @deprecated in 3.x. Use [[InstanceKey]].
- */
-export interface InstanceKeyJSON {
-  className: string;
-  id: string;
 }
 
 /**
@@ -85,40 +55,6 @@ export interface ClassInfo {
   /** Full class name in format `SchemaName:ClassName` */
   name: string;
   /** ECClass label */
-  label: string;
-}
-
-/** @public */
-export namespace ClassInfo {
-  /**
-   * Serialize [[ClassInfo]] to JSON
-   * @deprecated in 3.x. Use [[ClassInfo]].
-   */
-  // istanbul ignore next
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function toJSON(info: ClassInfo): ClassInfoJSON {
-    return { ...info };
-  }
-
-  /**
-   * Deserialize [[ClassInfo]] from JSON
-   * @deprecated in 3.x. Use [[ClassInfo]].
-   */
-  // istanbul ignore next
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  export function fromJSON(json: ClassInfoJSON): ClassInfo {
-    return { ...json };
-  }
-}
-
-/**
- * A serialized version of [[ClassInfo]]
- * @public
- * @deprecated in 3.x. Use [[ClassInfo]].
- */
-export interface ClassInfoJSON {
-  id: string;
-  name: string;
   label: string;
 }
 
@@ -188,15 +124,6 @@ export interface NavigationPropertyInfo {
  * @public
  */
 export namespace NavigationPropertyInfo {
-  /**
-   * Serialize [[NavigationPropertyInfo]] to JSON
-   * @deprecated in 3.x. Use [[toCompressedJSON]].
-   */
-  // istanbul ignore next
-  export function toJSON(info: NavigationPropertyInfo): NavigationPropertyInfoJSON {
-    return { ...info };
-  }
-
   /** Serialize [[NavigationPropertyInfo]] to compressed JSON */
   export function toCompressedJSON(
     navigationPropertyInfo: NavigationPropertyInfo,
@@ -212,15 +139,6 @@ export namespace NavigationPropertyInfo {
       classInfo: relationshipId,
       targetClassInfo: targetId,
     };
-  }
-
-  /**
-   * Deserialize [[NavigationPropertyInfo]] from JSON
-   * @deprecated in 3.x. Use [[fromCompressedJSON]].
-   */
-  // istanbul ignore next
-  export function fromJSON(json: NavigationPropertyInfoJSON): NavigationPropertyInfo {
-    return { ...json };
   }
 
   /** Deserialize [[NavigationPropertyInfo]] from compressed JSON */
@@ -240,8 +158,7 @@ export namespace NavigationPropertyInfo {
  * A serialized version of [[NavigationPropertyInfo]]
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+export interface NavigationPropertyInfoJSON<TClassInfoJSON = ClassInfo> {
   classInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
   targetClassInfo: TClassInfoJSON;
@@ -267,19 +184,45 @@ export interface PropertyInfo {
   extendedType?: string;
   /** Navigation property info if the field is navigation type */
   navigationPropertyInfo?: NavigationPropertyInfo;
+  /** Constraints for values of ECProperty */
+  constraints?: PropertyValueConstraints;
+}
+
+/**
+ * Constraints for values of ECProperty
+ * @public
+ */
+export type PropertyValueConstraints = StringPropertyValueConstraints | ArrayPropertyValueConstraints | NumericPropertyValueConstraints;
+
+/**
+ * Describes constraints for `string` type ECProperty values
+ * @public
+ */
+export interface StringPropertyValueConstraints {
+  minimumLength?: number;
+  maximumLength?: number;
+}
+
+/**
+ * Describes constraints for `int` | `double` | `float` type ECProperty values
+ * @public
+ */
+export interface NumericPropertyValueConstraints {
+  minimumValue?: number;
+  maximumValue?: number;
+}
+
+/**
+ * Describes constraints for `array` type ECProperty values
+ * @public
+ */
+export interface ArrayPropertyValueConstraints {
+  minOccurs?: number;
+  maxOccurs?: number;
 }
 
 /** @public */
 export namespace PropertyInfo {
-  /**
-   * Serialize [[PropertyInfo]] to JSON
-   * @deprecated in 3.x. Use [[PropertyInfo]].
-   */
-  // istanbul ignore next
-  export function toJSON(info: PropertyInfo): PropertyInfoJSON {
-    return { ...info };
-  }
-
   /** Serialize [[PropertyInfo]] to compressed JSON */
   export function toCompressedJSON(propertyInfo: PropertyInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> {
     const { navigationPropertyInfo, ...leftOverPropertyInfo } = propertyInfo;
@@ -292,23 +235,13 @@ export namespace PropertyInfo {
       ...(navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.toCompressedJSON(navigationPropertyInfo, classesMap) } : undefined),
     };
   }
-
-  /**
-   * Deserialize [[PropertyInfo]] from JSON
-   * @deprecated in 3.x. Use [[PropertyInfo]].
-   */
-  // istanbul ignore next
-  export function fromJSON(json: PropertyInfoJSON): PropertyInfo {
-    return { ...json };
-  }
 }
 
 /**
  * A serialized version of [[PropertyInfo]]
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+export interface PropertyInfoJSON<TClassInfoJSON = ClassInfo> {
   classInfo: TClassInfoJSON;
   name: string;
   type: string;
@@ -346,14 +279,6 @@ export interface RelatedClassInfo {
 
 /** @public */
 export namespace RelatedClassInfo {
-  /**
-   * Serialize [[RelatedClassInfo]] to JSON
-   * @deprecated in 3.x. Use [[RelatedClassInfo]].
-   */
-  export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON {
-    return { ...info };
-  }
-
   /** Serialize [[RelatedClassInfo]] to compressed JSON */
   export function toCompressedJSON(classInfo: RelatedClassInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON<string> {
     const { id: sourceId, ...sourceLeftOverInfo } = classInfo.sourceClassInfo;
@@ -370,14 +295,6 @@ export namespace RelatedClassInfo {
       targetClassInfo: targetId,
       relationshipInfo: relationshipId,
     };
-  }
-
-  /**
-   * Deserialize [[RelatedClassInfo]] from JSON
-   * @deprecated in 3.x. Use [[RelatedClassInfo]].
-   */
-  export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo {
-    return { ...json };
   }
 
   /** Deserialize [[RelatedClassInfo]] from compressed JSON */
@@ -434,8 +351,7 @@ export namespace RelatedClassInfo {
  * A serialized version of [[RelatedClassInfo]]
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfo> {
   sourceClassInfo: TClassInfoJSON;
   targetClassInfo: TClassInfoJSON;
   isPolymorphicTargetClass?: boolean;
@@ -453,7 +369,7 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
 /** @public */
-export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<
+export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfo> = PartialBy<
   RelatedClassInfoJSON<TClassInfoJSON>,
   "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship"
 >;
@@ -516,7 +432,7 @@ export type RelationshipPath = RelatedClassInfo[];
  * Serialized [[RelationshipPath]]
  * @public
  */
-export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
+export type RelationshipPathJSON<TClassInfoJSON = ClassInfo> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-redeclare

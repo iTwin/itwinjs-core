@@ -36,7 +36,7 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 ## Supported Browsers
 
-iTwin.js strives to support as many modern browsers as possible, though it requires complete JavaScript ES6 support. The quality of the web browser's WebGL implementation has a substantial impact on display performance.
+iTwin.js strives to support as many modern browsers as possible, though it requires JavaScript ES2023 support. The quality of the web browser's WebGL implementation has a substantial impact on display performance.
 
 - Chrome (recommended for development)
 - Firefox
@@ -50,7 +50,7 @@ iTwin.js strives to support as many modern browsers as possible, though it requi
 
 ## Electron
 
-To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 5.0, Electron 33 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
+To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 5.0, Electron 34 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
 
 ## Mobile Native
 

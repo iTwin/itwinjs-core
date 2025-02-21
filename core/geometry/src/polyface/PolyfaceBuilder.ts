@@ -10,7 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOutputSelect } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -357,23 +357,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addPoint(xyz: Point3d): number {
     return this._polyface.addPoint(xyz);
   }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPoint instead.
-   */
-  public findOrAddPoint(xyz: Point3d): number {
-    return this.addPoint(xyz);
-  }
   /** Add a uv parameter to the polyface. */
   public addParamXY(x: number, y: number): number {
     return this._polyface.addParamUV(x, y);
-  }
-  /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamXY instead.
-   */
-  public findOrAddParamXY(x: number, y: number): number {
-    return this.addParamXY(x, y);
   }
   private static _workPointFindOrAddA = Point3d.create();
   private static _workVectorFindOrAdd = Vector3d.create();
@@ -453,13 +439,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamInGrowableXYArray instead.
-   */
-  public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
-    return this.addParamInGrowableXYArray(data, index);
-  }
-  /**
    * Add a uv parameter to the polyface, taking `u` from `ls.fractions` and `v` from input. The implementation is
    * free to either create a new param or return the index of a prior param with the same coordinates.
    * @param ls the linestring.
@@ -502,13 +481,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Add a point to the polyface. */
   public addPointXYZ(x: number, y: number, z: number): number {
     return this._polyface.addPointXYZ(x, y, z);
-  }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPointXYZ instead.
-   */
-  public findOrAddPointXYZ(x: number, y: number, z: number): number {
-    return this.addPointXYZ(x, y, z);
   }
   /** Returns a transform who can be applied to points on a triangular facet in order to obtain UV parameters. */
   private getUVTransformForTriangleFacet(pointA: Point3d, pointB: Point3d, pointC: Point3d): Transform | undefined {
@@ -2001,49 +1973,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => { this.addTriangleFacet(triangle.points); },
     );
   }
-  /** Doc is same as `addMiteredPipes` doc. */
-  private addMiteredPipesFromPoints(
-    centerline: IndexedXYZCollection,
-    sectionData: number | XAndY | Arc3d,
-    numFacetAround: number = 12,
-    capped: boolean = false,
-  ): void {
-    const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
-    const pointA0 = Point3d.create();
-    const pointA1 = Point3d.create();
-    const pointB0 = Point3d.create();
-    const pointB1 = Point3d.create();
-    const wantCaps = capped && (!(sectionData instanceof Arc3d) || sectionData.sweep.isFullCircle);
-    if (numFacetAround < 3)
-      numFacetAround = 3;
-    const df = 1.0 / numFacetAround;
-    if (wantCaps) { // start cap facets
-      const startLineString = LineString3d.create();
-      for (let i = 0; i < numFacetAround; i++)
-        startLineString.addPoint(sections[0].fractionToPoint(i * df));
-      this.addTrianglesInUncheckedConvexPolygon(startLineString, true);
-      this.endFace();
-    }
-    for (let i = 1; i < sections.length; i++) { // side facets
-      const arcA = sections[i - 1];
-      const arcB = sections[i];
-      arcA.fractionToPoint(0.0, pointA0);
-      arcB.fractionToPoint(0.0, pointB0);
-      for (let k = 1; k <= numFacetAround; k++, pointA0.setFromPoint3d(pointA1), pointB0.setFromPoint3d(pointB1)) {
-        const f = k * df;
-        arcA.fractionToPoint(f, pointA1);
-        arcB.fractionToPoint(f, pointB1);
-        this.addQuadFacet([pointA0, pointA1, pointB1, pointB0]); // ASSUME: CCW section traversal wrt rail tangent
-      }
-    }
-    if (wantCaps) { // end cap facets
-      const endLineString = LineString3d.create();
-      for (let i = 0; i < numFacetAround; i++)
-        endLineString.addPoint(sections[sections.length - 1].fractionToPoint(i * df));
-      this.addTrianglesInUncheckedConvexPolygon(endLineString, false);
-      this.endFace();
-    }
-  }
   /**
    * Add quad facets along a mitered pipe that follows a centerline curve.
    * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
@@ -2052,8 +1981,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * lengths, or an Arc3d:
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
-   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
-   * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[CurveFactory.createMiteredSweepSections]], passing in the `startTangent`
+   * option to preserve the rotation of Arc3d-type `sectionData`.
    * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
    * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
@@ -2066,16 +1997,20 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     numFacetAround: number = 12,
     capped: boolean = false,
   ): void {
-    if (Array.isArray(centerline))
-      centerline = new Point3dArrayCarrier(centerline);
-    else if (centerline instanceof LineString3d)
-      centerline = centerline.packedPoints;
-    else if (centerline instanceof CurvePrimitive) {
-      const linestring = LineString3d.create();
-      centerline.emitStrokes(linestring, this._options);
-      centerline = linestring.packedPoints;
-    }
-    this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround, capped);
+    const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
+    if (!arc)
+      return;
+    if (numFacetAround < 3)
+      numFacetAround = 3;
+    const section = LineString3d.create();
+    section.appendFractionalStrokePoints(arc, numFacetAround, 0.0, 1.0, true);
+    const strokeOptions = this._options.clone();
+    const outputSelect = MiteredSweepOutputSelect.AlsoMesh;
+    const startTangent = sectionData instanceof Arc3d ? arc.binormalVector() : undefined; // preserve arc orientation
+    const options = { strokeOptions, capped, outputSelect, startTangent };
+    const sections = CurveFactory.createMiteredSweepSections(centerline, section, options);
+    if (sections && sections.mesh)
+      this.addIndexedPolyface(sections.mesh);
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {

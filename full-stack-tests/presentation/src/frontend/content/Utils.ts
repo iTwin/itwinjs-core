@@ -8,8 +8,8 @@ import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
 import { ECClassHierarchyInfo } from "../../ECClasHierarchy";
-import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 import { TestIModelConnection } from "../../IModelSetupUtils";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 
 interface ContentTestSuiteParams {
   getDefaultSuiteIModel: () => Promise<IModelConnection>;
@@ -20,7 +20,7 @@ interface ContentTestSuiteFunction extends ExclusiveContentTestSuiteFunction {
   only: ExclusiveContentTestSuiteFunction;
   skip: ExclusiveContentTestSuiteFunction;
 }
-export function createContentTestSuite(): ContentTestSuiteFunction {
+export function createContentTestSuite(props?: { skipInitialize?: boolean }): ContentTestSuiteFunction {
   const suiteTitle = "Content";
   const suiteFn = (title: string, fn: (params: ContentTestSuiteParams) => void) => {
     let suiteIModel: IModelConnection;
@@ -39,7 +39,9 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
     };
 
     before(async () => {
-      await initialize({ localization: testLocalization });
+      if (!props?.skipInitialize) {
+        await initialize({ imodelAppProps: { localization: testLocalization } });
+      }
     });
 
     after(async () => {

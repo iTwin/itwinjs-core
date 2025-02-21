@@ -219,7 +219,8 @@ export class PolylineOps {
       (data as Point3d[]).pop();
     }
   }
-  /** Create an array of planes.
+  /**
+   * Create an array of planes.
    * * First plane has origin at first centerline point, with unit normal directed at the next point.
    * * Intermediate planes have origin at intermediate points, with unit normals computed from the average of unit vectors
    *   along the incoming and outgoing segments.
@@ -229,9 +230,11 @@ export class PolylineOps {
    * * If there are one or fewer distinct input points, the return is undefined.
    * @param centerline points to reside in output planes.
    * @param wrapIfPhysicallyClosed if true and the first and last centerline points are the same, then the first and last
-   * output planes are averaged and equated (cloned).
+   * output planes are averaged and equated (cloned). Default false.
    */
-  public static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false): Plane3dByOriginAndUnitNormal[] | undefined {
+  public static createBisectorPlanesForDistinctPoints(
+    centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false,
+  ): Plane3dByOriginAndUnitNormal[] | undefined {
     const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
     if (packedPoints.length < 2)
       return undefined;

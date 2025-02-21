@@ -59,21 +59,20 @@ export async function modifyKindOfQuantity(context: SchemaMergeContext, change: 
   }
   if(change.difference.persistenceUnit !== undefined) {
     // TODO: It should be checked if the unit is the same, but referring to the source schema.
-    throw new Error(`Changing the kind of quantity '${itemKey.name}' persistenceUnit is not supported.`);
+    throw new Error(`Changing the kind of quantity '${change.itemName}' persistenceUnit is not supported.`);
   }
 }
 /**
  * Merges a new presentation format into the target kind of quantity
  * @internal
 */
-export async function addPresentationFormat(context: SchemaMergeContext, change: KindOfQuantityPresentationFormatDifference) {
+export async function addPresentationFormat(context: SchemaMergeContext, change: KindOfQuantityPresentationFormatDifference, itemKey: SchemaItemKey) {
   for (const formatString of change.difference) {
-    const koqKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
     const presentationFormat = await updateOverrideFormat(context, formatString);
     if (OverrideFormat.isOverrideFormat(presentationFormat)) {
-      await context.editor.kindOfQuantities.addPresentationOverrideFormat(koqKey, presentationFormat);
+      await context.editor.kindOfQuantities.addPresentationOverrideFormat(itemKey, presentationFormat);
     } else {
-      await context.editor.kindOfQuantities.addPresentationFormat(koqKey, presentationFormat.key);
+      await context.editor.kindOfQuantities.addPresentationFormat(itemKey, presentationFormat.key);
     }
   }
 }
