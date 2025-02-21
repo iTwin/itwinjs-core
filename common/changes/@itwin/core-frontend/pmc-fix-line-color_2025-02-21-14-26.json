@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix decoration graphics failing to use line color for planar region outlines.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
