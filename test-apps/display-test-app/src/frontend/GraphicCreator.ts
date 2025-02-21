@@ -5,7 +5,7 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { createWorkerProxy, GraphicBranch, GraphicType, HitDetail, IModelApp, IModelConnection, readGltfGraphics, readGltfTemplate, RenderGraphic, RenderInstancesParamsBuilder, ScreenViewport, TiledGraphicsProvider, TileTreeReference, Viewport } from "@itwin/core-frontend";
-import { Arc3d, Point3d, Sphere, Transform } from "@itwin/core-geometry";
+import { Arc3d, LineString3d, Loop, Point3d, Range3d, Sphere, Transform, Vector3d } from "@itwin/core-geometry";
 import { CreateCirclesArgs, GraphicCreator, GraphicCreatorResult } from "./workers/ExampleWorker";
 
 class FeatureProvider implements TiledGraphicsProvider {
@@ -104,7 +104,8 @@ export async function  testGraphicCreatorMain(vp: Viewport) {
   for (let i = 0; i < numCircles; i++) {
     // Set the next circle's color.
     const color = ColorDef.fromJSON(colors[i]);
-    builder.setSymbology(color, color, 1);
+    // builder.setSymbology(color, color, 1);
+    builder.setSymbology(ColorDef.blue, ColorDef.fromTbgr(ColorDef.withTransparency(ColorDef.green.tbgr, 150)),  15);
 
     // Assign a unique Id to the circle so it can be interacted with by the user.
     const circleId = vp.iModel.transientIds.getNext();
@@ -115,10 +116,34 @@ export async function  testGraphicCreatorMain(vp: Viewport) {
     const position = new Point3d(circles[offset], circles[offset + 1], circles[offset + 2]);
     const scaleFactor = circles[offset + 3];
     const radius = circles[offset + 3];
-    const sphere = Sphere.createCenterRadius(position, radius);
-    builder.addSolidPrimitive(sphere);
-    const circle = Arc3d.createXY(position, radius);
-    builder.addArc(circle, true, true);
+    // const sphere = Sphere.createCenterRadius(position, radius);
+    // builder.addSolidPrimitive(sphere);
+    // const circle = Arc3d.createXY(position, radius);
+    // builder.addArc(circle, true, true);
+    // const range = Range3d.createXYZXYZ(position.x - radius, position.y - radius, position.z-radius, position.x + radius, position.y + radius, position.z + radius);
+        // builder.addRangeBox(range, true);
+
+    const points: Point3d[] = [];
+    const width = 50;
+    const length = 50;
+    points.push(Point3d.create(position.x - width / 2, position.y - length / 2, position.z - 0.05));
+    points.push(Point3d.create(position.x - width / 2, position.y + length / 2, position.z - 0.05));
+    points.push(Point3d.create(position.x + width / 2, position.y + length / 2, position.z - 0.05));
+    points.push(Point3d.create(position.x + width / 2, position.y - length / 2, position.z - 0.05));
+    points.push(Point3d.create(position.x - width / 2, position.y - length / 2, position.z - 0.05));
+    // const linestring = LineString3d.create(points);
+    // const loop = Loop.create(linestring.clone());
+    // builder.addLineString(points);
+    // builder.addLoop(loop);
+    builder.addShape(points);
+
+
+
+
+    // const circle = Arc3d.createXY(position, radius);
+    // builder.addArc2d(circle, true, true, position.z);
+
+
     mainBranch.add(builder.finish());
 
     if (gltfTemplate) {
