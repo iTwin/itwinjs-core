@@ -1096,13 +1096,20 @@ export class AccuDraw {
   private stringFromAngle(angle: number): string {
     if (this.isBearingMode && this.flags.bearingFixToPlane2D) {
       const point = Vector3d.create(this.axes.x.x, this.axes.x.y, 0.0);
+      const matrix = Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z);
+      if (matrix.determinant() < 0)
+        angle = -angle; // Account for left handed rotations...
 
       point.normalizeInPlace();
       let adjustment = Math.acos(point.x);
 
       if (point.y < 0.0)
         adjustment = -adjustment;
-      angle += adjustment;
+      angle += adjustment; // This is the angle measured from design x...
+      angle = (Math.PI / 2) - angle; // Account for bearing direction convention...
+
+      if (angle < 0)
+        angle = (Math.PI * 2) + angle; // Negative bearings aren't valid?
     }
 
     const formatterSpec = this.getAngleFormatter();
@@ -1149,7 +1156,10 @@ export class AccuDraw {
       case ItemField.ANGLE_Item:
         parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
-          this._angle = parseResult.value;
+          if (this.isBearingMode && this.flags.bearingFixToPlane2D)
+            this._angle = (Math.PI / 2) - parseResult.value;
+          else
+            this._angle = parseResult.value;
           break;
         }
         return BentleyStatus.ERROR;
