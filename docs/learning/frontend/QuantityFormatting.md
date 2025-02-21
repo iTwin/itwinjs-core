@@ -339,79 +339,8 @@ const parseResult = parserSpec.parseToQuantityValue(inString);
 ```
 
 #### Limitations
-Only plus(`+`) and minus(`-`) signs are supported for now.
-Other operators will end up returning a parsing error or an invalid input result.
-If a Format uses a spacer that conflicts with one of the operators above, additional restrictions will apply:
 
-1. Mathematical operations only apply when they are in between whitespace. So `-2FT 6IN + 6IN` is equal to `-2FT-6IN + 6IN`, and `-2FT-6IN - 6IN` is not equal to `-2FT-6IN-6IN`.
-
-<details>
-<summary>Example:</summary>
-
-```Typescript
-    let formatProps = {
-      ...
-      composite: {
-        includeZero: true,
-        spacer: "-", // When omitted, the spacer defaults to " "
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: `"`,
-            name: "Units.IN",
-          },
-        ],
-      },
-      allowMathematicOperations: true, // We turn on the spacer
-    };
-    let format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
-    const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
-    const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
-    // The spacer property from formatProps is ignored, so the two results below are the same.
-    let result = parserSpec.parseToQuantityValue("-2FT-6IN + 6IN"); // -0.6096 in meters
-    result = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
-
-```
-
-</details>
-
-2. For a value like `2FT 6IN-0.5`, the `-` sign will be treated as a spacer and not subtraction. However, the `0.5` value will use the default unit conversion provided to the parser, because it's not a part of the composite unit when that composite is made up of only 2 units - `FT` and `IN`.
-
-<details>
-<summary>Example:</summary>
-
-```Typescript
-    let formatProps = {
-      ...
-      composite: {
-        includeZero: true,
-        spacer: "-", // When omitted, the spacer defaults to " "
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: `"`,
-            name: "Units.IN",
-          },
-        ],
-      },
-      allowMathematicOperations: true, // We turn on the spacer
-    };
-    let format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
-    const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
-    const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
-    // The spacer property from formatProps is ignored, so the two results below are the same.
-    let result = parserSpec.parseToQuantityValue("-2FT 6IN-0.5"); // -2.5 FT and 0.5 FT -> -0.6096 in meters
-    result = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
-
-```
-
-</details>
+There are corner cases and rules we've established surrounding use of math operations, explained further in [Limitations](../quantity/index.md#limitations).
 
 #### Usage
 
