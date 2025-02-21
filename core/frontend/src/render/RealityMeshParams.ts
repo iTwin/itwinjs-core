@@ -15,7 +15,6 @@ import {
 } from "@itwin/core-common";
 import { GltfMeshData, RealityTile } from "../tile/internal";
 import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
-import { MapLayerClassifiers } from "./RenderSystem";
 
 function precondition(condition: boolean, message: string | (() => string)): asserts condition {
   if (condition)
@@ -47,7 +46,6 @@ export interface RealityMeshParams {
   featureID?: number; // default 0
   /** @alpha unused by terrain meshes */
   texture?: RenderTexture;
-  layerClassifiers?: MapLayerClassifiers;
   tile?: RealityTile;
 }
 

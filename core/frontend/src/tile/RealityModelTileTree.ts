@@ -684,10 +684,6 @@ export namespace RealityModelTileTree {
         tree.clearLayers();
     }
 
-    public getMapLayerCount(): number {
-      return this._layerTrees.length;
-    }
-
     public override initializeLayers(context: SceneContext): boolean {
       const removals = this._detachFromDisplayStyle;
       if (0 === removals.length) {

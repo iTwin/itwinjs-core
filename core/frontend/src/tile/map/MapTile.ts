@@ -498,15 +498,6 @@ export class MapTile extends RealityTile {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this.getRangeCorners(scratchCorners));
   }
 
-  /** @internal */
-  public override clearLayers() {
-    this.clearImageryTiles();
-    this._graphic = undefined;
-    if (this.children)
-      for (const child of this.children)
-        (child as MapTile).clearLayers();
-  }
-
   private clearImageryTiles() {
     if (this._imageryTiles) {
       this._imageryTiles.forEach((tile) => tile.releaseMapTileUsage());

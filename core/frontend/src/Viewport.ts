@@ -49,7 +49,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityModelTileTree, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -65,6 +65,7 @@ import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeature
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
+import { Target } from "./render/webgl/Target";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -928,36 +929,47 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /**
-   * Helper function that compares the map layer counts of two view states.
-   * Returns true if the counts are different, otherwise false.
+   * Compares the map layers of two view states, ensuring both the number of layers
+   * and their order remain unchanged.
+   * Returns true if the map layers differ in count, order, or model IDs; otherwise, returns false.
+   *
    * @param prevView The previous view state.
    * @param newView The new view state.
+   * @returns {boolean} True if there is any difference in the model layer configuration; false otherwise.
    * @internal
    */
-  private compareMapLayerCounts(prevView: ViewState, newView: ViewState): boolean {
-    const prevTileTreeRefs = Array.from(prevView.getTileTreeRefs());
-    const newTileTreeRefs = Array.from(newView.getTileTreeRefs());
+  private compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
+    const prevLayers = prevView.displayStyle.getMapLayers(false);
+    const newLayers = newView.displayStyle.getMapLayers(false);
 
-    const prevRealityRefs = prevTileTreeRefs.filter(
-        ref => ref instanceof RealityModelTileTree.Reference
-    );
+    const prevModelIds: string[] = [];
+    const newModelIds: string[] = [];
 
-    const newRealityRefs = newTileTreeRefs.filter(
-        ref => ref instanceof RealityModelTileTree.Reference
-    );
-
-    for (const newRef of newRealityRefs) {
-      if (newRef.getMapLayerCount() > 1) {
-          return true; // Always return true if map layer count is greater than 1
-      }
-
-      // If newRef has only one map layer(bg map), check if the previous view has the same map layer count
-      for (const prevRef of prevRealityRefs) {
-          if (newRef.getMapLayerCount() !== prevRef.getMapLayerCount()) {
-            return true;
-          }
-      }
+    // Extract model IDs from the previous layers in reality tile using a for loop
+    for (const layer of prevLayers) {
+        if (layer instanceof ModelMapLayerSettings && layer.toRealityData === true) {
+            prevModelIds.push(layer.modelId);
+        }
     }
+
+    // Extract model IDs from the new layers in reality tile using a for loop
+    for (const layer of newLayers) {
+        if (layer instanceof ModelMapLayerSettings && layer.toRealityData === true) {
+            newModelIds.push(layer.modelId);
+        }
+    }
+
+    if (prevModelIds.length !== newModelIds.length) {
+        return true;
+    }
+
+    // Check if all model IDs in newModelIds exist in prevModelIds
+   for (let i = 0; i < prevModelIds.length; i++) {
+        if (prevModelIds[i] !== newModelIds[i]) {
+            return true;
+        }
+    }
+
     return false;
   }
 
@@ -1823,13 +1835,19 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateController();
-    this.target.reset();
+
+    const isMapLayerChanged = undefined !== prevView && this.compareMapLayer(prevView, view);
+    if (this.target.reset.length > 0) {
+      (this.target as Target).reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
+    } else {
+      this.target.reset();
+    }
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
       this._changeFlags.setViewState();
-      console.log(this.compareMapLayerCounts(prevView, view));
-      if (this.compareMapLayerCounts(prevView, view)) {
+
+      if (isMapLayerChanged) {
         this.refreshRealityTile();
       }
     }
