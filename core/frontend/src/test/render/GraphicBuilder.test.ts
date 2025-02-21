@@ -335,13 +335,11 @@ describe("GraphicBuilder", () => {
       expectColors([expected]);
     }
 
-    it("uses fill color for surfaces", () => {
-    });
-
     it("uses line color for lines", () => {
       const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
       builder.setSymbology(lineColor, fillColor, 1);
       builder.addLineString(points);
+      builder.finish();
       expectColor(["Polyline", lineColor.toJSON()]);
     });
 
@@ -349,10 +347,19 @@ describe("GraphicBuilder", () => {
       const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
       builder.setSymbology(lineColor, fillColor, 1);
       builder.addPointString(points);
+      builder.finish();
       expectColor(["PointString", lineColor.toJSON()]);
     });
     
     it("produces edge table for planar region if line color and fill color are the same", () => {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
+      builder.setSymbology(fillColor, fillColor, 1);
+      builder.addShape(points);
+      builder.finish();
+      expectColors([["Mesh", fillColor.toJSON()]]);
+    });
+
+    it("produces polyline edges for planar region if line color differs from fill color", () => {
       const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
       builder.setSymbology(lineColor, fillColor, 1);
       builder.addShape(points);
@@ -360,12 +367,13 @@ describe("GraphicBuilder", () => {
       expectColors([["Mesh", fillColor.toJSON()], ["Polyline", lineColor.toJSON()]]);
     });
 
-    it("produces polyline edges for planar region if line color differs from fill color", () => {
-    
-    });
-
-    it("produces edge table for using fill color regardless of line color if geometry is not a planar region", () => {
-      
+    it("produces edge table using fill color regardless of line color if geometry is not a planar region", () => {
+      const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
+      builder.setSymbology(lineColor, fillColor, 1);
+      const sphere = Sphere.createCenterRadius(points[0], 1);
+      builder.addSolidPrimitive(sphere);
+      builder.finish();
+      expectColors([["Mesh", fillColor.toJSON()]]);
     });
   });
 });
