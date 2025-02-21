@@ -38,6 +38,8 @@ describe("CrossPlatform", () => {
     testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-size3.fb`, `${nativeRoot}${testName}-size4.fb`, `${nativeRoot}${testName}-size5.fb`], [`${nativeRoot}${testName}.imjs`, `${nativeRoot}${testName}-size3.imjs`, `${nativeRoot}${testName}-size4.imjs`, `${nativeRoot}${testName}-size5.imjs`]], [[`${typeScriptRoot}${testName}-new.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
     testName = "indexedMesh-fixedSize";
     testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}.imjs`]], [[`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
+    testName = "indexedMesh-topo";  // edgeMateIndex serialization (TypeScript only)
+    testCases.push({ fileNames: [[[`${nativeRoot}${testName}-old.fb`, `${nativeRoot}${testName}-new.fb`], [`${nativeRoot}${testName}-old.imjs`, `${nativeRoot}${testName}-new.imjs`]], [[`${typeScriptRoot}${testName}-old.fb`, `${typeScriptRoot}${testName}-new.fb`], [`${typeScriptRoot}${testName}-old.imjs`, `${typeScriptRoot}${testName}-new.imjs`]]] });
 
     // TODO: add other test cases
 
@@ -62,7 +64,7 @@ describe("CrossPlatform", () => {
       for (const platform of [Platform.Native, Platform.TypeScript]) {
         for (const fileType of [FileType.FlatBuffer, FileType.JSON]) {
           for (const fileName of testCases[iTestCase].fileNames[platform][fileType])
-            pushFirstDeserializedGeom(fileName, fileType);
+            pushFirstDeserializedGeom(fileName, fileType); // only the first geometry deserialized from each file is compared
         }
       }
       if (ck.testLE(4, geometry.length, "have at least four geometries to compare")) {
