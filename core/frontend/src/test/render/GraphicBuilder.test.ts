@@ -15,7 +15,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshGraphic, MeshRenderGeometry } from "../../internal/render/webgl/Mesh";
+import { MeshRenderGeometry } from "../../internal/render/webgl/Mesh";
 import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
 import { MeshArgs } from "../../render/MeshArgs";
@@ -294,21 +294,21 @@ describe("GraphicBuilder", () => {
     let createPointStringGeometry: typeof RenderSystem.prototype.createPointStringGeometry;
 
     beforeEach(() => {
-      createMeshGeometry = IModelApp.renderSystem.createMeshGeometry;
+      createMeshGeometry = IModelApp.renderSystem.createMeshGeometry; // eslint-disable-line @typescript-eslint/unbound-method
       IModelApp.renderSystem.createMeshGeometry = (params, viOrigin) => {
         expect(params.vertices.uniformColor).not.to.be.undefined;
         primitiveColors.push(["Mesh", params.vertices.uniformColor!.toJSON()]);
         return createMeshGeometry.apply(IModelApp.renderSystem, [params, viOrigin]);
       };
 
-      createPolylineGeometry = IModelApp.renderSystem.createPolylineGeometry;
+      createPolylineGeometry = IModelApp.renderSystem.createPolylineGeometry; // eslint-disable-line @typescript-eslint/unbound-method
       IModelApp.renderSystem.createPolylineGeometry = (params, viOrigin) => {
         expect(params.vertices.uniformColor).not.to.be.undefined;
         primitiveColors.push(["Polyline", params.vertices.uniformColor!.toJSON()]);
         return createPolylineGeometry.apply(IModelApp.renderSystem, [params, viOrigin]);
       };
 
-      createPointStringGeometry = IModelApp.renderSystem.createPointStringGeometry;
+      createPointStringGeometry = IModelApp.renderSystem.createPointStringGeometry; // eslint-disable-line @typescript-eslint/unbound-method
       IModelApp.renderSystem.createPointStringGeometry = (params, viOrigin) => {
         expect(params.vertices.uniformColor).not.to.be.undefined;
         primitiveColors.push(["PointString", params.vertices.uniformColor!.toJSON()]);
