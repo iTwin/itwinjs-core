@@ -469,6 +469,7 @@ export class AccuDraw {
     indexed: LockedStates;
     // @internal (undocumented)
     protected _indexToleranceInches: number;
+    is3dCompass(viewport: Viewport): boolean;
     get isActive(): boolean;
     get isBearingMode(): boolean;
     get isDeactivated(): boolean;
