@@ -429,6 +429,16 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
+  /** Whether to show Z input field in 3d. Sub-classes can override to restrict AccuDraw to 2d input when working in overlays where
+   * depth is not important.
+   * @note Intended to be used in conjunction with ViewState.allow3dManipulations returning false to also disable 3d rotation and
+   * ToolAdmin.acsPlaneSnapLock set to true for projecting snapped points to the view's ACS plane.
+   * @see [[ViewState.allow3dManipulations]][[ToolAdmin.acsPlaneSnapLock]]
+   */
+  public is3dCompass(viewport: Viewport): boolean {
+    return viewport.view.is3d();
+  }
+
   /** Change current compass input mode to either polar or rectangular */
   public setCompassMode(mode: CompassMode): void {
     if (mode === this.compassMode)
@@ -622,7 +632,7 @@ export class AccuDraw {
   public isZLocked(vp: Viewport): boolean {
     if (this._fieldLocked[ItemField.Z_Item])
       return true;
-    if (vp.isSnapAdjustmentRequired) //  && TentativeOrAccuSnap.isHot())
+    if (vp.isSnapAdjustmentRequired && TentativeOrAccuSnap.isHot)
       return true;
 
     return false;
