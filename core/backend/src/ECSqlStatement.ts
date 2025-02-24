@@ -63,6 +63,10 @@ export interface ECSqlRowArg {
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iTwin.js API.
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
  * @public
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
@@ -408,10 +412,246 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getValue(columnIx: number): ECSqlValue {
     assert(undefined !== this._stmt);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return new ECSqlValue(this._stmt.getValue(columnIx));
   }
+}
+
+/** Executes ECSQL INSERT/UPDATE/DELETE statements.
+ *
+ * A statement must be prepared before it can be executed, and it must be released when no longer needed.
+ * See [ECDb.withCachedWriteStatement]($backend) for a convenient and
+ * reliable way to prepare, execute, and then release a statement.
+ *
+ * A statement may contain parameters that must be filled in before use by the **bind** methods.
+ *
+ * Once prepared (and parameters are bound, if any), the statement is executed by calling [ECSqlStatement.stepForInsert]($backend).
+ *
+ * > Preparing a statement can be time-consuming. The best way to reduce the effect of this overhead is to cache and reuse prepared
+ * > statements. A cached prepared statement may be used in different places in an app, as long as the statement is general enough.
+ * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
+ *
+ * See also
+ * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iTwin.js API.
+ * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
+ * @public
+ */
+export class ECSqlWriteStatement implements IDisposable {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  private _stmt: ECSqlStatement;
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public constructor(stmt?: ECSqlStatement) {
+    if (stmt)
+      this._stmt = stmt;
+    else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      this._stmt = new ECSqlStatement();
+    }
+  }
+
+  public get sql() { return this._stmt.sql; }
+
+  /** Check if this statement has been prepared successfully or not */
+  public get isPrepared(): boolean { return this._stmt.isPrepared; }
+
+  /** Get the underlying ECSqlStatement.  Needed until we remove ECSqlStatement.
+   * @param
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  public get stmt(): ECSqlStatement { return this._stmt; }
+
+  /** Prepare this statement prior to first use.
+   * @param db The ECDb to prepare the statement against
+   * @param ecsql The ECSQL statement string to prepare
+   * @param logErrors Determine if errors are logged or not
+   * @throws [IModelError]($common) if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
+   * The error.message property will provide details.
+   * @internal
+   */
+  public prepare(db: IModelJsNative.ECDb, ecsql: string, logErrors = true): void {
+    this._stmt.prepare(db, ecsql, logErrors);
+  }
+
+  /** Prepare this statement prior to first use.
+   * @param db The DgnDb or ECDb to prepare the statement against
+   * @param ecsql The ECSQL statement string to prepare
+   * @param logErrors Determine if errors are logged or not, its set to false by default for tryPrepare()
+   * @returns An object with a `status` member equal to [DbResult.BE_SQLITE_OK]($bentley) on success. Upon error, the `message` member will provide details.
+   * @internal
+   */
+  public tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors = false): { status: DbResult, message: string } {
+    return this.tryPrepare(db, ecsql, logErrors);
+  }
+
+  /** Reset this statement so that the next call to step will return the first row, if any. */
+  public reset(): void {
+    this._stmt.reset();
+  }
+
+  /** Get the Native SQL statement
+   * @internal
+   */
+  public getNativeSql(): string {
+    return this._stmt.getNativeSql();
+  }
+
+  /** Call this function when finished with this statement. This releases the native resources held by the statement.
+   *
+   * > Do not call this method directly on a statement that is being managed by a statement cache.
+   */
+  public dispose(): void {
+    this._stmt.dispose(); // free native statement
+  }
+
+  /** Binds the specified value to the specified ECSQL parameter.
+   * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iTwin.js types to be used for the different ECSQL parameter types.
+   * @param parameter Index (1-based) or name of the parameter
+   */
+  public bindValue(parameter: number | string, val: any): void { this.getBinder(parameter).bind(val); }
+
+  /** Binds null to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   */
+  public bindNull(parameter: number | string): void { this.getBinder(parameter).bindNull(); }
+
+  /** Binds a BLOB value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param BLOB value as either a Uint8Array, ArrayBuffer or a Base64 string
+   */
+  public bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void { this.getBinder(parameter).bindBlob(blob); }
+
+  /** Binds a boolean value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Boolean value
+   */
+  public bindBoolean(parameter: number | string, val: boolean): void { this.getBinder(parameter).bindBoolean(val); }
+
+  /** Binds a DateTime value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param isoDateTimeString DateTime value as ISO8601 string
+   */
+  public bindDateTime(parameter: number | string, isoDateTimeString: string): void { this.getBinder(parameter).bindDateTime(isoDateTimeString); }
+
+  /** Binds a double value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Double value
+   */
+  public bindDouble(parameter: number | string, val: number): void { this.getBinder(parameter).bindDouble(val); }
+
+  /** Binds an GUID value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val GUID value
+   */
+  public bindGuid(parameter: number | string, val: GuidString): void { this.getBinder(parameter).bindGuid(val); }
+
+  /** Binds an Id value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Id value
+   */
+  public bindId(parameter: number | string, val: Id64String): void { this.getBinder(parameter).bindId(val); }
+
+  /** Binds an integer value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Integer value as number, decimal string or hexadecimal string.
+   */
+  public bindInteger(parameter: number | string, val: number | string): void { this.getBinder(parameter).bindInteger(val); }
+
+  /** Binds an Point2d value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Point2d value
+   */
+  public bindPoint2d(parameter: number | string, val: XAndY): void { this.getBinder(parameter).bindPoint2d(val); }
+
+  /** Binds an Point3d value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Point3d value
+   */
+  public bindPoint3d(parameter: number | string, val: XYAndZ): void { this.getBinder(parameter).bindPoint3d(val); }
+
+  /** Binds a Range3d as a blob to the specified ECSQL parameter
+   * @param parameter Index(1-based) or name of the parameter
+   * @param val Range3d value
+   */
+  public bindRange3d(parameter: number | string, val: LowAndHighXYZ): void { this.getBinder(parameter).bindRange3d(val); }
+
+  /** Binds an string to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val String value
+   */
+  public bindString(parameter: number | string, val: string): void { this.getBinder(parameter).bindString(val); }
+
+  /** Binds a navigation property value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Navigation property value
+   */
+  public bindNavigation(parameter: number | string, val: NavigationBindingValue): void { this.getBinder(parameter).bindNavigation(val); }
+
+  /** Binds a struct property value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Struct value. The struct value is an object composed of pairs of a struct member property name and its value
+   * (of one of the supported types)
+   */
+  public bindStruct(parameter: number | string, val: object): void { this.getBinder(parameter).bindStruct(val); }
+
+  /** Binds an array value to the specified ECSQL parameter.
+   * @param parameter Index (1-based) or name of the parameter
+   * @param val Array value. The array value is an array of values of the supported types
+   */
+  public bindArray(parameter: number | string, val: any[]): void { this.getBinder(parameter).bindArray(val); }
+
+  public bindIdSet(parameter: number | string, val: Id64String[]): void { this.getBinder(parameter).bindIdSet(val); }
+  /**
+   * Gets a binder to bind a value for an ECSQL parameter
+   * > This is the most low-level API to bind a value to a specific parameter. Alternatively you can use the ECSqlStatement.bindXX methods
+   * > or [ECSqlStatement.bindValues]($backend).
+   * @param parameter Index (1-based) or name of the parameter
+   */
+  public getBinder(parameter: string | number): ECSqlBinder {
+    return this._stmt.getBinder(parameter);
+  }
+
+  /** Bind values to all parameters in the statement.
+   * @param values The values to bind to the parameters.
+   * Pass an *array* of values if the parameters are *positional*.
+   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
+   * The values in either the array or object must match the respective types of the parameter.
+   *
+   * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iTwin.js types to be used for the different ECSQL parameter types.
+   *
+   * See also these [Code Samples]($docs/learning/backend/ECSQLCodeExamples#binding-to-all-parameters-at-once)
+   */
+  public bindValues(values: any[] | object): void {
+    this._stmt.bindValues(values);
+  }
+
+  /** Clear any bindings that were previously set on this statement.
+   * @throws [IModelError]($common) in case of errors
+   */
+  public clearBindings(): void {
+    this._stmt.clearBindings();
+  }
+
+  /** Step this INSERT statement and returns status and the ECInstanceId of the newly
+   * created instance.
+   *
+   * > Insert statements can be used with ECDb only, not with IModelDb.
+   *
+   * @returns Returns the generated ECInstanceId in case of success and the status of the step
+   * call. In case of error, the respective error code is returned.
+   */
+  public stepForInsert(): ECSqlInsertResult {
+    return this._stmt.stepForInsert();
+  }
+
+  /** Get the query result's column count (only for ECSQL SELECT statements). */
+  public getColumnCount(): number { return this._stmt.getColumnCount(); }
 }
 
 /** Binds a value to an ECSQL parameter.
@@ -596,6 +836,10 @@ export class ECSqlBinder {
  * - [[ECSqlStatement.getValue]]
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
  */
 export interface ECEnumValue {
   schema: string;
@@ -611,7 +855,11 @@ export interface ECEnumValue {
  * - [ECSqlStatement.getValue]($backend)
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
- */
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
+*/
 export class ECSqlValue {
   private _val: IModelJsNative.ECSqlValue;
 
@@ -619,6 +867,7 @@ export class ECSqlValue {
   public constructor(val: IModelJsNative.ECSqlValue) { this._val = val; }
 
   /** Get information about the query result's column this value refers to. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
 
   /** Get the value of this ECSQL value */
@@ -665,18 +914,21 @@ export class ECSqlValue {
    *  @return ECEnumeration value(s) or undefined if the ECSqlValue does not represent an ECEnumeration.
    *  or is not a strict match of an ECEnumerator or a combination of them.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getEnum(): ECEnumValue[] | undefined { return this._val.getEnum(); }
 
   /** Get the value as [NavigationValue]($common) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }
 
   /** Get an iterator for iterating the struct members of this struct value. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getStructIterator(): ECSqlValueIterator { return new ECSqlValueIterator(this._val.getStructIterator()); }
 
   /** Get this struct value's content as object literal */
   public getStruct(): any { return ECSqlValueHelper.getStruct(this); }
 
   /** Get an iterator for iterating the array elements of this array value. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getArrayIterator(): ECSqlValueIterator { return new ECSqlValueIterator(this._val.getArrayIterator()); }
 
   /** Get this array value as JavaScript array */
@@ -686,26 +938,36 @@ export class ECSqlValue {
 /** Iterator over members of a struct [ECSqlValue]($backend) or the elements of an array [ECSqlValue]($backend).
  * See [ECSqlValue.getStructIterator]($backend) or [ECSqlValue.getArrayIterator]($backend).
  * @public
- */
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
+*/
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
 
   /** @internal */
   public constructor(it: IModelJsNative.ECSqlValueIterator) { this._it = it; }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public next(): IteratorResult<ECSqlValue> {
-    if (this._it.moveNext())
+    if (this._it.moveNext()) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
-
+    }
     return { done: true, value: undefined };
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public [Symbol.iterator](): IterableIterator<ECSqlValue> { return this; }
 }
 
 /** Information about an ECSQL column in an ECSQL query result.
  * See [ECSqlValue.columnInfo]($backend), [ECSqlStatement.getValue]($backend), [ECSqlStatement]($backend)
  * @public
+ * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+ * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+ * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.
@@ -886,6 +1148,7 @@ class ECSqlBindingHelper {
 }
 
 class ECSqlValueHelper {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static getValue(ecsqlValue: ECSqlValue): any {
     if (ecsqlValue.isNull)
       return undefined;
@@ -907,6 +1170,7 @@ class ECSqlValueHelper {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static getStruct(ecsqlValue: ECSqlValue): any {
     if (ecsqlValue.isNull)
       return undefined;
@@ -928,6 +1192,7 @@ class ECSqlValueHelper {
     return structVal;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static getArray(ecsqlValue: ECSqlValue): any[] {
     const arrayVal: any[] = [];
     const it = ecsqlValue.getArrayIterator();
@@ -941,10 +1206,12 @@ class ECSqlValueHelper {
     return arrayVal;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private static getPrimitiveValue(ecsqlValue: ECSqlValue): any {
     if (ecsqlValue.isNull)
       return undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
     switch (colInfo.getType()) {
       case ECSqlValueType.Blob:
@@ -983,7 +1250,9 @@ class ECSqlValueHelper {
     if (!tableSpace)
       tableSpace = "main";
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return ecdb.withPreparedStatement(`SELECT s.Name, c.Name FROM [${tableSpace}].meta.ECSchemaDef s, JOIN [${tableSpace}].meta.ECClassDef c ON s.ECInstanceId=c.SchemaId WHERE c.ECInstanceId=?`,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, classId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)

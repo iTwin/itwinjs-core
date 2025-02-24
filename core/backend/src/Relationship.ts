@@ -487,11 +487,13 @@ export class Relationships {
   public tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
     let props: T | undefined;
     if (typeof criteria === "string") {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
       });
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria.sourceId);
         stmt.bindId(2, criteria.targetId);
