@@ -47,6 +47,9 @@ export interface CheckpointProps extends TokenArg {
 
   /** The number of seconds before the current token expires to attempt to reacquire a new token. Default is 1 hour. */
   readonly reattachSafetySeconds?: number;
+
+  /** If present, indicates whether to initiate a prefetch operation when the checkpoint is attached. */
+  readonly doPrefetch?: boolean;
 }
 
 /** Return value from [[ProgressFunction]].
@@ -186,6 +189,21 @@ export class V2CheckpointManager {
     return container;
   }
 
+  /**
+   * Attaches to a checkpoint and optionally initiates a prefetch of the database blocks.
+   * Prefetching aims to improve subsequent access times by preloading data, but it should be used strategically to balance initial load time against overall performance improvement.
+   * Prefetching is enabled when 'Checkpoint/prefetch' is set to true.
+   * The decision is based on total number of blocks in db and maximum number of blocks(2GB). This limit aims to manage resource usage and ensure that prefetching is beneficial.
+   * The restriction is meant to mitigate the 'noisy neighbor' problem in cloud environment. However, it does not apply in desktop scenarios,
+   * where larger prefetches might be ok without impacting resources.
+   * Prefetching should be considered when:
+   * - A significant portion of the database will be accessed, making upfront loading more efficient than multiple individual fetches.
+   * - The application operates in a read-intensive environment where initial longer load time is acceptable for the benefit of faster subsequent access.
+   * - The total number of blocks does not exceed the maximum block number in cloud environment.
+   * - (We may change this in the future depends on perf test results)
+   * @param checkpoint The checkpoint properties
+   * @returns A promise that resolves with the database name and container.
+   */
   public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer }> {
     let v2props: V2CheckpointAccessProps | undefined;
     try {
@@ -205,13 +223,15 @@ export class V2CheckpointManager {
         container.connect(this.cloudCache);
       container.checkForChanges();
       const dbStats = container.queryDatabase(dbName);
-      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
+      const doPrefetch = checkpoint.doPrefetch ?? IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false);
+      if (doPrefetch) {
         const getPrefetchConfig = (name: string, defaultVal: number) => IModelHost.appWorkspace.settings.getNumber(`Checkpoints/prefetch/${name}`, defaultVal);
         const minRequests = getPrefetchConfig("minRequests", 3);
         const maxRequests = getPrefetchConfig("maxRequests", 6);
         const timeout = getPrefetchConfig("timeout", 100);
         const maxBlocks = getPrefetchConfig("maxBlocks", 500); // default size of 2GB. Assumes a checkpoint block size of 4MB.
-        if (dbStats?.totalBlocks !== undefined && dbStats.totalBlocks <= maxBlocks && dbStats.nPrefetch === 0) {
+        // !(this.cloudCache.isDaemon) => desktop/IPC, don't need the maxBlocks restriction.
+        if (dbStats?.totalBlocks !== undefined && (!(this.cloudCache.isDaemon) || dbStats.totalBlocks <= maxBlocks) && dbStats.nPrefetch === 0) {
           const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
             const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
             Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, { minRequests, maxRequests, timeout });
@@ -465,8 +485,7 @@ export class CheckpointManager {
     const changeset = args.changeset ?? await IModelHost[_hubAccess].getLatestChangeset({ ...args, accessToken: await IModelHost.getAccessToken() });
 
     return {
-      iModelId: args.iModelId,
-      iTwinId: args.iTwinId,
+      ...args,
       changeset: {
         index: changeset.index,
         id: changeset.id ?? (await IModelHost[_hubAccess].queryChangeset({ ...args, changeset, accessToken: await IModelHost.getAccessToken() })).id,
