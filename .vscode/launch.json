@@ -1107,6 +1107,7 @@
       "type": "chrome",
       "request": "attach",
       "name": "Attach to Vitest Browser",
+      "timeout": 60000, // Vitest setup could take longer than default timeout on Windows.
       "port": 9229,
     },
     {
