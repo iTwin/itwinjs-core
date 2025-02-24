@@ -493,6 +493,8 @@ public;interface;MapImageryProps
 public;class;MapImagerySettings
 public;interface;MapLayerKey
 public;type;MapLayerProps
+beta;type;MapLayerProviderArrayProperty
+beta;interface;MapLayerProviderProperties
 public;class;MapLayerSettings
 public;interface;MapSubLayerProps
 public;class;MapSubLayerSettings

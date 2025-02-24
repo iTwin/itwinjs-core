@@ -19,6 +19,18 @@ export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" |
 /** @public */
 export type SubLayerId = string | number;
 
+/**
+ * Type for map layer provider array property.
+ * @beta
+ */
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
+
+/**
+ * Type for map layer provider properties.
+ * @beta
+ */
+export interface MapLayerProviderProperties { [key: string]: number | string | boolean | MapLayerProviderArrayProperty };
+
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
  * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
@@ -132,10 +144,12 @@ export interface CommonMapLayerProps {
 
   /** A user-friendly name for the layer. */
   name: string;
+
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing,
    * or false to indicate the transparency should not be overridden.
    * Default value: 0.
    */
+
   transparency?: number;
   /** True to indicate background is transparent.
    * Default: true.
@@ -168,6 +182,11 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
    * @beta
   */
   queryParams?: { [key: string]: string };
+
+  /** Properties specific to the map layer provider.
+   * @beta
+  */
+  properties?: MapLayerProviderProperties;
 
 }
 
@@ -297,6 +316,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
    * @beta
   */
   public unsavedQueryParams?: { [key: string]: string };
+
+  /** Properties specific to the map layer provider.
+   * @beta
+  */
+  public readonly properties?: MapLayerProviderProperties;
+
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 
@@ -311,6 +336,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (props.queryParams) {
       this.savedQueryParams = {...props.queryParams};
     }
+
+    if (props.properties) {
+      this.properties = {...props.properties}
+    }
+
     this.subLayers = [];
     if (!props.subLayers)
       return;
@@ -338,6 +368,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (this.savedQueryParams)
       props.queryParams = {...this.savedQueryParams};
 
+    if (this.properties) {
+      props.properties = structuredClone(this.properties);
+    }
+
     return props;
   }
 
@@ -351,7 +385,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // Clone members not part of MapLayerProps
     clone.userName = this.userName;
     clone.password = this.password;
-    clone.accessKey = this.accessKey;
     if (this.unsavedQueryParams)
       clone.unsavedQueryParams = {...this.unsavedQueryParams};
     if (this.savedQueryParams)
@@ -374,6 +407,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.queryParams = {...this.savedQueryParams};
     }
 
+    if (changedProps.properties) {
+      props.properties = {...changedProps.properties}
+    } else  if (this.properties) {
+      props.properties = {...this.properties}
+    }
     return props;
   }
 
