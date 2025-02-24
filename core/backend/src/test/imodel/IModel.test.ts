@@ -61,10 +61,12 @@ describe("iModel", () => {
   let imodel5: SnapshotDb;
   let originalEnv: any;
 
-  before(async () => {
+  before(() => {
     originalEnv = { ...process.env };
-
     IModelTestUtils.registerTestBimSchema();
+  });
+
+  beforeEach(async () => {
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
@@ -77,15 +79,15 @@ describe("iModel", () => {
 
   after(() => {
     process.env = originalEnv;
+  });
+
+  afterEach(() => {
+    sinon.restore();
     imodel1.close();
     imodel2.close();
     imodel3.close();
     imodel4.close();
     imodel5.close();
-  });
-
-  afterEach(() => {
-    sinon.restore();
   });
 
   /** Roundtrip the entity through a json string and back to a new entity. */
@@ -595,11 +597,10 @@ describe("iModel", () => {
       const expected = test[0] ?? {};
       const styleId = DisplayStyle3d.insert(imodel2, IModel.dictionaryId, `TestStyle${suffix++}`, expected);
       const style = imodel2.elements.getElement<DisplayStyle3d>(styleId).toJSON();
-      expect(style.jsonProperties.styles).not.to.be.undefined;
 
       expect(style.jsonProperties).not.to.be.undefined;
-      expect(style.jsonProperties.styles).not.to.be.undefined;
-      const actual = style.jsonProperties.styles!;
+      expect(style.jsonProperties?.styles).not.to.be.undefined;
+      const actual = style.jsonProperties?.styles;
 
       expect(actual.viewflags).not.to.be.undefined;
       const expectedVf = ViewFlags.fromJSON(test[1]);

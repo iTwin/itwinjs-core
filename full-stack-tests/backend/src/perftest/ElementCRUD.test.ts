@@ -81,11 +81,12 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     elementProps.sub1Long = values.sub1Long;
     elementProps.sub1Double = values.sub1Double;
   }
-  if (className.includes("PerfElement2d"))
+  if (className.includes("PerfElement2d")) {
     elementProps.baseStr2 = values.baseStr2;
-  elementProps.baseStr = values.baseStr;
-  elementProps.baseLong = values.baseLong;
-  elementProps.baseDouble = values.baseDouble;
+    elementProps.baseStr = values.baseStr;
+    elementProps.baseLong = values.baseLong;
+    elementProps.baseDouble = values.baseDouble;
+  }
   return elementProps;
 }
 
