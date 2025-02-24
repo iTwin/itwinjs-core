@@ -8,8 +8,8 @@
  */
 
 import { assert, dispose, disposeArray, UintArray } from "@itwin/core-bentley";
-import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
-import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
+import { CartographicRange, ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
+import { Matrix4d, Range2d, Range3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { RealityMeshParams } from "../../../render/RealityMeshParams";
@@ -30,6 +30,7 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { TerrainTexture } from "../RenderTerrain";
+import { MapCartoRectangle, PlanarProjection, PlanarTilePatch, RealityModelTileTree, RealityTile } from "../../../tile/internal";
 
 const scratchOverlapRange = Range2d.createNull();
 const scratchBytes = new Uint8Array(4);
@@ -287,6 +288,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
 
   public static createForTerrain(mesh: RealityMeshParams, transform: Transform | undefined, disableTextureDisposal = false) {
     const params = RealityMeshGeometryParams.fromRealityMesh(mesh);
+
     if (!params)
       return undefined;
 
@@ -301,11 +303,53 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
 
   public static createFromRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {
     const params = RealityMeshGeometryParams.fromRealityMesh(realityMesh);
-    if (!params)
-      return undefined;
-    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
+    if (!params) return undefined;
 
-    return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
+    const { texture: meshTexture, featureID } = realityMesh;
+    const tile = realityMesh.tile as RealityTile;
+    const layerClassifiers = (tile?.tree as RealityModelTileTree)?.layerClassifiers;
+    const texture = meshTexture ? new TerrainTexture(meshTexture, featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
+
+    if (!layerClassifiers?.size || !tile) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
+
+    const transformECEF = tile.tree.iModel.getEcefTransform();
+    if (!transformECEF || !tile.range) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
+
+    const tileEcefRange = transformECEF.multiplyRange(tile.range);
+    const cartographicRange = new  CartographicRange(tileEcefRange, transformECEF);
+    const boundingBox = cartographicRange.getLongitudeLatitudeBoundingBox();
+    const mapCartoRectangle = MapCartoRectangle.fromRadians(
+      boundingBox.low.x,
+      boundingBox.low.y,
+      boundingBox.high.x,
+      boundingBox.high.y
+    );
+
+    const corners = tile.range.corners();
+
+    const normal = Vector3d.createCrossProductToPoints(corners[0], corners[1], corners[2])?.normalize();
+    if (!normal) {
+      return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
+    }
+    const chordHeight = corners[0].distance(corners[3]) / 2;
+
+    const realityPlanarTilePatch = new PlanarTilePatch(corners, normal, chordHeight);
+    const realityProjection = new PlanarProjection(realityPlanarTilePatch);
+
+    const realityMeshParams: RealityMeshGraphicParams = {
+      projection: realityProjection,
+      tileRectangle: mapCartoRectangle,
+      tileId: undefined,
+      baseColor: undefined,
+      baseTransparent: false,
+      layerClassifiers
+    };
+
+    const layerTextures: TerrainOrProjectedTexture[] = texture ? [texture] : [];
+
+    layerClassifiers?.forEach((layerClassifier, layerIndex) => layerTextures[layerIndex] = new ProjectedTexture(layerClassifier, realityMeshParams, realityMeshParams.tileRectangle));
+
+    return new RealityMeshGeometry({ realityMeshParams: params, textureParams: layerTextures.length > 0 ? RealityTextureParams.create(layerTextures) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
   }
 
   public getRange(): Range3d {
@@ -382,7 +426,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     const branch = new GraphicBranch(true);
     for (const mesh of meshes) {
       const primitive = Primitive.create(mesh);
-      branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
+      branch.add(system.createBatch(primitive!, featureTable!, mesh.getRange(), { tileId }));
     }
 
     return system.createBranch(branch, realityMesh._transform ? realityMesh._transform : Transform.createIdentity(), { disableClipStyle: params.disableClipStyle });

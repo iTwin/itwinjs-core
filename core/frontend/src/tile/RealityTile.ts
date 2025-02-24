@@ -580,6 +580,14 @@ export class RealityTile extends Tile {
   }
 
   /** @internal */
+  public clearLayers() {
+    this._graphic = undefined;
+    if (this.children)
+      for (const child of this.children)
+        (child as RealityTile).clearLayers();
+  }
+
+  /** @internal */
   public override produceGraphics(): RenderGraphic | undefined {
     if (undefined === this._reprojectionTransform)
       return super.produceGraphics();
