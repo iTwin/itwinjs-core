@@ -1100,7 +1100,7 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/core/frontend", // necessary to pick up frontend's vitest config
       "program": "node_modules/vitest/vitest.mjs",
-      "args": ["--inspect-brk", "--no-file-parallelism", "--test-timeout=0"], // disable test timeout while debugging
+      "args": ["--run", "--inspect", "--no-file-parallelism", "--test-timeout=0"], // disable test timeout while debugging
       "autoAttachChildProcesses": true
     },
     {
