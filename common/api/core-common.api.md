@@ -4793,6 +4793,8 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     modelId?: never;
     // @beta
+    properties?: MapLayerProviderProperties;
+    // @beta
     queryParams?: {
         [key: string]: string;
     };
@@ -4826,6 +4828,8 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
+    // @beta
+    readonly properties?: MapLayerProviderProperties;
     // @beta
     savedQueryParams?: {
         [key: string]: string;
@@ -5260,6 +5264,7 @@ export const ipcAppChannels: {
 
 // @internal
 export interface IpcAppFunctions {
+    abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
@@ -5736,6 +5741,15 @@ export interface MapLayerKey {
 
 // @public
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
+
+// @beta
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
+
+// @beta
+export interface MapLayerProviderProperties {
+    // (undocumented)
+    [key: string]: number | string | boolean | MapLayerProviderArrayProperty;
+}
 
 // @public
 export abstract class MapLayerSettings {
