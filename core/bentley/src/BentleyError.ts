@@ -303,6 +303,17 @@ export enum RealityDataStatus {
   InvalidData = REALITYDATA_ERROR_BASE + 1,
 }
 
+/** Error status from ChannelAdmin
+ * @beta
+ */
+export enum ChannelStatus {
+  Success = 0,
+  CHANNEL_ERROR_BASE = 0x26000,
+  NotAllowed = CHANNEL_ERROR_BASE + 1,
+  NestError = CHANNEL_ERROR_BASE + 2,
+  AlreadyExists = CHANNEL_ERROR_BASE + 3,
+}
+
 /** A function that returns a metadata object for a [[BentleyError]].
  * This is generally used for logging. However not every exception is logged, so use this if the metadata for an exception is expensive to create.
  * @public
@@ -628,6 +639,9 @@ export class BentleyError extends Error {
       case GeoServiceStatus.CSMapError: return "CSMap error";
       case GeoServiceStatus.Pending: return "Pending"; // eslint-disable-line @typescript-eslint/no-deprecated
       case RealityDataStatus.InvalidData: return "Invalid or unknown data";
+      case ChannelStatus.AlreadyExists: return "Channel already exists";
+      case ChannelStatus.NotAllowed: return "Channel not allowed";
+      case ChannelStatus.NestError: return "Channel may not nest";
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:
       case DbResult.BE_SQLITE_DONE:

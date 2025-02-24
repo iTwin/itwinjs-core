@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { ChannelStatus, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
@@ -73,7 +73,7 @@ class ChannelAdmin implements ChannelControl {
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel)
-      throw new Error(`channel "${deniedChannel}" is not allowed`);
+      throw new IModelError(ChannelStatus.NotAllowed, `channel "${deniedChannel}" is not allowed`);
 
     const channel = this.getChannelKey(modelId);
     if (this._allowedChannels.has(channel)) {
@@ -87,10 +87,10 @@ class ChannelAdmin implements ChannelControl {
 
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
     if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId))
-      throw new Error("channels may not nest");
+      throw new IModelError(ChannelStatus.NestError, "channels may not nest");
 
     if (this.queryChannelRoot(args.channelKey) !== undefined)
-      throw new Error("a channel root for the specified key already exists");
+      throw new IModelError(ChannelStatus.AlreadyExists, "a channel root for the specified key already exists");
 
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
