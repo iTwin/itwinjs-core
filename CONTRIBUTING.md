@@ -102,9 +102,9 @@ Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the cus
 
 ![Vitest refresh tests helper](./docs/assets/vitest-explorer-help.png)
 
-Note, the Vitest Explorer is not compatible with tests run on a browser, and the second way below is the only viable way to debug browser-based tests.
+> The Vitest Explorer is not compatible with tests run on a browser, and the second way below is the only viable way to debug browser-based tests.
 
-1. Edit the `vitest.config.mts` found in a package's root folder and add a [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the ViewRect class in core-frontend, which respectively has `ViewRect.test.ts`, one would edit the `vitest.config.mts` for core-frontend like below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
+2. Edit the `vitest.config.mts` found in a package's root folder and add a [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the ViewRect class in core-frontend, which respectively has `ViewRect.test.ts`, one would edit the `vitest.config.mts` for core-frontend like below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
 
 ```typescript
 export default defineConfig({
