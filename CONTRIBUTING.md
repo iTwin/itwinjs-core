@@ -98,7 +98,7 @@ Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the cus
 
   There are 2 ways to filter Vitest tests:
 
-1. (Recommended) A VSCode Extension, [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=vitest.explorer) is available, that integrates with VSCode allowing you to select individual test cases to run/debug. After editing a test or source code, if unexpected behavior occurs, hit the refresh tests button as shown below.
+1. A VSCode Extension, [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=vitest.explorer) is available, that integrates with VSCode allowing you to select individual test cases to run/debug. After editing a test or source code, if unexpected behavior occurs, hit the refresh tests button as shown below.
 
 ![Vitest refresh tests helper](./docs/assets/vitest-explorer-help.png)
 
