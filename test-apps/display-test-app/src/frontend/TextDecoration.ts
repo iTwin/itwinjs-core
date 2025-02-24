@@ -293,7 +293,7 @@ export class TextDecorationTool extends Tool {
       }
       case "margin": {
         const marginLocation = inArgs[1].toLowerCase();
-        const val = parseInt(inArgs[2], 10);
+        const val = parseFloat(inArgs[2]);
         if (isNaN(val)) {
           throw new Error("Expected a number");
         }
