@@ -108,17 +108,6 @@ if (targetBranch === `origin/${currentBranch}`) {
 // copy all changelogs from the current branch to ./temp-incoming-changelogs, the files will be named: package_name_CHANGELOG.json
 await $`find ./ -type f -name "CHANGELOG.json" -not -path "*/node_modules/*" -exec sh -c 'cp "{}" "./temp-incoming-changelogs/$(echo "{}" | sed "s/^.\\///; s/\\//_/g")"' \\;`;
 
-// before checking out to target branch
-// if it is a major or minor release, we need to update `gather-docs.yaml`'s branchName value to be the release branch
-if (commitMessage.endsWith(".0")) {
-  const docsYamlPath = "common/config/azure-pipelines/templates/gather-docs.yaml";
-  editFileInPlaceSynchronously(docsYamlPath, /release\/\d+\.\d+\.\w+/g, currentBranch);
-  // commit these changes to our release branch
-  await $`git add ${docsYamlPath}`;
-  await $`git commit -m "Update gather-docs.yaml's branch name to the release branch"`;
-  await $`git push origin HEAD:${currentBranch}`;
-}
-
 targetBranch = targetBranch.replace("origin/", "");
 await $`git checkout ${targetBranch}`;
 // copy all changelogs from the target branch to ./temp-target-changelogs, the files will be named: package_name_CHANGELOG.json
