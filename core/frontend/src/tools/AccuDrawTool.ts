@@ -191,7 +191,7 @@ export class AccuDrawShortcuts {
     }
 
     const vp = accudraw.currentView;
-    const is3d = vp ? vp.view.is3d() : false;
+    const is3d = vp ? accudraw.is3dCompass(vp) : false;
     const isPolar = (CompassMode.Polar === accudraw.compassMode);
     switch (index) {
       case ItemField.DIST_Item:
