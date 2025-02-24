@@ -199,6 +199,7 @@ import { NotifyEntitiesChangedArgs } from '@itwin/core-common';
 import { ObservableSet } from '@itwin/core-bentley';
 import { OctEncodedNormal } from '@itwin/core-common';
 import { OpenBriefcaseProps } from '@itwin/core-common';
+import { OpenCheckpointArgs } from '@itwin/core-common';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrbitGtBlobProps } from '@itwin/core-common';
 import { OrderedComparator } from '@itwin/core-bentley';
@@ -1933,6 +1934,7 @@ export class CheckpointConnection extends IModelConnection {
     // (undocumented)
     protected _isClosed?: boolean;
     get iTwinId(): GuidString;
+    static openFromIpc(args: OpenCheckpointArgs): Promise<CheckpointConnection>;
     static openRemote(iTwinId: GuidString, iModelId: GuidString, version?: IModelVersion): Promise<CheckpointConnection>;
 }
 
