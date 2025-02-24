@@ -141,7 +141,7 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    await testFormat.fromJSON(unitsProvider, json).catch(() => { });
+    await testFormat.fromJSON(unitsProvider, json);
   });
 
   it("Good default round factor", async () => {
@@ -156,7 +156,7 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    await testFormat.fromJSON(unitsProvider, json).catch(() => { });
+    await testFormat.fromJSON(unitsProvider, json);
   });
 
   it("Bad minWidth value", async () => {
@@ -734,7 +734,7 @@ describe("Formatting tests:", () => {
 
     for (const formatData of formatDataArray) {
       const format = new Format("test");
-      await format.fromJSON(unitsProvider, formatData).catch(() => { });
+      await format.fromJSON(unitsProvider, formatData);
       if (formatData.hasOwnProperty("precision"))
         expect(format.precision).toEqual(formatData.precision);
       expect(format.type.toUpperCase()).toEqual(formatData.type.toUpperCase());

@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface } from "@itwin/core-common";
+import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics";
@@ -172,12 +172,14 @@ export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<Displ
 /**
  * Data structure for selection scope request options.
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
 /**
  * Request options data structure for computing selection based on given selection scope and element IDs.
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
@@ -185,12 +187,13 @@ export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<Co
  * Interface used for communication between Presentation backend and frontend.
  * @public
  */
+@RpcOperation.setDefaultPolicy({ retryInterval: () => 0 })
 export class PresentationRpcInterface extends RpcInterface {
   /** The immutable name of the interface. */
   public static readonly interfaceName = "PresentationRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "4.1.0";
+  public static interfaceVersion = "5.0.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -304,11 +307,13 @@ export class PresentationRpcInterface extends RpcInterface {
   }
 
   /** @deprecated in 4.10. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
     return this.forward(arguments);
   }
 
   /** @deprecated in 4.10. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON> {
     return this.forward(arguments);
   }

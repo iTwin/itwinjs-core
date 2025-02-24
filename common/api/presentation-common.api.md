@@ -274,7 +274,7 @@ export interface CompressedClassInfoJSON {
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
-// @public
+// @public @deprecated
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
     // (undocumented)
     elementIds: Id64String[];
@@ -282,7 +282,7 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
     scope: SelectionScopeProps;
 }
 
-// @public
+// @public @deprecated
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
 // @public
@@ -439,6 +439,12 @@ export enum ContentSpecificationTypes {
 
 // @public
 export type ContentUpdateInfo = typeof UPDATE_FULL;
+
+// @internal (undocumented)
+export function createCancellableTimeoutPromise(timeoutMs: number): {
+    promise: Promise<void>;
+    cancel: () => void;
+};
 
 // @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean): FieldHierarchy[];
@@ -835,7 +841,7 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
     type: "struct";
 }
 
-// @public
+// @public @deprecated
 export interface ElementSelectionScopeProps {
     ancestorLevel?: number;
     id: "element";
@@ -1827,6 +1833,7 @@ export interface PresentationRpcResponseData<TResult = undefined> {
 
 // @public
 export enum PresentationStatus {
+    // @deprecated
     BackendTimeout = 65543,
     Canceled = 1,
     Error = 65536,
@@ -2547,23 +2554,23 @@ export interface SelectionInfo {
     providerName: string;
 }
 
-// @public
+// @public @deprecated
 export interface SelectionScope {
     description?: string;
     id: string;
     label: string;
 }
 
-// @public
+// @public @deprecated
 export type SelectionScopeProps = ElementSelectionScopeProps | {
     id: string;
 };
 
-// @public
+// @public @deprecated
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
-// @public
+// @public @deprecated
 export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
 // @internal (undocumented)

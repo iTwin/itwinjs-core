@@ -263,6 +263,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async saveChanges(key: string, description?: string): Promise<void> {
     IModelDb.findByKey(key).saveChanges(description);
   }
+  public async abandonChanges(key: string): Promise<void> {
+    IModelDb.findByKey(key).abandonChanges();
+  }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
   }
