@@ -57,6 +57,22 @@ export class ECDb implements Disposable {
     this._nativeDb.dispose();
     this._nativeDb = undefined;
   }
+  /**
+   * Attach an ECDb file to this connection and load and register its schemas.
+   * @param fileName ECDb file name
+   * @param alias identifier for the attached file. This identifer is used a tablespace executing ECSQL queries.
+   */
+  public attachDb(fileName: string, alias: string): void {
+    this[_nativeDb].attachDb(fileName, alias);
+  }
+  /**
+   * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
+   * @param alias identifer that was used in the call to [[attachDb]]
+   */
+  public detachDb(alias: string): void {
+    this.clearStatementCache();
+    this[_nativeDb].detachDb(alias);
+  }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
   public dispose(): void {

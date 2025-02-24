@@ -649,4 +649,3 @@ describe("CloudSqlite", () => {
     BlobContainer.service = service;
   });
 });
-
