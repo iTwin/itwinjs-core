@@ -565,6 +565,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
@@ -596,6 +597,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElement", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
@@ -620,6 +622,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // Verify via an ECSql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await iModel.withPreparedStatement("SELECT * FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementAspect;
@@ -727,6 +730,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement614
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;
@@ -759,6 +763,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     assert.equal(rowCount, 1);
 
     // verify via ecsql statement
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await imodel.withPreparedStatement("SELECT * FROM ts.TestElementRefersToElements", async (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElementRefersToElements;

@@ -44,6 +44,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -177,6 +178,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const startTime = new Date().getTime();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
       perfimodel.withPreparedStatement("SELECT * FROM tps.MixinElement", (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
         const row = stmt.getRow();
