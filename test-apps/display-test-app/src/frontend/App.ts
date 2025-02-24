@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuDrawViewportUI, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -29,7 +29,7 @@ import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransfor
 import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
-import { DrawingAidTestTool } from "./DrawingAidTestTool";
+import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -81,11 +81,19 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 }
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
+  private _shortcuts?: DisplayTestAppShortcutsUI;
+
   /** Process shortcut key events */
   public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
-    if (wentDown && AccuDrawHintBuilder.isEnabled)
-      return AccuDrawShortcuts.processShortcutKey(keyEvent);
-    return false;
+    if (!wentDown || !AccuDrawHintBuilder.isEnabled)
+      return false;
+
+    if (undefined === this._shortcuts) {
+      this._shortcuts = new DisplayTestAppShortcutsUI();
+      this._shortcuts.populateDefaultShortcuts();
+    }
+
+    return this._shortcuts.processShortcutKey(keyEvent);
   }
 }
 
@@ -262,6 +270,9 @@ export class DisplayTestApp {
             : undefined,
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
+            : undefined,
+          GoogleMaps: configuration.googleMapsKey
+            ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */

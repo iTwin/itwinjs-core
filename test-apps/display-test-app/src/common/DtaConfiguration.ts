@@ -34,6 +34,7 @@ export interface DtaBooleanConfiguration {
   ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
   noElectronAuth?: boolean; // if true, don't initialize auth client. It currently has a bug that produces an exception on every attempt to obtain access token, i.e., every RPC call.
   noImdlWorker?: boolean; // if true, parse iMdl content on main thread instead of web worker (easier to debug).
+  googleMapsUi?: boolean; // if set, a Google Maps toolbar icon will be displayed in the UI
 }
 
 export interface DtaStringConfiguration {
@@ -46,6 +47,7 @@ export interface DtaStringConfiguration {
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
+  googleMapsKey?: string; // default undefined
   cesiumIonKey?: string; // default undefined
   logLevel?: string; // default undefined
   windowSize?: string; // default undefined
@@ -141,6 +143,9 @@ export const getConfig = (): DtaConfiguration => {
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
 
+  if (undefined !== process.env.IMJS_GOOGLE_MAPS_KEY)
+    configuration.googleMapsKey = process.env.IMJS_GOOGLE_MAPS_KEY;
+
   if (undefined !== process.env.IMJS_MAPBOX_KEY)
     configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
 
@@ -152,6 +157,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_WINDOW_SIZE)
     configuration.windowSize = process.env.IMJS_WINDOW_SIZE;
+
+  if (undefined !== process.env.IMJS_GOOGLEMAPS_UI)
+    configuration.googleMapsUi = !!process.env.IMJS_GOOGLEMAPS_UI;
 
   configuration.devTools = undefined === process.env.IMJS_NO_DEV_TOOLS;
   configuration.cacheTileMetadata = undefined !== process.env.IMJS_CACHE_TILE_METADATA;

@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
-import { MockRender } from "../../../render/MockRender";
+import { MockRender } from "../../../internal/render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { openBlankViewport } from "../../openBlankViewport";

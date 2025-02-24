@@ -10,7 +10,7 @@ import {
   AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
+import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { IModelApp } from "../IModelApp";
@@ -21,6 +21,7 @@ import { Pixel } from "../render/Pixel";
 import { GraphicType } from "../common/render/GraphicType";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { Decorator } from "../ViewManager";
+import { CanvasDecoration } from "../core-frontend";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -685,6 +686,169 @@ describe("Viewport", () => {
         expect(vp.isPixelSelectable(fakePixelData as any)).toBe(true);
         stub.mockRestore();
       });
+    });
+  });
+
+  describe("Read Image To Canvas", () => {
+
+    class PixelCanvasDecoration implements CanvasDecoration {
+      public drawDecoration(ctx: CanvasRenderingContext2D) {
+        ctx.fillStyle = "red";
+        ctx.fillRect(0,0,1,1);
+      }
+    }
+
+    class PixelCanvasDecorator implements Decorator {
+      public decorate(context: DecorateContext) {
+
+        const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
+        context.addDecorationFromBuilder(builder);
+        context.addCanvasDecoration(new PixelCanvasDecoration());
+      }
+    }
+
+    function createViewport(): ScreenViewport {
+      const state = SpatialViewState.createBlank(createBlankConnection(), { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 })
+      const parentDiv = document.createElement("div");
+      parentDiv.setAttribute("height", "1px");
+      parentDiv.setAttribute("width", "1px");
+      parentDiv.style.height = parentDiv.style.width = "1px";
+      document.body.appendChild(parentDiv);
+      return ScreenViewport.create(parentDiv, state);
+    }
+
+    const activeDecorators: Decorator[] = [];
+    function addDecorator(dec: Decorator) {
+      IModelApp.viewManager.addDecorator(dec);
+      activeDecorators.push(dec);
+    }
+
+    afterEach(() => {
+      for (const dec of activeDecorators) {
+        IModelApp.viewManager.dropDecorator(dec);
+      }
+
+      activeDecorators.length = 0;
+    });
+
+    it("should not include canvas decorations if omitCanvasDecorations is true", () => {
+      const vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+
+      const readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: true,
+      };
+
+      expect(vp.rendersToScreen).to.be.true;
+      const canvas = vp.readImageToCanvas(readImageOptions);
+      const ctx = canvas.getContext("2d");
+      const pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      const rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([0,0,0]);
+
+      IModelApp.viewManager.dropViewport(vp);
+      });
+
+
+    it("should include canvas decorations if omitCanvasDecorations is false or undefined", () => {
+      const vp = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+
+      let readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: false,
+      };
+
+      expect(vp.rendersToScreen).to.be.true;
+      let canvas = vp.readImageToCanvas(readImageOptions);
+      let ctx = canvas.getContext("2d");
+      let pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      let rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([255,0,0]);
+
+      readImageOptions = {
+        omitCanvasDecorations: undefined,
+      };
+
+      canvas = vp.readImageToCanvas(readImageOptions);
+      ctx = canvas.getContext("2d");
+      pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([255,0,0]);
+
+      IModelApp.viewManager.dropViewport(vp);
+    });
+
+    it("should not include canvas decorations if omitCanvasDecorations is true with multiple viewports", () => {
+      const vp = createViewport();
+      const vp2 = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+      IModelApp.viewManager.addViewport(vp2);
+
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+      vp2.renderFrame();
+
+      const readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: true,
+      };
+
+      expect(vp.rendersToScreen).to.be.false;
+      let canvas = vp.readImageToCanvas(readImageOptions);
+      let ctx = canvas.getContext("2d");
+      let pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      let rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([0,0,0]);
+
+      expect(vp2.rendersToScreen).to.be.false;
+      canvas = vp2.readImageToCanvas(readImageOptions);
+      ctx = canvas.getContext("2d");
+      pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([0,0,0]);
+
+      IModelApp.viewManager.dropViewport(vp);
+      IModelApp.viewManager.dropViewport(vp2);
+      });
+
+
+    it("should include canvas decorations if omitCanvasDecorations is false or undefined with multiple viewports", () => {
+      const vp = createViewport();
+      const vp2 = createViewport();
+      IModelApp.viewManager.addViewport(vp);
+      IModelApp.viewManager.addViewport(vp2);
+
+      addDecorator(new PixelCanvasDecorator());
+      vp.renderFrame();
+      vp2.renderFrame();
+
+      let readImageOptions: ReadImageToCanvasOptions = {
+        omitCanvasDecorations: false,
+      };
+
+      expect(vp.rendersToScreen).to.be.false;
+      let canvas = vp.readImageToCanvas(readImageOptions);
+      let ctx = canvas.getContext("2d");
+      let pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      let rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([255,0,0]);
+
+      readImageOptions = {
+        omitCanvasDecorations: undefined,
+      };
+
+      expect(vp2.rendersToScreen).to.be.false;
+      canvas = vp2.readImageToCanvas(readImageOptions);
+      ctx = canvas.getContext("2d");
+      pixel = ctx!.getImageData(0, 0, 1, 1).data;
+      rgb = [pixel[0], pixel[1], pixel[2]];
+      expect(rgb).toEqual([255,0,0]);
+
+      IModelApp.viewManager.dropViewport(vp);
+      IModelApp.viewManager.dropViewport(vp2);
     });
   });
 });

@@ -17,6 +17,7 @@ import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { ECObjectsError } from "../../Exception";
 import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
+import { Enumeration } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -1770,7 +1771,7 @@ describe("XmlParser", () => {
     async function getTestCAClass(propertyJson: any): Promise<CustomAttributeClass | undefined> {
       const schemaJson = createSchemaJson(propertyJson);
       const schema = await Schema.fromJson(schemaJson, new SchemaContext());
-      return schema.getItem<CustomAttributeClass>("TestCustomAttribute");
+      return schema.getItem("TestCustomAttribute", CustomAttributeClass);
     }
 
     function getCAProviders(itemXml: string, expectedProviders: number = 1): CAProviderTuple[] {
@@ -2821,7 +2822,7 @@ describe("XmlParser", () => {
 
           const testClass = await getTestCAClass(propertyJson);
           const providers = getCAProviders(itemXml);
-          sinon.stub(testClass!.schema, "lookupItemSync").withArgs("TestSchema.TestStringEnumeration").returns(undefined);
+          sinon.stub(testClass!.schema, "lookupItemSync").withArgs("TestSchema.TestStringEnumeration", Enumeration).returns(undefined);
 
           expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, `The Enumeration class 'TestSchema.TestStringEnumeration' could not be found.`);
         });

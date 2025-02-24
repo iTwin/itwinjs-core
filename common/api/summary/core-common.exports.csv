@@ -57,6 +57,7 @@ beta;class;BentleyCloudRpcConfiguration
 beta;class;BentleyCloudRpcManager
 beta;interface;BentleyCloudRpcParams
 internal;class;BentleyCloudRpcProtocol
+public;interface;BinaryImageSource
 public;enum;BisCodeSpec
 internal;function;bisectTileRange2d
 internal;function;bisectTileRange3d
@@ -100,7 +101,7 @@ public;interface;ChangedEntities
 internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
-internal;interface;ChangesetFileProps
+public;interface;ChangesetFileProps
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex
 public;type;ChangesetIndex
@@ -462,6 +463,7 @@ internal;interface;IpcWebSocketMessage
 internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
+public;function;isBinaryImageSource
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
@@ -491,6 +493,8 @@ public;interface;MapImageryProps
 public;class;MapImagerySettings
 public;interface;MapLayerKey
 public;type;MapLayerProps
+beta;type;MapLayerProviderArrayProperty
+beta;interface;MapLayerProviderProperties
 public;class;MapLayerSettings
 public;interface;MapSubLayerProps
 public;class;MapSubLayerSettings
@@ -499,7 +503,9 @@ internal;interface;MarshalingBinaryMarker
 internal;namespace;MarshalingBinaryMarker
 public;enum;MassPropertiesOperation
 public;interface;MassPropertiesPerCandidateRequestProps
+deprecated;interface;MassPropertiesPerCandidateRequestProps
 public;interface;MassPropertiesPerCandidateResponseProps
+deprecated;interface;MassPropertiesPerCandidateResponseProps
 public;interface;MassPropertiesRequestProps
 public;interface;MassPropertiesResponseProps
 public;interface;MaterialProps
@@ -675,15 +681,16 @@ internal;interface;RelTypeInfo
 public;type;RemoveFunction
 public;interface;RenderFeatureTable
 public;class;RenderMaterial
-public;namespace;RenderMaterial
 public;interface;RenderMaterialAssetMapsProps
 public;interface;RenderMaterialAssetProps
+internal;class;RenderMaterialParams
 public;interface;RenderMaterialProps
 public;enum;RenderMode
 public;namespace;RenderSchedule
 internal;class;Interval
 public;class;RenderTexture
 public;namespace;RenderTexture
+internal;class;RenderTextureParams
 public;interface;RenderTimelineLoadProps
 public;interface;RenderTimelineProps
 public;interface;RepositoryLinkProps
@@ -829,9 +836,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
-public;type;TerrainProviderName
-deprecated;type;TerrainProviderName
 public;class;TerrainSettings
+internal;interface;TestingArgs
 internal;class;TestRpcManager
 beta;class;TextAnnotation
 public;interface;TextAnnotation2dProps

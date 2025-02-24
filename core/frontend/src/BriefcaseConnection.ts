@@ -329,6 +329,11 @@ export class BriefcaseConnection extends IModelConnection {
     await IpcApp.appFunctionIpc.saveChanges(this.key, description);
   }
 
+  /** Abandon pending changes to this briefcase. */
+  public async abandonChanges(): Promise<void> {
+    await IpcApp.appFunctionIpc.abandonChanges(this.key);
+  }
+
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
    * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
    * @param options Options for pulling changes.

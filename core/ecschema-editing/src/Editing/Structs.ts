@@ -16,6 +16,10 @@ import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.
  */
 export class Structs extends ECClasses {
+  protected override get itemTypeClass(): typeof StructClass {
+    return StructClass;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.StructClass, schemaEditor);
   }

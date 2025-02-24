@@ -90,7 +90,7 @@ export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesS
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
-// @public
+// @public @deprecated
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps;
 
 // @public
@@ -177,9 +177,6 @@ export const getFieldInfos: (field: Field) => Set<PropertyFullName>;
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
 // @public @deprecated
-export function getScopeId(scope: SelectionScope | string | undefined): string;
-
-// @public
 export interface HiliteSet {
     // (undocumented)
     elements?: Id64String[];
@@ -189,14 +186,14 @@ export interface HiliteSet {
     subCategories?: Id64String[];
 }
 
-// @public
+// @public @deprecated
 export class HiliteSetProvider {
     static create(props: HiliteSetProviderProps): HiliteSetProvider;
     getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
     getHiliteSetIterator(selection: Readonly<KeySet>): AsyncIterableIterator<HiliteSet>;
 }
 
-// @public
+// @public @deprecated
 export interface HiliteSetProviderProps {
     // (undocumented)
     imodel: IModelConnection;
@@ -239,7 +236,7 @@ export interface IModelHierarchyChangeEventArgs {
 // @internal (undocumented)
 export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
 
-// @public
+// @public @deprecated
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
     selectionChange: SelectionChangeEvent;
@@ -295,6 +292,7 @@ export class Presentation {
     static get localization(): Localization;
     static get presentation(): PresentationManager;
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
+    // @deprecated
     static get selection(): SelectionManager;
     // @internal (undocumented)
     static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
@@ -406,6 +404,7 @@ export interface PresentationManagerProps {
 export interface PresentationProps {
     favorites?: FavoritePropertiesManagerProps;
     presentation?: PresentationManagerProps;
+    // @deprecated
     selection?: Partial<SelectionManagerProps>;
 }
 
@@ -478,11 +477,11 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     unset(variableId: string): Promise<void>;
 }
 
-// @public
+// @public @deprecated
 export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> {
 }
 
-// @public
+// @public @deprecated
 export interface SelectionChangeEventArgs {
     changeType: SelectionChangeType;
     imodel: IModelConnection;
@@ -493,10 +492,10 @@ export interface SelectionChangeEventArgs {
     timestamp: Date;
 }
 
-// @public
+// @public @deprecated
 export type SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void;
 
-// @public
+// @public @deprecated
 export enum SelectionChangeType {
     Add = 0,
     Clear = 3,
@@ -504,7 +503,7 @@ export enum SelectionChangeType {
     Replace = 2
 }
 
-// @public
+// @public @deprecated
 export class SelectionHandler implements Disposable {
     [Symbol.dispose](): void;
     constructor(props: SelectionHandlerProps);
@@ -525,7 +524,7 @@ export class SelectionHandler implements Disposable {
     protected shouldHandle(evt: SelectionChangeEventArgs): boolean;
 }
 
-// @public
+// @public @deprecated
 export interface SelectionHandlerProps {
     imodel: IModelConnection;
     manager: SelectionManager;
@@ -534,12 +533,12 @@ export interface SelectionHandlerProps {
     rulesetId?: string;
 }
 
-// @public
+// @public @deprecated
 export class SelectionHelper {
     static getKeysForSelection(keys: Readonly<Keys>): Key[];
 }
 
-// @public
+// @public @deprecated
 export class SelectionManager implements ISelectionProvider, Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
@@ -569,14 +568,14 @@ export class SelectionManager implements ISelectionProvider, Disposable {
     };
 }
 
-// @public
+// @public @deprecated
 export interface SelectionManagerProps {
     imodelKeyFactory?: (imodel: IModelConnection) => string;
     scopes: SelectionScopesManager;
     selectionStorage?: SelectionStorage;
 }
 
-// @public
+// @public @deprecated
 export class SelectionScopesManager {
     constructor(props: SelectionScopesManagerProps);
     get activeLocale(): string | undefined;
@@ -586,7 +585,7 @@ export class SelectionScopesManager {
     getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]>;
 }
 
-// @public
+// @public @deprecated
 export interface SelectionScopesManagerProps {
     localeProvider?: () => string | undefined;
     rpcRequestsHandler: RpcRequestsHandler;
