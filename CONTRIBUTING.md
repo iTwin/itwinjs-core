@@ -9,6 +9,8 @@ The goal of this document is to provide a high-level overview of how you can get
   - [Repo Setup](#repo-setup)
   - [Source Code Edit Workflow](#source-code-edit-workflow)
     - [Other NPM Scripts](#other-npm-scripts)
+    - [Debugging](#debugging)
+      - [Filtering Test Suites](#filtering-test-suites)
   - [Asking Questions](#asking-questions)
   - [Providing Feedback](#providing-feedback)
   - [Reporting Issues](#reporting-issues)
@@ -76,6 +78,54 @@ Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
 
+### Debugging
+
+Custom VSCode tasks are found in [launch.json](/.vscode/launch.json) to make debugging easier for contributors. Navigate to the `Run and Debug` panel in VSCode and you can select one of many custom tasks to run, which will attach a debugger to the process, and stop at a breakpoint you've set up.
+
+#### Filtering Test Suites
+The custom scripts above run all tests found in the respective package; contributors, when debugging, tend to know exactly which individual test suite/case to run, and would prefer to filter out all other tests that aren't relevant to their task.
+
+This monorepo has packages using either mocha or vitest - both testing frameworks - to run tests, and instructions for filtering differs between the two:
+
+<details>
+  <summary> Filtering Mocha tests</summary>
+
+Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel, and mocha will run only that test suite.
+</details>
+
+<details>
+  <summary>Filtering Vitest tests</summary>
+
+  There are 2 ways to filter Vitest tests:
+
+1. (Recommended) A VSCode Extension, [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=vitest.explorer) is available, that integrates with VSCode allowing you to select individual test cases to run/debug. After editing a test or source code, if unexpected behavior occurs, hit the refresh tests button as shown below.
+
+![Vitest refresh tests helper](./docs/assets/vitest-explorer-help.png)
+
+Note, the Vitest Explorer is not compatible with tests run on a browser, and the second way below is the only viable way to debug browser-based tests.
+
+1. Edit the `vitest.config.mts` found in a package's root folder and add a [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the ViewRect class in core-frontend, which respectively has `ViewRect.test.ts`, one would edit the `vitest.config.mts` for core-frontend like below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
+
+```typescript
+export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
+  test: {
+    dir: "src",
+    setupFiles: "./src/test/setupTests.ts",
+    include: ["**/ViewRect.test.ts"], // Added here - the include property accepts a regex pattern.
+    browser: {
+      ...
+    },
+    ...
+  }
+  ...
+})
+```
+</details>
+
+To distinguish whether a package is using vitest or mocha, look at the `package.json` `devDependencies`.
 ## Asking Questions
 
 Have a question?
@@ -203,5 +253,3 @@ Use these instructions to update dependencies and devDependencies on external pa
 1. Go into the appropriate `package.json` file and update the semantic version range of the dependency you want to update.
 2. Run `rush check` to make sure that you are specifying consistent versions across the repository
 3. Run `rush update` to make sure the newer version of the module specified in #1 is installed
-
-
