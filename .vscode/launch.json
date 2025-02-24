@@ -1098,22 +1098,27 @@
       "request": "launch",
       "name": "Run Vitest Browser",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}/core/frontend",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "run",
-        "test",
-        "--inspect",
-        "--no-file-parallelism"
-      ],
+      "cwd": "${workspaceFolder}/core/frontend", // necessary to pick up frontend's vitest config
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": ["--inspect-brk", "--no-file-parallelism", "--test-timeout=0"], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
     },
     {
       "type": "chrome",
       "request": "attach",
       "name": "Attach to Vitest Browser",
-      "url": "http://localhost:5173",
-      "timeout": 30000,
-      "port": 9229
+      "port": 9229,
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Compile test worker for frontend tests",
+      "console": "integratedTerminal",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "webpackTestWorker"
+      ],
     }
   ],
   "compounds": [
@@ -1127,6 +1132,7 @@
         "Attach to Vitest Browser",
         "Run Vitest Browser"
       ],
+      "preLaunchTask": "Run webpack for frontend test worker",
       "stopAll": true
     },
     {
