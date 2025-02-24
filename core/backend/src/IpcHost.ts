@@ -176,7 +176,6 @@ export abstract class IpcHandler {
       } catch (err: any) {
         let ret: IpcInvokeReturn;
         if (ITwinError.isITwinError(err)) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { namespace, errorKey, message, stack, metadata, ...rest } = err;
           ret = {
             iTwinError:
