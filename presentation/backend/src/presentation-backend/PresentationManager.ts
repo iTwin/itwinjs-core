@@ -742,7 +742,9 @@ export class PresentationManager {
   /**
    * Retrieves available selection scopes.
    * @public
+   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]> {
     return SelectionScopesHelper.getSelectionScopes();
   }
@@ -750,7 +752,9 @@ export class PresentationManager {
   /**
    * Computes selection based on provided element IDs and selection scope.
    * @public
+   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet> {
     return SelectionScopesHelper.computeSelection(requestOptions);
   }

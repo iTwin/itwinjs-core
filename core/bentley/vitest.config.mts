@@ -22,7 +22,9 @@ export default defineConfig({
         "cobertura"
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
-    }
+    },
+    minWorkers: 1,
+    maxWorkers: 3,
   },
   optimizeDeps: {
     force: true,

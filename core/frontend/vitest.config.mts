@@ -11,7 +11,9 @@ export default defineConfig({
     browser: {
       provider: "playwright",
       enabled: true,
-      name: "chromium",
+      instances : [
+        { browser: "chromium"}
+      ],
       headless: true,
       screenshotFailures: false
     },
@@ -33,8 +35,8 @@ export default defineConfig({
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
     },
-    pool: "threads",
-    fileParallelism: false // Had to disable parallel test runs due to Worker related tests timing out and not fetching properly.
+    minWorkers: 1,
+    maxWorkers: 3
   },
   plugins: [
     viteStaticCopy({

@@ -113,9 +113,9 @@ describe("BsplineCurve", () => {
     const basis1 = new Float64Array(3);
     basis[0] = 10.0;
     basis1[0] = 11.0;
-    zeroDegreeKnots.evaluateBasisFunctions(0, 0, basis);   // nothing happens !
+    zeroDegreeKnots.evaluateBasisFunctions(0, 1.4, basis);
     ck.testExactNumber(1.0, basis[0]);
-    zeroDegreeKnots.evaluateBasisFunctions1(0, 0, basis, basis1);   // nothing happens !
+    zeroDegreeKnots.evaluateBasisFunctions1(0, 1.4, basis, basis1);
     ck.testExactNumber(1.0, basis[0]);
     ck.testExactNumber(0.0, basis1[0]);
     ck.testFalse(knotVector1.isIndexOfRealSpan(-1));
