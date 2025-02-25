@@ -25,7 +25,7 @@ import { AccessToken, BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWa
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir nocase
-/* eslint-disable id-blacklist,no-console */
+/* eslint-disable id-denylist,no-console */
 
 /** Currently executing an "@" script? */
 let wsEditor: WorkspaceEditor;

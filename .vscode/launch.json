@@ -58,13 +58,30 @@
       "cwd": "${workspaceFolder}/core/bentley/",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/bentley/lib/**/*.js"
-      ]
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Quantity Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/quantity/",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
     },
     {
       "name": "OrbitGT Tests",
@@ -92,13 +109,13 @@
       "cwd": "${workspaceFolder}/core/common/",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ]
+      "runtimeExecutable": "pnpm",
+      "autoAttachChildProcesses": true,
+      "console": "integratedTerminal",
+      "smartStep": true
     },
     {
       "name": "EC Tests",
@@ -287,13 +304,13 @@
       "cwd": "${workspaceFolder}/core/geometry",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ],
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
       "env": {
         "NODE_ENV": "development" // needed for asserts to fire
       }
@@ -445,9 +462,8 @@
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -467,9 +483,8 @@
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -489,11 +504,8 @@
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
-        "--no-timeouts",
-        "-r",
-        "jsdom-global/register",
-        "lib/cjs/test/**/*.test.js"
+        "./.mocharc.json",
+        "--no-timeouts"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -512,7 +524,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--no-config",
+        "--config",
+        "./.mocharc.json",
         "--no-timeouts"
       ],
       "outFiles": [
@@ -695,19 +708,6 @@
       "env": {
         "WORKSPACE_EDITOR_LOGGING": "false",
       }
-    },
-    {
-      "name": "Webpack Plugin Tests",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/tools/webpack-core",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ]
     },
     // TEST APPS
     { /* PARTIAL */
@@ -1093,6 +1093,28 @@
       ],
       "autoAttachChildProcesses": true
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Vitest Browser",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/core/frontend",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "test",
+        "--inspect",
+        "--no-file-parallelism"
+      ],
+    },
+    {
+      "type": "chrome",
+      "request": "attach",
+      "name": "Attach to Vitest Browser",
+      "url": "http://localhost:5173",
+      "timeout": 30000,
+      "port": 9229
+    }
   ],
   "compounds": [
     {
@@ -1102,9 +1124,10 @@
         "order": 2
       },
       "configurations": [
-        "[BROWSER] Frontend Tests",
-        "[NODE] Certa Test Runner for Frontend Tests"
-      ]
+        "Attach to Vitest Browser",
+        "Run Vitest Browser"
+      ],
+      "stopAll": true
     },
     {
       "name": "Electron Frontend Tests",

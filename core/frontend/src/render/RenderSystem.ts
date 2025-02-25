@@ -6,18 +6,17 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
+import { base64StringToUint8Array, Id64String } from "@itwin/core-bentley";
 import {
-  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
+  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, RenderTextureParams, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
-import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
 import { MeshParams } from "../common/internal/render/MeshParams";
@@ -29,14 +28,13 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../common/render/InstancedGraphicParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { RealityMeshGraphicParams } from "./RealityMeshGraphicParams";
+import { RealityMeshGraphicParams } from "../internal/render/RealityMeshGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { CreateRenderMaterialArgs } from "./CreateRenderMaterialArgs";
 import { RenderMemory } from "./RenderMemory";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "./CreateTextureArgs";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
@@ -52,64 +50,13 @@ import { PolylineArgs } from "./PolylineArgs";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
+import { RenderSystemDebugControl } from "../internal/render/RenderSystemDebugControl";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
+import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
+import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
 
-/* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
-
-/** An opaque representation of a texture draped on geometry within a [[Viewport]].
- * @internal
- */
-export abstract class RenderTextureDrape implements IDisposable {
-  public abstract dispose(): void;
-
-  /** @internal */
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-  public abstract collectGraphics(context: SceneContext): void;
-}
-
-/** @internal */
-export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
-
-/** @internal */
-export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
-
-/** Describes a texture loaded from an HTMLImageElement
- * ###TODO Replace with TextureImage from RenderTexture.ts after we start returning transparency info from the backend.
- * @internal
- */
-export interface OldTextureImage {
-  /** The HTMLImageElement containing the texture's image data */
-  image: HTMLImageElement;
-  /** The format of the texture's image data */
-  format: ImageSourceFormat;
-}
-
-/** @internal */
-export enum RenderDiagnostics {
-  /** No diagnostics enabled. */
-  None = 0,
-  /** Debugging output to browser console enabled. */
-  DebugOutput = 1 << 1,
-  /** Potentially expensive checks of WebGL state enabled. */
-  WebGL = 1 << 2,
-  /** All diagnostics enabled. */
-  All = DebugOutput | WebGL,
-}
-
-/** @internal */
-export interface GLTimerResult {
-  /** Label from GLTimer.beginOperation */
-  label: string;
-  /** Time elapsed in nanoseconds, inclusive of child result times.
-   *  @note no-op queries seem to have 32ns of noise.
-   */
-  nanoseconds: number;
-  /** Child results if GLTimer.beginOperation calls were nested */
-  children?: GLTimerResult[];
-}
-
-/** @internal */
-export type GLTimerResultCallback = (result: GLTimerResult) => void;
 
 /** Default implementation of RenderGraphicOwner. */
 class GraphicOwner extends RenderGraphicOwner {
@@ -117,76 +64,6 @@ class GraphicOwner extends RenderGraphicOwner {
   public get graphic(): RenderGraphic { return this._graphic; }
 }
 
-/** An interface optionally exposed by a RenderSystem that allows control of various debugging features.
- * @beta
- */
-export interface RenderSystemDebugControl {
-  /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
-  loseContext(): boolean;
-
-  /** Overrides [[RenderSystem.dpiAwareLOD]].
-   * @internal
-   */
-  dpiAwareLOD: boolean;
-
-  /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
-   * @internal
-   */
-  resultsCallback?: GLTimerResultCallback;
-
-  /** Returns true if the browser supports GPU profiling queries.
-   * @internal
-   */
-  readonly isGLTimerSupported: boolean;
-
-  /** Attempts to compile all shader programs and returns true if all were successful. May throw exceptions on errors.
-   * This is useful for debugging shader compilation on specific platforms - especially those which use neither ANGLE nor SwiftShader (e.g., linux, mac, iOS)
-   * because our unit tests which also compile all shaders run in software mode and therefore may not catch some "errors" (especially uniforms that have no effect on
-   * program output).
-   * @internal
-   */
-  compileAllShaders(): boolean;
-
-  /** Obtain accumulated debug info collected during shader compilation. See `RenderSystem.Options.debugShaders`.
-   * @internal
-   */
-  debugShaderFiles?: DebugShaderFile[];
-}
-
-/** @internal */
-export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
-  public abstract dispose(): void;
-  public abstract get transform(): Transform | undefined;
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-}
-
-/** @internal */
-export class TerrainTexture {
-  public constructor(
-    public readonly texture: RenderTexture,
-    public featureId: number,
-    public readonly scale: Vector2d,
-    public readonly translate: Vector2d,
-    public readonly targetRectangle: Range2d,
-    public readonly layerIndex: number,
-    public transparency: number,
-    public readonly clipRectangle?: Range2d,
-  ) { }
-
-  public cloneWithClip(clipRectangle: Range2d) {
-    return new TerrainTexture (this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
-  }
-}
-/** @internal */
-export class DebugShaderFile {
-  public constructor(
-    public readonly filename: string,
-    public readonly src: string,
-    public isVS: boolean,
-    public isGL: boolean,
-    public isUsed: boolean,
-  ) { }
-}
 /** Transparency settings for planar grid display.
  * @alpha
  */
@@ -217,13 +94,6 @@ export interface PlanarGridProps {
   transparency?: PlanarGridTransparency;
 }
 
-/** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
- * @internal
- */
-export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
-  readonly [_implementationProhibited]: "renderAreaPattern";
-}
-
 /** Contains the WebGL resources necessary to draw multiple [[Instance]]s of a [[GraphicTemplate]] using [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html).
  * Use [[RenderSystem.createRenderInstances]] to create one.
  * The instances may be associated with [Feature]($common)s, in which case those features override any defined in the template itself.
@@ -243,30 +113,6 @@ export interface RenderInstances {
   /** @internal */
   readonly [_featureTable]?: PackedFeatureTable;
 }
-
-/** @internal */
-export interface RenderSkyGradientParams {
-  type: "gradient";
-  gradient: SkyGradient;
-  zOffset: number;
-}
-
-/** @internal */
-export interface RenderSkySphereParams {
-  type: "sphere";
-  texture: RenderTexture;
-  rotation: number;
-  zOffset: number;
-}
-
-/** @internal */
-export interface RenderSkyCubeParams {
-  type: "cube";
-  texture: RenderTexture;
-}
-
-/** @internal */
-export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
 /** Arguments supplied to [[RenderSystem.createGraphicFromDescription]].
  * @beta
@@ -296,7 +142,7 @@ export interface CreateGraphicFromTemplateArgs {
  * @public
  * @extensions
  */
-export abstract class RenderSystem implements IDisposable {
+export abstract class RenderSystem implements Disposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
    * This object is frozen and cannot be modified after the RenderSystem is created.
    * @internal
@@ -323,8 +169,12 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public abstract get isValid(): boolean;
 
-  /** @internal */
-  public abstract dispose(): void;
+  public [Symbol.dispose]() {
+    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+  }
+
+  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** The maximum permitted width or height of a texture supported by this render system. */
   public get maxTextureSize(): number { return 0; }
@@ -354,17 +204,6 @@ export abstract class RenderSystem implements IDisposable {
    * @returns A previously-created material matching the specified ID, or undefined if no such material exists.
    */
   public findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
-
-  /** Create a [RenderMaterial]($common) from parameters
-   * If the parameters include a non-empty key, and no previously-created material already exists with that key, the newly-created material will be cached on the IModelConnection such
-   * that it can later be retrieved by the same key using [[RenderSystem.findMaterial]].
-   * @param _params A description of the material's properties.
-   * @param _imodel The IModelConnection associated with the material.
-   * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
-   * @deprecated in 3.x. Use [[createRenderMaterial]].
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a [RenderMaterial]($common).
    * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
@@ -610,8 +449,8 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 
   /** Create a RenderGraphic consisting of a list of Graphics, with optional transform and symbology overrides applied to the list */
-  public createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic {
-    return this.createGraphicBranch(branch, transform);
+  public createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
+    return this.createGraphicBranch(branch, transform, options);
   }
 
   /** Create a graphic from a [[GraphicBranch]]. */
@@ -706,7 +545,7 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderSystem.loadTexture]]
    * @internal
    */
-  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<OldTextureImage | undefined> {
+  public async loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<{ image: HTMLImageElement, format: ImageSourceFormat } | undefined> {
     const elemProps = await iModel.elements.getProps(id);
     if (1 !== elemProps.length)
       return undefined;
@@ -736,52 +575,6 @@ export abstract class RenderSystem implements IDisposable {
     return undefined;
   }
 
-  /** Create a new texture from an [[ImageBuffer]].
-   * @deprecated in 3.x. Use [[createTexture]].
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromImageBuffer(image: ImageBuffer, iModel: IModelConnection, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
-    return this.createTexture({
-      type: params.type,
-      ownership,
-      image: {
-        source: image,
-        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
-      },
-    });
-  }
-
-  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]].
-   * @deprecated in 3.x. Use [[createTexture]].
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromImage(image: HTMLImageElement, hasAlpha: boolean, iModel: IModelConnection | undefined, params: RenderTexture.Params): RenderTexture | undefined {
-    const ownership = params.key && iModel ? { key: params.key, iModel } : (params.isOwned ? "external" : undefined);
-    return this.createTexture({
-      type: params.type,
-      ownership,
-      image: {
-        source: image,
-        transparency: hasAlpha ? TextureTransparency.Mixed : TextureTransparency.Opaque,
-      },
-    });
-  }
-
-  /** Create a new texture from an ImageSource.
-   * @deprecated in 3.x. Use RenderSystem.createTextureFromSource.
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async createTextureFromImageSource(source: ImageSource, iModel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    const ownership = iModel && params.key ? { iModel, key: params.key } : (params.isOwned ? "external" : undefined);
-    return this.createTextureFromSource({
-      type: params.type,
-      source,
-      ownership,
-      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Mixed,
-    });
-  }
-
   /** Create a texture from an ImageSource. */
   public async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
     try {
@@ -805,8 +598,8 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
-  // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined {
+
+  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTextureParams, _format: ImageSourceFormat): RenderTexture | undefined {
     return undefined;
   }
 
@@ -817,8 +610,8 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from a cube of HTML images.
    * @internal
    */
-  // eslint-disable-next-line deprecation/deprecation
-  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined {
+
+  public createTextureFromCubeImages(_posX: HTMLImageElement, _negX: HTMLImageElement, _posY: HTMLImageElement, _negY: HTMLImageElement, _posZ: HTMLImageElement, _negZ: HTMLImageElement, _imodel: IModelConnection, _params: RenderTextureParams): RenderTexture | undefined {
     return undefined;
   }
 
@@ -826,13 +619,10 @@ export abstract class RenderSystem implements IDisposable {
   public onInitialized(): void { }
 
   /** @internal */
-  public enableDiagnostics(_enable: RenderDiagnostics): void { }
-
-  /** @internal */
   public get supportsLogZBuffer(): boolean { return false !== this.options.logarithmicDepthBuffer; }
 
   /** Obtain an object that can be used to control various debugging features. Returns `undefined` if debugging features are unavailable for this `RenderSystem`.
-   * @beta
+   * @internal
    */
   public get debugControl(): RenderSystemDebugControl | undefined { return undefined; }
 
@@ -954,7 +744,7 @@ export abstract class RenderSystem implements IDisposable {
  * @see [[IModelApp.renderSystem]].
  * @public
  */
-export namespace RenderSystem { // eslint-disable-line no-redeclare
+export namespace RenderSystem {
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
    * @public

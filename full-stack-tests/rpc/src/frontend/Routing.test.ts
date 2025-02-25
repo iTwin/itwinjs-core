@@ -53,7 +53,7 @@ if (!ProcessDetector.isElectronAppFrontend) {
       const protocol = TestRpcInterface.getClient().configuration.protocol as BentleyCloudRpcProtocol;
 
       const testParamsWithSuffix = async (suffix: string) => {
-        const realParams = btoa(JSON.stringify([1, 10])); // eslint-disable-line deprecation/deprecation
+        const realParams = btoa(JSON.stringify([1, 10]));
         assert.equal(realParams.indexOf("="), -1);  // we don't want any padding in the real base64 value
 
         const response = await fetch(`${protocol.pathPrefix}/${protocol.info.title}/${protocol.info.version}/mode/1/context/undefined/imodel/undefined/changeset/0/${TestRpcInterface.interfaceName}-${TestRpcInterface.interfaceVersion}-op1?parameters=${encodeURIComponent(realParams)}${suffix}`, {
@@ -80,7 +80,7 @@ if (!ProcessDetector.isElectronAppFrontend) {
         return;
 
       const protocol = TestRpcInterface.getClient().configuration.protocol as BentleyCloudRpcProtocol;
-      const realParams = btoa(JSON.stringify([1, 10])); // eslint-disable-line deprecation/deprecation
+      const realParams = btoa(JSON.stringify([1, 10]));
       const response = await fetch(`${protocol.pathPrefix}/${protocol.info.title}/${protocol.info.version}/mode/1/context/undefined/imodel/undefined/changeset/0/${TestRpcInterface.interfaceName}-${TestRpcInterface.interfaceVersion}-op1?parameters=${encodeURIComponent(realParams)}`, {
         method: "GET",
         headers: {

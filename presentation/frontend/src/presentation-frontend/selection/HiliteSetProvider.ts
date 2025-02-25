@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -12,8 +13,8 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "../Presentation";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 import hiliteRuleset from "./HiliteRules.json";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 const HILITE_RULESET = hiliteRuleset as Ruleset;
 
@@ -22,6 +23,7 @@ const HILITE_RULESET = hiliteRuleset as Ruleset;
  * viewport hilite.
  *
  * @public
+ * @deprecated in 5.0. Use `HiliteSet` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
  */
 export interface HiliteSet {
   models?: Id64String[];
@@ -32,6 +34,7 @@ export interface HiliteSet {
 /**
  * Properties for creating a `HiliteSetProvider` instance.
  * @public
+ * @deprecated in 5.0. Use `HiliteSetProvider` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
  */
 export interface HiliteSetProviderProps {
   imodel: IModelConnection;
@@ -43,6 +46,7 @@ export interface HiliteSetProviderProps {
  * supplied `KeySet`.
  *
  * @public
+ * @deprecated in 5.0. Use `HiliteSetProvider` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#hilite-sets) package instead.
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;

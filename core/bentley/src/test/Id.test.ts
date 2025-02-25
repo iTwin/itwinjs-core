@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import {
   CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64String, MutableCompressedId64Set, OrderedId64Iterable, TransientIdSequence,
 } from "../core-bentley";

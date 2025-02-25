@@ -20,7 +20,7 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** The properties of an RpcActivity.
  * @public
@@ -289,7 +289,7 @@ export class RpcInvocation {
       if (impl[CURRENT_INVOCATION] === this) {
         impl[CURRENT_INVOCATION] = undefined;
       }
-    } catch (_err) { }
+    } catch { }
 
     return fulfillment;
   }

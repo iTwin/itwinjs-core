@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import {  describe, expect, it} from "vitest";
 import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
@@ -18,16 +18,16 @@ const logTestOutput = false;
 describe("Parsing tests:", () => {
   it("Bad unit", async () => {
     const testUnit: UnitProps = new BadUnit();
-    assert.isTrue(testUnit.name.length === 0);
-    assert.isTrue(testUnit.label.length === 0);
-    assert.isTrue(testUnit.phenomenon.length === 0);
-    assert.isTrue(testUnit.isValid === false);
+    expect(testUnit.name.length).toEqual(0);
+    expect(testUnit.label.length).toEqual(0);
+    expect(testUnit.phenomenon.length).toEqual(0);
+    expect(testUnit.isValid).to.be.false;
   });
 
   it("Quantity constructor", async () => {
     const noUnitQty = new Quantity();
-    assert.isTrue(noUnitQty.magnitude === 0);
-    assert.isTrue(noUnitQty.isValid === false);
+    expect(noUnitQty.magnitude).toEqual(0);
+    expect(noUnitQty.isValid).to.be.false;
   });
 
   it("Quantity convert Meters to inches", async () => {
@@ -38,8 +38,8 @@ describe("Parsing tests:", () => {
     const conversion = await unitsProvider.getConversion(meterUnit, inchUnit);
     const inchesQty = meterQty.convertTo(inchUnit, conversion);
 
-    assert.isTrue(meterQty.magnitude === 1.0);
-    assert.isTrue(inchesQty!.magnitude === meterQty.magnitude * conversion.factor);
+    expect(meterQty.magnitude).toEqual(1.0);
+    expect(inchesQty!.magnitude).toEqual(meterQty.magnitude * conversion.factor);
   });
 
   it("Convert units", async () => {
@@ -60,7 +60,7 @@ describe("Parsing tests:", () => {
       for (const toVal of tstVal.cvtTo) {
         const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.phenomenon);
         const conversionData = await unitsProvider.getConversion(fromUnit, toUnit);
-        assert.isTrue(Math.fround(conversionData.factor) === toVal.factor);
+        expect(Math.fround(conversionData.factor)).toEqual(toVal.factor);
       }
     }
   });
@@ -94,10 +94,10 @@ describe("Parsing tests:", () => {
     let i = 0;
     for (const test of tests) {
       const tokens = Parser.parseQuantitySpecification(test.input, format);
-      assert.isTrue(tokens.length === test.expectedTokens.length);
+      expect(tokens.length).toEqual(test.expectedTokens.length);
 
       for (let j = 0; j < tokens.length; j++) {
-        assert.isTrue(tokens[j].value === test.expectedTokens[j].value);
+        expect(tokens[j].value).toEqual(test.expectedTokens[j].value);
       }
 
       i = i + 1;
@@ -123,16 +123,15 @@ describe("Parsing tests:", () => {
     };
     const format = new Format("test");
     const unitsProvider = new TestUnitsProvider();
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     let i = 0;
     for (const test of tests) {
       const tokens = Parser.parseQuantitySpecification(test.input, format);
-      assert.isTrue(tokens.length === test.expectedTokens.length);
+      expect(tokens.length).toEqual(test.expectedTokens.length);
 
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < tokens.length; j++) {
-        assert.isTrue(tokens[j].value === test.expectedTokens[j].value);
+        expect(tokens[j].value).toEqual(test.expectedTokens[j].value);
       }
 
       i = i + 1;
@@ -156,7 +155,7 @@ describe("Parsing tests:", () => {
 
     for (const lookupEntry of expectedLookupResults) {
       const unit = await unitProvider.findUnit(lookupEntry.label, (lookupEntry.unitContext.length > 0) ? lookupEntry.unitContext : undefined);
-      assert.isTrue(unit.name === lookupEntry.name);
+      expect(unit.name).toEqual(lookupEntry.name);
     }
   });
 
@@ -178,7 +177,7 @@ describe("Parsing tests:", () => {
       for (const toVal of tstVal.cvtTo) {
         const toUnit = await unitsProvider.findUnit(toVal.label, fromUnit.phenomenon);
         const conversionData = await unitsProvider.getConversion(fromUnit, toUnit);
-        assert.isTrue(Math.fround(conversionData.factor) === toVal.factor);
+        expect(Math.fround(conversionData.factor)).toEqual(toVal.factor);
       }
     }
   });
@@ -219,14 +218,14 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       // console.log (`quantityProps=${JSON.stringify(quantityProps)}`);
-      expect(Math.fround(quantityProps.magnitude)).to.eql(Math.fround(testEntry.quantity.magnitude));
-      expect(quantityProps.unit.name).to.eql(testEntry.quantity.unitName);
+      expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
   });
 
@@ -253,13 +252,13 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       // console.log (`quantityProps=${JSON.stringify(quantityProps)}`);
-      expect(Math.fround(quantityProps.magnitude)).to.eql(Math.fround(testEntry.quantity.magnitude));
-      expect(quantityProps.unit.name).to.eql(testEntry.quantity.unitName);
+      expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
   });
 
@@ -295,13 +294,13 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
-      assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity.magnitude));
-      assert.isTrue(quantityProps.unit.name === testEntry.quantity.unitName);
+      expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
   });
 
@@ -336,13 +335,13 @@ describe("Parsing tests:", () => {
     ];
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
-      assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity.magnitude));
-      assert.isTrue(quantityProps.unit.name === testEntry.quantity.unitName);
+      expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
   });
 
@@ -382,13 +381,13 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
-      assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity.magnitude));
-      assert.isTrue(quantityProps.unit.name === testEntry.quantity.unitName);
+      expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
   });
 
@@ -413,13 +412,13 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(!format.hasUnits);
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.false;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
-      assert.isTrue(Math.fround(quantityProps.magnitude) === Math.fround(testEntry.quantity.magnitude));
-      assert.isTrue(quantityProps.unit.name === testEntry.quantity.unitName);
+      expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
   });
 
@@ -451,14 +450,14 @@ describe("Parsing tests:", () => {
 
     const unitsAndAltLabelsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsAndAltLabelsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    await format.fromJSON(unitsAndAltLabelsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
 
     const persistenceUnit = await unitsAndAltLabelsProvider.findUnitByName("Units.M");
-    const unitConversions = await Parser.createUnitConversionSpecsForUnit(unitsAndAltLabelsProvider, persistenceUnit, unitsAndAltLabelsProvider);
 
+    const parserSpec = await ParserSpec.create(format, unitsAndAltLabelsProvider, persistenceUnit, unitsAndAltLabelsProvider);
     for (const testEntry of testData) {
-      const result = Parser.parseToQuantityValue(testEntry.value, format, unitConversions);
+      const result = Parser.parseQuantityString(testEntry.value, parserSpec);
       expect(Parser.isParsedQuantity(result)).to.be.true;
       if (Parser.isParsedQuantity(result)) {
         expect(Math.fround(result.value * 1000000)).to.be.eql(Math.fround(testEntry.magnitude * 1000000));
@@ -493,8 +492,8 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
@@ -541,13 +540,13 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry.value, format, unitsProvider);
       // console.log (`quantityProps=${JSON.stringify(quantityProps)}`);
-      expect(Math.fround(quantityProps.magnitude)).to.eql(Math.fround(testEntry.quantity.magnitude));
-      expect(quantityProps.unit.name).to.eql(testEntry.quantity.unitName);
+      expect(Math.fround(quantityProps.magnitude)).toEqual(Math.fround(testEntry.quantity.magnitude));
+      expect(quantityProps.unit.name).toEqual(testEntry.quantity.unitName);
     }
   });
 
@@ -587,12 +586,51 @@ describe("Parsing tests:", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
 
     for (const testEntry of testData) {
       const quantityProps = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
-      expect(quantityProps.isValid).to.eql(false);
-      expect(quantityProps.magnitude).to.eql(0);
+      expect(quantityProps.isValid).to.be.false;
+      expect(quantityProps.magnitude).toEqual(0);
+    }
+  });
+
+  it("should return parseError when parsing only special characters", async () => {
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: "",
+      composite: {
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+      allowMathematicOperations: true,
+    };
+
+    const testData = [
+      ".",
+      ",",
+      ",,",
+      "..",
+      ",,,",
+      "...",
+      ".,",
+      ",.",
+      "!@#$%^&*()_", // special characters
+    ];
+
+    const unitsProvider = new TestUnitsProvider();
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData);
+
+    for (const testEntry of testData) {
+      const parseResult = await Parser.parseIntoQuantity(testEntry, format, unitsProvider);
+      expect(parseResult.isValid).to.eql(false);
     }
   });
 
@@ -624,7 +662,7 @@ describe("Synchronous Parsing tests:", async () => {
     allowMathematicOperations: true,
   };
   const format = new Format("test");
-  await format.fromJSON(unitsProvider, formatData).catch(() => { });
+  await format.fromJSON(unitsProvider, formatData);
 
   const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
   const formatSpec = await FormatterSpec.create("test", format, unitsProvider, outUnit);
@@ -656,7 +694,7 @@ describe("Synchronous Parsing tests:", async () => {
   };
 
   const angleFormat = new Format("testAngle");
-  await angleFormat.fromJSON(unitsProvider, angleFormatData).catch(() => { });
+  await angleFormat.fromJSON(unitsProvider, angleFormatData);
   const outAngleUnit = await unitsProvider.findUnitByName("Units.ARC_DEG");
   const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit, unitsProvider);
   const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
@@ -688,14 +726,14 @@ describe("Synchronous Parsing tests:", async () => {
     }
 
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry.value, format, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry.value, parserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
         else if (Parser.isParseError(parseResult))
           console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
       }
-      assert.isTrue(Parser.isParsedQuantity(parseResult));
+      expect(Parser.isParsedQuantity(parseResult)).to.be.true;
       if (Parser.isParsedQuantity(parseResult))
         expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
     }
@@ -710,7 +748,7 @@ describe("Synchronous Parsing tests:", async () => {
       allowMathematicOperations: false,
     };
     const formatMathNotAllowed = new Format("test");
-    await formatMathNotAllowed.fromJSON(unitsProvider, formatDataMathNotAllowed).catch(() => { });
+    await formatMathNotAllowed.fromJSON(unitsProvider, formatDataMathNotAllowed);
 
     const testData = [
       "12,345.345 - 1",
@@ -736,17 +774,18 @@ describe("Synchronous Parsing tests:", async () => {
       }
     }
 
+    const noAllowMathParserSpec = await ParserSpec.create(formatMathNotAllowed, unitsProvider, outUnit, unitsProvider);
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry, formatMathNotAllowed, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry, noAllowMathParserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry} output=${parseResult.value}`); // eslint-disable-line no-console
         else if (Parser.isParseError(parseResult))
           console.log(`input=${testEntry} error=${parseResult.error}`); // eslint-disable-line no-console
       }
-      assert.isTrue(Parser.isParseError(parseResult));
+      expect(Parser.isParseError(parseResult)).to.be.true;
       if (Parser.isParseError(parseResult))
-        expect(parseResult.error).to.eql(ParseError.MathematicOperationFoundButIsNotAllowed);
+        expect(parseResult.error).toEqual(ParseError.MathematicOperationFoundButIsNotAllowed);
     }
   });
 
@@ -759,7 +798,7 @@ describe("Synchronous Parsing tests:", async () => {
       allowMathematicOperations: true,
     };
     const formatUnitless = new Format("test");
-    await formatUnitless.fromJSON(unitsProvider, formatDataUnitless).catch(() => { });
+    await formatUnitless.fromJSON(unitsProvider, formatDataUnitless);
 
     const testData = [
       { value: "12,345.345 - 1", magnitude: 12345.345 - 1}, // unitless
@@ -775,15 +814,16 @@ describe("Synchronous Parsing tests:", async () => {
       }
     }
 
+    const unitlessParserSpec = await ParserSpec.create(formatUnitless, unitsProvider, outUnit, unitsProvider);
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry.value, formatUnitless, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry.value, unitlessParserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
         else if (Parser.isParseError(parseResult))
           console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
       }
-      assert.isTrue(Parser.isParsedQuantity(parseResult));
+      expect(Parser.isParsedQuantity(parseResult)).to.be.true;
       if (Parser.isParsedQuantity(parseResult))
         expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
     }
@@ -825,16 +865,16 @@ describe("Synchronous Parsing tests:", async () => {
         console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
       }
     }
-
+    const newParserSpec = new ParserSpec(outUnit, format, meterConversionSpecs);
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry.value, format, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry.value, newParserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
         else if (Parser.isParseError(parseResult))
           console.log(`input=${testEntry.value} error=${parseResult.error}`); // eslint-disable-line no-console
       }
-      assert.isTrue(Parser.isParsedQuantity(parseResult));
+      expect(Parser.isParsedQuantity(parseResult)).to.be.true;
       if (Parser.isParsedQuantity(parseResult))
         expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
     }
@@ -875,7 +915,7 @@ describe("Synchronous Parsing tests:", async () => {
 
     for (const testEntry of testData) {
       const parseResult = Parser.parseQuantityString(testEntry.value, parserSpec);
-      assert.isTrue(Parser.isParsedQuantity(parseResult));
+      expect(Parser.isParsedQuantity(parseResult)).to.be.true;
       if (Parser.isParsedQuantity(parseResult)) {
         if (logTestOutput) {
           // eslint-disable-next-line no-console
@@ -909,7 +949,7 @@ describe("Synchronous Parsing tests:", async () => {
 
     for (const testEntry of testData) {
       const parseResult = Parser.parseQuantityString(testEntry.value, angleParserSpec);
-      assert.isTrue(Parser.isParsedQuantity(parseResult));
+      expect(Parser.isParsedQuantity(parseResult)).to.be.true;
       if (Parser.isParsedQuantity(parseResult)) {
         if (logTestOutput) {
           // eslint-disable-next-line no-console
@@ -925,5 +965,62 @@ describe("Synchronous Parsing tests:", async () => {
       }
     }
   });
+
+  it("should return parseError when parsing only special characters", async () => {
+    const testData = [
+      ".",
+      ",",
+      ",,",
+      "..",
+      ",,,",
+      "...",
+      ".,",
+      ",.",
+      "!@#$%^&*()_",
+    ];
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
+      if (Parser.isParseError(parseResult)){
+        expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
+      } else {
+        expect.fail(`Expected a ParseError with input: ${testEntry}`);
+      }
+    }
+  });
+
+  it("should return parseError when parsing a string with invalid special characters mixed into numbers", async () => {
+    const testData = [
+      "10..",
+      "1.2,,3..4...7",
+      ",,3..",
+      "12..34",
+      "1.2.3",
+      "..10",
+      "1...2",
+      "1..",
+      "1..,",
+      "10,20,30..40",
+      "1..e2",
+      "1e..2",
+      "1e2..",
+      "1...2e3",
+      "1e2..,3",
+      // "1,,2", // the parsing skips comas for loose checking, returns 12
+      // "1.,2", // returns 1.2
+    ];
+
+    const unitMeter = await unitsProvider.findUnitByName("Units.FT");
+    const parserSpecExp = await ParserSpec.create(format, unitsProvider, unitMeter, unitsProvider);
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, parserSpecExp);
+      if (Parser.isParseError(parseResult)){
+        expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
+      } else {
+        expect.fail(`Expected a ParseError with input: ${testEntry}`);
+      }
+    }
+    });
 
 });

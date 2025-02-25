@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttribute, CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { CustomAttribute, CustomAttributeClass, RelationshipClass } from "@itwin/ecschema-metadata";
 import { type SchemaMergeContext } from "./SchemaMerger";
 import { type CustomAttributeDifference } from "../Differencing/SchemaDifference";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import { getClassEditor, toItemKey, toPropertyKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 type CustomAttributeSetter = (customAttribute: CustomAttribute) => Promise<void>;
 
@@ -19,7 +19,7 @@ export async function addCustomAttribute(context: SchemaMergeContext, change: Cu
   }
   const schemaItemKey = await updateSchemaItemKey(context, change.difference.className);
 
-  const targetCustomAttributeClass = await context.targetSchema.lookupItem<CustomAttributeClass>(schemaItemKey);
+  const targetCustomAttributeClass = await context.targetSchema.lookupItem(schemaItemKey, CustomAttributeClass);
   if (targetCustomAttributeClass === undefined) {
     throw new Error(`Unable to locate the custom attribute class ${schemaItemKey.name} in the merged schema.`);
   }
@@ -33,17 +33,20 @@ export async function addCustomAttribute(context: SchemaMergeContext, change: Cu
     await context.editor.addCustomAttribute(context.targetSchemaKey, caInstance);
   }
   if (change.appliedTo === "SchemaItem") {
-    const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-    await context.editor.entities.addCustomAttribute(itemKey, caInstance);
+    const itemKey = toItemKey(context, change.itemName);
+    const editor = await getClassEditor(context, itemKey);
+    await editor.addCustomAttribute(itemKey, caInstance);
   }
   if (change.appliedTo === "Property") {
-    const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+    const itemKey = toItemKey(context, change.itemName);
     const [propertyName] = change.path.split(".");
-    await context.editor.entities.properties.addCustomAttribute(itemKey, propertyName, caInstance);
+    const propertyKey = toPropertyKey(context, change.itemName, propertyName);
+    const editor = await getClassEditor(context, itemKey);
+    await editor.properties.addCustomAttribute(itemKey, propertyKey.propertyName, caInstance);
   }
   if (change.appliedTo === "RelationshipConstraint") {
-    const itemKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
-    const relationshipClass = await context.targetSchema.lookupItem<RelationshipClass>(itemKey);
+    const itemKey = toItemKey(context, change.itemName);
+    const relationshipClass = await context.targetSchema.lookupItem(itemKey, RelationshipClass);
     if (relationshipClass === undefined) {
       throw new Error(`Unable to locate the relationship class ${itemKey.name} in the merged schema.`);
     }

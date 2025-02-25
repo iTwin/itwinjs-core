@@ -88,7 +88,6 @@ describe("Descriptor", () => {
         connectionId: "",
         categories: [CategoryDescription.toJSON(category)],
         contentFlags: 0,
-        contentOptions: 0,
         displayType: "",
         inputKeysHash: "",
         classesMap: {
@@ -313,12 +312,11 @@ describe("Descriptor", () => {
         connectionId: "",
         categories: [CategoryDescription.toJSON(category)],
         contentFlags: 0,
-        contentOptions: 0,
         displayType: "",
         inputKeysHash: "",
         selectClasses: [],
         classesMap: {},
-        fields: [createTestSimpleContentField({ category }).toJSON(), undefined as any],
+        fields: [createTestSimpleContentField({ category }).toCompressedJSON({}), undefined as any],
       };
       const descriptor = Descriptor.fromJSON(json);
       expect(descriptor!.fields.length).to.eq(1);
@@ -493,17 +491,6 @@ describe("Descriptor", () => {
       });
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({
         contentFlags: 123,
-      });
-    });
-
-    it("creates a valid object with filter expression", () => {
-      const descriptor = createTestContentDescriptor({
-        fields: [],
-        filterExpression: "test filter",
-      });
-      descriptor.fieldsFilterExpression = undefined;
-      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
-        fieldsFilterExpression: "test filter",
       });
     });
 

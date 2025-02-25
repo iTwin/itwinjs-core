@@ -2,6 +2,102 @@
   "name": "@itwin/linear-referencing-common",
   "entries": [
     {
+      "version": "4.10.7",
+      "tag": "@itwin/linear-referencing-common_v4.10.7",
+      "date": "Tue, 18 Feb 2025 17:27:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.6",
+      "tag": "@itwin/linear-referencing-common_v4.10.6",
+      "date": "Fri, 24 Jan 2025 08:02:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.5",
+      "tag": "@itwin/linear-referencing-common_v4.10.5",
+      "date": "Tue, 21 Jan 2025 21:56:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.4",
+      "tag": "@itwin/linear-referencing-common_v4.10.4",
+      "date": "Mon, 13 Jan 2025 14:06:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.3",
+      "tag": "@itwin/linear-referencing-common_v4.10.3",
+      "date": "Mon, 06 Jan 2025 14:00:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.2",
+      "tag": "@itwin/linear-referencing-common_v4.10.2",
+      "date": "Thu, 21 Nov 2024 15:22:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.1",
+      "tag": "@itwin/linear-referencing-common_v4.10.1",
+      "date": "Thu, 14 Nov 2024 18:11:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.0",
+      "tag": "@itwin/linear-referencing-common_v4.10.0",
+      "date": "Wed, 13 Nov 2024 15:23:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.7",
+      "tag": "@itwin/linear-referencing-common_v4.9.7",
+      "date": "Wed, 06 Nov 2024 19:23:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.6",
+      "tag": "@itwin/linear-referencing-common_v4.9.6",
+      "date": "Tue, 05 Nov 2024 15:22:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.5",
+      "tag": "@itwin/linear-referencing-common_v4.9.5",
+      "date": "Tue, 22 Oct 2024 20:01:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.4",
+      "tag": "@itwin/linear-referencing-common_v4.9.4",
+      "date": "Wed, 09 Oct 2024 20:22:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.3",
+      "tag": "@itwin/linear-referencing-common_v4.9.3",
+      "date": "Thu, 03 Oct 2024 19:15:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.2",
+      "tag": "@itwin/linear-referencing-common_v4.9.2",
+      "date": "Wed, 02 Oct 2024 15:14:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.1",
+      "tag": "@itwin/linear-referencing-common_v4.9.1",
+      "date": "Wed, 25 Sep 2024 20:10:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.9.0",
+      "tag": "@itwin/linear-referencing-common_v4.9.0",
+      "date": "Mon, 23 Sep 2024 13:44:01 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.8.7",
       "tag": "@itwin/linear-referencing-common_v4.8.7",
       "date": "Fri, 13 Sep 2024 15:11:17 GMT",

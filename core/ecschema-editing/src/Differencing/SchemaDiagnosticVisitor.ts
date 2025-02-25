@@ -10,8 +10,8 @@ import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
   AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass,
-  Enumeration, Mixin, Property, PropertyProps,
-  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem,
+  Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Property, PropertyProps,
+  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, Unit,
 } from "@itwin/ecschema-metadata";
 import {
   type AnyClassItemDifference,
@@ -22,6 +22,8 @@ import {
   type DifferenceType,
   type EntityClassMixinDifference,
   type EnumeratorDifference,
+  type FormatUnitDifference,
+  type KindOfQuantityPresentationFormatDifference,
   type RelationshipConstraintClassDifference,
   type RelationshipConstraintDifference,
   type SchemaDifference,
@@ -38,7 +40,10 @@ import {
 export class SchemaDiagnosticVisitor {
 
   public readonly schemaDifferences: Array<SchemaDifference | SchemaReferenceDifference>;
-  public readonly schemaItemDifferences: Array<AnySchemaItemDifference>;
+  public readonly schemaItemDifferences: Array<AnySchemaItemDifference
+    | EntityClassMixinDifference
+    | KindOfQuantityPresentationFormatDifference
+    | FormatUnitDifference>;
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
 
@@ -78,10 +83,8 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.PropertyCategoryDelta:
       case SchemaCompareCodes.RelationshipDelta:
       case SchemaCompareCodes.UnitDelta:
-        return this.visitChangedSchemaItem(diagnostic);
-
       case SchemaCompareCodes.EnumerationDelta:
-        return this.visitChangedEnumeration(diagnostic);
+        return this.visitChangedSchemaItem(diagnostic);
 
       case SchemaCompareCodes.EnumeratorDelta:
         return this.visitChangedEnumerator(diagnostic);
@@ -105,11 +108,13 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.CustomAttributeInstanceClassMissing:
         return this.visitMissingCustomAttributeInstance(diagnostic);
 
-      // Currently not handled...
-      case SchemaCompareCodes.FormatUnitMissing:
       case SchemaCompareCodes.PresentationUnitMissing:
+        return this.visitMissingPresentationUnit(diagnostic);
+
+      case SchemaCompareCodes.FormatUnitMissing:
+        return this.visitMissingFormatUnit(diagnostic);
       case SchemaCompareCodes.UnitLabelOverrideDelta:
-        break;
+        return this.visitChangedFormatUnitLabel(diagnostic);
     }
     return;
   }
@@ -192,15 +197,6 @@ export class SchemaDiagnosticVisitor {
     (modifyEntry.difference as any)[propertyName] = sourceValue;
   }
 
-  private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
-    const enumeration = diagnostic.ecDefinition as Enumeration;
-    if (this.schemaItemPathDifferences.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
-      return;
-    }
-
-    return this.visitChangedSchemaItem(diagnostic);
-  }
-
   private visitMissingEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
@@ -256,7 +252,7 @@ export class SchemaDiagnosticVisitor {
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
       itemName: property.class.name,
-      path: property.name,
+      path:  property.name,
       difference: property.toJSON() as AnyPropertyProps,
     });
   }
@@ -284,7 +280,7 @@ export class SchemaDiagnosticVisitor {
       this.schemaItemPathDifferences.push(modifyEntry);
     }
 
-    if (propertyName !== "name" && sourceValue !== undefined) {
+    if (propertyName !== "name") {
       modifyEntry.difference[propertyName] = sourceValue;
     }
   }
@@ -314,20 +310,20 @@ export class SchemaDiagnosticVisitor {
     const ecClass = diagnostic.ecDefinition as ECClass;
     const [mixin] = diagnostic.messageArgs as [Mixin];
 
-    let modifyEntry = this.schemaItemDifferences.find((entry): entry is EntityClassMixinDifference => {
+    let addEntry = this.schemaItemDifferences.find((entry): entry is EntityClassMixinDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name;
     });
 
-    if (modifyEntry === undefined) {
-      modifyEntry = {
+    if (addEntry === undefined) {
+      addEntry = {
         changeType: "add",
         schemaType: SchemaOtherTypes.EntityClassMixin,
         itemName: ecClass.name,
         difference: [],
       };
-      this.schemaItemDifferences.push(modifyEntry);
+      this.schemaItemDifferences.push(addEntry);
     }
-    modifyEntry.difference.push(mixin.fullName);
+    addEntry.difference.push(mixin.fullName);
   }
 
   private visitMissingRelationshipConstraintClass(diagnostic: AnyDiagnostic) {
@@ -335,23 +331,23 @@ export class SchemaDiagnosticVisitor {
     const className = constraint.relationshipClass.name;
     const constraintPath = constraint.isSource ? "$source" : "$target";
 
-    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintClassDifference => {
+    let addEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintClassDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.RelationshipConstraintClass, entry.itemName === className && entry.path === constraintPath;
     });
 
-    if (!modifyEntry) {
-      modifyEntry = {
+    if (!addEntry) {
+      addEntry = {
         changeType: "add",
         schemaType: SchemaOtherTypes.RelationshipConstraintClass,
         itemName: className,
         path: constraintPath,
         difference: [],
       };
-      this.schemaItemPathDifferences.push(modifyEntry);
+      this.schemaItemPathDifferences.push(addEntry);
     }
 
     const [constraintClass] = diagnostic.messageArgs as [ECClass];
-    modifyEntry.difference.push(constraintClass.fullName);
+    addEntry.difference.push(constraintClass.fullName);
   }
 
   private visitChangedRelationshipConstraint(diagnostic: AnyDiagnostic) {
@@ -449,7 +445,82 @@ export class SchemaDiagnosticVisitor {
     }
     return;
   }
-}
+
+  private visitMissingPresentationUnit(diagnostic: AnyDiagnostic) {
+    const koq = diagnostic.ecDefinition as KindOfQuantity;
+    const [presentationFormat] = diagnostic.messageArgs as [Format | OverrideFormat];
+
+    let addEntry = this.schemaItemDifferences.find((entry): entry is KindOfQuantityPresentationFormatDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.KindOfQuantityPresentationFormat
+        && entry.itemName === koq.name;
+    });
+
+    if (addEntry === undefined) {
+      addEntry = {
+        changeType: "add",
+        schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
+        itemName: koq.name,
+        difference: [],
+      };
+      this.schemaItemDifferences.push(addEntry);
+    }
+    addEntry.difference.push(presentationFormat.fullName);
+  }
+
+  private visitMissingFormatUnit(diagnostic: AnyDiagnostic) {
+    const format = diagnostic.ecDefinition as Format;
+
+    for (let index = this.schemaItemPathDifferences.length-1; index>=0; index--) {
+      const entry = this.schemaItemPathDifferences[index];
+      if (entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.FormatUnitLabel && entry.itemName === format.name) {
+        this.schemaItemPathDifferences.splice(index, 1);
+      }
+    }
+
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is FormatUnitDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.FormatUnit
+        && entry.itemName === format.name;
+    });
+
+    if (modifyEntry === undefined && format.units) {
+      modifyEntry = {
+        changeType: "modify",
+        schemaType: SchemaOtherTypes.FormatUnit,
+        itemName: format.name,
+        difference: [],
+      };
+
+      for (const [unit, label] of format.units) {
+        modifyEntry.difference.push({
+          name: unit.fullName,
+          label,
+        });
+      };
+
+      this.schemaItemDifferences.push(modifyEntry);
+    }
+  }
+
+  private visitChangedFormatUnitLabel(diagnostic: AnyDiagnostic) {
+    const format = diagnostic.ecDefinition as Format;
+
+    if (this.schemaItemDifferences.find((entry): entry is FormatUnitDifference => { return entry.changeType === "modify"
+        && entry.schemaType === SchemaOtherTypes.FormatUnit && entry.itemName === format.name})) {
+      return;
+    }
+
+    const [unit, label] = diagnostic.messageArgs as [Unit | InvertedUnit, string | undefined];
+    this.schemaItemPathDifferences.push({
+      changeType: "modify",
+      schemaType: SchemaOtherTypes.FormatUnitLabel,
+      itemName: format.name,
+      path: unit.fullName,
+      difference: {
+        label,
+      },
+    });
+  };
+};
 
 function isPropertyTypeName(property: Property, propertyName: string) {
   return (propertyName === "type") ||

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { expect } from "vitest";
 import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
@@ -54,10 +54,12 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
   class BlankViewport extends ScreenViewport {
     public ownedIModel?: BlankConnection;
 
-    public override dispose(): void {
-      document.body.removeChild(this.parentDiv);
-      super.dispose();
-      this.ownedIModel?.closeSync();
+    public override[Symbol.dispose](): void {
+      if (!this.isDisposed) {
+        document.body.removeChild(this.parentDiv);
+        super[Symbol.dispose]();
+        this.ownedIModel?.closeSync();
+      }
     }
   }
 
@@ -74,27 +76,22 @@ export type TestBlankViewportOptions = BlankViewportOptions & { test: (vp: Scree
  * @internal
  */
 export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): void {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    if (typeof args === "function")
-      args(vp);
-    else
-      args.test(vp);
-  } finally {
-    vp.dispose();
-  }
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  if (typeof args === "function")
+    args(vp);
+  else
+    args.test(vp);
 }
+
+export type TestBlankViewportAsyncOptions = BlankViewportOptions & { test: (vp: ScreenViewport) => Promise<void> };
 
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export async function testBlankViewportAsync(args: ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    await args(vp);
-  } finally {
-    vp.dispose();
-  }
+export async function testBlankViewportAsync(args: TestBlankViewportAsyncOptions | ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  const result = (typeof args === "function") ? args(vp) : args.test(vp);
+  return await result;
 }
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
@@ -193,6 +190,11 @@ export class Color {
     const colors = def.colors;
     return colors.r === this.r && colors.g === this.g && colors.b === this.b && colors.t === 0xff - this.a;
   }
+
+  public toHexString(): string {
+    const color = ColorDef.create(this.v);
+    return color.toHexString();
+  }
 }
 
 /** A set of unique color values read from a viewport - see readUniqueColors.
@@ -245,7 +247,7 @@ export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNon
       features.insert(pixel.feature);
     }
   },
-  readRect, excludeNonLocatable, excludedElements);
+    readRect, excludeNonLocatable, excludedElements);
 
   return features;
 }
@@ -253,7 +255,7 @@ export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNon
 /** Read a specific pixel. @internal */
 export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
   const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
-  expect(pixels.length).to.equal(1);
+  expect(pixels.length).toEqual(1);
   return pixels.array[0];
 }
 
@@ -264,7 +266,7 @@ export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatabl
 export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const buffer = vp.readImageBuffer({ rect })!;
-  expect(buffer).not.to.be.undefined;
+  expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);
   const colors = new ColorSet();
   for (const rgba of u32)
@@ -278,7 +280,7 @@ export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<C
 
   const rect = readRect ?? vp.viewRect;
   const buffer = vp.readImageBuffer({ rect })!;
-  expect(buffer).not.to.be.undefined;
+  expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);
   for (const rgba of u32) {
     const color = Color.from(rgba);
@@ -292,6 +294,6 @@ export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<C
 /** Read the color of a specific pixel. @internal */
 export function readColor(vp: Viewport, x: number, y: number): Color {
   const colors = readUniqueColors(vp, new ViewRect(x, y, x + 1, y + 1));
-  expect(colors.length).to.equal(1);
+  expect(colors.length).toEqual(1);
   return colors.array[0];
 }

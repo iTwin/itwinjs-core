@@ -3,7 +3,6 @@ Release Tag;API Item Type;API Item Name
 public;class;AkimaCurve3d
 public;class;AkimaCurve3dOptions
 public;interface;AkimaCurve3dProps
-internal;class;AnalyticRoots
 public;class;Angle
 public;type;AngleProps
 public;class;AngleSweep
@@ -39,7 +38,6 @@ public;class;BezierCurve3dH
 public;class;BezierCurveBase
 internal;class;BezierPolynomialAlgebra
 public;class;BilinearPatch
-internal;class;BilinearPolynomial
 public;type;BlockComparisonFunction
 public;class;BooleanClipFactory
 public;class;Box
@@ -109,9 +107,6 @@ public;enum;CurveSearchStatus
 internal;class;CutLoop
 internal;class;CutLoopMergeContext
 public;class;DeepCompare
-internal;class;Degree2PowerPolynomial
-internal;class;Degree3PowerPolynomial
-internal;class;Degree4PowerPolynomial
 public;class;DirectSpiral3d
 public;type;DirectSpiralTypeName
 public;enum;DuplicateFacetClusterSelector
@@ -145,11 +140,11 @@ public;type;HasZ
 public;interface;HoleFillOptions
 public;interface;ICloneable
 public;namespace;IModelJson
-internal;class;ImplicitLineXY
 public;class;IndexedCollectionInterval
 public;class;IndexedPolyface
 public;class;IndexedPolyfaceSubsetVisitor
 public;class;IndexedPolyfaceVisitor
+public;class;IndexedPolyfaceWalker
 public;class;IndexedReadWriteXYZCollection
 public;class;IndexedXYCollection
 public;class;IndexedXYZCollection
@@ -237,7 +232,6 @@ public;class;PolygonLocationDetail
 public;class;PolygonLocationDetailPair
 public;class;PolygonOps
 public;class;PolylineOps
-internal;class;PowerPolynomial
 public;class;ProxyCurve
 internal;class;Quadrature
 public;class;Range1d
@@ -263,14 +257,12 @@ public;interface;SectionSequenceWithPlanes
 public;class;Segment1d
 public;namespace;SerializationHelpers
 public;interface;SignedLoops
-internal;class;SineCosinePolynomial
 public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
 public;type;SolidPrimitiveType
 public;class;SpacePolygonTriangulation
 public;class;Sphere
-internal;class;SphereImplicit
 public;enum;StandardViewIndex
 alpha;type;SteppedIndexFunction
 alpha;class;SteppedIndexFunctionFactory
@@ -282,7 +274,6 @@ public;class;SweepContour
 public;class;SweepLineStringToFacetsOptions
 public;namespace;TaggedNumericConstants
 public;class;TaggedNumericData
-internal;class;TorusImplicit
 public;class;TorusPipe
 public;class;Transform
 public;type;TransformProps
@@ -290,7 +281,6 @@ public;class;TransitionSpiral3d
 public;class;TriangleLocationDetail
 public;class;TriangularFacetLocationDetail
 internal;class;TriDiagonalSystem
-internal;class;TrigPolynomial
 public;interface;TrigValues
 public;class;UnionOfConvexClipPlaneSets
 public;type;UnionOfConvexClipPlaneSetsProps

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IDisposable, Logger } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** Wrapper around a promise that allows synchronous queries of it's state
@@ -38,7 +38,7 @@ export type GenerateKeyFnType = (...args: any[]) => string;
  * The cache is keyed on the input arguments passed to these functions
  * @internal
  */
-export class PromiseMemoizer<T> implements IDisposable {
+export class PromiseMemoizer<T> implements Disposable {
   private readonly _cachedPromises: Map<string, QueryablePromise<T>> = new Map<string, QueryablePromise<T>>();
   private readonly _timers: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>();
   private readonly _memoizeFn: MemoizeFnType<T>;
@@ -85,7 +85,7 @@ export class PromiseMemoizer<T> implements IDisposable {
     };
 
     const p = this._memoizeFn(...args).then(removeCachedPromise, (e) => {
-      throw removeCachedPromise(e);
+      throw removeCachedPromise(e); // eslint-disable-line @typescript-eslint/only-throw-error
     });
 
     qp = new QueryablePromise<T>(p);
@@ -107,7 +107,7 @@ export class PromiseMemoizer<T> implements IDisposable {
     this._cachedPromises.clear();
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     for (const timer of this._timers.values())
       clearTimeout(timer);
 

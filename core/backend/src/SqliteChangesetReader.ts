@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, IDisposable } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb } from "./internal/Symbols";
 
 /** Changed value type
  * @beta
@@ -56,8 +56,8 @@ export type AnyDb = IModelDb | ECDb;
  * @beta
 */
 export interface SqliteChangesetReaderArgs {
-  /** db from which schema will be read. It should be close to changeset.*/
-  readonly db?: AnyDb;
+  /** db from which schema will be read. It should be at or ahead of the latest changeset being opened.*/
+  readonly db: AnyDb;
   /** invert the changeset operations */
   readonly invert?: true;
   /** do not check if column of change match db schema instead ignore addition columns */
@@ -83,14 +83,14 @@ export interface SqliteChange {
  * a db provided.
  * @beta
  */
-export class SqliteChangesetReader implements IDisposable {
+export class SqliteChangesetReader implements Disposable {
   private readonly _nativeReader = new IModelNative.platform.ChangesetReader();
   private _schemaCache = new Map<string, string[]>();
   private _disableSchemaCheck = false;
   private _changeIndex = 0;
   protected constructor(
     /** db from where sql schema will be read */
-    public readonly db?: AnyDb,
+    public readonly db: AnyDb,
   ) { }
 
   /**
@@ -106,7 +106,7 @@ export class SqliteChangesetReader implements IDisposable {
   }
   /**
    * Group changeset file into single changeset and open that changeset.
-   * @param args - The arguments for opening the changeset group.
+   * @param args - The arguments for opening the changeset group. Requires an open db.
    * @returns The SqliteChangesetReader instance.
    */
   public static openGroup(args: { readonly changesetFiles: string[] } & SqliteChangesetReaderArgs): SqliteChangesetReader {
@@ -115,7 +115,21 @@ export class SqliteChangesetReader implements IDisposable {
     }
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.openGroup(args.changesetFiles, args.invert ?? false);
+    reader._nativeReader.openGroup(args.changesetFiles, args.db[_nativeDb], args.invert ?? false);
+    return reader;
+  }
+  /**
+   * Open txn change in iModel.
+   * @param args iModel and other options.
+   * @returns SqliteChangesetReader instance
+   */
+  public static openTxn(args: { txnId: Id64String } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+    if (args.db instanceof ECDb) {
+      throw new Error("ECDb does not support openTxn");
+    }
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openTxn(args.db[_nativeDb], args.txnId, args.invert ?? false);
     return reader;
   }
   /**
@@ -132,12 +146,13 @@ export class SqliteChangesetReader implements IDisposable {
   /**
    * Open local changes in iModel.
    * @param args iModel and other options.
+   * @param args.db must be of type IModelDb
    * @returns SqliteChangesetReader instance
    */
-  public static openLocalChanges(args: { iModel: IModelJsNative.DgnDb, includeInMemoryChanges?: true } & SqliteChangesetReaderArgs): SqliteChangesetReader {
+  public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
-    reader._nativeReader.openLocalChanges(args.iModel, args.includeInMemoryChanges ?? false, args.invert ?? false);
+    reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
     return reader;
   }
   /** check if schema check is disabled or not */
@@ -373,9 +388,6 @@ export class SqliteChangesetReader implements IDisposable {
     if (columns)
       return columns;
 
-    if (!this.db)
-      throw new Error("getColumns() require db context to be provided.");
-
     return this.db.withPreparedSqliteStatement("SELECT [name] FROM PRAGMA_TABLE_INFO(?) ORDER BY [cid]", (stmt) => {
       stmt.bindString(1, tableName);
       const tblCols: string[] = [];
@@ -402,7 +414,7 @@ export class SqliteChangesetReader implements IDisposable {
    * Dispose this object
    * @beta
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.close();
   }
 }

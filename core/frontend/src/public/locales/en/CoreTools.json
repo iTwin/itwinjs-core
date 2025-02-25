@@ -310,6 +310,21 @@
         "description": "Set AccuDraw rotation to view",
         "flyover": "Rotate View"
       },
+      "Rotate90AboutX": {
+        "keyin": "accudraw rotate about x",
+        "description": "Set AccuDraw rotation to 90 degree rotation about current X axis",
+        "flyover": "Rotate About X"
+      },
+      "Rotate90AboutY": {
+        "keyin": "accudraw rotate about y",
+        "description": "Set AccuDraw rotation to 90 degree rotation about current Y axis",
+        "flyover": "Rotate About Y"
+      },
+      "Rotate90AboutZ": {
+        "keyin": "accudraw rotate about z",
+        "description": "Set AccuDraw rotation to 90 degree rotation about current Z axis",
+        "flyover": "Rotate About Z"
+      },
       "RotateAxes": {
         "keyin": "accudraw rotate quick",
         "description": "Set AccuDraw rotation about current origin",
@@ -450,6 +465,7 @@
         "NoFenceElems": "No elements in fence",
         "NoFenceElemsOutside": "No elements outside fence",
         "NoSSElems": "No elements selected",
+        "ActiveSSWithoutElems": "Selection set contains models and/or categories, but no elements",
         "AlreadySelected": "Element is already selected",
         "NotSelected": "Element is not selected",
         "NotSupportedElmType": "Element type not valid for this tool",

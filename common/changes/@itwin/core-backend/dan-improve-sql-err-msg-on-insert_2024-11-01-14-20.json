@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add test for BE_SQLITE_CONSTRAINT_UNIQUE",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

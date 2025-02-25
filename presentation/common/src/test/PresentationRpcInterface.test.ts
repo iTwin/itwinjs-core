@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String, using } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions,
@@ -53,17 +53,17 @@ describe("PresentationRpcInterface", () => {
     RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
     const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
     const operation = RpcOperation.lookup(PresentationRpcInterface, "getNodesCount");
-    const disposableRequest = {
-      request: new TestRpcRequest(client, "getNodesCount", parameters),
-      dispose: () => {
-        // no way to properly destroy the created request...
-        (disposableRequest.request as any).dispose();
-      },
-    };
-    using(disposableRequest, (dr) => {
-      const result = operation.policy.token(dr.request);
+    {
+      using disposableRequest = {
+        request: new TestRpcRequest(client, "getNodesCount", parameters),
+        [Symbol.dispose]: () => {
+          // no way to properly destroy the created request...
+          (disposableRequest.request as any)[Symbol.dispose]();
+        },
+      };
+      const result = operation.policy.token(disposableRequest.request);
       expect(result).to.eq(token);
-    });
+    }
     RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface);
   });
 
@@ -71,6 +71,7 @@ describe("PresentationRpcInterface", () => {
     return arguments;
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated -- PresentationRpcInterface methods are deprecated */
   describe("calls forwarding", () => {
     let rpcInterface: PresentationRpcInterface;
     let spy: sinon.SinonStub<[IArguments], Promise<any>>;
@@ -254,15 +255,6 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("[deprecated] forwards computeSelection call", async () => {
-      const options: SelectionScopeRpcRequestOptions = {};
-      const ids = new Array<Id64String>();
-      const scopeId = faker.random.uuid();
-      // eslint-disable-next-line deprecation/deprecation
-      await rpcInterface.computeSelection(token, options, ids, scopeId);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
-    });
-
     it("forwards computeSelection call", async () => {
       const options: ComputeSelectionRpcRequestOptions = {
         elementIds: new Array<Id64String>(),
@@ -272,4 +264,5 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
 });

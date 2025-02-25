@@ -48,25 +48,25 @@ export async function modifyConstant(context: SchemaMergeContext, change: Consta
   // Note: There are no editor methods to modify a constant.
   if (change.difference.definition !== undefined) {
     if (change.difference.definition !== "" && constant.definition.toLowerCase() !== change.difference.definition.toLowerCase()) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${itemKey.name} has an invalid 'definition' attribute.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${change.itemName} has an invalid 'definition' attribute.`);
     }
     constant.setDefinition(change.difference.definition);
   }
   if (change.difference.denominator !== undefined) {
     if (constant.hasDenominator && constant.denominator !== change.difference.denominator) {
-      throw new Error(`Failed to merged, constant denominator conflict: ${change.difference.denominator} -> ${constant.denominator}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${change.itemName} has an invalid 'denominator' attribute.`);
     }
     constant.setDenominator(change.difference.denominator);
   }
   if (change.difference.numerator !== undefined) {
     if (constant.hasNumerator && constant.numerator !== change.difference.numerator) {
-      throw new Error(`Failed to merged, constant numerator conflict: ${change.difference.numerator} -> ${constant.numerator}`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${change.itemName} has an invalid 'numerator' attribute.`);
     }
     constant.setNumerator(change.difference.numerator);
   }
   if (change.difference.phenomenon !== undefined) {
     const lookupKey = await updateSchemaItemKey(context, change.difference.phenomenon);
-    const phenomenon = await context.editor.schemaContext.getSchemaItem<Phenomenon>(lookupKey);
+    const phenomenon = await context.editor.schemaContext.getSchemaItem(lookupKey, Phenomenon);
     if (phenomenon === undefined) {
       throw new Error(`Could not find phenomenon ${lookupKey.fullName} in the current context`);
     }

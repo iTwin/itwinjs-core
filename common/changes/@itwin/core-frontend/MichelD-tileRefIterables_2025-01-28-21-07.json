@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add iterator-based alternatives to various forEach-style APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

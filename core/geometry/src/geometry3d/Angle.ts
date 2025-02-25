@@ -334,7 +334,7 @@ export class Angle implements BeJSONFunctions {
     return Angle.createDegrees(Angle.adjustDegreesSigned180(degrees));
   }
   /**
-   * Test if two radians values are equivalent, allowing shift by full circle (i.e. by a multiple of `2*PI`)
+   * Test if two radian values are equivalent, allowing shift by full circle (i.e. by a multiple of `2*PI`)
    * @param radiansA first radians value
    * @param radiansB second radians value
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
@@ -360,7 +360,7 @@ export class Angle implements BeJSONFunctions {
   }
 
   /**
-   * Test if this angle and other are equivalent, allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * Test if this angle and `other` are equivalent, allowing shift by full circle (i.e., multiples of `2 * PI`).
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
@@ -368,7 +368,7 @@ export class Angle implements BeJSONFunctions {
     return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians, other._radians, radianTol);
   }
   /**
-   * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * Test if two angles (in radians) are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
    * @param radiansA first radians value
    * @param radiansB second radians value
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
@@ -378,7 +378,7 @@ export class Angle implements BeJSONFunctions {
     return Math.abs(radiansA - radiansB) < radianTol;
   }
   /**
-   * Test if two this angle and other are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * Test if this angle and `other` are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
@@ -386,7 +386,7 @@ export class Angle implements BeJSONFunctions {
     return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians, other._radians, radianTol);
   }
   /**
-   * Test if two this angle and other are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
+   * Test if this angle and `other` are almost equal, NOT allowing shift by full circle (i.e., multiples of `2 * PI`).
    * * This function is same as isAlmostEqualRadiansNoPeriodShift. Please use isAlmostEqualRadiansNoPeriodShift.
    * @param other the other angle
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians

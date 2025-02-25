@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
@@ -11,22 +11,21 @@ import type { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { RealityModelTileTree, TileTreeLoadStatus, TileTreeReference } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 
 describe("SpatialViewState", () => {
   afterEach(() => {
-    sinonRestore();
+    vi.restoreAllMocks();
   });
 
   const projectExtents = new Range3d(-100, -50, -25, 25, 50, 100);
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = createBlankConnection(undefined, undefined, projectExtents);
   });
 
-  after(async () => IModelApp.shutdown());
+  afterAll(async () => IModelApp.shutdown());
 
   class TreeRef extends TileTreeReference {
     public constructor(private readonly _range: Range3d) {
@@ -43,7 +42,7 @@ describe("SpatialViewState", () => {
         tileTree: undefined,
         loadStatus: TileTreeLoadStatus.NotLoaded,
         load: () => undefined,
-        dispose: () => undefined,
+        [Symbol.dispose]: () => undefined,
         loadTree: async () => Promise.resolve(undefined),
       };
     }
@@ -52,31 +51,25 @@ describe("SpatialViewState", () => {
   function createView(ranges: Range3d[]): SpatialViewState {
     const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     const refs = ranges.map((range) => new TreeRef(range));
-    view.forEachModelTreeRef = (func: (ref: TileTreeReference) => void) => {
-      for (const ref of refs)
-        func(ref);
-    };
+    view.getModelTreeRefs = () => refs;
 
     return view;
   }
 
   function expectFitRange(view: SpatialViewState, expected: Range3d, baseExtents?: Range3d): void {
     const actual = view.computeFitRange({ baseExtents });
-    expect(actual.low.x).to.equal(expected.low.x);
-    expect(actual.low.y).to.equal(expected.low.y);
-    expect(actual.low.z).to.equal(expected.low.z);
-    expect(actual.high.x).to.equal(expected.high.x);
-    expect(actual.high.y).to.equal(expected.high.y);
-    expect(actual.high.z).to.equal(expected.high.z);
+    expect(actual.low.x).toEqual(expected.low.x);
+    expect(actual.low.y).toEqual(expected.low.y);
+    expect(actual.low.z).toEqual(expected.low.z);
+    expect(actual.high.x).toEqual(expected.high.x);
+    expect(actual.high.y).toEqual(expected.high.y);
+    expect(actual.high.z).toEqual(expected.high.z);
   }
 
   describe("computeFitRange", () => {
     it("unions ranges of all tile trees", () => {
       expectFitRange(createView([new Range3d(0, 1, 2, 3, 4, 5)]), new Range3d(0, 1, 2, 3, 4, 5));
-      expectFitRange(createView([
-        new Range3d(0, 1, 2, 3, 4, 5),
-        new Range3d(-1, 2, 2, 2, 5, 7),
-      ]), new Range3d(-1, 1, 2, 3, 5, 7));
+      expectFitRange(createView([new Range3d(0, 1, 2, 3, 4, 5), new Range3d(-1, 2, 2, 2, 5, 7)]), new Range3d(-1, 1, 2, 3, 5, 7));
     });
 
     it("falls back to slightly-expanded project extents upon null range", () => {
@@ -94,12 +87,12 @@ describe("SpatialViewState", () => {
     it("does not modify input baseExtents", () => {
       const baseExtents = new Range3d(0, 1, 2, 3, 4, 5);
       expectFitRange(createView([new Range3d(-1, 2, 2, 2, 5, 7)]), new Range3d(-1, 1, 2, 3, 5, 7), baseExtents);
-      expect(baseExtents.low.x).to.equal(0);
-      expect(baseExtents.low.y).to.equal(1);
-      expect(baseExtents.low.z).to.equal(2);
-      expect(baseExtents.high.x).to.equal(3);
-      expect(baseExtents.high.y).to.equal(4);
-      expect(baseExtents.high.z).to.equal(5);
+      expect(baseExtents.low.x).toEqual(0);
+      expect(baseExtents.low.y).toEqual(1);
+      expect(baseExtents.low.z).toEqual(2);
+      expect(baseExtents.high.x).toEqual(3);
+      expect(baseExtents.high.y).toEqual(4);
+      expect(baseExtents.high.z).toEqual(5);
     });
 
     it("does not include invisible context reality models when computing range", () => {
@@ -108,14 +101,14 @@ describe("SpatialViewState", () => {
       const state = view.displayStyle.attachRealityModel({tilesetUrl: "https://fake.com"});
 
       state.invisible = true;
-      const unionFitRangeSpy = sinonSpy(RealityModelTileTree.Reference.prototype, "unionFitRange");
+      const unionFitRangeSpy = vi.spyOn(RealityModelTileTree.Reference.prototype, "unionFitRange");
       view.computeFitRange();
-      expect(unionFitRangeSpy.called).to.false;
+      expect(unionFitRangeSpy).not.toHaveBeenCalled();
 
-      // Make sure its still being called when not 'invisible'
+      // Make sure it's still being called when not 'invisible'
       state.invisible = false;
       view.computeFitRange();
-      expect(unionFitRangeSpy.called).to.true;
+      expect(unionFitRangeSpy).toHaveBeenCalled();
     });
   });
 });

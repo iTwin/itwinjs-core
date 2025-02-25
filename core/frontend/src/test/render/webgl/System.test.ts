@@ -2,20 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import {
-  EmptyLocalization,
-  Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
-} from "@itwin/core-common";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { EmptyLocalization, Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { Capabilities } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialArgs";
 import { IModelConnection } from "../../../IModelConnection";
-import { MockRender } from "../../../render/MockRender";
-import { Material } from "../../../render/webgl/Material";
+import { MockRender } from "../../../internal/render/MockRender";
+import { Material } from "../../../internal/render/webgl/Material";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { TileAdmin } from "../../../tile/internal";
-import { System } from "../../../render/webgl/System";
+import { System } from "../../../internal/render/webgl/System";
 import { createBlankConnection } from "../../createBlankConnection";
 import { unpackAndNormalizeMaterialParam } from "./Material.test";
 
@@ -29,7 +26,7 @@ function _createCanvas(): HTMLCanvasElement | undefined {
 describe("Render Compatibility", () => {
   it("requires WebGL 2", () => {
     const canvas = _createCanvas();
-    expect(canvas).to.not.be.undefined;
+    expect(canvas).toBeDefined();
     // force canvas to fail context creation if webgl2 is requested
     const originalMethod = canvas!.getContext.bind(canvas);
     (canvas as any).getContext = (contextId: any, args?: any) => {
@@ -40,7 +37,7 @@ describe("Render Compatibility", () => {
     };
 
     const context = System.createContext(canvas!, false);
-    expect(context).to.be.undefined;
+    expect(context).toBeUndefined();
   });
 });
 
@@ -54,12 +51,12 @@ describe("Instancing", () => {
         localization: new EmptyLocalization(),
       });
 
-      expect(IModelApp.tileAdmin.enableInstancing).to.equal(expectEnabled);
+      expect(IModelApp.tileAdmin.enableInstancing).toEqual(expectEnabled);
       await IModelApp.shutdown();
     }
   }
 
-  after(async () => {
+  afterAll(async () => {
     // make sure app shut down if exception occurs during test
     if (IModelApp.initialized)
       await TestApp.shutdown();
@@ -84,12 +81,12 @@ describe("ExternalTextures", () => {
         localization: new EmptyLocalization(),
       });
 
-      expect(IModelApp.tileAdmin.enableExternalTextures).to.equal(expectEnabled);
+      expect(IModelApp.tileAdmin.enableExternalTextures).toEqual(expectEnabled);
       await IModelApp.shutdown();
     }
   }
 
-  after(async () => {
+  afterAll(async () => {
     // make sure app shut down if exception occurs during test
     if (IModelApp.initialized)
       await TestApp.shutdown();
@@ -108,11 +105,11 @@ describe("System", () => {
   it("should override webgl context attributes", () => {
     const expectAttributes = (system: System, expected: WebGLContextAttributes) => {
       const attrs = system.context.getContextAttributes()!;
-      expect(attrs).not.to.be.null;
-      expect(attrs.premultipliedAlpha).to.equal(expected.premultipliedAlpha);
-      expect(attrs.preserveDrawingBuffer).to.equal(expected.preserveDrawingBuffer);
-      expect(attrs.antialias).to.equal(expected.antialias);
-      expect(attrs.powerPreference).to.equal(expected.powerPreference);
+      expect(attrs).not.toBeNull();
+      expect(attrs.premultipliedAlpha).toEqual(expected.premultipliedAlpha);
+      expect(attrs.preserveDrawingBuffer).toEqual(expected.preserveDrawingBuffer);
+      expect(attrs.antialias).toEqual(expected.antialias);
+      expect(attrs.powerPreference).toEqual(expected.powerPreference);
     };
 
     const defaultSys = System.create();
@@ -144,9 +141,8 @@ describe("System", () => {
         const map = this.getIdMap(imodel);
         const createTextureFromImageSource = map.createTextureFromImageSource.bind(map);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         map.createTextureFromImageSource = async (args) => {
-          expect(typeof args.ownership).to.equal("object");
+          expect(typeof args.ownership).toEqual("object");
           const key = (args.ownership as any).key;
           TestSystem.requestedIds.push(key);
           return createTextureFromImageSource(args, key);
@@ -163,7 +159,7 @@ describe("System", () => {
       4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
     ]), ImageSourceFormat.Png);
 
-    before(async () => {
+    beforeAll(async () => {
       await IModelApp.startup({
         renderSys: TestSystem.create(),
         localization: new EmptyLocalization(),
@@ -174,14 +170,14 @@ describe("System", () => {
       TestSystem.reset();
     });
 
-    after(async () => {
+    afterAll(async () => {
       await IModelApp.shutdown();
     });
 
     function requestThematicGradient(stepCount: number) {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Thematic,
-        thematicSettings: {stepCount},
+        thematicSettings: { stepCount },
         keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 229 }],
       });
       return IModelApp.renderSystem.getGradientTexture(symb, imodel);
@@ -189,28 +185,28 @@ describe("System", () => {
 
     it("should properly request a thematic gradient texture", async () => {
       const g1 = requestThematicGradient(5);
-      expect(g1).to.not.be.undefined;
-      g1!.dispose();
+      expect(g1).toBeDefined();
+      g1![Symbol.dispose]();
     });
 
     it("should properly cache and reuse thematic gradient textures", async () => {
       const g1 = requestThematicGradient(5);
-      expect(g1).to.not.be.undefined;
+      expect(g1).toBeDefined();
       const g2 = requestThematicGradient(5);
-      expect(g2).to.not.be.undefined;
-      expect(g2 === g1).to.be.true;
-      g1!.dispose();
-      g2!.dispose();
+      expect(g2).toBeDefined();
+      expect(g2 === g1).toBe(true);
+      g1![Symbol.dispose]();
+      g2![Symbol.dispose]();
     });
 
     it("should properly create separate thematic gradient textures if thematic settings differ", async () => {
       const g1 = requestThematicGradient(5);
-      expect(g1).to.not.be.undefined;
+      expect(g1).toBeDefined();
       const g2 = requestThematicGradient(6);
-      expect(g2).to.not.be.undefined;
-      expect(g2 === g1).to.be.false;
-      g1!.dispose();
-      g2!.dispose();
+      expect(g2).toBeDefined();
+      expect(g2 === g1).toBe(false);
+      g1![Symbol.dispose]();
+      g2![Symbol.dispose]();
     });
 
     async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {
@@ -223,11 +219,11 @@ describe("System", () => {
 
     function expectPendingRequests(expectedCount: number): void {
       const map = System.instance.getIdMap(imodel);
-      expect(map.texturesFromImageSources.size).to.equal(expectedCount);
+      expect(map.texturesFromImageSources.size).toEqual(expectedCount);
     }
 
     function expectRequestedIds(expected: Array<string | undefined>): void {
-      expect(TestSystem.requestedIds).to.deep.equal(expected);
+      expect(TestSystem.requestedIds).toEqual(expected);
     }
 
     it("should decode image only once for multiple requests for same texture", async () => {
@@ -241,10 +237,10 @@ describe("System", () => {
       const t1 = await p1;
       expectPendingRequests(0);
       const t2 = await p2;
-      expect(t1).to.equal(t2);
-      expect(t1).not.to.be.undefined;
+      expect(t1).toEqual(t2);
+      expect(t1).toBeDefined();
 
-      t1!.dispose();
+      t1![Symbol.dispose]();
     });
 
     it("should decode each different image once", async () => {
@@ -258,13 +254,13 @@ describe("System", () => {
       const t1 = await p1;
       const t2 = await p2;
       expectPendingRequests(0);
-      expect(t1).not.to.equal(t2);
+      expect(t1).not.toEqual(t2);
 
-      expect(t1).not.to.be.undefined;
-      expect(t2).not.to.be.undefined;
+      expect(t1).toBeDefined();
+      expect(t2).toBeDefined();
 
-      t1!.dispose();
-      t2!.dispose();
+      t1![Symbol.dispose]();
+      t2![Symbol.dispose]();
     });
 
     it("should not record pending requests for unnamed textures", async () => {
@@ -275,10 +271,10 @@ describe("System", () => {
 
       const t1 = await p1;
       const t2 = await p2;
-      expect(t1).not.to.equal(t2);
+      expect(t1).not.toEqual(t2);
 
-      t1!.dispose();
-      t2!.dispose();
+      t1![Symbol.dispose]();
+      t2![Symbol.dispose]();
     });
 
     it("should not record requests for previously-created textures", async () => {
@@ -297,12 +293,12 @@ describe("System", () => {
       expectRequestedIds(["d"]);
 
       const t2 = await p2;
-      expect(t2).to.equal(t1);
+      expect(t2).toEqual(t1);
 
       const t3 = await p3;
-      expect(t3).to.equal(t1);
+      expect(t3).toEqual(t1);
 
-      t1!.dispose();
+      t1![Symbol.dispose]();
     });
 
     it("should return undefined and delete pending request on error", async () => {
@@ -312,7 +308,7 @@ describe("System", () => {
       expectRequestedIds(["e"]);
 
       const t1 = await p1;
-      expect(t1).to.be.undefined;
+      expect(t1).toBeUndefined();
       expectPendingRequests(0);
 
       const p2 = requestTexture("e");
@@ -320,21 +316,21 @@ describe("System", () => {
       expectRequestedIds(["e", "e"]);
 
       const t2 = await p2;
-      expect(t2).not.to.be.undefined;
+      expect(t2).toBeDefined();
       expectPendingRequests(0);
 
-      t2!.dispose();
+      t2![Symbol.dispose]();
     });
 
     it("should return undefined after render system is disposed", async () => {
       const idmap = System.instance.getIdMap(imodel);
       const promise = requestTexture("f");
-      expect(idmap.texturesFromImageSources.size).to.equal(1);
+      expect(idmap.texturesFromImageSources.size).toEqual(1);
 
       await IModelApp.shutdown();
       const texture = await promise;
-      expect(texture).to.be.undefined;
-      expect(idmap.texturesFromImageSources.size).to.equal(0);
+      expect(texture).toBeUndefined();
+      expect(idmap.texturesFromImageSources.size).toEqual(0);
     });
   });
 
@@ -352,30 +348,30 @@ describe("System", () => {
 
     it("caches materials by Id", () => {
       const sys = IModelApp.renderSystem;
-      expect(sys.findMaterial("0x1", iModel)).to.be.undefined;
+      expect(sys.findMaterial("0x1", iModel)).toBeUndefined();
       const mat1 = sys.createRenderMaterial({ source: { id: "0x1", iModel } });
-      expect(sys.createRenderMaterial({ source: { id: "0x1", iModel } })).to.equal(mat1);
+      expect(sys.createRenderMaterial({ source: { id: "0x1", iModel } })).toEqual(mat1);
 
       const mat2 = sys.createRenderMaterial({ source: { id: "0x2", iModel } });
-      expect(mat2).not.to.be.undefined;
-      expect(mat2).not.to.equal(mat1);
+      expect(mat2).toBeDefined();
+      expect(mat2).not.toEqual(mat1);
 
       const mat0 = sys.createRenderMaterial({});
-      expect(mat0).not.to.be.undefined;
-      expect(mat0).not.to.equal(mat1);
-      expect(mat0).not.to.equal(mat2);
+      expect(mat0).toBeDefined();
+      expect(mat0).not.toEqual(mat1);
+      expect(mat0).not.toEqual(mat2);
 
-      expect(sys.createRenderMaterial({})).not.to.equal(mat0);
+      expect(sys.createRenderMaterial({})).not.toEqual(mat0);
     });
 
     it("requires valid Id64String for cache", () => {
       const sys = IModelApp.renderSystem;
       const mat1 = sys.createRenderMaterial({ source: { id: "not an id", iModel } });
-      expect(mat1).not.to.be.undefined;
+      expect(mat1).toBeDefined();
 
       const mat2 = sys.createRenderMaterial({ source: { id: "not an id", iModel } });
-      expect(mat2).not.to.be.undefined;
-      expect(mat2).not.to.equal(mat1);
+      expect(mat2).toBeDefined();
+      expect(mat2).not.toEqual(mat1);
     });
 
     it("produces expected materials from input", () => {
@@ -425,7 +421,7 @@ describe("System", () => {
 
       const test = (args: CreateRenderMaterialArgs, expected?: CreateRenderMaterialArgs) => {
         const mat = IModelApp.renderSystem.createRenderMaterial(args) as Material;
-        expect(mat).not.to.be.undefined;
+        expect(mat).toBeDefined();
 
         const actual = unpackMaterial(mat);
 
@@ -448,10 +444,10 @@ describe("System", () => {
           };
         }
 
-        expect(actual).to.deep.equal(expected);
+        expect(actual).toEqual(expected);
       };
 
-      test({ }, defaults);
+      test({}, defaults);
       test(defaults);
 
       const color = { r: 1, g: 127, b: 255 };
@@ -516,9 +512,9 @@ describe("System", () => {
       }
 
       const debugControl = IModelApp.renderSystem.debugControl!;
-      expect(debugControl).not.to.be.undefined;
+      expect(debugControl).toBeDefined();
 
-      expect(debugControl.loseContext()).to.be.true;
+      expect(debugControl.loseContext()).toBe(true);
       await waitForContextLoss();
     });
   });

@@ -5,6 +5,7 @@
 ```ts
 
 import { ArcGISImageryProvider } from '@itwin/core-frontend';
+import { BaseMapLayerSettings } from '@itwin/core-common';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { Cartographic } from '@itwin/core-common';
@@ -18,6 +19,7 @@ import { Listener } from '@itwin/core-bentley';
 import { Localization } from '@itwin/core-common';
 import { LocateFilterStatus } from '@itwin/core-frontend';
 import { LocateResponse } from '@itwin/core-frontend';
+import { MapCartoRectangle } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
@@ -73,6 +75,41 @@ export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
 }
 
 // @beta
+export const GoogleMaps: {
+    createMapLayerSettings: (name?: string, opts?: GoogleMapsCreateSessionOptions) => ImageMapLayerSettings;
+    createBaseLayerSettings: (opts?: GoogleMapsCreateSessionOptions) => BaseMapLayerSettings;
+};
+
+// @beta
+export interface GoogleMapsCreateSessionOptions {
+    apiOptions?: string[];
+    language: string;
+    layerTypes?: GoogleMapsLayerTypes[];
+    mapType: GoogleMapsMapTypes;
+    overlay?: boolean;
+    region: string;
+    scale?: GoogleMapsScaleFactors;
+}
+
+// @beta
+export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
+
+// @beta
+export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
+
+// @beta
+export type GoogleMapsScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
+
+// @beta
+export interface GoogleMapsSession {
+    expiry: number;
+    imageFormat: string;
+    session: string;
+    tileHeight: number;
+    tileWidth: number;
+}
+
+// @beta
 export class MapFeatureInfoTool extends PrimitiveTool {
     // (undocumented)
     filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
@@ -124,6 +161,34 @@ export class MapLayersFormats {
 export interface MapLayersFormatsConfig {
     // (undocumented)
     localization?: Localization;
+}
+
+// @beta
+export interface MaxZoomRectangle {
+    // (undocumented)
+    east: number;
+    // (undocumented)
+    maxZoom: number;
+    // (undocumented)
+    north: number;
+    // (undocumented)
+    south: number;
+    // (undocumented)
+    west: number;
+}
+
+// @beta
+export interface ViewportInfo {
+    copyright: string;
+    maxZoomRects: MaxZoomRectangle[];
+}
+
+// @beta
+export interface ViewportInfoRequestParams {
+    key: string;
+    rectangle: MapCartoRectangle;
+    session: string;
+    zoom: number;
 }
 
 // (No @packageDocumentation comment for this package)

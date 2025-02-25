@@ -2,13 +2,14 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module UnifiedSelection
  */
 
 import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
-import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
-import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
+import { Id64, Id64Arg, Id64Array } from "@itwin/core-bentley";
+import { IModelConnection, SelectableIds, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
 import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
 import {
   createStorage,
@@ -18,6 +19,7 @@ import {
   SelectionStorage,
   StorageSelectionChangeEventArgs,
   StorageSelectionChangeType,
+  TRANSIENT_ELEMENT_CLASSNAME,
 } from "@itwin/unified-selection";
 import { Presentation } from "../Presentation";
 import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
@@ -28,32 +30,50 @@ import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionSc
 /**
  * Properties for creating [[SelectionManager]].
  * @public
+ * @deprecated in 5.0. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
  */
 export interface SelectionManagerProps {
   /** A manager for [selection scopes]($docs/presentation/unified-selection/index#selection-scopes) */
   scopes: SelectionScopesManager;
+
   /**
    * Custom unified selection storage to be used by [[SelectionManager]]. If not provided [[SelectionManager]] creates
    * and maintains storage.
    */
   selectionStorage?: SelectionStorage;
+
+  /**
+   * An optional function that returns a key for the given iModel. The key is what "glues" iModel selection
+   * changes made in `selectionStorage`, where iModels are identified by key, and `SelectionManager`, where
+   * iModels are specified as `IModelConnection`.
+   *
+   * If not provided, [IModelConnection.key]($core-frontend) or [IModelConnection.name]($core-frontend) is used.
+   */
+  imodelKeyFactory?: (imodel: IModelConnection) => string;
 }
 
 /**
  * The selection manager which stores the overall selection.
  * @public
+ * @deprecated in 5.0. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
  */
-export class SelectionManager implements ISelectionProvider {
-  private _selectionStorage: SelectionStorage;
+export class SelectionManager implements ISelectionProvider, Disposable {
+  private _imodelKeyFactory: (imodel: IModelConnection) => string;
   private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number; handler: ToolSelectionSyncHandler }>();
   private _hiliteSetProviders = new Map<IModelConnection, HiliteSetProvider>();
   private _ownsStorage: boolean;
 
-  private _knownIModels = new Map<string, IModelConnection>();
+  private _knownIModels = new Set<IModelConnection>();
   private _currentSelection = new CurrentSelectionStorage();
   private _selectionChanges = new Subject<StorageSelectionChangeEventArgs>();
   private _selectionEventsSubscription: Subscription;
   private _listeners: Array<() => void> = [];
+
+  /**
+   * Underlying selection storage used by this selection manager. Ideally, consumers should use
+   * the storage directly instead of using this manager to manipulate selection.
+   */
+  public readonly selectionStorage: SelectionStorage;
 
   /** An event which gets broadcasted on selection changes */
   public readonly selectionChange: SelectionChangeEvent;
@@ -67,13 +87,14 @@ export class SelectionManager implements ISelectionProvider {
   constructor(props: SelectionManagerProps) {
     this.selectionChange = new SelectionChangeEvent();
     this.scopes = props.scopes;
-    this._selectionStorage = props.selectionStorage ?? createStorage();
+    this.selectionStorage = props.selectionStorage ?? createStorage();
+    this._imodelKeyFactory = props.imodelKeyFactory ?? ((imodel) => (imodel.key.length ? imodel.key : imodel.name));
     this._ownsStorage = props.selectionStorage === undefined;
-    this._selectionStorage.selectionChangeEvent.addListener((args) => this._selectionChanges.next(args));
+    this.selectionStorage.selectionChangeEvent.addListener((args) => this._selectionChanges.next(args));
     this._selectionEventsSubscription = this.streamSelectionEvents();
     this._listeners.push(
       IModelConnection.onOpen.addListener((imodel) => {
-        this._knownIModels.set(imodel.key, imodel);
+        this._knownIModels.add(imodel);
       }),
     );
     this._listeners.push(
@@ -83,18 +104,25 @@ export class SelectionManager implements ISelectionProvider {
     );
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._selectionEventsSubscription.unsubscribe();
     this._listeners.forEach((dispose) => dispose());
   }
 
+  /** @deprecated in 5.0. Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
+  }
+
   private onConnectionClose(imodel: IModelConnection): void {
+    const imodelKey = this._imodelKeyFactory(imodel);
     this._hiliteSetProviders.delete(imodel);
-    this._knownIModels.delete(imodel.key);
-    this._currentSelection.clear(imodel.key);
+    this._knownIModels.delete(imodel);
+    this._currentSelection.clear(imodelKey);
     if (this._ownsStorage) {
       this.clearSelection("Connection Close Event", imodel);
-      this._selectionStorage.clearStorage({ iModelKey: imodel.key });
+      this.selectionStorage.clearStorage({ imodelKey });
     }
   }
 
@@ -122,30 +150,33 @@ export class SelectionManager implements ISelectionProvider {
           this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount });
         } else {
           this._imodelToolSelectionSyncHandlers.delete(imodel);
-          registration.handler.dispose();
+          registration.handler[Symbol.dispose]();
         }
       }
     }
   }
 
   /**
-   * Temporarily suspends tool selection synchronization until the returned `IDisposable`
+   * Temporarily suspends tool selection synchronization until the returned `Disposable`
    * is disposed.
    */
-  public suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable {
+  public suspendIModelToolSelectionSync(imodel: IModelConnection) {
     const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
     if (!registration) {
-      return { dispose: () => {} };
+      const noop = () => {};
+      return { [Symbol.dispose]: noop, dispose: noop };
     }
 
     const wasSuspended = registration.handler.isSuspended;
     registration.handler.isSuspended = true;
-    return { dispose: () => (registration.handler.isSuspended = wasSuspended) };
+    const doDispose = () => (registration.handler.isSuspended = wasSuspended);
+    return { [Symbol.dispose]: doDispose, dispose: doDispose };
   }
 
   /** Get the selection levels currently stored in this manager for the specified imodel */
   public getSelectionLevels(imodel: IModelConnection): number[] {
-    return this._selectionStorage.getSelectionLevels({ iModelKey: imodel.key });
+    const imodelKey = this._imodelKeyFactory(imodel);
+    return this.selectionStorage.getSelectionLevels({ imodelKey });
   }
 
   /**
@@ -156,41 +187,40 @@ export class SelectionManager implements ISelectionProvider {
    * latest selection after changes.
    */
   public getSelection(imodel: IModelConnection, level: number = 0): Readonly<KeySet> {
-    return this._currentSelection.getSelection(imodel.key, level);
+    const imodelKey = this._imodelKeyFactory(imodel);
+    return this._currentSelection.getSelection(imodelKey, level);
   }
 
   private handleEvent(evt: SelectionChangeEventArgs): void {
-    if (!this._knownIModels.has(evt.imodel.key)) {
-      this._knownIModels.set(evt.imodel.key, evt.imodel);
-    }
-
+    const imodelKey = this._imodelKeyFactory(evt.imodel);
+    this._knownIModels.add(evt.imodel);
     switch (evt.changeType) {
       case SelectionChangeType.Add:
-        this._selectionStorage.addToSelection({
-          iModelKey: evt.imodel.key,
+        this.selectionStorage.addToSelection({
+          imodelKey,
           source: evt.source,
           level: evt.level,
           selectables: keysToSelectable(evt.imodel, evt.keys),
         });
         break;
       case SelectionChangeType.Remove:
-        this._selectionStorage.removeFromSelection({
-          iModelKey: evt.imodel.key,
+        this.selectionStorage.removeFromSelection({
+          imodelKey,
           source: evt.source,
           level: evt.level,
           selectables: keysToSelectable(evt.imodel, evt.keys),
         });
         break;
       case SelectionChangeType.Replace:
-        this._selectionStorage.replaceSelection({
-          iModelKey: evt.imodel.key,
+        this.selectionStorage.replaceSelection({
+          imodelKey,
           source: evt.source,
           level: evt.level,
           selectables: keysToSelectable(evt.imodel, evt.keys),
         });
         break;
       case SelectionChangeType.Clear:
-        this._selectionStorage.clearSelection({ iModelKey: evt.imodel.key, source: evt.source, level: evt.level });
+        this.selectionStorage.clearSelection({ imodelKey, source: evt.source, level: evt.level });
         break;
     }
   }
@@ -370,10 +400,10 @@ export class SelectionManager implements ISelectionProvider {
     return this._selectionChanges
       .pipe(
         mergeMap((args) => {
-          const currentSelectables = this._selectionStorage.getSelection({ iModelKey: args.iModelKey, level: args.level });
-          return this._currentSelection.computeSelection(args.iModelKey, args.level, currentSelectables, args.selectables).pipe(
+          const currentSelectables = this.selectionStorage.getSelection({ imodelKey: args.imodelKey, level: args.level });
+          return this._currentSelection.computeSelection(args.imodelKey, args.level, currentSelectables, args.selectables).pipe(
             mergeMap(({ level, changedSelection }): Observable<SelectionChangeEventArgs> => {
-              const imodel = this._knownIModels.get(args.iModelKey);
+              const imodel = findIModel(this._knownIModels, this._imodelKeyFactory, args.imodelKey);
               // istanbul ignore if
               if (!imodel) {
                 return EMPTY;
@@ -398,11 +428,17 @@ export class SelectionManager implements ISelectionProvider {
   }
 }
 
-/** @internal */
-export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
+function findIModel(set: Set<IModelConnection>, imodelKeyFactory: (imodel: IModelConnection) => string, key: string) {
+  for (const imodel of set) {
+    if (imodelKeyFactory(imodel) === key) {
+      return imodel;
+    }
+  }
+  return undefined;
+}
 
 /** @internal */
-export class ToolSelectionSyncHandler implements IDisposable {
+export class ToolSelectionSyncHandler implements Disposable {
   private _selectionSourceName = "Tool";
   private _logicalSelection: SelectionManager;
   private _imodel: IModelConnection;
@@ -416,7 +452,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
     this._imodelToolSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onToolSelectionChanged);
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._imodelToolSelectionListenerDisposeFunc();
   }
 
@@ -425,7 +461,6 @@ export class ToolSelectionSyncHandler implements IDisposable {
     return this._asyncsTracker.pendingAsyncs;
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onToolSelectionChanged = async (ev: SelectionSetEvent): Promise<void> => {
     // ignore selection change event if the handler is suspended
     if (this.isSuspended) {
@@ -442,16 +477,16 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // wip: may want to allow selecting at different levels?
     const selectionLevel = 0;
 
-    let ids: Id64Arg;
+    let ids: SelectableIds;
     switch (ev.type) {
       case SelectionSetEventType.Add:
-        ids = ev.added;
+        ids = ev.additions;
         break;
       case SelectionSetEventType.Replace:
-        ids = ev.set.elements;
+        ids = ev.set.active;
         break;
       default:
-        ids = ev.removed;
+        ids = ev.removals;
         break;
     }
 
@@ -466,30 +501,25 @@ export class ToolSelectionSyncHandler implements IDisposable {
       createSelectionScopeProps(this._logicalSelection.scopes.activeScope),
     );
 
-    // we know what to do immediately on `clear` events
-    if (SelectionSetEventType.Clear === ev.type) {
-      await changer.clear(selectionLevel);
-      return;
+    using _r = this._asyncsTracker.trackAsyncTask();
+    switch (ev.type) {
+      case SelectionSetEventType.Add:
+        await changer.add(ids, selectionLevel);
+        break;
+      case SelectionSetEventType.Replace:
+        await changer.replace(ids, selectionLevel);
+        break;
+      case SelectionSetEventType.Remove:
+        await changer.remove(ids, selectionLevel);
+        break;
+      case SelectionSetEventType.Clear:
+        await changer.clear(selectionLevel);
+        break;
     }
-
-    const parsedIds = parseIds(ids);
-    await using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
-      switch (ev.type) {
-        case SelectionSetEventType.Add:
-          await changer.add(parsedIds.transient, parsedIds.persistent, selectionLevel);
-          break;
-        case SelectionSetEventType.Replace:
-          await changer.replace(parsedIds.transient, parsedIds.persistent, selectionLevel);
-          break;
-        case SelectionSetEventType.Remove:
-          await changer.remove(parsedIds.transient, parsedIds.persistent, selectionLevel);
-          break;
-      }
-    });
   };
 }
 
-const parseIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => {
+const parseElementIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => {
   let allPersistent = true;
   let allTransient = true;
   for (const id of Id64.iterable(ids)) {
@@ -526,13 +556,12 @@ const parseIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => 
   return { persistent: persistentElementIds, transient: transientElementIds };
 };
 
-function addTransientKeys(transientIds: Id64Arg, keys: KeySet): void {
-  for (const id of Id64.iterable(transientIds)) {
-    keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id });
+function addKeys(target: KeySet, className: string, ids: Id64Arg) {
+  for (const id of Id64.iterable(ids)) {
+    target.add({ className, id });
   }
 }
 
-/** @internal */
 class ScopedSelectionChanger {
   public readonly name: string;
   public readonly imodel: IModelConnection;
@@ -547,20 +576,32 @@ class ScopedSelectionChanger {
   public async clear(level: number): Promise<void> {
     this.manager.clearSelection(this.name, this.imodel, level);
   }
-  public async add(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
-    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    addTransientKeys(transientIds, keys);
+  public async add(ids: SelectableIds, level: number): Promise<void> {
+    const keys = await this.#computeSelection(ids);
     this.manager.addToSelection(this.name, this.imodel, keys, level);
   }
-  public async remove(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
-    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    addTransientKeys(transientIds, keys);
+  public async remove(ids: SelectableIds, level: number): Promise<void> {
+    const keys = await this.#computeSelection(ids);
     this.manager.removeFromSelection(this.name, this.imodel, keys, level);
   }
-  public async replace(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
-    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    addTransientKeys(transientIds, keys);
+  public async replace(ids: SelectableIds, level: number): Promise<void> {
+    const keys = await this.#computeSelection(ids);
     this.manager.replaceSelection(this.name, this.imodel, keys, level);
+  }
+  async #computeSelection(ids: SelectableIds) {
+    let keys = new KeySet();
+    if (ids.elements) {
+      const { persistent, transient } = parseElementIds(ids.elements);
+      keys = await this.manager.scopes.computeSelection(this.imodel, persistent, this.scope);
+      addKeys(keys, TRANSIENT_ELEMENT_CLASSNAME, transient);
+    }
+    if (ids.models) {
+      addKeys(keys, "BisCore.Model", ids.models);
+    }
+    if (ids.subcategories) {
+      addKeys(keys, "BisCore.SubCategory", ids.subcategories);
+    }
+    return keys;
   }
 }
 

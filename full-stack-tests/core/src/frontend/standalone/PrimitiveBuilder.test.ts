@@ -5,16 +5,16 @@
 import { assert, expect } from "chai";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import {
-  GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection,
-  SpatialViewState, StandardViewId,
+  GraphicType, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
 import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder";
 import { DisplayParams } from "@itwin/core-frontend/lib/cjs/common/internal/render/DisplayParams";
 import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
 import { Geometry } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryPrimitives";
-import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Branch } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;
@@ -22,7 +22,7 @@ describe("PrimitiveBuilder", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     const viewDiv = document.createElement("div");
     assert(null !== viewDiv);
@@ -36,7 +36,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   after(async () => {
-    viewport?.dispose();
+    viewport?.[Symbol.dispose]();
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

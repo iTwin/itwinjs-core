@@ -1,7 +1,9 @@
 sep=;
 Release Tag;API Item Type;API Item Name
 internal;function;almostEqual
+internal;function;almostZero
 beta;interface;AlternateUnitLabelsProvider
+internal;function;applyConversion
 beta;class;BadUnit
 beta;class;BaseFormat
 beta;class;BasicUnit
@@ -18,6 +20,7 @@ beta;enum;FormatTraits
 beta;function;formatTraitsToArray
 beta;enum;FormatType
 beta;function;formatTypeToString
+deprecated;function;formatTypeToString
 beta;enum;FractionalPrecision
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
@@ -31,6 +34,7 @@ beta;function;parseFractionalPrecision
 beta;function;parsePrecision
 beta;interface;ParseQuantityError
 beta;class;Parser
+beta;function;parseRatioType
 beta;class;ParserSpec
 beta;function;parseScientificType
 beta;function;parseShowSignOption
@@ -41,10 +45,14 @@ beta;class;QuantityError
 beta;type;QuantityParseResult
 beta;interface;QuantityProps
 beta;enum;QuantityStatus
+beta;enum;RatioType
 beta;enum;ScientificType
 beta;function;scientificTypeToString
+deprecated;function;scientificTypeToString
 beta;enum;ShowSignOption
 beta;function;showSignOptionToString
+deprecated;function;showSignOptionToString
+beta;enum;UnitConversionInvert
 beta;interface;UnitConversionProps
 beta;interface;UnitConversionSpec
 alpha;interface;UnitExtraData

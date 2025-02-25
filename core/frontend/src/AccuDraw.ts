@@ -25,7 +25,7 @@ import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
-import { ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
+import { FormatterSpec, FormatType, ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
 import { GraphicType } from "./common/render/GraphicType";
 
 // cspell:ignore dont primitivetools
@@ -140,11 +140,10 @@ export enum ItemField {
 export enum KeyinStatus {
   Dynamic = 0,
   Partial = 1,
-  DontUpdate = 2,
 }
 
 const enum Constants { // eslint-disable-line no-restricted-syntax
-  MAX_SAVED_VALUES = 20,
+  MAX_SAVED_VALUES = 10,
   SMALL_ANGLE = 1.0e-12,
   SMALL_DELTA = 0.00001,
 }
@@ -188,9 +187,17 @@ export class Flags {
   public animateRotation = false;
 }
 
-/** @internal */
+/** AccuDraw value round off settings. Allows dynamic distance and angle values to be rounded to the nearest increment of the specified units value(s).
+ * @public
+ */
 export class RoundOff {
+  /** Whether rounding is to be applied to the corresponding dynamic distance or angle value.
+   * @note To be considered active, units must also specify at least one increment value.
+  */
   public active = false;
+  /** Round off increment value(s), meters for distance round off, and radians for angle round off.
+   * @note When multiple values are specified, rounding is based on smallest discernable value at current view zoom.
+   */
   public units = new Set<number>();
 }
 
@@ -206,13 +213,6 @@ export class SavedState {
   public fixedOrg = false;
   public ignoreDataButton = true; // By default the data point that terminates a view tool or input collector should be ignored...
   public ignoreFlags: AccuDrawFlags = 0;
-}
-
-/** @internal */
-class SavedCoords {
-  public nSaveValues = 0;
-  public readonly savedValues: number[] = [];
-  public readonly savedValIsAngle: boolean[] = [];
 }
 
 /** @internal */
@@ -268,8 +268,10 @@ export class AccuDraw {
       this.onCompassDisplayChange(wasActive ? "hide" : "show");
   }
 
-  public compassMode = CompassMode.Rectangular; // Compass mode
-  public rotationMode = RotationMode.View; // Compass rotation
+  /** The current compass mode */
+  public compassMode = CompassMode.Rectangular;
+  /** The current compass rotation */
+  public rotationMode = RotationMode.View;
   /** @internal */
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
   /** @internal */
@@ -290,13 +292,16 @@ export class AccuDraw {
   private readonly _angleRoundOff = new RoundOff(); // angle round off enabled and unit
   /** @internal */
   public readonly flags = new Flags(); // current state flags
-  private readonly _fieldLocked: boolean[] = []; // locked state of fields
-  private readonly _keyinStatus: KeyinStatus[] = []; // state of input field
+  private readonly _fieldLocked: [boolean, boolean, boolean, boolean, boolean] = [false, false, false, false, false]; // locked state of fields
+  private readonly _keyinStatus: [KeyinStatus, KeyinStatus, KeyinStatus, KeyinStatus, KeyinStatus] = [KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic, KeyinStatus.Dynamic]; // state of input field
   /** @internal */
   public readonly savedStateViewTool = new SavedState(); // Restore point for shortcuts/tools...
   /** @internal */
   public readonly savedStateInputCollector = new SavedState(); // Restore point for shortcuts/tools...
-  private readonly _savedCoords = new SavedCoords(); // History of previous angles/distances...
+  private readonly _savedDistances: number[] = []; // History of previous distances...
+  private readonly _savedAngles: number[] = []; // History of previous angles...
+  private _savedDistanceIndex = -1; // Current saved distance index for choosing next/previous value...
+  private _savedAngleIndex = -1; // Current saved distance index for choosing next/previous value...
   /** @internal */
   public readonly baseAxes = new ThreeAxes(); // Used for "context" base rotation to hold arbitrary rotation w/o needing to change ACS...
   /** @internal */
@@ -348,16 +353,30 @@ export class AccuDraw {
   /** @internal */
   protected readonly _fillColorNoFocus = ColorDef.create(ColorByName.lightGrey);
 
-  // User Preference Settings...
+  /** When true improve behavior for +/- input when cursor switches side and try to automatically manage focus */
   public smartKeyin = true;
+  /** When true the compass follows the origin hint as opposed to remaining at a fixed location */
   public floatingOrigin = true;
+  /** When true the z input field will remain locked with it's current value after a data button  */
   public stickyZLock = false;
+  /** When true the compass is always active and on screen instead of following the current tools request to activate */
   public alwaysShowCompass = false;
+  /** When true all tool hints are applied as opposed to only selected hints */
   public contextSensitive = true;
+  /** When true the current point is adjusted to the x and y axes when within a close tolerance */
   public axisIndexing = true;
+  /** When true the current point is adjusted to the last locked distance value when within a close tolerance */
   public distanceIndexing = true;
+  /** When true locking the angle also moves focus to the angle input field */
   public autoFocusFields = true;
+  /** When true fully specifying a point by entering both distance and angle in polar mode or XY[Z] in rectangular mode, the point is automatically accepted */
   public autoPointPlacement = false;
+
+  /** Get distance round off settings */
+  public get distanceRoundOff(): RoundOff { return this._distanceRoundOff; }
+  /** Get angle round off settings */
+  public get angleRoundOff(): RoundOff { return this._angleRoundOff; }
+
   private static _tempRot = new Matrix3d();
 
   /** @internal */
@@ -371,18 +390,28 @@ export class AccuDraw {
     return rMatrix;
   }
 
-  public get isActive(): boolean { return CurrentState.Active === this.currentState; }
+  /** When true AccuDraw is enabled by the application and can be used by interactive tools */
   public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
+  /** When true the compass is displayed and adjusting input points for the current interactive tool */
+  public get isActive(): boolean { return CurrentState.Active === this.currentState; }
+  /** When true the compass is not displayed or adjusting points, but it can be automatically activated by the current interactive tool or via shortcuts */
   public get isInactive(): boolean { return (CurrentState.Inactive === this.currentState); }
+  /** When true the compass is not displayed or adjusting points, the current interactive tool has disabled automatic activation, but can still be enabled via shortcuts */
   public get isDeactivated(): boolean { return (CurrentState.Deactivated === this.currentState); }
 
   /** Get the current lock state for the supplied input field */
   public getFieldLock(index: ItemField): boolean { return this._fieldLocked[index]; }
   /** @internal */
   public getKeyinStatus(index: ItemField): KeyinStatus { return this._keyinStatus[index]; }
+  /** Get the current keyin status for the supplied input field */
+  public isDynamicKeyinStatus(index: ItemField): boolean { return KeyinStatus.Dynamic === this.getKeyinStatus(index) }
 
-  /** Implement this method to set focus to the AccuDraw UI. */
+  /** Get whether AccuDraw currently has input focus */
+  public get hasInputFocus() { return true; }
+  /** Called to request input focus be set to AccuDraw. Focus is managed by AccuDraw UI. */
   public grabInputFocus() { }
+  /** Get default focus item for the current compass mode */
+  public defaultFocusItem(): ItemField { return (CompassMode.Polar === this.compassMode ? ItemField.DIST_Item : this.newFocus); }
 
   /** @internal */
   public activate(): void {
@@ -398,6 +427,16 @@ export class AccuDraw {
     // Don't allow compass to come back until user re-enables it...
     if (CurrentState.Inactive === this.currentState)
       this.currentState = CurrentState.Deactivated;
+  }
+
+  /** Whether to show Z input field in 3d. Sub-classes can override to restrict AccuDraw to 2d input when working in overlays where
+   * depth is not important.
+   * @note Intended to be used in conjunction with ViewState.allow3dManipulations returning false to also disable 3d rotation and
+   * ToolAdmin.acsPlaneSnapLock set to true for projecting snapped points to the view's ACS plane.
+   * @see [[ViewState.allow3dManipulations]][[ToolAdmin.acsPlaneSnapLock]]
+   */
+  public is3dCompass(viewport: Viewport): boolean {
+    return viewport.view.is3d();
   }
 
   /** Change current compass input mode to either polar or rectangular */
@@ -429,11 +468,16 @@ export class AccuDraw {
 
   /** @internal */
   public setKeyinStatus(index: ItemField, status: KeyinStatus): void {
+    if (status === this._keyinStatus[index])
+      return;
+
     this._keyinStatus[index] = status;
     if (KeyinStatus.Dynamic !== status)
       this.dontMoveFocus = true;
     if (KeyinStatus.Partial === status)
       this._threshold = Math.abs(ItemField.X_Item === index ? this._rawDelta.y : this._rawDelta.x) + this._tolerance;
+
+    this.onFieldKeyinStatusChange(index);
   }
 
   private needsRefresh(vp: Viewport): boolean {
@@ -588,7 +632,7 @@ export class AccuDraw {
   public isZLocked(vp: Viewport): boolean {
     if (this._fieldLocked[ItemField.Z_Item])
       return true;
-    if (vp.isSnapAdjustmentRequired) //  && TentativeOrAccuSnap.isHot())
+    if (vp.isSnapAdjustmentRequired && TentativeOrAccuSnap.isHot)
       return true;
 
     return false;
@@ -641,7 +685,6 @@ export class AccuDraw {
     let rMatrix: Matrix3d;
     let myAxes: ThreeAxes;
     const vecP = Vector3d.createZero();
-    /* eslint-disable max-statements-per-line */
     switch (this.flags.baseRotation) {
       case RotationMode.Top:
         switch (whichVec) {
@@ -696,7 +739,6 @@ export class AccuDraw {
         }
         break;
     }
-    /* eslint-enable max-statements-per-line */
 
     return vecP;
   }
@@ -872,13 +914,23 @@ export class AccuDraw {
     // animator -> ChangeOfRotation(Matrix3d:: FromColumnVectors(oldRotation[0], oldRotation[1], oldRotation[2]));
   }
 
-  /** @internal */
+  /**
+   * Enable AccuDraw so that it can be used by interactive tools.
+   * This method is public to allow applications to provide a user interface to enable/disable AccuDraw.
+   * @note Should not be called by interactive tools, those should use [[AccuDrawHintBuilder]]. AccuDraw is enabled for applications by default.
+   * @see [[disableForSession]]
+   */
   public enableForSession(): void {
     if (CurrentState.NotEnabled === this.currentState)
       this.currentState = CurrentState.Inactive;
   }
 
-  /** @internal */
+  /**
+   * Disable AccuDraw so that it can not be used by interactive tools.
+   * This method is public to allow applications to provide a user interface to enable/disable AccuDraw.
+   * @note Should not be called by interactive tools, those should use [[AccuDrawHintBuilder]]. AccuDraw is enabled for applications by default.
+   * @see [[enableForSession]]
+   */
   public disableForSession(): void {
     this.currentState = CurrentState.NotEnabled;
     this.flags.redrawCompass = true; // Make sure decorators are called so we don't draw (i.e. erase AccuDraw compass)
@@ -999,12 +1051,17 @@ export class AccuDraw {
   private updateVector(angle: number): void {
     this.vector.set(Math.cos(angle), Math.sin(angle), 0.0);
     const rMatrix = this.getRotation();
-    rMatrix.multiplyTransposeVector(this.vector);
+    rMatrix.multiplyTransposeVectorInPlace(this.vector);
   }
 
   /** Allow the AccuDraw user interface to supply the distance parser */
   public getLengthParser(): ParserSpec | undefined {
     return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
+  }
+
+  /** Allow the AccuDraw user interface to supply the distance parser */
+  public getLengthFormatter(): FormatterSpec | undefined {
+    return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
   }
 
   private stringToDistance(str: string): QuantityParseResult {
@@ -1014,13 +1071,29 @@ export class AccuDraw {
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
+  private stringFromDistance(distance: number): string {
+    const formatterSpec = this.getLengthFormatter();
+    let formattedValue = distance.toString();
+    if (formatterSpec)
+      formattedValue = IModelApp.quantityFormatter.formatQuantity(distance, formatterSpec);
+    return formattedValue;
+  }
+
   /** Allow the AccuDraw user interface to specify bearing */
-  public get isBearingMode(): boolean { return false; }
+  public get isBearingMode(): boolean { return this.getAngleParser()?.format.type === FormatType.Bearing; }
+
+  /** Allow the AccuDraw user interface to specify bearing directions are always in xy plane */
+  public get bearingFixedToPlane2d() { return this.flags.bearingFixToPlane2D; }
+  public set bearingFixedToPlane2d(enable: boolean) { this.flags.bearingFixToPlane2D = enable; }
 
   /** Allow the AccuDraw user interface to supply the angle/direction parser */
   public getAngleParser(): ParserSpec | undefined {
-    // TODO: Use QuantityType.Angle when isBearingMode=false and "Bearing" for isBearingMode=true.
     return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
+  }
+
+  /** Allow the AccuDraw user interface to supply the angle/direction formatter */
+  public getAngleFormatter(): FormatterSpec | undefined {
+    return IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
   }
 
   private stringToAngle(inString: string): QuantityParseResult {
@@ -1028,6 +1101,42 @@ export class AccuDraw {
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
     return { ok: false, error: ParseError.InvalidParserSpec };
+  }
+
+  private stringFromAngle(angle: number): string {
+    if (this.isBearingMode && this.flags.bearingFixToPlane2D) {
+      const point = Vector3d.create(this.axes.x.x, this.axes.x.y, 0.0);
+      const matrix = Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z);
+      if (matrix.determinant() < 0)
+        angle = -angle; // Account for left handed rotations...
+
+      point.normalizeInPlace();
+      let adjustment = Math.acos(point.x);
+
+      if (point.y < 0.0)
+        adjustment = -adjustment;
+      angle += adjustment; // This is the angle measured from design x...
+      angle = (Math.PI / 2) - angle; // Account for bearing direction convention...
+
+      if (angle < 0)
+        angle = (Math.PI * 2) + angle; // Negative bearings aren't valid?
+    }
+
+    const formatterSpec = this.getAngleFormatter();
+    let formattedValue = angle.toString();
+    if (formatterSpec)
+      formattedValue = IModelApp.quantityFormatter.formatQuantity(angle, formatterSpec);
+    return formattedValue;
+  }
+
+  /** Can be called by sub-classes to get a formatted value to display for an AccuDraw input field
+   * @see [[onFieldValueChange]]
+   */
+  public getFormattedValueByIndex(index: ItemField): string {
+    const value = IModelApp.accuDraw.getValueByIndex(index);
+    if (ItemField.ANGLE_Item === index)
+      return this.stringFromAngle(value);
+    return this.stringFromDistance(value);
   }
 
   private updateFieldValue(index: ItemField, input: string): BentleyStatus {
@@ -1057,7 +1166,10 @@ export class AccuDraw {
       case ItemField.ANGLE_Item:
         parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
-          this._angle = parseResult.value;
+          if (this.isBearingMode && this.flags.bearingFixToPlane2D)
+            this._angle = (Math.PI / 2) - parseResult.value;
+          else
+            this._angle = parseResult.value;
           break;
         }
         return BentleyStatus.ERROR;
@@ -1104,7 +1216,7 @@ export class AccuDraw {
 
   /** @internal */
   public unlockAllFields(): void {
-    this.locked = 0;
+    this.locked = LockedStates.NONE_LOCKED;;
 
     if (CompassMode.Polar === this.compassMode) {
       if (this._fieldLocked[ItemField.DIST_Item])
@@ -1160,12 +1272,20 @@ export class AccuDraw {
     return true;
   }
 
+  private _acosWithLimitCheck(value: number): number {
+    if (value >= 1.0)
+      return 0.0;
+    if (value <= -1.0)
+      return Math.PI;
+    return Math.acos(value);
+  }
+
   private handleDegeneratePolarCase(): void {
     if (!(this.locked & LockedStates.DIST_BM))
       this._distance = 0.0;
 
     if (this.locked & LockedStates.VEC_BM) {
-      this._angle = Math.acos(this.vector.dotProduct(this.axes.x));
+      this._angle = this._acosWithLimitCheck(this.vector.dotProduct(this.axes.x));
     } else if (this.locked & LockedStates.Y_BM) {
       this.vector.setFrom(this.axes.y);
       this._angle = Math.PI / 2.0;
@@ -1176,7 +1296,7 @@ export class AccuDraw {
       this.indexed = this.locked;
     } else {
       // use last good vector
-      this._angle = Math.acos(this.vector.dotProduct(this.axes.x));
+      this._angle = this._acosWithLimitCheck(this.vector.dotProduct(this.axes.x));
     }
     this.origin.plusScaled(this.vector, this._distance, this.point);
   }
@@ -1195,18 +1315,54 @@ export class AccuDraw {
     return (!IModelApp.toolAdmin.gridLock);
   }
 
+  /** Call from an AccuDraw UI event to check if key is valid for updating the input field value. */
+  protected itemFieldInputIsValid(key: string, item: ItemField): boolean {
+    if (1 !== key.length)
+      return false;
+
+    switch (key) {
+      case ".":
+      case ",":
+        return true;
+
+      case "'": // feet/minutes...
+      case "\"": // inches/seconds...
+        return true;
+
+      case "°": // degrees...
+        return (ItemField.ANGLE_Item === item); // Allowed for angle input...
+
+      case "N":
+      case "S":
+      case "E":
+      case "W":
+      case "n":
+      case "s":
+      case "e":
+      case "w":
+        return (ItemField.ANGLE_Item === item && this.isBearingMode); // Allowed for bearing direction input, trumps shortcuts...
+    }
+
+    if (!Number.isNaN(parseInt(key, 10)))
+      return true; // Accept numeric input...
+
+    if (key.toLowerCase() !== key.toUpperCase())
+      return false; // Treat unhandled letters as potential shortcuts...
+
+    // Let parser deal with anything else, like +-/*, etc.
+    return true;
+  }
+
   /** Call from an AccuDraw UI event to sync the supplied input field value */
   public async processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void> {
     if (BentleyStatus.SUCCESS !== this.updateFieldValue(index, input)) {
-      const saveKeyinStatus = this._keyinStatus[index]; // Don't want this to change when entering '.', etc.
-      this.updateFieldLock(index, false);
-      this._keyinStatus[index] = saveKeyinStatus;
+      this._unlockFieldInternal(index); // Don't want keyin status to change when entering '.', etc.
       return;
     }
 
     switch (index) {
       case ItemField.DIST_Item:
-        this.distanceLock(synchText, true);
+        this.distanceLock(synchText, false); // Don't save distance here, partial input...
         await this.doAutoPoint(index, CompassMode.Polar);
         break;
 
@@ -1246,36 +1402,35 @@ export class AccuDraw {
     this.refreshDecorationsAndDynamics();
   }
 
-  /** @internal */
-  public updateFieldLock(index: ItemField, locked: boolean): void {
-    if (locked) {
-      if (!this._fieldLocked[index]) {
-        this.setFieldLock(index, true);
-
-        switch (index) {
-          case ItemField.DIST_Item:
-            this.distanceLock(true, false);
-            break;
-
-          case ItemField.ANGLE_Item:
-            this.angleLock();
-            break;
-
-          case ItemField.X_Item:
-            this.locked |= LockedStates.X_BM;
-            break;
-
-          case ItemField.Y_Item:
-            this.locked |= LockedStates.Y_BM;
-            break;
-
-          case ItemField.Z_Item:
-            break;
-        }
-      }
+  private _lockFieldInternal(index: ItemField): void {
+    if (this._fieldLocked[index])
       return;
-    }
 
+    this.setFieldLock(index, true);
+
+    switch (index) {
+      case ItemField.DIST_Item:
+        this.distanceLock(true, false);
+        break;
+
+      case ItemField.ANGLE_Item:
+        this.angleLock();
+        break;
+
+      case ItemField.X_Item:
+        this.locked |= LockedStates.X_BM;
+        break;
+
+      case ItemField.Y_Item:
+        this.locked |= LockedStates.Y_BM;
+        break;
+
+      case ItemField.Z_Item:
+        break;
+    }
+  }
+
+  private _unlockFieldInternal(index: ItemField): void {
     switch (index) {
       case ItemField.DIST_Item:
         this.locked &= ~LockedStates.DIST_BM;
@@ -1296,7 +1451,16 @@ export class AccuDraw {
 
     if (index !== ItemField.Z_Item || !this.stickyZLock)
       this.setFieldLock(index, false);
+  }
 
+  /** @internal */
+  public updateFieldLock(index: ItemField, locked: boolean): void {
+    if (locked) {
+      this._lockFieldInternal(index);
+      return;
+    }
+
+    this._unlockFieldInternal(index);
     this.setKeyinStatus(index, KeyinStatus.Dynamic);
   }
 
@@ -1478,41 +1642,146 @@ export class AccuDraw {
     } else {
       this.locked &= ~LockedStates.ANGLE_BM;
       this.saveCoordinate(ItemField.ANGLE_Item, this._angle);
+      this.setKeyinStatus(ItemField.ANGLE_Item, KeyinStatus.Dynamic);
     }
+  }
+
+  private saveAngle(value: number): void {
+    if (Geometry.isAlmostEqualNumber(value, 0.0) || Geometry.isAlmostEqualNumber(Math.abs(value), Math.PI) || Geometry.isAlmostEqualNumber(Math.abs(value), (Math.PI / 2.0)))
+      return; // Don't accept 0, 90, -90, 180 and -180 degrees...
+
+    const foundIndex = this._savedAngles.findIndex(angle => Geometry.isAlmostEqualNumber(angle, value));
+    if (-1 !== foundIndex) {
+      this._savedAngleIndex = foundIndex; // Set index to existing entry with matching value...
+      return;
+    }
+
+    this._savedAngleIndex++;
+    if (this._savedAngleIndex >= Constants.MAX_SAVED_VALUES)
+      this._savedAngleIndex = 0;
+
+    this._savedAngles[this._savedAngleIndex] = value;
+  }
+
+  private saveDistance(value: number): void {
+    if (Geometry.isAlmostEqualNumber(value, 0.0))
+      return; // Don't accept zero or nearly zero...
+
+    value = Math.abs(value); // Only save positive distance...
+    const foundIndex = this._savedDistances.findIndex(distance => Geometry.isAlmostEqualNumber(distance, value));
+    if (-1 !== foundIndex) {
+      this._savedDistanceIndex = foundIndex; // Set index to existing entry with matching value...
+      return;
+    }
+
+    this._savedDistanceIndex++;
+    if (this._savedDistanceIndex >= Constants.MAX_SAVED_VALUES)
+      this._savedDistanceIndex = 0;
+
+    this._savedDistances[this._savedDistanceIndex] = value;
+    this._lastDistance = value;
   }
 
   /** @internal */
   public saveCoordinate(index: ItemField, value: number): void {
-    const isAngle = (ItemField.ANGLE_Item === index);
-    let currIndex = this._savedCoords.nSaveValues + 1;
+    if (ItemField.ANGLE_Item === index)
+      this.saveAngle(value);
+    else
+      this.saveDistance(value);
+  }
 
-    if (currIndex >= Constants.MAX_SAVED_VALUES)
-      currIndex = 0;
+  private getSavedAngle(next: boolean): number | undefined {
+    if (-1 === this._savedAngleIndex || 0 === this._savedAngles.length)
+      return undefined;
 
-    if (this._savedCoords.savedValues[this._savedCoords.nSaveValues] === value && this._savedCoords.savedValIsAngle[this._savedCoords.nSaveValues] === isAngle)
-      return;
+    const value = this._savedAngles[this._savedAngleIndex];
 
-    if (isAngle) {
-      // don't accept 0, 90, -90, and 180 degrees
-      if (value === 0.0 || value === Math.PI || value === (Math.PI / 2.0) || value === -Math.PI)
-        return;
-    } else {
-      // don't accept zero
-      value = Math.abs(value);
-      if (value < Constants.SMALL_ANGLE)
-        return;
+    if (next) {
+      this._savedAngleIndex++;
+      if (this._savedAngleIndex >= this._savedAngles.length)
+        this._savedAngleIndex = 0;
+    }
+    else {
+      this._savedAngleIndex--;
+      if (this._savedAngleIndex < 0)
+        this._savedAngleIndex = this._savedAngles.length - 1;
     }
 
-    this._savedCoords.savedValues[currIndex] = value;
-    this._savedCoords.savedValIsAngle[currIndex] = isAngle;
-    this._savedCoords.nSaveValues = currIndex;
+    return value;
+  }
+
+  private getSavedDistance(next: boolean): number | undefined {
+    if (-1 === this._savedDistanceIndex || 0 === this._savedDistances.length)
+      return undefined;
+
+    const value = this._savedDistances[this._savedDistanceIndex];
+
+    if (next) {
+      this._savedDistanceIndex++;
+      if (this._savedDistanceIndex >= this._savedDistances.length)
+        this._savedDistanceIndex = 0;
+    }
+    else {
+      this._savedDistanceIndex--;
+      if (this._savedDistanceIndex < 0)
+        this._savedDistanceIndex = this._savedDistances.length - 1;
+    }
+
+    return value;
+  }
+
+  /** @internal */
+  public getSavedValue(index: ItemField, next: boolean): void {
+    const isAngle = (ItemField.ANGLE_Item === index);
+    const savedValue = (isAngle ? this.getSavedAngle(next) : this.getSavedDistance(next));
+    if (undefined === savedValue)
+      return;
 
     if (!isAngle)
-      this._lastDistance = value;
+      this._lastDistance = savedValue;
+
+    const currValue = this.getValueByIndex(index);
+    this.setValueByIndex(index, currValue < 0.0 ? -savedValue : savedValue);
+
+    switch (index) {
+      case ItemField.X_Item:
+        this.setFieldLock(ItemField.X_Item, true);
+        this.onFieldValueChange(ItemField.X_Item);
+        this.locked |= LockedStates.X_BM;
+        break;
+
+      case ItemField.Y_Item:
+        this.setFieldLock(ItemField.Y_Item, true);
+        this.onFieldValueChange(ItemField.Y_Item);
+        this.locked |= LockedStates.Y_BM;
+        break;
+
+      case ItemField.Z_Item:
+        this.setFieldLock(ItemField.Z_Item, true);
+        this.onFieldValueChange(ItemField.Z_Item);
+        break;
+
+      case ItemField.DIST_Item:
+        this.distanceLock(true, false);
+        break;
+
+      case ItemField.ANGLE_Item:
+        this.locked &= ~LockedStates.XY_BM;
+        this.updateVector(this._angle);
+        this.angleLock();
+        break;
+    }
+  }
+
+  /** @internal */
+  public clearSavedValues(): void {
+    this._savedDistances.length = this._savedAngles.length = 0;
+    this._savedDistanceIndex = this._savedAngleIndex = -1;
   }
 
   /** @internal */
   public changeCompassMode(animate: boolean = false): void {
+    this.unlockAllFields(); // Clear locks for the current mode and send change notifications...
     this.setCompassMode(CompassMode.Polar === this.compassMode ? CompassMode.Rectangular : CompassMode.Polar);
 
     const viewport = this.currentView;
@@ -2195,9 +2464,9 @@ export class AccuDraw {
   public onFieldLockChange(_index: ItemField) { }
   /** Called after input field value changes */
   public onFieldValueChange(_index: ItemField) { }
-  /** Whether AccuDraw currently has input focus */
-  public get hasInputFocus() { return true; }
-  /** Set focus to the specified input field */
+  /** Called after input field keyin status changes */
+  public onFieldKeyinStatusChange(_index: ItemField) { }
+  /** Called to request focus change to the specified input field */
   public setFocusItem(_index: ItemField) { }
 
   private static getMinPolarMag(origin: Point3d): number {
@@ -2305,7 +2574,7 @@ export class AccuDraw {
     if (!this._distanceRoundOff.active || !this._distanceRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._distanceRoundOff.units.values().next().value;
+    let roundValue = this._distanceRoundOff.units.values().next().value!;
 
     if (this._distanceRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...
@@ -2337,7 +2606,7 @@ export class AccuDraw {
     if (!this._angleRoundOff.active || !this._angleRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._angleRoundOff.units.values().next().value;
+    let roundValue = this._angleRoundOff.units.values().next().value!;
 
     if (this._angleRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...
@@ -2828,9 +3097,38 @@ export class AccuDraw {
   /** @internal */
   public onEndDynamics(): boolean { return this.downgradeInactiveState(); }
 
+  /** Can be called by sub-classes as the default implementation of onMotion.
+   * @see [[onMotion]]
+   * @note Input fields are expected to call [[AccuDrawShortcuts.itemFieldNewInput]] when the user enters a value that is not a shortcut
+   * and call [[AccuDrawShortcuts.itemFieldCompletedInput]] when a value is accepted, such as when focusing out of the field. This is
+   * required for processMotion to correctly handle updating dynamic field values to reflect the current cursor location.
+   */
+  public processMotion(): void {
+    if (this.flags.dialogNeedsUpdate || !this.isActive) {
+      if (this.isActive && this.smartKeyin) {
+        // NOTE: fixPointRectangular sets newFocus to either x or y based on which axis is closer to the input point...
+        if (CompassMode.Rectangular === this.compassMode && !this.dontMoveFocus && !this.getFieldLock(this.newFocus) && this.hasInputFocus)
+          this.setFocusItem(this.newFocus);
+      }
+
+      const sendDynamicFieldValueChange = (item: ItemField): void => {
+        if (KeyinStatus.Dynamic === this.getKeyinStatus(item))
+          this.onFieldValueChange(item);
+      };
+
+      // NOTE: Shows the current deltas for rectangular mode when active and current coordinate when not active...
+      sendDynamicFieldValueChange(ItemField.X_Item);
+      sendDynamicFieldValueChange(ItemField.Y_Item);
+      sendDynamicFieldValueChange(ItemField.Z_Item);
+      sendDynamicFieldValueChange(ItemField.ANGLE_Item);
+      sendDynamicFieldValueChange(ItemField.DIST_Item);
+    }
+  }
+
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
    * Should also choose active x or y input field in rectangular mode based on cursor position when
    * axis isn't locked to support "smart lock".
+   * @see [[processMotion]]
    */
   public onMotion(_ev: BeButtonEvent): void { }
 
@@ -3286,6 +3584,14 @@ export class AccuDrawHintBuilder {
 
   /** Whether AccuDraw compass is currently displayed and points are being adjusted */
   public static get isActive(): boolean { return IModelApp.accuDraw.isActive; }
+
+  /**
+   * Immediately process pending hints and update tool dynamics using the adjusted point when not called from a button down event.
+   * @note Provided to help with exceptions cases, such as starting an InputCollector from the active tool's drag event, that are not handled by normal hint processing.
+   * A typical interactive tool should not call this method and should only be calling sendHints.
+   * @see [[sendHints]]
+   */
+  public static processHintsImmediate(): void { return IModelApp.accuDraw.refreshDecorationsAndDynamics(); }
 
   /**
    * Provide hints to AccuDraw using the current builder state.

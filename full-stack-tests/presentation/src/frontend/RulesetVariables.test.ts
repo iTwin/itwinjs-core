@@ -5,40 +5,20 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
-
-const RULESET: Ruleset = {
-  id: "ruleset vars test",
-  rules: [
-    {
-      ruleType: RuleTypes.RootNodes,
-      specifications: [
-        {
-          specType: ChildNodeSpecificationTypes.CustomNode,
-          type: "root",
-          label: "root",
-        },
-      ],
-    },
-    {
-      ruleType: RuleTypes.LabelOverride,
-      condition: 'ThisNode.Type = "root"',
-      label: 'GetVariableStringValue("variable_id")',
-    },
-  ],
-};
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("Ruleset Variables", async () => {
   let variables: RulesetVariablesManager;
 
   beforeEach(async () => {
     await initialize();
-    variables = Presentation.presentation.vars(RULESET.id);
+    variables = Presentation.presentation.vars("ruleset vars test");
   });
 
   afterEach(async () => {
@@ -246,18 +226,41 @@ describe("Ruleset Variables", async () => {
   });
 
   describe("Multiple frontends for one backend", async () => {
+    const RULESET: Ruleset = {
+      id: "ruleset vars test",
+      rules: [
+        {
+          ruleType: RuleTypes.RootNodes,
+          specifications: [
+            {
+              specType: ChildNodeSpecificationTypes.CustomNode,
+              type: "root",
+              label: "root",
+            },
+          ],
+        },
+        {
+          ruleType: "ExtendedData",
+          condition: 'ThisNode.Type = "root"',
+          items: {
+            value: 'GetVariableStringValue("variable_id")',
+          },
+        },
+      ],
+    };
+
     let imodel: IModelConnection;
     let frontends: PresentationManager[];
 
     beforeEach(async () => {
       const testIModelName = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.openFile(testIModelName);
+      imodel = TestIModelConnection.openFile(testIModelName);
       frontends = [0, 1].map(() => PresentationManager.create());
     });
 
     afterEach(async () => {
       await imodel.close();
-      frontends.forEach((f) => f.dispose());
+      frontends.forEach((f) => f[Symbol.dispose]());
     });
 
     it("handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
@@ -265,7 +268,7 @@ describe("Ruleset Variables", async () => {
         frontends.forEach(async (f, fi) => f.vars(RULESET.id).setString("variable_id", `${i}_${fi}`));
         const nodes = await Promise.all(frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: RULESET }).then(async (x) => collect(x.items))));
         frontends.forEach((_f, fi) => {
-          expect(nodes[fi][0].label.displayValue).to.eq(`${i}_${fi}`);
+          expect(nodes[fi][0].extendedData?.value).to.eq(`${i}_${fi}`);
         });
       }
     });
@@ -277,14 +280,14 @@ describe("Ruleset Variables", async () => {
 
     beforeEach(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.openFile(testIModelName);
+      imodel = TestIModelConnection.openFile(testIModelName);
       expect(imodel).is.not.null;
       frontend = PresentationManager.create();
     });
 
     afterEach(async () => {
       await imodel.close();
-      frontend.dispose();
+      frontend[Symbol.dispose]();
     });
 
     it("can use the same frontend-registered ruleset variables after backend is reset", async () => {
@@ -312,7 +315,7 @@ describe("Ruleset Variables", async () => {
     let imodel: IModelConnection;
 
     beforeEach(async () => {
-      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     });
 
     afterEach(async () => {

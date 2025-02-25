@@ -10,15 +10,14 @@ import {
   ChildNodeSpecificationTypes,
   Descriptor,
   InstanceKey,
-  PresentationError,
   PropertyValueFormat,
   RelationshipDirection,
   Ruleset,
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
 import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
 import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
 
@@ -314,7 +313,10 @@ describe("Hierarchies", () => {
       };
 
       // ensure requesting the hierarchy level descriptor throws
-      await expect(Presentation.presentation.getNodesDescriptor({ imodel, rulesetOrId: ruleset })).to.eventually.be.rejectedWith(PresentationError);
+      await expect(Presentation.presentation.getNodesDescriptor({ imodel, rulesetOrId: ruleset })).to.eventually.be.rejectedWith(
+        Error,
+        "Filtering not supported",
+      );
     });
   });
 });

@@ -15,24 +15,21 @@ import { SchemaMatchType } from "../../ECObjects";
 import { SchemaKey } from "../../SchemaKey";
 
 class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(schemaKey, matchType, context) as T;
+  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext): Promise<Schema | undefined> {
+    return this.getSchemaSync(schemaKey, matchType, context);
   }
 
   public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<SchemaInfo | undefined> {
     return this.getSchema(schemaKey, matchType, context);
   }
-  public getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context?: SchemaContext): Schema | undefined {
     if (schemaKey.name !== "Units")
       return undefined;
 
     const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema = deserializeXmlSync(schemaXml, context || new SchemaContext());
-    if (schema !== undefined)
-      return schema as T;
-
-    return undefined;
+    return schema;
   }
 }
 
@@ -321,6 +318,53 @@ describe("Unit Provider tests", () => {
 
       const unit2 = await provider.findUnitByName("Units.KM_PER_HR");
       expect(unit2.name === "Units.KM_PER_HR", `Unit name should be Units.KM_PER_HR and not ${unit2.name}`).to.be.true;
+    });
+
+    it("should find VERTICAL_PER_HORIZONTAL by unit name", async () => {
+      const unit = await provider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+      expect(unit.name === "Units.VERTICAL_PER_HORIZONTAL", `Unit name should be Units.VERTICAL_PER_HORIZONTAL and not ${unit.name}`).to.be.true;
+    });
+
+    it("should find inverted unit HORIZONTAL_PER_VERTICAL by unit name", async () => {
+      const unit = await provider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
+      expect(unit.isValid).to.be.true;
+      expect(unit.name === "Units.HORIZONTAL_PER_VERTICAL", `Unit name should be Units.HORIZONTAL_PER_VERTICAL and not ${unit.name}`).to.be.true;
+      expect(unit.label).to.equal("");
+      expect(unit.phenomenon).to.equal("Units.SLOPE");
+      expect(unit.system).to.equal("Units.INTERNATIONAL");
+    });
+
+    it("should find slope units by family", async () => {
+      const slopeUnits = await provider.getUnitsByFamily("Units.SLOPE");
+      expect(slopeUnits).to.have.lengthOf(14);
+      // find unit of name Units.HORIZONTAL_PER_VERTICAL in the array
+      const hpv = slopeUnits.find((u) => u.name === "Units.HORIZONTAL_PER_VERTICAL");
+      expect(hpv).to.not.be.undefined;
+      expect(hpv!.phenomenon).to.equal("Units.SLOPE");
+    });
+
+    it("should find HORZONTAL_PER_VERTICAL unit by alt label", async () => {
+      let unit = await provider.findUnit("hpv");
+      expect(unit.isValid).to.be.true;
+      expect(unit.name).to.equal("Units.HORIZONTAL_PER_VERTICAL");
+
+      unit = await provider.findUnit("hpv", "UnknownSchema");
+      expect(unit.isValid).to.be.false;
+
+      unit = await provider.findUnit("hpv", "Units");
+      expect(unit.isValid).to.be.true;
+      expect(unit.name).to.equal("Units.HORIZONTAL_PER_VERTICAL");
+
+      unit = await provider.findUnit("hpv", undefined, "Units.PRESSURE");
+      expect(unit.isValid).to.be.true;
+      expect(unit.name).to.equal("Units.FT_H2O");
+
+      unit = await provider.findUnit("hpv", undefined, undefined, "Units.USCUSTOM");
+      expect(unit.isValid).to.be.true;
+      expect(unit.name).to.equal("Units.FT_H2O");
+
+      unit = await provider.findUnit("hpv", undefined, "Units.SLOPE", "Units.USCUSTOM");
+      expect(unit.isValid).to.be.false;
     });
   });
 });

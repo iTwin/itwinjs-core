@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
-import { Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { Geometry, Range2d } from "@itwin/core-geometry";
+import { ColorDef,  FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -47,13 +47,13 @@ function isIntlSupported(): boolean {
 
 describe("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
-    const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
-    const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
-    const run1 = TextRun.create({ content: "run1", styleName: "run", styleOverrides: { widthFactor: 78, fontName: "run1" }});
+    const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
+    const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
+    const run1 = TextRun.create({ content: "run1", styleName: "run", styleOverrides: { widthFactor: 78, fontName: "run1" } });
     textBlock.appendRun(run0);
     textBlock.appendRun(run1);
 
-    const tb = doLayout(textBlock,{
+    const tb = doLayout(textBlock, {
       findTextStyle: (name: string) => TextStyleSettings.fromJSON(name === "block" ? { lineSpacingFactor: 12, fontName: "block" } : { lineSpacingFactor: 99, fontName: "run" }),
     });
 
@@ -119,7 +119,7 @@ describe("layoutTextBlock", () => {
         expect(line.range.low.y).to.equal(0);
         expect(line.range.high.y).to.equal(1);
         expect(line.range.high.x).to.equal(3 * (l + 1));
-        for (const run of line.runs){
+        for (const run of line.runs) {
           expect(run.charOffset).to.equal(0);
           expect(run.numChars).to.equal(3);
           expect(run.range.low.x).to.equal(0);
@@ -145,7 +145,7 @@ describe("layoutTextBlock", () => {
     textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
     textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
     textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl"}));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
 
     const tb = doLayout(textBlock);
     expect(tb.lines.length).to.equal(3);
@@ -168,7 +168,7 @@ describe("layoutTextBlock", () => {
     textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
     textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
     textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl"}));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
 
     const tb = doLayout(textBlock);
     expect(tb.lines.length).to.equal(3);
@@ -301,8 +301,12 @@ describe("layoutTextBlock", () => {
       expect(line.offsetFromDocument.x).to.equal(offset);
     }
 
+    // Two text runs with 7 characters total.
     block.appendRun(makeTextRun("abc"));
     block.appendRun(makeTextRun("defg"));
+
+    // 1 line of text with width 0: left, right, center justification.
+    block.justification = "left";
     expectBlockRange(7, 1);
     expectLineOffset(0, 0);
 
@@ -314,6 +318,22 @@ describe("layoutTextBlock", () => {
     expectBlockRange(7, 1);
     expectLineOffset(0, 0);
 
+    // 1 line of text from a width greater than number of characters: left, right, center justification.
+    block.width = 10;
+
+    block.justification = "left";
+    expectBlockRange(10, 1);
+    expectLineOffset(0, 0);
+
+    block.justification = "right";
+    expectBlockRange(10, 1);
+    expectLineOffset(3, 0); // 3 = 10 - 7
+
+    block.justification = "center";
+    expectBlockRange(10, 1);
+    expectLineOffset(1.5, 0); // 1.5 = (10 - 7) / 2
+
+    // 2 line of text from a width less than number of characters: left, right, center justification.
     block.justification = "left";
     block.width = 4;
     expectBlockRange(4, 2);
@@ -330,6 +350,7 @@ describe("layoutTextBlock", () => {
     expectLineOffset(0.5, 0);
     expectLineOffset(0, 1);
 
+    // Testing text longer the the width of the text block.
     block.width = 2;
     block.justification = "left";
     expectBlockRange(4, 2);
@@ -436,7 +457,7 @@ describe("layoutTextBlock", () => {
     }
 
     // "I am a cat. The name is Tanuki."
-    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾","輩","は","猫","で","あ","る。","名","前","は","た","ぬ","き。"]);
+    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾", "輩", "は", "猫", "で", "あ", "る。", "名", "前", "は", "た", "ぬ", "き。"]);
   });
 
   it("performs word-wrapping with punctuation", function () {
@@ -551,13 +572,29 @@ describe("layoutTextBlock", () => {
     expectLayout(-2, "aabb ccc d eeff ggg h");
   });
 
+  it("does not word wrap due to floating point rounding error", function () {
+    if (!isIntlSupported()) {
+      this.skip();
+    }
+
+    const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+    block.appendRun(makeTextRun("abc defg"));
+    const layout1 = doLayout(block);
+    let width = layout1.range.xLength();
+    // Simulate a floating point rounding error by slightly reducing the width
+    width -= Geometry.smallFloatingPoint;
+    block.width = width;
+    const layout2 = doLayout(block);
+    expect(layout2.range.yLength()).to.equal(1);
+  })
+
   it("has consistent data when converted to a layout result", function () {
     if (!isIntlSupported()) {
       this.skip();
     }
 
     // Initialize a new TextBlockLayout object
-    const textBlock = TextBlock.create({ width: 50, styleName: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" }});
+    const textBlock = TextBlock.create({ width: 50, styleName: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" } });
     const run0 = TextRun.create({
       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus pretium mi sit amet magna malesuada, at venenatis ante eleifend.",
       styleName: "",
@@ -600,7 +637,7 @@ describe("layoutTextBlock", () => {
     expect(result.lines.length).to.equal(textBlockLayout.lines.length);
 
     // Loop through each line in the result and the original object
-    for(let i = 0; i < result.lines.length; i++) {
+    for (let i = 0; i < result.lines.length; i++) {
       const resultLine: LineLayoutResult = result.lines[i];
       const originalLine: LineLayout = textBlockLayout.lines[i];
 
@@ -612,7 +649,7 @@ describe("layoutTextBlock", () => {
       // Offset matches
       expect(resultLine.offsetFromDocument).to.deep.equal(originalLine.offsetFromDocument);
 
-      for(let j = 0; j < resultLine.runs.length; j++) {
+      for (let j = 0; j < resultLine.runs.length; j++) {
         const resultRun: RunLayoutResult = resultLine.runs[j];
         const originalRun: RunLayout = originalLine.runs[j];
 
@@ -798,19 +835,17 @@ describe("layoutTextBlock", () => {
 
     after(() => iModel.close());
 
-    it("maps font names to Id", () => {
-      const vera = iModel.fontMap.getFont("Vera")!.id;
+    it("maps font names to Id", async () => {
+      const vera = iModel.fonts.findId({ name: "Vera" });
       expect(vera).to.equal(1);
 
-      iModel.addNewFont("Arial");
-      iModel.addNewFont("Comic Sans");
+      const arial = await iModel.fonts.acquireId({ name: "Arial", type: FontType.TrueType });
+      const comic = await iModel.fonts.acquireId({ name: "Comic Sans", type: FontType.TrueType });
       iModel.saveChanges();
 
-      const arial = iModel.fontMap.getFont("Arial")!.id;
-      const comic = iModel.fontMap.getFont("Comic Sans")!.id;
       expect(arial).to.equal(2);
       expect(comic).to.equal(3);
-      expect(iModel.fontMap.getFont("Consolas")).to.be.undefined;
+      expect(iModel.fonts.findId({ name: "Consolas" })).to.be.undefined;
 
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create({ styleName: "" });
@@ -825,10 +860,8 @@ describe("layoutTextBlock", () => {
       test("Comic Sans", comic);
       test("Consolas", 0);
 
-      // ###TODO: native code uses SQLite's NOCASE collation; TypeScript FontMap does not.
-      // ###TODO: we need to fix the collation to use Unicode; SQLite only applies to ASCII characters.
-      // test("arial", arial);
-      // test("aRIaL", arial);
+      test("arial", arial);
+      test("aRIaL", arial);
     });
 
     function computeDimensions(args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number }): { x: number, y: number } {
@@ -889,7 +922,7 @@ describe("layoutTextBlock", () => {
       }
 
       function test(chars: string, expectEqualRanges: boolean): void {
-        const { justification, layout }= computeRanges(chars);
+        const { justification, layout } = computeRanges(chars);
         expect(layout.low.x).to.equal(justification.low.x);
         expect(layout.high.y).to.equal(justification.high.y);
         expect(layout.low.y).to.equal(justification.low.y);
@@ -924,8 +957,10 @@ describe("layoutTextBlock", () => {
 });
 
 function mockIModel(): IModelDb {
-  const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
-    fontMap: new FontMap(),
+  const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
+    fonts: {
+      findId: () => 0,
+    } as any,
     computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) }; },
     forEachMetaData: () => undefined,
   };

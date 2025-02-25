@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "EC Schemas getItems was using a generic to specify the type of item to be removed, the items were never validated though if the schema items really match the given type. With this change, callers can make sure that if they use the overload with the item type (analog to getItem) only items of that type get's returned.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
+import { describe, expect, it } from "vitest";
+import { TechniqueFlags } from "../../../internal/render/webgl/TechniqueFlags";
 
 const descriptions = [
   "Opaque",
@@ -153,7 +153,7 @@ describe("TechniqueFlags", () => {
   it("initializes from description", () => {
     for (const description of descriptions) {
       const flags = TechniqueFlags.fromDescription(description);
-      expect(flags.buildDescription()).to.equal(description);
+      expect(flags.buildDescription()).toEqual(description);
     }
   });
 
@@ -162,7 +162,7 @@ describe("TechniqueFlags", () => {
       for (const descB of descriptions) {
         const flagsA = TechniqueFlags.fromDescription(descA);
         const flagsB = TechniqueFlags.fromDescription(descB);
-        expect(flagsA.equals(flagsB)).to.equal(descA === descB);
+        expect(flagsA.equals(flagsB)).toEqual(descA === descB);
       }
     }
   });

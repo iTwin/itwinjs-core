@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { BeEvent, Guid, using } from "@itwin/core-bentley";
+import { BeEvent, Guid } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { PresentationManager, PresentationManagerProps } from "@itwin/presentation-backend";
@@ -28,7 +28,7 @@ import { getFieldByLabel } from "../Utils";
 describe("PresentationManager", () => {
   let imodel: IModelDb;
   before(async () => {
-    await initialize({ localization: testLocalization });
+    await initialize({ imodelAppProps: { localization: testLocalization } });
     imodel = SnapshotDb.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
@@ -148,21 +148,20 @@ describe("PresentationManager", () => {
         });
 
         async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
-          return using(new PresentationManager({ defaultFormats, defaultLocale: "en-PSEUDO", ...config }), async (manager) => {
-            const descriptor = await manager.getContentDescriptor({
-              imodel,
-              rulesetOrId: ruleset,
-              keys,
-              displayType: "Grid",
-              unitSystem,
-            });
-            expect(descriptor).to.not.be.undefined;
-            const field = getFieldByLabel(descriptor!.fields, "cm2");
-            const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem });
-            const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
-            expect(displayValues.length).is.eq(1);
-            return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
+          using manager = new PresentationManager({ defaultFormats, ...config });
+          const descriptor = await manager.getContentDescriptor({
+            imodel,
+            rulesetOrId: ruleset,
+            keys,
+            displayType: "Grid",
+            unitSystem,
           });
+          expect(descriptor).to.not.be.undefined;
+          const field = getFieldByLabel(descriptor!.fields, "cm2");
+          const content = await manager.getContent({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem });
+          const displayValues = content!.contentSet[0].values.rc_generic_PhysicalObject_ncc_MyProp_areaElementAspect as DisplayValuesArray;
+          expect(displayValues.length).is.eq(1);
+          return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
         }
       });
     });
@@ -170,42 +169,50 @@ describe("PresentationManager", () => {
 
   describe("getElementProperties", () => {
     it("returns properties for some elements of class 'PhysicalObject", async () => {
-      await using(new PresentationManager(), async (manager) => {
-        const properties: ElementProperties[] = [];
-        const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
-        for await (const items of iterator()) {
-          properties.push(...items);
-        }
-        expect(properties).to.matchSnapshot();
-      });
+      using manager = new PresentationManager();
+      const properties: ElementProperties[] = [];
+      const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
+      for await (const items of iterator()) {
+        properties.push(...items);
+      }
+      expect(properties).to.matchSnapshot();
+    });
+
+    it("returns properties of specific elements by element ID", async () => {
+      using manager = new PresentationManager();
+      const properties: ElementProperties[] = [];
+      const { iterator } = await manager.getElementProperties({ imodel, elementIds: ["0x74", "0x1", "0x75"] });
+      for await (const items of iterator()) {
+        properties.push(...items);
+      }
+      expect(properties).to.matchSnapshot();
     });
   });
 
   describe("Cancel request", () => {
     it("cancels 'getNodes' request", async () => {
-      await using(new PresentationManager(), async (manager) => {
-        const cancelEvent = new BeEvent<() => void>();
-        const promise = manager.getNodes({
-          imodel,
-          rulesetOrId: {
-            id: "ruleset",
-            rules: [
-              {
-                ruleType: RuleTypes.RootNodes,
-                specifications: [
-                  {
-                    specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-                    classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
-                  },
-                ],
-              },
-            ],
-          },
-          cancelEvent,
-        });
-        cancelEvent.raiseEvent();
-        await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
+      using manager = new PresentationManager();
+      const cancelEvent = new BeEvent<() => void>();
+      const promise = manager.getNodes({
+        imodel,
+        rulesetOrId: {
+          id: "ruleset",
+          rules: [
+            {
+              ruleType: RuleTypes.RootNodes,
+              specifications: [
+                {
+                  specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                  classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+                },
+              ],
+            },
+          ],
+        },
+        cancelEvent,
       });
+      cancelEvent.raiseEvent();
+      await expect(promise).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.Canceled);
     });
   });
 });

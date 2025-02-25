@@ -12,25 +12,18 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
-import { formatStringRgx } from "@itwin/core-quantity";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
-import { OverrideFormat } from "./OverrideFormat";
-import { Schema } from "./Schema";
+import { OverrideFormat, OverrideFormatProps } from "./OverrideFormat";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-
-interface OverrideFormatProps {
-  name: string;
-  precision?: number;
-  unitAndLabels?: Array<[string, string | undefined]>; // Tuple of [unit name | unit label]
-}
 
 /** A Typescript class representation of a KindOfQuantity.
  * @beta
  */
 export class KindOfQuantity extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.KindOfQuantity; // eslint-disable-line
+  public override readonly schemaItemType = KindOfQuantity.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.KindOfQuantity; }
   protected _relativeError: number = 1.0;
   protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
@@ -42,14 +35,9 @@ export class KindOfQuantity extends SchemaItem {
   public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
-  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) {  this._persistenceUnit = value; }
+  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }
-
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.schemaItemType = SchemaItemType.KindOfQuantity; // Needed to allow both run-time and compile-time check.
-  }
 
   /**
    *
@@ -59,69 +47,6 @@ export class KindOfQuantity extends SchemaItem {
   protected addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean = false) {
     // TODO: Add some sort of validation?
     (isDefault) ? this._presentationFormats.splice(0, 0, format) : this._presentationFormats.push(format);
-  }
-
-  /** Parses the format string into the parts that make up an Override Format
-   * @param formatString
-   */
-  private parseFormatString(formatString: string): OverrideFormatProps {
-    const match = formatString.split(formatStringRgx); // split string based on regex groups
-    if (undefined === match[1])
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The format string, ${formatString}, on KindOfQuantity '${this.fullName}' is missing a format.`);
-
-    const returnValue: OverrideFormatProps = { name: match[1] };
-
-    if (undefined !== match[2] && undefined !== match[3]) {
-      const overrideString = match[2];
-      const tokens: string[] = [];
-      let prevPos = 1; // Initial position is the character directly after the opening '(' in the override string.
-      let currPos;
-
-      // TODO need to include `,` as a valid search argument.
-      while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) { // eslint-disable-line
-        tokens.push(overrideString.substring(prevPos, currPos));
-        prevPos = currPos + 1;
-      }
-
-      if (overrideString.length > 0 && undefined === tokens.find((token) => {
-        return "" !== token; // there is at least one token that is not empty.
-      })) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      }
-
-      // The first override parameter overrides the default precision of the format
-      const precisionIndx: number = 0;
-
-      if (tokens.length >= precisionIndx + 1) {
-        if (tokens[precisionIndx].length > 0) {
-          const precision = Number.parseInt(tokens[precisionIndx], 10);
-          if (Number.isNaN(precision))
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The format string '${formatString}' on KindOfQuantity '${this.fullName}' has a precision override '${tokens[precisionIndx]}' that is not number.`);
-          returnValue.precision = precision;
-        }
-      }
-    }
-
-    let i = 4;
-    while (i < match.length - 1) {  // The regex match ends with an empty last value, which causes problems when exactly 4 unit overrides as specified, so ignore this last empty value
-      if (undefined === match[i])
-        break;
-      // Unit override required
-      if (undefined === match[i + 1])
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-
-      if (undefined === returnValue.unitAndLabels)
-        returnValue.unitAndLabels = [];
-
-      if (undefined !== match[i + 2]) // matches '|'
-        returnValue.unitAndLabels.push([match[i + 1], match[i + 3] ?? ""]); // add unit name and label override (if '|' matches and next value is undefined, save it as an empty string)
-      else
-        returnValue.unitAndLabels.push([match[i + 1], undefined]); // add unit name
-
-      i += 4;
-    }
-
-    return returnValue;
   }
 
   /** Creates an OverrideFormat in the context of this KindOfQuantity.
@@ -144,9 +69,9 @@ export class KindOfQuantity extends SchemaItem {
   private async processPresentationUnits(presentationUnitsJson: string | string[]): Promise<void> {
     const presUnitsArr = Array.isArray(presentationUnitsJson) ? presentationUnitsJson : presentationUnitsJson.split(";");
     for (const formatString of presUnitsArr) {
-      const presFormatOverride: OverrideFormatProps = this.parseFormatString(formatString);
+      const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = await this.schema.lookupItem<Format>(presFormatOverride.name);
+      const format = await this.schema.lookupItem(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
@@ -162,11 +87,11 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = await this.schema.lookupItem<Unit | InvertedUnit>(unitOverride[0]);
-          if (undefined === unit)
+          const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
+          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 
@@ -178,9 +103,9 @@ export class KindOfQuantity extends SchemaItem {
   private processPresentationUnitsSync(presentationUnitsJson: string | string[]): void {
     const presUnitsArr = Array.isArray(presentationUnitsJson) ? presentationUnitsJson : presentationUnitsJson.split(";");
     for (const formatString of presUnitsArr) {
-      const presFormatOverride: OverrideFormatProps = this.parseFormatString(formatString);
+      const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
 
-      const format = this.schema.lookupItemSync<Format>(presFormatOverride.name);
+      const format = this.schema.lookupItemSync(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
@@ -196,11 +121,11 @@ export class KindOfQuantity extends SchemaItem {
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unit = this.schema.lookupItemSync<Unit | InvertedUnit>(unitOverride[0]);
-          if (undefined === unit)
+          const unitOrInverted = this.schema.lookupItemSync(unitOverride[0]);
+          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
-          unitAndLabels.push([unit, unitOverride[1]]);
+          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 
@@ -250,14 +175,17 @@ export class KindOfQuantity extends SchemaItem {
     super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = this.schema.lookupItemSync<Unit>(kindOfQuantityProps.persistenceUnit);
+    const persistenceUnit = this.schema.lookupItemSync(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
-    if (persistenceUnit.schemaItemType !== SchemaItemType.Unit && persistenceUnit.schemaItemType !== SchemaItemType.InvertedUnit)
+    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    if(Unit.isUnit(persistenceUnit))
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    else
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
@@ -267,14 +195,18 @@ export class KindOfQuantity extends SchemaItem {
     await super.fromJSON(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = await this.schema.lookupItem<Unit>(kindOfQuantityProps.persistenceUnit);
+    const persistenceUnit = await this.schema.lookupItem(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
-    if (persistenceUnit.schemaItemType !== SchemaItemType.Unit && persistenceUnit.schemaItemType !== SchemaItemType.InvertedUnit)
+    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    if(Unit.isUnit(persistenceUnit))
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+    else
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
@@ -286,6 +218,25 @@ export class KindOfQuantity extends SchemaItem {
    */
   protected setRelativeError(relativeError: number): void {
     this._relativeError = relativeError;
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type KindOfQuantity.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a KindOfQuantity, false otherwise.
+   */
+  public static isKindOfQuantity(item?: SchemaItem): item is KindOfQuantity {
+    return item?.schemaItemType === SchemaItemType.KindOfQuantity;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type KindOfQuantity.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to KindOfQuantity if it is a KindOfQuantity, undefined otherwise.
+   */
+  public static assertIsKindOfQuantity(item?: SchemaItem): asserts item is KindOfQuantity {
+    if (!this.isKindOfQuantity(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.KindOfQuantity}' (KindOfQuantity)`);
   }
 }
 /**

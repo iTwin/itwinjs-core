@@ -12,13 +12,13 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
-import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { BackendHubAccess } from "./BackendHubAccess";
+import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -31,7 +31,6 @@ import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
@@ -42,6 +41,7 @@ import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
+import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -122,7 +122,6 @@ export interface IModelHostOptions {
 
   /**
    * The kind of iModel hub server to use.
-   * @internal
    */
   hubAccess?: BackendHubAccess;
 
@@ -196,6 +195,7 @@ export interface IModelHostOptions {
    * Will be changed to default to `false` in 5.0.
    */
   allowSharedChannel?: boolean;
+
 }
 
 /** Configuration of core-backend.
@@ -207,7 +207,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
-
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
@@ -289,14 +288,8 @@ export class IModelHost {
   private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
 
-  /** Provides access to the entirely internal, low-level, unstable APIs provided by @bentley/imodel-native.
-   * Should not be used outside of @itwin/core-backend, and certainly not outside of the itwinjs-core repository
-   * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelHost's public API instead.
-   * @internal
-   */
-  public static get platform(): typeof IModelJsNative { return IModelNative.platform; }
-
-  public static configuration?: IModelHostOptions;
+  // Omit the hubAccess field from configuration so it stays internal.
+  public static configuration?: Omit<IModelHostOptions, "hubAccess">;
 
   /**
    * The name of the *Profile* directory (a subdirectory of "[[cacheDir]]/profiles/") for this process.
@@ -365,8 +358,10 @@ export class IModelHost {
    */
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
-  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
-  public static snapshotFileNameResolver?: FileNameResolver;
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
+   * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   */
+  public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Get the current access token for this IModelHost, or a blank string if none is available.
    * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
@@ -378,7 +373,7 @@ export class IModelHost {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }
@@ -414,19 +409,19 @@ export class IModelHost {
 
   private static _hubAccess?: BackendHubAccess;
   /** @internal */
-  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
+  public static [_setHubAccess](hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
 
   /** get the current hubAccess, if present.
    * @internal
    */
-  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
+  public static [_getHubAccess](): BackendHubAccess | undefined { return this._hubAccess; }
 
   /** Provides access to the IModelHub for this IModelHost
    * @internal
    * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
-   * To determine whether one is present, use [[getHubAccess]].
+   * To determine whether one is present, use [[_getHubAccess]].
    */
-  public static get hubAccess(): BackendHubAccess {
+  public static get [_hubAccess](): BackendHubAccess {
     if (IModelHost._hubAccess === undefined)
       throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
     return IModelHost._hubAccess;
@@ -475,7 +470,7 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
-    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);
 
     this.loadNative(options);
@@ -487,8 +482,7 @@ export class IModelHost {
     [
       IModelReadRpcImpl,
       IModelTileRpcImpl,
-      SnapshotIModelRpcImpl,
-      WipRpcImpl,
+      SnapshotIModelRpcImpl, // eslint-disable-line @typescript-eslint/no-deprecated
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
@@ -498,10 +492,11 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    if (undefined !== options.hubAccess)
-      this._hubAccess = options.hubAccess;
+    const { hubAccess, ...otherOptions } = options;
+    if (undefined !== hubAccess)
+      this._hubAccess = hubAccess;
 
-    this.configuration = options;
+    this.configuration = otherOptions;
     this.setupTileCache();
 
     process.once("beforeExit", IModelHost.shutdown);
@@ -521,6 +516,16 @@ export class IModelHost {
     // Note: This method is set as a node listener where `this` is unbound. Call private method to
     // ensure `this` is correct. Don't combine these methods.
     return IModelHost.doShutdown();
+  }
+
+  /**
+   * Create a new iModel.
+   * @returns the Guid of the newly created iModel.
+   * @throws [IModelError]($common) in case of errors.
+   * @note If [[IModelHostOptions.hubAccess]] was undefined in the call to [[startup]], this function will throw an error.
+   */
+  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
+    return this[_hubAccess].createNewIModel(arg);
   }
 
   private static async doShutdown() {
@@ -691,6 +696,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
+ * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

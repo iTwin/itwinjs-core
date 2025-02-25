@@ -14,12 +14,12 @@ import { SchemaItem } from "./SchemaItem";
 
 /** @beta */
 export class Phenomenon extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Phenomenon; // eslint-disable-line
+  public override readonly schemaItemType = Phenomenon.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.Phenomenon; }
   protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Phenomenon;
     this._definition = "";
   }
 
@@ -57,6 +57,28 @@ export class Phenomenon extends SchemaItem {
 
   protected async setDefinition(definition: string) {
     this._definition = definition;
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type Phenomenon.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Phenomenon, false otherwise.
+   */
+  public static isPhenomenon(item?: SchemaItem): item is Phenomenon {
+    if (item && item.schemaItemType === SchemaItemType.Phenomenon)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Phenomenon.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Phenomenon if it is a Phenomenon, undefined otherwise.
+   */
+  public static assertIsPhenomenon(item?: SchemaItem): asserts item is Phenomenon {
+    if (!this.isPhenomenon(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Phenomenon}' (Phenomenon)`);
   }
 }
 

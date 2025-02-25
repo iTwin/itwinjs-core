@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -34,6 +34,10 @@ export class ECSqlInsertResult {
 export interface ECSqlRowArg {
   /** Determine row format. */
   rowFormat?: QueryRowFormat;
+  /**
+   * Determine if classIds are converted to class names.
+   */
+  classIdsToClassNames?: boolean;
 }
 
 /** Executes ECSQL statements.
@@ -60,7 +64,7 @@ export interface ECSqlRowArg {
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
  * @public
  */
-export class ECSqlStatement implements IterableIterator<any>, IDisposable {
+export class ECSqlStatement implements IterableIterator<any>, Disposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
   private _props = new PropertyMetaDataMap([]);
@@ -119,11 +123,16 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * > Do not call this method directly on a statement that is being managed by a statement cache.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._stmt) {
       this._stmt.dispose(); // free native statement
       this._stmt = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 
   /** Binds the specified value to the specified ECSQL parameter.
@@ -332,46 +341,42 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
   public getRow(args?: ECSqlRowArg): any {
-    args = args ?? {};
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
 
-    // Set default rowFormat if not provided
+    args = args ?? {};
     if (args.rowFormat === undefined) {
       args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
-
-    const toRowOptions = {
-      classIdsToClassNames: true,
-      rowFormat: args.rowFormat,
-    };
-    const resp = this._stmt!.toRow(toRowOptions); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    const resp = this._stmt.toRow({
+      classIdsToClassNames: args.classIdsToClassNames,
+      useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
+      abbreviateBlobs: false,
+      // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
+      // converted into classNames which is a bug that we must now support.This option preserves this special behavior until
+      // it can be removed in a future version.
+      doNotConvertClassIdsToClassNamesWhenAliased: true,
+    });
     return this.formatCurrentRow(resp, args.rowFormat);
   }
 
-  /**
-   * @internal
-   */
-  public formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
+  private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    if (rowFormat === QueryRowFormat.UseECSqlPropertyIndexes)
+      return currentResp.data;
+
     if (this._props.length === 0) {
-      const resp = this._stmt!.getMetadata(); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const resp = this._stmt.getMetadata();
       this._props = new PropertyMetaDataMap(resp.meta);
     }
     const formattedRow = {};
-    const uniqueNames = new Map<string, number>();
     for (const prop of this._props) {
       const propName = rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = currentResp.data[prop.index];
       if (typeof val !== "undefined" && val !== null) {
-        let uniquePropName = propName;
-        if (uniqueNames.has(propName)) {
-          let currentValue = uniqueNames.get(propName);
-          currentValue = currentValue ? currentValue + 1 : 1;
-          uniqueNames.set(propName, currentValue);
-          uniquePropName = `${propName}_${currentValue}`;
-        } else {
-          uniqueNames.set(propName,0);
-        }
-
-        Object.defineProperty(formattedRow, uniquePropName, {
+        Object.defineProperty(formattedRow, propName, {
           value: val,
           enumerable: true,
           writable: true,

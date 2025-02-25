@@ -8,13 +8,13 @@
 
 // cspell:ignore calltrace
 
-import { assert, Logger, SpanKind, staticLoggerMetadata, Tracing } from "@itwin/core-bentley";
+import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
 import { RpcActivity, RpcInvocation } from "@itwin/core-common";
 import { AsyncLocalStorage } from "async_hooks";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost } from "../IModelHost";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /**
  * Utility for tracing Rpc activity processing. When multiple Rpc requests are being processed asynchronously, this
@@ -64,18 +64,17 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
 
   if (enableOpenTelemetry) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const api = require("@opentelemetry/api");
       const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
       Tracing.enableOpenTelemetry(tracer, api);
       RpcInvocation.runActivity = async (activity, fn) => RpcTrace.runWithSpan(activity, fn); // wrap invocation in an OpenTelemetry span in addition to RpcTrace
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
       Logger.logException(BackendLoggerCategory.IModelHost, e);
     }
   }
 
   // set up static logger metadata to include current RpcActivity information for logs during rpc processing
-  staticLoggerMetadata.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
+  Logger.staticMetaData.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));
 }

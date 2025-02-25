@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeDuration, BeEvent, CompressedId64Set, using } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, CompressedId64Set } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelApp, IModelConnection, IpcApp, QuantityFormatter } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
@@ -25,7 +25,6 @@ import {
   DescriptorOverrides,
   DisplayLabelRequestOptions,
   DisplayLabelsRequestOptions,
-  DisplayValueGroup,
   DistinctValuesRequestOptions,
   ECInstancesNodeKey,
   ElementProperties,
@@ -37,9 +36,7 @@ import {
   InstanceKey,
   Item,
   KeySet,
-  Node,
   NodeKey,
-  NodePathElement,
   Paged,
   PresentationIpcEvents,
   PropertyValueFormat,
@@ -77,9 +74,9 @@ import {
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "../presentation-frontend/selection/SelectionManager";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 describe("PresentationManager", () => {
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManagerImpl>();
@@ -113,12 +110,12 @@ describe("PresentationManager", () => {
   });
 
   afterEach(() => {
-    manager.dispose();
+    manager[Symbol.dispose]();
     Presentation.terminate();
   });
 
   function recreateManager(props?: Partial<PresentationManagerProps>) {
-    manager && manager.dispose();
+    manager && manager[Symbol.dispose]();
     manager = PresentationManager.create({
       rpcRequestsHandler: rpcRequestsHandlerMock.object,
       ...props,
@@ -173,7 +170,6 @@ describe("PresentationManager", () => {
     it("[deprecated] sets active unit system override if supplied with props", async () => {
       const props = { activeUnitSystem: "usSurvey" as UnitSystemKey };
       const mgr = PresentationManager.create(props);
-      // eslint-disable-next-line deprecation/deprecation
       expect(mgr.activeUnitSystem).to.eq(props.activeUnitSystem);
     });
 
@@ -215,7 +211,9 @@ describe("PresentationManager", () => {
     it("starts listening to update events", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(() => {});
-      using(PresentationManager.create(), (_) => {});
+      {
+        using _ = PresentationManager.create();
+      }
       expect(addListenerSpy).to.be.calledOnceWith(
         PresentationIpcEvents.Update,
         sinon.match((arg) => typeof arg === "function"),
@@ -317,7 +315,6 @@ describe("PresentationManager", () => {
     it("[deprecated] requests with manager's unit system if not set in request options", async () => {
       const keys = new KeySet();
       const unitSystem = "usSurvey";
-      // eslint-disable-next-line deprecation/deprecation
       manager.activeUnitSystem = unitSystem;
       await manager.getContentDescriptor({
         imodel: testData.imodelMock.object,
@@ -341,7 +338,6 @@ describe("PresentationManager", () => {
     it("requests with request's unit system if set", async () => {
       const keys = new KeySet();
       const unitSystem = "usSurvey";
-      // eslint-disable-next-line deprecation/deprecation
       manager.activeUnitSystem = "metric";
       await manager.getContentDescriptor({
         imodel: testData.imodelMock.object,
@@ -418,7 +414,7 @@ describe("PresentationManager", () => {
     it("does not inject ruleset variables into request options in IpcApp", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       sinon.stub(IpcApp, "addListener");
-      manager.dispose();
+      manager[Symbol.dispose]();
       manager = PresentationManager.create({
         rpcRequestsHandler: rpcRequestsHandlerMock.object,
       });
@@ -466,8 +462,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
+        .returns(async () => ({ total: count, items: nodes }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
       expect(actualResult).to.deep.eq({ count, nodes });
@@ -486,8 +481,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: count, items: nodes.map(Node.toJSON) }))
+        .returns(async () => ({ total: count, items: nodes }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
       expect(actualResult).to.deep.eq({ count, nodes });
@@ -506,13 +500,11 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 0, size: 0 } })))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
+        .returns(async () => ({ total: count, items: [node1] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
+        .returns(async () => ({ total: count, items: [node2] }))
         .verifiable();
       const actualResult = await manager.getNodesAndCount(options);
       expect(actualResult).to.deep.eq({ count, nodes: [node1, node2] });
@@ -531,8 +523,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: result.length, items: result.map(Node.toJSON) }))
+        .returns(async () => ({ total: result.length, items: result }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq(result);
@@ -553,8 +544,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: 666, items: prelocalizedNode.map(Node.toJSON) }))
+        .returns(async () => ({ total: 666, items: prelocalizedNode }))
         .verifiable();
 
       const actualResult = await manager.getNodes(options);
@@ -576,8 +566,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey })))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: 666, items: result.map(Node.toJSON) }))
+        .returns(async () => ({ total: 666, items: result }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq(result);
@@ -596,13 +585,11 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 0, size: 0 } })))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: count, items: [Node.toJSON(node1)] }))
+        .returns(async () => ({ total: count, items: [node1] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedNodes(toRulesetRpcOptions({ ...options, parentKey: parentNodeKey, paging: { start: 1, size: 1 } })))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: count, items: [Node.toJSON(node2)] }))
+        .returns(async () => ({ total: count, items: [node2] }))
         .verifiable();
       const actualResult = await manager.getNodes(options);
       expect(actualResult).to.deep.eq([node1, node2]);
@@ -702,8 +689,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getFilteredNodePaths(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => value.map(NodePathElement.toJSON))
+        .returns(async () => value)
         .verifiable();
       const result = await manager.getFilteredNodePaths(options);
       expect(result).to.be.deep.equal(value);
@@ -723,8 +709,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getNodePaths(toRulesetRpcOptions(options)))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => value.map(NodePathElement.toJSON))
+        .returns(async () => value)
         .verifiable();
       const result = await manager.getNodePaths(options);
       expect(result).to.be.deep.equal(value);
@@ -1265,13 +1250,11 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item1)] }))
+        .returns(async () => ({ total: 2, items: [item1] }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) => x.getPagedDistinctValues({ ...rpcHandlerOptions, paging: { start: 1, size: 1 } }))
-        // eslint-disable-next-line deprecation/deprecation
-        .returns(async () => ({ total: 2, items: [DisplayValueGroup.toJSON(item2)] }))
+        .returns(async () => ({ total: 2, items: [item2] }))
         .verifiable();
       const actualResult = await manager.getPagedDistinctValues(managerOptions);
       rpcRequestsHandlerMock.verifyAll();

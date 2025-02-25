@@ -75,7 +75,7 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
     await BeDuration.race(this._timeoutMs, memo.promise).catch(() => undefined);
 
     if (memo.isPending)
-      throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+      throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
 
     this.deleteMemoized(props);
 
@@ -85,7 +85,7 @@ class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
     }
 
     assert(memo.isRejected);
-    throw memo.error; // eslint-disable-line no-throw-literal
+    throw memo.error;
   }
 }
 
@@ -100,7 +100,7 @@ async function getIModelForRpc(tokenProps: IModelRpcProps): Promise<IModelDb> {
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
  */
-export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface { // eslint-disable-line deprecation/deprecation
+export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInterface {
 
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
@@ -258,7 +258,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.views.getViewStateProps(viewDefinitionId, options);
   }
 
-  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
+  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> { // eslint-disable-line @typescript-eslint/no-deprecated
     const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb[_nativeDb].readFontMap();
   }
@@ -283,7 +283,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.getMassProperties(props);
   }
 
-  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { // eslint-disable-line @typescript-eslint/no-deprecated
     const iModelDb = await getIModelForRpc(tokenProps);
 
     const getSingleCandidateMassProperties = async (candidate: string) => {
@@ -295,7 +295,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
           massPropResults.push(massProperties);
         }
 
-        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate };
+        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate }; // eslint-disable-line @typescript-eslint/no-deprecated
 
         if (massPropResults.some((r) => r.status !== BentleyStatus.ERROR)) {
           singleCandidateResult.status = BentleyStatus.SUCCESS;
@@ -310,7 +310,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       }
     };
 
-    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = [];
+    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = []; // eslint-disable-line @typescript-eslint/no-deprecated
 
     for (const candidate of CompressedId64Set.iterable(props.candidates)) {
       promises.push(getSingleCandidateMassProperties(candidate));
@@ -330,7 +330,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
    */
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    // eslint-disable-next-line deprecation/deprecation
     const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();

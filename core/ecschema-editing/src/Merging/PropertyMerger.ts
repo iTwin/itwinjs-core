@@ -5,10 +5,9 @@
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { AnyClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
 import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import { getClassEditor, toItemKey, toPropertyKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
-import { ECClasses } from "../Editing/ECClasses";
 
 type PartialEditable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -47,6 +46,8 @@ async function mergeClassProperty(context: SchemaMergeContext, change: { changeT
 }
 
 async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: PartialEditable<AnyPropertyProps>): Promise<void> {
+  const ecClass = await context.targetSchema.lookupItem(toItemKey(context, itemKey.name)) as ECClass;
+
   if (property.category !== undefined) {
     property.category = await updateSchemaItemFullName(context, property.category);
   }
@@ -55,12 +56,12 @@ async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItem
     property.kindOfQuantity = await updateSchemaItemFullName(context, property.kindOfQuantity);
   }
 
-  await createProperty(context, itemKey, property);
+  await createProperty(context, ecClass.key, property);
 
   if (property.customAttributes !== undefined) {
     await applyCustomAttributes(context, property.customAttributes as CustomAttribute[], async (ca) => {
-      const classEditor = await getClassEditor(context, itemKey);
-      await classEditor.properties.addCustomAttribute(itemKey, property.name, ca);
+      const classEditor = await getClassEditor(context, ecClass.key);
+      await classEditor.properties.addCustomAttribute(ecClass.key, property.name, ca);
     });
   }
 }
@@ -82,75 +83,56 @@ async function createProperty(context: SchemaMergeContext, itemKey: SchemaItemKe
 }
 
 async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, propertyProps: AnyPropertyProps): Promise<void> {
-  const ecClass = await context.editor.schemaContext.getSchemaItem(itemKey) as ECClass;
-  const property = await ecClass.getProperty(propertyProps.name) as MutableProperty;
+  const ecClass = await context.targetSchema.lookupItem(toItemKey(context, itemKey.name)) as ECClass;
+  const propertyKey = toPropertyKey(context, itemKey.name, propertyProps.name);
+  const property = await ecClass.getProperty(propertyKey.propertyName) as MutableProperty;
+
   if (property === undefined) {
-    throw new Error(`Couldn't find property ${propertyProps.name} on class ${itemKey.name}`);
+    throw new Error(`Couldn't find property ${propertyKey.propertyName} on class ${ecClass.key.name}`);
   }
 
   if (propertyProps.type !== undefined) {
     throw new Error(`Changing the property '${property.fullName}' type is not supported.`);
   }
-  if (propertyProps.kindOfQuantity !== undefined) {
-    throw new Error(`Changing the property '${property.fullName}' kind of quantity is not supported.`);
-  }
 
   const classEditor = await getClassEditor(context, ecClass);
 
   if (propertyProps.description !== undefined) {
-    await classEditor.properties.setDescription(itemKey, propertyProps.name, propertyProps.description);
+    await classEditor.properties.setDescription(ecClass.key, property.name, propertyProps.description);
   }
   if (propertyProps.label !== undefined) {
-    await classEditor.properties.setLabel(itemKey, propertyProps.name, propertyProps.label);
+    await classEditor.properties.setLabel(ecClass.key, property.name, propertyProps.label);
   }
   if (propertyProps.isReadOnly !== undefined) {
-    await classEditor.properties.setIsReadOnly(itemKey, propertyProps.name, propertyProps.isReadOnly);
+    await classEditor.properties.setIsReadOnly(ecClass.key, property.name, propertyProps.isReadOnly);
   }
   if (propertyProps.priority !== undefined) {
-    await classEditor.properties.setPriority(itemKey, propertyProps.name, propertyProps.priority);
+    await classEditor.properties.setPriority(ecClass.key, property.name, propertyProps.priority);
+  }
+  if (propertyProps.kindOfQuantity !== undefined) {
+    await classEditor.properties.setKindOfQuantity(ecClass.key, property.name, await updateSchemaItemKey(context, propertyProps.kindOfQuantity));
   }
 
   if (property.isArray()) {
-    await arrayProperty.merge(context, itemKey, property.name, propertyProps);
+    await arrayProperty.merge(context, ecClass.key, property.name, propertyProps);
   }
 
   if (propertyProps.category !== undefined) {
     const categoryKey = await updateSchemaItemKey(context, propertyProps.category);
-    await classEditor.properties.setCategory(itemKey, property.name, categoryKey);
+    await classEditor.properties.setCategory(ecClass.key, property.name, categoryKey);
   }
 
   if (property.isEnumeration()) {
-    return enumerationProperty.merge(context, itemKey, property, propertyProps as any);
+    return enumerationProperty.merge(context, ecClass.key, property, propertyProps as any);
   }
   if (property.isNavigation()) {
-    return navigationProperty.merge(context, itemKey, property, propertyProps as any);
+    return navigationProperty.merge(context, ecClass.key, property, propertyProps as any);
   }
   if (property.isPrimitive()) {
-    return primitiveProperty.merge(context, itemKey, property, propertyProps as any);
+    return primitiveProperty.merge(context, ecClass.key, property, propertyProps as any);
   }
   if (property.isStruct()) {
-    return structProperty.merge(context, itemKey, property, propertyProps as any);
-  }
-}
-
-async function getClassEditor(context: SchemaMergeContext, ecClass: ECClass | SchemaItemKey): Promise<ECClasses> {
-  const schemaItemType = ECClass.isECClass(ecClass)
-    ? ecClass.schemaItemType
-    : (await context.editor.schemaContext.getSchemaItem<ECClass>(ecClass))?.schemaItemType;
-
-  switch(schemaItemType) {
-    case SchemaItemType.EntityClass:
-      return context.editor.entities;
-    case SchemaItemType.Mixin:
-      return context.editor.mixins;
-    case SchemaItemType.StructClass:
-      return context.editor.structs;
-    case SchemaItemType.CustomAttributeClass:
-      return context.editor.customAttributes;
-    case SchemaItemType.RelationshipClass:
-      return context.editor.relationships;
-    default:
-      throw new Error("SchemaItemType not supported");
+    return structProperty.merge(context, ecClass.key, property, propertyProps as any);
   }
 }
 
@@ -175,12 +157,12 @@ const enumerationProperty: PropertyMerger<EnumerationPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const enumerationKey = await updateSchemaItemKey(context, property.typeName);
-    const enumerationType = await context.editor.schemaContext.getSchemaItem<Enumeration>(enumerationKey);
+    const enumerationType = await context.editor.schemaContext.getSchemaItem(enumerationKey, Enumeration);
     if (enumerationType === undefined) {
       throw new Error(`Unable to locate the enumeration class ${enumerationKey.name} in the context schema.`);
     }
 
-    property.typeName = enumerationKey.fullName;
+    property.typeName = enumerationType.fullName;
 
     const classEditor = await getClassEditor(context, itemKey);
 
@@ -202,20 +184,20 @@ const navigationProperty: PropertyMerger<NavigationPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const relationshipKey = await updateSchemaItemKey(context, property.relationshipName);
-    const relationshipType = await context.editor.schemaContext.getSchemaItem<RelationshipClass>(relationshipKey);
+    const relationshipType = await context.editor.schemaContext.getSchemaItem(relationshipKey, RelationshipClass);
     if (relationshipType === undefined) {
       throw new Error(`Unable to locate the relationship class ${relationshipKey.name} in the context schema.`);
     }
 
-    property.relationshipName = relationshipKey.fullName;
+    property.relationshipName = relationshipType.fullName;
 
     const ecClass = await context.editor.schemaContext.getSchemaItem(itemKey) as ECClass;
     if (ecClass.schemaItemType === SchemaItemType.EntityClass)
-      return context.editor.entities.createNavigationPropertyFromProps(itemKey, property);
+      return context.editor.entities.createNavigationPropertyFromProps(ecClass.key, property);
     if (ecClass.schemaItemType === SchemaItemType.Mixin)
-      return context.editor.mixins.createNavigationPropertyFromProps(itemKey, property);
+      return context.editor.mixins.createNavigationPropertyFromProps(ecClass.key, property);
     if (ecClass.schemaItemType === SchemaItemType.RelationshipClass)
-      return context.editor.relationships.createNavigationPropertyFromProps(itemKey, property);
+      return context.editor.relationships.createNavigationPropertyFromProps(ecClass.key, property);
     throw new Error(`Navigation property can't be added to ${ecClass.schemaItemType}.`);
   },
   async merge(_context, _itemKey, property, props) {
@@ -273,12 +255,12 @@ const structProperty: PropertyMerger<StructPropertyProps> = {
   },
   async add(context, itemKey, property): Promise<void> {
     const structKey = await updateSchemaItemKey(context, property.typeName);
-    const structType = await context.editor.schemaContext.getSchemaItem<StructClass>(structKey);
+    const structType = await context.editor.schemaContext.getSchemaItem(structKey, StructClass);
     if (structType === undefined) {
       throw new Error(`Unable to locate the struct ${structKey.name} in the context schema.`);
     }
 
-    property.typeName = structKey.fullName;
+    property.typeName = structType.fullName;
 
     const classEditor = await getClassEditor(context, itemKey);
     return arrayProperty.is(property)

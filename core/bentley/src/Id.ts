@@ -137,7 +137,7 @@ export namespace Id64 {
   }
 
   // Used when constructing local ID portion of Id64String. Performance optimization.
-  const _localIdPrefixByLocalIdLength = [ // eslint-disable-line @typescript-eslint/naming-convention
+  const _localIdPrefixByLocalIdLength = [
     "0000000000",
     "000000000",
     "00000000",
@@ -373,7 +373,7 @@ export namespace Id64 {
 
   /** Return the first [[Id64String]] of an [[Id64Arg]]. */
   export function getFirst(arg: Id64Arg): Id64String {
-    return typeof arg === "string" ? arg : (Array.isArray(arg) ? arg[0] : arg.values().next().value);
+    return typeof arg === "string" ? arg : (Array.isArray(arg) ? arg[0] : arg.values().next().value) ?? Id64.invalid;
   }
 
   /** Return the number of [[Id64String]]s represented by an [[Id64Arg]]. */
@@ -575,8 +575,11 @@ export namespace Id64 {
     /** Remove an Id from the set. */
     public delete(low: number, high: number): void {
       const set = this._map.get(high);
-      if (undefined !== set)
+      if (undefined !== set) {
         set.delete(low);
+        if (set.size === 0)
+          this._map.delete(high);
+      }
     }
 
     /** Returns true if the set contains the specified Id. */
@@ -734,13 +737,6 @@ export class TransientIdSequence {
    */
   public get currentLocalId(): number {
     return this._localId;
-  }
-
-  /** Generate and return the next transient Id64String in the sequence.
-   * @deprecated in 3.x. Use [[getNext]].
-   */
-  public get next(): Id64String {
-    return this.getNext();
   }
 
   /** Generate and return the next transient Id64String in the sequence. */
