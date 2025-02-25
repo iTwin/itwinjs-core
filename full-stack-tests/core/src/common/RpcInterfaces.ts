@@ -34,9 +34,9 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async executeTest(_iModelRpcProps: IModelRpcProps, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
-  public async purgeCheckpoints(_iModelId: string): Promise<void> {
-    return this.forward(arguments);
-  }
+  // public async purgeCheckpoints(_iModelId: string): Promise<void> {
+  //   return this.forward(arguments);
+  // }
   public async purgeStorageCache(): Promise<void> {
     return this.forward(arguments);
   }

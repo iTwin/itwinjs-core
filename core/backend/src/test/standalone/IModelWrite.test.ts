@@ -28,6 +28,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
+import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 chai.use(chaiAsPromised);
 
@@ -53,9 +54,13 @@ describe("IModelWriteTest", () => {
 
   before(() => {
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     iTwinId = HubMock.iTwinId;
   });
-  after(() => HubMock.shutdown());
+  after(() => {
+    CloudSqliteMock.shutdown();
+    HubMock.shutdown()
+  });
 
   it("Check busyTimeout option", async () => {
     const iModelProps = {

@@ -17,6 +17,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
 import { ProgressFunction, ProgressStatus } from "../../CheckpointManager";
 import { _hubAccess } from "../../internal/Symbols";
+import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -26,8 +27,10 @@ describe("HubMock", () => {
 
   before(() => {
     HubMock.startup("HubMockTest", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
   });
   after(() => {
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 

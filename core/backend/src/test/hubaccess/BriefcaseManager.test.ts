@@ -12,6 +12,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubMock } from "../../HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
 import { _nativeDb, ChannelControl } from "../../core-backend";
+import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
@@ -23,6 +24,7 @@ describe("BriefcaseManager", async () => {
 
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
     HubMock.startup("bad names", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     let iModelName = "iModel Name With Spaces";
     let iModelId = await HubWrappers.createIModel(managerAccessToken, testITwinId, iModelName);
     const args = { accessToken, iTwinId: testITwinId, iModelId };
@@ -47,11 +49,13 @@ describe("BriefcaseManager", async () => {
     iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
     iModel.close();
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
     HubMock.startup("briefcaseIds", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
     const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: true };
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
@@ -66,11 +70,13 @@ describe("BriefcaseManager", async () => {
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
     HubMock.startup("briefcaseIdsReopen", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
 
     const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: false };
@@ -83,11 +89,13 @@ describe("BriefcaseManager", async () => {
     assert.strictEqual(briefcaseId3, briefcaseId1);
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 
   it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
     HubMock.startup("workflow", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const userToken1 = "manager token";
     const userToken2 = "super manager token";
 
@@ -127,11 +135,13 @@ describe("BriefcaseManager", async () => {
 
     // Delete iModel from the Hub and disk
     await testUtility.deleteTestIModel();
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
     HubMock.startup("pullPush", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const userToken1 = "manager token"; // User1 is just used to create and update the iModel
     const userToken2 = "super manager token"; // User2 is used for the test
 
@@ -194,6 +204,7 @@ describe("BriefcaseManager", async () => {
     // Delete iModel from the Hub and disk
     await HubWrappers.closeAndDeleteBriefcaseDb(userToken2, iModelPullAndPush);
     await testUtility.deleteTestIModel();
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 });

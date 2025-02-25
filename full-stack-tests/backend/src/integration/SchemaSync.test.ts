@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, CloudSqliteMock, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
@@ -146,6 +146,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user3AccessToken = "token 3";
 
     HubMock.startup("test", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -234,6 +235,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.close();
     b3.close();
 
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
   it("import same schema from different briefcase", async () => {
@@ -244,6 +246,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user3AccessToken = "token 3";
 
     HubMock.startup("test", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -321,6 +324,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.close();
     b3.close();
 
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
   it("override schema sync container", async () => {
@@ -332,6 +336,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user3AccessToken = "token 3";
 
     HubMock.startup("test", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -502,6 +507,7 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 
@@ -514,6 +520,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user3AccessToken = "token 3";
 
     HubMock.startup("test", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
 
     // Setup seed file from existing 4.0.0.3 imodel
     const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4001.bim") }, OpenMode.ReadWrite);
@@ -854,6 +861,7 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
   it("test schema sync with profile and domain schema upgrade (from 4.0.0.3)", async () => {
@@ -865,6 +873,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user3AccessToken = "token 3";
 
     HubMock.startup("test", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
 
     // Setup seed file from existing 4.0.0.3 imodel
     const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim") }, OpenMode.ReadWrite);
@@ -1198,6 +1207,7 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
   it("import schema acquire schema lock when need to transform data", async () => {
@@ -1209,6 +1219,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user4AccessToken = "token 4";
 
     HubMock.startup("test", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -1386,12 +1397,14 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 
   it("revert timeline changes", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
     HubMock.startup("test", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     const adminToken = "super manager token";
     const iModelName = "test";
     const iTwinId = HubMock.iTwinId;
@@ -1598,6 +1611,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 });

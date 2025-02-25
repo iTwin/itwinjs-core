@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import {
-  BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
+  BriefcaseDb, BriefcaseManager, CloudSqliteMock, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
   PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
 import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
@@ -186,12 +186,14 @@ describe.skip("IModelBranchingOperations", () => {
 
   before(async () => {
     HubMock.startup("IModelBranchingOperations", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
     if (fs.existsSync(version0Path))
       fs.unlinkSync(version0Path);
     SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" } }).close();
   });
 
   after(() => {
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 

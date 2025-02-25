@@ -18,7 +18,7 @@ import {
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import {
   _nativeDb, AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
@@ -35,7 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
-import { _hubAccess } from "../internal/Symbols";
+import { _getCheckpointDb, _hubAccess } from "../internal/Symbols";
 
 chai.use(chaiAsPromised);
 
@@ -184,7 +184,7 @@ export class HubWrappers {
     }
   }
 
-  /** Downloads and opens a v1 checkpoint */
+  /** Downloads and opens a checkpoint */
   public static async downloadAndOpenCheckpoint(args: { accessToken: AccessToken, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -196,7 +196,9 @@ export class HubWrappers {
       changeset: (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
     };
 
-    return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
+    const folder = path.join(V2CheckpointManager.getFolder(), checkpoint.iModelId);
+    const filename = path.join(folder, `${checkpoint.changeset.id ?? "first"}.bim`);
+    return V2CheckpointManager[_getCheckpointDb]({ checkpoint, localFile: filename });
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */

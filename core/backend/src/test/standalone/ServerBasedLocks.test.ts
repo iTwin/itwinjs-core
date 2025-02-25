@@ -20,6 +20,7 @@ import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
 import { _hubAccess, _releaseAllLocks } from "../../internal/Symbols";
+import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -46,6 +47,7 @@ describe("Server-based locks", () => {
   afterEach(() => sinonRestore());
   before(async () => {
     HubMock.startup("ServerBasedLocks", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
 
     const iModelProps = {
       iModelName: "server locks test",
@@ -59,6 +61,7 @@ describe("Server-based locks", () => {
     briefcase2Props = await BriefcaseManager.downloadBriefcase({ accessToken: "test token2", ...args });
   });
   after(() => {
+    CloudSqliteMock.shutdown();
     HubMock.shutdown();
   });
 

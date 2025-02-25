@@ -214,8 +214,16 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
   }
 
-  public static async queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
-    return undefined;
+  public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    return {
+      accountName: "none",
+      sasToken: "none",
+      containerId: "none",
+      dbName: "none",
+      storageType: "mock",
+      isMock: true,
+      checkpoint: arg,
+    } as V2CheckpointAccessProps;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated

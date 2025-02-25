@@ -6,7 +6,6 @@
 import * as nock from "nock";
 import * as path from "path";
 import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
-import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
 import { AzuriteTest } from "./AzuriteTest";
@@ -51,9 +50,9 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return JSON.parse(IModelDb.findByKey(tokenProps.key)[_nativeDb].executeTest(testName, JSON.stringify(params)));
   }
 
-  public async purgeCheckpoints(iModelId: string): Promise<void> {
-    IModelJsFs.removeSync(V1CheckpointManager.getFolder(iModelId));
-  }
+  // public async purgeCheckpoints(iModelId: string): Promise<void> {
+  //   IModelJsFs.removeSync(V1CheckpointManager.getFolder(iModelId));
+  // }
 
   public async purgeStorageCache(): Promise<void> {
     return IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);

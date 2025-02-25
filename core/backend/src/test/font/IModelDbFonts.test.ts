@@ -16,6 +16,7 @@ import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { QueryMappedFamiliesArgs } from "../../IModelDbFonts";
+import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 describe("IModelDbFonts", () => {
   let db: IModelDb;
@@ -49,8 +50,14 @@ describe("IModelDbFonts", () => {
 
   }
 
-  before(() => HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir));
-  after(() => HubMock.shutdown());
+  before(() => {
+    HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir);
+    CloudSqliteMock.startup();
+  });
+  after(() => {
+    CloudSqliteMock.shutdown();
+    HubMock.shutdown();
+  });
 
   beforeEach(async () => {
     CodeService.createForIModel = () => MockCodeService as any;
@@ -99,7 +106,7 @@ describe("IModelDbFonts", () => {
       expectEmbeddedFontFiles([]);
 
       const expectedFiles: Array<IModelJsNative.FontFaceProps[]> = [];
-  
+
       async function embedAndTest(file: FontFile, expectedFaces: IModelJsNative.FontFaceProps[]): Promise<void> {
         await db.fonts.embedFontFile({ file });
         expectedFiles.push(expectedFaces);
@@ -203,7 +210,7 @@ describe("IModelDbFonts", () => {
       const spy = sinon.spy(db, "acquireSchemaLock");
 
       await db.fonts.embedFontFile({ file: createTTFile("Karla-Regular.ttf"), skipFontIdAllocation: true });
-      
+
       await db.fonts.embedFontFile({ file: createTTFile("Sitka.ttc"), skipFontIdAllocation: false });
 
       expect(spy.callCount).to.equal(0);
@@ -244,7 +251,7 @@ describe("IModelDbFonts", () => {
 
       const cdmRscId = await db.fonts.acquireId(cdmRsc);
       expect(cdmRscId).to.equal(2);
-    
+
       expect(db.fonts.findId(cdmRsc)).to.equal(cdmRscId);
       expect(db.fonts.findDescriptor(cdmRscId)).to.deep.equal(cdmRsc);
 
@@ -285,7 +292,7 @@ describe("IModelDbFonts", () => {
       expect(spy.callCount).to.equal(0);
     });
   });
-  
+
   describe("findId", () => {
     it("finds exact match by name and type, or first match by type if only name is supplied", async () => {
       const shx = await db.fonts.acquireId({ name: "Font", type: FontType.Shx });
@@ -293,7 +300,7 @@ describe("IModelDbFonts", () => {
       expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.be.undefined;
       expect(db.fonts.findId({ name: "Font", type: FontType.TrueType})).to.be.undefined;
       expect(db.fonts.findId({ name: "Font" })).to.equal(shx);
-      
+
       const tt = await db.fonts.acquireId({ name: "Font", type: FontType.TrueType });
       expect(db.fonts.findId({ name: "Font", type: FontType.TrueType })).to.equal(tt);
       expect(db.fonts.findId({ name: "Font", type: FontType.Rsc})).to.be.undefined;
