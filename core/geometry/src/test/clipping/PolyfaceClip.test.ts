@@ -1184,8 +1184,12 @@ describe("PolyfaceClip", () => {
     const path0 = Path.createArray([line0, arc0, line1, arc1, line2]);
     const path1 = CurveOps.constructCurveXYOffset(path0, thickness) as CurveChain;
     path1.reverseChildrenInPlace();
-    const edge0 = LineSegment3d.create(path0.getChild(path0.children.length - 1)!.endPoint(), path1.getChild(0)!.startPoint());
-    const edge1 = LineSegment3d.create(path1.getChild(path1.children.length - 1)!.endPoint(), path0.getChild(0)!.startPoint());
+    const edge0 = LineSegment3d.create(
+      path0.getChild(path0.children.length - 1)!.endPoint(), path1.getChild(0)!.startPoint(),
+    );
+    const edge1 = LineSegment3d.create(
+      path1.getChild(path1.children.length - 1)!.endPoint(), path0.getChild(0)!.startPoint(),
+    );
     const loop = Loop.create(...path0.children, edge0, ...path1.children, edge1);
     const solid = LinearSweep.create(loop, Vector3d.create(0, 0, extrusionLength), true);
     if (ck.testDefined(solid, "target solid created"))
@@ -1214,9 +1218,14 @@ describe("PolyfaceClip", () => {
     if (ck.testDefined(loopArea, "loop area successfully computed")) {
       ck.testLT(0, loopArea, "loop has positive area");
       ck.testLT(0, clipVolume.volume, "clipper has positive volume");
-      ck.testNearNumber(loopArea * extrusionLength, PolyfaceQuery.sumTetrahedralVolumes(solidMesh), 1, "mesh and solid volumes are close");
+      ck.testNearNumber(
+        loopArea * extrusionLength,
+        PolyfaceQuery.sumTetrahedralVolumes(solidMesh),
+        1,
+        "mesh and solid volumes are close",
+      );
     }
-    if (ck.testDefined(clampMesh)) {
+    if (ck.testDefined(clampMesh, "clampMesh is defined")) {
       let numBadEdges = 0;
       PolyfaceQuery.announceBoundaryEdges(clampMesh, () => ++numBadEdges, true, true, true);
       ck.testExactNumber(0, numBadEdges, "clamp mesh has all interior edges");
