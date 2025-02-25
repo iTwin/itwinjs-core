@@ -1,6 +1,6 @@
 {
   "name": "@itwin/analytical-backend",
-  "version": "5.0.0-dev.70",
+  "version": "5.0.0-dev.71",
   "main": "lib/cjs/analytical-backend.js",
   "typings": "lib/cjs/analytical-backend",
   "license": "MIT",
