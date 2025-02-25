@@ -8,6 +8,7 @@ export default defineConfig({
   test: {
     dir: "src",
     setupFiles: "./src/test/setupTests.ts",
+    // include: ["**/<insert-file-name-here>.test.ts"],
     browser: {
       provider: "playwright",
       enabled: true,
