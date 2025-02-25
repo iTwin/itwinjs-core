@@ -83,14 +83,28 @@ Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/
 Custom VSCode tasks are found in [launch.json](/.vscode/launch.json) to make debugging easier for contributors. Navigate to the `Run and Debug` panel in VSCode and you can select one of many custom tasks to run, which will attach a debugger to the process, and stop at a breakpoint you've set up.
 
 #### Filtering Test Suites
-The custom scripts above run all tests found in the respective package; contributors, when debugging, tend to know exactly which individual test suite/case to run, and would prefer to filter out all other tests that aren't relevant to their task.
 
-This monorepo has packages using either mocha or vitest - both testing frameworks - to run tests, and instructions for filtering differs between the two:
+The custom scripts above run all tests found in their respective package. This monorepo contains packages using either mocha or vitest. Below is guidance for running specific tests using filters in either test library.
 
 <details>
   <summary> Filtering Mocha tests</summary>
 
-Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel, and mocha will run only that test suite.
+Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel, and mocha will run only that test suite. Example:
+
+```ts
+
+  // Both Car and Plane test suites are found in the same test file. Mocha detects the use of `.only()` and will ignore all other test files.
+  describe.only("Car", () => { // Mocha will only run the Car test suite.
+    it("should drive", () => ...);
+
+    it.only("should stop", () => ...); // Mocha will only run this test case and not the first one.
+  });
+
+  describe("Plane", () => {
+    it("should fly", () => ...)
+  });
+
+```
 </details>
 
 <details>
@@ -98,13 +112,13 @@ Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the cus
 
   There are 2 ways to filter Vitest tests:
 
-1. A VSCode Extension, [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=vitest.explorer) is available, that integrates with VSCode allowing you to select individual test cases to run/debug. After editing a test or source code, if unexpected behavior occurs, hit the refresh tests button as shown below.
+1. ​The [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=vitest.explorer) is a Visual Studio Code extension that enables running and debugging individual test cases. If unexpected behavior occurs after editing a test or source code, click the "Refresh Tests" button in the Testing view to reload your test suite and reflect any changes.
 
 ![Vitest refresh tests helper](./docs/assets/vitest-explorer-help.png)
 
-> The Vitest Explorer is not compatible with tests run on a browser, and the second way below is the only viable way to debug browser-based tests.
+> The Vitest Explorer is not compatible with tests running in a browser environment. The method below is the only viable way to debug browser-based tests.
 
-2. Edit the `vitest.config.mts` found in a package's root folder and add a [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the ViewRect class in core-frontend, which respectively has `ViewRect.test.ts`, one would edit the `vitest.config.mts` for core-frontend like below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
+2. Edit the `vitest.config.mts` found in a package's root folder and add an [include](https://vitest.dev/config/#include) property to filter out tests. Afterwards, run the custom VSCode task for the package through the `Run and Debug` panel. For example, to test the `ViewRect` class in core-frontend (corresponding to the `ViewRect.test.ts` test), one would edit the `vitest.config.mts` for core-frontend as demonstrated below. By adding `.only` to a `describe()` or `it()` test function in `ViewRect.test.ts`, you can filter out tests in more detail.
 
 ```typescript
 export default defineConfig({
