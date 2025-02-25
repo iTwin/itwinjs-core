@@ -411,6 +411,20 @@ export class Paragraph extends TextBlockComponent {
  */
 export type TextBlockJustification = "left" | "center" | "right";
 
+/** Describes the margins around the content inside a [[TextBlock]]. It's measured in meters.
+ * @beta
+ */
+export interface TextBlockMargins {
+  /** The left margin. Default: 0 */
+  left?: number;
+  /** The right margin. Default: 0 */
+  right?: number;
+  /** The top margin. Default: 0 */
+  top?: number;
+  /** The bottom margin. Default: 0 */
+  bottom?: number;
+};
+
 /** JSON representation of a [[TextBlock]].
  * @beta
  */
@@ -422,6 +436,8 @@ export interface TextBlockProps extends TextBlockComponentProps {
   width?: number;
   /** The alignment of the document content. Default: "left". */
   justification?: TextBlockJustification;
+  /** The margins to surround the document content. Default: 0 margins on all sides */
+  margins?: TextBlockMargins;
   /** The paragraphs within the text block. Default: an empty array. */
   paragraphs?: ParagraphProps[];
 }
@@ -440,6 +456,8 @@ export class TextBlock extends TextBlockComponent {
   public width: number;
   /** The alignment of the document's content. */
   public justification: TextBlockJustification;
+  /** The margins of the document. */
+  public margins: TextBlockMargins;
   /** The ordered list of paragraphs within the document. */
   public readonly paragraphs: Paragraph[];
 
@@ -447,6 +465,7 @@ export class TextBlock extends TextBlockComponent {
     super(props);
     this.width = props.width ?? 0;
     this.justification = props.justification ?? "left";
+    this.margins = props.margins ?? { left: 0, right: 0, top: 0, bottom: 0 };
     this.paragraphs = props.paragraphs?.map((x) => Paragraph.create(x)) ?? [];
   }
 
@@ -455,6 +474,7 @@ export class TextBlock extends TextBlockComponent {
       ...super.toJSON(),
       width: this.width,
       justification: this.justification,
+      margins: this.margins,
       paragraphs: this.paragraphs.map((x) => x.toJSON()),
     };
   }
@@ -524,6 +544,12 @@ export class TextBlock extends TextBlockComponent {
     if (this.width !== other.width || this.justification !== other.justification || this.paragraphs.length !== other.paragraphs.length) {
       return false;
     }
+
+    const marginsAreEqual = Object.entries(this.margins).every(([key, value]) =>
+      value === (other.margins as any)[key]
+    );
+
+    if (!marginsAreEqual) return false;
 
     return this.paragraphs.every((paragraph, index) => paragraph.equals(other.paragraphs[index]));
   }
