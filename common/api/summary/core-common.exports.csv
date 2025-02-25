@@ -110,7 +110,13 @@ public;type;ChangesetIndexOrId
 public;interface;ChangesetProps
 public;interface;ChangesetRange
 public;enum;ChangesetType
+beta;interface;ChannelNotAllowedError
+beta;namespace;ChannelNotAllowedError
 public;interface;ChannelRootAspectProps
+beta;interface;ChannelRootExistsError
+beta;namespace;ChannelRootExistsError
+beta;interface;ChannelsNestError
+beta;namespace;ChannelsNestError
 internal;interface;ClassifierTileTreeId
 public;class;ClipIntersectionStyle
 public;interface;ClipIntersectionStyleProps

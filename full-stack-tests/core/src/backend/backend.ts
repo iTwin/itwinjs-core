@@ -6,14 +6,12 @@ import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
-import * as fs from "fs";
-import * as path from "path";
 import {
   BriefcaseDb, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, InUseLock, InUseLocksError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, ChannelNotAllowedError, ChannelRootExistsError, ChannelsNestError, CodeProps, ElementProps, IModel, InUseLock, InUseLocksError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -21,6 +19,8 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
+import * as fs from "fs";
+import * as path from "path";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -79,6 +79,18 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
 
   public async throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metaData?: LoggingMetaData): Promise<void> {
     InUseLocksError.throwInUseLocksError(inUseLocks, message, metaData);
+  }
+
+  public async throwChannelNotAllowedError(message?: string, metaData?: LoggingMetaData): Promise<void> {
+    ChannelNotAllowedError.throwChannelNotAllowedError(message, metaData);
+  }
+
+  public async throwChannelsNestError(message?: string, metaData?: LoggingMetaData): Promise<void> {
+    ChannelsNestError.throwChannelsNestError(message, metaData);
+  }
+
+  public async throwChannelRootExistsError(message?: string, metaData?: LoggingMetaData): Promise<void> {
+    ChannelRootExistsError.throwChannelRootExistsError(message, metaData);
   }
 }
 

@@ -1164,9 +1164,51 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
+// @beta
+export interface ChannelNotAllowedError extends ITwinError {
+    // (undocumented)
+    errorKey: "channel-not-allowed";
+    // (undocumented)
+    namespace: "itwinjs-core";
+}
+
+// @beta (undocumented)
+export namespace ChannelNotAllowedError {
+    export function isChannelNotAllowedError(error: unknown): error is ChannelNotAllowedError;
+    export function throwChannelNotAllowedError(message?: string, metadata?: LoggingMetaData): never;
+}
+
 // @public
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;
+}
+
+// @beta
+export interface ChannelRootExistsError extends ITwinError {
+    // (undocumented)
+    errorKey: "channel-root-exists";
+    // (undocumented)
+    namespace: "itwinjs-core";
+}
+
+// @beta (undocumented)
+export namespace ChannelRootExistsError {
+    export function isChannelRootExistsError(error: unknown): error is ChannelsNestError;
+    export function throwChannelRootExistsError(message?: string, metadata?: LoggingMetaData): never;
+}
+
+// @beta
+export interface ChannelsNestError extends ITwinError {
+    // (undocumented)
+    errorKey: "channels-may-not-nest";
+    // (undocumented)
+    namespace: "itwinjs-core";
+}
+
+// @beta (undocumented)
+export namespace ChannelsNestError {
+    export function isChannelsNestError(error: unknown): error is ChannelsNestError;
+    export function throwChannelsNestError(message?: string, metadata?: LoggingMetaData): never;
 }
 
 // @internal
