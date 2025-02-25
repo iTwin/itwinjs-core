@@ -89,6 +89,121 @@ export namespace InUseLocksError {
   }
 
 }
+
+/**
+ * An error raised when channel is not allowed/denied.
+ * Typically this error would be thrown by [ChannelAdmin._verifyChannel]($backend) during verification of the channel.
+ * @beta
+*/
+export interface ChannelNotAllowedError extends ITwinError {
+  namespace: "itwinjs-core";
+  errorKey: "channel-not-allowed";
+}
+
+/** @beta */
+export namespace ChannelNotAllowedError {
+
+    /**
+   * type guard function that returns whether or not the passed in parameter is an [[ChannelNotAllowedError]].
+   * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "channel-not-allowed".
+   */
+    export function isChannelNotAllowedError (error: unknown): error is ChannelNotAllowedError {
+      return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "channel-not-allowed";
+    }
+
+    /** throws an error which passes the [[ChannelNotAllowedError.isChannelNotAllowedError]] type guard function */
+    export function throwChannelNotAllowedError (message?: string, metadata?: LoggingMetaData) : never {
+      const errorObject = new Error();
+      errorObject.name = "ChannelNotAllowedError";
+
+      const channelError: ChannelNotAllowedError = {
+        namespace: "itwinjs-core",
+        errorKey: "channel-not-allowed",
+        message: message ?? "Channel is not allowed",
+        metadata,
+      };
+      Object.assign(errorObject, channelError);
+      throw errorObject;
+    }
+
+}
+
+/**
+ * An error raised when channel is may not nest.
+ * Typically this error would be thrown by [ChannelAdmin.makeChannelRoot]($backend) during creating channel root.
+ * @beta
+*/
+export interface ChannelsNestError extends ITwinError {
+  namespace: "itwinjs-core";
+  errorKey: "channels-may-not-nest";
+}
+
+/** @beta */
+export namespace ChannelsNestError {
+
+  /**
+ * type guard function that returns whether or not the passed in parameter is an [[ChannelNestError]].
+ * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "channels-may-not-nest".
+ */
+  export function isChannelsNestError (error: unknown): error is ChannelsNestError {
+    return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "channels-may-not-nest";
+  }
+
+  /** throws an error which passes the [[ChannelNestError.isChannelNestError]] type guard function */
+  export function throwChannelsNestError (message?: string, metadata?: LoggingMetaData) : never {
+    const errorObject = new Error();
+    errorObject.name = "ChannelsNestError";
+
+    const channelError: ChannelsNestError = {
+      namespace: "itwinjs-core",
+      errorKey: "channels-may-not-nest",
+      message: message ?? "Channels may not nest",
+      metadata,
+    };
+    Object.assign(errorObject, channelError);
+    throw errorObject;
+  }
+
+}
+
+/**
+ * An error raised when channel root already exists.
+ * Typically this error would be thrown by [ChannelAdmin.makeChannelRoot]($backend) or [ChannelAdmin.insertChannelSubject]($backend) during creating channel root.
+ * @beta
+*/
+export interface ChannelRootExistsError extends ITwinError {
+  namespace: "itwinjs-core";
+  errorKey: "channel-root-exists";
+}
+
+/** @beta */
+export namespace ChannelRootExistsError {
+
+  /**
+ * type guard function that returns whether or not the passed in parameter is an [[ChannelRootExistsError]].
+ * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "channel-root-exists".
+ */
+  export function isChannelRootExistsError (error: unknown): error is ChannelsNestError {
+    return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "channel-root-exists";
+  }
+
+  /** throws an error which passes the [[ChannelNestError.isChannelRootExistsError]] type guard function */
+  export function throwChannelRootExistsError (message?: string, metadata?: LoggingMetaData) : never {
+    const errorObject = new Error();
+    errorObject.name = "ChannelRootExistsError";
+
+    const channelError: ChannelRootExistsError = {
+      namespace: "itwinjs-core",
+      errorKey: "channel-root-exists",
+      message: message ?? "A channel root for the specified key already exists",
+      metadata,
+    };
+    Object.assign(errorObject, channelError);
+    throw errorObject;
+  }
+
+}
+
 /** @beta */
 export namespace ITwinError {
   /** type guard function that returns whether or not the passed in parameter is an [[ITwinError]] */
