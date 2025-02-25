@@ -62,7 +62,7 @@ The following instructions will quickly set the repo up for you to edit the sour
 3. Build source: `rush build`
 4. Run tests: `rush cover`
 
-For more information, our [Contributing guide](./CONTRIBUTING.md) contains detailed instructions on typical source code editing workflows, our contribution standards, FAQs, instructions on how to post questions and et cetera.
+For more information, our [Contributing guide](./CONTRIBUTING.md) contains detailed instructions on typical source code editing workflows, debugging tests, our contribution standards, FAQs, instructions on how to post questions and et cetera.
 
 ## Licensing
 

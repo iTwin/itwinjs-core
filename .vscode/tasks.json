@@ -25,6 +25,13 @@
       ],
       "group": "build",
       "isBackground": true
-    }
+    },
+    {
+      "type": "npm",
+      "label": "Run webpack for frontend test worker",
+      "script": "webpackTestWorker",
+      "path": "core/frontend/",
+      "problemMatcher": []
+    },
   ]
 }
