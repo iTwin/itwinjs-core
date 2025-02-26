@@ -680,7 +680,7 @@ describe("Parsing tests:", () => {
     }
   });
 
-  it("when spacer is defined and math operations are supported, parser will ignore '-' characters when they are not surrounded by whitespace", async () => {
+  it("when spacer is defined and math operations are supported, parser will ignore '-' characters when they are not in front of whitespace", async () => {
     const formatData = {
       composite: {
         includeZero: true,
@@ -710,6 +710,9 @@ describe("Parsing tests:", () => {
     };
     const testData = [
       { value: "-2FT-6IN + 6IN", magnitude: -0.6096 },
+      { value: "-2FT-6IN +6IN", magnitude: -0.6096 },
+      { value: "-2FT-6IN -6IN", magnitude: -0.9144 },
+      { value: "-2FT-6IN - 6IN", magnitude: -0.9144 },
       { value: "-2FT 6IN + 6IN", magnitude: -0.6096 },
       { value: "1 1/2FT + 1/2IN", magnitude: 0.45720000000000005 + 0.0127 },
       { value: "2' 6\"-0.5", magnitude: 0.9144 },

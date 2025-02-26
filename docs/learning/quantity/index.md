@@ -236,7 +236,7 @@ Only plus(`+`) and minus(`-`) signs are supported for now.
 Other operators will end up returning a parsing error or an invalid input result.
 If a Format uses a spacer that conflicts with one of the operators above, additional restrictions will apply:
 
-1. Mathematical operations only apply when they are in between whitespace. So `-2FT 6IN + 6IN` is equal to `-2FT-6IN + 6IN`, and `-2FT-6IN - 6IN` is not equal to `-2FT-6IN-6IN`.
+1. Mathematical operations only apply when the operator is in front of whitespace. So `-2FT 6IN + 6IN` is equal to `-2FT-6IN + 6IN`, and `-2FT-6IN - 6IN` is not equal to `-2FT-6IN- 6IN`.
 
 <details>
 <summary>Example:</summary>

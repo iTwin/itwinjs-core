@@ -338,9 +338,8 @@ export class Parser {
 
           if (isSpacer && i > 0 && i < str.length - 1) {
             const prevCharCode = str.charCodeAt(i - 1);
-            const nextCharCode = str.charCodeAt(i + 1);
-            if (isCharOperator && nextCharCode !== QuantityConstants.CHAR_SPACE && prevCharCode !== QuantityConstants.CHAR_SPACE) {
-              // ignore spacer if it's not at the start or end, not whitespace, and is not in between whitespace
+            if (isCharOperator && prevCharCode !== QuantityConstants.CHAR_SPACE) {
+              // ignore spacer if it's not at the start or end, not whitespace, and is not in front of a whitespace
               continue;
             }
           }
