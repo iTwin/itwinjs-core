@@ -5325,6 +5325,7 @@ export type IpcInvokeReturn = {
         errorKey: string;
         message: string;
         stack?: string;
+        metadata?: LoggingMetaData;
         [key: string]: any;
     };
 };
