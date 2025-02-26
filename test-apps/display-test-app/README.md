@@ -228,7 +228,7 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_NO_IMDL_WORKER
   * If defined, decoding of iMdl content is performed in the main thread instead of in a web worker. This makes debugging easier.
 * IMJS_GOOGLEMAPS_UI
-  * Enable the Google Maps toolbar button
+  * Enable the Google Maps toolbar button.
 
 ## Key-ins
 
