@@ -15,20 +15,15 @@ import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetRead
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { _nativeDb, ChannelControl } from "../../core-backend";
-import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
   before(() => {
     HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
-    CloudSqliteMock.startup();
     iTwinId = HubMock.iTwinId;
   });
-  after(() => {
-    CloudSqliteMock.shutdown();
-    HubMock.shutdown();
-  });
+  after(() => HubMock.shutdown());
   it("Able to recover from when ExclusiveRootClassId is NULL for overflow table", async () => {
     /**
      * 1. Import schema with class that span overflow table.

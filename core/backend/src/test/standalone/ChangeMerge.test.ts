@@ -25,7 +25,6 @@ import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetCo
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
-import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -78,11 +77,9 @@ describe("Change merge method", () => {
   before(async () => {
     await IModelHost.startup();
     HubMock.startup("PullMergeMethod", KnownTestLocations.outputDir);
-    CloudSqliteMock.startup();
   });
 
   after(async () => {
-    CloudSqliteMock.shutdown();
     HubMock.shutdown()
     //await IModelHost.shutdown();
   });

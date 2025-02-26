@@ -19,6 +19,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
 import { TokenArg } from "./IModelDb";
 import { _getHubAccess, _setHubAccess } from "./internal/Symbols";
+import { CloudSqliteMock } from "./test/CloudSqliteMock";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
@@ -87,12 +88,14 @@ export class HubMock {
 
     IModelHost[_setHubAccess](this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
+    CloudSqliteMock.startup();
   }
 
   /** Stop a HubMock that was previously started with [[startup]]
    * @note this function throws an exception if any of the iModels used during the tests are left open.
    */
   public static shutdown() {
+    CloudSqliteMock.shutdown();
     if (this.mockRoot === undefined)
       return;
 

@@ -26,7 +26,6 @@ import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import * as sinon from "sinon";
-import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -59,13 +58,9 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
 
   before(() => {
     HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
-    CloudSqliteMock.startup();
     iTwinId = HubMock.iTwinId;
   });
-  after(() => {
-    CloudSqliteMock.shutdown();
-    HubMock.shutdown()
-  });
+  after(() => HubMock.shutdown());
 
   it("pull/merge causing update conflict - dirty read/modify (with no lock)", async () => {
     /**

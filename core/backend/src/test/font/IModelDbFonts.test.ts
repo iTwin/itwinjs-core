@@ -16,7 +16,6 @@ import { HubMock } from "../../HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { QueryMappedFamiliesArgs } from "../../IModelDbFonts";
-import { CloudSqliteMock } from "../../CloudSqliteMock";
 
 describe("IModelDbFonts", () => {
   let db: IModelDb;
@@ -52,12 +51,8 @@ describe("IModelDbFonts", () => {
 
   before(() => {
     HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir);
-    CloudSqliteMock.startup();
   });
-  after(() => {
-    CloudSqliteMock.shutdown();
-    HubMock.shutdown();
-  });
+  after(() => HubMock.shutdown());
 
   beforeEach(async () => {
     CodeService.createForIModel = () => MockCodeService as any;

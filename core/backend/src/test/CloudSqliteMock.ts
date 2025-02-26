@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { CloudSqlite } from "./CloudSqlite";
-import { HubMock } from "./HubMock";
-import { CheckpointProps } from "./CheckpointManager";
+import { CloudSqlite } from "../CloudSqlite";
+import { HubMock } from "../HubMock";
+import { CheckpointProps } from "../CheckpointManager";
 
 /**
  * Mocks the CloudSqlite access needed for [[V2CheckpointManager.downloadCheckpoint]].
