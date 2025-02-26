@@ -1565,7 +1565,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
-   * @deprecated in 5.0. Use [[mapTileTreeRefs]] instead.
+   * @deprecated in 4.11.x. Use [[mapTileTreeRefs]] instead.
    */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
@@ -1579,7 +1579,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
 
   /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
-   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 4.11.x. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     for (const ref of this.getTileTreeRefs()) {
@@ -3195,7 +3195,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== IModelApp.applicationLogoCard) {
         logos.appendChild(IModelApp.applicationLogoCard());
       }
-      
+
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
       for (const ref of this.getTileTreeRefs()) {
         ref.addLogoCards(logos, this);
