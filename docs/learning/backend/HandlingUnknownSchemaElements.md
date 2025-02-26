@@ -25,7 +25,7 @@ A schema with a newer ECXml version might contain elements not recognized by the
 
 ### Reading a newer schema already present in a newer iModel
 
-A newer iModel may be containing schemas that are write incompatible due to elements unsupported/unknown to the ECDb runtime being used.
+A newer iModel may contain schemas that are write incompatible due to elements unsupported/unknown to the ECDb runtime being used.
 When reading such a schema with an older ECDb runtime, a reduced form of the schema will be loaded where only the elements the ECDb runtime understands are read.
 
 | Schema Element or Attribute | Behavior when reading from iModel |
@@ -46,7 +46,7 @@ When reading such a schema with an older ECDb runtime, a reduced form of the sch
 
 A newer iModel might contain a class which is mapped to the Db tables in a way that is unsupported by or unknown to the ECDb runtime being used.
 These classes can be loaded successfully, as the user might want to look at the layout to see how the properties and/or relationships are estabished in the schema.
-However, querying these class and it's sub-classes is restricted due to the unknown nature of the db mapping.
+However, querying these classes and it's sub-classes is restricted due to the unknown nature of the db mapping.
 
 Consider the following example schema:
 
