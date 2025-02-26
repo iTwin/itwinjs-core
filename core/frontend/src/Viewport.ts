@@ -2687,7 +2687,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @deprecated in 3.x. Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
-
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
