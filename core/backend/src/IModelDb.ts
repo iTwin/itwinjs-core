@@ -803,7 +803,7 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].updateIModelProps(this.toJSON());
   }
 
-  /** Commit unsaved changes in memory as a Txn to the iModelDb.
+  /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
@@ -818,7 +818,9 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
-  /** Abandon pending changes in this iModel. */
+  /** Abandon changes in memory that have not been saved as a Txn to this iModelDb. 
+   * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
+  */
   public abandonChanges(): void {
     this[_nativeDb].abandonChanges();
   }
