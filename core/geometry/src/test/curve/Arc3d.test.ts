@@ -148,10 +148,12 @@ describe("Arc3d", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
+    const origin = Point3d.create();
+    const unitX = Vector3d.unitX();
+    const unitY = Vector3d.unitY();
+
     let dx = 0;
-    const arc1 = Arc3d.create(
-      Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartEndDegrees(0, 7200),
-    );
+    const arc1 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(0, 7200));
     ck.testCoordinate(arc1.sweep.sweepRadians, Angle.pi2Radians);
     ck.testCoordinate(arc1.sweep.startDegrees, 0);
     ck.testCoordinate(arc1.sweep.endDegrees, 360);
@@ -162,9 +164,7 @@ describe("Arc3d", () => {
     ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(1, 0));
 
     dx += 2;
-    const arc2 = Arc3d.create(
-      Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartEndDegrees(-90, 90),
-    );
+    const arc2 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-90, 90));
     ck.testCoordinate(arc2.sweep.sweepRadians, Angle.piRadians);
     ck.testCoordinate(arc2.sweep.startDegrees, -90);
     ck.testCoordinate(arc2.sweep.endDegrees, 90);
@@ -175,9 +175,7 @@ describe("Arc3d", () => {
     ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
 
     dx += 3;
-    const arc3 = Arc3d.create(
-      Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartEndDegrees(-540, -270),
-    );
+    const arc3 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-540, -270));
     ck.testCoordinate(arc3.sweep.sweepRadians, Angle.pi3Over2Radians);
     ck.testCoordinate(arc3.sweep.startDegrees, -540);
     ck.testCoordinate(arc3.sweep.endDegrees, -270);
@@ -188,9 +186,7 @@ describe("Arc3d", () => {
     ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
 
     dx += 2;
-    const arc4 = Arc3d.create(
-      Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartEndDegrees(90, 0),
-    );
+    const arc4 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(90, 0));
     ck.testCoordinate(arc4.sweep.sweepRadians, -Angle.piOver2Radians);
     ck.testCoordinate(arc4.sweep.startDegrees, 90);
     ck.testCoordinate(arc4.sweep.endDegrees, 0);
@@ -201,9 +197,7 @@ describe("Arc3d", () => {
     ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(1, 0));
 
     dx += 3;
-    const arc5 = Arc3d.create(
-      Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartEndDegrees(540, 450),
-    );
+    const arc5 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(540, 450));
     ck.testCoordinate(arc5.sweep.sweepRadians, -Angle.piOver2Radians);
     ck.testCoordinate(arc5.sweep.startDegrees, 540);
     ck.testCoordinate(arc5.sweep.endDegrees, 450);
@@ -211,6 +205,28 @@ describe("Arc3d", () => {
     arc5.emitStrokes(dest);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
     ck.testPoint3d(dest.pointAt(0)!, Point3d.create(-1, 0));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
+
+    dx += 2;
+    const arc6 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-1080, 3600));
+    ck.testCoordinate(arc6.sweep.sweepRadians, Angle.pi2Radians);
+    ck.testCoordinate(arc6.sweep.startDegrees, -1080);
+    ck.testCoordinate(arc6.sweep.endDegrees, -720);
+    dest = LineString3d.create();
+    arc6.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(1, 0));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(1, 0));
+
+    dx += 3;
+    const arc7 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-630, -1260));
+    ck.testCoordinate(arc7.sweep.sweepRadians, -Angle.pi2Radians);
+    ck.testCoordinate(arc7.sweep.startDegrees, -630);
+    ck.testCoordinate(arc7.sweep.endDegrees, -990);
+    dest = LineString3d.create();
+    arc7.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(0, 1));
     ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "Arc3dCreate");

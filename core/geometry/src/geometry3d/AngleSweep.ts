@@ -191,7 +191,7 @@ export class AngleSweep implements BeJSONFunctions {
     this._radians1 = Geometry.clampToStartEnd(this._radians1, -limit, limit);
   }
   /**
-   * Restrict the sweep angle to the degree range [-360, 360].
+   * Restrict [[sweepDegrees]] to the range [-360, 360].
    * The start angle and sign of the sweep angle are unchanged.
    */
   public clampToFullCircle(result?: AngleSweep): AngleSweep {
