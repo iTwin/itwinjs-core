@@ -11306,7 +11306,7 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
     // @deprecated
-    protected getDisplayedExtents(): AxisAlignedBox3d;f615 (TileTreeReference iterables (#7617))
+    protected getDisplayedExtents(): AxisAlignedBox3d;
     // @internal
     getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
     // @internal (undocumented)
