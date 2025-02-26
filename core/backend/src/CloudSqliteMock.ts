@@ -20,8 +20,6 @@ export class CloudSqliteMock {
    * copy a local file to the target file. Call [[shutdown]] to stop the mocking.
    */
   public static startup() {
-    // eslint-disable-next-line no-debugger
-    debugger;
     if (this._stubs.length > 0) {
       throw new Error("CloudSqliteMock.startup called twice without calling shutdown");
     }
@@ -36,10 +34,11 @@ export class CloudSqliteMock {
     }));
     this._stubs.push(sinon.stub(CloudSqlite, "transferDb").callsFake(async (direction, container: any, props) => {
       if (container.createArgs?.isMock) {
-        if (direction !== "download") {
+        if (direction === "download") {
           const checkpoint = container.createArgs.checkpoint as CheckpointProps;
           HubMock.findLocalHub(checkpoint.iModelId).downloadCheckpoint({ changeset: checkpoint.changeset, targetFile: props.localFileName });
         } else {
+          debugger; // eslint-disable-line no-debugger
           throw new Error("Mock transferDb only supports download");
         }
       } else {
