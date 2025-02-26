@@ -1404,6 +1404,8 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
+    addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
@@ -1591,6 +1593,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
+    addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
     constructUrl(y: number, x: number, zoom: number): Promise<string>;
@@ -1884,6 +1888,8 @@ export class BingLocationProvider {
 export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
@@ -6382,6 +6388,8 @@ export enum ManipulatorToolEvent {
 export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: ImageMapLayerSettings);
     // (undocumented)
+    addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
@@ -9679,6 +9687,8 @@ export interface RealityTileTreeParams extends TileTreeParams {
 export class RealityTreeReference extends RealityModelTileTree.Reference {
     constructor(props: RealityModelTileTree.ReferenceProps);
     // (undocumented)
+    addAttributions(cards: HTMLTableElement): Promise<void>;
+    // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement): void;
     // (undocumented)
     addToScene(context: SceneContext): void;
