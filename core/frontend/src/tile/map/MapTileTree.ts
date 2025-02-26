@@ -20,13 +20,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
-<<<<<<< HEAD
 import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
-import { SceneContext } from "../../ViewContext";
-=======
-import { RenderPlanarClassifier } from "../../internal/render/RenderPlanarClassifier";
 import { DecorateContext, SceneContext } from "../../ViewContext";
->>>>>>> ce418d16d8 (GoogleMaps support (#7604))
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,

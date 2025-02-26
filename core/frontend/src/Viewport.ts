@@ -2687,7 +2687,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @deprecated in 3.x. Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
@@ -3179,15 +3179,13 @@ export class ScreenViewport extends Viewport {
       if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
-<<<<<<< HEAD
-      this.forEachTileTreeRef((ref) => ref.addLogoCards(logos, this));
-=======
+
       const promises = new Array<Promise<void>>();
-      for (const ref of this.getTileTreeRefs()) {
-        promises.push(ref.addAttributions(logos, this));
-      }
+      // TODO: MD - fix this when PR7617 is backported
+      // for (const ref of this.getTileTreeRefs()) {
+      //   promises.push(ref.addAttributions(logos, this));
+      // }
       await Promise.all(promises);
->>>>>>> ce418d16d8 (GoogleMaps support (#7604))
       ev.stopPropagation();
     };
     logo.onclick = showLogos;
@@ -3438,13 +3436,11 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-<<<<<<< HEAD
-      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
-=======
-      for (const ref of this.getTileTreeRefs()) {
-        context.addFromDecorator(ref);
-      }
->>>>>>> ce418d16d8 (GoogleMaps support (#7604))
+
+      // TODO: MD - fix this when PR7617 is backported
+      // for (const ref of this.getTileTreeRefs()) {
+      //   context.addFromDecorator(ref);
+      // }
 
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);

@@ -5,12 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-
-<<<<<<< HEAD
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger} from "@itwin/core-bentley";
-=======
 import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, Logger,} from "@itwin/core-bentley";
->>>>>>> ce418d16d8 (GoogleMaps support (#7604))
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerProviderArrayProperty, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";

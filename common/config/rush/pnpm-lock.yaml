@@ -1302,6 +1302,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@itwin/imodel-transformer': ^0.4.2
       '@itwin/itwins-client': ^1.2.0
+      '@itwin/map-layers-formats': workspace:*
       '@itwin/oidc-signin-tool': ^4.4.1
       '@itwin/service-authorization': ^1.0.0
       '@types/chai': 4.3.1
@@ -1334,6 +1335,7 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/imodel-transformer': 0.4.2_weqmipkhmjm5vfy37lv47aijmu
       '@itwin/itwins-client': 1.2.0
+      '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.5
       azurite: 3.32.0

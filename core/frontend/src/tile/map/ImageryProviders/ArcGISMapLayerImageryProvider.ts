@@ -14,15 +14,9 @@ import {
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
-<<<<<<< HEAD:core/frontend/src/tile/map/ImageryProviders/ArcGISMapLayerImageryProvider.ts
 import { Logger } from "@itwin/core-bentley";
 import { HitDetail } from "../../../HitDetail";
-=======
-import { IModelStatus, Logger } from "@itwin/core-bentley";
-import { HitDetail } from "../../../../HitDetail";
-import { ScreenViewport } from "../../../../Viewport";
-
->>>>>>> ce418d16d8 (GoogleMaps support (#7604)):core/frontend/src/internal/tile/map/ImageryProviders/ArcGISMapLayerImageryProvider.ts
+import { ScreenViewport } from "../../../Viewport";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";
 

@@ -7,15 +7,9 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-<<<<<<< HEAD:core/frontend/src/tile/map/ImageryProviders/MapBoxLayerImageryProvider.ts
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
-=======
-import { IModelApp } from "../../../../IModelApp";
-import { MapLayerImageryProvider } from "../../../../tile/internal";
-import { ScreenViewport } from "../../../../Viewport";
-
->>>>>>> ce418d16d8 (GoogleMaps support (#7604)):core/frontend/src/internal/tile/map/ImageryProviders/MapBoxLayerImageryProvider.ts
+import { ScreenViewport } from "../../../Viewport";
 
 /** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
  * @internal

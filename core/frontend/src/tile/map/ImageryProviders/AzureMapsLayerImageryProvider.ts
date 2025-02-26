@@ -7,15 +7,9 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-<<<<<<< HEAD:core/frontend/src/tile/map/ImageryProviders/AzureMapsLayerImageryProvider.ts
 import { IModelApp } from "../../../IModelApp";
 import { MapLayerImageryProvider } from "../../internal";
-=======
-import { IModelApp } from "../../../../IModelApp";
-import { MapLayerImageryProvider } from "../../../../tile/internal";
-import { ScreenViewport } from "../../../../Viewport";
-
->>>>>>> ce418d16d8 (GoogleMaps support (#7604)):core/frontend/src/internal/tile/map/ImageryProviders/AzureMapsLayerImageryProvider.ts
+import { ScreenViewport } from "../../../Viewport";
 
 /** @internal */
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
