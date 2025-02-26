@@ -42,6 +42,8 @@ import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
 import { Npc } from "@itwin/core-common";
 import { addApplyContours } from "./Contours";
+import { Matrix4d } from "@itwin/core-geometry";
+import { Matrix4 } from "../Matrix";
 
 const constantLodTextureLookup = `
 vec4 constantLodTextureLookup(sampler2D textureSampler) {
@@ -296,7 +298,7 @@ export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClass
   const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, true, posType);
 
   addSurfaceFlags(builder, true, false);
-  addTexture(builder, IsAnimated.No, IsThematic.No, false, true);
+  addTexture(builder, IsAnimated.No, IsThematic.No, false, true, false);
   if (classified) {
     addHilitePlanarClassifier(builder);
     builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
@@ -490,7 +492,7 @@ const computeBaseColor = `
   // Compute color for raster glyph.
   const vec3 white = vec3(1.0);
   const vec3 epsilon = vec3(0.0001);
-  const vec3 almostWhite = white - epsilon;
+  vec3 almostWhite = white - epsilon;
 
   // set to black if almost white and reverse white-on-white is on
   bvec3 isAlmostWhite = greaterThan(surfaceColor.rgb, almostWhite);
@@ -561,9 +563,11 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
     builder.addInlineComputedVarying("v_normal", VariableType.Vec3, "v_normal = computeSurfaceNormal();");
   }
 }
-
+const scratchMatrix4d1 = Matrix4d.createIdentity();
+const scratchMatrix4d2 = Matrix4d.createIdentity();
+const scratchMatrix = new Matrix4();
 /** @internal */
-export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud: boolean, isHilite: boolean) {
+export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud: boolean, isHilite: boolean, isMaplayer:boolean) {
   if (isThematic) {
     builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, isPointCloud, true));
   }
@@ -617,7 +621,169 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       });
     });
   }
+
+  if (isMaplayer) {
+    builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
+      program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
+        uniform.setUniform1i(params.geometry.asSurface!.hasTextures ? 1 : 0);
+      });
+    });
+
+    const textureUnits = [
+      TextureUnit.RealityMesh3,
+      TextureUnit.RealityMesh4,
+      TextureUnit.RealityMesh5,
+      TextureUnit.RealityMeshThematicGradient,
+    ];
+
+    for (let i = 0; i < textureUnits.length; i++) {
+      const textureLabel = `s_texture${i}`;
+
+      builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
+        prog.addGraphicUniform(textureLabel, (uniform, params) => {
+          const textureUnit = textureUnits[i];
+          const mesh = params.geometry.asSurface!;
+          // console.log(mesh.textureParams);
+          const drapeTexture = mesh.textureParams ? mesh.textureParams.params[i].texture : undefined;
+          if (drapeTexture !== undefined) {
+            const texture = drapeTexture as Texture;
+            texture.texture.bindSampler(uniform, textureUnit);
+            params.context
+          } else {
+            System.instance.ensureSamplerBound(uniform, textureUnit);
+          }
+        });
+      });
+      const paramsLabel = `u_texParams${i}`, matrixLabel = `u_texMatrix${i}`;
+      builder.frag.addUniform(matrixLabel, VariableType.Mat4, (prog) => {
+        prog.addGraphicUniform(matrixLabel, (uniform, params) => {
+          const mesh = params.geometry.asSurface!;
+          const textureParam = mesh.textureParams?.params[i];
+          // assert(undefined !== textureParam);
+          if (undefined !== textureParam) {
+            const projectionMatrix = textureParam.getProjectionMatrix();
+            if (projectionMatrix) {
+              const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!, scratchMatrix4d1);
+              const eyeToTexture = projectionMatrix.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d2);
+              uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix));
+            } else
+              uniform.setMatrix4(textureParam.getTerrainMatrix()!);
+          }
+        });
+      });
+      builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
+        prog.addGraphicUniform(paramsLabel, (uniform, params) => {
+          const mesh = params.geometry.asSurface!;
+          const textureParam = mesh.textureParams?.params[i];
+          // assert(undefined !== textureParam);
+          if (undefined !== textureParam) {
+            uniform.setMatrix4(textureParam.getParams(scratchMatrix));
+          }
+        });
+      });
+    }
+  }
+
 }
+
+function applyDraping(){
+  const applyTextureStrings = [];
+
+  const textureCount = 4;
+
+  for (let i = 0; i < textureCount; i++)
+    applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
+
+  return `
+  if (!u_texturesPresent) {
+    vec4 col = baseColor;
+    return col;
+  }
+
+  bool doDiscard = true;
+  vec4 col = baseColor;
+  ${applyTextureStrings.join("\n  ")}
+  if (doDiscard)
+    discard;
+
+  return col;
+  `;
+}
+
+const testInside = `
+bool testInside(float x0, float y0, float x1, float y1, float x, float y) {
+  vec2 perp = vec2(y0 - y1, x1 - x0), test = vec2(x - x0, y - y0);
+  float dot = (test.x * perp.x + test.y * perp.y) / sqrt(perp.x * perp.x + perp.y * perp.y);
+  return dot >= -0.001;
+}
+`;
+
+const applyTexture = `
+bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
+  vec2 uv;
+  float layerAlpha;
+  bool isProjected = params[0][0] != 0.0;
+  float imageCount = params[0][1];
+  vec2 classPos;
+
+  if (isProjected) {
+    vec4 eye4 = vec4(v_eyeSpace, 1.0);
+    vec4 classPos4 = matrix * eye4;
+    classPos = classPos4.xy / classPos4.w;
+
+    // if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y) ||
+    //     !testInside(params[2].z, params[2].w, params[3].x, params[3].y, classPos.x, classPos.y) ||
+    //     !testInside(params[3].x, params[3].y, params[3].z, params[3].w, classPos.x, classPos.y) ||
+    //     !testInside(params[3].z, params[3].w, params[2].x, params[2].y, classPos.x, classPos.y))
+    //     return false;
+
+    uv.x = classPos.x;
+    uv.y = classPos.y / imageCount;
+    layerAlpha = params[0][2];
+
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+      return false;
+
+  } else {
+    vec4 texTransform = matrix[0].xyzw;
+    vec4 texClip = matrix[1].xyzw;
+    layerAlpha = matrix[2].x;
+    uv = vec2(texTransform[0] + texTransform[2] * v_texCoord.x, texTransform[1] + texTransform[3] * v_texCoord.y);
+
+    if (uv.x < texClip[0] || uv.x > texClip[2] || uv.y < texClip[1] || uv.y > texClip[3])
+      return false;
+
+    uv.y = 1.0 - uv.y;
+  }
+
+  vec4 texCol = TEXTURE(sampler, uv);
+  float alpha = layerAlpha * texCol.a;
+
+  if (alpha > 0.05) {
+    vec3 texRgb = isProjected ? (texCol.rgb / texCol.a) : texCol.rgb; // If projected, undo premultiplication
+    // Texture color is premultiplied earlier by alpha only if projected (from classification).
+
+    col.rgb = (1.0 - alpha) * col.rgb + alpha * texRgb;
+
+    if (isProjected) {
+      vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
+      // classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
+    } else {
+      // featureIncrement = matrix[2].y;
+      // classifierId = vec4(0);
+    }
+
+    if (alpha > col.a)
+      col.a = alpha;
+
+    return true;
+  }
+
+  // If texture color is transparent but base color is not, return true (don't discard)
+  // Else return false (discard) if both the texture and base color are transparent
+  return (col.a > 0.05);
+}
+`;
 
 export const discardClassifiedByAlpha = `
   if (u_no_classifier_discard)
@@ -690,7 +856,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     });
   });
 
-  addTexture(builder, flags.isAnimated, flags.isThematic, false, false);
+  addTexture(builder, flags.isAnimated, flags.isThematic, false, false, true);
 
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Boolean, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
@@ -703,6 +869,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addColor(builder);
 
   // Fragment
+  builder.frag.addFunction(testInside);
+  builder.frag.addFunction(applyTexture);
   builder.frag.addFunction(getSurfaceColor);
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
@@ -756,6 +924,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     addClassificationTranslucencyDiscard(builder);
   else
     addTransparencyDiscard(builder.frag);
+
+  builder.frag.set(FragmentShaderComponent.ApplyDraping, applyDraping());
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder, flags.isInstanced === IsInstanced.Yes);

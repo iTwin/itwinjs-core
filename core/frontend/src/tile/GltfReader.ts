@@ -651,7 +651,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return this._system.createGeometryFromMesh(mesh, undefined);
+    return this._system.createGeometryFromMesh(mesh, undefined, this._tile);
   }
 
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {

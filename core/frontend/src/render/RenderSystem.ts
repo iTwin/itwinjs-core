@@ -15,7 +15,7 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAn
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, RealityTile, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
@@ -266,10 +266,12 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** @internal */
-  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined {
+  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tile?: RealityTile): RenderGeometry | undefined {
     const meshArgs = mesh.toMeshArgs();
     if (meshArgs) {
       const meshParams = createMeshParams(meshArgs, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
+      meshParams.tile = tile;
+      meshParams.texture = mesh.displayParams.textureMapping?.texture;
       return this.createMeshGeometry(meshParams, viOrigin);
     }
 

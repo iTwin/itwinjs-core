@@ -36,7 +36,7 @@ const scratchOverlapRange = Range2d.createNull();
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchRange2d = Range2d.createNull();
-class ProjectedTexture {
+export class ProjectedTexture {
   public classifier: PlanarClassifier;
   constructor(classifier: RenderPlanarClassifier, public meshParams: RealityMeshGraphicParams, public targetRectangle: Range2d) {
     this.classifier = classifier as PlanarClassifier;
