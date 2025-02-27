@@ -39,6 +39,7 @@ describe("Class Registry", () => {
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData: EntityMetaData | undefined = el.getClassMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
@@ -60,6 +61,7 @@ describe("Class Registry", () => {
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const metaData = el2.getClassMetaData();
       assert.exists(metaData);
       if (undefined === metaData)
@@ -80,6 +82,7 @@ describe("Class Registry", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
 
     assert.equal(testDomainClass.baseClasses.length, 2);
@@ -92,6 +95,7 @@ describe("Class Registry", () => {
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
     const testData: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName) => {
       testData.push(propName);
     }, false);

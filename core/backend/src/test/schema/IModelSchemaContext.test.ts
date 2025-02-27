@@ -6,12 +6,13 @@ import { assert } from "chai";
 import * as path from "path";
 import { Code } from "@itwin/core-common";
 import {
-  DefinitionElement, IModelDb,
+  DefinitionElement,
   RepositoryLink,
   SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { SchemaKey } from "@itwin/ecschema-metadata";
 
 describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;
@@ -92,22 +93,16 @@ describe("IModel Schema Context", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
-    const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
+    const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1,0,0));
+    const testDomainClass = await testDomain!.getEntityClass("TestDomainClass");
 
-    assert.equal(testDomainClass.baseClasses.length, 2);
-    assert.equal(testDomainClass.baseClasses[0], DefinitionElement.classFullName);
-    assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
-
-    // Ensures the IMixin has been loaded as part of getMetadata call above.
-    assert.isDefined(imodel.classMetaDataRegistry.find("TestDomain:IMixin"));
+    assert.equal(Array.from(testDomainClass!.getAllBaseClassesSync() ?? []).length, 2);
+    assert.equal(testDomainClass!.getBaseClassSync()?.fullName, DefinitionElement.schemaItemKey.fullName);
+    assert.equal(Array.from(testDomainClass!.getAllBaseClassesSync() ?? [])[1]?.fullName, "TestDomain.IMixin");
 
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
-    const testData: string[] = [];
-    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName) => {
-      testData.push(propName);
-    }, false);
-
+    const testData = (await testDomainClass!.getProperties()).map(property => property.name);
     const expectedString = testData.find((testString: string) => {
       return testString === "testMixinProperty";
     });

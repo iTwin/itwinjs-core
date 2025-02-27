@@ -35,6 +35,7 @@ describe("Schema XML Import Tests", () => {
 
     await imodel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const testDomainClass = imodel.getMetaData("Test3:Test3Element"); // will throw on failure
 
     assert.equal(testDomainClass.baseClasses.length, 1);

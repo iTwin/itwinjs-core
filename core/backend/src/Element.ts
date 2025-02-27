@@ -398,7 +398,10 @@ export class Element extends Entity {
     model: ConcreteEntityTypes.Model,
   };
 
-  /** Get the class metadata for this element. */
+  /** Get the class metadata for this element.
+   * @deprecated in 5.0. Use [[Entity.getMetaData]] instead.
+   */
+   
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any {

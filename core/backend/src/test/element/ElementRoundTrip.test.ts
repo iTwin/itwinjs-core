@@ -565,6 +565,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       }
     } as unknown as TestElement;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const relClassId = imodel.getMetaData("BisCore:ModelContainsElements").classId;
 
     // verify inserted element properties
@@ -596,6 +597,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     let reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, Model.Id, Model.RelECClassId FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, id);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.equal(reader.current.ECClassId, geomElement.getClassMetaData()?.classId);
     assert.equal(reader.current.Id, newModelId);
     assert.equal(reader.current.RelECClassId, relClassId);
@@ -642,6 +644,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     reader = imodel.createQueryReader("SELECT ECInstanceId, ECClassId, Model.Id, Model.RelECClassId FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, id);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.equal(reader.current.ECClassId, geomElement.getClassMetaData()?.classId);
     assert.equal(reader.current.Id, newModelId);
     assert.equal(reader.current.RelECClassId, relClassId);
@@ -684,8 +687,10 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const reader = iModel.createQueryReader("SELECT ECInstanceId, ECClassId, Element.Id, Element.RelECClassId FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyNames });
     assert.isTrue(await reader.step());
     assert.equal(reader.current.ECInstanceId, elementAspectId);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.equal(reader.current.ECClassId, iModel.getMetaData("ElementRoundTripTest:TestElementAspect").classId);
     assert.equal(reader.current.Id, elementId);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.equal(reader.current.RelECClassId, iModel.getMetaData("BisCore:ElementOwnsUniqueAspect").classId);
     assert.isFalse(await reader.step());
 
@@ -811,7 +816,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       targetClassName: `ElementRoundTripTest.TestElement`,
     } as unknown as TestElementRefersToElements;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classId = imodel.getMetaData("ElementRoundTripTest:TestElementRefersToElements").classId;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const testElementId = imodel.getMetaData("ElementRoundTripTest:TestElement").classId;
 
     // verify system properties via concurrent query

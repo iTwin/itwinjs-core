@@ -164,6 +164,7 @@ class ChangedEntitiesProc {
       db.withPreparedSqliteStatement(sql, (stmt) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const classFullName = `${stmt.getValueString(2)}:${stmt.getValueString(0)}`;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           db.tryGetMetaData(classFullName);
         }
       });
@@ -182,6 +183,7 @@ class ChangedEntitiesProc {
       const bases: number[] = [];
       result[index] = { name, bases };
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.tryGetMetaData(name);
       if (!meta) {
         return;
