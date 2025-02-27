@@ -190,16 +190,14 @@ export class TerrainDrapeTool extends PrimitiveTool {
   }
 
   private getGeometryTreeRef(vp: Viewport, modelId: string): GeometryTileTreeReference | undefined {
-    let treeRef: GeometryTileTreeReference | undefined;
-    vp.forEachTileTreeRef((ref) => {
-      if (!treeRef) {
-        const tree = ref.treeOwner.load();
-        if (tree?.modelId === modelId)
-          treeRef = ref.createGeometryTreeReference();
+    for (const ref of vp.getTileTreeRefs()) {
+      const tree = ref.treeOwner.load();
+      if (tree?.modelId === modelId) {
+        return ref.createGeometryTreeReference();
       }
-    });
+    }
 
-    return treeRef;
+    return undefined;
   }
 
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
