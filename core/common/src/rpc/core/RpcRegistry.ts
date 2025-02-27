@@ -47,7 +47,7 @@ export class RpcRegistry {
 
   public static get instance() {
     if (!RpcRegistry._instance) {
-      const globalObj: any = global ?? self ?? window ?? {};
+      const globalObj: any = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
       if (!globalObj[REGISTRY])
         globalObj[REGISTRY] = new RpcRegistry();
 
