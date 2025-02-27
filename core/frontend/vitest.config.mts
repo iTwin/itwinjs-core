@@ -1,5 +1,24 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import * as packageJson from "./package.json";
+
+const includePackages: string[] = [];
+
+Object.keys(packageJson.peerDependencies).forEach((pkgName) => {
+  if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
+    try {
+      includePackages.push(pkgName);
+    } catch (e) { }
+  }
+});
+
+Object.keys(packageJson.dependencies).forEach((pkgName) => {
+  if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
+    try {
+      includePackages.push(pkgName);
+    } catch (e) { }
+  }
+});
 
 export default defineConfig({
   esbuild: {
@@ -11,8 +30,8 @@ export default defineConfig({
     browser: {
       provider: "playwright",
       enabled: true,
-      instances : [
-        { browser: "chromium"}
+      instances: [
+        { browser: "chromium" }
       ],
       headless: true,
       screenshotFailures: false
@@ -62,7 +81,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ["@itwin/core-common", "@itwin/core-bentley", "@itwin/core-geometry", "@itwin/core-quantity", "@itwin/appui-abstract", "@itwin/core-orbitgt"],
+    include: includePackages,
     force: true,
   },
 })

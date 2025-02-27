@@ -1,4 +1,16 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import * as packageJson from "./package.json";
+
+const includePackages: string[] = [];
+
+Object.keys(packageJson.dependencies).forEach((pkgName) => {
+  if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
+    try {
+      includePackages.push(pkgName);
+    } catch (e) { }
+  }
+});
+
 export default defineConfig({
   esbuild: {
     target: "es2022",
@@ -43,6 +55,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    include: includePackages,
     force: true,
   }
 })

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Clean cache on every test run to make sure linked dependencies are up to date",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
