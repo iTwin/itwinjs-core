@@ -685,7 +685,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     if (undefined === this._controls) {
       const overlay = vp.addNewDiv("accudraw-overlay", true, 35);
       const div = this.createControlDiv();
-      const is3dLayout = vp.view.is3d();
+      const is3dLayout = this.is3dCompass(vp);
       const isHorizontalLayout = props.horizontalArrangement;
 
       overlay.appendChild(div);
@@ -739,7 +739,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       div.style.height = isHorizontalLayout ? `${itemHeight * props.rowSpacingFactor}px` : `${rowOffset}px`;
 
       this._controls = { overlay, div, itemFields, itemLocks };
-      this.updateControlVisibility(CompassMode.Polar === this.compassMode, vp.view.is3d());
+      this.updateControlVisibility(CompassMode.Polar === this.compassMode, this.is3dCompass(vp));
       this.setFocusItem(this._focusItem);
       this.suspendToolTips();
 

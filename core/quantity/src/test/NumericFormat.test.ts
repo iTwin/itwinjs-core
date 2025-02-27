@@ -26,7 +26,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -63,7 +63,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -100,7 +100,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const clonedFormat = format.clone({
@@ -140,7 +140,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -173,7 +173,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -205,7 +205,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -239,7 +239,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -270,7 +270,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -302,7 +302,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -334,7 +334,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -365,7 +365,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -398,7 +398,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -430,7 +430,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -461,7 +461,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -488,7 +488,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -520,7 +520,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -552,7 +552,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -583,7 +583,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const testQuantityData = [
@@ -618,7 +618,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const clonedFormat = format.clone({
@@ -659,7 +659,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const clonedFormat = format.clone({
@@ -700,7 +700,7 @@ describe("Numeric Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData);
     expect(format.hasUnits).to.be.false;
 
     const primaryUnit: UnitProps = {
