@@ -176,8 +176,6 @@ export abstract class IpcHandler {
       } catch (err: any) {
         let ret: IpcInvokeReturn;
         if (ITwinError.isITwinError(err)) {
-          // TODO: Should metadata be left out? It is left out in the original error implementation..
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { namespace, errorKey, message, stack, metadata, ...rest } = err;
           ret = {
             iTwinError:
@@ -185,6 +183,7 @@ export abstract class IpcHandler {
               namespace,
               errorKey,
               message,
+              ...(metadata && { metadata }), // Include metadata only when defined
               ...rest,
             },
           };
@@ -263,6 +262,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
   public async saveChanges(key: string, description?: string): Promise<void> {
     IModelDb.findByKey(key).saveChanges(description);
+  }
+  public async abandonChanges(key: string): Promise<void> {
+    IModelDb.findByKey(key).abandonChanges();
   }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
