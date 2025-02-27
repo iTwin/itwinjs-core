@@ -6,7 +6,41 @@
 import * as sinon from "sinon";
 import { CloudSqlite } from "../CloudSqlite";
 import { HubMock } from "../HubMock";
-import { CheckpointProps } from "../CheckpointManager";
+import * as path from "path";
+import { BriefcaseManager } from "../BriefcaseManager";
+
+export class CloudContainerMock {
+  public isConnected = false;
+  public createArgs: any;
+  public containerId = "MockContainerId";
+  private _cloudCache?: CloudSqlite.CloudCache;
+
+  constructor(createArgs: any) {
+    this.createArgs = createArgs;
+  }
+  public connect(cache: CloudSqlite.CloudCache) {
+    this._cloudCache = cache;
+    this.downloadCheckpoint(path.join(cache.rootDir, this.createArgs.checkpoint.iModelId, this.createArgs.dbName));
+    this.isConnected = true;
+  }
+  public disconnect(_args?: { detach?: boolean }) {
+    this.isConnected = false;
+    this._cloudCache = undefined;
+  }
+  public downloadCheckpoint(fileName: string) {
+    const checkpoint = this.createArgs.checkpoint;
+    HubMock.findLocalHub(checkpoint.iModelId).downloadCheckpoint({ changeset: checkpoint.changeset, targetFile: fileName });
+  }
+  public checkForChanges() {}
+  public queryDatabase() {
+    return undefined;
+  }
+  public attach(): { dbName: string, container: CloudSqlite.CloudContainer } {
+    const dbName = path.join(BriefcaseManager.getBriefcaseBasePath(this.createArgs.checkpoint.iModelId), this.createArgs.dbName);
+    this.downloadCheckpoint(dbName);
+    return { dbName, container: undefined } as any as { dbName: string, container: CloudSqlite.CloudContainer };
+  }
+}
 
 /**
  * Mocks the CloudSqlite access needed for [[V2CheckpointManager.downloadCheckpoint]].
@@ -27,16 +61,15 @@ export class CloudSqliteMock {
     const origTransferDb = CloudSqlite.transferDb;
     this._stubs.push(sinon.stub(CloudSqlite, "createCloudContainer").callsFake((args) => {
       if ((args as any).isMock) {
-        return { createArgs: args } as any as CloudSqlite.CloudContainer;
+        return new CloudContainerMock(args) as any as CloudSqlite.CloudContainer;
       } else {
         return origCreateCloudContainer(args);
       }
     }));
     this._stubs.push(sinon.stub(CloudSqlite, "transferDb").callsFake(async (direction, container: any, props) => {
-      if (container.createArgs?.isMock) {
+      if (container instanceof CloudContainerMock) {
         if (direction === "download") {
-          const checkpoint = container.createArgs.checkpoint as CheckpointProps;
-          HubMock.findLocalHub(checkpoint.iModelId).downloadCheckpoint({ changeset: checkpoint.changeset, targetFile: props.localFileName });
+          container.downloadCheckpoint(props.localFileName);
         } else {
           debugger; // eslint-disable-line no-debugger
           throw new Error("Mock transferDb only supports download");

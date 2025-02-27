@@ -95,10 +95,10 @@ export class HubMock {
    * @note this function throws an exception if any of the iModels used during the tests are left open.
    */
   public static shutdown() {
-    CloudSqliteMock.shutdown();
     if (this.mockRoot === undefined)
       return;
 
+    CloudSqliteMock.shutdown();
     HubMock._iTwinId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
@@ -222,7 +222,7 @@ export class HubMock {
       accountName: "none",
       sasToken: "none",
       containerId: "none",
-      dbName: "none",
+      dbName: `${arg.changeset.index ?? 0}.bim`,
       storageType: "mock",
       isMock: true,
       checkpoint: arg,

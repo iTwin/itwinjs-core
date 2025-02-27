@@ -23,6 +23,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _getCheckpointDb, _hubAccess, _nativeDb, _openCheckpoint } from "./internal/Symbols";
+import { CloudContainerMock } from "./test/CloudSqliteMock";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -198,6 +199,9 @@ export class V2CheckpointManager {
 
     try {
       const container = this.getContainer(v2props, checkpoint);
+      if (container instanceof CloudContainerMock) {
+        return container.attach();
+      }
       const dbName = v2props.dbName;
       // Use the new token from the recently queried v2 checkpoint just incase the one we currently have is expired.
       container.accessToken = v2props.sasToken;
