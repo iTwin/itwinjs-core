@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "Clean cache on every test run to make sure linked dependencies are up to date",
+      "comment": "",
       "type": "none"
     }
   ],

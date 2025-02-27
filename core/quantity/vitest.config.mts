@@ -1,15 +1,9 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 import * as packageJson from "./package.json";
 
-const includePackages: string[] = [];
-
-Object.entries(packageJson.peerDependencies).forEach(([pkgName, version]) => {
-  if (version === "workspace:*") {
-    try {
-      includePackages.push(pkgName);
-    } catch (e) { }
-  }
-});
+const includePackages: string[] = Object.entries(packageJson.peerDependencies)
+  .filter(([_, version]) => version === "workspace:*")
+  .map(([pkgName]) => pkgName);
 
 export default defineConfig({
   test: {

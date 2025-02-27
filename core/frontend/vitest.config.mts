@@ -2,23 +2,14 @@ import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import * as packageJson from "./package.json";
 
-const includePackages: string[] = [];
-
-Object.entries(packageJson.peerDependencies).forEach(([pkgName, version]) => {
-  if (version === "workspace:*") {
-    try {
-      includePackages.push(pkgName);
-    } catch (e) { }
-  }
-});
-
-Object.entries(packageJson.dependencies).forEach(([pkgName, version]) => {
-  if (version === "workspace:*") {
-    try {
-      includePackages.push(pkgName);
-    } catch (e) { }
-  }
-});
+const includePackages: string[] = [
+  ...Object.entries(packageJson.peerDependencies)
+    .filter(([_, version]) => version === "workspace:*")
+    .map(([pkgName]) => pkgName),
+  ...Object.entries(packageJson.dependencies)
+    .filter(([_, version]) => version === "workspace:*")
+    .map(([pkgName]) => pkgName)
+];
 
 export default defineConfig({
   esbuild: {
