@@ -3,8 +3,8 @@ import * as packageJson from "./package.json";
 
 const includePackages: string[] = [];
 
-Object.keys(packageJson.peerDependencies).forEach((pkgName) => {
-  if (pkgName.startsWith("@itwin") || pkgName.startsWith("@bentley")) {
+Object.entries(packageJson.peerDependencies).forEach(([pkgName, version]) => {
+  if (version === "workspace:*") {
     try {
       includePackages.push(pkgName);
     } catch (e) { }
