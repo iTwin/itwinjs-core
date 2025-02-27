@@ -50,11 +50,11 @@ export class PlanarClipMaskState {
       // For this case, we don't need a maskRange so leave it as null.
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
-      context.viewport.forEachTileTreeRef((ref) => {
+      for (const ref of context.viewport.getTileTreeRefs()) {
         const tree = ref.treeOwner.load();
         if (tree && tree.modelId !== classifiedModelId && ref.planarClipMaskPriority > thisPriority)
           viewTrees.push(ref);
-      });
+      }
 
       return viewTrees;
     }

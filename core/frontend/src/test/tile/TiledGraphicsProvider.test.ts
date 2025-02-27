@@ -127,6 +127,8 @@ class TestProvider implements TiledGraphicsProvider {
       func(ref);
   }
 
+  public getReferences() { return this.refs; }
+
   public set loadingComplete(loadingComplete: boolean | undefined) {
     if (undefined === loadingComplete)
       this.isLoadingComplete = undefined;
@@ -243,5 +245,56 @@ describe("TiledGraphicsProvider", () => {
       projExtents.high.x + 30, projExtents.high.y - 40, projExtents.high.z * 50);
 
     expectExtents(new Range3d(projExtents.low.x - 10, projExtents.low.y, projExtents.low.z, projExtents.high.x + 30, projExtents.high.y, projExtents.high.z * 50));
+  });
+
+  describe("getTileTreeRefs", () => {
+    it("calls getReferences if defined", () => {
+      const tree = new TestTree(imodel);
+      const a = new TestRef(tree);
+      const b = new TestRef(tree);
+
+      class Pvdr implements TiledGraphicsProvider {
+        public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void) {
+          func(a);
+          func(b);
+        }
+        
+        public * getReferences(): Iterable<TileTreeReference> {
+          yield b;
+          yield a;
+        }
+      };
+
+      const provider = new Pvdr();
+      const refs: TileTreeReference[] = [];
+      for (const ref of TiledGraphicsProvider.getTileTreeRefs(provider, viewport)) {
+        refs.push(ref);
+      }
+
+      expect(refs[0]).to.equal(b);
+      expect(refs[1]).to.equal(a);
+    });
+
+    it("falls back to forEachTileTreeRef if getReferences is not defined", () => {
+      const tree = new TestTree(imodel);
+      const a = new TestRef(tree);
+      const b = new TestRef(tree);
+
+      class Pvdr implements TiledGraphicsProvider {
+        public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void) {
+          func(a);
+          func(b);
+        }
+      };
+
+      const provider = new Pvdr();
+      const refs: TileTreeReference[] = [];
+      for (const ref of TiledGraphicsProvider.getTileTreeRefs(provider, viewport)) {
+        refs.push(ref);
+      }
+
+      expect(refs[0]).to.equal(a);
+      expect(refs[1]).to.equal(b);
+    })
   });
 });
