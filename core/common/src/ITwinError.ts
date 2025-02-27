@@ -27,14 +27,25 @@ export interface InUseLock {
 }
 
 /**
+ * An enum used to describe namespaces for a developer/application.
+ * @beta
+ */
+export enum ITwinErrorNamespaces {
+  ItwinJsCore = "itwinjs-core"
+}
+
+/**
+ * An enum used to describe an error keys for a developer/application.
+ * @beta
+ */
+export enum ITwinErrorKeys {
+  InUseLocks = "in-use-locks",
+  Channel = "channel-error",
+}
+
+/**
  * An interface used to describe an error for a developer/application. The message is not intended to be displayed to an end user.
  * This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
- * When extending ITwinError, one should typically add a type guard function and a function to throw the error either to a namespace for their error or as standalone functions.
- * See [[InUseLocksError.throwInUseLocksError]] and [[InUseLocksError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
- * * Example of catching a ITwinError:
- * ``` ts
- * [[include:ITwinError.catchAndHandleITwinError]]
- * ```
  * @beta
  */
 export interface ITwinError {
@@ -56,164 +67,68 @@ export interface ITwinError {
  * @beta
 */
 export interface InUseLocksError extends ITwinError {
-  namespace: "itwinjs-core";
-  errorKey: "in-use-locks";
   inUseLocks: InUseLock[];
 }
 
-/** @beta */
-export namespace InUseLocksError {
-
-  /**
-   * type guard function that returns whether or not the passed in parameter is an [[InUseLocksError]].
-   * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "in-use-locks".
-   */
-  export function isInUseLocksError(error: unknown): error is InUseLocksError {
-    return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "in-use-locks";
-  }
-
-  /** throws an error which passes the [[InUseLocksError.isInUseLocksError]] type guard function */
-  export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never {
-    const errorObject = new Error();
-    errorObject.name = "InUseLocksError"; // optional but makes it so that when the error is thrown and not caught we see InUseLocksError: 'message' instead of Error: 'message'
-    Error.captureStackTrace(errorObject, throwInUseLocksError); // optional: whether we want to hide throwInUseLocksError or not from the stack. not super important
-    const lockError: InUseLocksError = {
-      namespace: "itwinjs-core",
-      errorKey: "in-use-locks",
-      message: message ?? "One or more objects are already locked by another briefcase.",
-      metadata,
-      inUseLocks,
-    };
-    Object.assign(errorObject, lockError);
-    throw errorObject;
-  }
-
-}
-
-/**
- * An error raised when channel is not allowed/denied.
- * Typically this error would be thrown by [ChannelAdmin._verifyChannel]($backend) during verification of the channel.
- * @beta
-*/
-export interface ChannelNotAllowedError extends ITwinError {
-  namespace: "itwinjs-core";
-  errorKey: "channel-not-allowed";
-}
-
-/** @beta */
-export namespace ChannelNotAllowedError {
-
-    /**
-   * type guard function that returns whether or not the passed in parameter is an [[ChannelNotAllowedError]].
-   * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "channel-not-allowed".
-   */
-    export function isChannelNotAllowedError (error: unknown): error is ChannelNotAllowedError {
-      return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "channel-not-allowed";
-    }
-
-    /** throws an error which passes the [[ChannelNotAllowedError.isChannelNotAllowedError]] type guard function */
-    export function throwChannelNotAllowedError (message?: string, metadata?: LoggingMetaData) : never {
-      const errorObject = new Error();
-      errorObject.name = "ChannelNotAllowedError";
-
-      const channelError: ChannelNotAllowedError = {
-        namespace: "itwinjs-core",
-        errorKey: "channel-not-allowed",
-        message: message ?? "Channel is not allowed",
-        metadata,
-      };
-      Object.assign(errorObject, channelError);
-      throw errorObject;
-    }
-
-}
-
-/**
- * An error raised when channel is may not nest.
- * Typically this error would be thrown by [ChannelAdmin.makeChannelRoot]($backend) during creating channel root.
- * @beta
-*/
-export interface ChannelsNestError extends ITwinError {
-  namespace: "itwinjs-core";
-  errorKey: "channels-may-not-nest";
-}
-
-/** @beta */
-export namespace ChannelsNestError {
-
-  /**
- * type guard function that returns whether or not the passed in parameter is an [[ChannelNestError]].
- * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "channels-may-not-nest".
- */
-  export function isChannelsNestError (error: unknown): error is ChannelsNestError {
-    return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "channels-may-not-nest";
-  }
-
-  /** throws an error which passes the [[ChannelNestError.isChannelNestError]] type guard function */
-  export function throwChannelsNestError (message?: string, metadata?: LoggingMetaData) : never {
-    const errorObject = new Error();
-    errorObject.name = "ChannelsNestError";
-
-    const channelError: ChannelsNestError = {
-      namespace: "itwinjs-core",
-      errorKey: "channels-may-not-nest",
-      message: message ?? "Channels may not nest",
-      metadata,
-    };
-    Object.assign(errorObject, channelError);
-    throw errorObject;
-  }
-
-}
-
-/**
- * An error raised when channel root already exists.
- * Typically this error would be thrown by [ChannelAdmin.makeChannelRoot]($backend) or [ChannelAdmin.insertChannelSubject]($backend) during creating channel root.
- * @beta
-*/
-export interface ChannelRootExistsError extends ITwinError {
-  namespace: "itwinjs-core";
-  errorKey: "channel-root-exists";
-}
-
-/** @beta */
-export namespace ChannelRootExistsError {
-
-  /**
- * type guard function that returns whether or not the passed in parameter is an [[ChannelRootExistsError]].
- * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "channel-root-exists".
- */
-  export function isChannelRootExistsError (error: unknown): error is ChannelsNestError {
-    return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "channel-root-exists";
-  }
-
-  /** throws an error which passes the [[ChannelNestError.isChannelRootExistsError]] type guard function */
-  export function throwChannelRootExistsError (message?: string, metadata?: LoggingMetaData) : never {
-    const errorObject = new Error();
-    errorObject.name = "ChannelRootExistsError";
-
-    const channelError: ChannelRootExistsError = {
-      namespace: "itwinjs-core",
-      errorKey: "channel-root-exists",
-      message: message ?? "A channel root for the specified key already exists",
-      metadata,
-    };
-    Object.assign(errorObject, channelError);
-    throw errorObject;
-  }
-
-}
+type ITwinAssertFn<T extends ITwinError> = (error: unknown) => error is T;
 
 /** @beta */
 export namespace ITwinError {
-  /** type guard function that returns whether or not the passed in parameter is an [[ITwinError]] */
-  export function isITwinError(error: unknown): error is ITwinError {
-    return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error;
+
+  /**
+ * A function which will be used to construct an error.
+ * @param namespace The namespace associated with the error.
+ * @param errorKey The errorKey associated with the error.
+ * @param message The message associated with the error.
+ * @param metadata Metadata associated with the error.
+ * @beta
+ */
+  export function constructError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError {
+    const errorObject = new Error();
+    errorObject.name = `${namespace}:${errorKey}`;
+
+    const error: ITwinError = {
+      namespace,
+      errorKey,
+      message: message ?? `${errorKey} occurred`,
+      metadata
+    };
+
+    return Object.assign(errorObject, error);
   }
 
-  /** get the meta data associated with this ITwinError, if any. */
+   /**
+ * A function which will be used to construct a details error for example [[ InUseLocksError ]] above.
+ * @param namespace The namespace associated with the error.
+ * @param errorKey The errorKey associated with the error.
+ * @param details Other details associated with the error.
+ * @param message The message associated with the error.
+ * @param metadata Metadata associated with the error.
+ * @beta
+ */
+  export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T {
+    const baseError = constructError(namespace, errorKey, message, metadata);
+
+    return Object.assign(baseError, details) as T;
+  }
+
+  /** type guard function that returns whether or not the passed in parameter is an extension of [[ITwinError]] */
+  export function isValidError<T extends ITwinError>(namespace: string, errorKey: string): ITwinAssertFn<T> {
+    return (error: unknown): error is T => {
+      return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && (error as ITwinError).namespace === namespace && (error as ITwinError).errorKey === errorKey;
+    }
+  }
+
+  /** get the meta data associated with this ITwinErrorTest, if any. */
   export function getMetaData(err: ITwinError): object | undefined {
     return BentleyError.getMetaData(err.metadata);
+  }
+
+  /** type guard function that returns whether or not the passed in parameter is an [[ITwinError]]
+   * Keeping this for now to avoid changes throughout code.
+  */
+  export function isITwinError(error: unknown): error is ITwinError {
+    return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error;
   }
 
 };

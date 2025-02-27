@@ -11,7 +11,7 @@ import {
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, ChannelNotAllowedError, ChannelRootExistsError, ChannelsNestError, CodeProps, ElementProps, IModel, InUseLock, InUseLocksError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, InUseLock, InUseLocksError, ITwinError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -25,6 +25,7 @@ import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
+import { namespaces } from "@svgdotjs/svg.js";
 
 /* eslint-disable no-console */
 
@@ -77,20 +78,14 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return iModel.executeWritable(async () => undefined);
   }
 
-  public async throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metaData?: LoggingMetaData): Promise<void> {
-    InUseLocksError.throwInUseLocksError(inUseLocks, message, metaData);
+  public async throwDetailedError<T extends ITwinError>(details: Omit<T, keyof ITwinError>, namespace: string, errorKey: string, message?: string, metaData?: LoggingMetaData): Promise<void> {
+    const error = ITwinError.constructDetailedError<T>(namespace, errorKey, details, message, metaData);
+    throw error;
   }
 
-  public async throwChannelNotAllowedError(message?: string, metaData?: LoggingMetaData): Promise<void> {
-    ChannelNotAllowedError.throwChannelNotAllowedError(message, metaData);
-  }
-
-  public async throwChannelsNestError(message?: string, metaData?: LoggingMetaData): Promise<void> {
-    ChannelsNestError.throwChannelsNestError(message, metaData);
-  }
-
-  public async throwChannelRootExistsError(message?: string, metaData?: LoggingMetaData): Promise<void> {
-    ChannelRootExistsError.throwChannelRootExistsError(message, metaData);
+  public async throwITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void> {
+    const error = ITwinError.constructError(namespace, errorKey, message, metadata);
+    throw error;
   }
 }
 
