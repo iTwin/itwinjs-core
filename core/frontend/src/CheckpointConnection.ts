@@ -8,7 +8,7 @@
 
 import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, OpenCheckpointArgs, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -54,18 +54,27 @@ export class CheckpointConnection extends IModelConnection {
     const accessToken = await IModelApp.getAccessToken();
     const changeset = await IModelApp.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version });
 
-    let connection: CheckpointConnection;
     const iModelProps = { iTwinId, iModelId, changeset };
-    if (IpcApp.isValid) {
-      connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(iModelProps), true);
-    } else {
-      const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-      connection = new this(await this.callOpen(iModelProps, routingContext), false);
-      RpcManager.setIModel(connection);
-      connection.routingContext = routingContext;
-      RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
-    }
+    if (IpcApp.isValid) // when called from Ipc, use the Ipc implementation
+      return this.openFromIpc(iModelProps);
 
+    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
+    const connection = new this(await this.callOpen(iModelProps, routingContext), false);
+    RpcManager.setIModel(connection);
+    connection.routingContext = routingContext;
+    RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
+  }
+
+  /**
+   * Open a readonly IModelConnection to a Checkpoint of an iModel from Ipc.
+   * @note this function is equivalent to [[openRemote]] but allows more flexibility specifying the changeset version,
+   * and also optionally starting a prefetch operation.
+   */
+  public static async openFromIpc(args: OpenCheckpointArgs): Promise<CheckpointConnection> {
+    const connection = new this(await IpcApp.appFunctionIpc.openCheckpoint(args), true);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }

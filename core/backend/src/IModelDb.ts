@@ -3408,6 +3408,11 @@ export class SnapshotDb extends IModelDb {
     return db;
   }
 
+  /**
+   * Attach to a checkpoint and open it. This involves fetching the database name and container from V2CheckpointManager, and opening the file.
+   * @param checkpoint The checkpoint properties
+   * @returns A promise that resolves with an instance of SnapshotDb.
+   */
   private static async attachAndOpenCheckpoint(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { dbName, container } = await V2CheckpointManager.attach(checkpoint);
     const key = CheckpointManager.getKey(checkpoint);
@@ -3437,11 +3442,15 @@ export class SnapshotDb extends IModelDb {
   }
 
   /**
-   * Open a Checkpoint directly from its cloud container.
+   * Open a Checkpoint directly from its cloud container. Data for the checkpoint is loaded from the container on demand as it is accessed.
+   * This method starts a "prefetch" (see [[CloudSqlite.startCloudPrefetch]]) operation to asynchronously download all blocks in the checkpoint by
+   * default. Prefetching can improve performance when a large portion of the database will be needed, or to allow offline usage.
+   * To disable prefetching, set `args.doPrefetch = false`;
    * @beta
    */
   public static async openCheckpoint(args: OpenCheckpointArgs): Promise<SnapshotDb> {
-    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckpointProps(args));
+    // set doPrefetch = true by default
+    return this.attachAndOpenCheckpoint(await CheckpointManager.toCheckpointProps({ doPrefetch: true, ...args }));
   }
 
   /** Used to refresh the container sasToken using the current user's accessToken.
