@@ -7,6 +7,7 @@ publish: false
 Table of contents:
 
 - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
+- [Pending Removals](#pending-removals)
 
 ## Deprecated ECSqlStatement
 
@@ -18,5 +19,20 @@ Following are related classes to ECSqlStatement that are also marked depercated
   * `ECSqlValueIterator`
   * `ECSqlColumnInfo`
 
-  In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
-  
+In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
+
+## Pending Removals
+
+The following APIs in `@itwin/core-common` are being re-exported from `@itwin/core-bentley` and will be removed in the next major without deprecation. Please import them from `@itwin/core-bentley` instead.
+
+| To be removed         |
+| --------------------- |
+| `BentleyStatus`       |
+| `BentleyError`        |
+| `IModelStatus`        |
+| `BriefcaseStatus`     |
+| `DbResult`            |
+| `ChangeSetStatus`     |
+| `GetMetaDataFunction` |
+| `LogFunction`         |
+| `LoggingMetaData`     |
