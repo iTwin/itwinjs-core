@@ -561,13 +561,12 @@ export class LinearlyLocated {
 
   private static queryFirstLinearLocationAspectId(iModel: IModelDb, linearlyLocatedElementId: Id64String, className: string): Id64String | undefined {
     let aspectId: Id64String | undefined;
-
-    iModel.withPreparedStatement(`SELECT ECInstanceId FROM LinearReferencing.${className} WHERE Element.Id=? LIMIT 1`,
-      (stmt: ECSqlStatement) => {
-        stmt.bindId(1, linearlyLocatedElementId);
-        if (stmt.step() === DbResult.BE_SQLITE_ROW)
-          aspectId = stmt.getValue(0).getId();
-      });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    iModel.withPreparedStatement(`SELECT ECInstanceId FROM LinearReferencing.${className} WHERE Element.Id=? LIMIT 1`, (stmt: ECSqlStatement) => {
+      stmt.bindId(1, linearlyLocatedElementId);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW)
+        aspectId = stmt.getValue(0).getId();
+    });
 
     return aspectId;
   }
@@ -662,16 +661,15 @@ export class LinearlyLocated {
    */
   public static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined {
     let linearElementId: Id64String | undefined;
-    iModel.withPreparedStatement(
-      "SELECT TargetECInstanceId FROM LinearReferencing.ILinearlyLocatedAlongILinearElement WHERE SourceECInstanceId = ?",
-      (stmt: ECSqlStatement) => {
-        stmt.bindId(1, linearlyLocatedElementId);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    iModel.withPreparedStatement("SELECT TargetECInstanceId FROM LinearReferencing.ILinearlyLocatedAlongILinearElement WHERE SourceECInstanceId = ?", (stmt: ECSqlStatement) => {
+      stmt.bindId(1, linearlyLocatedElementId);
 
-        if (DbResult.BE_SQLITE_ROW === stmt.step())
-          linearElementId = stmt.getValue(0).getId();
-        else
-          linearElementId = undefined;
-      });
+      if (DbResult.BE_SQLITE_ROW === stmt.step())
+        linearElementId = stmt.getValue(0).getId();
+      else
+        linearElementId = undefined;
+    });
 
     return linearElementId;
   }
@@ -765,6 +763,7 @@ export class LinearElement {
     const ecsqlAndBindVals = ecSqlGen.generate(linearElementId);
 
     const linearLocationRefs: LinearLocationReference[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(ecsqlAndBindVals[0], (stmt: ECSqlStatement) => {
       stmt.bindValues(ecsqlAndBindVals[1]);
 

@@ -12,39 +12,42 @@ import * as crypto from "crypto";
 import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
 import { KnownTestLocations } from "../../KnownTestLocations";
 import { format } from "sql-formatter";
+import { using } from "@itwin/core-bentley";
 
 // Call like this:
 // node lib\cjs\test\ecsql\src\ECSqlTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t
 // node lib\cjs\test\ecsql\src\ECSqlTestGenerator.js AllProperties.bim "SELECT te.ECInstanceId [MyId], te.s, te.DT [Date], row_number() over(PARTITION BY te.DT ORDER BY te.ECInstanceId) as [RowNumber] from aps.TestElement te WHERE te.i < 106" -t
-async function runConcurrentQuery(imodel: IModelDb, sql: string): Promise<{metadata: any[], rows: any[] }> {
+async function runConcurrentQuery(imodel: IModelDb, sql: string): Promise<{ metadata: any[], rows: any[] }> {
   const queryOptions: QueryOptionsBuilder = new QueryOptionsBuilder();
   queryOptions.setRowFormat(QueryRowFormat.UseECSqlPropertyNames);
   const reader = imodel.createQueryReader(sql, undefined, queryOptions.getOptions());
   const rows = await reader.toArray();
   const metadata = await reader.getMetaData();
-  metadata.forEach((value: QueryPropertyMetaData)=> delete (value as any).extendType);
-  return {metadata, rows };
+  metadata.forEach((value: QueryPropertyMetaData) => delete (value as any).extendType);
+  return { metadata, rows };
 }
 
 function pullAdditionalMetadataThroughECSqlStatement(imodel: IModelDb, metadata: any[], sql: string): void {
-  const stmt = imodel.prepareStatement(sql);
-  if (stmt.step() === DbResult.BE_SQLITE_ROW) {
-    const colCount = stmt.getColumnCount();
-    if(colCount !== metadata.length) {
-      // eslint-disable-next-line no-console
-      console.error(`Column count mismatch: ${colCount} != ${metadata.length}. Not generating metadata from statement.`);
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  using(imodel.prepareStatement(sql), (stmt) => {
+    if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const colCount = stmt.getColumnCount();
+      if (colCount !== metadata.length) {
+        // eslint-disable-next-line no-console
+        console.error(`Column count mismatch: ${colCount} != ${metadata.length}. Not generating metadata from statement.`);
+        stmt.dispose();
+        return;
+      }
+      for (let i = 0; i < colCount; i++) {
+        const colInfo = stmt.getValue(i).columnInfo;
+        metadata[i].type = ECSqlValueType[colInfo.getType()];
+        const originPropertyName = colInfo.getOriginPropertyName();
+        if (originPropertyName !== undefined)
+          metadata[i].originPropertyName = originPropertyName;
+      }
       stmt.dispose();
-      return;
     }
-    for (let i = 0; i < colCount; i++) {
-      const colInfo = stmt.getValue(i).columnInfo;
-      metadata[i].type = ECSqlValueType[colInfo.getType()];
-      const originPropertyName = colInfo.getOriginPropertyName();
-      if (originPropertyName !== undefined)
-        metadata[i].originPropertyName = originPropertyName;
-    }
-    stmt.dispose();
-  }
+  });
 }
 
 function arrayToMarkdownTable(data: any[]): string {
@@ -78,7 +81,7 @@ function generateHash(input: string): string {
 function writeMarkdownFile(dataset: string, sql: string, columns: any[], results: any[], useTables: boolean): void {
   const hash = generateHash(sql);
   if (sql.length > 100) { // we format the SQL if it's too long
-    sql = format(sql, {language: "sqlite", keywordCase: "upper", "tabWidth": 2, indentStyle: "standard", logicalOperatorNewline: "after"});
+    sql = format(sql, { language: "sqlite", keywordCase: "upper", "tabWidth": 2, indentStyle: "standard", logicalOperatorNewline: "after" });
   }
 
   let markdownContent = `# GeneratedTest #${dataset} - ${hash}
@@ -100,7 +103,7 @@ ${arrayToMarkdownTable(results)}
   } else {
     markdownContent += `
 \`\`\`json
-${JSON.stringify({columns}, null, 2)}
+${JSON.stringify({ columns }, null, 2)}
 \`\`\`
 
 \`\`\`json

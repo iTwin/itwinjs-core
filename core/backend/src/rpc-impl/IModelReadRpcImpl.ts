@@ -246,6 +246,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getAllCodeSpecs(tokenProps: IModelRpcProps): Promise<any[]> {
     const codeSpecs: any[] = [];
     const iModelDb = await getIModelForRpc(tokenProps);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
       for (const row of statement)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
@@ -283,7 +284,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.getMassProperties(props);
   }
 
-  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { // eslint-disable-line @typescript-eslint/no-deprecated
     const iModelDb = await getIModelForRpc(tokenProps);
 
     const getSingleCandidateMassProperties = async (candidate: string) => {
@@ -295,7 +296,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
           massPropResults.push(massProperties);
         }
 
-        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate };
+        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate }; // eslint-disable-line @typescript-eslint/no-deprecated
 
         if (massPropResults.some((r) => r.status !== BentleyStatus.ERROR)) {
           singleCandidateResult.status = BentleyStatus.SUCCESS;
@@ -310,7 +311,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       }
     };
 
-    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = [];
+    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = []; // eslint-disable-line @typescript-eslint/no-deprecated
 
     for (const candidate of CompressedId64Set.iterable(props.candidates)) {
       promises.push(getSingleCandidateMassProperties(candidate));

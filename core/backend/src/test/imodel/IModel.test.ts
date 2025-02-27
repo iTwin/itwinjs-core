@@ -728,6 +728,7 @@ describe("iModel", () => {
 
   it("should be some categories", () => {
     const categorySql = `SELECT ECInstanceId FROM ${Category.classFullName}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel1.withPreparedStatement(categorySql, (categoryStatement: ECSqlStatement): void => {
       let numCategories = 0;
       while (DbResult.BE_SQLITE_ROW === categoryStatement.step()) {
@@ -748,6 +749,7 @@ describe("iModel", () => {
 
         // get the subcategories
         const subCategorySql = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE Parent.Id=:parentId`;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         imodel1.withPreparedStatement(subCategorySql, (subCategoryStatement: ECSqlStatement): void => {
           let numSubCategories = 0;
           subCategoryStatement.bindId("parentId", categoryId);
@@ -767,6 +769,7 @@ describe("iModel", () => {
 
   it("should be some 2d elements", () => {
     const sql = `SELECT ECInstanceId FROM ${DrawingGraphic.classFullName}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       let numDrawingGraphics = 0;
       let found25: boolean = false;
@@ -863,6 +866,7 @@ describe("iModel", () => {
 
   it("should be children of RootSubject", () => {
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("parentModelId", IModel.repositoryModelId);
       let numModels = 0;
@@ -1131,6 +1135,7 @@ describe("iModel", () => {
   it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel2.prepareStatement("select no_such_property, codeValue from bis.element", false);
       assert.fail("prepare should have failed with an exception");
     } catch (err: any) {
@@ -1139,6 +1144,7 @@ describe("iModel", () => {
     }
     let lastId: string = "";
     let firstCodeValue: string = "";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element", (stmt: ECSqlStatement) => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
@@ -1187,6 +1193,7 @@ describe("iModel", () => {
       assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
       const idToFind = Id64.fromJSON(lastId);
@@ -1203,6 +1210,7 @@ describe("iModel", () => {
     });
 
     let firstCodeValueId: Id64String | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1223,8 +1231,10 @@ describe("iModel", () => {
     const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
     assert.equal(ids.values().next().value, firstCodeValueId);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         imodel2.withPreparedStatement("select codevalue from bis.element where ecinstanceid=?", (stmt6: ECSqlStatement) => {
           stmt6.bindId(1, stmt5.getRow().id);
           while (DbResult.BE_SQLITE_ROW === stmt6.step()) {
@@ -1483,6 +1493,7 @@ describe("iModel", () => {
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId1);
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId2);
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId3);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const numMembers = iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${DefinitionGroupGroupsDefinitions.classFullName}`, (statement: ECSqlStatement): number => {
       return statement.step() === DbResult.BE_SQLITE_ROW ? statement.getValue(0).getInteger() : 0;
     });
@@ -2530,8 +2541,11 @@ describe("iModel", () => {
   it("tryPrepareStatement", () => {
     const sql = `SELECT * FROM ${Element.classFullName} LIMIT 1`;
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.throws(() => imodel1.prepareStatement(invalidSql, false));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);
     assert.isTrue(statement?.isPrepared);
