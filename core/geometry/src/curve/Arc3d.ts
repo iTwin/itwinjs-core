@@ -298,7 +298,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     super();
     this._center = center;
     this._matrix = matrix;
-    this._sweep = sweep;
+    this._sweep = sweep.clampToFullCircle(sweep);
   }
   /**
    * Return a clone of the arc, with transform applied.
