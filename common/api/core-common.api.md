@@ -672,6 +672,12 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 }
 
 // @public
+export interface BinaryImageSource {
+    readonly data: Uint8Array;
+    readonly format: ImageSourceFormat.Jpeg | ImageSourceFormat.Png;
+}
+
+// @public
 export enum BisCodeSpec {
     // @internal (undocumented)
     annotationFrameStyle = "bis:AnnotationFrameStyle",
@@ -1096,7 +1102,7 @@ export enum ChangeOpCode {
     Update = 2
 }
 
-// @internal
+// @public
 export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
@@ -3723,6 +3729,7 @@ export enum GeoCoordStatus {
     NoGCSDefined = 100,
     OutOfMathematicalDomain = 2,
     OutOfUsefulRange = 1,
+    // @deprecated
     Pending = -41556,
     Success = 0,
     VerticalDatumConvertError = 26
@@ -4785,6 +4792,8 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     modelId?: never;
     // @beta
+    properties?: MapLayerProviderProperties;
+    // @beta
     queryParams?: {
         [key: string]: string;
     };
@@ -4818,6 +4827,8 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
+    // @beta
+    readonly properties?: MapLayerProviderProperties;
     // @beta
     savedQueryParams?: {
         [key: string]: string;
@@ -5252,6 +5263,7 @@ export const ipcAppChannels: {
 
 // @internal
 export interface IpcAppFunctions {
+    abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
@@ -5312,6 +5324,7 @@ export type IpcInvokeReturn = {
         errorKey: string;
         message: string;
         stack?: string;
+        metadata?: LoggingMetaData;
         [key: string]: any;
     };
 };
@@ -5440,6 +5453,9 @@ export abstract class IpcWebSocketTransport {
     // (undocumented)
     protected unwrap(data: any): any;
 }
+
+// @public
+export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
@@ -5725,6 +5741,15 @@ export interface MapLayerKey {
 
 // @public
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
+
+// @beta
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
+
+// @beta
+export interface MapLayerProviderProperties {
+    // (undocumented)
+    [key: string]: number | string | boolean | MapLayerProviderArrayProperty;
+}
 
 // @public
 export abstract class MapLayerSettings {

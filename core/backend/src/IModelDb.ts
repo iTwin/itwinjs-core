@@ -70,7 +70,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 
 // spell:ignore fontid fontmap
@@ -804,9 +804,11 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].updateIModelProps(this.toJSON());
   }
 
-  /** Commit pending changes to this iModel.
+  /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
+   * @note This will not push changes to the iModelHub.
+   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
   public saveChanges(description?: string): void {
     if (this.openMode === OpenMode.Readonly)
@@ -817,7 +819,9 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
-  /** Abandon pending changes in this iModel. */
+  /** Abandon changes in memory that have not been saved as a Txn to this iModelDb. 
+   * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
+  */
   public abandonChanges(): void {
     this[_nativeDb].abandonChanges();
   }
@@ -3407,7 +3411,7 @@ class RefreshV2CheckpointSas {
         throw new Error("checkpoint is not from a cloud container");
 
       assert(undefined !== iModel.iTwinId);
-      const props = await IModelHost.hubAccess.queryV2Checkpoint({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      const props = await IModelHost[_hubAccess].queryV2Checkpoint({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
       if (!props)
         throw new Error("can't reset checkpoint sas token");
 

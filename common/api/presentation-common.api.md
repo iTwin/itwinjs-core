@@ -440,6 +440,12 @@ export enum ContentSpecificationTypes {
 // @public
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
+// @internal (undocumented)
+export function createCancellableTimeoutPromise(timeoutMs: number): {
+    promise: Promise<void>;
+    cancel: () => void;
+};
+
 // @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean): FieldHierarchy[];
 
@@ -1827,6 +1833,7 @@ export interface PresentationRpcResponseData<TResult = undefined> {
 
 // @public
 export enum PresentationStatus {
+    // @deprecated
     BackendTimeout = 65543,
     Canceled = 1,
     Error = 65536,

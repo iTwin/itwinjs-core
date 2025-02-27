@@ -34,7 +34,7 @@ describe("Ratio format tests", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const ratioFormat = new Format("Ratio");
-    await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => { });
+    await ratioFormat.fromJSON(unitsProvider, ratioJson);
     expect(ratioFormat.hasUnits).to.be.true;
 
     const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(persistenceUnitStr);
