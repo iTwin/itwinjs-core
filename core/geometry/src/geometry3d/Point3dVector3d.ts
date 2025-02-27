@@ -1599,7 +1599,7 @@ export class Vector3d extends XYZ {
    * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
    * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison
-   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value (default false).
    * @param options optional radian and distance tolerances.
    */
   public isPerpendicularTo(
