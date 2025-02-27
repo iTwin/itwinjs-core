@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelDb, SnapshotDb } from "../../../core-backend";
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, using } from "@itwin/core-bentley";
 import { ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import * as path from "path";
 import * as fs from "fs";
@@ -12,7 +12,6 @@ import * as crypto from "crypto";
 import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
 import { KnownTestLocations } from "../../KnownTestLocations";
 import { format } from "sql-formatter";
-import { using } from "@itwin/core-bentley";
 
 // Call like this:
 // node lib\cjs\test\ecsql\src\ECSqlTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t
