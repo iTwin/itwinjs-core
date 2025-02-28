@@ -5,7 +5,8 @@
 /** @packageDocumentation
  * @module WebGL
  */
-import { FragmentShaderBuilder, FragmentShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import { addUInt32s } from "./Common";
 
 const testInside = `
 bool testInside(float x0, float y0, float x1, float y1, float x, float y) {
@@ -64,10 +65,10 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
 
     if (isProjected) {
       vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
-      // classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
+      classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
     } else {
-      // featureIncrement = matrix[2].y;
-      // classifierId = vec4(0);
+      featureIncrement = matrix[2].y;
+      classifierId = vec4(0);
     }
 
     if (alpha > col.a)
@@ -82,10 +83,12 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
 }
 `;
 
+const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0) : classifierId;`;
+
 function applyDraping(){
   const applyTextureStrings = [];
 
-  const textureCount = 4;
+  const textureCount = 6;
 
   for (let i = 0; i < textureCount; i++)
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
@@ -110,7 +113,11 @@ function applyDraping(){
  * @internal
  */
 export function addApplySurfaceDraping(frag: FragmentShaderBuilder) {
+  frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
+  frag.addGlobal("classifierId", VariableType.Vec4);
+  frag.addFunction(addUInt32s);
   frag.addFunction(testInside);
   frag.addFunction(applyTexture);
   frag.set(FragmentShaderComponent.ApplyDraping, applyDraping());
+  frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
 }

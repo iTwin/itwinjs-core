@@ -190,6 +190,14 @@ export enum TextureUnit {
 
   // Contours texture.
   Contours = WebGLRenderingContext.TEXTURE14,
+
+  // Draping textures.
+  Draping0 = WebGLRenderingContext.TEXTURE15,
+  Draping1 = WebGLRenderingContext.TEXTURE16,
+  Draping2 = WebGLRenderingContext.TEXTURE17,
+  Draping3 = WebGLRenderingContext.TEXTURE18,
+  Draping4 = WebGLRenderingContext.TEXTURE19,
+  Draping5 = WebGLRenderingContext.TEXTURE20,
 }
 
 /**

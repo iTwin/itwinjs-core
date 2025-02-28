@@ -631,10 +631,12 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
     });
 
     const textureUnits = [
-      TextureUnit.RealityMesh3,
-      TextureUnit.RealityMesh4,
-      TextureUnit.RealityMesh5,
-      TextureUnit.RealityMeshThematicGradient,
+      TextureUnit.Draping0,
+      TextureUnit.Draping1,
+      TextureUnit.Draping2,
+      TextureUnit.Draping3,
+      TextureUnit.Draping4,
+      TextureUnit.Draping5,
     ];
 
     for (let i = 0; i < textureUnits.length; i++) {
