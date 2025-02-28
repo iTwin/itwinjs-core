@@ -24,21 +24,31 @@ import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
 
 /**
- * A cone with axis along the z axis of a (possibly skewed) local coordinate system.
+ * A cone with axis along the z-axis of a (possibly skewed) local coordinate system.
+ * * The curved surface of the cone `C` with axis `vectorZ = centerB - centerA` is parameterized over (u,v) in [0,1]x[0,1] by
+ * `C(u,v) = centerA + vFractionToRadius(v) * (cos(u * 2pi) * vectorX + sin(u * 2pi) * vectorY) + v * vectorZ`.
+ * * Either radius may be zero, but they may not both be zero.
+ * * If `vectorX` and `vectorY` are orthonormal, the cross sections are circular, with sections at v = 0 and v = 1 having radius
+ * `radiusA` and `radiusB`, respectively; otherwise, the cross sections are elliptical.
+ * * Typically,
  *
- * * In local coordinates, the sections at z=0 and z=1 are circles of radius r0 and r1.
- * * Either one individually  may be zero, but they may not both be zero.
- * * The stored matrix has unit vectors in the xy columns, and full-length z column.
+ * the stored matrix has unit vectors in the xy columns, and full-length z column.
  * @public
  */
 export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
   /** String name for schema properties */
   public readonly solidPrimitiveType = "cone";
 
-  private _localToWorld: Transform;       // Transform from local to global.
-  private _radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
-  private _radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse
-  private _maxRadius: number; // maximum radius anywhere on the cone.
+  /** Local to world transform. Axes may have nonzero length and may be non-perpendicular. */
+  private _localToWorld: Transform;
+  /** Nominal cross sectional radius at z=0. Skewed axes may make the cross section elliptical. */
+  private _radiusA: number;
+  /** Nominal cross sectional radius at z=1. Skewed axes may make the cross section elliptical. */
+  private _radiusB: number;
+  /** Maximum radius of a cross section. */
+  private _maxRadius: number;
+
+  /** Constructor, inputs CONSUMED. */
   protected constructor(map: Transform, radiusA: number, radiusB: number, capped: boolean) {
     super(capped);
     this._localToWorld = map;
@@ -76,12 +86,13 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const result = this.clone();
     return result.tryTransformInPlace(transform) ? result : undefined;
   }
-  /** create a cylinder or cone from two endpoints and their radii.   The circular cross sections are perpendicular to the axis line
-   * from start to end point.
-   * * both radii must be of the same sign.
-   * * negative radius is accepted to create interior surface.    Downstream effects of that combined with capping may be a problem.
+  /**
+   * Create a right circular cylinder or cone from the given base centers and radii.
+   * * The circular cross sections are perpendicular to the axis line between the centers.
+   * * Both radii must be of the same sign, and at least one radius must be nonzero.
+   * * Negative radii are accepted to create an interior surface, however the downstream effects of this, combined with capping, may be problematic.
    */
-  public static createAxisPoints(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, capped: boolean): Cone | undefined {
+  public static createAxisPoints(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined {
     const zDirection = centerA.vectorTo(centerB);
     const a = zDirection.magnitude();
     if (Geometry.isSmallMetricDistance(a)) return undefined;
@@ -95,17 +106,23 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const matrix = Matrix3d.createRigidHeadsUp(zDirection);
     matrix.scaleColumns(1.0, 1.0, a, matrix);
     const localToWorld = Transform.createOriginAndMatrix(centerA, matrix);
-    return new Cone(localToWorld, radiusA, radiusB, capped);
+    return new Cone(localToWorld, radiusA, radiusB, capped ?? false);
   }
-  /** create a cylinder or cone from axis start and end with cross section defined by vectors that do not need to be perpendicular to each other or
-   * to the axis.
+  /**
+   * Create a general cone from cross sections parallel to the plane spanned by the given vectors.
+   * * Circular cross sections are indicated by perpendicular vectors of the same length.
+   * * Elliptical cross sections are indicated by non-perpendicular vectors, or vectors of different lengths.
+   * * Cross sectional planes do not have to be perpendicular to the axis line between centers.
+   * * Cross section size is affected both by the given vector lengths and radii. To avoid unexpected scaling,
+   * pass orthonormal vectors for circular cross sections, or unit radii for elliptical cross sections.
+   * * There is no validation of the input radii. For best results, they should be nonnegative, and at least one should be nonzero.
    */
-  public static createBaseAndTarget(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped: boolean) {
+  public static createBaseAndTarget(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone {
     radiusA = Math.abs(Geometry.correctSmallMetricDistance(radiusA));
     radiusB = Math.abs(Geometry.correctSmallMetricDistance(radiusB));
     const vectorZ = centerA.vectorTo(centerB);
     const localToWorld = Transform.createOriginAndMatrixColumns(centerA, vectorX, vectorY, vectorZ);
-    return new Cone(localToWorld, radiusA, radiusB, capped);
+    return new Cone(localToWorld, radiusA, radiusB, capped ?? false);
   }
   /** (Property accessor) Return the center point at the base plane */
   public getCenterA(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }

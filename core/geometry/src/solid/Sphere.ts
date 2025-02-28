@@ -24,6 +24,7 @@ import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
 
+// TODO: explain better. A sphere has arbitrary transform, but matrix axes are forced orthonormal and x=y when deserialized to DGN (cf. createDgnSphere).
 /**
  * A Sphere is
  *
@@ -78,10 +79,10 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const result = this.clone();
     return result.tryTransformInPlace(transform) ? result : undefined;
   }
-  /** Return a coordinate frame (right handed, unit axes)
-   * * origin at sphere center
-   * * equator in xy plane
-   * * z axis perpendicular
+  /**
+   * Construct a rigid coordinate frame from the local coordinates frame.
+   * * The returned frame is right-handed, with perpendicular unit axes.
+   * * Compare to [[cloneLocalToWorld]].
    */
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
@@ -89,36 +90,39 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   /** Return the latitude sweep as fraction of south pole to north pole. */
   public get latitudeSweepFraction(): number { return this._latitudeSweep.sweepRadians / Math.PI; }
   /** Create from center and radius, with optional restricted latitudes. */
-  public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere {
+  public static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere {
     const localToWorld = Transform.createOriginAndMatrix(center, Matrix3d.createUniformScale(radius));
-    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), false);
+    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
   }
   /** Create an ellipsoid which is a unit sphere mapped to position by an (arbitrary, possibly skewed and scaled) transform. */
-  public static createEllipsoid(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean): Sphere | undefined {
-    return new Sphere(localToWorld.clone(), latitudeSweep.clone(), capped);
+  public static createEllipsoid(localToWorld: Transform, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined {
+    return new Sphere(localToWorld.clone(), latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
   }
 
   /** Create a sphere from the typical parameters of the Dgn file */
   public static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number,
-    latitudeSweep: AngleSweep,
-    capped: boolean): Sphere | undefined {
+    latitudeSweep?: AngleSweep,
+    capped?: boolean): Sphere | undefined {
     const vectorY = vectorX.rotate90Around(vectorZ);
     if (vectorY && !vectorX.isParallelTo(vectorZ)) {
       const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
       matrix.scaleColumns(radiusXY, radiusXY, radiusZ, matrix);
       const frame = Transform.createOriginAndMatrix(center, matrix);
-      return new Sphere(frame, latitudeSweep.clone(), capped);
+      return new Sphere(frame, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
     }
     return undefined;
   }
 
-  /** Create a sphere from the typical parameters of the Dgn file */
+  /**
+   * Create a sphere.
+   * * If `axes` is supplied, its columns are scaled by the radii to form the sphere's local frame.
+  */
   public static createFromAxesAndScales(center: Point3d, axes: undefined | Matrix3d, radiusX: number, radiusY: number, radiusZ: number,
-    latitudeSweep: AngleSweep | undefined,
-    capped: boolean): Sphere | undefined {
+    latitudeSweep?: AngleSweep,
+    capped?: boolean): Sphere | undefined {
     const localToWorld = Transform.createOriginAndMatrix(center, axes);
     localToWorld.matrix.scaleColumnsInPlace(radiusX, radiusY, radiusZ);
-    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped);
+    return new Sphere(localToWorld, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
   }
 
   /** return (copy of) sphere center */
@@ -148,8 +152,11 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   }
   /**
    * Return a (clone of) the sphere's local to world transformation.
+   * * Compare to [[getConstructiveFrame]].
    */
-  public cloneLocalToWorld(): Transform { return this._localToWorld.clone(); }
+  public cloneLocalToWorld(): Transform {
+    return this._localToWorld.clone();
+  }
   /** Test if `other` is a `Sphere` */
   public isSameGeometryClass(other: any): boolean { return other instanceof Sphere; }
   /** Test for same geometry in `other` */
