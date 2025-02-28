@@ -163,7 +163,6 @@ describe("SelectionScopesHelper", () => {
         .setup((x) => x.getMetaData(moq.It.isAnyString()))
         .returns(
           (className: string) =>
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
             new EntityMetaData({
               classId: "0x123",
               baseClasses: [],

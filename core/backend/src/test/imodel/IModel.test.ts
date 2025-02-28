@@ -1037,7 +1037,6 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, Element.classFullName);
@@ -1143,7 +1142,6 @@ describe("iModel", () => {
     assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
     assert.isDefined(obj.properties.restrictions);
     assert.equal(obj.properties.restrictions.primitiveType, 2305);
