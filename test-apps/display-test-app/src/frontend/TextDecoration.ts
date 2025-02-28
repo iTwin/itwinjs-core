@@ -173,7 +173,9 @@ export class TextDecorationTool extends Tool {
         editor.clear();
         return true;
       case "init":
-        editor.init(vp.iModel, arg);
+        // Use the first category if the user doesn't specify one. This is just a convenience.
+        const category = arg ?? vp.view.categorySelector.categories.values().next().value;
+        editor.init(vp.iModel, category ?? "");
         break;
       case "center":
         editor.origin = vp.view.getCenter();
@@ -293,7 +295,7 @@ export class TextDecorationTool extends Tool {
       }
       case "margin": {
         const marginLocation = inArgs[1].toLowerCase();
-        const val = parseFloat(inArgs[2]);
+        const val = Number(inArgs[2]);
         if (isNaN(val)) {
           throw new Error("Expected a number");
         }
@@ -304,6 +306,15 @@ export class TextDecorationTool extends Tool {
           case "top":
           case "bottom":
             editor.setMargins({ [marginLocation]: val });
+            break;
+          case "all":
+            editor.setMargins({ left: val, right: val, top: val, bottom: val });
+            break;
+          case "horizontal":
+            editor.setMargins({ left: val, right: val });
+            break;
+          case "vertical":
+            editor.setMargins({ top: val, bottom: val });
             break;
           default:
             throw new Error("Expected left, right, top, or bottom");
