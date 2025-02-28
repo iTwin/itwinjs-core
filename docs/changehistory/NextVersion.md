@@ -648,6 +648,7 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 Example of attaching a snapshot to a master file and running a query that combines data from both databases:
 ```ts
      const master = SnapshotDb.openFile(masterFile);
+    // SimDb is alias that will be used to reference the attached snapshot
     master.attachDb(simulationFile, "SimDb");
 
     const ecsql = `
@@ -669,4 +670,4 @@ Example of attaching a snapshot to a master file and running a query that combin
     }
 ```
 
-> Note: There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
