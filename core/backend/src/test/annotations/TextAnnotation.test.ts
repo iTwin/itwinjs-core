@@ -705,14 +705,14 @@ describe("layoutTextBlock", () => {
   });
 
   it("adds margins", function () {
-    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: TextBlockMargins) => {
+    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: Partial<TextBlockMargins>) => {
       expect(marginRange.low.x).to.equal(layoutRange.low.x - (margins.left ?? 0));
       expect(marginRange.high.x).to.equal(layoutRange.high.x + (margins.right ?? 0));
       expect(marginRange.low.y).to.equal(layoutRange.low.y - (margins.bottom ?? 0));
       expect(marginRange.high.y).to.equal(layoutRange.high.y + (margins.top ?? 0));
     }
 
-    const makeTextBlock = (margins: TextBlockMargins) => {
+    const makeTextBlock = (margins: Partial<TextBlockMargins>) => {
       const textblock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 }, margins });
       textblock.appendRun(makeTextRun("abc"));
       textblock.appendRun(makeTextRun("defg"));

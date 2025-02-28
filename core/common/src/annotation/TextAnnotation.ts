@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, Range2d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
@@ -156,7 +156,13 @@ export class TextAnnotation {
     const matrix = this.orientation.toMatrix3d();
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
-    const translation = Transform.createTranslation(this.offset.minus(anchorPt));
+
+    const marginOffset = this.computeMarginOffset();
+    rotation.multiplyVector(marginOffset, marginOffset);
+
+    const offset = this.offset.plus(marginOffset);
+    const translation = Transform.createTranslation(offset.minus(anchorPt));
+
     return translation.multiplyTransformTransform(rotation, rotation);
   }
 
@@ -187,6 +193,44 @@ export class TextAnnotation {
     }
 
     return new Point3d(x, y, 0);
+  }
+
+  /**
+   * TODO
+   */
+  public computeMarginOffset(): Vector3d {
+    const offset = Vector3d.createZero();
+    const xVec = Vector3d.unitX();
+    const yVec = Vector3d.unitY().negate(); // Y axis points up in screen space.
+
+    // If not defined, margins are 0.
+    const margins = this.textBlock.margins;
+
+    switch (this.anchor.horizontal) {
+      case "left":
+        offset.plusScaled(xVec, margins.left, offset);
+        break;
+      case "center":
+        // offset.plusScaled(xVec, (margins.right - margins.left) / 2, offset);
+        break;
+      case "right":
+        offset.plusScaled(xVec.negate(), margins.right, offset);
+        break;
+    }
+
+    switch (this.anchor.vertical) {
+      case "top":
+        offset.plusScaled(yVec, margins.top, offset);
+        break;
+      case "middle":
+        // offset.plusScaled(yVec, (margins.top - margins.bottom) / 2, offset);
+        break;
+      case "bottom":
+        offset.plusScaled(yVec.negate(), margins.bottom, offset);
+        break;
+    }
+
+    return offset;
   }
 
   /** Returns true if this annotation is logically equivalent to `other`. */
