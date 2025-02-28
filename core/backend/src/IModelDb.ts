@@ -1178,7 +1178,6 @@ export abstract class IModelDb extends IModel {
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
    * @deprecated in 5.0. Use [schemaContext] instead.
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
       // eslint-disable-next-line @typescript-eslint/no-deprecated

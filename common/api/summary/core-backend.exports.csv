@@ -290,6 +290,7 @@ deprecated;enum;LockState
 internal;interface;LockStatusExclusive
 internal;interface;LockStatusShared
 internal;class;MetaDataRegistry
+deprecated;class;MetaDataRegistry
 public;class;Model
 public;class;ModelSelector
 internal;class;ModelSelectorRefersToModels
