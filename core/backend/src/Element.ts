@@ -401,7 +401,7 @@ export class Element extends Entity {
   /** Get the class metadata for this element.
    * @deprecated in 5.0. Use [[Entity.getMetaData]] instead.
    */
-   
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any {

@@ -104,9 +104,11 @@ describe("iModel", () => {
     assert(!extents.isNull);
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
     const e1 = imodel1.constructEntity<LightLocation, LightLocationProps>({ category: "0x11", classFullName: "BisCore:LightLocation", model: "0x01", code: Code.createEmpty() });
     assert.isDefined(e1);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
 
@@ -1035,6 +1037,7 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, Element.classFullName);
@@ -1140,6 +1143,7 @@ describe("iModel", () => {
     assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
     assert.isDefined(obj.properties.restrictions);
     assert.equal(obj.properties.restrictions.primitiveType, 2305);

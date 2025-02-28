@@ -157,6 +157,7 @@ class ChangedEntitiesProc {
 
   private populateMetadata(db: BriefcaseDb | StandaloneDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
     if (classIdsToLoad.length > 0) {
       const classIdsStr = classIdsToLoad.join(",");
@@ -173,6 +174,7 @@ class ChangedEntitiesProc {
     // Define array indices for the metadata array entries correlating to the class Ids in the input list.
     const nameToIndex = new Map<string, number>();
     for (const classId of classIds) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.classMetaDataRegistry.findByClassId(classId);
       nameToIndex.set(meta?.ecclass ?? "", nameToIndex.size);
     }

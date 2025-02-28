@@ -228,6 +228,7 @@ export abstract class IModelDb extends IModel {
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _schemaContext?: SchemaContext;
   /** @deprecated in 5.0.0. Use [[fonts]]. */
@@ -1075,9 +1076,12 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
+   * @deprecated in 5.0. Use [[schemaContext]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._classMetaDataRegistry = new MetaDataRegistry();
 
     return this._classMetaDataRegistry;
@@ -1147,6 +1151,7 @@ export abstract class IModelDb extends IModel {
         throw err;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.loadMetaData(classFullName);
       return ClassRegistry.getClass(classFullName, this) as T;
     }
@@ -1156,10 +1161,14 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    * @deprecated in 5.0. Use [schemaContext] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getMetaData(classFullName: string): EntityMetaData {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let metadata = this.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.loadMetaData(classFullName);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       metadata = this.classMetaDataRegistry.find(classFullName);
       if (metadata === undefined)
         throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
@@ -1170,6 +1179,7 @@ export abstract class IModelDb extends IModel {
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
    * @deprecated in 5.0. Use [schemaContext] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1215,8 +1225,12 @@ export abstract class IModelDb extends IModel {
       meta.baseClasses.forEach((baseClass) => this.forEachMetaData(baseClass, true, func, includeCustom));
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated in 5.0. Use [schemaContext] instead.
+   */
   private loadMetaData(classFullName: string) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (this.classMetaDataRegistry.find(classFullName))
       return;
 
@@ -1229,11 +1243,14 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
     assert(undefined !== val.result);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData = new EntityMetaData(JSON.parse(val.result));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.classMetaDataRegistry.add(classFullName, metaData);
 
     // Recursive, to make sure that base classes are cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
@@ -2304,6 +2321,7 @@ export namespace IModelDb {
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel[_nativeDb].getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const metaData = new EntityMetaData(JSON.parse(val.result));
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
           return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);

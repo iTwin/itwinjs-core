@@ -90,6 +90,7 @@ describe("Class Registry", () => {
     assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
 
     // Ensures the IMixin has been loaded as part of getMetadata call above.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isDefined(imodel.classMetaDataRegistry.find("TestDomain:IMixin"));
 
     // Verify that the forEach method which is called when constructing an entity
