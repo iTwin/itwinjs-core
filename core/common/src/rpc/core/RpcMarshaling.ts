@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-
-import { BentleyStatus, IModelError } from "../../IModelError";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { IModelError } from "../../IModelError";
 import { BackendReadable } from "../../BackendTypes";
 import { RpcProtocol } from "./RpcProtocol";
 
