@@ -668,3 +668,5 @@ Example of attaching a snapshot to a master file and running a query that combin
       // ...
     }
 ```
+
+> Note: There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'

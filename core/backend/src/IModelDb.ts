@@ -367,17 +367,25 @@ export abstract class IModelDb extends IModel {
   }
   /**
    * Attach an iModel file to this connection and load and register its schemas.
+   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
    * @param fileName IModel file name
-   * @param alias identifier for the attached file. This identifer is used a tablespace executing ECSQL queries.
+   * @param tablespace identifier for the attached file. This identifer is used a tablespace executing ECSQL queries.
    */
-  public attachDb(fileName: string, alias: string): void {
-    this[_nativeDb].attachDb(fileName, alias);
+  public attachDb(fileName: string, tablespace: string): void {
+    if (tablespace.toLowerCase() === "main" || tablespace.toLowerCase() === "schema_sync_db" || tablespace.toLowerCase() === "ecchange" || tablespace.toLowerCase() === "temp") {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
+    }
+    this[_nativeDb].attachDb(fileName, tablespace);
   }
   /**
    * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
-   * @param alias identifer that was used in the call to [[attachDb]]
+   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param tablespace identifer that was used in the call to [[attachDb]]
    */
-  public detachDb(alias: string): void {
+  public detachDb(tablespace: string): void {
+    if (tablespace.toLowerCase() === "main" || tablespace.toLowerCase() === "schema_sync_db" || tablespace.toLowerCase() === "ecchange" || tablespace.toLowerCase() === "temp") {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
+    }
     this.clearCaches();
     this[_nativeDb].detachDb(alias);
   }
@@ -833,7 +841,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
-  /** Abandon changes in memory that have not been saved as a Txn to this iModelDb. 
+  /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
@@ -1103,8 +1111,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public get schemaContext(): SchemaContext {
-    if (this._schemaContext === undefined)
-    {
+    if (this._schemaContext === undefined) {
       const context = new SchemaContext();
       // TODO: We probably need a more optimized locater for here
       const locater = new SchemaJsonLocater((name) => this.getSchemaProps(name));
