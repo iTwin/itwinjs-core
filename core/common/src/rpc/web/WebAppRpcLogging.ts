@@ -132,7 +132,10 @@ export abstract class WebAppRpcLogging {
   }
 }
 
-declare const window: any;
+declare global {
+  // eslint-disable-next-line no-var
+  var window: any;
+}
 
 class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   protected override async logProtocolEvent(event: RpcProtocolEvent, object: WebAppRpcRequest): Promise<void> {
@@ -145,7 +148,7 @@ class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   }
 
   protected override getHostname(): string {
-    return window?.location?.host ?? "imodeljs-mobile";
+    return globalThis.window?.location?.host ?? "imodeljs-mobile";
   }
 
   private logErrorFrontend(message: string, request: WebAppRpcRequest): void {
