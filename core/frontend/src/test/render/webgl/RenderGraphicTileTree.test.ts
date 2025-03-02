@@ -63,7 +63,6 @@ describe("TileTreeReference.createFromRenderGraphic", () => {
 
       vp.addTiledGraphicsProvider({
         forEachTileTreeRef: (_, func) => func(ref),
-        getReferences: () => [ref],
       });
 
       const hitProps: HitDetailProps = {

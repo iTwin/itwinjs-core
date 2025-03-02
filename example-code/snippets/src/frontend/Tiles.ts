@@ -32,7 +32,6 @@ export function addTiledGraphics(viewport: Viewport): void {
   // Register a provider to draw the sphere as part of the viewport's scene.
   viewport.addTiledGraphicsProvider({
     forEachTileTreeRef: (_vp, func) => func(treeRef),
-    getReferences: () => [treeRef],
   });
 }
 
@@ -124,7 +123,6 @@ export function maskBackgroundMap(viewport: Viewport, regions: Iterable<Sphere>)
   // Add the tile tree reference to the viewport as a TiledGraphicsProvider.
   viewport.addTiledGraphicsProvider({
     forEachTileTreeRef: (_vp, func) => func(tileTreeReference),
-    getReferences: () => [tileTreeReference],
   });
 
   // Enable masking by priority, with priority set just below that of our TileTreeReference so that the map will only be masked by

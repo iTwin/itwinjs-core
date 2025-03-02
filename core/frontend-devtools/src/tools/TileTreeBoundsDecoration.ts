@@ -30,9 +30,7 @@ class TreeDecoration {
   public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
-    for (const ref of context.viewport.getTileTreeRefs()) {
-      this.drawBoundingBox(ref, context);
-    }
+    context.viewport.forEachTileTreeRef((ref) => this.drawBoundingBox(ref, context));
   }
 
   private drawBoundingBox(ref: TileTreeReference, context: DecorateContext): void {
