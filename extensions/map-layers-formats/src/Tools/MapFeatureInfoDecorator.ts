@@ -7,7 +7,7 @@ import {
   BeButtonEvent, Cluster, DecorateContext, Decorator,
   GeometryTileTreeReference, GraphicBuilder, GraphicPrimitive, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
   ScreenViewport,
-  Viewport } from "@itwin/core-frontend";
+  TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { GrowableXYZArray, LineString3d, Point2d, Point3d, Polyface, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 import { GeometryTerrainDraper } from "./GeometryTerrainDraper";
@@ -216,15 +216,16 @@ export class MapFeatureInfoDecorator implements Decorator {
   };
 
   private getGeometryTreeRef(vp: Viewport): GeometryTileTreeReference | undefined {
+    let treeRef: GeometryTileTreeReference | undefined;
     if (vp.backgroundMapSettings.applyTerrain) {
-      for (const ref of vp.mapTileTreeRefs) {
-        if (ref instanceof MapTileTreeReference) {
-          return ref.createGeometryTreeReference();
+      vp.forEachMapTreeRef((ref: TileTreeReference) => {
+        if (!treeRef && ref instanceof MapTileTreeReference) {
+          treeRef = ref.createGeometryTreeReference();
         }
-      }
+      });
     }
 
-    return undefined;
+    return treeRef;
   }
 
   protected renderGraphics(context: DecorateContext) {

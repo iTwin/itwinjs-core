@@ -174,13 +174,12 @@ function areAllTilesLoaded(vp: Viewport): boolean {
     return false;
 
   // In addition to ViewState.areAllTileTreesLoaded, ensure all child tiles are loaded (for map tiles).
-  for (const ref of vp.getTileTreeRefs()) {
-    if (!ref.isLoadingComplete || !areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile)) {
-      return false;
-    }
-  }
+  let allLoaded = true;
+  vp.forEachTileTreeRef((ref) => {
+    allLoaded = allLoaded && ref.isLoadingComplete && areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
+  });
 
-  return true;
+  return allLoaded;
 }
 
 // Utility functions added to Viewport by TestViewport.

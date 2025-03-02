@@ -10,10 +10,7 @@ import { TestUtility } from "../../TestUtility";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
-  for (const _ of view.getModelTreeRefs()) {
-    ++numTrees;
-  }
-
+  view.forEachModelTreeRef((_) => ++numTrees);
   return numTrees;
 }
 

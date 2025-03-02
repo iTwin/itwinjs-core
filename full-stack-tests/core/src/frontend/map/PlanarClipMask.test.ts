@@ -166,8 +166,9 @@ describe("Planar clip mask (#integration)", () => {
     });
 
     vp.addTiledGraphicsProvider({
-      forEachTileTreeRef: (_, func) => func(treeRef),
-      getReferences: () => [treeRef],
+      forEachTileTreeRef: (_, func) => {
+        func(treeRef);
+      },
     });
 
     vp.changeViewedModels([]);
@@ -197,8 +198,9 @@ describe("Planar clip mask (#integration)", () => {
     }, "model", (vp) => {
       vp.changeViewedModels([]);
       vp.addTiledGraphicsProvider({
-        forEachTileTreeRef: (_, func) => func(treeRef),
-        getReferences: () => [treeRef],
+        forEachTileTreeRef: (_, func) => {
+          func(treeRef);
+        },
       });
     });
   });

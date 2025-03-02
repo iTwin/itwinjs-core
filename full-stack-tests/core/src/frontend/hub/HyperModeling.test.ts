@@ -130,10 +130,7 @@ describe("HyperModeling (#integration)", () => {
 
       const countTileTrees = () => {
         let count = 0;
-        for (const _ of vp.getTileTreeRefs()) {
-          ++count;
-        }
-
+        vp.forEachTileTreeRef((_) => ++count);
         return count;
       };
 

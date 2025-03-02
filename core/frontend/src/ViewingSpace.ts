@@ -17,7 +17,6 @@ import { ViewRect } from "./common/ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
 import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
-import { TiledGraphicsProvider } from "./tile/internal";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
@@ -277,11 +276,11 @@ export class ViewingSpace {
 
     this.getViewedExtents = () => {
       const extents = this._view.getViewedExtents();
-      for (const provider of vp.tiledGraphicsProviders) {
-        for (const ref of TiledGraphicsProvider.getTileTreeRefs(provider, vp)) {
+      vp.forEachTiledGraphicsProvider((provider) => {
+        provider.forEachTileTreeRef(vp, (ref) => {
           ref.unionFitRange(extents);
-        }
-      }
+        });
+      });
 
       return extents;
     };

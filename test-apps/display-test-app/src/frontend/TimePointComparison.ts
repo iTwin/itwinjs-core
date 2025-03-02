@@ -22,9 +22,7 @@ class TimePointComparison {
   }
 
   public forEachTileTreeRef(viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
-    for (const ref of viewport.view.getTileTreeRefs()) {
-      func(ref);
-    }
+    viewport.view.forEachTileTreeRef(func);
   }
 
   public addToScene(output: SceneContext): void {
@@ -59,12 +57,10 @@ class TimePointComparison {
       return;
 
     let provider: TimePointComparison | undefined;
-    for (const x of vp.tiledGraphicsProviders) {
-      if (x instanceof TimePointComparison) {
+    vp.forEachTiledGraphicsProvider((x) => {
+      if (x instanceof TimePointComparison)
         provider = x;
-        break;
-      }
-    }
+    });
 
     if (!provider) {
       const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;

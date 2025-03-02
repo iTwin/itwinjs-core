@@ -1067,11 +1067,24 @@ export abstract class Viewport implements IDisposable, TileUser {
   */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
-    for (const ref of this.getTileTreeRefs()) {
+    this.view.forEachTileTreeRef((ref) => {
       const promise = ref.getToolTipPromise(hit);
-      if (promise) {
+      if (promise)
         promises.push(promise);
-      }
+    });
+
+    this.forEachMapTreeRef((ref) => {
+      const promise = ref.getToolTipPromise(hit);
+      if (promise)
+        promises.push(promise);
+    });
+
+    for (const provider of this.tiledGraphicsProviders) {
+      provider.forEachTileTreeRef(this, (ref) => {
+        const promise = ref.getToolTipPromise(hit);
+        if (promise)
+          promises.push(promise);
+      });
     }
 
     const results = await Promise.all(promises);
@@ -1088,10 +1101,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
     // so that we get still get results even though a tree has failed.
-    for (const tree of this.mapTileTreeRefs) {
-      promises.push(tree.getMapFeatureInfo(hit, options).catch(() => undefined));
-    }
-
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit, options).catch(() => undefined)));
     const featureInfo: MapFeatureInfo = {};
 
     const worldPoint = hit.hitPoint.clone();
@@ -1558,40 +1568,28 @@ export abstract class Viewport implements IDisposable, TileUser {
   }
 
   /** @internal */
-  protected * tiledGraphicsProviderRefs(): Iterable<TileTreeReference> {
-    for (const provider of this.tiledGraphicsProviders) {
-      yield * TiledGraphicsProvider.getTileTreeRefs(provider, this);
-    }
+  public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
+    for (const provider of this._tiledGraphicsProviders)
+      func(provider);
   }
 
-  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
-   * @deprecated in 4.11.x. Use [[mapTileTreeRefs]] instead.
-   */
+  /** @internal */
+  protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void {
+    for (const provider of this._tiledGraphicsProviders)
+      provider.forEachTileTreeRef(this, (ref) => func(ref));
+  }
+
+  /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport. */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
       this._mapTiledGraphicsProvider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
-  /** Obtain an iterator over the tile tree references used to render map imagery in this viewport, if any. */
-  public get mapTileTreeRefs(): Iterable<TileTreeReference> {
-    return this._mapTiledGraphicsProvider?.getReferences(this) ?? [];
-  };
-
-
-  /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
-   * @deprecated in 4.11.x. Use [[getTileTreeRefs]] instead.
-   */
+  /** Apply a function to every [[TileTreeReference]] displayed by this viewport. */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    for (const ref of this.getTileTreeRefs()) {
-      func(ref);
-    }
-  }
-
-  /** Iterate over every [[TileTreeReference]] displayed by this viewport. */
-  public * getTileTreeRefs(): Iterable<TileTreeReference> {
-    yield * this.view.getTileTreeRefs();
-    yield * this.mapTileTreeRefs;
-    yield * this.tiledGraphicsProviderRefs();
+    this.view.forEachTileTreeRef(func);
+    this.forEachTiledGraphicsProviderTree(func);
+    this.forEachMapTreeRef(func);
   }
 
   /**
@@ -1615,14 +1613,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @internal
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    for (const ref of this.tiledGraphicsProviderRefs()) {
-      trees.disclose(ref);
-    }
-
-    for (const ref of this.mapTileTreeRefs) {
-      trees.disclose(ref);
-    }
-
+    this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
+    this.forEachMapTreeRef((ref) => trees.disclose(ref));
     trees.disclose(this.view);
   }
 
@@ -1660,14 +1652,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public getTerrainHeightRange(): Range1d {
     const heightRange = Range1d.createNull();
-
-    for (const ref of this.mapTileTreeRefs) {
-      ref.getTerrainHeight(heightRange);
-    }
-
+    this.forEachTileTreeRef((ref) => ref.getTerrainHeight(heightRange));
     return heightRange;
   }
-
   /** @internal */
   public setViewedCategoriesPerModelChanged(): void {
     this._changeFlags.setViewedCategoriesPerModel();
@@ -2229,11 +2216,9 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Compute the range of all geometry to be displayed in this viewport. */
   public computeViewRange(): Range3d {
     const fitRange = this.view.computeFitRange();
-
-    for (const ref of this.tiledGraphicsProviderRefs()) {
+    this.forEachTiledGraphicsProviderTree((ref) => {
       ref.unionFitRange(fitRange);
-    }
-
+    });
     return fitRange;
   }
 
@@ -3191,19 +3176,12 @@ export class ScreenViewport extends Viewport {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true, rootDiv: this.vpDiv.ownerDocument.body }).modal;
       aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
-
-      if (undefined !== IModelApp.applicationLogoCard) {
+      if (undefined !== IModelApp.applicationLogoCard)
         logos.appendChild(IModelApp.applicationLogoCard());
-      }
-
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
-      for (const ref of this.getTileTreeRefs()) {
-        ref.addLogoCards(logos, this);
-      }
-
+      this.forEachTileTreeRef((ref) => ref.addLogoCards(logos, this));
       ev.stopPropagation();
     };
-
     logo.onclick = showLogos;
     logo.addEventListener("touchstart", showLogos);
     logo.onmousemove = logo.onmousedown = logo.onmouseup = (ev) => ev.stopPropagation();
@@ -3452,9 +3430,7 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      for (const ref of this.tiledGraphicsProviderRefs()) {
-        context.addFromDecorator(ref);
-      }
+      this.forEachTiledGraphicsProviderTree((ref) => context.addFromDecorator(ref));
 
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
