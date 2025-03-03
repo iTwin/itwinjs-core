@@ -27,9 +27,9 @@ if (ProcessDetector.isElectronAppFrontend) {
         await coreFullStackTestIpc.throwDetailedError<InUseLocksError>({ inUseLocks: inUseLocks }, ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isValidError = ITwinError.isValidError<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks,);
-        expect(isValidError(err)).to.be.true;
-        if (isValidError(err)) {
+        const isInUseError = ITwinError.createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks);
+        expect(isInUseError(err)).to.be.true;
+        if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
           expect(err.stack?.includes("core\\backend") || err.stack?.includes("core/backend"), `Expected ${err.stack} to have mention of 'core\\backend' or 'core/backend'`).to.be.true;
           expect(err.message).to.equal(message);
@@ -45,12 +45,12 @@ if (ProcessDetector.isElectronAppFrontend) {
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
       let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwITwinError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.Channel, message, metadata);
+        await coreFullStackTestIpc.throwITwinError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isValidError = ITwinError.isValidError<ITwinError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.Channel);
-        expect(isValidError(err)).to.be.true;
-        if (isValidError(err)) {
+        const isInUseError = ITwinError.createTypeAsserter<ITwinError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest);
+        expect(isInUseError(err)).to.be.true;
+        if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
           expect(err.stack?.includes("core\\backend") || err.stack?.includes("core/backend"), `Expected ${err.stack} to have mention of 'core\\backend' or 'core/backend'`).to.be.true;
           expect(err.message).to.equal(message);
