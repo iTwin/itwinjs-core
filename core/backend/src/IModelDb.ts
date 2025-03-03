@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import { join } from "path";
 import * as touch from "touch";
-import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
+import { IModelJsNative, InstanceSerializationMethod, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
   Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
@@ -17,17 +17,18 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometry, ElementGeometryCacheOperationRequestProps,
+  ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGraphicsRequestProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometryStreamBuilder, GeometryStreamProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
+  mapNativeElementProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, NativeInterfaceMap, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Range2d, Range3d } from "@itwin/core-geometry";
+import { Range2d, Range3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs } from "./BriefcaseManager";
 import { ChannelControl } from "./ChannelControl";
@@ -1872,11 +1873,80 @@ export namespace IModelDb {
      * @see getElementJson
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
+      const { id, code, federationGuid } = loadProps;
+
+      if (!this._iModel.isOpen)
+        return undefined;
+
+      let elementId: string | undefined;
+      let classId: string | undefined;
+
+      if (id !== undefined) {
+        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECClassId FROM Bis.Element WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [id, stmt.getValue(0).getId()] : [id, undefined];
+        });
+      } else if (federationGuid !== undefined) {
+        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE FederationGuid=?", (stmt: ECSqlStatement) => {
+          stmt.bindGuid(1, federationGuid);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getId()] : [undefined, undefined];
+        });
+      } else if (code !== undefined) {
+        [elementId, classId] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, code.spec);
+          stmt.bindId(2, code.scope);
+          code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getId()] : [undefined, undefined];
+        });
+      }
+
+      if (elementId === undefined || classId === undefined)
+        return undefined;
+
+      let nativeInstance: NativeInterfaceMap<T>;
       try {
-        return this._iModel[_nativeDb].getElement(loadProps) as T;
+        nativeInstance = this._iModel[_nativeDb].getInstance({ id: elementId, classId, serializationMethod: InstanceSerializationMethod.BeJsNapi, useJsNames: true, classIdsToClassNames: true, abbreviateBlobs: false }) as NativeInterfaceMap<T>;
       } catch {
         return undefined;
       }
+
+      const elementProps = mapNativeElementProps(nativeInstance, loadProps);
+
+      if (loadProps.wantGeometry) {
+        const geom = this.getGeometryStreamProps(elementId, loadProps.wantBRepData);
+        return { ...elementProps, geom };
+      }
+
+      if (elementProps.classFullName === "BisCore:CategorySelector") {
+        const categories = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
+
+          statement.bindId(1, elementId); // elementId can't be null here, but eslint recognizes it as an error.
+
+          const ids: Id64Array = [];
+          while (DbResult.BE_SQLITE_ROW === statement.step()) {
+            ids.push(statement.getValue(0).getId());
+          }
+          return ids;
+        });
+
+        return { ...elementProps, categories };
+      }
+
+      if (elementProps.classFullName === "BisCore:ModelSelector") {
+        const models = this._iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement: ECSqlStatement) => {
+
+          statement.bindId(1, elementId); // elementId can't be null here, but eslint recognizes it as an error.
+
+          const ids: Id64Array = [];
+          while (DbResult.BE_SQLITE_ROW === statement.step()) {
+            ids.push(statement.getValue(0).getId());
+          }
+          return ids;
+        });
+        return { ...elementProps, models };
+      }
+
+      return elementProps;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1889,11 +1959,12 @@ export namespace IModelDb {
       } else if (props instanceof Code) {
         props = { code: props };
       }
-      try {
-        return this._iModel[_nativeDb].getElement(props) as T;
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
-      }
+
+      const elementProps =  this.tryGetElementProps<T>(props);
+      if (elementProps === undefined)
+        throw new IModelError(IModelStatus.NotFound, `reading element={id: ${props.id} federationGuid: ${props.federationGuid}, code: ${props.code}}`);
+
+      return elementProps;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1996,6 +2067,84 @@ export namespace IModelDb {
           return statement.getValue(0).getDateTime();
         throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`);
       });
+    }
+
+    /** Get GeometryStreamProps of an Element by Id.
+     * @returns The geometry stream JSON of the element or `undefined` if the element itself or geometry information is not found.
+     * @note Useful for cases when fetching Bis.Element with $ syntax, but geometry stream is also needed.
+     * @see getElementProps
+     */
+    private getGeometryStreamProps(elementId: Id64String, wantBRepData?: boolean): GeometryStreamProps | undefined {
+      const builder = new GeometryStreamBuilder();
+
+      const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+        const it = new ElementGeometry.Iterator(info);
+        for (const entry of it) {
+          if (entry.localRange !== undefined && !entry.localRange.isNull)
+            builder.appendGeometryRanges(entry.localRange);
+
+          builder.appendGeometryParamsChange(entry.geomParams);
+
+          if (ElementGeometry.isGeometryQueryEntry(entry.value)) {
+            const geom = entry.toGeometryQuery();
+            if (geom !== undefined)
+              builder.appendGeometry(geom);
+          } else if (ElementGeometry.isGeometricEntry(entry.value)) {
+            switch (entry.value.opcode) {
+              case ElementGeometryOpcode.BRep:
+                const brep = entry.toBRepData(wantBRepData);
+
+                if (brep !== undefined)
+                  builder.appendBRepData(brep);
+                break;
+
+              case ElementGeometryOpcode.TextString:
+                const text = entry.toTextString();
+
+                if (text !== undefined)
+                  builder.appendTextString(text);
+                break;
+
+              case ElementGeometryOpcode.Image:
+                const image = entry.toImageGraphic();
+
+                if (image !== undefined)
+                  builder.appendImage(image);
+                break;
+            }
+          } else if (ElementGeometryOpcode.PartReference === entry.value.opcode) {
+            const partToElement = Transform.createIdentity();
+            const partId = entry.toGeometryPart(partToElement);
+
+            if (partId !== undefined) {
+              const scales = new Vector3d();
+              let instanceScale = 1.0;
+
+              if (partToElement.matrix.normalizeColumnsInPlace(scales))
+                instanceScale = scales.x;
+
+              const instanceTrans = YawPitchRollAngles.tryFromTransform(partToElement);
+
+              builder.appendGeometryPart3d(
+                partId,
+                instanceTrans.origin,
+                instanceTrans.angles,
+                instanceScale,
+              );
+            }
+          }
+        }
+
+        if (builder.geometryStream.length) {
+          builder.obtainHeader();
+          builder.isViewIndependent = info.viewIndependent ?? false;
+        }
+      };
+
+      return IModelStatus.Success ===
+        this._iModel.elementGeometryRequest({ onGeometry, elementId, skipBReps: !wantBRepData })
+        ? (builder.geometryStream.length ? builder.geometryStream : undefined)
+        : undefined;
     }
 
     /** Create a new instance of an element.
