@@ -19,9 +19,14 @@ export type IpcAdapted<T> = {
 export function getIpcIterable<T>(
   initFn: () => Promise<string>,
   nextFn: (queryId: string) => Promise<IteratorResult<T, void>>,
-): AsyncIterable<T> {
+  metadataFn: (queryId: string) => Promise<any>
+): AsyncIterable<T> & { meta: any } {
   const queryId = initFn();
 
   const next = async () => nextFn(await queryId);
-  return { [Symbol.asyncIterator]: () => ({ next }) };
+  const meta = async () => metadataFn(await queryId);
+  return {
+    [Symbol.asyncIterator]: () => ({ next }),
+    meta
+  };
 }
