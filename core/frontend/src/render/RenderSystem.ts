@@ -28,7 +28,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../common/render/InstancedGraphicParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { RealityMeshGraphicParams } from "../internal/render/RealityMeshGraphicParams";
+import { MeshMapLayerGraphicParams } from "../internal/render/MeshMapLayerGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "./RenderClipVolume";
@@ -371,7 +371,7 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** @internal */
-  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_params: MeshMapLayerGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
     const geom = this.createRealityMeshGeometry(realityMesh, disableTextureDisposal);

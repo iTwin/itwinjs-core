@@ -13,7 +13,7 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
-export interface RealityMeshGraphicParams {
+export interface MeshMapLayerGraphicParams {
   readonly realityMesh?: RenderTerrainGeometry;
   readonly projection: MapTileProjection;
   readonly tileRectangle: MapCartoRectangle;

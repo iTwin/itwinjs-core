@@ -163,7 +163,6 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
           const texture = realityTexture as Texture;
           texture.texture.bindSampler(uniform, textureUnits[i]);
         } else {
-          // assert(false, "Terrain Mesh texture not defined when beginning texture.");
           System.instance.ensureSamplerBound(uniform, textureUnits[i]);
         }
       });
