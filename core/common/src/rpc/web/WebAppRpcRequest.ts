@@ -18,6 +18,7 @@ import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
+declare const location: any;
 
 /** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
@@ -189,7 +190,7 @@ export class WebAppRpcRequest extends RpcRequest {
     const requestClass = this.supplyRequest();
     const fetchFunction = this.supplyFetch();
 
-    const path = new URL(this.path, typeof (location) !== "undefined" ? location.origin : undefined);
+    const path = new URL(this.path, typeof location !== "undefined" ? location.origin : undefined);
     if (this._pathSuffix) {
       const params = new URLSearchParams();
       params.set("parameters", this._pathSuffix);

@@ -123,7 +123,7 @@ describe("SelectionScopesHelper", () => {
     });
 
     it("throws on invalid scopeId", async () => {
-      await expect(SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [], "invalid")).to.eventually.be.rejected;
+      await expect(SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [], scope: { id: "invalid" } })).to.eventually.be.rejected;
     });
 
     describe("scope: 'element'", () => {
@@ -131,22 +131,14 @@ describe("SelectionScopesHelper", () => {
         const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
         keys.forEach((key) => setupIModelForElementProps({ key }));
 
-        const result = await SelectionScopesHelper.computeSelection(
-          { imodel: imodelMock.object },
-          keys.map((k) => k.id),
-          "element",
-        );
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
         expect(result.size).to.eq(2);
         keys.forEach((key) => expect(result.has(key)));
       });
 
       it("skips non-existing element ids", async () => {
         const keys = [createRandomECInstanceKey()];
-        const result = await SelectionScopesHelper.computeSelection(
-          { imodel: imodelMock.object },
-          keys.map((k) => k.id),
-          "element",
-        );
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
         expect(result.size).to.eq(0);
       });
 
@@ -154,11 +146,7 @@ describe("SelectionScopesHelper", () => {
         const keys = [createRandomECInstanceKey(), { className: "any:class", id: createTransientElementId() }];
         setupIModelForElementProps({ key: keys[0] });
 
-        const result = await SelectionScopesHelper.computeSelection(
-          { imodel: imodelMock.object },
-          keys.map((k) => k.id),
-          "element",
-        );
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
         expect(result.size).to.eq(1);
         expect(result.has(keys[0])).to.be.true;
       });
@@ -168,7 +156,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForElementProps({ key: validKeys[0] });
         setupIModelForElementProps({ key: validKeys[1] });
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [validKeys[0].id, "not an id", validKeys[1].id], "element");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [validKeys[0].id, "not an id", validKeys[1].id],
+          scope: { id: "element" },
+        });
         expect(result.size).to.eq(2);
         validKeys.forEach((key) => expect(result.has(key)));
       });
@@ -195,11 +187,11 @@ describe("SelectionScopesHelper", () => {
         const parentKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
         parentKeys.forEach((key) => setupIModelForElementProps({ key }));
         const elementKeys = parentKeys.map((pk) => setupIModelForElementProps({ parentKey: pk }).key);
-        const result = await SelectionScopesHelper.computeSelection(
-          { imodel: imodelMock.object },
-          elementKeys.map(({ id }) => id),
-          "assembly",
-        );
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: elementKeys.map(({ id }) => id),
+          scope: { id: "assembly" },
+        });
         expect(result.size).to.eq(2);
         parentKeys.forEach((key) => expect(result.has(key)).to.be.true);
       });
@@ -207,11 +199,11 @@ describe("SelectionScopesHelper", () => {
       it("does not duplicate keys", async () => {
         const { key: parentKey } = setupIModelForElementProps();
         const elementKeys = [setupIModelForElementProps({ parentKey }).key, setupIModelForElementProps({ parentKey }).key];
-        const result = await SelectionScopesHelper.computeSelection(
-          { imodel: imodelMock.object },
-          elementKeys.map(({ id }) => id),
-          "assembly",
-        );
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: elementKeys.map(({ id }) => id),
+          scope: { id: "assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(parentKey)).to.be.true;
       });
@@ -219,7 +211,7 @@ describe("SelectionScopesHelper", () => {
       it("returns element key if it has no parent", async () => {
         const key = createRandomECInstanceKey();
         setupIModelForElementProps({ key });
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "assembly");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(key)).to.be.true;
       });
@@ -227,7 +219,7 @@ describe("SelectionScopesHelper", () => {
       it("skips non-existing element ids", async () => {
         const key = createRandomECInstanceKey();
         elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => undefined);
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "assembly");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "assembly" } });
         expect(result.size).to.eq(0);
       });
 
@@ -235,7 +227,7 @@ describe("SelectionScopesHelper", () => {
         const { key: parentKey } = setupIModelForElementProps();
         const { key: elementKey } = setupIModelForElementProps({ parentKey });
         const ids = [elementKey.id, createTransientElementId()];
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "assembly");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: ids, scope: { id: "assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(parentKey)).to.be.true;
       });
@@ -246,14 +238,14 @@ describe("SelectionScopesHelper", () => {
         const { key: grandparentKey } = setupIModelForElementProps();
         const { key: parentKey } = setupIModelForElementProps({ parentKey: grandparentKey });
         const { key: elementKey } = setupIModelForElementProps({ parentKey });
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementKey.id], "top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementKey.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(grandparentKey)).to.be.true;
       });
 
       it("returns element key if it has no parent", async () => {
         const { key } = setupIModelForElementProps();
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(key)).to.be.true;
       });
@@ -261,7 +253,7 @@ describe("SelectionScopesHelper", () => {
       it("skips non-existing element ids", async () => {
         const key = createRandomECInstanceKey();
         elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => undefined);
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [key.id], "top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(0);
       });
 
@@ -269,7 +261,7 @@ describe("SelectionScopesHelper", () => {
         const { key: parentKey } = setupIModelForElementProps();
         const { key: elementKey } = setupIModelForElementProps({ parentKey });
         const ids = [elementKey.id, createTransientElementId()];
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: ids, scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(parentKey)).to.be.true;
       });
@@ -289,7 +281,7 @@ describe("SelectionScopesHelper", () => {
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
         elementsMock.setup((x) => x.tryGetElementProps(category.id!)).returns(() => category);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "category" } });
         expect(result.size).to.eq(1);
         expect(result.has({ className: category.classFullName, id: element.category })).to.be.true;
       });
@@ -297,7 +289,7 @@ describe("SelectionScopesHelper", () => {
       it("skips categories of removed elements", async () => {
         const elementId = createRandomId();
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => undefined);
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "category" } });
         expect(result.isEmpty).to.be.true;
       });
 
@@ -314,7 +306,7 @@ describe("SelectionScopesHelper", () => {
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
         elementsMock.setup((x) => x.tryGetElementProps(categoryId)).returns(() => undefined);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "category" } });
         expect(result.isEmpty).to.be.true;
       });
 
@@ -323,7 +315,7 @@ describe("SelectionScopesHelper", () => {
         const element = moq.Mock.ofType<Element>();
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element.object);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "category");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "category" } });
         expect(result.isEmpty).to.be.true;
       });
 
@@ -341,7 +333,7 @@ describe("SelectionScopesHelper", () => {
         elementsMock.setup((x) => x.tryGetElementProps(category.id!)).returns(() => category);
 
         const ids = [elementId, createTransientElementId()];
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "category");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: ids, scope: { id: "category" } });
         expect(result.size).to.eq(1);
         expect(result.has({ className: category.classFullName, id: element.category })).to.be.true;
       });
@@ -361,7 +353,7 @@ describe("SelectionScopesHelper", () => {
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "model");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "model" } });
         expect(result.size).to.eq(1);
         expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
       });
@@ -369,7 +361,7 @@ describe("SelectionScopesHelper", () => {
       it("skips models of removed elements", async () => {
         const elementId = createRandomId();
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => undefined);
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "model");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "model" } });
         expect(result.isEmpty).to.be.true;
       });
 
@@ -386,7 +378,7 @@ describe("SelectionScopesHelper", () => {
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(modelId)).returns(() => undefined);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [elementId], "model");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "model" } });
         expect(result.isEmpty).to.be.true;
       });
 
@@ -404,7 +396,7 @@ describe("SelectionScopesHelper", () => {
         modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
 
         const ids = [elementId, createTransientElementId()];
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, ids, "model");
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: ids, scope: { id: "model" } });
         expect(result.size).to.eq(1);
         expect(result.has({ className: model.classFullName, id: model.id! })).to.be.true;
       });
@@ -416,7 +408,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -427,7 +423,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-element");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-element" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalElementKey)).to.be.true;
       });
@@ -437,7 +437,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -451,7 +455,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-element");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-element" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -462,7 +470,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-element");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-element" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalElementKey)).to.be.true;
       });
@@ -477,7 +489,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-element");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-element" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalElementKey)).to.be.true;
       });
@@ -487,11 +503,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection(
-          { imodel: imodelMock.object },
-          [graphicalElementKey.id, createTransientElementId()],
-          "functional-element",
-        );
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id, createTransientElementId()],
+          scope: { id: "functional-element" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -503,7 +519,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -514,7 +534,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalParentElementKey)).to.be.true;
       });
@@ -527,7 +551,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalElementKey)).to.be.true;
       });
@@ -537,7 +565,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -551,7 +583,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalParentElementKey)).to.be.true;
       });
@@ -566,7 +602,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalElementKey)).to.be.true;
       });
@@ -580,7 +620,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalParentElementKey)).to.be.true;
       });
@@ -592,7 +636,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-top-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -604,7 +652,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-top-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalGrandParentElementKey)).to.be.true;
       });
@@ -617,7 +669,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(true);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-top-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalElementKey)).to.be.true;
       });
@@ -627,7 +683,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-top-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
@@ -641,7 +701,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-top-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(graphicalGrandParentElementKey)).to.be.true;
       });
@@ -656,7 +720,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-top-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalElementKey)).to.be.true;
       });
@@ -673,7 +741,11 @@ describe("SelectionScopesHelper", () => {
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+        const result = await SelectionScopesHelper.computeSelection({
+          imodel: imodelMock.object,
+          elementIds: [graphicalElementKey.id],
+          scope: { id: "functional-top-assembly" },
+        });
         expect(result.size).to.eq(1);
         expect(result.has(functionalGrandParentElementKey)).to.be.true;
       });

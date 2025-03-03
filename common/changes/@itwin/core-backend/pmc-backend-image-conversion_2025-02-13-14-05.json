@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add APIs for converting between ImageSource and ImageBuffer.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

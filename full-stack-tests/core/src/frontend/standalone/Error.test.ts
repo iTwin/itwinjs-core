@@ -33,7 +33,7 @@ if (ProcessDetector.isElectronAppFrontend) {
           expect(err.stack?.includes("core\\backend") || err.stack?.includes("core/backend"), `Expected ${err.stack} to have mention of 'core\\backend' or 'core/backend'`).to.be.true;
           expect(err.message).to.equal(message);
           expect(err.inUseLocks).to.deep.equal(inUseLocks);
-          expect(ITwinError.getMetaData(err)).to.be.undefined; // Currently not propagating metadata.
+          expect(ITwinError.getMetaData(err)).to.deep.equal(metadata);
         }
       }
       expect(caughtError).to.be.true;

@@ -30,7 +30,8 @@ export type AnyEnumerator = Enumerator<string | number>;
  * @beta
  */
 export class Enumeration extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.Enumeration;
+  public override readonly schemaItemType = Enumeration.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.Enumeration; }
   protected _type?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
@@ -191,6 +192,24 @@ export class Enumeration extends SchemaItem {
     this._isStrict = isStrict;
   }
 
+  /**
+   * Type guard to check if the SchemaItem is of type Enumeration.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is an Enumeration, false otherwise.
+   */
+  public static isEnumeration(item?: SchemaItem): item is Enumeration {
+    return item?.schemaItemType === SchemaItemType.Enumeration;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Enumeration.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Enumeration if it is an Enumeration, undefined otherwise.
+   */
+  public static assertIsEnumeration(item?: SchemaItem): asserts item is Enumeration {
+    if (!this.isEnumeration(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Enumeration}' (Enumeration)`);
+  }
 }
 
 /** @internal

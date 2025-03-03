@@ -11,7 +11,7 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../HubMock";
-import { _nativeDb } from "../../internal/Symbols";
+import { _hubAccess, _nativeDb } from "../../internal/Symbols";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -51,11 +51,11 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     const clock = sinon.useFakeTimers();
     clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
     const defaultTxnSpy = sinon.spy(SnapshotDb.prototype, "restartDefaultTxn");
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: cloudContainer } as any;
     });
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
@@ -99,11 +99,11 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     const clock = sinon.useFakeTimers();
     clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
 
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: cloudContainer } as any;
     });
-    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    const queryStub = sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);

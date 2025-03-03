@@ -12,12 +12,11 @@ import {
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
-  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
+  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, IModelApp, IModelConnection,
   ModelDisplayTransform,
   ModelDisplayTransformProvider,
   PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
-import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -93,7 +92,7 @@ class Timings {
   public readonly gpu = new Map<string, number[]>();
   public readonly actualFps = new Array<Map<string, number>>();
   public gpuFramesCollected = 0;
-  public readonly callback: GLTimerResultCallback;
+  public readonly callback: (result: GLTimerResult) => void;
 
   public constructor(numFramesToCollect: number) {
     this.callback = (result: GLTimerResult) => {
@@ -361,7 +360,7 @@ export class TestRunner {
     if (testConfig.testType === "image" || testConfig.testType === "both") {
       this.updateTestNames(test, undefined, true);
 
-      const canvas = vp.readImageToCanvas();
+      const canvas = vp.readImageToCanvas({omitCanvasDecorations: false});
       await savePng(this.getImageName(test), canvas);
 
       if (testConfig.testType === "image")
@@ -460,7 +459,7 @@ export class TestRunner {
         if (++frameCount === numFrames)
           target.performanceMetrics = undefined;
 
-        if (timings.gpuFramesCollected >= numFrames || (frameCount >= numFrames && !(IModelApp.renderSystem as System).isGLTimerSupported)) {
+        if (timings.gpuFramesCollected >= numFrames || (frameCount >= numFrames && !IModelApp.renderSystem.debugControl?.isGLTimerSupported)) {
           removeListener();
           IModelApp.viewManager.dropViewport(vp, false);
           vp.continuousRendering = false;
@@ -1028,7 +1027,7 @@ export class TestRunner {
 
   private async createReadPixelsImages(test: TestCase, pix: Pixel.Selector, pixStr: string): Promise<void> {
     const vp = test.viewport;
-    const canvas = vp.readImageToCanvas();
+    const canvas = vp.readImageToCanvas({omitCanvasDecorations: false});
     const ctx = canvas.getContext("2d");
     if (!ctx)
       return;

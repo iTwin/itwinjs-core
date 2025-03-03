@@ -132,3 +132,20 @@ export function deepReplaceNullsToUndefined<T>(obj: T): NullToUndefined<T> {
   }
   return obj as any;
 }
+
+/** @internal */
+export function createCancellableTimeoutPromise(timeoutMs: number) {
+  let timeout: ReturnType<typeof setTimeout>;
+  let rejectPromise: () => void;
+  const promise = new Promise<void>((resolve, reject) => {
+    rejectPromise = reject;
+    timeout = setTimeout(resolve, timeoutMs);
+  });
+  return {
+    promise,
+    cancel: () => {
+      clearTimeout(timeout);
+      rejectPromise();
+    },
+  };
+}

@@ -33,8 +33,8 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public async getSchema<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(key, matchType, context) as T;
+  public async getSchema(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
+    return this.getSchemaSync(key, matchType, context);
   }
 
   public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
@@ -47,7 +47,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public getSchemaSync<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const localPath: Set<string> = new Set<string>();
     return this.getSchemaRecursively(key, matchType, context, localPath);
   }
@@ -83,7 +83,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param context The schema context used to parse schema
    * @param localPath The path of the recursion is following used to detect cyclic dependency
    */
-  private getSchemaRecursively<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): T | undefined {
+  private getSchemaRecursively(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): Schema | undefined {
     // load the schema file
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
     if (0 === candidates.length)
@@ -121,7 +121,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
 
     // it should be safe to parse the current schema because all the references are in the native context and the TS side schema context at this point
     const schemaJson = this._nativeContext.readSchemaFromXmlFile(schemaPath);
-    return Schema.fromJsonSync(schemaJson, context) as T;
+    return Schema.fromJsonSync(schemaJson, context);
   }
 
   /**

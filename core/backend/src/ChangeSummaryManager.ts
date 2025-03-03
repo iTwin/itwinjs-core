@@ -16,7 +16,7 @@ import { ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement } from "./ECSqlS
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { _nativeDb } from "./internal/Symbols";
+import { _hubAccess, _nativeDb } from "./internal/Symbols";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -377,7 +377,7 @@ export class ChangeSummaryManager {
 
     const iModelId = iModel.iModelId;
     const changesetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    const changeset = await IModelHost.hubAccess.downloadChangeset({ accessToken: IModelHost.authorizationClient ? undefined : accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
+    const changeset = await IModelHost[_hubAccess].downloadChangeset({ accessToken: IModelHost.authorizationClient ? undefined : accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
 
     if (!IModelJsFs.existsSync(changeset.pathname))
       throw new IModelError(IModelStatus.FileNotFound, `Failed to download change set: ${changeset.pathname}`);
@@ -416,13 +416,13 @@ export class ChangeSummaryManager {
     // if we pass undefined to hubAccess methods they will use our authorizationClient to refresh the token as needed.
     const accessToken = IModelHost.authorizationClient ? undefined : args.accessToken ?? "";
     const { iModelId, iTwinId, range } = args;
-    range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
+    range.end = range.end ?? (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
       throw new IModelError(IModelStatus.BadArg, "Invalid range of changesets");
     if (range.first === 0 && range.end === 0)
       return []; // no changesets exist, so the inclusive range is empty
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId, range });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId, range });
 
     // Setup a temporary briefcase to help with extracting change summaries
     const briefcasePath = BriefcaseManager.getBriefcaseBasePath(iModelId);
