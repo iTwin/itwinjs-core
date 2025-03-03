@@ -628,6 +628,7 @@ export class PartialECChangeUnifier implements Disposable {
     }
     stmt[Symbol.dispose]();
   }
+  
   /**
    * Returns complete EC change instances.
    * @beta
