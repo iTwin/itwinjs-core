@@ -515,6 +515,7 @@ export class PartialECChangeUnifier implements Disposable {
       return undefined;
     });
   }
+  
   private static replaceBase64WithUint8Array(row: any): void {
     for (const key of Object.keys(row)) {
       const val = row[key];
