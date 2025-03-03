@@ -33,6 +33,12 @@ Every channel has a `channelKey` that is used for controlling write access to it
 
 >Note: `channelKey` is distinct from the Code of the Channel root element. It is a key chosen by the application that creates a channel and is not visible to the user. A particular `channelKey` can only be used by one Channel root Element in an iModel.
 
+In order to minimize collisions, `channelKeys` shall follow the convention:
+
+[organization-name]:[application-name]:[extension-name-if-any]
+
+For example, "bentley:opensiteplus" or "bentley:localsync:mstn"
+
 ## ChannelControl
 
 Every `IModelDb` has a member [IModelDb.channels]($backend) of type [ChannelControl]($backend) that supplies methods for controlling which channels are editable during a session.
@@ -49,13 +55,13 @@ After opening an `IModelDb` but before editing it, applications should call [Cha
 For example:
 
 ```ts
-    imodel.channels.addAllowedChannel("structural-members");
+    imodel.channels.addAllowedChannel("bentley:structural");
 ```
 
 Later, to disallow editing of that channel call:
 
 ```ts
-    imodel.channels.removeAllowedChannel("structural-members");
+    imodel.channels.removeAllowedChannel("bentley:structural");
 ```
 
 > Note: The "shared" channel is not editable by default. To allow writing to the shared channel, you need to call `imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName)`
@@ -67,7 +73,7 @@ To create a new *Channel Root* `Subject` element (and thereby a new channel), us
 E.g.:
 
 ```ts
-  imodel.channels.insertChannelSubject({ subjectName: "Chester", channelKey: "surface-stubs" });
+  imodel.channels.insertChannelSubject({ subjectName: "Chester", channelKey: "bentley:structural" });
 ```
 
 Generally, *Channel Root* `Subject` elements are created as an child of the *Root Subject*. However, `insertChannelSubject` accepts an optional `parentSubjectId` argument so that *Channel Root* Subjects can appear elsewhere in the Subject hierarchy. However, channels may not nest. Attempts to create a *Channel Root* element within an existing channel other than the "shared" Channel will throw an exception.
