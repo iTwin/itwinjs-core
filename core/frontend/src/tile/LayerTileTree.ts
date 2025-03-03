@@ -12,7 +12,6 @@ import { MapLayerSettings } from "@itwin/core-common";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { SceneContext } from "../ViewContext";
 
-// ###TODO this is a duplicate from MapTileTree.ts!
 /** Utility interface that ties an imagery tile tree to its corresponding map-layer settings object.
  * @internal
  */
