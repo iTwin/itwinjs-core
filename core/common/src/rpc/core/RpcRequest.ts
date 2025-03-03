@@ -41,7 +41,7 @@ export class ResponseLike implements Response {
   public get status() { return 200; }
   public get statusText() { return ""; }
   public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public get type(): ResponseType { return "basic"; }
+  public get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect" { return "basic"; }
   public get url() { return ""; }
   public clone() { return { ...this }; }
 
