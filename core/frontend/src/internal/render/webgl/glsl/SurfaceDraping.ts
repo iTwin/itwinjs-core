@@ -32,7 +32,7 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
     // if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y) ||
     //     !testInside(params[2].z, params[2].w, params[3].x, params[3].y, classPos.x, classPos.y) ||
     //     !testInside(params[3].x, params[3].y, params[3].z, params[3].w, classPos.x, classPos.y) ||
-    //     !testInside(params[3].z, params[3].w, params[2].x, params[2].y, classPos.x, classPos.y))
+    //     !testInside(params[3].z, params[3].w, params[2].x, params [2].y, classPos.x, classPos.y))
     //     return false;
 
     uv.x = classPos.x;
