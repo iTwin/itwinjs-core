@@ -42,6 +42,7 @@ import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { EnvironmentDecorations } from "./EnvironmentDecorations";
+import { _scheduleScriptReference } from "./common/internal/Symbols";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -335,8 +336,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
+  public get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined {
+    return this.displayStyle[_scheduleScriptReference];
   }
 
   /** Get the globe projection mode.
@@ -404,12 +405,13 @@ export abstract class ViewState extends ElementState {
    * map tiles as well call [[Viewport.areAreAllTileTreesLoaded]].
    */
   public get areAllTileTreesLoaded(): boolean {
-    let allLoaded = true;
-    this.forEachTileTreeRef((ref) => {
-      allLoaded = allLoaded && ref.isLoadingComplete;
-    });
+    for (const ref of this.getTileTreeRefs()) {
+      if (!ref.isLoadingComplete) {
+        return false;
+      }
+    }
 
-    return allLoaded;
+  return true;
   }
 
   /** Get the name of the [[ViewDefinition]] from which this ViewState originated. */
@@ -507,25 +509,36 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
-  /** Execute a function against the [[TileTreeReference]]s associated with each viewed model.
-   * @note Each model may have more than one tile tree reference - for instance, if the view has a schedule script containing animation transforms.
-   * @internal
-   */
-  public abstract forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
+  /** @internal */
+  public abstract getModelTreeRefs(): Iterable<TileTreeReference>;
 
   /** Execute a function against each [[TileTreeReference]] associated with this view.
-   * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
+   * This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
+   * @note This method is inefficient (iteration cannot be aborted) and awkward (callback cannot be async nor return a value). Prefer to iterate using [[getTileTreeRefs]].
+   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    this.forEachModelTreeRef(func);
-    this.displayStyle.forEachTileTreeRef(func);
+    for (const ref of this.getModelTreeRefs()) {
+      func(ref);
+    }
+
+    for (const ref of this.displayStyle.getTileTreeRefs()) {
+      func(ref);
+    }
+  }
+
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    yield * this.getModelTreeRefs();
+    yield * this.displayStyle.getTileTreeRefs();
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    this.forEachTileTreeRef((ref) => trees.disclose(ref));
+    for (const ref of this.getTileTreeRefs()) {
+      trees.disclose(ref);
+    }
   }
 
   /** Discloses graphics memory consumed by viewed tile trees and other consumers like view attachments.
@@ -563,7 +576,9 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createScene(context: SceneContext): void {
-    this.forEachTileTreeRef((ref: TileTreeReference) => ref.addToScene(context));
+    for (const ref of this.getTileTreeRefs()) {
+      ref.addToScene(context);
+    }
   }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
@@ -1134,13 +1149,13 @@ export abstract class ViewState extends ElementState {
    */
   public refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean {
     let refreshed = false;
-    this.forEachModelTreeRef((ref) => {
+    for (const ref of this.getModelTreeRefs()) {
       const tree = ref.treeOwner.tileTree;
       if (undefined !== tree && (undefined === modelIds || Id64.has(modelIds, tree.modelId))) {
         ref.treeOwner[Symbol.dispose]();
         refreshed = true;
       }
-    });
+    }
 
     return refreshed;
   }
@@ -2427,10 +2442,10 @@ export abstract class ViewState2d extends ViewState {
   }
 
   /** @internal */
-  public override forEachModelTreeRef(func: (ref: TileTreeReference) => void): void {
-    const ref = this._tileTreeRef;
-    if (undefined !== ref)
-      func(ref);
+  public override * getModelTreeRefs(): Iterable<TileTreeReference> {
+    if (this._tileTreeRef) {
+      yield this._tileTreeRef;
+    }
   }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Removed deprecated scheduleScriptReference and onScheduleScriptReferencedChanged from DisplayStyleState.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

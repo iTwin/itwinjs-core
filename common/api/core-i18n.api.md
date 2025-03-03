@@ -22,8 +22,6 @@ export class ITwinLocalization implements Localization {
     getLanguageList(): readonly string[];
     getLocalizedKeys(line: string): string;
     getLocalizedString(key: string | string[], options?: TOptionsBase): string;
-    // @internal
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string;
     getNamespacePromise(name: string): Promise<void> | undefined;
     // (undocumented)
     i18next: i18n;

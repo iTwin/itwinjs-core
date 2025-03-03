@@ -331,6 +331,13 @@ class SectionGraphicsProvider implements TiledGraphicsProvider {
     if (undefined !== this._sheetRef)
       func(this._sheetRef);
   }
+
+  public * getReferences(): Iterable<TileTreeReference> {
+    yield this._drawingRef;
+    if (this._sheetRef) {
+      yield this._sheetRef;
+    }
+  }
 }
 
 /** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a [SpatialViewState]($frontend).

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Make IModelHostOptions.hubAccess public.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -23,6 +23,8 @@ export abstract class SchemaItems {
   protected schemaItemType: SchemaItemType;
   protected schemaEditor: SchemaContextEditor;
 
+  protected abstract get itemTypeClass(): typeof SchemaItem;
+
   public constructor(schemaItemType: SchemaItemType, schemaEditor: SchemaContextEditor) {
     this.schemaItemType = schemaItemType;
     this.schemaEditor = schemaEditor;
@@ -37,11 +39,11 @@ export abstract class SchemaItems {
   public async setName(itemKey: SchemaItemKey, name: string): Promise<SchemaItemKey> {
     try {
       const schema = await this.getSchema(itemKey.schemaKey);
-      const ecClass = await schema.getItem<MutableSchemaItem>(name);
+      const ecClass = await schema.getItem(name, this.itemTypeClass);
       if (ecClass !== undefined)
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNameAlreadyExists, new SchemaItemId(this.schemaItemType, name, schema.schemaKey));
 
-      const mutableItem = await this.getSchemaItem<MutableSchemaItem>(itemKey);
+      const mutableItem = await this.getSchemaItem(itemKey, this.itemTypeClass) as MutableSchemaItem;
 
       const existingName = itemKey.name;
       mutableItem.setName(name);
@@ -66,11 +68,11 @@ export abstract class SchemaItems {
    * @param description The new description to set.
    */
   public async setDescription(schemaItemKey: SchemaItemKey, description: string) {
-    const item = await this.getSchemaItem<MutableSchemaItem>(schemaItemKey)
+    const item = await this.getSchemaItem(schemaItemKey, this.itemTypeClass)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
-    item.setDescription(description);
+    (item as MutableSchemaItem).setDescription(description);
   }
 
   /**
@@ -79,11 +81,11 @@ export abstract class SchemaItems {
    * @param label The new label to set.
    */
   public async setDisplayLabel(schemaItemKey: SchemaItemKey, label: string) {
-    const item = await this.getSchemaItem<MutableSchemaItem>(schemaItemKey)
+    const item = await this.getSchemaItem(schemaItemKey, this.itemTypeClass)
       .catch((e: any) => {
         throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaItemId(this.schemaItemType, schemaItemKey), e);
       });
-    item.setDisplayLabel(label);
+    (item as MutableSchemaItem).setDisplayLabel(label);
   }
 
   protected async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
@@ -94,14 +96,8 @@ export abstract class SchemaItems {
     return schema;
   }
 
-  protected async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
-    schemaItemType = schemaItemType ?? this.schemaItemType;
-    return this.schemaEditor.getSchemaItem<T>(schemaItemKey, schemaItemType);
-  }
-
-  protected async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
-    schemaItemType = schemaItemType ?? this.schemaItemType;
-    return this.schemaEditor.lookupSchemaItem(schemaOrKey, schemaItemKey, schemaItemType);
+  protected async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>> {
+    return this.schemaEditor.getSchemaItem(schemaItemKey, itemConstructor);
   }
 
   protected async createSchemaItem<T extends SchemaItem>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, ...args: any[]): Promise<T> {

@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
+  ECClass,
   ECVersion, EntityClass, PrimitiveType, Schema,
   SchemaContext, SchemaItemKey, SchemaKey,
 } from "@itwin/ecschema-metadata";
@@ -455,6 +456,30 @@ describe("Editor tests", () => {
       await testEditor.setAlias(testSchema.schemaKey, "newAlias");
 
       expect(testSchema.alias).to.equal("newAlias");
+    });
+
+    it("getSchemaItem with invalid schema item type, throws error", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ValidSchema",
+        version: "1.2.3",
+        alias: "vs",
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            label: "ExampleEntity",
+            description: "An example entity class.",
+          },
+        },
+      };
+
+      context = new SchemaContext();
+      testSchema = await Schema.fromJson(schemaJson, context);
+      testEditor = new SchemaContextEditor(context);
+      const testClassKey = new SchemaItemKey("testClass", testSchema.schemaKey);
+      await expect(testEditor.getSchemaItem(testClassKey, ECClass)).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("message", `Invalid schema item lookup for: Class`);
+      });
     });
 
     it("try changing schema alias to invalid name, throws error", async () => {

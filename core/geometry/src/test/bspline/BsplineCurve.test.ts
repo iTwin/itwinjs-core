@@ -146,6 +146,117 @@ function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: L
   return ok;
 }
 describe("BsplineCurve", () => {
+  it("CreateBspline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    const dy = 3;
+
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    let knotArray1 = [0, 1 / 5, 2 / 5, 3 / 5, 4 / 5, 1];
+    let knotArray2 = [0, 0, 0, 1, 1, 1];
+    let bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    let bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    knotArray1 = [0, 0, 2 / 5, 3 / 5, 1, 1];
+    knotArray2 = [0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    poleArray.push(Point3d.create(5, 2));
+    knotArray1 = [0, 1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1];
+    knotArray2 = [0, 0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    knotArray1 = [0, 0, 2 / 6, 3 / 6, 4 / 6, 1, 1];
+    knotArray2 = [0, 0, 0, 0.9, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    const closedPoleArray = [
+      Point3d.create(0, 0),
+      Point3d.create(1, 2),
+      Point3d.create(3, 2),
+      Point3d.create(4, 0),
+      Point3d.create(0, 0),
+    ];
+    knotArray1 = [0, 0, 0, 1, 1, 1, 1];
+    knotArray2 = [0, 0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(closedPoleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(closedPoleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedPoleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedPoleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "CreateBspline");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("evaluatePointInSpan1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    const knotArray = [0, 0, 0, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
+
+    const p0 = bspline.evaluatePointInSpan(0, 0);
+    const p1 = bspline.evaluatePointInSpan(0, 0.5);
+    const p2 = bspline.evaluatePointInSpan(0, 1);
+    ck.testPoint3d(p0, Point3d.create(0, 0, 0));
+    ck.testPoint3d(p1, Point3d.create(2, 1.5, 0));
+    ck.testPoint3d(p2, Point3d.create(4, 0, 0));
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "evaluatePointInSpan1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("evaluatePointInSpan2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const degree = 3;
+    const poleArray = [
+      Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0), Point3d.create(5, 2),
+    ];
+    const knotArray = [0, 0, 0, 0.5, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
+
+    const p0 = bspline.evaluatePointInSpan(0, 1);
+    const p1 = bspline.evaluatePointInSpan(1, 0);
+    ck.testPoint3d(p0, p1, "both adjacent spans yield the same Point3d at spanFraction equal to a knot");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "evaluatePointInSpan2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
   it("HelloWorld", () => {
     const ck = new Checker();

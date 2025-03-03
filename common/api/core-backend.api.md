@@ -17,6 +17,7 @@ import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
+import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -72,8 +73,6 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
-import { ElementGeometryBuilderParams } from '@itwin/core-common';
-import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
@@ -81,6 +80,7 @@ import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
+import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
@@ -118,6 +118,8 @@ import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
+import { ImageBuffer } from '@itwin/core-common';
+import { ImageBufferFormat } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
@@ -203,6 +205,9 @@ import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { RscFontEncodingProps } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaItemKey } from '@itwin/ecschema-metadata';
+import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -289,14 +294,14 @@ export abstract class AuxCoordSystem extends DefinitionElement {
     // (undocumented)
     description?: string;
     // (undocumented)
-    type: number;
+    type?: number;
 }
 
 // @public
 export class AuxCoordSystem2d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
-    angle: number;
+    angle?: number;
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -313,11 +318,11 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
     // (undocumented)
     origin?: Point3d;
     // (undocumented)
-    pitch: number;
+    pitch?: number;
     // (undocumented)
-    roll: number;
+    roll?: number;
     // (undocumented)
-    yaw: number;
+    yaw?: number;
 }
 
 // @public
@@ -345,7 +350,7 @@ export interface AzureBlobStorageCredentials {
     baseUrl?: string;
 }
 
-// @internal
+// @public
 export interface BackendHubAccess {
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
@@ -353,7 +358,7 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @deprecated
+    // @internal @deprecated
     downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
@@ -1677,12 +1682,12 @@ export class DocumentPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
-// @beta
+// @public
 export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
 
-// @beta
+// @public
 export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
@@ -1695,7 +1700,7 @@ export interface DownloadJob {
     request: DownloadRequest;
 }
 
-// @beta
+// @public
 export interface DownloadProgressArg {
     progressCallback?: ProgressFunction;
 }
@@ -2344,6 +2349,8 @@ export class Entity {
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
+    // @beta
+    getMetaData(): Promise<EntityClass>;
     // @internal @deprecated
     getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
@@ -2359,6 +2366,10 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
+    // @beta
+    static get schemaItemKey(): SchemaItemKey;
+    // @beta
+    get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
     toJSON(): EntityProps;
 }
@@ -2841,8 +2852,6 @@ export abstract class GeometricElement extends Element_2 {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -2941,8 +2950,6 @@ export class GeometryPart extends DefinitionElement {
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
     // (undocumented)
@@ -3124,6 +3131,26 @@ export class HubMock {
     static startup(mockName: LocalDirName, outputDir: string): void;
 }
 
+// @public
+export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs): ImageBuffer | undefined;
+
+// @public
+export interface ImageBufferFromImageSourceArgs {
+    source: BinaryImageSource;
+    targetFormat?: ImageBufferFormat.Rgb | ImageBufferFormat.Rgba;
+}
+
+// @public
+export function imageSourceFromImageBuffer(args: ImageSourceFromImageBufferArgs): BinaryImageSource | undefined;
+
+// @public
+export interface ImageSourceFromImageBufferArgs {
+    flipVertically?: boolean;
+    image: ImageBuffer;
+    jpegQuality?: number;
+    targetFormat?: ImageSourceFormat.Png | ImageSourceFormat.Jpeg;
+}
+
 // @beta @deprecated (undocumented)
 export const IModelCloneContext: typeof IModelElementCloneContext;
 
@@ -3282,6 +3309,8 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
+    // @beta
+    get schemaContext(): SchemaContext;
     // @beta
     simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
@@ -3464,6 +3493,12 @@ export class IModelElementCloneContext {
 
 // @public
 export class IModelHost {
+    // @internal
+    static [_getHubAccess](): BackendHubAccess | undefined;
+    // @internal
+    static get [_hubAccess](): BackendHubAccess;
+    // @internal (undocumented)
+    static [_setHubAccess](hubAccess: BackendHubAccess | undefined): void;
     static get appAssetsDir(): string | undefined;
     static get applicationId(): string;
     static set applicationId(id: string);
@@ -3484,14 +3519,11 @@ export class IModelHost {
         exactMatch?: boolean;
     }): string;
     // (undocumented)
-    static configuration?: IModelHostOptions;
+    static configuration?: Omit<IModelHostOptions, "hubAccess">;
+    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
-    // @internal
-    static getHubAccess(): BackendHubAccess | undefined;
-    // @internal
-    static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
@@ -3512,8 +3544,6 @@ export class IModelHost {
     static set sessionId(id: GuidString);
     // @internal
     static setCrashReportProperty(name: string, value: string): void;
-    // @internal (undocumented)
-    static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
     // @beta
     static get settingsSchemas(): SettingsSchemas;
     static shutdown(this: void): Promise<void>;
@@ -3578,7 +3608,6 @@ export interface IModelHostOptions {
     // @internal
     crashReportingConfig?: CrashReportingConfig;
     enableOpenTelemetry?: boolean;
-    // @internal
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
@@ -3816,7 +3845,7 @@ export class LightLocation extends SpatialLocationElement {
     protected constructor(props: LightLocationProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    enabled: boolean;
+    enabled?: boolean;
 }
 
 // @public
@@ -4158,10 +4187,10 @@ export interface LockControl {
     releaseAllLocks(): Promise<void>;
 }
 
-// @internal (undocumented)
+// @public
 export type LockMap = Map<Id64String, LockState_2>;
 
-// @beta
+// @public
 export interface LockProps {
     readonly id: Id64String;
     readonly state: LockState_2;
@@ -4251,7 +4280,7 @@ export class Model extends Entity {
     // @beta
     protected static onUpdateElement(_arg: OnElementInModelPropsArg): void;
     // (undocumented)
-    readonly parentModel: Id64String;
+    readonly parentModel?: Id64String;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
@@ -4861,6 +4890,8 @@ export class Schema {
     protected constructor();
     // @internal
     static get missingRequiredBehavior(): boolean;
+    // @internal
+    static get schemaKey(): SchemaKey_2;
     static get schemaName(): string;
     // @beta
     static toSemverString(paddedVersion: string): string;
@@ -5932,6 +5963,7 @@ export class TxnManager {
     cancelTo(txnId: TxnIdString): IModelStatus;
     // @internal (undocumented)
     readonly changeMergeManager: ChangeMergeManager;
+    deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
     getCurrentTxnId(): TxnIdString;
@@ -6060,7 +6092,7 @@ export class V1CheckpointManager {
     static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
 }
 
-// @internal
+// @public
 export interface V2CheckpointAccessProps {
     readonly accountName: string;
     readonly containerId: string;

@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -37,17 +38,15 @@ import {
   FieldDescriptorType,
   FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions,
+  HierarchyLevel,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
-  HierarchyLevelJSON,
   HierarchyRequestOptions,
   HierarchyRpcRequestOptions,
   InstanceKey,
   Item,
   KeySet,
-  Node,
   NodeKey,
-  NodePathElement,
   Paged,
   PageOptions,
   PresentationError,
@@ -179,15 +178,15 @@ describe("PresentationRpcImpl", () => {
     using impl = new PresentationRpcImpl({ requestTimeout: 10 });
     using _ = { [Symbol.dispose]: () => Presentation.terminate() };
     let callsCount = 0;
-    const result = new ResolvablePromise<number>();
+    using result = new ResolvablePromise<number>();
     presentationManagerMock
       .setup(async (x) => x.getNodesCount(moq.It.isAny()))
       .callback((props: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & BackendDiagnosticsAttribute) => {
         props.diagnostics!.handler({ logs: [{ scope: `${callsCount++}` }] });
       })
       .returns(async () => result);
-    const response1 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
-    expect(response1.statusCode).to.eq(PresentationStatus.BackendTimeout);
+    const response1 = impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+    await expect(response1).to.eventually.be.rejectedWith("Timeout");
     await result.resolve(123);
     const response2 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
     expect(response2.statusCode).to.eq(PresentationStatus.Success);
@@ -227,12 +226,7 @@ describe("PresentationRpcImpl", () => {
         refreshContainerForRpc: sinon.stub(),
       } as unknown as IModelDb);
     using impl = new PresentationRpcImpl();
-    expect(await impl.getSelectionScopes(imodelToken, {})).to.deep.eq({
-      statusCode: PresentationStatus.Error,
-      errorMessage: "test error",
-      result: undefined,
-      diagnostics: undefined,
-    });
+    await expect(impl.getSelectionScopes(imodelToken, {})).to.eventually.be.rejectedWith(PresentationError, "test error");
   });
 
   it("re-throws generic errors", async () => {
@@ -287,7 +281,7 @@ describe("PresentationRpcImpl", () => {
       // note: all RPC methods go through `makeRequest` that takes care of timeouts and throws - test that here
       // using `getNodesCount` request
 
-      it("should return `PresentationStatus.BackendTimeout` without any result if manager request takes more than requestTimeout", async () => {
+      it("should throw timeout response without any result if manager request takes more than requestTimeout", async () => {
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
@@ -295,19 +289,16 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
-        const result = new ResolvablePromise<number>();
+        using result = new ResolvablePromise<number>();
         presentationManagerMock
           .setup(async (x) => x.getNodesCount(managerOptions))
           .returns(async () => result)
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith("Timeout");
         presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.be.undefined;
-        expect(actualResult.statusCode).to.equal(PresentationStatus.BackendTimeout);
-        await result.resolve(999);
       });
 
       it("should return result if `requestTimeout` is set to 0", async () => {
@@ -320,7 +311,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         const result = new ResolvablePromise<number>();
@@ -348,7 +338,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions1: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         const result1 = new ResolvablePromise<number>();
@@ -364,7 +353,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions2: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: iModelMock2.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         const result2 = new ResolvablePromise<number>();
@@ -397,7 +385,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock
@@ -423,7 +410,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           rulesetVariables: rpcOptions.rulesetVariables as RulesetVariable[],
           cancelEvent: new BeEvent<() => void>(),
         };
@@ -447,7 +433,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>> & { diagnostics?: DiagnosticsOptions } = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           diagnostics: {
             perf: true,
           },
@@ -480,7 +465,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock
@@ -489,10 +473,9 @@ describe("PresentationRpcImpl", () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith(PresentationError, "test error");
         presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
-        expect(actualResult.errorMessage).to.eq("test error");
       });
 
       it("should return error result if manager throws and `requestTimeout` is set to 0", async () => {
@@ -505,7 +488,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock
@@ -514,10 +496,9 @@ describe("PresentationRpcImpl", () => {
             throw new PresentationError(PresentationStatus.Error, "test error");
           })
           .verifiable();
-        const actualResult = await impl.getNodesCount(testData.imodelToken, rpcOptions);
+        const actualResult = impl.getNodesCount(testData.imodelToken, rpcOptions);
+        await expect(actualResult).to.eventually.be.rejectedWith(PresentationError, "test error");
         presentationManagerMock.verifyAll();
-        expect(actualResult.statusCode).to.eq(PresentationStatus.Error);
-        expect(actualResult.errorMessage).to.eq("test error");
       });
     });
 
@@ -531,7 +512,6 @@ describe("PresentationRpcImpl", () => {
         const managerOptions: WithCancelEvent<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         presentationManagerMock
@@ -569,8 +549,8 @@ describe("PresentationRpcImpl", () => {
 
     describe("getPagedNodes", () => {
       it("calls manager for root nodes", async () => {
-        const getRootNodesResult: HierarchyLevelJSON = {
-          nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
+        const getRootNodesResult: HierarchyLevel = {
+          nodes: [createTestNode(), createTestNode(), createTestNode()],
           supportsFiltering: true,
         };
         const getRootNodesCountResult = 999;
@@ -583,7 +563,6 @@ describe("PresentationRpcImpl", () => {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
 
@@ -607,8 +586,8 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("calls manager for child nodes", async () => {
-        const getChildNodesResult: HierarchyLevelJSON = {
-          nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
+        const getChildNodesResult: HierarchyLevel = {
+          nodes: [createTestNode(), createTestNode(), createTestNode()],
           supportsFiltering: true,
         };
         const getChildNodesCountResult = 999;
@@ -647,7 +626,9 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("enforces maximum page size when requesting with larger size than allowed", async () => {
-        const getRootNodesResult: Node[] = [];
+        const getRootNodesResult: HierarchyLevel = {
+          nodes: [],
+        };
         const getRootNodesCountResult = 9999;
         const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
           ...defaultRpcParams,
@@ -658,12 +639,11 @@ describe("PresentationRpcImpl", () => {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
 
         const presentationManagerDetailStub = {
-          getNodes: sinon.spy(async () => JSON.stringify(getRootNodesResult)),
+          getNodes: sinon.fake(async () => JSON.stringify(getRootNodesResult)),
         };
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         presentationManagerMock
@@ -675,7 +655,9 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("enforces maximum page size when requesting with undefined size", async () => {
-        const getRootNodesResult: Node[] = [];
+        const getRootNodesResult: HierarchyLevel = {
+          nodes: [],
+        };
         const getRootNodesCountResult = 9999;
         const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
           ...defaultRpcParams,
@@ -686,7 +668,6 @@ describe("PresentationRpcImpl", () => {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { start: 0, size: MAX_ALLOWED_PAGE_SIZE },
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
         const presentationManagerDetailStub = {
@@ -702,7 +683,9 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("enforces maximum page size when requesting with undefined page options", async () => {
-        const getRootNodesResult: Node[] = [];
+        const getRootNodesResult: HierarchyLevel = {
+          nodes: [],
+        };
         const getRootNodesCountResult = 9999;
         const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
           ...defaultRpcParams,
@@ -712,7 +695,6 @@ describe("PresentationRpcImpl", () => {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: { size: MAX_ALLOWED_PAGE_SIZE },
-          parentKey: undefined,
           cancelEvent: new BeEvent<() => void>(),
         };
 
@@ -775,7 +757,7 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
 
-        expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
+        expect(actualResult.result).to.deep.equal(result);
       });
     });
 
@@ -803,7 +785,7 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
 
-        expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
+        expect(actualResult.result).to.deep.equal(result);
       });
     });
 
@@ -1965,28 +1947,6 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("computeSelection", () => {
-      it("[deprecated] calls manager", async () => {
-        const scope = createRandomSelectionScope();
-        const ids = [createRandomId()];
-        const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>> = {
-          ...defaultRpcParams,
-        };
-        const managerOptions: WithCancelEvent<ComputeSelectionRequestOptions<IModelDb>> = {
-          imodel: testData.imodelMock.object,
-          elementIds: ids,
-          scope: { id: scope.id },
-          cancelEvent: new BeEvent<() => void>(),
-        };
-        const result = new KeySet();
-        presentationManagerMock
-          .setup(async (x) => x.computeSelection(managerOptions))
-          .returns(async () => result)
-          .verifiable();
-        const actualResult = await impl.computeSelection(testData.imodelToken, rpcOptions, ids, scope.id);
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(result.toJSON());
-      });
-
       it("calls manager", async () => {
         const scopeId = "element";
         const ancestorLevel = 123;
