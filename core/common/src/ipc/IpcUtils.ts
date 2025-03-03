@@ -16,11 +16,11 @@ export type IpcAdapted<T> = {
  * @param nextFn Function that returns the next value in the iterable based on the identifier
  * @beta
  */
-export function getIpcIterable<T>(
+export function getIpcIterable<T, MetaDataType = unknown>(
   initFn: () => Promise<string>,
   nextFn: (queryId: string) => Promise<IteratorResult<T, void>>,
-  metadataFn: (queryId: string) => Promise<any>
-): AsyncIterable<T> & { meta: any } {
+  metadataFn: (queryId: string) => Promise<MetaDataType[]>
+): AsyncIterable<T> & { meta: () => Promise<MetaDataType[]> } {
   const queryId = initFn();
 
   const next = async () => nextFn(await queryId);

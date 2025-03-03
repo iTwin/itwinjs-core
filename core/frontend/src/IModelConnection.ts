@@ -294,8 +294,7 @@ export abstract class IModelConnection extends IModel {
       || options.priority !== undefined
       || options.quota !== undefined
       || options.restartToken !== undefined
-      || options.rowFormat !== QueryRowFormat.UseECSqlPropertyNames
-      || options.suppressLogErrors !== undefined
+      || options.rowFormat === QueryRowFormat.UseJsPropertyNames
       || options.usePrimaryConn !== undefined
   }
 
@@ -393,75 +392,6 @@ export abstract class IModelConnection extends IModel {
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
       yield reader.formatCurrentRow();
-  }
-
-  public async *runQuery(query: QueryRequest): AsyncIterable<object> {
-    const reader = this.createQueryReader(query.query, this._getQueryBinder(query), {
-      rowFormat: QueryRowFormat.UseECSqlPropertyNames,
-      convertClassIdsToClassNames: false,
-      includeMetaData: true
-    })
-    for await (const row of reader) {
-      yield row.toRow()
-    }
-  }
-
-  private _getQueryBinder(query: QueryRequest): QueryBinder | undefined {
-    const args = query.args;
-    if (args === undefined) return undefined;
-
-    const binder = new QueryBinder();
-    if (Array.isArray(args)) {
-      for (let i = 0; i < args.length; i++) {
-        this._bindValue(binder, i + 1, args[i]);
-      }
-      return binder;
-    }
-    for (const [key, value] of Object.entries(args)) {
-      this._bindValue(binder, key, value);
-    }
-    return binder;
-  }
-
-  private _bindValue(binder: QueryBinder, key: string | number, value: QueryArgument) {
-    switch (value.type) {
-      case "string":
-        binder.bindString(key, value.value);
-        break;
-      case "boolean":
-        binder.bindBoolean(key, value.value);
-        break;
-      case "double":
-        binder.bindDouble(key, value.value);
-        break;
-      case "id":
-        binder.bindId(key, value.value);
-        break;
-      case "idSet":
-        binder.bindIdSet(key, value.value);
-        break;
-      case "integer":
-        binder.bindInt(key, value.value);
-        break;
-      case "long":
-        binder.bindLong(key, value.value);
-        break;
-      case "null":
-        binder.bindNull(key);
-        break;
-      case "point2d":
-        binder.bindPoint2d(key, Point2d.fromJSON(value.value));
-        break;
-      case "point3d":
-        binder.bindPoint3d(key, Point3d.fromJSON(value.value));
-        break;
-      case "blob":
-        binder.bindBlob(key, Buffer.from(value.value, "base64"));
-        break;
-      case "struct":
-        binder.bindStruct(key, value.value);
-        break;
-    }
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
