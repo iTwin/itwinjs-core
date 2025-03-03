@@ -6,6 +6,7 @@
  * @module WebGL
  */
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import { System } from "../System";
 import { addUInt32s } from "./Common";
 
 const testInside = `
@@ -29,11 +30,11 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
     vec4 classPos4 = matrix * eye4;
     classPos = classPos4.xy / classPos4.w;
 
-    // if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y) ||
-    //     !testInside(params[2].z, params[2].w, params[3].x, params[3].y, classPos.x, classPos.y) ||
-    //     !testInside(params[3].x, params[3].y, params[3].z, params[3].w, classPos.x, classPos.y) ||
-    //     !testInside(params[3].z, params[3].w, params[2].x, params [2].y, classPos.x, classPos.y))
-    //     return false;
+    if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y) &&
+        !testInside(params[2].z, params[2].w, params[3].x, params[3].y, classPos.x, classPos.y) &&
+        !testInside(params[3].x, params[3].y, params[3].z, params[3].w, classPos.x, classPos.y) &&
+        !testInside(params[3].z, params[3].w, params[2].x, params [2].y, classPos.x, classPos.y))
+        return false;
 
     uv.x = classPos.x;
     uv.y = classPos.y / imageCount;
@@ -88,9 +89,7 @@ const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(featur
 function applyDraping(){
   const applyTextureStrings = [];
 
-  const textureCount = 6;
-
-  for (let i = 0; i < textureCount; i++)
+  for (let i = 0; i < System.instance.maxRealityImageryLayers; i++)
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
 
   return `
