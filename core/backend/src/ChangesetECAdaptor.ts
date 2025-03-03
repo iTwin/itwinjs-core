@@ -619,6 +619,7 @@ export class PartialECChangeUnifier implements Disposable {
     });
     this._readonly = true;
   }
+  
   private *getInstances(): IterableIterator<ChangedECInstance> {
     const stmt = this._db.prepareSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
