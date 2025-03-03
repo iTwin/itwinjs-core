@@ -289,12 +289,6 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
-<<<<<<< HEAD
-=======
-beta;interface;FontFace
-public;interface;FontFamilyDescriptor
-beta;interface;FontFamilySelector
->>>>>>> c26d976673 (Remove Node.js and DOM type references from core-common (#7720))
 public;type;FontId
 public;class;FontMap
 public;interface;FontMapProps
@@ -922,7 +916,6 @@ public;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
-public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 public;class;VerticalCRS
