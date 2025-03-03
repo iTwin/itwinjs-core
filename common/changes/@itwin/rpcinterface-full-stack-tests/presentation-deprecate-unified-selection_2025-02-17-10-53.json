@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/rpcinterface-full-stack-tests",
+      "comment": "Deprecate unified selection related APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/rpcinterface-full-stack-tests"
+}

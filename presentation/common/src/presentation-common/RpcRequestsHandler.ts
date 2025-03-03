@@ -6,18 +6,16 @@
  * @module RPC
  */
 
-import { BeDuration, BeTimePoint, Guid, Logger } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcManager } from "@itwin/core-common";
+import { Guid, Logger } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcManager, RpcRequest } from "@itwin/core-common";
 import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
-import { DisplayValueGroupJSON } from "./content/Value";
 import { ClientDiagnostics, ClientDiagnosticsAttribute, ClientDiagnosticsHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKey } from "./hierarchy/Key";
-import { NodeJSON } from "./hierarchy/Node";
-import { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import { Node } from "./hierarchy/Node";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinition } from "./LabelDefinition";
 import {
@@ -42,7 +40,9 @@ import { ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcReque
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
-import { PagedResponse } from "./Utils";
+import { createCancellableTimeoutPromise, PagedResponse } from "./Utils";
+import { NodePathElement } from "./hierarchy/NodePathElement";
+import { DisplayValueGroup } from "./content/Value";
 
 /**
  * Default timeout for how long we're going to wait for RPC request to be fulfilled before throwing
@@ -92,34 +92,37 @@ export class RpcRequestsHandler {
   }
 
   private async requestWithTimeout<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: ClientDiagnosticsHandler): Promise<TResult> {
-    const start = BeTimePoint.now();
-    const timeout = BeDuration.fromMilliseconds(this.timeout);
-    let diagnostics: ClientDiagnostics | undefined;
-    while (start.plus(timeout).isInFuture) {
-      try {
-        const response = await func();
-        diagnostics = response.diagnostics;
-        switch (response.statusCode) {
-          case PresentationStatus.Success:
-            return response.result!;
-          case PresentationStatus.BackendTimeout:
-            break;
-          default:
-            throw new PresentationError(response.statusCode, response.errorMessage);
+    const rpcResponsePromise = func();
+    const rpcRequest: RpcRequest | undefined = RpcRequest.current(this.rpcClient);
+    const timeout = createCancellableTimeoutPromise(this.timeout);
+    return Promise.race([
+      (async () => {
+        let diagnostics: ClientDiagnostics | undefined;
+        try {
+          const response = await rpcResponsePromise;
+          diagnostics = response.diagnostics;
+          switch (response.statusCode) {
+            case PresentationStatus.Success:
+              return response.result!;
+            default:
+              throw new PresentationError(response.statusCode, response.errorMessage);
+          }
+        } finally {
+          diagnosticsHandler && diagnostics && diagnosticsHandler(diagnostics);
         }
-      } finally {
-        diagnosticsHandler && diagnostics && diagnosticsHandler(diagnostics);
-      }
-    }
-    throw new PresentationError(PresentationStatus.BackendTimeout);
+      })(),
+      timeout.promise.then(() => {
+        throw new Error(`Processing the request took longer than the configured limit of ${this.timeout} ms`);
+      }),
+    ]).finally(() => {
+      rpcRequest?.cancel();
+      timeout.cancel();
+    });
   }
 
   /**
-   * Send the request to backend.
-   *
-   * If the backend responds with [[PresentationStatus.BackendTimeout]], the request is repeated until we hit `timeout` or get
-   * a response. If the response is other than [[PresentationStatus.BackendTimeout]] or [[PresentationStatus.Success]], a [[PresentationError]]
-   * is thrown with the details from the response.
+   * Send the request to backend. We'll wait for the response for `this.timeout` ms, and if we don't get the response by
+   * then, we'll throw an error.
    */
   public async request<TResult, TOptions extends RequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute, TArg = any>(
     func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>,
@@ -139,7 +142,8 @@ export class RpcRequestsHandler {
       rpcOptions.diagnostics = diagnosticsOptions;
     }
     const doRequest = async () => func(imodel, rpcOptions, ...additionalOptions);
-    return this.requestWithTimeout(doRequest, diagnosticsHandler);
+    const result = await this.requestWithTimeout(doRequest, diagnosticsHandler);
+    return result;
   }
 
   public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number> {
@@ -149,10 +153,9 @@ export class RpcRequestsHandler {
 
   public async getPagedNodes(
     options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> & ClientDiagnosticsAttribute,
+  ): Promise<PagedResponse<Node>> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<PagedResponse<NodeJSON>> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<PagedResponse<NodeJSON>, typeof options>(this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
+    return this.request<PagedResponse<Node>, typeof options>(this.rpcClient.getPagedNodes.bind(this.rpcClient), options);
   }
 
   public async getNodesDescriptor(
@@ -168,18 +171,16 @@ export class RpcRequestsHandler {
 
   public async getNodePaths(
     options: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<NodePathElementJSON[]> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<NodePathElementJSON[], typeof options>(this.rpcClient.getNodePaths.bind(this.rpcClient), options);
+    return this.request<NodePathElement[], typeof options>(this.rpcClient.getNodePaths.bind(this.rpcClient), options);
   }
 
   public async getFilteredNodePaths(
     options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> & ClientDiagnosticsAttribute,
+  ): Promise<NodePathElement[]> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<NodePathElementJSON[]> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<NodePathElementJSON[], typeof options>(this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options);
+    return this.request<NodePathElement[], typeof options>(this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options);
   }
 
   public async getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult> {
@@ -216,10 +217,9 @@ export class RpcRequestsHandler {
 
   public async getPagedDistinctValues(
     options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute,
+  ): Promise<PagedResponse<DisplayValueGroup>> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-  ): Promise<PagedResponse<DisplayValueGroupJSON>> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return this.request<PagedResponse<DisplayValueGroupJSON>, typeof options>(this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
+    return this.request<PagedResponse<DisplayValueGroup>, typeof options>(this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
   public async getContentInstanceKeys(
@@ -242,17 +242,14 @@ export class RpcRequestsHandler {
     return this.request<PagedResponse<LabelDefinition>, typeof options>(this.rpcClient.getPagedDisplayLabelDefinitions.bind(this.rpcClient), options);
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<SelectionScope[], typeof options>(this.rpcClient.getSelectionScopes.bind(this.rpcClient), options);
   }
   public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON> {
-    return this.request<KeySetJSON, typeof options>(
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.rpcClient.computeSelection.bind(this.rpcClient),
-      options,
-    );
+    return this.request<KeySetJSON, typeof options>(this.rpcClient.computeSelection.bind(this.rpcClient), options);
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 }
 
 function isOptionsWithRuleset(options: object): options is { rulesetOrId: Ruleset } {

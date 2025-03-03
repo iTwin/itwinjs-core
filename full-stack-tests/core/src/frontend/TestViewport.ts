@@ -174,12 +174,13 @@ function areAllTilesLoaded(vp: Viewport): boolean {
     return false;
 
   // In addition to ViewState.areAllTileTreesLoaded, ensure all child tiles are loaded (for map tiles).
-  let allLoaded = true;
-  vp.forEachTileTreeRef((ref) => {
-    allLoaded = allLoaded && ref.isLoadingComplete && areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile);
-  });
+  for (const ref of vp.getTileTreeRefs()) {
+    if (!ref.isLoadingComplete || !areAllChildTilesLoaded(ref.treeOwner.tileTree?.rootTile)) {
+      return false;
+    }
+  }
 
-  return allLoaded;
+  return true;
 }
 
 // Utility functions added to Viewport by TestViewport.
@@ -274,10 +275,10 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
     return this.waitForRenderFrame();
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     if (!this.isDisposed) {
       IModelApp.viewManager.dropViewport(this, false); // do not allow dropViewport() to call dispose()...
-      super.dispose();
+      super[Symbol.dispose]();
       document.body.removeChild(this.parentDiv);
     }
   }
@@ -330,13 +331,12 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
     return;
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
-  const onscreen = await createOnScreenTestViewport(viewId, imodel, width, height, devicePixelRatio);
+  using onscreen = await createOnScreenTestViewport(viewId, imodel, width, height, devicePixelRatio);
   onscreen.continuousRendering = true;
   try {
     await test(onscreen);
   } finally {
     onscreen.continuousRendering = false;
-    onscreen.dispose();
   }
 }
 
@@ -344,12 +344,8 @@ export async function testOffScreenViewport(viewId: Id64String, imodel: IModelCo
   if (!IModelApp.initialized)
     return;
 
-  const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
-  try {
-    await test(offscreen);
-  } finally {
-    offscreen.dispose();
-  }
+  using offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
+  await test(offscreen);
 }
 
 // Execute a test against both an off-screen and on-screen viewport.

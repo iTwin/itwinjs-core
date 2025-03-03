@@ -122,6 +122,7 @@ export class AngleSweep implements BeJSONFunctions {
     angleToSignedPeriodicFraction(theta: Angle, zeroSweepDefault?: number): number;
     angleToUnboundedFraction(theta: Angle): number;
     capLatitudeInPlace(): void;
+    clampToFullCircle(result?: AngleSweep): AngleSweep;
     clone(): AngleSweep;
     cloneComplement(reverseDirection?: boolean, result?: AngleSweep): AngleSweep;
     cloneMinusRadians(radians: number): AngleSweep;
@@ -706,7 +707,7 @@ export class BSpline1dNd {
     basisBuffer: Float64Array;
     basisBuffer1: Float64Array;
     basisBuffer2: Float64Array;
-    static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined;
+    static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd;
     get degree(): number;
     evaluateBasisFunctionsInSpan(spanIndex: number, spanFraction: number, f: Float64Array, df?: Float64Array, ddf?: Float64Array): boolean;
     evaluateBuffersAtKnot(u: number, numDerivative?: number): void;
@@ -723,7 +724,7 @@ export class BSpline1dNd {
     poleBuffer2: Float64Array;
     poleLength: number;
     reverseInPlace(): void;
-    spanFractionToKnot(span: number, localFraction: number): number;
+    spanFractionToKnot(spanIndex: number, spanFraction: number): number;
     sumPoleBuffer1ForSpan(spanIndex: number): void;
     sumPoleBuffer2ForSpan(spanIndex: number): void;
     sumPoleBufferForSpan(spanIndex: number): void;
@@ -784,7 +785,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     copyPoints(): any[];
     copyPointsFloat64Array(): Float64Array;
     static create(poleArray: Float64Array | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
-    // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
     static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
@@ -797,7 +797,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined;
     getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined;
-    getSaturatedBezierSpan3d(spanIndex: number, result?: BezierCurveBase): BezierCurveBase | undefined;
+    getSaturatedBezierSpan3d(spanIndex: number, result?: BezierCurveBase): BezierCurve3d | undefined;
     getSaturatedBezierSpan3dH(spanIndex: number, result?: BezierCurveBase): BezierCurve3dH | undefined;
     getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
     isAlmostEqual(other: any): boolean;
@@ -808,7 +808,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     knotToPointAnd2Derivatives(u: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     knotToPointAndDerivative(u: number, result?: Ray3d): Ray3d;
     quickLength(): number;
-    spanFractionToKnot(span: number, localFraction: number): number;
+    spanFractionToKnot(spanIndex: number, spanFraction: number): number;
     tryTransformInPlace(transform: Transform): boolean;
 }
 
@@ -822,7 +822,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     cloneTransformed(transform: Transform): BSplineCurve3dBase;
     closestPoint(spacePoint: Point3d, _extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectBezierSpans(prefer3dH: boolean): BezierCurveBase[];
-    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
+    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): BSplineCurve3d | undefined;
     copyKnots(includeExtraEndKnot: boolean): number[];
     readonly curvePrimitiveType = "bsplineCurve";
     set definitionData(data: any);
@@ -2423,8 +2423,6 @@ export class GrowableXYArray extends IndexedXYCollection {
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean;
     setXYAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
-    // @deprecated
-    setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
     sortIndicesLexical(): Uint32Array;
     sumLengths(): number;
     transferFromGrowableXYArray(destIndex: number, source: GrowableXYArray, sourceIndex: number): boolean;
@@ -2566,7 +2564,7 @@ export namespace IModelJson {
         points: [XYZProps];
     }
     export interface BoxProps extends AxesProps {
-        // @internal @deprecated
+        // @internal
         baseOrigin?: XYZProps;
         baseX: number;
         baseY?: number;
@@ -2597,6 +2595,8 @@ export namespace IModelJson {
         vectorY?: XYZProps;
     }
     export interface CurveCollectionProps extends PlanarRegionProps {
+        bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
+        // @deprecated
         bagofCurves?: [CurveCollectionProps];
         path?: [CurvePrimitiveProps];
     }
@@ -2681,10 +2681,6 @@ export namespace IModelJson {
         center: XYZProps;
         contour: CurveCollectionProps;
         sweepAngle: AngleProps;
-    }
-    export interface RuledSweepProps {
-        capped?: boolean;
-        contour: [CurveCollectionProps];
     }
     export interface RuledSweepProps {
         capped?: boolean;
@@ -2813,11 +2809,13 @@ export class IndexedPolyface extends Polyface {
     static create(needNormals?: boolean, needParams?: boolean, needColors?: boolean, twoSided?: boolean): IndexedPolyface;
     createVisitor(numWrap?: number): IndexedPolyfaceVisitor;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
+    edgeIndexToFaceLoop(k: number | undefined): Range1d | undefined;
+    edgeIndexToFacetIndex(k: number | undefined): number | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     get faceCount(): number;
     get facetCount(): number;
-    facetIndex0(index: number): number;
-    facetIndex1(index: number): number;
+    facetIndex0(facetIndex: number): number;
+    facetIndex1(facetIndex: number): number;
     protected _facetStart: number[];
     protected _facetToFaceData: number[];
     // @deprecated
@@ -2825,7 +2823,7 @@ export class IndexedPolyface extends Polyface {
     isAlmostEqual(other: any): boolean;
     get isEmpty(): boolean;
     isSameGeometryClass(other: any): boolean;
-    isValidFacetIndex(index: number): boolean;
+    isValidFacetIndex(facetIndex: number): boolean;
     get normalCount(): number;
     numEdgeInFacet(facetIndex: number): number;
     get paramCount(): number;
@@ -2834,6 +2832,7 @@ export class IndexedPolyface extends Polyface {
     reverseIndices(): void;
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
+    static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined;
     setNewFaceData(endFacetIndex?: number): boolean;
     terminateFacet(validateAllIndices?: boolean): string[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
@@ -2875,6 +2874,27 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     setNumWrap(numWrap: number): void;
     tryGetDistanceParameter(index: number, result?: Point2d): Point2d | undefined;
     tryGetNormalizedParameter(index: number, result?: Point2d): Point2d | undefined;
+}
+
+// @public
+export class IndexedPolyfaceWalker {
+    static buildEdgeMateIndices(polyface: IndexedPolyface): void;
+    clone(edgeIndex?: number): IndexedPolyfaceWalker | undefined;
+    static createAtEdgeIndex(polyface: IndexedPolyface, edgeIndex?: number): IndexedPolyfaceWalker;
+    static createAtFacetIndex(polyface: IndexedPolyface, facetIndex: number, offsetWithinFacet?: number): IndexedPolyfaceWalker;
+    static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet?: number): IndexedPolyfaceWalker;
+    get edgeIndex(): number | undefined;
+    edgeMate(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    isDifferentEdgeInSamePolyface(other: IndexedPolyfaceWalker): boolean;
+    isSameEdge(other: IndexedPolyfaceWalker): boolean;
+    get isUndefined(): boolean;
+    get isValid(): boolean;
+    loadVisitor(visitor: IndexedPolyfaceVisitor): boolean;
+    nextAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    nextAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    get polyface(): IndexedPolyface | undefined;
+    previousAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+    previousAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
 }
 
 // @public
@@ -4005,8 +4025,6 @@ export class PathFragment {
     childCurve: CurvePrimitive;
     childFraction0: number;
     childFraction1: number;
-    // @deprecated (undocumented)
-    childFractionTChainDistance(fraction: number): number;
     childFractionToChainDistance(fraction: number): number;
     static collectSortedQuickMinDistances(fragments: PathFragment[], spacePoint: Point3d): PathFragment[];
     containsChainDistance(distance: number): boolean;
@@ -4524,17 +4542,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     endFace(): boolean;
     findOrAddNormalInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddNormalInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined;
-    // @deprecated
-    findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     findOrAddParamInLineString(ls: LineString3d, index: number, v: number, priorIndexA?: number, priorIndexB?: number): number | undefined;
-    // @deprecated
-    findOrAddParamXY(x: number, y: number): number;
-    // @deprecated
-    findOrAddPoint(xyz: Point3d): number;
     findOrAddPointInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddPointInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndex?: number): number | undefined;
-    // @deprecated
-    findOrAddPointXYZ(x: number, y: number, z: number): number;
     // @internal
     static graphFacesToPolyface(faces: HalfEdge[]): IndexedPolyface;
     // @internal
@@ -4589,6 +4599,8 @@ export class PolyfaceData {
     copyNormalTo(i: number, dest: Vector3d): void;
     copyParamTo(i: number, dest: Point2d): void;
     copyPointTo(i: number, dest: Point3d): void;
+    edgeIndexToEdgeMateIndex(k: number | undefined): number | undefined;
+    edgeMateIndex?: Array<number | undefined>;
     edgeVisible: boolean[];
     get expectedClosure(): number;
     set expectedClosure(value: number);
@@ -4603,6 +4615,7 @@ export class PolyfaceData {
     get indexCount(): number;
     isAlmostEqual(other: PolyfaceData): boolean;
     isAlmostEqualParamIndexUV(i: number, u: number, v: number): boolean;
+    isValidEdgeIndex(value: number | undefined): boolean;
     static isValidFacetStartIndexArray(facetStartIndex: number[]): boolean;
     normal?: GrowableXYZArray;
     get normalCount(): number;

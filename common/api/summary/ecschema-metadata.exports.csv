@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item Type;API Item Name
+beta;enum;AbstractSchemaItemType
 beta;type;AnyArrayProperty
 beta;type;AnyClass
 beta;type;AnyClassProps
@@ -43,14 +44,17 @@ beta;class;EnumerationArrayProperty
 beta;class;EnumerationProperty
 beta;interface;EnumerationPropertyProps
 beta;interface;EnumerationProps
+beta;interface;Enumerator
 beta;interface;EnumeratorProps
 beta;class;Format
 internal;function;getFormatProps
+beta;interface;HasMixins
 beta;class;InvertedUnit
 beta;interface;InvertedUnitProps
 beta;interface;ISchemaItemLocater
 beta;interface;ISchemaLocater
 beta;interface;ISchemaPartVisitor
+beta;function;isSupportedSchemaItemType
 beta;class;KindOfQuantity
 beta;interface;KindOfQuantityProps
 beta;type;LazyLoadedConstant
@@ -147,6 +151,7 @@ beta;class;StructClass
 beta;type;StructClassProps
 beta;class;StructProperty
 beta;interface;StructPropertyProps
+beta;type;SupportedSchemaItemType
 beta;class;Unit
 internal;class;UnitConversion
 internal;class;UnitConverter

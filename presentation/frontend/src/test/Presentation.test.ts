@@ -39,11 +39,13 @@ describe("Presentation", () => {
 
     it("creates manager instances", async () => {
       expect(() => Presentation.presentation).to.throw();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(() => Presentation.selection).to.throw();
       expect(() => Presentation.favoriteProperties).to.throw();
       expect(() => Presentation.localization).to.throw();
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(Presentation.selection).to.be.instanceof(selection.SelectionManager);
       expect(Presentation.favoriteProperties).to.be.instanceof(favorites.FavoritePropertiesManager);
     });
@@ -103,6 +105,7 @@ describe("Presentation", () => {
       expect(spy).to.be.calledOnce;
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
     it("initializes SelectionManager with given props", async () => {
       const constructorSpy = sinon.spy(selection, "SelectionManager");
       const props: selection.SelectionManagerProps = {
@@ -120,6 +123,7 @@ describe("Presentation", () => {
       expect(Presentation.presentation.activeLocale).to.eq("other");
       expect(Presentation.selection.scopes.activeLocale).to.eq("other");
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
 
     it("sets `startIModelInitialization` and `ensureIModelInitialized` callbacks of `PresentationManager` as proxies to `FavoritePropertiesManager`", async () => {
       await Presentation.initialize({ presentation: { activeLocale: "test" } });
@@ -142,11 +146,13 @@ describe("Presentation", () => {
     it("resets manager instances", async () => {
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.not.null;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(Presentation.selection).to.be.not.null;
       expect(Presentation.favoriteProperties).to.be.not.null;
       expect(Presentation.localization).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.presentation).to.throw;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(() => Presentation.selection).to.throw;
       expect(() => Presentation.favoriteProperties).to.throw;
       expect(() => Presentation.localization).to.throw;
@@ -179,6 +185,7 @@ describe("Presentation", () => {
     });
   });
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   describe("setSelectionManager", () => {
     it("overwrites selection manager instance before initialization", async () => {
       const manager = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
@@ -196,6 +203,7 @@ describe("Presentation", () => {
       expect(Presentation.selection).to.eq(otherManager);
     });
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   describe("setFavoritePropertiesManager", () => {
     it("overwrites favoriteProperties instance before initialization", async () => {

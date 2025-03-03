@@ -20,7 +20,7 @@ interface ContentTestSuiteFunction extends ExclusiveContentTestSuiteFunction {
   only: ExclusiveContentTestSuiteFunction;
   skip: ExclusiveContentTestSuiteFunction;
 }
-export function createContentTestSuite(): ContentTestSuiteFunction {
+export function createContentTestSuite(props?: { skipInitialize?: boolean }): ContentTestSuiteFunction {
   const suiteTitle = "Content";
   const suiteFn = (title: string, fn: (params: ContentTestSuiteParams) => void) => {
     let suiteIModel: IModelConnection;
@@ -39,7 +39,9 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
     };
 
     before(async () => {
-      await initialize({ imodelAppProps: { localization: testLocalization } });
+      if (!props?.skipInitialize) {
+        await initialize({ imodelAppProps: { localization: testLocalization } });
+      }
     });
 
     after(async () => {

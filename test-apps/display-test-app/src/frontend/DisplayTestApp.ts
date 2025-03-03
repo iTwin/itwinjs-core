@@ -6,7 +6,7 @@ import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
 import {
   GpuMemoryLimit,
-  IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
+  IModelApp, IModelConnection, RenderSystem, TileAdmin,
 } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
@@ -186,7 +186,7 @@ const dtaFrontendMain = async () => {
   [renderSystemOptions, tileAdminProps] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
-    IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+    IModelApp.renderSystem.debugControl?.enableDiagnostics(undefined);
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
     alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
@@ -207,7 +207,7 @@ const dtaFrontendMain = async () => {
     [renderSystemOptions, tileAdminProps] = setConfigurationResults();
     await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
     if (false !== configuration.enableDiagnostics)
-      IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
+      IModelApp.renderSystem.debugControl?.enableDiagnostics(undefined);
 
     if (!configuration.standalone && !configuration.customOrchestratorUri) {
       alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
@@ -323,7 +323,7 @@ async function initView(iModel: IModelConnection | undefined) {
     input: document.getElementById("browserFileSelector") as HTMLInputElement,
   } : undefined;
 
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
+  DisplayTestApp.surface = new Surface(configuration, document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...
@@ -334,6 +334,7 @@ async function initView(iModel: IModelConnection | undefined) {
       iModel,
       defaultViewName: configuration.viewName,
       disableEdges: true === configuration.disableEdges,
+      configuration
     });
 
     viewer.dock(Dock.Full);

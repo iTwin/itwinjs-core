@@ -7,13 +7,37 @@
  */
 
 import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItem } from "./SchemaItem";
 
 /**
  * @beta
  */
 export class UnitSystem extends SchemaItem {
-  public override readonly schemaItemType = SchemaItemType.UnitSystem;
+  public override readonly schemaItemType = UnitSystem.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.UnitSystem; }
+
+  /**
+   * Type guard to check if the SchemaItem is of type UnitSystem.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a UnitSystem, false otherwise.
+   */
+  public static isUnitSystem(item?: SchemaItem): item is UnitSystem {
+    if (item && item.schemaItemType === SchemaItemType.UnitSystem)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type UnitSystem.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to UnitSystem if it is a UnitSystem, undefined otherwise.
+   */
+  public static assertIsUnitSystem(item?: SchemaItem): asserts item is UnitSystem {
+    if (!this.isUnitSystem(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.UnitSystem}' (UnitSystem)`);
+  }
 }
 
 /**

@@ -2,17 +2,23 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
+import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
-import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
-import sinon from "sinon";
-import { Presentation } from "../../presentation-frontend/Presentation";
-import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
+import {
+  createRandomECInstanceKey,
+  createRandomTransientId,
+  createTestContentDescriptor,
+  createTestContentItem,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
+import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
+import { Presentation } from "../../presentation-frontend/Presentation";
+import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -49,9 +55,7 @@ describe("HiliteSetProvider", () => {
     });
 
     it("memoizes result", async () => {
-      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([createRandomECInstanceKey()], "", "", undefined, {}, {}, [], {}), // element
-      ]);
+      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [createTestContentItem({ values: {}, displayValues: {} })]);
       fakeGetContentIterator.callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
       const keys = new KeySet([createRandomECInstanceKey()]);
 
@@ -88,7 +92,7 @@ describe("HiliteSetProvider", () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
+        createTestContentItem({ primaryKeys: [resultKey], values: {}, displayValues: {} }), // element
       ]);
 
       fakeGetContentIterator
@@ -105,7 +109,9 @@ describe("HiliteSetProvider", () => {
     it("creates result for model keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true })]);
+      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
+        createTestContentItem({ primaryKeys: [resultKey], values: {}, displayValues: {}, extendedData: { isModel: true } }),
+      ]);
 
       fakeGetContentIterator
         .onFirstCall()
@@ -122,7 +128,7 @@ describe("HiliteSetProvider", () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([resultKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
+        createTestContentItem({ primaryKeys: [resultKey], values: {}, displayValues: {}, extendedData: { isSubCategory: true } }),
       ]);
       fakeGetContentIterator
         .onFirstCall()
@@ -143,9 +149,9 @@ describe("HiliteSetProvider", () => {
       const resultSubCategoryKey = createRandomECInstanceKey();
       const resultElementKey = createRandomECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([resultModelKey], "", "", undefined, {}, {}, [], { isModel: true }),
-        new Item([resultSubCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
-        new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
+        createTestContentItem({ primaryKeys: [resultModelKey], values: {}, displayValues: {}, extendedData: { isModel: true } }),
+        createTestContentItem({ primaryKeys: [resultSubCategoryKey], values: {}, displayValues: {}, extendedData: { isSubCategory: true } }),
+        createTestContentItem({ primaryKeys: [resultElementKey], values: {}, displayValues: {}, extendedData: {} }),
       ]);
       fakeGetContentIterator
         .onFirstCall()
@@ -168,7 +174,7 @@ describe("HiliteSetProvider", () => {
       // first request returns content with an element key
       const elementKey = createRandomECInstanceKey();
       const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
+        createTestContentItem({ primaryKeys: [elementKey], values: {}, displayValues: {} }),
       ]);
       fakeGetContentIterator
         .withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))
@@ -182,8 +188,8 @@ describe("HiliteSetProvider", () => {
       const subCategoryKey = createRandomECInstanceKey();
       const modelKey = createRandomECInstanceKey();
       const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), [
-        new Item([subCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
-        new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
+        createTestContentItem({ primaryKeys: [subCategoryKey], values: {}, displayValues: {}, extendedData: { isSubCategory: true } }),
+        createTestContentItem({ primaryKeys: [modelKey], values: {}, displayValues: {}, extendedData: { isModel: true } }),
       ]);
       fakeGetContentIterator
         .withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.size === 1))
@@ -205,7 +211,7 @@ describe("HiliteSetProvider", () => {
 
     it("iterates over content items in pages", async () => {
       const elementKeys = new Array(1001).fill(0).map((_, i) => ({ id: `0x${i}`, className: "TestElement" }));
-      const items = elementKeys.map((key) => new Item([key], "", "", undefined, {}, {}, [], {}));
+      const items = elementKeys.map((key) => createTestContentItem({ primaryKeys: [key], values: {}, displayValues: {} }));
 
       const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), items.slice(0, 1000));
       const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), items.slice(1000));

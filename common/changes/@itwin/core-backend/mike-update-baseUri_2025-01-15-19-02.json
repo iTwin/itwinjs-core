@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update BlobContainerService Comments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

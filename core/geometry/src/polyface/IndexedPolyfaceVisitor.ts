@@ -134,7 +134,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       result,
     );
   }
-  /** Return the index (in the client polyface) of the current facet. */
+  /** Return the facetIndex of the currently referenced facet in the client polyface. */
   public currentReadIndex(): number {
     return this._currentFacetIndex;
   }

@@ -732,14 +732,32 @@ export class TxnManager {
   /** Test if a TxnId is valid */
   public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
-  /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
+  /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.
+   * @see [[IModelDb.pushChanges]]
+   */
   public get hasPendingTxns(): boolean { return this._nativeDb.hasPendingTxns(); }
 
-  /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
+  /**
+   * Query if there are any changes in memory that have yet to be saved to the IModelDb.
+   * @see [[IModelDb.saveChanges]]
+   */
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
 
-  /** Query if there are un-saved or un-pushed local changes. */
+  /**
+   * Query if there are changes in memory that have not been saved to the iModelDb or if there are Txns that are waiting to be pushed.
+   * @see [[IModelDb.saveChanges]]
+   * @see [[IModelDb.pushChanges]]
+   */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
+
+  /** Destroy the record of all local changes that have yet to be saved and/or pushed.
+   * This permanently eradicates your changes - use with caution!
+   * Typically, callers will want to subsequently use [[LockControl.releaseAllLocks]].
+   * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
+   */
+  public deleteAllTxns(): void {
+    this._nativeDb.deleteAllTxns();
+  }
 
   /** Obtain a list of the EC instances that have been changed locally by the [[BriefcaseDb]] associated with this `TxnManager` and have not yet been pushed to the iModel.
    * @beta

@@ -3,136 +3,302 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
-import { Geometry, IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
+import { Angle, IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, GeometryStreamProps } from "@itwin/core-common";
-import {
-  AccuDraw,
-  AccuDrawHintBuilder, BeButtonEvent, CanvasDecoration, CompassMode, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, ItemField, PrimitiveTool, SnapStatus,
-} from "@itwin/core-frontend";
+import { AccuDrawChangeModeTool, AccuDrawHintBuilder, AccuDrawRotateAxesTool, AccuDrawRotateCycleTool, AccuDrawRotateElementTool, AccuDrawRotateFrontTool, AccuDrawRotatePerpendicularTool, AccuDrawRotateSideTool, AccuDrawRotateTopTool, AccuDrawRotateViewTool, AccuDrawSetLockAngleTool, AccuDrawSetLockDistanceTool, AccuDrawSetLockIndexTool, AccuDrawSetLockSmartTool, AccuDrawSetLockXTool, AccuDrawSetLockYTool, AccuDrawSetLockZTool, AccuDrawSetOriginTool, AccuDrawShortcuts, AccuDrawSuspendToggleTool, AccuDrawViewportUI, BeButtonEvent, DecorateContext, DefineACSByElementTool, DefineACSByPointsTool, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, ScreenViewport, SnapStatus, ToolType } from "@itwin/core-frontend";
+import { PlaceLineStringTool } from "./EditingTools";
 
-interface AccuDrawItemFieldData { itemField: number, value: number, displayValue: string, locked: boolean }
+function toggleUILayout(): void {
+  const accuDraw = IModelApp.accuDraw;
+  if (!(accuDraw instanceof AccuDrawViewportUI))
+    return;
+  const accuDrawUI = (accuDraw instanceof AccuDrawViewportUI ? accuDraw : undefined);
+  if (undefined === accuDrawUI)
+    return;
+  if (AccuDrawViewportUI.controlProps.horizontalArrangement)
+    accuDrawUI.setVerticalCursorLayout();
+  else
+    accuDrawUI.setHorizontalFixedLayout();
+  accuDrawUI.refreshControls();
+}
 
-class AccuDrawInputFields implements CanvasDecoration {
-  public position = new Point3d();
-  protected fieldData: AccuDrawItemFieldData[] = [];
-  protected focusItem: ItemField;
-
-  constructor(position: Point3d, fieldData: AccuDrawItemFieldData[], focusItem: ItemField) {
-    this.position.setFrom(position);
-    this.fieldData = fieldData;
-    this.focusItem = focusItem;
+function toggleRoundOff(): void {
+  const accuDraw = IModelApp.accuDraw;
+  accuDraw.angleRoundOff.active = !accuDraw.angleRoundOff.active;
+  if (accuDraw.angleRoundOff.active) {
+    accuDraw.angleRoundOff.units.clear();
+    accuDraw.angleRoundOff.units.add(Angle.createDegrees(10).radians);
   }
 
-  public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "14px sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
-    ctx.shadowColor = "black";
-
-    let yOffset = 0;
-
-    const drawField = (field: AccuDrawItemFieldData) => {
-      const metrics = ctx.measureText(field.displayValue);
-      const textWidth = metrics.width;
-      const textHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-      const textValueHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-
-      if (field.itemField === this.focusItem) {
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = "rgba(0, 225, 255, 0.4)";
-        ctx.fillRect(0, yOffset, textWidth, textValueHeight);
-      }
-
-      ctx.shadowBlur = 5;
-      ctx.fillStyle = (field.locked ? "orange" : "white");
-      ctx.fillText(field.displayValue, 0, yOffset);
-
-      yOffset += textHeight;
-    };
-
-    for (const field of this.fieldData)
-      drawField(field);
-  }
-
-  public addDecoration(context: DecorateContext) {
-    context.addCanvasDecoration(this);
+  accuDraw.distanceRoundOff.active = !accuDraw.distanceRoundOff.active;
+  if (accuDraw.distanceRoundOff.active) {
+    accuDraw.distanceRoundOff.units.clear();
+    accuDraw.distanceRoundOff.units.add(0.1);
+    accuDraw.distanceRoundOff.units.add(1.0);
+    accuDraw.distanceRoundOff.units.add(10.0);
   }
 }
 
-export class DisplayTestAppAccuDraw extends AccuDraw {
-  protected itemFieldData: AccuDrawItemFieldData[] = [];
-  protected focusItem: ItemField;
-  protected cursorPoint = new Point3d();
+interface AccuDrawShortcutProps {
+  key: string;
+  description?: string;
+  run?: () => void;
+  submenu?: AccuDrawShortcutProps[];
+}
 
-  public constructor() {
-    super();
+export class DisplayTestAppShortcutsUI {
+  private static shortcutTimeout = 2000;
+  private _shortcuts: AccuDrawShortcutProps[] = [];
+  private _shortcutOverlayDiv: HTMLDivElement | undefined;
+  private _shortcutTimerId: NodeJS.Timeout | undefined;
 
-    for (let index = ItemField.DIST_Item; index <= ItemField.Z_Item; ++index)
-      this.itemFieldData.push({ itemField: index, value: 0, displayValue: "", locked: false });
-
-    this.focusItem = this.defaultFocusItem();
+  private createShortcutsOverlayDiv(vp: ScreenViewport): HTMLDivElement {
+    return vp.addNewDiv("accudraw-shortcuts-overlay", true, 50);
   }
 
-  public override decorate(context: DecorateContext): void {
-    super.decorate(context);
-
-    if (!this.isActive)
-      return; // Don't show spatial coordinates for rectangular mode at cursor when inactive...
-
-    if (context.viewport !== IModelApp.toolAdmin.cursorView)
-      return;
-
-    const position = context.viewport.worldToView(this.cursorPoint);
-    position.x += Math.floor(context.viewport.pixelsFromInches(0.4)) + 0.5; // Offset from snap location...
-    position.y += Math.floor(context.viewport.pixelsFromInches(0.1)) + 0.5; // Offset from snap location...
-    if (!context.viewport.viewRect.containsPoint(position))
-      return; // Could choose another location to ensure fields are in view...
-
-    const activeFields: AccuDrawItemFieldData[] = [];
-
-    if (CompassMode.Polar === this.compassMode) {
-      activeFields.push(this.itemFieldData[ItemField.DIST_Item]);
-      activeFields.push(this.itemFieldData[ItemField.ANGLE_Item]);
-    } else {
-      activeFields.push(this.itemFieldData[ItemField.X_Item]);
-      activeFields.push(this.itemFieldData[ItemField.Y_Item]);
+  private removeShortcutsOverlayDiv(): void {
+    if (undefined !== this._shortcutTimerId) {
+      clearTimeout(this._shortcutTimerId);
+      this._shortcutTimerId = undefined;
     }
 
-    if (context.viewport.view.allow3dManipulations() && (!Geometry.isAlmostEqualNumber(this.itemFieldData[ItemField.Z_Item].value, 0.0) || this.itemFieldData[ItemField.Z_Item].locked))
-      activeFields.push(this.itemFieldData[ItemField.Z_Item]);
-
-    const displayedFields = new AccuDrawInputFields(position, activeFields, this.focusItem);
-    displayedFields.addDecoration(context);
+    if (undefined !== this._shortcutOverlayDiv) {
+      this._shortcutOverlayDiv.remove();
+      this._shortcutOverlayDiv = undefined;
+    }
   }
 
-  public override setFocusItem(index: ItemField) {
-    this.focusItem = index;
+  private createShortcutsDiv(): HTMLDivElement {
+    const div = document.createElement("div");
+    div.className = "accudraw-shortcuts";
+
+    const style = div.style;
+    style.pointerEvents = "none";
+    style.overflow = "visible";
+    style.position = "absolute";
+    style.top = style.left = "0";
+    style.height = style.width = "100%";
+
+    return div;
   }
 
-  public override onCompassDisplayChange(_state: "show" | "hide"): void {
-    IModelApp.viewManager.invalidateDecorationsAllViews();
+  private positionShortcutsDiv(div: HTMLDivElement, vp: ScreenViewport, width: number, height: number): void {
+    const viewRect = vp.viewRect;
+    div.style.top = "0.5em";
+    div.style.left = `${(viewRect.left + ((viewRect.width - width) * 0.5))}px`;
+    div.style.width = `${width}px`;
+    div.style.height = `${height}px`;
   }
 
-  public override onCompassModeChange(): void {
-    this.focusItem = this.defaultFocusItem();
+  private initializeElementStyle(style: CSSStyleDeclaration, isLabel: boolean): void {
+    style.pointerEvents = isLabel ? "none" : "auto"; // Don't let events over submenu to to view...
+    style.position = "absolute";
+    style.textWrap = "nowrap";
+    style.textAnchor = "top";
+    style.textAlign = "left";
+    style.paddingLeft = style.paddingRight = isLabel ? "0.5em" : "";
+
+    style.fontFamily = "sans-serif";
+    style.fontSize = isLabel ? "12pt" : "9pt";
+    style.borderRadius = isLabel ? "0.5em" : "0.25em";
+    style.outlineStyle = "solid";
+    style.outlineWidth = "thin";
+    style.color = style.outlineColor = "white";
+    style.backgroundColor = "rgba(150, 150, 150, 0.5)";
+    style.boxShadow = "0.25em 0.25em 0.2em rgb(75, 75, 75)";
   }
 
-  public override onFieldLockChange(index: ItemField) {
-    this.itemFieldData[index].locked = !this.itemFieldData[index].locked;
-    assert(this.itemFieldData[index].locked === this.getFieldLock(index)); // Make sure lock change notifications weren't omitted...
+  private createLabelElement(label: string): HTMLLabelElement {
+    const labelElement = document.createElement("label");
+    labelElement.innerHTML = label;
+    this.initializeElementStyle(labelElement.style, true);
+
+    return labelElement;
   }
 
-  public override onFieldValueChange(index: ItemField) {
-    this.itemFieldData[index].value = this.getValueByIndex(index);
-    this.itemFieldData[index].displayValue = this.getFormattedValueByIndex(index);
+  private createTableElement(submenu: AccuDrawShortcutProps[], labelElement?: HTMLLabelElement): HTMLTableElement {
+    const tableElement = document.createElement("table");
+    tableElement.contentEditable = "true";
+    this.initializeElementStyle(tableElement.style, false);
+    tableElement.style.borderSpacing = "0";
+
+    for (const shortcut of submenu) {
+      const row = tableElement.insertRow();
+      if (0 === tableElement.rows.length % 2)
+        row.style.backgroundColor = "rgba(100, 100, 100, 0.5)";
+
+      const columnKey = row.insertCell();
+      columnKey.innerHTML = shortcut.key;
+      columnKey.style.paddingLeft = columnKey.style.paddingRight = "0.5em";
+
+      const columnDesc = row.insertCell();
+      columnDesc.innerHTML = shortcut.description ?? "";
+      columnDesc.style.paddingLeft = columnDesc.style.paddingRight = "0.5em";
+    }
+
+    if (labelElement)
+      tableElement.style.left = `${labelElement.offsetWidth * 1.2}px`; // Position to the left of the label...
+
+    return tableElement;
   }
 
-  public override onMotion(ev: BeButtonEvent): void {
-    this.processMotion();
-    this.cursorPoint.setFrom(ev.point);
+  private runShortcut(props: AccuDrawShortcutProps, initialKey?: string): void {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp || undefined === props.run)
+      return;
+
+    this.removeShortcutsOverlayDiv(); // Clear shortcuts that haven't timed out yet...
+    this._shortcutOverlayDiv = this.createShortcutsOverlayDiv(vp);
+    const div = this.createShortcutsDiv();
+    this._shortcutOverlayDiv.appendChild(div);
+
+    const shortcutLabel = `${(initialKey ? initialKey : "") + props.key} - ${props.description}`;
+    const shortcutElement = this.createLabelElement(shortcutLabel);
+    div.appendChild(shortcutElement);
+
+    this.positionShortcutsDiv(div, vp, shortcutElement.offsetWidth, shortcutElement.offsetHeight);
+
+    this._shortcutTimerId = setTimeout(() => { this.removeShortcutsOverlayDiv() }, DisplayTestAppShortcutsUI.shortcutTimeout);
+    props.run();
   }
-}
+
+  private chooseShortcut(props: AccuDrawShortcutProps): void {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp || undefined === props.submenu || 0 === props.submenu.length)
+      return;
+
+    this.removeShortcutsOverlayDiv(); // Clear shortcuts that haven't timed out yet...
+    this._shortcutOverlayDiv = this.createShortcutsOverlayDiv(vp);
+    const div = this.createShortcutsDiv();
+    this._shortcutOverlayDiv.appendChild(div);
+
+    const shortcutElement = this.createLabelElement(props.key);
+    div.appendChild(shortcutElement);
+
+    const shortcutChoices = this.createTableElement(props.submenu, shortcutElement);
+    div.appendChild(shortcutChoices);
+
+    this.positionShortcutsDiv(div, vp, shortcutElement.offsetWidth + shortcutChoices.offsetWidth, shortcutChoices.offsetHeight);
+
+    const close = (ev: Event) => {
+      this.removeShortcutsOverlayDiv();
+      ev.stopPropagation();
+    };
+
+    const submenu = props.submenu;
+    const onKeyEvent = (ev: KeyboardEvent, isDown: boolean) => {
+      if (isDown) {
+        switch (ev.key) {
+          case "Enter":
+          case "Escape":
+            shortcutChoices.blur();
+            break;
+
+          default:
+            const shortcut = this.findShortcut(ev.key, submenu);
+            if (undefined === shortcut || undefined === shortcut.run)
+              break;
+            shortcutChoices.blur(); // Focus out before running shortcut so it doesn't close timed notification...
+            this.runShortcut(shortcut, props.key);
+            break;
+        }
+      }
+      ev.preventDefault();
+      ev.stopPropagation();
+    };
+
+    shortcutChoices.focus();
+    shortcutChoices.onblur = close;
+    shortcutChoices.onmousedown = shortcutChoices.onmouseup = shortcutChoices.onmousemove = (ev: MouseEvent) => { ev.stopPropagation(); }
+    shortcutChoices.ontouchstart = shortcutChoices.ontouchend = shortcutChoices.ontouchcancel = shortcutChoices.ontouchmove = (ev: TouchEvent) => { ev.stopPropagation(); }
+    shortcutChoices.onwheel = (ev: WheelEvent) => { ev.stopPropagation(); }
+    shortcutChoices.onkeydown = (ev: KeyboardEvent) => { onKeyEvent(ev, true) }
+    shortcutChoices.onkeyup = (ev: KeyboardEvent) => { onKeyEvent(ev, false) }
+  }
+
+  private displayKey(key: string): string {
+    return (1 === key.length ? key.toUpperCase() : key);
+  }
+
+  private findShortcut(key: string, shortcuts: AccuDrawShortcutProps[]): AccuDrawShortcutProps | undefined {
+    const displayKey = this.displayKey(key);
+    const shortcut = shortcuts.find((entry) => entry.key === displayKey);
+    return shortcut;
+  }
+
+  private addShortcut(key: string, description: string, run: () => void, shortcuts: AccuDrawShortcutProps[]): boolean {
+    if (undefined !== this.findShortcut(key, shortcuts))
+      return false;
+    shortcuts.push({ key: this.displayKey(key), description, run })
+    return true;
+  }
+
+  private addShortcutForTool(key: string, tool: ToolType, shortcuts: AccuDrawShortcutProps[]): boolean {
+    return this.addShortcut(key, tool.flyover, () => { void IModelApp.tools.run(tool.toolId); }, shortcuts);
+  }
+
+  private addShortcutSubMenu(key: string, shortcuts: AccuDrawShortcutProps[]): AccuDrawShortcutProps[] | undefined {
+    if (undefined !== this.findShortcut(key, shortcuts))
+      return undefined;
+    const submenu: AccuDrawShortcutProps[] = [];
+    shortcuts.push({ key: this.displayKey(key), submenu });
+    return submenu;
+  }
+
+  public populateDefaultShortcuts(): void {
+    this.addShortcutForTool("O", AccuDrawSetOriginTool, this._shortcuts);
+    this.addShortcutForTool("M", AccuDrawChangeModeTool, this._shortcuts);
+    this.addShortcutForTool("X", AccuDrawSetLockXTool, this._shortcuts);
+    this.addShortcutForTool("Y", AccuDrawSetLockYTool, this._shortcuts);
+    this.addShortcutForTool("Z", AccuDrawSetLockZTool, this._shortcuts);
+    this.addShortcutForTool("D", AccuDrawSetLockDistanceTool, this._shortcuts);
+    this.addShortcutForTool("A", AccuDrawSetLockAngleTool, this._shortcuts);
+    this.addShortcutForTool("L", AccuDrawSetLockSmartTool, this._shortcuts); // Multi-point placement tools can use both Enter and Reset to accept...
+    this.addShortcutForTool("Enter", AccuDrawSetLockSmartTool, this._shortcuts); // Legacy mapping...
+
+    const shortcutsForR = this.addShortcutSubMenu("R", this._shortcuts);
+    if (undefined !== shortcutsForR) {
+      this.addShortcutForTool("T", AccuDrawRotateTopTool, shortcutsForR);
+      this.addShortcutForTool("F", AccuDrawRotateFrontTool, shortcutsForR);
+      this.addShortcutForTool("S", AccuDrawRotateSideTool, shortcutsForR);
+      this.addShortcutForTool("V", AccuDrawRotateViewTool, shortcutsForR);
+      this.addShortcutForTool("C", AccuDrawRotateCycleTool, shortcutsForR);
+      this.addShortcutForTool("Q", AccuDrawRotateAxesTool, shortcutsForR);
+      this.addShortcutForTool("E", AccuDrawRotateElementTool, shortcutsForR);
+      this.addShortcutForTool("P", AccuDrawRotatePerpendicularTool, shortcutsForR);
+    }
+
+    const shortcutsForQ = this.addShortcutSubMenu("Q", this._shortcuts);
+    if (undefined !== shortcutsForQ) {
+      this.addShortcutForTool("A", DefineACSByPointsTool, shortcutsForQ);
+      this.addShortcutForTool("E", DefineACSByElementTool, shortcutsForQ);
+      this.addShortcutForTool("H", AccuDrawSuspendToggleTool, shortcutsForQ);
+      this.addShortcutForTool("I", AccuDrawSetLockIndexTool, shortcutsForQ);
+      this.addShortcut("F", "Focus AccuDraw", () => { AccuDrawShortcuts.requestInputFocus(); }, shortcutsForQ);
+      this.addShortcut("W", "Toggle UI Layout", () => { toggleUILayout(); }, shortcutsForQ);
+      this.addShortcut("U", "Toggle Metric/Imperial", () => { void IModelApp.tools.parseAndRun("fdt metric"); }, shortcutsForQ);
+      this.addShortcut("R", "Toggle Round Off", () => { toggleRoundOff(); }, shortcutsForQ);
+      this.addShortcut("L", "Place Line String", () => { void IModelApp.tools.run(PlaceLineStringTool.toolId); }, shortcutsForQ);
+      this.addShortcut("C", "Clear Saved Values", () => { AccuDrawShortcuts.clearSavedValues(); }, shortcutsForQ);
+    }
+  }
+
+  public async processShortcutKey(ev: KeyboardEvent) {
+    const shortcut = this.findShortcut(ev.key, this._shortcuts);
+    if (undefined === shortcut)
+      return false;
+
+    if (undefined !== shortcut.run) {
+      this.runShortcut(shortcut);
+      return true;
+    } else if (undefined !== shortcut.submenu) {
+      this.chooseShortcut(shortcut);
+      return true;
+    }
+
+    return false;
+  }
+};
 
 export class DrawingAidTestTool extends PrimitiveTool {
   public static override toolId = "DrawingAidTest.Points";
