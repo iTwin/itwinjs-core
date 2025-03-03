@@ -558,6 +558,7 @@ export class PartialECChangeUnifier implements Disposable {
       }
     });
   }
+  
   private dropTempTable(): void {
     this._db.withPreparedSqliteStatement(`DROP TABLE IF EXISTS [temp].[${this._cacheTable}]`, (stmt) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step()) {
