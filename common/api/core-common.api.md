@@ -1925,7 +1925,7 @@ export enum CurrentImdlVersion {
     Minor = 0
 }
 
-// @beta
+// @beta @deprecated
 export interface CustomAttribute {
     ecclass: string;
     properties: {
@@ -3054,7 +3054,7 @@ export interface EntityIdAndClassId {
 // @public
 export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
 
-// @beta
+// @beta @deprecated
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
     readonly baseClasses: string[];
@@ -7080,7 +7080,7 @@ export interface ProjectionProps {
 // @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-// @beta
+// @beta @deprecated
 export class PropertyMetaData implements PropertyMetaDataProps {
     constructor(jsonObj: PropertyMetaDataProps);
     createProperty(jsonObj: any): any;
@@ -7140,7 +7140,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     readonly properties: QueryPropertyMetaData[];
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface PropertyMetaDataProps {
     // (undocumented)
     customAttributes?: CustomAttribute[];
