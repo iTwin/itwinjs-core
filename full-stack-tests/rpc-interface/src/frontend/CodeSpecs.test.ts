@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { BisCodeSpec, CodeSpec } from "@itwin/core-common";
+import { BisCodeSpec, CodeSpec, IModelError, IModelStatus } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
@@ -58,5 +58,77 @@ describe("Get Code Specs", () => {
     const codeSpec = await iModel.codeSpecs.getById(codeSpecId);
 
     verifyCodeSpec(codeSpec, iModel, codeSpecName, codeSpecId);
+  });
+
+  it("should fail because empty id", async () => {
+    const iModel = await testContext.iModelWithChangesets!.getConnection();
+    const codeSpecId = "";
+
+    try {
+      await iModel.codeSpecs.getById(codeSpecId);
+    }
+    catch (error: any) {
+        expect(error).to.be.instanceOf(IModelError);
+        expect(error.errorNumber).to.equal(IModelStatus.NotFound);
+        expect(error.message).to.equal("CodeSpec not found");
+    }
+  });
+
+  it("should fail because empty name", async () => {
+    const iModel = await testContext.iModelWithChangesets!.getConnection();
+    const codeSpecName = "";
+
+    try {
+      await iModel.codeSpecs.getByName(codeSpecName);
+    }
+    catch (error: any) {
+        expect(error).to.be.instanceOf(IModelError);
+        expect(error.errorNumber).to.equal(IModelStatus.NotFound);
+        expect(error.message).to.equal("CodeSpec not found");
+    }
+  });
+
+  it("should fail because invalid id", async () => {
+    const iModel = await testContext.iModelWithChangesets!.getConnection();
+    const codeSpecId = "0";
+
+    try {
+      await iModel.codeSpecs.getById(codeSpecId);
+    }
+    catch (error: any) {
+        expect(error).to.be.instanceOf(IModelError);
+        expect(error.errorNumber).to.equal(IModelStatus.InvalidId);
+        expect(error.message).to.equal("Invalid codeSpecId");
+        expect(error.getMetaData).to.be.a('function');
+        expect(error.getMetaData()).to.deep.equal({ codeSpecId });
+    }
+  });
+
+  it("should fail because non existent id", async () => {
+    const iModel = await testContext.iModelWithChangesets!.getConnection();
+    const codeSpecId = "0xff";
+
+    try {
+      await iModel.codeSpecs.getById(codeSpecId);
+    }
+    catch (error: any) {
+        expect(error).to.be.instanceOf(IModelError);
+        expect(error.errorNumber).to.equal(IModelStatus.NotFound);
+        expect(error.message).to.equal("CodeSpec not found");
+    }
+  });
+
+  it("should fail because non existent name", async () => {
+    const iModel = await testContext.iModelWithChangesets!.getConnection();
+    const codeSpecName = "non-existent-name";
+
+    try {
+      await iModel.codeSpecs.getByName(codeSpecName);
+    }
+    catch (error: any) {
+        expect(error).to.be.instanceOf(IModelError);
+        expect(error.errorNumber).to.equal(IModelStatus.NotFound);
+        expect(error.message).to.equal("CodeSpec not found");
+    }
   });
 });
