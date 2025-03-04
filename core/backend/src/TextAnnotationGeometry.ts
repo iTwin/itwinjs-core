@@ -61,7 +61,7 @@ function processTextRun(run: RunLayout, transform: Transform, context: GeometryC
   ts.transformInPlace(transform);
 
   setColor(run.style.color, context);
-  context.entries.push({ text: ts});
+  context.entries.push({ text: ts });
 }
 
 function createFractionTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
@@ -121,7 +121,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   });
 
   if (source.denominator.length > 0) {
-    context.entries.push({ text: createFractionTextString(source.denominator, run,denominatorOffset, transform) });
+    context.entries.push({ text: createFractionTextString(source.denominator, run, denominatorOffset, transform) });
   }
 }
 
@@ -146,26 +146,95 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
   }
 
   if (debugAnchorPt) {
-    // Draw lines representing the horizontal and vertical ranges, intersecting at the anchor point.
+    context.entries.push({
+      color: ColorDef.fromString("#58a4b0").toJSON()
+    });
+
+    const marginCorners = layout.marginRange.corners3d(true);
+    documentTransform.multiplyPoint3dArrayInPlace(marginCorners);
+    marginCorners.forEach((corner, index) => {
+      const next = marginCorners[index + 1];
+      if (!next) return;
+
+      context.entries.push({
+        separator: {
+          startPoint: [corner.x, corner.y, 0],
+          endPoint: [next.x, next.y, 0],
+        },
+      });
+    });
+
+    context.entries.push({
+      color: ColorDef.fromString("#5d2e8c").toJSON()
+    });
+
+    const rangeCorners = layout.range.corners3d(true);
+    documentTransform.multiplyPoint3dArrayInPlace(rangeCorners);
+    rangeCorners.forEach((corner, index) => {
+      const next = rangeCorners[index + 1];
+      if (!next) return;
+
+      context.entries.push({
+        separator: {
+          startPoint: [corner.x, corner.y, 0],
+          endPoint: [next.x, next.y, 0],
+        },
+      });
+    });
+
     context.entries.push({
       color: ColorDef.red.toJSON(),
     });
 
-    const lx = layout.range.low.x - debugAnchorPt.x;
-    const ly = layout.range.low.y - debugAnchorPt.y;
-    const hx = layout.range.high.x - debugAnchorPt.x;
-    const hy = layout.range.high.y - debugAnchorPt.y;
+    // const debugAnchorPt = documentTransform.multiplyPoint3d(layout.anchorPt);
 
     context.entries.push({
       separator: {
-        startPoint: [lx, 0, 0],
-        endPoint: [hx, 0, 0],
+        startPoint: [debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0],
+        endPoint: [debugAnchorPt.x + 1, debugAnchorPt.y + 1, 0],
       },
     });
+
     context.entries.push({
       separator: {
-        startPoint: [0, ly, 0],
-        endPoint: [0, hy, 0],
+        startPoint: [debugAnchorPt.x + 1, debugAnchorPt.y - 1, 0],
+        endPoint: [debugAnchorPt.x - 1, debugAnchorPt.y + 1, 0],
+      },
+    });
+
+    context.entries.push({
+      color: ColorDef.blue.toJSON(),
+    });
+
+    context.entries.push({
+      separator: {
+        startPoint: [documentTransform.origin.x - 1, documentTransform.origin.y - 1, 0],
+        endPoint: [documentTransform.origin.x + 1, documentTransform.origin.y + 1, 0],
+      },
+    });
+
+    context.entries.push({
+      separator: {
+        startPoint: [documentTransform.origin.x + 1, documentTransform.origin.y - 1, 0],
+        endPoint: [documentTransform.origin.x - 1, documentTransform.origin.y + 1, 0],
+      },
+    });
+
+    context.entries.push({
+      color: ColorDef.black.toJSON(),
+    });
+
+    context.entries.push({
+      separator: {
+        startPoint: [-1, -1, 0],
+        endPoint: [1, 1, 0],
+      },
+    });
+
+    context.entries.push({
+      separator: {
+        startPoint: [1, -1, 0],
+        endPoint: [-1, 1, 0],
       },
     });
   }
@@ -207,6 +276,6 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   const dimensions = layout.range;
   const transform = args.annotation.computeTransform(dimensions);
 
-  const anchorPoint = args.debugAnchorPointAndRange ? args.annotation.computeAnchorPoint(dimensions) : undefined;
+  const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
   return produceTextBlockGeometry(layout, transform, anchorPoint);
 }
