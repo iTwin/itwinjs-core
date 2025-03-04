@@ -48,7 +48,7 @@ describe("Example Code", () => {
       try {
         await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
       } catch (err) {
-        const isInUseError = createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks);
+        const isInUseError = createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.InUseLocks);
         if (isInUseError(err)) {
           const inUseLocks = err.inUseLocks;
           for (const inUseLock of inUseLocks) {

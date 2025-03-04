@@ -73,7 +73,7 @@ class ChannelAdmin implements ChannelControl {
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel) {
-      const error = constructError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNotAllowed, `channel "${deniedChannel}" is not allowed`);
+      const error = constructError(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.ChannelNotAllowed, `channel "${deniedChannel}" is not allowed`);
       throw error;
     }
 
@@ -89,12 +89,12 @@ class ChannelAdmin implements ChannelControl {
 
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
     if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId)) {
-      const error = constructError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest, `Channel ${this.getChannelKey(args.elementId)} may not nest`);
+      const error = constructError(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.ChannelNest, `Channel ${this.getChannelKey(args.elementId)} may not nest`);
       throw error;
     }
 
     if (this.queryChannelRoot(args.channelKey) !== undefined) {
-      const error = constructError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelRootExists, `A channel root for ${args.channelKey} already exists`);
+      const error = constructError(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.ChannelRootExists, `A channel root for ${args.channelKey} already exists`);
       throw error;
     }
 
@@ -107,7 +107,7 @@ class ChannelAdmin implements ChannelControl {
     // makeChannelRoot will check that again, but at that point the new Subject is already inserted.
     // Prefer to check twice instead of deleting the Subject in the latter option.
     if (this.queryChannelRoot(args.channelKey) !== undefined) {
-      const error = constructError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelRootExists, `A channel root for ${args.channelKey} already exists`);
+      const error = constructError(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.ChannelRootExists, `A channel root for ${args.channelKey} already exists`);
       throw error;
     }
 

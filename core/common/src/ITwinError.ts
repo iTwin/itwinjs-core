@@ -30,27 +30,29 @@ export interface InUseLock {
  * error namespaces object to describe namespaces for a developer/application.
  * @beta
  */
+/* eslint-disable @typescript-eslint/naming-convention */
 export const ITwinErrorNamespaces = {
-  ItwinJsCore: "itwinjs-core"
-}
+  ITwinJsCore: "itwinjs-core"
+} as const;
 
 /**
  * error keys object used to describe an error keys for a developer/application.
  * @beta
  */
+/* eslint-disable @typescript-eslint/naming-convention */
 export const ITwinErrorKeys = {
   InUseLocks: "in-use-locks",
   ChannelNest: "channel-may-not-nest",
   ChannelNotAllowed: "channel-not-allowed",
   ChannelRootExists: "channel-root-exists"
-}
+} as const;
 
 /**
  * An interface used to describe an error for a developer/application. The message is not intended to be displayed to an end user.
  * This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
  * @beta
  */
-export interface ITwinError {
+export interface ITwinError extends Error {
   /** namespace for the error. This is a unique qualifier for the errorKey. */
   namespace: string;
   /** unique key for error, within namespace. All errorKeys within the same namespace must be unique. */
@@ -72,8 +74,6 @@ export interface InUseLocksError extends ITwinError {
   inUseLocks: InUseLock[];
 }
 
-type ITwinAssertFn<T extends ITwinError> = (error: unknown) => error is T;
-
 /**
 * A function which will be used to construct an error.
 * @param namespace The namespace associated with the error.
@@ -83,17 +83,16 @@ type ITwinAssertFn<T extends ITwinError> = (error: unknown) => error is T;
 * @beta
 */
 export function constructError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError {
-  const errorObject = new Error();
-  errorObject.name = `${namespace}:${errorKey}`;
 
   const error: ITwinError = {
+    name: `${namespace}:${errorKey}`,
     namespace,
     errorKey,
     message: message ?? `${errorKey} occurred`,
-    metadata
+    metadata,
   };
 
-  return Object.assign(errorObject, error);
+  return error;
 }
 
 /**

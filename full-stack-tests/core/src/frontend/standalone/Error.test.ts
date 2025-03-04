@@ -24,10 +24,10 @@ if (ProcessDetector.isElectronAppFrontend) {
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
       let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwDetailedError<InUseLocksError>({ inUseLocks: inUseLocks }, ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks, message, metadata);
+        await coreFullStackTestIpc.throwDetailedError<InUseLocksError>({ inUseLocks }, ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.InUseLocks, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isInUseError = createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks);
+        const isInUseError = createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.InUseLocks);
         expect(isInUseError(err)).to.be.true;
         if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
@@ -45,10 +45,10 @@ if (ProcessDetector.isElectronAppFrontend) {
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
       let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwITwinError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest, message, metadata);
+        await coreFullStackTestIpc.throwITwinError(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.ChannelNest, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isInUseError = createTypeAsserter<ITwinError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest);
+        const isInUseError = createTypeAsserter<ITwinError>(ITwinErrorNamespaces.ITwinJsCore, ITwinErrorKeys.ChannelNest);
         expect(isInUseError(err)).to.be.true;
         if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
