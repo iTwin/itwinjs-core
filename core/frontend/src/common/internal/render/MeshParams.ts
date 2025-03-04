@@ -10,6 +10,8 @@ import { AuxChannelTable } from "./AuxChannelTable";
 import { VertexTable } from "./VertexTable";
 import { SurfaceParams } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
+import { RealityTile } from "../../../tile/internal";
+import { RenderTexture } from "@itwin/core-common";
 
 /** Describes mesh geometry to be submitted to the rendering system.
  * A mesh consists of a surface and its edges, which may include any combination of silhouettes, polylines, and single segments.
@@ -22,4 +24,6 @@ export interface MeshParams {
   edges?: EdgeParams;
   isPlanar: boolean;
   auxChannels?: AuxChannelTable;
+  tile?: RealityTile;
+  texture?: RenderTexture
 }
