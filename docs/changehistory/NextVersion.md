@@ -11,8 +11,8 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-  - [Display](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
+  - [Display](#display)
+    - [Read image to canvas](#read-image-to-canvas)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -168,11 +168,25 @@ Can also be attached as a map-layer:
 ### @itwin/core-common
 
 - [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
+- Some types which are now more comprehensively exposed by backend's new ecschema-metadata integration were made deprecated:
+  - [EntityClassMetadata]($common)
+  - [EntityClassMetadataProps]($common)
+  - [CustomAttribute]($common)
+  - [PropertyMetaData]($common)
+  - [PropertyMetaDataProps]($common)
 
 ### @itwin/core-backend
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
 - Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
+- metadata related methods now exposed through ecschema-metadata
+  - [Element.getClassMetaData()]($backend),
+  - [Entity.forEachProperty()]($backend),
+  - [IModelDb.classMetaDataRegistry]($backend),
+  - [IModelDb.getMetaData]($backend),
+  - [IModelDb.tryGetMetaData]($backend),
+  - [IModelDb.forEachMetaData()]($backend)
+  - [MetaDataRegistry]($backend)
 
 ### @itwin/core-frontend
 

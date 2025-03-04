@@ -225,7 +225,10 @@ export class PropertyMetaData implements PropertyMetaDataProps {
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated in 5.0. Use ecschema-metadata instead
+ */
 export interface EntityMetaDataProps {
   classId: Id64String;
   ecclass: string;
