@@ -264,6 +264,7 @@ public;type;EntityIdAndClassIdIterable
 beta;class;EntityMetaData
 deprecated;class;EntityMetaData
 beta;interface;EntityMetaDataProps
+deprecated;interface;EntityMetaDataProps
 public;interface;EntityProps
 public;interface;EntityQueryParams
 alpha;type;EntityReference

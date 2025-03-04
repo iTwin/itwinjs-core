@@ -3072,7 +3072,7 @@ export class EntityMetaData implements EntityMetaDataProps {
     };
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface EntityMetaDataProps {
     baseClasses: string[];
     // (undocumented)
