@@ -159,9 +159,11 @@ describe("SelectionScopesHelper", () => {
       imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
       imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
       imodelMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup((x) => x.getMetaData(moq.It.isAnyString()))
         .returns(
           (className: string) =>
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             new EntityMetaData({
               classId: "0x123",
               baseClasses: [],

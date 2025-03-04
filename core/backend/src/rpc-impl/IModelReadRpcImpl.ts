@@ -233,6 +233,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = await getIModelForRpc(tokenProps);
     const classArray: string[] = [];
     while (true) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
       classArray.push(classFullName);
       if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)

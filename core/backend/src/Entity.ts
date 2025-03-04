@@ -71,6 +71,7 @@ export class Entity {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
   }
 
@@ -89,6 +90,7 @@ export class Entity {
     val.classFullName = this.classFullName;
     if (Id64.isValid(this.id))
       val.id = this.id;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.forEachProperty((propName: string) => val[propName] = (this as any)[propName], false);
     return val;
   }
@@ -97,8 +99,10 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @deprecated in 5.0. Use [[getMetaData]] to get the metadata and iterate over the properties
    */
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.iModel.forEachMetaData(this.classFullName, true, func, includeCustom);
   }
 
