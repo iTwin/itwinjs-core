@@ -13,7 +13,7 @@ describe("Attach/Detach Db", () => {
   it("attach simulation db", async () => {
     const masterFile = IModelTestUtils.resolveAssetFile("sim-master.bim");
     const simulationFile = IModelTestUtils.resolveAssetFile("sim-attach.ecdb");
-    // __PUBLISH_EXTRACT_START__ IModelDb.attachDb
+    // __PUBLISH_EXTRACT_START__ IModelDb_attachDb
     const master = SnapshotDb.openFile(masterFile);
 
     // attach simulation db

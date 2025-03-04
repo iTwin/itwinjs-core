@@ -370,6 +370,11 @@ export abstract class IModelDb extends IModel {
    * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
    * @param fileName IModel file name
    * @param alias identifier for the attached file. This identifer is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
+   *
+   * *Example:*
+   * ``` ts
+   *  [[include:IModelDb_attachDb.code]]
+   * ```
    */
   public attachDb(fileName: string, alias: string): void {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
@@ -381,6 +386,11 @@ export abstract class IModelDb extends IModel {
    * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
    * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
    * @param alias identifer that was used in the call to [[attachDb]]
+   *
+   * *Example:*
+   * ``` ts
+   *  [[include:IModelDb_attachDb.code]]
+   * ```
    */
   public detachDb(alias: string): void {
     if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
