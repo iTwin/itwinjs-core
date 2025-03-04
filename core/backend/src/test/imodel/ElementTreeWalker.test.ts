@@ -57,6 +57,7 @@ function doesModelExist(iModel: IModelDb, mid: Id64String): boolean {
 }
 
 function doesGroupRelationshipExist(iModel: IModelDb, source: Id64String, target: Id64String): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return iModel.withPreparedStatement(`select count(*) from ${ElementGroupsMembers.classFullName} where sourceecinstanceid=? and targetecinstanceid=?`, (stmt) => {
     stmt.bindId(1, source);
     stmt.bindId(2, target);
