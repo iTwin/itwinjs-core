@@ -290,6 +290,7 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
+beta;interface;FontFace
 public;interface;FontFamilyDescriptor
 beta;interface;FontFamilySelector
 public;type;FontId
@@ -920,6 +921,7 @@ public;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 public;class;VerticalCRS
