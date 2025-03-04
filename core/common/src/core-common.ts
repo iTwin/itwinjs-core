@@ -166,8 +166,6 @@ export * from "./WhiteOnWhiteReversalSettings";
 
 export * from "./internal/cross-package";
 
-export * from "./BentleyError";
-
 /** @docs-package-description
  * The core-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
