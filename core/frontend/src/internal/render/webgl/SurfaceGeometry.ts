@@ -21,10 +21,10 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
-import { ProjectedTexture, RealityTextureParams } from "./RealityMesh";
+import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams";
 import { MeshParams } from "../../../common/internal/render/MeshParams";
 import { MapCartoRectangle, PlanarProjection, PlanarTilePatch, RealityModelTileTree, RealityTile } from "../../../tile/internal";
-import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
+import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { Vector3d } from "@itwin/core-geometry";
 
 /** @internal */
@@ -41,7 +41,7 @@ export class SurfaceGeometry extends MeshGeometry {
   private readonly _buffers: BuffersContainer;
   private readonly _indices: BufferHandle;
   public readonly hasTextures: boolean;
-  public textureParams: RealityTextureParams | undefined;
+  public textureParams: LayerTextureParams | undefined;
 
   public get lutBuffers() { return this._buffers; }
 
@@ -75,11 +75,11 @@ export class SurfaceGeometry extends MeshGeometry {
     }
     const chordHeight = corners[0].distance(corners[3]) / 2;
 
-    const realityPlanarTilePatch = new PlanarTilePatch(corners, normal, chordHeight);
-    const realityProjection = new PlanarProjection(realityPlanarTilePatch);
+    const surfacePlanarTilePatch = new PlanarTilePatch(corners, normal, chordHeight);
+    const surfaceProjection = new PlanarProjection(surfacePlanarTilePatch);
 
-    const realityMeshParams: RealityMeshGraphicParams = {
-      projection: realityProjection,
+    const meshParams: MeshMapLayerGraphicParams = {
+      projection: surfaceProjection,
       tileRectangle: mapCartoRectangle,
       tileId: undefined,
       baseColor: undefined,
@@ -92,7 +92,7 @@ export class SurfaceGeometry extends MeshGeometry {
     let sequentialIndex = 0;
 
     layerClassifiers?.forEach((layerClassifier) => {
-      layerTextures[sequentialIndex++] = new ProjectedTexture(layerClassifier, realityMeshParams, realityMeshParams.tileRectangle);
+      layerTextures[sequentialIndex++] = new ProjectedTexture(layerClassifier, meshParams, meshParams.tileRectangle);
     });
 
     let surfaceGeometry;
@@ -100,9 +100,9 @@ export class SurfaceGeometry extends MeshGeometry {
     if (undefined !== indexBuffer) {
       const indexCount = indices.length;
       const hasLayerTextures = layerTextures.length > 0;
-      const realityTextureParams = hasLayerTextures ? RealityTextureParams.create(layerTextures) : undefined;
+      const layerTextureParams = hasLayerTextures ? LayerTextureParams.create(layerTextures) : undefined;
 
-      surfaceGeometry = new SurfaceGeometry(indexBuffer, indexCount, mesh, realityTextureParams);
+      surfaceGeometry = new SurfaceGeometry(indexBuffer, indexCount, mesh, layerTextureParams);
     }
 
     return surfaceGeometry;
@@ -359,7 +359,7 @@ export class SurfaceGeometry extends MeshGeometry {
     }
   }
 
-  private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData, textureParams?: RealityTextureParams) {
+  private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData, textureParams?: LayerTextureParams) {
     super(mesh, numIndices);
     this.textureParams = textureParams;
     this._buffers = BuffersContainer.create();

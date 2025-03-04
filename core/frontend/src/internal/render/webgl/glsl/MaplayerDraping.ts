@@ -6,9 +6,10 @@
  * @module WebGL
  */
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import { System } from "../System";
 import { addUInt32s } from "./Common";
 
-const testInside = `
+export const testInside = `
 bool testInside(float x0, float y0, float x1, float y1, float x, float y) {
   vec2 perp = vec2(y0 - y1, x1 - x0), test = vec2(x - x0, y - y0);
   float dot = (test.x * perp.x + test.y * perp.y) / sqrt(perp.x * perp.x + perp.y * perp.y);
@@ -16,7 +17,7 @@ bool testInside(float x0, float y0, float x1, float y1, float x, float y) {
 }
 `;
 
-const applyTexture = `
+export const applyTexture = (isRealityTile: boolean) => `
 bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
   vec2 uv;
   float layerAlpha;
@@ -29,11 +30,14 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
     vec4 classPos4 = matrix * eye4;
     classPos = classPos4.xy / classPos4.w;
 
-    // if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y) ||
-    //     !testInside(params[2].z, params[2].w, params[3].x, params[3].y, classPos.x, classPos.y) ||
-    //     !testInside(params[3].x, params[3].y, params[3].z, params[3].w, classPos.x, classPos.y) ||
-    //     !testInside(params[3].z, params[3].w, params[2].x, params[2].y, classPos.x, classPos.y))
-    //     return false;
+    if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y)
+        ${isRealityTile ? "||" : "&&"}
+        !testInside(params[2].z, params[2].w, params[3].x, params[3].y, classPos.x, classPos.y)
+        ${isRealityTile ? "||" : "&&"}
+        !testInside(params[3].x, params[3].y, params[3].z, params[3].w, classPos.x, classPos.y)
+        ${isRealityTile ? "||" : "&&"}
+        !testInside(params[3].z, params[3].w, params[2].x, params[2].y, classPos.x, classPos.y))
+        return false;
 
     uv.x = classPos.x;
     uv.y = classPos.y / imageCount;
@@ -83,14 +87,12 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
 }
 `;
 
-const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0) : classifierId;`;
+export const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0) : classifierId;`;
 
 function applyDraping(){
   const applyTextureStrings = [];
 
-  const textureCount = 6;
-
-  for (let i = 0; i < textureCount; i++)
+  for (let i = 0; i < System.instance.maxRealityImageryLayers; i++)
     applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
 
   return `
@@ -117,7 +119,7 @@ export function addApplySurfaceDraping(frag: FragmentShaderBuilder) {
   frag.addGlobal("classifierId", VariableType.Vec4);
   frag.addFunction(addUInt32s);
   frag.addFunction(testInside);
-  frag.addFunction(applyTexture);
+  frag.addFunction(applyTexture(false));
   frag.set(FragmentShaderComponent.ApplyDraping, applyDraping());
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
 }
