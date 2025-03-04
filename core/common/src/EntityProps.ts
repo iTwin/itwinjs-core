@@ -266,6 +266,7 @@ export class EntityMetaData implements EntityMetaDataProps {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public readonly properties: { [propName: string]: PropertyMetaData };
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public constructor(jsonObj: EntityMetaDataProps) {
     this.classId = jsonObj.classId;
     this.ecclass = jsonObj.ecclass;
