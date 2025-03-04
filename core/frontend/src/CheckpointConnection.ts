@@ -6,8 +6,8 @@
  * @module IModelConnection
  */
 
-import { GuidString, Logger } from "@itwin/core-bentley";
-import { IModelConnectionProps, IModelRpcOpenProps, IModelVersion, RpcManager } from "@itwin/core-common";
+import { BentleyError, GuidString, Logger } from "@itwin/core-bentley";
+import { IModelConnectionProps, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcRequest } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -69,14 +69,14 @@ export class CheckpointConnection extends IModelConnection {
       connection = new this(await this.callOpen(iModelProps, iModelReadHttpApi), iModelReadHttpApi, false);
       RpcManager.setIModel(connection);
       connection.routingContext = routingContext;
-      // RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
+      RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
     }
 
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
-  private static async callOpen(iModelToken: IModelRpcOpenProps, iModelReadHttpApi: IModelReadHTTPClient): Promise<IModelConnectionProps> {
+  private static async callOpen(iModelToken: IModelRpcOpenProps, iModelReadHttpApi: IModelReadAPI): Promise<IModelConnectionProps> {
     Logger.logTrace(loggerCategory, `IModelConnection.open`, iModelToken);
 
     return {
@@ -86,30 +86,30 @@ export class CheckpointConnection extends IModelConnection {
     };
   }
 
-  // private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason?: any) => void) => {
-  //   if (!response.hasOwnProperty("isIModelNotFoundResponse"))
-  //     reject();
+  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason?: any) => void) => {
+    if (!response.hasOwnProperty("isIModelNotFoundResponse"))
+      reject();
 
-  //   const iModelRpcProps = request.parameters[0];
-  //   if (this._fileKey !== iModelRpcProps.key)
-  //     reject(); // The handler is called for a different connection than this
+    const iModelRpcProps = request.parameters[0];
+    if (this._fileKey !== iModelRpcProps.key)
+      reject(); // The handler is called for a different connection than this
 
-  //   Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
+    Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
 
-  //   try {
-  //     const openResponse = await CheckpointConnection.callOpen(iModelRpcProps);
-  //     // The new/reopened connection may have a new rpcKey and/or changesetId, but the other IModelRpcTokenProps should be the same
-  //     this._fileKey = openResponse.key;
-  //     this.changeset = openResponse.changeset!;
-  //   } catch (error) {
-  //     reject(BentleyError.getErrorMessage(error));
-  //   } finally {
-  //   }
+    try {
+      const openResponse = await CheckpointConnection.callOpen(iModelRpcProps, this._iModelReadApi);
+      // The new/reopened connection may have a new rpcKey and/or changesetId, but the other IModelRpcTokenProps should be the same
+      this._fileKey = openResponse.key;
+      this.changeset = openResponse.changeset!;
+    } catch (error) {
+      reject(BentleyError.getErrorMessage(error));
+    } finally {
+    }
 
-  //   Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", iModelRpcProps);
-  //   request.parameters[0] = this.getRpcProps(); // Modify the token of the original request before resubmitting it.
-  //   resubmit();
-  // };
+    Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", iModelRpcProps);
+    request.parameters[0] = this.getRpcProps(); // Modify the token of the original request before resubmitting it.
+    resubmit();
+  };
 
   /** Close this CheckpointConnection */
   public async close(): Promise<void> {
@@ -119,8 +119,8 @@ export class CheckpointConnection extends IModelConnection {
     this.beforeClose();
     if (this._fromIpc)
       await IpcApp.appFunctionIpc.closeIModel(this._fileKey);
-    // else
-    //   RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
+    else
+      RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
 
     this._isClosed = true;
   }

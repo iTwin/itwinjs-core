@@ -62,7 +62,7 @@ export interface BlankConnectionProps {
  * @extensions
  */
 export abstract class IModelConnection extends IModel {
-  private readonly _iModelReadApi: IModelReadAPI;
+  protected readonly _iModelReadApi: IModelReadAPI;
   /** The [[ModelState]]s in this IModelConnection. */
   public readonly models: IModelConnection.Models;
   /** The [[ElementState]]s in this IModelConnection. */
