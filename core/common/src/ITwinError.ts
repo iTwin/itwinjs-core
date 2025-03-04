@@ -27,14 +27,27 @@ export interface InUseLock {
 }
 
 /**
+ * error namespaces object to describe namespaces for a developer/application.
+ * @beta
+ */
+export const ITwinErrorNamespaces = {
+  ItwinJsCore: "itwinjs-core"
+}
+
+/**
+ * error keys object used to describe an error keys for a developer/application.
+ * @beta
+ */
+export const ITwinErrorKeys = {
+  InUseLocks: "in-use-locks",
+  ChannelNest: "channel-may-not-nest",
+  ChannelNotAllowed: "channel-not-allowed",
+  ChannelRootExists: "channel-root-exists"
+}
+
+/**
  * An interface used to describe an error for a developer/application. The message is not intended to be displayed to an end user.
  * This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
- * When extending ITwinError, one should typically add a type guard function and a function to throw the error either to a namespace for their error or as standalone functions.
- * See [[InUseLocksError.throwInUseLocksError]] and [[InUseLocksError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
- * * Example of catching a ITwinError:
- * ``` ts
- * [[include:ITwinError.catchAndHandleITwinError]]
- * ```
  * @beta
  */
 export interface ITwinError {
@@ -56,49 +69,74 @@ export interface ITwinError {
  * @beta
 */
 export interface InUseLocksError extends ITwinError {
-  namespace: "itwinjs-core";
-  errorKey: "in-use-locks";
   inUseLocks: InUseLock[];
 }
 
-/** @beta */
-export namespace InUseLocksError {
+type ITwinAssertFn<T extends ITwinError> = (error: unknown) => error is T;
 
-  /**
-   * type guard function that returns whether or not the passed in parameter is an [[InUseLocksError]].
-   * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "in-use-locks".
-   */
-  export function isInUseLocksError(error: unknown): error is InUseLocksError {
-    return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "in-use-locks";
-  }
+/**
+* A function which will be used to construct an error.
+* @param namespace The namespace associated with the error.
+* @param errorKey The errorKey associated with the error.
+* @param message The message associated with the error.
+* @param metadata Metadata associated with the error.
+* @beta
+*/
+export function constructError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError {
+  const errorObject = new Error();
+  errorObject.name = `${namespace}:${errorKey}`;
 
-  /** throws an error which passes the [[InUseLocksError.isInUseLocksError]] type guard function */
-  export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never {
-    const errorObject = new Error();
-    errorObject.name = "InUseLocksError"; // optional but makes it so that when the error is thrown and not caught we see InUseLocksError: 'message' instead of Error: 'message'
-    Error.captureStackTrace(errorObject, throwInUseLocksError); // optional: whether we want to hide throwInUseLocksError or not from the stack. not super important
-    const lockError: InUseLocksError = {
-      namespace: "itwinjs-core",
-      errorKey: "in-use-locks",
-      message: message ?? "One or more objects are already locked by another briefcase.",
-      metadata,
-      inUseLocks,
-    };
-    Object.assign(errorObject, lockError);
-    throw errorObject;
-  }
+  const error: ITwinError = {
+    namespace,
+    errorKey,
+    message: message ?? `${errorKey} occurred`,
+    metadata
+  };
 
+  return Object.assign(errorObject, error);
 }
-/** @beta */
-export namespace ITwinError {
-  /** type guard function that returns whether or not the passed in parameter is an [[ITwinError]] */
-  export function isITwinError(error: unknown): error is ITwinError {
-    return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error;
-  }
 
-  /** get the meta data associated with this ITwinError, if any. */
-  export function getMetaData(err: ITwinError): object | undefined {
-    return BentleyError.getMetaData(err.metadata);
-  }
+/**
+* A function which constructs a detailed error for example [[ InUseLocksError ]] above.
+* @param namespace The namespace associated with the error.
+* @param errorKey The errorKey associated with the error.
+* @param details Other details associated with the error.
+* @param message The message associated with the error.
+* @param metadata Metadata associated with the error.
+* @beta
+*/
+export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T {
+  const baseError = constructError(namespace, errorKey, message, metadata);
 
-};
+  return Object.assign(baseError, details) as T;
+}
+
+/**
+ * a high level function that returns a type asserter function which would return whether or not the passed in parameter is an [[ITwinError]]
+ * @param namespace The namespace associated with the error.
+ * @param errorKey The errorKey associated with the error.
+ * @beta
+*/
+export function createTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string) {
+  return (error: unknown): error is T => isITwinError(error, namespace, errorKey);
+}
+
+/**
+ * get the meta data associated with this ITwinError, if any.
+ * @param error The error for which metadata is required.
+ * @beta
+*/
+export function getMetaData(error: ITwinError): object | undefined {
+  return BentleyError.getMetaData(error.metadata);
+}
+
+/**
+ * type guard function that returns whether or not the passed in parameter is an [[ITwinError]]
+ * @param error The error which is to ve verified.
+ * @param namespace The namespace associated with the error.
+ * @param errorKey The errorKey associated with the error.
+ * @beta
+*/
+export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError {
+  return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error && (namespace === undefined || (error as ITwinError).namespace === namespace) && (errorKey === undefined || (error as ITwinError).errorKey === errorKey);
+}
