@@ -115,6 +115,7 @@ export class IModelTile extends Tile {
         system,
         isCanceled,
         sizeMultiplier,
+        tile: this,
       });
     } catch {
       //

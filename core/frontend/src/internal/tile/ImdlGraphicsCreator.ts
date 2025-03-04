@@ -29,6 +29,7 @@ import { _implementationProhibited, _textures } from "../../common/internal/Symb
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../../internal/render/GraphicTemplateImpl";
 import { GraphicTemplate } from "../../render/GraphicTemplate";
+import { Tile } from "../../tile/internal";
 
 /** Options provided to [[decodeImdlContent]].
  */
@@ -37,6 +38,7 @@ export interface ImdlDecodeOptions {
   system: RenderSystem;
   iModel: IModelConnection;
   isCanceled?: () => boolean;
+  tile?: Tile;
 }
 
 async function loadNamedTexture(name: string, namedTex: ImdlNamedTexture, options: ImdlDecodeOptions): Promise<RenderTexture | undefined> {
@@ -118,6 +120,7 @@ interface GraphicsOptions {
   isCanceled?: () => boolean;
   textures: Map<string, RenderTexture>;
   patterns: Map<string, RenderGeometry[]>;
+  tile?: Tile;
 }
 
 function constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
@@ -295,6 +298,7 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
           textureMapping,
           indices: new VertexIndices(primitive.params.surface.indices),
         },
+        tile: options.tile,
       }, viOrigin);
     }
   }
@@ -404,6 +408,7 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
 
   const patterns = new Map<string, RenderGeometry[]>();
   const graphicsOptions = { ...options, textures, patterns };
+  graphicsOptions.tile = options.tile;
 
   for (const [name, primitives] of options.document.patterns)
     patterns.set(name, createPatternGeometries(primitives, graphicsOptions));
