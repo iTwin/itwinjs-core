@@ -47,7 +47,6 @@ describe("BriefcaseManager", async () => {
     iModel = await HubWrappers.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
     iModel.close();
-    HubMock.shutdown();
   });
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
@@ -66,7 +65,6 @@ describe("BriefcaseManager", async () => {
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
-    HubMock.shutdown();
   });
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
@@ -83,7 +81,6 @@ describe("BriefcaseManager", async () => {
     assert.strictEqual(briefcaseId3, briefcaseId1);
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
-    HubMock.shutdown();
   });
 
   it("should reuse a briefcaseId when re-opening iModels of different versions for pullAndPush and pullOnly workflows", async () => {
@@ -127,7 +124,6 @@ describe("BriefcaseManager", async () => {
 
     // Delete iModel from the Hub and disk
     await testUtility.deleteTestIModel();
-    HubMock.shutdown();
   });
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
@@ -194,6 +190,5 @@ describe("BriefcaseManager", async () => {
     // Delete iModel from the Hub and disk
     await HubWrappers.closeAndDeleteBriefcaseDb(userToken2, iModelPullAndPush);
     await testUtility.deleteTestIModel();
-    HubMock.shutdown();
   });
 });

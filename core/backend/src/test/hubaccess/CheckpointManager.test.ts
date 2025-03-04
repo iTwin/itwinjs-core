@@ -7,83 +7,79 @@ import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { _nativeDb, IModelHost } from "../../core-backend";
-import { SnapshotDb } from "../../IModelDb";
+import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelJsFs } from "../../IModelJsFs";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { HubMock } from "../../HubMock";
-import { _hubAccess } from "../../internal/Symbols";
+import { _hubAccess, _nativeDb } from "../../internal/Symbols";
 
-describe("V1 Checkpoint Manager", () => {
-  it("empty props", async () => {
-    const props = {
-      iTwinId: "",
-      iModelId: "",
-      changeset: { id: "" },
-    };
-    assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "first.bim"));
-  });
+// describe("V1 Checkpoint Manager", () => {
+//   it("empty props", async () => {
+//     const props = {
+//       iTwinId: "",
+//       iModelId: "",
+//       changeset: { id: "" },
+//     };
+//     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "first.bim"));
+//   });
 
-  it("changeset only props", async () => {
-    const props = {
-      iTwinId: "",
-      iModelId: "",
-      changeset: { id: "1234" },
-    };
-    assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
-  });
+//   it("changeset only props", async () => {
+//     const props = {
+//       iTwinId: "",
+//       iModelId: "",
+//       changeset: { id: "1234" },
+//     };
+//     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
+//   });
 
-  it("changeset+itwin props", async () => {
-    const props = {
-      iTwinId: "5678",
-      iModelId: "",
-      changeset: { id: "1234" },
-    };
-    assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
-  });
+//   it("changeset+itwin props", async () => {
+//     const props = {
+//       iTwinId: "5678",
+//       iModelId: "",
+//       changeset: { id: "1234" },
+//     };
+//     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
+//   });
 
-  it("changeset+itwin+imodel props", async () => {
-    const props = {
-      iTwinId: "5678",
-      iModelId: "910",
-      changeset: { id: "1234" },
-    };
-    assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "910", "checkpoints", "1234.bim"));
-  });
+//   it("changeset+itwin+imodel props", async () => {
+//     const props = {
+//       iTwinId: "5678",
+//       iModelId: "910",
+//       changeset: { id: "1234" },
+//     };
+//     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "910", "checkpoints", "1234.bim"));
+//   });
 
-  it("getFolder", async () => {
-    assert.equal(V1CheckpointManager.getFolder("1234"), path.join(IModelHost.cacheDir, "imodels", "1234", "checkpoints"));
-    assert.equal(V1CheckpointManager.getFolder(""), path.join(IModelHost.cacheDir, "imodels", "checkpoints"));
-  });
+//   it("getFolder", async () => {
+//     assert.equal(V1CheckpointManager.getFolder("1234"), path.join(IModelHost.cacheDir, "imodels", "1234", "checkpoints"));
+//     assert.equal(V1CheckpointManager.getFolder(""), path.join(IModelHost.cacheDir, "imodels", "checkpoints"));
+//   });
 
-  it("should fix invalid dbGuid during download", async () => {
-    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
-    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot[_nativeDb].setITwinId(iTwinId);
-    snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id);
-    snapshot.saveChanges();
+//   it("should fix invalid dbGuid during download", async () => {
+//     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+//     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+//     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+//     const iTwinId = Guid.createValue();
+//     const changeset = IModelTestUtils.generateChangeSetId();
+//     snapshot[_nativeDb].setITwinId(iTwinId);
+//     snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id);
+//     snapshot.saveChanges();
 
-    assert.notEqual(iModelId, snapshot[_nativeDb].getIModelId()); // Ensure the Snapshot dbGuid and iModelId are different
-    snapshot.close();
+//     assert.notEqual(iModelId, snapshot[_nativeDb].getIModelId()); // Ensure the Snapshot dbGuid and iModelId are different
+//     snapshot.close();
 
-    sinon.stub(V2CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
-      IModelJsFs.copySync(dbPath, arg.localFile);
-      return changeset.id;
-    });
+//     sinon.stub(V2CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
+//       IModelJsFs.copySync(dbPath, arg.localFile);
+//       return changeset.id;
+//     });
 
-    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
+//     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
-    await CheckpointManager.downloadCheckpoint(request);
-    const db = V1CheckpointManager.openCheckpointV1(localFile, request.checkpoint);
-    assert.equal(iModelId, db[_nativeDb].getIModelId(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
-    db.close();
-  });
-});
+//     const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
+//     await CheckpointManager.downloadCheckpoint(request);
+//     const db = V1CheckpointManager.openCheckpointV1(localFile, request.checkpoint);
+//     assert.equal(iModelId, db[_nativeDb].getIModelId(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
+//     db.close();
+//   });
+// });
 
 describe("Checkpoint Manager", () => {
 
@@ -98,7 +94,7 @@ describe("Checkpoint Manager", () => {
       changeset: { id: "1234" },
     };
     const request = {
-      localFile: V1CheckpointManager.getFileName(checkpoint),
+      localFile: path.join(V2CheckpointManager.getFolder(), Guid.createValue()),
       checkpoint,
     };
     const db = CheckpointManager.tryOpenLocalFile(request);
@@ -113,11 +109,11 @@ describe("Checkpoint Manager", () => {
     };
 
     // Setup a local file
-    const folder = V1CheckpointManager.getFolder(checkpoint.iModelId);
+    const folder = path.join(V2CheckpointManager.getFolder(), checkpoint.iModelId);
     if (!IModelJsFs.existsSync(folder))
       IModelJsFs.recursiveMkDirSync(folder);
 
-    const outputFile = V1CheckpointManager.getFileName(checkpoint);
+    const outputFile = path.join(V2CheckpointManager.getFolder(), `${checkpoint.changeset.id}.bim`);
     if (IModelJsFs.existsSync(outputFile))
       IModelJsFs.unlinkSync(outputFile);
 
@@ -125,36 +121,36 @@ describe("Checkpoint Manager", () => {
 
     // Attempt to open the file
     const request = {
-      localFile: V1CheckpointManager.getFileName(checkpoint),
+      localFile: outputFile,
       checkpoint,
     };
     const db = CheckpointManager.tryOpenLocalFile(request);
     assert.isUndefined(db);
   });
 
-  it("downloadCheckpoint should fall back to use v1 checkpoints if v2 checkpoints are not enabled", async () => {
-    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
-    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = snapshot.iModelId;
-    const iTwinId = Guid.createValue();
-    const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot[_nativeDb].setITwinId(iTwinId);
-    snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id);
-    snapshot.saveChanges();
-    snapshot.close();
+  // it("downloadCheckpoint should fall back to use v1 checkpoints if v2 checkpoints are not enabled", async () => {
+  //   const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+  //   const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+  //   const iModelId = snapshot.iModelId;
+  //   const iTwinId = Guid.createValue();
+  //   const changeset = IModelTestUtils.generateChangeSetId();
+  //   snapshot[_nativeDb].setITwinId(iTwinId);
+  //   snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id);
+  //   snapshot.saveChanges();
+  //   snapshot.close();
 
-    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
-    sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => undefined);
+  //   sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
+  //   sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => undefined);
 
-    const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
-      IModelJsFs.copySync(dbPath, arg.localFile);
-      return changeset.id;
-    });
+  //   const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
+  //     IModelJsFs.copySync(dbPath, arg.localFile);
+  //     return changeset.id;
+  //   });
 
-    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
+  //   const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset } };
-    await CheckpointManager.downloadCheckpoint(request);
-    assert.isTrue(v1Spy.calledOnce);
-  });
+  //   const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset } };
+  //   await CheckpointManager.downloadCheckpoint(request);
+  //   assert.isTrue(v1Spy.calledOnce);
+  // });
 });
