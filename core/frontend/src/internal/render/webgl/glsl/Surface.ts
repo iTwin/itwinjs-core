@@ -44,7 +44,7 @@ import { Npc } from "@itwin/core-common";
 import { addApplyContours } from "./Contours";
 import { Matrix4d } from "@itwin/core-geometry";
 import { Matrix4 } from "../Matrix";
-import { addApplySurfaceDraping } from "./SurfaceDraping";
+import { addApplySurfaceDraping } from "./MaplayerDraping";
 
 const constantLodTextureLookup = `
 vec4 constantLodTextureLookup(sampler2D textureSampler) {
