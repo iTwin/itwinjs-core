@@ -269,7 +269,7 @@ describe("Changeset Reader API", async () => {
     if (true || "test local changes") {
       const reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
       using adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
+      const cci = new PartialECChangeUnifier(reader.db);
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
       }
@@ -334,7 +334,6 @@ describe("Changeset Reader API", async () => {
           1,
         ],
         stage: "New",
-        fallbackClassId: undefined,
       });
     }
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
@@ -346,7 +345,7 @@ describe("Changeset Reader API", async () => {
     if (true || "updated element") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
+      const cci = new PartialECChangeUnifier(reader.db);
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
       }
@@ -376,7 +375,7 @@ describe("Changeset Reader API", async () => {
       const otherDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
+      const cci = new PartialECChangeUnifier(reader.db);
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
       }
@@ -407,7 +406,7 @@ describe("Changeset Reader API", async () => {
     if (true || "test changeset file") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
       using adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
+      const cci = new PartialECChangeUnifier(reader.db);
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
       }
@@ -472,14 +471,13 @@ describe("Changeset Reader API", async () => {
           1,
         ],
         stage: "New",
-        fallbackClassId: undefined,
       });
     }
     if (true || "test ChangesetAdaptor.acceptClass()") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
       using adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptClass("TestDomain.Test2dElement");
-      const cci = new PartialECChangeUnifier();
+      const cci = new PartialECChangeUnifier(reader.db);
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
       }
@@ -491,7 +489,7 @@ describe("Changeset Reader API", async () => {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
       using adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptOp("Updated");
-      const cci = new PartialECChangeUnifier();
+      const cci = new PartialECChangeUnifier(reader.db);
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
       }
