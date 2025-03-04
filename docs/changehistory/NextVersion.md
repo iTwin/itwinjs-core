@@ -645,29 +645,4 @@ class MyElement extends Element {
 
 Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
 
-Example of attaching a snapshot to a master file and running a query that combines data from both databases:
-```ts
-     const master = SnapshotDb.openFile(masterFile);
-    // SimDb is alias that will be used to reference the attached snapshot
-    master.attachDb(simulationFile, "SimDb");
-
-    const ecsql = `
-    SELECT ts.TimeFromStart [Time From Start (s)],
-       p.UserLabel [Pipe with Max Flow],
-       MAX(ltvrr.Flow) [Max Flow (L/s)]
-    FROM
-        SimDb.simrescore.TimeStep ts
-        INNER JOIN SimDb.stmswrres.BasicFlowResultRecord ltvrr ON ts.ECInstanceId = ltvrr.TimeStep.Id
-        INNER JOIN swrhyd.Pipe p ON p.ECInstanceId = ltvrr.ElementId
-    GROUP BY
-          ts.ECInstanceId
-    HAVING
-          MAX(ltvrr.Flow) > 1`;
-
-    const reader = master.createQueryReader(ecsql);
-    while (await reader.step()) {
-      // ...
-    }
-```
-
 > Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
