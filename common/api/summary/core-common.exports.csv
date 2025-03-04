@@ -110,13 +110,7 @@ public;type;ChangesetIndexOrId
 public;interface;ChangesetProps
 public;interface;ChangesetRange
 public;enum;ChangesetType
-beta;interface;ChannelNotAllowedError
-beta;namespace;ChannelNotAllowedError
 public;interface;ChannelRootAspectProps
-beta;interface;ChannelRootExistsError
-beta;namespace;ChannelRootExistsError
-beta;interface;ChannelsNestError
-beta;namespace;ChannelsNestError
 internal;interface;ClassifierTileTreeId
 public;class;ClipIntersectionStyle
 public;interface;ClipIntersectionStyleProps
@@ -453,7 +447,6 @@ public;const;Interpolation
 public;type;InterpolationFunction
 beta;interface;InUseLock
 beta;interface;InUseLocksError
-beta;namespace;InUseLocksError
 internal;const;ipcAppChannels
 internal;interface;IpcAppFunctions
 internal;interface;IpcAppNotifications
@@ -479,6 +472,8 @@ public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 beta;interface;ITwinError
 beta;namespace;ITwinError
+beta;enum;ITwinErrorKeys
+beta;enum;ITwinErrorNamespaces
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps
