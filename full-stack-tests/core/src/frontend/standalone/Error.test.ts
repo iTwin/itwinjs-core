@@ -1,5 +1,5 @@
 import { LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { InUseLock, InUseLocksError, ITwinError, ITwinErrorKeys, ITwinErrorNamespaces, LockState } from "@itwin/core-common";
+import { createTypeAsserter, getMetaData, InUseLock, InUseLocksError, ITwinError, ITwinErrorKeys, ITwinErrorNamespaces, LockState } from "@itwin/core-common";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { expect } from "chai";
 import { coreFullStackTestIpc } from "../Editing";
@@ -27,14 +27,14 @@ if (ProcessDetector.isElectronAppFrontend) {
         await coreFullStackTestIpc.throwDetailedError<InUseLocksError>({ inUseLocks: inUseLocks }, ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isInUseError = ITwinError.createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks);
+        const isInUseError = createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks);
         expect(isInUseError(err)).to.be.true;
         if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
           expect(err.stack?.includes("core\\backend") || err.stack?.includes("core/backend"), `Expected ${err.stack} to have mention of 'core\\backend' or 'core/backend'`).to.be.true;
           expect(err.message).to.equal(message);
           expect(err.inUseLocks).to.deep.equal(inUseLocks);
-          expect(ITwinError.getMetaData(err)).to.deep.equal(metadata);
+          expect(getMetaData(err)).to.deep.equal(metadata);
         }
       }
       expect(caughtError).to.be.true;
@@ -48,13 +48,13 @@ if (ProcessDetector.isElectronAppFrontend) {
         await coreFullStackTestIpc.throwITwinError(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isInUseError = ITwinError.createTypeAsserter<ITwinError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest);
+        const isInUseError = createTypeAsserter<ITwinError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.ChannelNest);
         expect(isInUseError(err)).to.be.true;
         if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
           expect(err.stack?.includes("core\\backend") || err.stack?.includes("core/backend"), `Expected ${err.stack} to have mention of 'core\\backend' or 'core/backend'`).to.be.true;
           expect(err.message).to.equal(message);
-          expect(ITwinError.getMetaData(err)).to.deep.equal(metadata);
+          expect(getMetaData(err)).to.deep.equal(metadata);
         }
       }
       expect(caughtError).to.be.true;

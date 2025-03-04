@@ -143,6 +143,8 @@ public;interface;ConflictingLock
 deprecated;interface;ConflictingLock
 public;class;ConflictingLocksError
 deprecated;class;ConflictingLocksError
+beta;function;constructDetailedError
+beta;function;constructError
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -168,6 +170,7 @@ internal;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
 public;interface;CreateSnapshotIModelProps
 internal;interface;CreateStandaloneIModelProps
+beta;function;createTypeAsserter
 internal;const;CURRENT_INVOCATION
 internal;const;CURRENT_REQUEST
 internal;enum;CurrentImdlVersion
@@ -363,6 +366,7 @@ public;interface;GeometrySummaryOptions
 public;interface;GeometrySummaryRequestProps
 public;enum;GeometrySummaryVerbosity
 internal;function;getMaximumMajorTileFormatVersion
+beta;function;getMetaData
 internal;const;getPullChangesIpcChannel
 internal;function;getTileObjectReference
 internal;class;GlbHeader
@@ -464,6 +468,7 @@ internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
+beta;function;isITwinError
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
@@ -471,9 +476,8 @@ public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 beta;interface;ITwinError
-beta;namespace;ITwinError
-beta;enum;ITwinErrorKeys
-beta;enum;ITwinErrorNamespaces
+beta;const;ITwinErrorKeys
+beta;const;ITwinErrorNamespaces
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps

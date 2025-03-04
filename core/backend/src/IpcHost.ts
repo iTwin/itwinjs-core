@@ -10,16 +10,15 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
-  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  ITwinError,
+  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, isITwinError, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
-import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
   * Options for [[IpcHost.startup]]
@@ -175,7 +174,7 @@ export abstract class IpcHandler {
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
         let ret: IpcInvokeReturn;
-        if (ITwinError.isITwinError(err)) {
+        if (isITwinError(err)) {
           const { namespace, errorKey, message, stack, metadata, ...rest } = err;
           ret = {
             iTwinError:

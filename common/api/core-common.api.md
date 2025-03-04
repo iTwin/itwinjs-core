@@ -1643,6 +1643,12 @@ export class ConflictingLocksError extends IModelError {
     conflictingLocks?: ConflictingLock[];
 }
 
+// @beta
+export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
+
+// @beta
+export function constructError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -1911,6 +1917,9 @@ export interface CreateSnapshotIModelProps {
 export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
+
+// @beta
+export function createTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
 
 // @internal (undocumented)
 export const CURRENT_INVOCATION: unique symbol;
@@ -4128,6 +4137,9 @@ export enum GeometrySummaryVerbosity {
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
+// @beta
+export function getMetaData(error: ITwinError): object | undefined;
+
 // @internal
 export const getPullChangesIpcChannel: (iModelId: string) => string;
 
@@ -5447,6 +5459,9 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
+// @beta
+export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError;
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5474,32 +5489,18 @@ export interface ITwinError {
     stack?: string;
 }
 
-// @beta (undocumented)
-export namespace ITwinError {
-    export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
-    export function constructError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
-    export function createTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
-    export function getMetaData(err: ITwinError): object | undefined;
-    export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError;
-}
+// @beta
+export const ITwinErrorKeys: {
+    InUseLocks: string;
+    ChannelNest: string;
+    ChannelNotAllowed: string;
+    ChannelRootExists: string;
+};
 
 // @beta
-export enum ITwinErrorKeys {
-    // (undocumented)
-    ChannelNest = "channel-may-not-nest",
-    // (undocumented)
-    ChannelNotAllowed = "channel-not-allowed",
-    // (undocumented)
-    ChannelRootExists = "channel-root-exists",
-    // (undocumented)
-    InUseLocks = "in-use-locks"
-}
-
-// @beta
-export enum ITwinErrorNamespaces {
-    // (undocumented)
-    ItwinJsCore = "itwinjs-core"
-}
+export const ITwinErrorNamespaces: {
+    ItwinJsCore: string;
+};
 
 // @public
 export interface JsonGeometryStream {

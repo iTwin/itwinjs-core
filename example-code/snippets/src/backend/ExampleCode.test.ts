@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel, InUseLocksError, ITwinError, ITwinErrorKeys, ITwinErrorNamespaces } from "@itwin/core-common";
+import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, createTypeAsserter, IModel, InUseLocksError, ITwinErrorKeys, ITwinErrorNamespaces } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
+import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -48,7 +48,7 @@ describe("Example Code", () => {
       try {
         await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
       } catch (err) {
-        const isInUseError = ITwinError.createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks);
+        const isInUseError = createTypeAsserter<InUseLocksError>(ITwinErrorNamespaces.ItwinJsCore, ITwinErrorKeys.InUseLocks);
         if (isInUseError(err)) {
           const inUseLocks = err.inUseLocks;
           for (const inUseLock of inUseLocks) {
