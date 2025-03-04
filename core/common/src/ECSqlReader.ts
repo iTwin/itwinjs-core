@@ -141,6 +141,10 @@ export interface QueryStats {
   prepareTime: number;
 }
 
+type MetadataWithOptionalLegacyFields = Omit<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'> & Partial<Pick<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'>>
+export type MinimalDbQueryResponse = Omit<DbQueryResponse, 'meta'> & { meta: MetadataWithOptionalLegacyFields[] }
+
+
 /**
  * Execute ECSQL statements and read the results.
  *
@@ -216,7 +220,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   /**
    * @internal
    */
-  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
+  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, MinimalDbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
     }
@@ -381,8 +385,10 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     const execQuery = async (req: DbQueryRequest) => {
       const startTime = Date.now();
       const rs = await this._executor.execute(req);
+      const generatedMeta: QueryPropertyMetaData[] = this.populateDeprecatedMetadataProps(rs.meta);
       this.stats.totalTime += (Date.now() - startTime);
-      return rs;
+      const resp: DbQueryResponse = {...rs, meta: generatedMeta};
+      return resp;
     };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);
@@ -443,6 +449,20 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     if (this._localRows.length === 0) {
       this._done = true;
     }
+  }
+
+  private populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
+    const metaWithGeneratedProps: QueryPropertyMetaData[] = [];
+    meta.forEach((value, index) => {
+      metaWithGeneratedProps.push({
+        ...value,
+        generated: value.generated ?? false,
+        index: value.index ?? index,
+        jsonName: value.jsonName ?? "",
+        extendType: value.extendType ?? ""
+      })
+    });
+    return metaWithGeneratedProps
   }
 
   /**

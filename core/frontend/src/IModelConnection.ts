@@ -11,17 +11,17 @@ import {
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
-  ElementMeshRequestProps,
-  ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
-  Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
-  ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult,
+  EcefLocation,
+  EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
+  ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
+  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams,
+  NoContentError, Placement, Placement2d, Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  QueryParamType, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps,
+  ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import type { IModelReadAPI, IModelReadIpcAPI, QueryRequest } from "@itwin/imodelread-common";
+import type { IModelReadAPI, IModelReadIpcAPI } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { IModelReadHTTPClient} from "@itwin/imodelread-client-http";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -276,15 +276,79 @@ export abstract class IModelConnection extends IModel {
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @public
-   * @deprecated in 4.10. Use [[runQuery]] instead.
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+    if (config && this.hasUnsupportedQueryOptions(config)) {
+      return this.createRPCQueryReader(ecsql, params, config)
+    }
+    const parsedParams = params ? this.parseBinderToArgs(params) : undefined
+    return this._iModelReadApi.runQuery({query: ecsql, args: parsedParams, options: {includeMetaData: config?.includeMetaData}});
+  }
+
+  private hasUnsupportedQueryOptions(options: QueryOptions): boolean {
+    return options.abbreviateBlobs !== undefined
+      || options.convertClassIdsToClassNames === true
+      || options.delay !== undefined
+      || options.limit !== undefined
+      || options.priority !== undefined
+      || options.quota !== undefined
+      || options.restartToken !== undefined
+      || options.rowFormat === QueryRowFormat.UseJsPropertyNames
+      || options.usePrimaryConn !== undefined
+  }
+
+  private createRPCQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
+  }
+
+  private parseBinderToArgs(params: QueryBinder): any[] {
+    const serializedArgs = params.serialize()
+    if (Array.isArray(serializedArgs)) {
+      return serializedArgs
+    }
+
+    const args = []
+    for (const value of Object.values(serializedArgs)) {
+      value.type = this.parseArgumentValue(value.type)
+      args.push(value)
+    }
+    return args
+  }
+
+  private parseArgumentValue(index: number): string {
+    switch (index) {
+      case QueryParamType.Boolean:
+        return "boolean"
+      case QueryParamType.Double:
+        return "double"
+      case QueryParamType.Id:
+        return "id"
+      case QueryParamType.IdSet:
+        return "idSet"
+      case QueryParamType.Integer:
+        return "integer"
+      case QueryParamType.Long:
+        return "long"
+      case QueryParamType.Null:
+        return "null"
+      case QueryParamType.Point2d:
+        return "point2d"
+      case QueryParamType.Point3d:
+        return "point3d"
+      case QueryParamType.String:
+        return "string"
+      case QueryParamType.Blob:
+        return "blob"
+      case QueryParamType.Struct:
+        return "struct"
+      default:
+        throw new TypeError(`No query parameter type matches the provided index ${index}`)
+    }
   }
 
   /**
@@ -327,10 +391,6 @@ export abstract class IModelConnection extends IModel {
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
       yield reader.formatCurrentRow();
-  }
-
-  public runQuery(query:QueryRequest): AsyncIterable<object> {
-    return this._iModelReadApi.runQuery(query);
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
