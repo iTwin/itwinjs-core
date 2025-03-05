@@ -91,7 +91,7 @@ describe("IModel Schema Context", () => {
     }
   });
 
-  it.only("should verify Entity metadata with both base class and mixin properties", async () => {
+  it("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
