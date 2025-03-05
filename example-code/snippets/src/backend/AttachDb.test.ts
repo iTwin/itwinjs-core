@@ -7,12 +7,13 @@
 import { expect } from "chai";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { SnapshotDb } from "@itwin/core-backend";
+import { LocalFileName } from "@itwin/core-common";
 
 
 describe("Attach/Detach Db", () => {
   it("attach simulation db", async () => {
     // __PUBLISH_EXTRACT_START__ IModelDb_attachDb
-    function attachSimulationDb(masterFile: LocalFileName, simulationFile: LocalFileName): void {
+    async function attachSimulationDb(masterFile: LocalFileName, simulationFile: LocalFileName): Promise<void> {
       const master = SnapshotDb.openFile(masterFile);
 
       // attach simulation db
@@ -61,6 +62,5 @@ describe("Attach/Detach Db", () => {
     }
     // __PUBLISH_EXTRACT_END__
     attachSimulationDb(IModelTestUtils.resolveAssetFile("sim-master.bim"), IModelTestUtils.resolveAssetFile("sim-attach.ecdb"));
-
-
+  });
 });
