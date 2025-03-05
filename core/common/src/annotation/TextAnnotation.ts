@@ -157,7 +157,7 @@ export class TextAnnotation {
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
 
-    const marginOffset = this.computeMarginOffset();
+    const marginOffset = this.computeMarginOffset(boundingBox);
     rotation.multiplyVector(marginOffset, marginOffset);
 
     const offset = this.offset.plus(marginOffset);
@@ -198,7 +198,7 @@ export class TextAnnotation {
   /**
    * TODO
    */
-  public computeMarginOffset(): Vector3d {
+  public computeMarginOffset(_boundingBox: Range2d): Vector3d {
     const offset = Vector3d.createZero();
     const xVec = Vector3d.unitX();
     const yVec = Vector3d.unitY().negate(); // Y axis points up in screen space.
@@ -211,7 +211,7 @@ export class TextAnnotation {
         offset.plusScaled(xVec, margins.left, offset);
         break;
       case "center":
-        // offset.plusScaled(xVec, (margins.right - margins.left) / 2, offset);
+        offset.plusScaled(xVec, (margins.left - margins.right) / 2, offset);
         break;
       case "right":
         offset.plusScaled(xVec.negate(), margins.right, offset);
@@ -223,7 +223,7 @@ export class TextAnnotation {
         offset.plusScaled(yVec, margins.top, offset);
         break;
       case "middle":
-        // offset.plusScaled(yVec, (margins.top - margins.bottom) / 2, offset);
+        offset.plusScaled(yVec, (margins.top - margins.bottom) / 2, offset);
         break;
       case "bottom":
         offset.plusScaled(yVec.negate(), margins.bottom, offset);
