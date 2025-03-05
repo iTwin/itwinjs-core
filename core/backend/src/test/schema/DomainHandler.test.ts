@@ -1,15 +1,20 @@
-import { _nativeDb, ChannelControl, ChannelKey, ClassRegistry, ElementUniqueAspect, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema, IModelHost, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, SubjectOwnsPartitionElements } from "../../core-backend";
+import { _nativeDb, ChannelControl, ChannelKey, ClassRegistry, ElementOwnsUniqueAspect, ElementUniqueAspect, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema, IModelHost, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, SubjectOwnsPartitionElements } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import { assert, expect } from "chai";
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Guid, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { join } from "node:path";
-import { Code, CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 
-const domainHandlerOrder = [];
+Logger.initializeToConsole();
+Logger.setLevelDefault(LogLevel.Trace);
+
+const elementDomainHandlerOrder = [];
+const modelDomainHandlerOrder = [];
+const aspectDomainHandlerOrder = [];
 
 /** test schema for supplying element/model/aspect classes */
 class TestSchema extends FunctionalSchema {
@@ -22,68 +27,70 @@ class TestElementHandlers extends FunctionalBreakdownElement {
   public static dontDeleteChild = "";
 
   public static override onInsert(arg: OnElementPropsArg): void {
+    arg.props.userLabel = "inserted label";
     super.onInsert(arg);
-    domainHandlerOrder.push("onInsert");
+    elementDomainHandlerOrder.push("Element: onInsert");
   }
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
-    domainHandlerOrder.push("onInserted");
+    elementDomainHandlerOrder.push("Element: onInserted");
   }
   public static override onUpdate(arg: OnElementPropsArg): void {
+    arg.props.userLabel = "updated label";
     super.onUpdate(arg);
-    domainHandlerOrder.push("onUpdate");
+    elementDomainHandlerOrder.push("Element: onUpdate");
   }
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
-    domainHandlerOrder.push("onUpdated");
+    elementDomainHandlerOrder.push("Element: onUpdated");
   }
   public static override onDelete(arg: OnElementIdArg): void {
     super.onDelete(arg);
-    domainHandlerOrder.push("onDelete");
+    elementDomainHandlerOrder.push("Element: onDelete");
   }
   public static override onDeleted(arg: OnElementIdArg): void {
     super.onDeleted(arg);
-    domainHandlerOrder.push("onDeleted");
+    elementDomainHandlerOrder.push("Element: onDeleted");
   }
   public static override onChildDelete(arg: OnChildElementIdArg): void {
     super.onChildDelete(arg);
-    domainHandlerOrder.push("onChildDelete");
+    elementDomainHandlerOrder.push("Element: onChildDelete");
   }
   public static override onChildDeleted(arg: OnChildElementIdArg): void {
     super.onChildDeleted(arg);
-    domainHandlerOrder.push("onChildDeleted");
+    elementDomainHandlerOrder.push("Element: onChildDeleted");
   }
   public static override onChildInsert(arg: OnChildElementPropsArg): void {
     super.onChildInsert(arg);
-    domainHandlerOrder.push("onChildInsert");
+    elementDomainHandlerOrder.push("Element: onChildInsert");
   }
   public static override onChildInserted(arg: OnChildElementIdArg): void {
     super.onChildInserted(arg);
-    domainHandlerOrder.push("onChildInserted");
+    elementDomainHandlerOrder.push("Element: onChildInserted");
   }
   public static override onChildUpdate(arg: OnChildElementPropsArg): void {
     super.onChildUpdate(arg);
-    domainHandlerOrder.push("onChildUpdate");
+    elementDomainHandlerOrder.push("Element: onChildUpdate");
   }
   public static override onChildUpdated(arg: OnChildElementIdArg): void {
     super.onChildUpdated(arg);
-    domainHandlerOrder.push("onChildUpdated");
+    elementDomainHandlerOrder.push("Element: onChildUpdated");
   }
   public static override onChildAdd(arg: OnChildElementPropsArg): void {
     super.onChildAdd(arg);
-    domainHandlerOrder.push("onChildAdd");
+    elementDomainHandlerOrder.push("Element: onChildAdd");
   }
   public static override onChildAdded(arg: OnChildElementIdArg): void {
     super.onChildAdded(arg);
-    domainHandlerOrder.push("onChildAdded");
+    elementDomainHandlerOrder.push("Element: onChildAdded");
   }
   public static override onChildDrop(arg: OnChildElementIdArg): void {
     super.onChildDrop(arg);
-    domainHandlerOrder.push("onChildDrop");
+    elementDomainHandlerOrder.push("Element: onChildDrop");
   }
   public static override onChildDropped(arg: OnChildElementIdArg): void {
     super.onChildDropped(arg);
-    domainHandlerOrder.push("onChildDropped");
+    elementDomainHandlerOrder.push("Element: onChildDropped");
   }
 }
 
@@ -93,19 +100,19 @@ class TestPartitionHandlers extends InformationPartitionElement {
 
   public static override onSubModelInsert(arg: OnSubModelPropsArg): void {
     super.onSubModelInsert(arg);
-    domainHandlerOrder.push("onSubModelInsert");
+    elementDomainHandlerOrder.push("SubModel Element: onSubModelInsert");
   }
   public static override onSubModelInserted(arg: OnSubModelIdArg): void {
     super.onSubModelInserted(arg);
-    domainHandlerOrder.push("onSubModelInserted");
+    elementDomainHandlerOrder.push("SubModel Element: onSubModelInserted");
   }
   public static override onSubModelDelete(arg: OnSubModelIdArg): void {
     super.onSubModelDelete(arg);
-    domainHandlerOrder.push("onSubModelDelete");
+    elementDomainHandlerOrder.push("SubModel Element: onSubModelDelete");
   }
   public static override onSubModelDeleted(arg: OnSubModelIdArg): void {
     super.onSubModelDeleted(arg);
-    domainHandlerOrder.push("onSubModelDeleted");
+    elementDomainHandlerOrder.push("SubModel Element: onSubModelDeleted");
   }
 }
 
@@ -116,82 +123,82 @@ class TestModelHandlers extends FunctionalModel {
 
   public static override onInsert(arg: OnModelPropsArg): void {
     super.onInsert(arg);
-    domainHandlerOrder.push("onInsert");
+    modelDomainHandlerOrder.push("Model: onInsert");
   }
   public static override onInserted(arg: OnModelIdArg): void {
     super.onInserted(arg);
-    domainHandlerOrder.push("onInserted");
+    modelDomainHandlerOrder.push("Model: onInserted");
   }
   public static override onUpdate(arg: OnModelPropsArg): void {
     super.onUpdate(arg);
-    domainHandlerOrder.push("onUpdate");
+    modelDomainHandlerOrder.push("Model: onUpdate");
   }
   public static override onUpdated(arg: OnModelIdArg): void {
     super.onUpdated(arg);
-    domainHandlerOrder.push("onUpdated");
+    modelDomainHandlerOrder.push("Model: onUpdated");
   }
   public static override onDelete(arg: OnModelIdArg): void {
     super.onDelete(arg);
-    domainHandlerOrder.push("onDelete");
+    modelDomainHandlerOrder.push("Model: onDelete");
   }
   public static override onDeleted(arg: OnModelIdArg): void {
     super.onDeleted(arg);
-    domainHandlerOrder.push("onDeleted");
+    modelDomainHandlerOrder.push("Model: onDeleted");
   }
   public static override onInsertElement(arg: OnElementInModelPropsArg): void {
     super.onInsertElement(arg);
-    domainHandlerOrder.push("onInsertElement");
+    modelDomainHandlerOrder.push("Model: onInsertElement");
   }
   public static override onInsertedElement(arg: OnElementInModelIdArg): void {
     super.onInsertedElement(arg);
-    domainHandlerOrder.push("onInsertedElement");
+    modelDomainHandlerOrder.push("Model: onInsertedElement");
   }
   public static override onUpdateElement(arg: OnElementInModelPropsArg): void {
     super.onUpdateElement(arg);
-    domainHandlerOrder.push("onUpdateElement");
+    modelDomainHandlerOrder.push("Model: onUpdateElement");
   }
   public static override onUpdatedElement(arg: OnElementInModelIdArg): void {
     super.onUpdatedElement(arg);
-    domainHandlerOrder.push("onUpdatedElement");
+    modelDomainHandlerOrder.push("Model: onUpdatedElement");
   }
   public static override onDeleteElement(arg: OnElementInModelIdArg): void {
     super.onDeleteElement(arg);
-    domainHandlerOrder.push("onDeleteElement");
+    modelDomainHandlerOrder.push("Model: onDeleteElement");
   }
   public static override onDeletedElement(arg: OnElementInModelIdArg): void {
     super.onDeletedElement(arg);
-    domainHandlerOrder.push("onDeletedElement");
+    modelDomainHandlerOrder.push("Model: onDeletedElement");
   }
 }
 
 /** for testing `ElementAspect.onXxx` methods */
 class TestAspectHandlers extends ElementUniqueAspect {
-  public static override get className() { return "TestFuncAspect"; }
+  public static override get className() { return "TestAspectHandlers"; }
   public static expectedVal = "";
 
   public static override onInsert(arg: OnAspectPropsArg): void {
     super.onInsert(arg);
-    domainHandlerOrder.push("onInsert");
+    aspectDomainHandlerOrder.push("Aspect: onInsert");
   }
   public static override onInserted(arg: OnAspectPropsArg): void {
     super.onInserted(arg);
-    domainHandlerOrder.push("onInserted");
+    aspectDomainHandlerOrder.push("Aspect: onInserted");
   }
   public static override onUpdate(arg: OnAspectPropsArg): void {
     super.onUpdate(arg);
-    domainHandlerOrder.push("onUpdate");
+    aspectDomainHandlerOrder.push("Aspect: onUpdate");
   }
   public static override onUpdated(arg: OnAspectPropsArg): void {
     super.onUpdated(arg);
-    domainHandlerOrder.push("onUpdated");
+    aspectDomainHandlerOrder.push("Aspect: onUpdated");
   }
   public static override onDelete(arg: OnAspectIdArg): void {
     super.onDelete(arg);
-    domainHandlerOrder.push("onDelete");
+    aspectDomainHandlerOrder.push("Aspect: onDelete");
   }
   public static override onDeleted(arg: OnAspectIdArg): void {
     super.onDeleted(arg);
-    domainHandlerOrder.push("onDeleted");
+    aspectDomainHandlerOrder.push("Aspect: onDeleted");
   }
 }
 
@@ -202,28 +209,66 @@ class Component extends FunctionalComponentElement {
 describe.only("Domain Handlers", () => {
 
   let iModelDb: StandaloneDb;
+  let modelId: Id64String;
+
   let codeSpec: CodeSpec;
   let subjectId: Id64String;
   let partitionCode: Code;
   const testChannelKey1 = "channel 1 for tests";
 
+  const spy = {
+    model: {
+      onInsert: sinonSpy(TestModelHandlers, "onInsert"),
+      onInserted: sinonSpy(TestModelHandlers, "onInserted"),
+      onUpdate: sinonSpy(TestModelHandlers, "onUpdate"),
+      onUpdated: sinonSpy(TestModelHandlers, "onUpdated"),
+      onDelete: sinonSpy(TestModelHandlers, "onDelete"),
+      onDeleted: sinonSpy(TestModelHandlers, "onDeleted"),
+      onInsertElement: sinonSpy(TestModelHandlers, "onInsertElement"),
+      onInsertedElement: sinonSpy(TestModelHandlers, "onInsertedElement"),
+      onUpdateElement: sinonSpy(TestModelHandlers, "onUpdateElement"),
+      onUpdatedElement: sinonSpy(TestModelHandlers, "onUpdatedElement"),
+      onDeleteElement: sinonSpy(TestModelHandlers, "onDeleteElement"),
+      onDeletedElement: sinonSpy(TestModelHandlers, "onDeletedElement"),
+    },
+    partition: {
+      onSubModelInsert: sinonSpy(TestPartitionHandlers, "onSubModelInsert"),
+      onSubModelInserted: sinonSpy(TestPartitionHandlers, "onSubModelInserted"),
+      onSubModelDelete: sinonSpy(TestPartitionHandlers, "onSubModelDelete"),
+      onSubModelDeleted: sinonSpy(TestPartitionHandlers, "onSubModelDeleted"),
+    },
+    breakdown: {
+      onInsert: sinonSpy(TestElementHandlers, "onInsert"),
+      onInserted: sinonSpy(TestElementHandlers, "onInserted"),
+      onUpdate: sinonSpy(TestElementHandlers, "onUpdate"),
+      onUpdated: sinonSpy(TestElementHandlers, "onUpdated"),
+      onDelete: sinonSpy(TestElementHandlers, "onDelete"),
+      onDeleted: sinonSpy(TestElementHandlers, "onDeleted"),
+      onChildDelete: sinonSpy(TestElementHandlers, "onChildDelete"),
+      onChildDeleted: sinonSpy(TestElementHandlers, "onChildDeleted"),
+      onChildInsert: sinonSpy(TestElementHandlers, "onChildInsert"),
+      onChildInserted: sinonSpy(TestElementHandlers, "onChildInserted"),
+      onChildUpdate: sinonSpy(TestElementHandlers, "onChildUpdate"),
+      onChildUpdated: sinonSpy(TestElementHandlers, "onChildUpdated"),
+      onChildAdd: sinonSpy(TestElementHandlers, "onChildAdd"),
+      onChildAdded: sinonSpy(TestElementHandlers, "onChildAdded"),
+      onChildDrop: sinonSpy(TestElementHandlers, "onChildDrop"),
+      onChildDropped: sinonSpy(TestElementHandlers, "onChildDropped"),
+    },
+    aspect: {
+      onInsert: sinonSpy(TestAspectHandlers, "onInsert"),
+      onInserted: sinonSpy(TestAspectHandlers, "onInserted"),
+      onUpdate: sinonSpy(TestAspectHandlers, "onUpdate"),
+      onUpdated: sinonSpy(TestAspectHandlers, "onUpdated"),
+      onDelete: sinonSpy(TestAspectHandlers, "onDelete"),
+      onDeleted: sinonSpy(TestAspectHandlers, "onDeleted"),
+    },
+  };
+
   before(async () => {
     // await IModelHost.startup();
-  });
 
-  after(async () => {
-    // await IModelHost.shutdown();
-  });
-
-  beforeEach(async () => {
-
-  });
-
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it("should call all handler functions for an inserted element", async () => {
+    // Create iModel
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DomainHandlers", "DomainHandlers.bim"), {
       rootSubject: { name: "HandlerTest", description: "Test of Domain Handlers." },
       client: "Functional",
@@ -242,81 +287,11 @@ describe.only("Domain Handlers", () => {
     ClassRegistry.registerModule({ TestElementHandlers, TestPartitionHandlers, TestModelHandlers, TestAspectHandlers, Component }, TestSchema);
     await FunctionalSchema.importSchema(iModelDb);
 
-    let commits = 0;
-    let committed = 0;
-    const elements = iModelDb.elements;
-    const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
-    const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
+
     iModelDb.saveChanges("Import Functional schema");
-
-    assert.equal(commits, 1);
-    assert.equal(committed, 1);
-    dropCommit();
-    dropCommitted();
     IModelTestUtils.flushTxns(iModelDb);
-
     await iModelDb.importSchemas([join(KnownTestLocations.assetsDir, "TestHandlers.ecschema.xml")]);
     iModelDb.saveChanges("Import TestHandlers schema");
-    assert.equal(commits, 1);
-    assert.equal(committed, 1);
-
-    // Set up test channel
-    function testChannel<T>(channelKey: ChannelKey, fn: () => T, spies: sinon.SinonSpy[]) {
-      iModelDb.channels.removeAllowedChannel(channelKey);
-      expect(fn).throws("not allowed");
-      iModelDb.channels.addAllowedChannel(channelKey);
-      spies.forEach((s) => s.resetHistory());
-      return fn();
-    }
-
-    const spy = {
-      model: {
-        onInsert: sinonSpy(TestModelHandlers, "onInsert"),
-        onInserted: sinonSpy(TestModelHandlers, "onInserted"),
-        onUpdate: sinonSpy(TestModelHandlers, "onUpdate"),
-        onUpdated: sinonSpy(TestModelHandlers, "onUpdated"),
-        onDelete: sinonSpy(TestModelHandlers, "onDelete"),
-        onDeleted: sinonSpy(TestModelHandlers, "onDeleted"),
-        onInsertElement: sinonSpy(TestModelHandlers, "onInsertElement"),
-        onInsertedElement: sinonSpy(TestModelHandlers, "onInsertedElement"),
-        onUpdateElement: sinonSpy(TestModelHandlers, "onUpdateElement"),
-        onUpdatedElement: sinonSpy(TestModelHandlers, "onUpdatedElement"),
-        onDeleteElement: sinonSpy(TestModelHandlers, "onDeleteElement"),
-        onDeletedElement: sinonSpy(TestModelHandlers, "onDeletedElement"),
-      },
-      partition: {
-        onSubModelInsert: sinonSpy(TestPartitionHandlers, "onSubModelInsert"),
-        onSubModelInserted: sinonSpy(TestPartitionHandlers, "onSubModelInserted"),
-        onSubModelDelete: sinonSpy(TestPartitionHandlers, "onSubModelDelete"),
-        onSubModelDeleted: sinonSpy(TestPartitionHandlers, "onSubModelDeleted"),
-      },
-      breakdown: {
-        onInsert: sinonSpy(TestElementHandlers, "onInsert"),
-        onInserted: sinonSpy(TestElementHandlers, "onInserted"),
-        onUpdate: sinonSpy(TestElementHandlers, "onUpdate"),
-        onUpdated: sinonSpy(TestElementHandlers, "onUpdated"),
-        onDelete: sinonSpy(TestElementHandlers, "onDelete"),
-        onDeleted: sinonSpy(TestElementHandlers, "onDeleted"),
-        onChildDelete: sinonSpy(TestElementHandlers, "onChildDelete"),
-        onChildDeleted: sinonSpy(TestElementHandlers, "onChildDeleted"),
-        onChildInsert: sinonSpy(TestElementHandlers, "onChildInsert"),
-        onChildInserted: sinonSpy(TestElementHandlers, "onChildInserted"),
-        onChildUpdate: sinonSpy(TestElementHandlers, "onChildUpdate"),
-        onChildUpdated: sinonSpy(TestElementHandlers, "onChildUpdated"),
-        onChildAdd: sinonSpy(TestElementHandlers, "onChildAdd"),
-        onChildAdded: sinonSpy(TestElementHandlers, "onChildAdded"),
-        onChildDrop: sinonSpy(TestElementHandlers, "onChildDrop"),
-        onChildDropped: sinonSpy(TestElementHandlers, "onChildDropped"),
-      },
-      aspect: {
-        onInsert: sinonSpy(TestAspectHandlers, "onInsert"),
-        onInserted: sinonSpy(TestAspectHandlers, "onInserted"),
-        onUpdate: sinonSpy(TestAspectHandlers, "onUpdate"),
-        onUpdated: sinonSpy(TestAspectHandlers, "onUpdated"),
-        onDelete: sinonSpy(TestAspectHandlers, "onDelete"),
-        onDeleted: sinonSpy(TestAspectHandlers, "onDeleted"),
-      },
-    };
 
     assert.equal(iModelDb.channels.queryChannelRoot(ChannelControl.sharedChannelName), IModel.rootSubjectId);
 
@@ -328,6 +303,7 @@ describe.only("Domain Handlers", () => {
     subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Subject Domain Handlers", channelKey: testChannelKey1 });
     assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey1), subjectId);
 
+    // Setup the Model
     partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -335,45 +311,92 @@ describe.only("Domain Handlers", () => {
       parent: new SubjectOwnsPartitionElements(subjectId),
       code: partitionCode,
     };
-
     iModelDb.channels.addAllowedChannel(testChannelKey1);
-    let partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+  });
 
-    // Test Model Handlers
-    const modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+  after(async () => {
+    // await IModelHost.shutdown();
+  });
+
+  beforeEach(async () => {
+
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should call all handler functions for an inserted model", async () => {
+    const elementProps: ElementProps = {
+      classFullName: TestElementHandlers.classFullName,
+      model: modelId,
+      code: {
+        spec: codeSpec.id,
+        scope: modelId,
+        value: "Breakdown1"
+      }
+    };
+    const elementId = iModelDb.elements.insertElement(elementProps);
     const model = iModelDb.models.getModel(modelId);
     model.update();
+    const element = iModelDb.elements.getElement(elementId);
+    element.update();
     model.delete();
 
-    partitionProps.code.value = "Test Func 2";
-    partitionProps.parent = new SubjectOwnsPartitionElements(subjectId);
-    partitionId = iModelDb.elements.insertElement(partitionProps);
+    // Check that all model handler functions were called
+    assert.isTrue(spy.model.onInsert.calledOnce);
+    assert.isTrue(spy.model.onInserted.calledOnce);
+    assert.isTrue(spy.model.onInsertElement.calledOnce);
+    assert.isTrue(spy.model.onInsertedElement.calledOnce);
+    assert.isTrue(spy.model.onUpdate.calledOnce);
+    assert.isTrue(spy.model.onUpdated.calledOnce);
+    assert.isTrue(spy.model.onUpdateElement.calledOnce);
+    assert.isTrue(spy.model.onUpdatedElement.calledOnce);
+    assert.isTrue(spy.model.onDelete.calledOnce);
+    assert.isTrue(spy.model.onDeleted.calledOnce);
+    assert.isTrue(spy.model.onDeleteElement.calledOnce);
+    assert.isTrue(spy.model.onDeletedElement.calledOnce);
 
-    const modelId2 = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+    // Check that all sub model handler functions were called
+    assert.isTrue(spy.partition.onSubModelInsert.calledOnce);
+    assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
+    assert.isTrue(spy.partition.onSubModelDelete.calledOnce);
+    assert.isTrue(spy.partition.onSubModelDeleted.calledOnce);
+  });
 
-    // const briefcase = await imodelInfo.openBriefcase();
+  it("should call all handler functions for an inserted aspect", async () => {
+    const elementProps: ElementProps = {
+      classFullName: TestElementHandlers.classFullName,
+      model: modelId,
+      code: {
+        spec: codeSpec.id,
+        scope: modelId,
+        value: "Breakdown2"
+      }
+    };
 
-    // const codeSpec = CodeSpec.create(briefcase, "Test Domain Handler", CodeScopeSpec.Type.Model);
-    // briefcase.codeSpecs.insert(codeSpec);
-    // assert.isTrue(Id64.isValidId64(codeSpec.id));
+    const elementId = iModelDb.elements.insertElement(elementProps);
 
-    // const testChannelKey1 = "channel 1 for tests";
-    // assert.isUndefined(briefcase.channels.queryChannelRoot(testChannelKey1));
-    // const subject1Id = briefcase.channels.insertChannelSubject({ subjectName: "Test Domain Handler", channelKey: testChannelKey1 });
-    // assert.equal(briefcase.channels.queryChannelRoot(testChannelKey1), subject1Id);
+    const aspectProps = {
+      classFullName: TestAspectHandlers.classFullName,
+      element: new ElementOwnsUniqueAspect(elementId),
+      strProp: "prop 1"
+    };
 
-    // const partitionCode = FunctionalPartition.createCode(briefcase, subject1Id, "Test Functional Model");
-    // const partitionProps = {
-    //   classFullName: TestElementHanders.classFullName,
-    //   model: IModel.repositoryModelId,
-    //   parent: new SubjectOwnsPartitionElements(subject1Id),
-    //   code: partitionCode,
-    // };
+    iModelDb.elements.insertAspect(aspectProps);
+    aspectProps.strProp = "prop 2";
+    iModelDb.elements.updateAspect(aspectProps);
+    const aspect = iModelDb.elements.getAspects(elementId, TestAspectHandlers.classFullName);
+    iModelDb.elements.deleteAspect(aspect[0].id);
 
-    // briefcase.channels.addAllowedChannel(testChannelKey1);
-    // briefcase.elements.insertElement(partitionProps);
-
-    // await briefcase.locks.releaseAllLocks();
-    // briefcase.close();
+    // Check that all aspect handler functions were called
+    assert.isTrue(spy.aspect.onInsert.calledOnce);
+    assert.isTrue(spy.aspect.onInserted.calledOnce);
+    assert.isTrue(spy.aspect.onUpdate.calledOnce);
+    assert.isTrue(spy.aspect.onUpdated.calledOnce);
+    assert.isTrue(spy.aspect.onDelete.calledOnce);
+    assert.isTrue(spy.aspect.onDeleted.calledOnce);
   });
 });
