@@ -824,7 +824,7 @@ export class SnapshotConnection extends IModelConnection {
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line @typescript-eslint/no-deprecated
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
-    const connection = new SnapshotConnection(openResponse, {} as any);
+    const connection = new SnapshotConnection(openResponse, new IpcIModelRead(openResponse.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
     connection.routingContext = routingContext;
     connection._isRemote = true;
     IModelConnection.onOpen.raiseEvent(connection);
