@@ -100,7 +100,7 @@ If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [View
 
 ### Draping Models Onto Reality Data
 
-A new property titled `toRealityData` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When specified as `true`, the model map layer will be draped onto all attached reality data in the view. Otherwise, the model map layer will be draped onto the background map. Supported reality data formats include glTF or b3dm. If `toRealityData` is not specified in the properties, it will default to `false`.
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. Supported reality data formats include glTF or b3dm. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.BackgroundMap]($common), which will only drape the model map layer onto the background map.
 
 ## Back-end image conversion
 
