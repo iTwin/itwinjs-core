@@ -197,7 +197,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 export interface ModelMapLayerProps extends CommonMapLayerProps {
   /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
   modelId: Id64String;
-  /** True to drape this layer onto all attached reality data, not the background map. Otherwise, the layer will be draped onto the background map.
+  /** True to drape this model map layer onto all attached reality data. Otherwise, the layer will be draped onto the background map. Supported reality data formats include glTF or b3dm.
    * Default: false.
    */
   toRealityData?: boolean;
