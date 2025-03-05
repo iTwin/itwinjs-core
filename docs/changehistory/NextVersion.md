@@ -13,6 +13,7 @@ Table of contents:
     - [Polyface Traversal](#polyface-traversal)
   - [Display](#graphics)
     - [Read Image To Canvas](#read-image-to-canvas)
+    - [Draping Models Onto Reality Data](#draping-models-onto-reality-data)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -96,6 +97,10 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
+
+### Draping Models Onto Reality Data
+
+A new property titled `toRealityData` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When specified as `true`, the model map layer will be draped onto all attached reality data in the view. Otherwise, the model map layer will be draped onto the background map. Supported reality data formats include glTF or b3dm. If `toRealityData` is not specified in the properties, it will default to `false`.
 
 ## Back-end image conversion
 
@@ -258,7 +263,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release (Electron 34) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only the latest Electron release ([Electron 35](https://www.electronjs.org/blog/electron-35-0)) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 

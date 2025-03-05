@@ -155,10 +155,6 @@ export interface CommonMapLayerProps {
    * Default: true.
    */
   transparentBackground?: boolean;
-  /** True to drape this layer onto all attached reality data, not the background map. Otherwise, the layer will be draped onto the background map.
-   * Default: false.
-   */
-  toRealityData?: boolean;
 }
 
 /** JSON representation of an [[ImageMapLayerSettings]].
@@ -201,6 +197,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 export interface ModelMapLayerProps extends CommonMapLayerProps {
   /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
   modelId: Id64String;
+  /** True to drape this model map layer onto all attached reality data. Otherwise, the layer will be draped onto the background map. Supported reality data formats include glTF or b3dm.
+   * Default: false.
+   */
+  toRealityData?: boolean;
 
   /** @internal */
   url?: never;
@@ -239,18 +239,16 @@ export abstract class MapLayerSettings {
   public readonly name: string;
   public readonly transparency: number;
   public readonly transparentBackground: boolean;
-  public readonly toRealityData: boolean;
   public abstract get allSubLayersInvisible(): boolean;
   public abstract clone(changedProps: Partial<MapLayerProps>): MapLayerSettings;
   public abstract toJSON(): MapLayerProps;
 
   /** @internal */
-  protected constructor(name: string, visible = true, transparency: number = 0, transparentBackground = true, toRealityData = false) {
+  protected constructor(name: string, visible = true, transparency: number = 0, transparentBackground = true) {
     this.name = name;
     this.visible = visible;
     this.transparentBackground = transparentBackground;
     this.transparency = transparency;
-    this.toRealityData = toRealityData;
   }
 
   /** Create a map layer settings from its JSON representation. */
@@ -271,9 +269,6 @@ export abstract class MapLayerSettings {
     if (this.transparentBackground === false)
       props.transparentBackground = this.transparentBackground;
 
-    if (this.toRealityData === true)
-      props.toRealityData = this.toRealityData;
-
     return props;
   }
 
@@ -283,7 +278,6 @@ export abstract class MapLayerSettings {
       name: undefined !== changedProps.name ? changedProps.name : this.name,
       visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
       transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
-      toRealityData: undefined !== changedProps.toRealityData ? changedProps.toRealityData : this.toRealityData,
       transparentBackground: undefined !== changedProps.transparentBackground ? changedProps.transparentBackground : this.transparentBackground,
     };
   }
@@ -338,7 +332,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   /** @internal */
   protected constructor(props: ImageMapLayerProps) {
     const transparentBackground = props.transparentBackground ?? true;
-    super(props.name, props.visible, props.transparency, transparentBackground, props.toRealityData);
+    super(props.name, props.visible, props.transparency, transparentBackground);
 
     this.formatId = props.formatId;
     this.url = props.url;
@@ -531,14 +525,16 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  * @public
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
+  public readonly toRealityData: boolean;
   public readonly modelId: Id64String;
   public override get source(): string { return this.modelId; }
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
     transparency: number = 0, transparentBackground = true, toRealityData = false) {
-    super(name, visible, transparency, transparentBackground, toRealityData);
+    super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
+    this.toRealityData = toRealityData;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -551,6 +547,8 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   public override toJSON(): ModelMapLayerProps {
     const props = super._toJSON() as ModelMapLayerProps;
     props.modelId = this.modelId;
+    if (this.toRealityData === true)
+      props.toRealityData = this.toRealityData;
     return props;
   }
 
@@ -566,6 +564,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   protected override cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps {
     const props = super.cloneProps(changedProps) as ModelMapLayerProps;
     props.modelId = changedProps.modelId ?? this.modelId;
+    props.toRealityData = changedProps.toRealityData ?? this.toRealityData;
     return props;
   }
 
