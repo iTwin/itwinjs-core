@@ -420,14 +420,18 @@ export class Sample {
     }
     return result;
   }
-  /** Create various orders of non-rational B-spline curves with helical poles */
-  public static createBsplineCurveHelices(radius: number, height: number, numTurns: number, numSamplesPerTurn: number): BSplineCurve3d[] {
+  /** Create various orders of non-rational B-spline curves with helical poles. */
+  public static createBsplineCurveHelices(
+    radius: number, height: number, numTurns: number, numSamplesPerTurn: number,
+  ): BSplineCurve3d[] {
     const pts: Point3d[] = [];
     const zDelta = (height / numTurns) / numSamplesPerTurn;
     const aDelta = 2 * Math.PI / numSamplesPerTurn;
     for (let iTurn = 0; iTurn < numTurns; ++iTurn) {
       for (let iSample = 0; iSample < numSamplesPerTurn; iSample++) {
-        pts.push(Point3d.create(radius * Math.cos(iSample * aDelta), radius * Math.sin(iSample * aDelta), pts.length * zDelta));
+        pts.push(
+          Point3d.create(radius * Math.cos(iSample * aDelta), radius * Math.sin(iSample * aDelta), pts.length * zDelta),
+        );
       }
     }
     const result: BSplineCurve3d[] = [];
@@ -1142,7 +1146,7 @@ export class Sample {
       ParityRegion.create(
         Loop.create(
           LineString3d.create(point0, pointA, pointB),
-          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
         ),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
       ),
@@ -1168,7 +1172,7 @@ export class Sample {
       ParityRegion.create(
         Loop.create(
           LineString3d.create(point0, pointA, pointB),
-          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
         ),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
         Loop.create(Arc3d.create(point4, Vector3d.create(-r2, 0), Vector3d.create(0, r2A))),
@@ -1191,7 +1195,7 @@ export class Sample {
                 pointB,
               ],
               3)!,
-            Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+            Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
           ),
         ),
       );
@@ -2244,7 +2248,7 @@ export class Sample {
         Path.create(
           Arc3d.createCircularStartMiddleEnd(
             Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0),
-          )!,
+          ),
         ),
       ),
     );
@@ -2267,7 +2271,7 @@ export class Sample {
       CurveChainWithDistanceIndex.createCapture(
         Path.create(
           LineSegment3d.create(pointsA[0], pointsA[1]),
-          Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
+          Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3]),
           LineSegment3d.create(pointsA[3], pointsA[4]),
         ),
       ),
@@ -2692,7 +2696,7 @@ export class Sample {
     const pointABCDA = [pointA, pointB, pointC, pointD, pointA];
     result.push(LineSegment3d.create(pointA, pointB));
     result.push(CoordinateXYZ.create(pointA));
-    result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
+    result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC));
     result.push(PointString3d.create(pointA, pointB));
     result.push(
       IntegratedSpiral3d.createRadiusRadiusBearingBearing(
@@ -2724,16 +2728,21 @@ export class Sample {
     return result;
   }
   /**
-   * Create points on a sine wave
-   * Point i is origin + (i * xStep, a *sin(theta0 + i * dTheta), b * sin(beta0 + i * dBeta))
-   * * Default b is zero, so it is a simple sine wave
+   * Create points on a sine wave.
+   * * Point i is origin + (i * xStep, a *sin(theta0 + i * dTheta), b * sin(beta0 + i * dBeta)).
+   * * Default b is zero, so it is a simple sine wave.
    * * If the dTheta and dBeta are equal, it is a sine wave in a tilted plane.
-   * * If dTheta and dBeta are different it is a non-planar curve
+   * * If dTheta and dBeta are different it is a non-planar curve.
    */
-  public static createPointSineWave(origin: XYAndZ | undefined, numInterval: number = 24,
+  public static createPointSineWave(
+    origin: XYAndZ | undefined,
+    numInterval: number = 24,
     xStep: number = Math.PI / 12,
-    a: number = 1, thetaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
-    b: number = 0, betaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 180)): Point3d[] {
+    a: number = 1,
+    thetaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
+    b: number = 0,
+    betaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 180),
+  ): Point3d[] {
     return this.createPointsByIndexFunctions(
       numInterval, SteppedIndexFunctionFactory.createLinear(xStep, origin ? origin.x : 0),
       SteppedIndexFunctionFactory.createCosine(a, thetaSweep, origin ? origin.y : 0),

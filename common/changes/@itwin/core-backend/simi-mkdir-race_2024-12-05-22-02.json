@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Resolve race condition when recursively creating folders.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

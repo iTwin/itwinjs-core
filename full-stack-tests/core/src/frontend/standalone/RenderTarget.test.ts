@@ -6,13 +6,14 @@ import { expect } from "chai";
 import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
-  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SpatialViewState, Viewport, ViewRect,
 } from "@itwin/core-frontend";
 import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import {
   Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
 } from "../TestViewport";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -24,7 +25,7 @@ describe("Vertex buffer objects", () => {
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
     await TestUtility.startFrontend({ renderSys: renderSysOpts });
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -92,7 +93,7 @@ describe("RenderTarget", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -658,14 +659,11 @@ describe("RenderTarget", () => {
 
   it("should render off-screen if multiple viewports exist", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    using vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
-    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    using vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.false;
     expect(vp1.rendersToScreen).to.be.false;
-
-    vp0.dispose();
-    vp1.dispose();
   });
 
   it("should clip using a single plane", async () => {

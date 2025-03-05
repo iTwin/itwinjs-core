@@ -24,6 +24,9 @@ export interface TestWorker {
   throwString(): never;
   setTransfer(wantTransfer: boolean): undefined;
   createGraphic(context: WorkerGraphicDescriptionContextProps): WorkerGraphic;
+  someVeryLongRunningAsyncOperation(): Promise<number>;
+  someLongRunningAsyncOperation(): Promise<number>;
+  someFastSynchronousOperation(): number;
 }
 
 let doTransfer = false;
@@ -35,6 +38,15 @@ function maybeTransfer<T>(result: T): T | { result: T, transfer: Transferable[] 
   return { result, transfer: [] };
 }
 
+let globalTickCounter = 0;
+
+async function waitNTicks(nTicks: number): Promise<void> {
+  let counter = 0;
+  while (++counter < nTicks) {
+    await new Promise<void>((resolve: any) => setTimeout(resolve, 1));
+  }
+}
+
 registerWorker<TestWorker>({
   zero: () => maybeTransfer("zero"),
   one: (arg: string) => maybeTransfer(arg),
@@ -43,7 +55,7 @@ registerWorker<TestWorker>({
     throw new Error("ruh-roh");
   },
   throwString: () => {
-    throw "not an error"; // eslint-disable-line no-throw-literal
+    throw "not an error"; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
   },
   setTransfer: (wantTransfer: boolean) => {
     doTransfer = wantTransfer;
@@ -84,5 +96,17 @@ registerWorker<TestWorker>({
       },
       transfer: Array.from(transferables),
     };
+  },
+
+  someVeryLongRunningAsyncOperation: async () => {
+    await waitNTicks(10);
+    return { result: ++globalTickCounter, transfer: [] };
+  },
+  someLongRunningAsyncOperation: async () => {
+    await waitNTicks(5);
+    return ++globalTickCounter;
+  },
+  someFastSynchronousOperation: () => {
+    return ++globalTickCounter;
   },
 });

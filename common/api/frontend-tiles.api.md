@@ -25,6 +25,16 @@ export interface BaseGeoscienceArgs {
 // @beta
 export type ComputeSpatialTilesetBaseUrl = (iModel: IModelConnection) => Promise<URL | undefined>;
 
+// @internal
+export function createGraphicRepresentationsQueryUrl(args: {
+    sourceId: string;
+    sourceType: string;
+    urlPrefix?: string;
+    changeId?: string;
+    enableCDN?: boolean;
+    numExports?: number;
+}): string;
+
 // @beta
 export interface DataSource {
     changeId?: string;
@@ -63,34 +73,20 @@ export interface GetGeoscienceTilesetArgs extends BaseGeoscienceArgs {
 export function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): Promise<string | undefined>;
 
 // @beta
-export type GraphicRepresentation = {
+export interface GraphicRepresentation {
+    dataSource: DataSource;
     displayName: string;
+    format: GraphicRepresentationFormat;
     representationId: string;
     status: GraphicRepresentationStatus;
-    format: GraphicRepresentationFormat;
-    dataSource: DataSource;
-} & ({
-    status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
-    url?: string;
-} | {
-    status: GraphicRepresentationStatus.Complete;
-    url: string;
-});
-
-// @beta
-export type GraphicRepresentationFormat = "IMDL" | "3DTILES" | string;
-
-// @beta
-export enum GraphicRepresentationStatus {
-    // (undocumented)
-    Complete = "Complete",
-    // (undocumented)
-    Failed = "Failed",
-    // (undocumented)
-    InProgress = "In progress",
-    // (undocumented)
-    NotStarted = "Not started"
+    url: string | undefined;
 }
+
+// @beta
+export type GraphicRepresentationFormat = "3DFT" | "3DTiles" | "CESIUM" | "IMODEL" | string;
+
+// @beta
+export type GraphicRepresentationStatus = "Complete" | "InProgress" | "Invalid" | "NotStarted";
 
 // @beta
 export function initializeFrontendTiles(options: FrontendTilesOptions): void;
@@ -151,8 +147,10 @@ export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promis
 // @beta
 export interface ObtainIModelTilesetUrlArgs {
     accessToken: AccessToken;
+    changesetId?: string;
     enableCDN?: boolean;
-    iModel: IModelConnection;
+    iModelId?: string;
+    iTwinId?: string;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
 }
@@ -173,6 +171,7 @@ export interface QueryGraphicRepresentationsArgs {
     enableCDN?: boolean;
     format: GraphicRepresentationFormat;
     includeIncomplete?: boolean;
+    numExports?: number;
     sessionId: string;
     urlPrefix?: string;
 }
@@ -188,6 +187,7 @@ export interface QueryMeshExportsArgs {
     iModelId: string;
     includeIncomplete?: boolean;
     iTwinId: string;
+    numExports?: number;
     urlPrefix?: string;
 }
 

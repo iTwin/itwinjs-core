@@ -10,7 +10,7 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
@@ -501,7 +501,8 @@ export namespace CloudSqlite {
      *
      * Notes:
      * - no changes made by other processes are visible to this CloudContainer unless/until this method is called.
-     * - note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
+     * - this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
+     * - any existing transactions on databases within the container will continue to use the old version of the manifest and therefore see no new changes pulled in.
      */
     checkForChanges(): void;
 
@@ -736,7 +737,6 @@ export namespace CloudSqlite {
       if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
         return await operation();
       containerInternal.writeLockHeldBy = args.user;
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       const val = await operation(); // wait for work to finish or fail
       containerInternal.releaseWriteLock();
       containerInternal.writeLockHeldBy = undefined;
@@ -771,6 +771,9 @@ export namespace CloudSqlite {
       const rootDir = args.cacheDir ?? join(IModelHost.profileDir, "CloudCaches", cacheName);
       IModelJsFs.recursiveMkDirSync(rootDir);
       const cache = new NativeLibrary.nativeLib.CloudCache({ rootDir, name: cacheName, cacheSize: args.cacheSize ?? "10G" });
+      if (Logger.getLevel("CloudSqlite") === LogLevel.Trace) {
+        cache.setLogMask(CloudSqlite.LoggingMask.All);
+      }
       this.cloudCaches.set(cacheName, cache);
       return cache;
     }
@@ -915,7 +918,7 @@ export namespace CloudSqlite {
         throw new Error("no authorization client available");
 
       const userToken = await auth.getAccessToken();
-      const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" }, userToken });
+      const cloudContainer = await service.create({ scope: args.scope, metadata: args.metadata, userToken });
       return { baseUri: cloudContainer.baseUri, containerId: cloudContainer.containerId, storageType: cloudContainer.provider };
     }
 
@@ -987,8 +990,8 @@ export namespace CloudSqlite {
     }
 
     /** get a method member, by name, from the database object. Throws if not a Function. */
-    private getDbMethod(methodName: string): Function {
-      const fn = (this._cloudDb as any)[methodName] as Function;
+    private getDbMethod(methodName: string): (...args: any[]) => any {
+      const fn = (this._cloudDb as any)[methodName];
       if (typeof fn !== "function")
         throw new Error(`illegal method name ${methodName}`);
       return fn;

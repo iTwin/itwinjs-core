@@ -18,6 +18,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
 import { TokenArg } from "./IModelDb";
+import { _getHubAccess, _setHubAccess } from "./internal/Symbols";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
@@ -47,7 +48,7 @@ function wasStarted(val: string | undefined): asserts val is string {
  * test against a "real" IModelHub, you can simply comment off the call [[startup]], though in that case you should make sure the name of your
  * iModel is unique so your test won't collide with other tests (iModel name uniqueness is not necessary for mocked tests.)
  *
- * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createNewIModel]] with a `version0` iModel.
+ * Mocked tests must always start by creating a new iModel via [[IModelHost[_hubAccess].createNewIModel]] with a `version0` iModel.
  * They use mock (aka "bogus") credentials for `AccessTokens`, which is fine since [[HubMock]] never accesses resources outside the current
  * computer.
  *
@@ -82,9 +83,9 @@ export class HubMock {
     this.mockRoot = join(outputDir, "HubMock", mockName);
     IModelJsFs.recursiveMkDirSync(this.mockRoot);
     IModelJsFs.purgeDirSync(this.mockRoot);
-    this._saveHubAccess = IModelHost.getHubAccess();
+    this._saveHubAccess = IModelHost[_getHubAccess]();
 
-    IModelHost.setHubAccess(this);
+    IModelHost[_setHubAccess](this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
   }
 
@@ -102,7 +103,7 @@ export class HubMock {
     this.hubs.clear();
     IModelJsFs.purgeDirSync(this.mockRoot);
     IModelJsFs.removeSync(this.mockRoot);
-    IModelHost.setHubAccess(this._saveHubAccess);
+    IModelHost[_setHubAccess](this._saveHubAccess);
     this.mockRoot = undefined;
   }
 
@@ -217,7 +218,7 @@ export class HubMock {
     return undefined;
   }
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }

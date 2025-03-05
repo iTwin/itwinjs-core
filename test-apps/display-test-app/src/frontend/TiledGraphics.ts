@@ -3,99 +3,93 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { QueryRowFormat } from "@itwin/core-common";
 import {
-  FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
+  BriefcaseConnection,
+  FeatureSymbology, HitDetail, IModelApp, IModelConnection, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
+import { Transform } from "@itwin/core-geometry";
 
-/** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */
-class ExternalTreeRef extends TileTreeReference {
+class Reference extends TileTreeReference {
   private readonly _ref: TileTreeReference;
-  private readonly _ovrs: FeatureSymbology.Overrides;
+  private readonly _provider: Provider;
+  private _transform?: Transform;
 
-  public constructor(ref: TileTreeReference, ovrs: FeatureSymbology.Overrides) {
+  public constructor(ref: TileTreeReference, provider: Provider) {
     super();
     this._ref = ref;
-    this._ovrs = ovrs;
+    this._provider = provider;
   }
 
-  public override get castsShadows() {
-    return this._ref.castsShadows;
+  public override get castsShadows() { return this._ref.castsShadows; }
+  public override get treeOwner() { return this._ref.treeOwner; }
+  public override async getToolTip(hit: HitDetail) { return this._ref.getToolTip(hit); }
+  public override canSupplyToolTip(hit: HitDetail) { return this._ref.canSupplyToolTip(hit); }
+  public override async getToolTipPromise(hit: HitDetail) { return this._ref.getToolTipPromise(hit); }
+
+  protected override getSymbologyOverrides() { return this._provider.ovrs; }
+
+  protected override computeTransform(tree: TileTree): Transform {
+    return this._transform ?? (this._transform = this._provider.computeTransform(tree));
   }
 
-  public get treeOwner() { return this._ref.treeOwner; }
-
-  public override addToScene(context: SceneContext): void {
-    const tree = this.treeOwner.load();
-    if (undefined === tree)
-      return;
-
-    // ###TODO transform
-    const args = this.createDrawArgs(context);
-    if (undefined === args)
-      return;
-
-    tree.draw(args);
-
-    args.graphics.symbologyOverrides = this._ovrs;
-    const branch = context.createBranch(args.graphics, args.location);
-    context.outputGraphic(branch);
+  public override getTransformFromIModel() {
+    return this._provider.toViewport;
   }
 }
 
 class Provider implements TiledGraphicsProvider {
-  private readonly _refs: TileTreeReference[] = [];
-  public readonly iModel: IModelConnection;
+  public readonly view: ViewState;
+  public readonly ovrs: FeatureSymbology.Overrides;
+  public readonly viewport: Viewport;
+  public readonly toViewport: Transform;
+  private readonly _refs: Reference[];
 
-  private constructor(vp: Viewport, iModel: IModelConnection, ovrs: FeatureSymbology.Overrides) {
-    this.iModel = iModel;
-    for (const model of iModel.models) {
-      const spatial = model.asSpatialModel;
-      if (undefined !== spatial) {
-        const ref = spatial.createTileTreeReference(vp.view);
-        this._refs.push(new ExternalTreeRef(ref, ovrs));
-      }
-    }
-  }
+  public get iModel() { return this.view.iModel; }
 
-  public static async create(vp: Viewport, iModel: IModelConnection): Promise<Provider> {
-    const query = { from: SpatialModelState.classFullName, wantPrivate: false };
-    const props = await iModel.models.queryProps(query);
+  private constructor(view: ViewState, vp: Viewport, transform: Transform) {
+    this.view = view;
+    this.viewport = vp;
+    this.toViewport = transform;
 
-    const modelIds = [];
-    for (const prop of props)
-      if (undefined !== prop.id)
-        modelIds.push(prop.id);
+    // These overrides ensure that all of the categories and subcategories in the secondary iModel are displayed.
+    // Any symbology overrides applied to the viewport are ignored.
+    this.ovrs = new FeatureSymbology.Overrides(view);
 
-    await iModel.models.load(modelIds);
-
-    // Enable all categories (and subcategories thereof)
-    const ecsql = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
-    const catIds: string[] = [];
-    for await (const catId of iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-      catIds.push(catId.categoryId);
-
-    const subcatsRequest = iModel.subcategories.load(catIds);
-    if (undefined !== subcatsRequest)
-      await subcatsRequest.promise;
-
-    // Ignore the symbology overrides defined on the viewport - instead, set up our own to draw our iModel's categories.
-    const ovrs = new FeatureSymbology.Overrides();
-    for (const catId of catIds) {
-      const subcats = iModel.subcategories.getSubCategories(catId);
-      if (undefined !== subcats)
-        for (const subcat of subcats)
-          ovrs.setVisibleSubCategory(subcat);
-    }
-
-    return new Provider(vp, iModel, ovrs);
+    this._refs = Array.from(view.getModelTreeRefs()).map((ref) => new Reference(ref, this));
   }
 
   public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
-    for (const ref of this._refs)
+    for (const ref of this._refs) {
       func(ref);
+    }
   }
+
+  public static async create(attachedIModel: IModelConnection, vp: Viewport): Promise<Provider> {
+    const creator = new ViewCreator3d(attachedIModel);
+    const view = await creator.createDefaultView();
+
+    const transform = computeTransformFromSecondaryIModel({ primary: vp.iModel, secondary: attachedIModel });
+    return new Provider(view, vp, transform);
+  }
+
+  public computeTransform(tree: TileTree): Transform {
+    return computeTransformFromSecondaryIModel({ primary: this.viewport.iModel, secondary: tree.iModel, tileTreeToWorld: tree.iModelTransform });
+  }
+}
+
+function computeTransformFromSecondaryIModel(args: { primary: IModelConnection, secondary: IModelConnection, tileTreeToWorld?: Transform }): Transform {
+  const { primary, secondary } = args;
+  const tileTreeToWorld = args.tileTreeToWorld ?? Transform.createIdentity();
+
+  if (!secondary.ecefLocation?.isValid || !primary.ecefLocation?.isValid) {
+    return tileTreeToWorld;
+  }
+
+  const dbToEcef = secondary.ecefLocation.getTransform();
+  const ecefTransform = dbToEcef.multiplyTransformTransform(tileTreeToWorld);
+  const worldTf = primary.getEcefTransform().inverse();
+  return worldTf ? worldTf.multiplyTransformTransform(ecefTransform, ecefTransform) : tileTreeToWorld;
 }
 
 const providersByViewport = new Map<Viewport, Provider>();
@@ -110,18 +104,32 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
     return;
   }
 
-  const filename = await DisplayTestApp.surface.selectFileName();
-  if (undefined === filename)
+  const fileName = await DisplayTestApp.surface.selectFileName();
+  if (undefined === fileName)
     return;
 
   let iModel;
   try {
-    iModel = await SnapshotConnection.openFile(filename);
-    const provider = await Provider.create(vp, iModel);
+    iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
+    const provider = await Provider.create(iModel, vp);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
   } catch (err: any) {
     alert(err.toString());
     return;
+  }
+}
+
+export class ToggleSecondaryIModelTool extends Tool {
+  public static override toolId = "ToggleSecondaryIModel";
+
+  public override async run(): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
+      return false;
+    }
+
+    await toggleExternalTiledGraphicsProvider(vp);
+    return true;
   }
 }

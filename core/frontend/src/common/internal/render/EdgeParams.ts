@@ -9,8 +9,9 @@
 import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
 import { TesselatedPolyline, tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
-import { MeshArgs, MeshArgsEdges } from "./MeshPrimitives";
+import { MeshArgsEdges } from "./MeshPrimitives";
 import { assert } from "@itwin/core-bentley";
+import { MeshArgs } from "../../../render/MeshArgs";
 
 /**
  * Describes a set of line segments representing edges of a mesh.

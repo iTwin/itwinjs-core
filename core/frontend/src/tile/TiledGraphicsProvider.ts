@@ -18,8 +18,17 @@ import { TileTreeReference } from "./internal";
  * @extensions
  */
 export interface TiledGraphicsProvider {
-  /** For each [[TileTreeReference]] belonging to this provider that should be drawn in the specified [[Viewport]], apply the provided function. */
+  /** For each [[TileTreeReference]] belonging to this provider that should be drawn in the specified [[Viewport]], apply the provided function.
+   * This method is inefficient because it does not permit the caller to prematurely halt iteration; and awkward because `func` cannot be `async` nor
+   * return any value.
+   * Implementations should implement [[getReferences]], and callers should prefer to call [[TiledGraphicsProvider.getTileTreeRefs]].
+   */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+
+  /** If defined, iterates over the [[TileTreeReference]]s belonging to this provider that should be drawn in the specified [[Viewport]].
+   * [[TiledGraphicsProvider.getTileTreeRefs]] will call this more efficient method if defined, and fall back to the less efficient [[forEachTileTreeRef]] otherwise.
+   */
+  getReferences?: (viewport: Viewport) => Iterable<TileTreeReference>;
 
   /** If defined, overrides the logic for adding this provider's graphics into the scene.
    * Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference.
@@ -55,5 +64,22 @@ export namespace TiledGraphicsProvider {
     });
 
     return allLoaded;
+  }
+
+  /** Obtain an iterator over all of the [[TileTreeReference]]s belonging to this provider that should be drawn in the specified [[Viewport]].
+   * This function invokes [[TiledGraphicsProvider.getReferences]] if implemented by `provider`; otherwise, it populates an iterable from the references
+   * provided by [[TiledGraphicsProvider.forEachTileTreeRef]], which is less efficient.
+   */
+  export function getTileTreeRefs(provider: TiledGraphicsProvider, viewport: Viewport): Iterable<TileTreeReference> {
+    if (provider.getReferences) {
+      return provider.getReferences(viewport);
+    }
+
+    const refs: TileTreeReference[] = [];
+    provider.forEachTileTreeRef(viewport, (ref) => {
+      refs.push(ref);
+    });
+
+    return refs;
   }
 }

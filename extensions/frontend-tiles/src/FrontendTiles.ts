@@ -5,9 +5,9 @@
 
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
+import { queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
-import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs} from "./GraphicsProvider/GraphicsProvider";
+import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider";
 
 /** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
  * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).
@@ -73,6 +73,8 @@ export interface QueryMeshExportsArgs {
   includeIncomplete?: boolean;
   /** If true, enables a CDN (content delivery network) to access tiles faster. */
   enableCDN?: boolean;
+  /** Number of exports to query */
+  numExports?: number;
 }
 
 /** Query the [mesh export service](https://developer.bentley.com/apis/mesh-export/operations/get-exports/) for exports of type "IMODEL" matching
@@ -81,7 +83,7 @@ export interface QueryMeshExportsArgs {
  * @beta
  */
 export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
-  const graphicsArgs = {
+  const graphicsArgs: QueryGraphicRepresentationsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
@@ -90,16 +92,18 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: "IMDL",
+    format: "IMODEL",
     urlPrefix: args.urlPrefix,
+    includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,
+    numExports: args.numExports,
   };
 
-  for await (const data of queryGraphicRepresentations(graphicsArgs)){
+  for await (const data of queryGraphicRepresentations(graphicsArgs)) {
     const meshExport = {
       id: data.representationId,
       displayName: data.displayName,
-      status: "Complete",
+      status: data.status,
       request: {
         iModelId: data.dataSource.id,
         changesetId: data.dataSource.changeId ?? "",
@@ -199,7 +203,13 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
     frontendTilesOptions.useIndexedDBCache = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({ iModel, accessToken: await IModelApp.getAccessToken(), enableCDN: options.enableCDN })
+    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({
+      iTwinId: iModel.iTwinId,
+      iModelId: iModel.iModelId,
+      changesetId: iModel.changeset.id,
+      accessToken: await IModelApp.getAccessToken(),
+      enableCDN: options.enableCDN,
+    })
   );
 
   SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl, options.nopFallback ?? false);

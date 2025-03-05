@@ -1,18 +1,19 @@
 {
   "name": "@itwin/core-electron",
-  "version": "4.8.0-dev.37",
+  "version": "5.0.0-dev.77",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0 || ^20.0.0"
+    "node": "^20.0.0 || ^22.0.0"
   },
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s webpack:test",
+    "build": "npm run -s build:cjs && npm run -s webpack:test && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "npm run test:integration:backend && npm run test:integration:frontend",
     "test:integration:backend": "mocha --config src/test/backend/.mocharc.json",
@@ -35,11 +36,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.8.0-dev.37",
-    "@itwin/core-bentley": "workspace:^4.8.0-dev.37",
-    "@itwin/core-common": "workspace:^4.8.0-dev.37",
-    "@itwin/core-frontend": "workspace:^4.8.0-dev.37",
-    "electron": ">=23.0.0 <32.0.0"
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
+    "electron": "^35.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -48,24 +49,25 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.17.0",
     "chai": "^4.3.10",
-    "electron": "^31.0.0",
-    "eslint": "^8.56.0",
+    "cpx2": "^3.0.0",
+    "electron": "^35.0.0",
+    "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
-    "webpack": "^5.76.0",
+    "typescript": "~5.6.2",
+    "webpack": "^5.97.1",
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "@openid/appauth": "^1.2.6",
     "open": "^7.0.0",
-    "username": "^5.1.0"
+    "username": "^7.0.0"
   }
 }

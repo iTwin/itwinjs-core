@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Id64, Logger } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
+import { CURRENT_REQUEST, IModelRpcProps, RpcInterface, RpcManager, RpcRequest } from "@itwin/core-common";
 import {
   DescriptorOverrides,
   DistinctValuesRpcRequestOptions,
@@ -27,7 +27,6 @@ import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
 import { ClientDiagnostics } from "../presentation-common/Diagnostics";
 import { InstanceKey } from "../presentation-common/EC";
-import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey } from "../presentation-common/hierarchy/Key";
 import {
   ComputeSelectionRequestOptions,
@@ -42,7 +41,6 @@ import {
   FilterByTextHierarchyRequestOptions,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
-  SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions,
@@ -56,18 +54,18 @@ import {
   FilterByTextHierarchyRpcRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import {
   createRandomECInstanceKey,
-  createRandomECInstancesNodeJSON,
+  createRandomECInstancesNode,
   createRandomECInstancesNodeKey,
   createRandomLabelDefinition,
-  createRandomNodePathElementJSON,
+  createRandomNodePathElement,
   createRandomSelectionScope,
 } from "./_helpers/random";
+import { ResolvablePromise } from "./_helpers";
 
 describe("RpcRequestsHandler", () => {
   let clientId: string;
@@ -90,6 +88,10 @@ describe("RpcRequestsHandler", () => {
     defaultRpcHandlerOptions = { imodel: token };
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   describe("construction", () => {
     let handler: RpcRequestsHandler;
 
@@ -106,9 +108,15 @@ describe("RpcRequestsHandler", () => {
 
   describe("request", () => {
     let handler: RpcRequestsHandler;
+    const rpcInterface = {
+      [CURRENT_REQUEST]: {
+        cancel: sinon.stub(),
+      },
+    };
 
     beforeEach(() => {
       handler = new RpcRequestsHandler();
+      sinon.stub(RpcManager, "getClientForInterface").returns(rpcInterface as unknown as RpcInterface);
     });
 
     describe("when request succeeds", () => {
@@ -179,54 +187,18 @@ describe("RpcRequestsHandler", () => {
       });
     });
 
-    describe("when request returns a status of BackendTimeout", () => {
-      it("returns PresentationError with BackendTimeout status", async () => {
-        let callCount = 0;
-        const nowStub = sinon.stub(Date, "now").returns(0);
-        const func = sinon.fake(async () => {
-          nowStub.reset();
-          nowStub.returns(++callCount);
-          return errorResponse(PresentationStatus.BackendTimeout);
-        });
-
-        // create a handler with a known timeout
-        handler = new RpcRequestsHandler({ timeout: 10 });
-
-        await expect(handler.request(func, defaultRpcHandlerOptions))
-          .to.eventually.be.rejectedWith(PresentationError)
-          .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
-
-        /**
-         * The `func` will be repeatedly called until `Date.now()` at the `request` call `+ timeout`
-         * exceeds `Date.now()`. We're setting up 0 for the starting time and increase it by 1 on each
-         * call of `func`, so the total call count should match `handler.timeout`.
-         */
-        expect(func.callCount).to.eq(handler.timeout);
-      });
-
-      it("calls diagnostics handler if provided", async () => {
-        let callCount = 0;
-        const nowStub = sinon.stub(Date, "now").returns(0);
-        const func = sinon.fake(async () => {
-          nowStub.reset();
-          nowStub.returns(++callCount);
-          return errorResponse(PresentationStatus.BackendTimeout, undefined, { logs: [{ scope: `${callCount}` }] });
-        });
-
-        // create a handler with a known timeout
-        handler = new RpcRequestsHandler({ timeout: 3 });
-
-        const diagnosticsOptions = {
-          handler: sinon.spy(),
+    describe("when request times out", () => {
+      it("returns timeout error", async () => {
+        using resolvablePromise = new ResolvablePromise<void>();
+        const func = async () => {
+          await resolvablePromise;
+          return successResponse("test");
         };
-        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions }))
-          .to.eventually.be.rejectedWith(PresentationError)
-          .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
-
-        expect(diagnosticsOptions.handler.callCount).to.eq(3);
-        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => {
-          expect(call).to.be.calledWith({ logs: [{ scope: `${callIndex + 1}` }] });
-        });
+        handler = new RpcRequestsHandler({ timeout: 10 });
+        await expect(handler.request(func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(
+          Error,
+          "Processing the request took longer than the configured limit of 10 ms",
+        );
       });
     });
   });
@@ -234,20 +206,15 @@ describe("RpcRequestsHandler", () => {
   describe("requests forwarding to PresentationRpcInterface", () => {
     let handler: RpcRequestsHandler;
     let rpcInterfaceMock: moq.IMock<PresentationRpcInterface>;
-    let defaultGetClientForInterfaceImpl: <T extends RpcInterface>(def: RpcInterfaceDefinition<T>) => T; // eslint-disable-line deprecation/deprecation
-
-    before(() => {
-      rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
-      defaultGetClientForInterfaceImpl = (definition) => RpcManager.getClientForInterface(definition);
-      RpcManager.getClientForInterface = (() => rpcInterfaceMock.object) as any;
-    });
-
-    after(() => {
-      RpcManager.getClientForInterface = defaultGetClientForInterfaceImpl;
-    });
 
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
+      rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
+      sinon.stub(RpcManager, "getClientForInterface").returns(rpcInterfaceMock.object);
+      sinon.stub(RpcRequest, "current").returns(undefined as any);
+    });
+
+    afterEach(() => {
       rpcInterfaceMock.reset();
     });
 
@@ -262,6 +229,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = faker.random.number();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -282,6 +250,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = faker.random.number();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -300,11 +269,11 @@ describe("RpcRequestsHandler", () => {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
         paging: { start: 1, size: 2 },
-        // eslint-disable-next-line deprecation/deprecation
-        parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
+        parentKey: handlerOptions.parentKey!,
       };
-      const result = { items: [createRandomECInstancesNodeJSON()], total: 1 };
+      const result = { items: [createRandomECInstancesNode()], total: 1 };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedNodes(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -322,8 +291,7 @@ describe("RpcRequestsHandler", () => {
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           clientId,
           rulesetOrId: handlerOptions.rulesetOrId,
-          // eslint-disable-next-line deprecation/deprecation
-          parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
+          parentKey: handlerOptions.parentKey!,
         };
         const result = createTestContentDescriptor({ fields: [] }).toJSON();
         return { handlerOptions, rpcOptions, result };
@@ -332,6 +300,7 @@ describe("RpcRequestsHandler", () => {
       it("when descriptor is sent as serialized JSON string", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
         rpcInterfaceMock
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
           .returns(async () => successResponse(JSON.stringify(result)))
           .verifiable();
@@ -342,6 +311,7 @@ describe("RpcRequestsHandler", () => {
       it("when descriptor is sent as JSON", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
         rpcInterfaceMock
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
           .returns(async () => successResponse(result))
           .verifiable();
@@ -362,8 +332,9 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: handlerOptions.rulesetOrId,
         filterText,
       };
-      const result = [createRandomNodePathElementJSON()];
+      const result = [createRandomNodePathElement()];
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getFilteredNodePaths(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -386,8 +357,9 @@ describe("RpcRequestsHandler", () => {
         instancePaths: paths,
         markedIndex,
       };
-      const result = [createRandomNodePathElementJSON()];
+      const result = [createRandomNodePathElement()];
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodePaths(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -421,6 +393,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentSources(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -448,6 +421,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = createTestContentDescriptor({ fields: [] }).toJSON();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentDescriptor(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -472,6 +446,7 @@ describe("RpcRequestsHandler", () => {
         keys,
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentSetSize(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -504,6 +479,7 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedContent(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -533,6 +509,7 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedContentSet(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -575,34 +552,11 @@ describe("RpcRequestsHandler", () => {
         ],
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedDistinctValues(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
       expect(await handler.getPagedDistinctValues(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
-    });
-
-    it("forwards getElementProperties call", async () => {
-      const elementId = "0x123";
-      const handlerOptions: SingleElementPropertiesRequestOptions<IModelRpcProps> = {
-        imodel: token,
-        elementId,
-      };
-      const rpcOptions: SingleElementPropertiesRpcRequestOptions = {
-        clientId,
-        elementId,
-      };
-      const result: ElementProperties = {
-        class: "test class",
-        id: elementId,
-        label: "test label",
-        items: {},
-      };
-      rpcInterfaceMock
-        .setup(async (x) => x.getElementProperties(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
-      expect(await handler.getElementProperties(handlerOptions)).to.deep.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 
@@ -633,6 +587,7 @@ describe("RpcRequestsHandler", () => {
         ]).toJSON(),
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentInstanceKeys(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -652,6 +607,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = createRandomLabelDefinition();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -674,6 +630,7 @@ describe("RpcRequestsHandler", () => {
         items: [createRandomLabelDefinition(), createRandomLabelDefinition()],
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedDisplayLabelDefinitions(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -681,6 +638,7 @@ describe("RpcRequestsHandler", () => {
       rpcInterfaceMock.verifyAll();
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
     it("forwards getSelectionScopes call", async () => {
       const handlerOptions: SelectionScopeRequestOptions<IModelRpcProps> = {
         imodel: token,
@@ -716,5 +674,6 @@ describe("RpcRequestsHandler", () => {
       expect(await handler.computeSelection(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 });

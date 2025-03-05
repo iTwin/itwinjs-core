@@ -23,10 +23,6 @@ export interface EditorPosition {
   rowPriority: number;
   /** Determines the column position for the type editor */
   columnIndex: number;
-  /** Number of columns to occupy. Defaults to 1
-   * @deprecated in 2.19. No longer necessary, ignored.
-   */
-  columnSpan?: number;
 }
 
 /** [[BaseDialogItem]] contains only the members necessary to create a PropertyRecord.
@@ -45,7 +41,7 @@ export interface DialogItem extends BaseDialogItem {
   readonly lockProperty?: BaseDialogItem;
 }
 
-/** [[DialogPropertyItem]] us the specification to use if you are defining the components directly, e.g., in React
+/** [[DialogPropertyItem]] is the specification to use if you are defining the components directly, e.g., in React
  * @public
  */
 export interface DialogPropertyItem {

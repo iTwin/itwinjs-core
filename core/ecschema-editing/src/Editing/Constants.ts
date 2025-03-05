@@ -17,6 +17,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Constant.
  */
 export class Constants extends SchemaItems {
+  protected override get itemTypeClass(): typeof Constant {
+    return Constant;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.Constant, schemaEditor);
   }
@@ -25,7 +29,7 @@ export class Constants extends SchemaItems {
     try {
       const newConstant = await this.createSchemaItem<Constant>(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), name) as MutableConstant;
 
-      const newPhenomenon = (await this.getSchemaItem<Phenomenon>(phenomenon, SchemaItemType.Phenomenon));
+      const newPhenomenon = (await this.getSchemaItem(phenomenon, Phenomenon));
       newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
 
       newConstant.setDefinition(definition);

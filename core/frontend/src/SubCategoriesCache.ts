@@ -69,10 +69,10 @@ export class SubCategoriesCache {
   public async loadAllUsedSpatialSubCategories(): Promise<void> {
     try {
       const results = await this._imodel.queryAllUsedSpatialSubCategories();
-      if (undefined !== results){
+      if (undefined !== results) {
         this.processResults(results, new Set<string>(), false);
       }
-    } catch (e) {
+    } catch {
       // In case of a truncated response, gracefully handle the error and exit.
     }
 
@@ -110,7 +110,7 @@ export class SubCategoriesCache {
   }
 
   private processResults(result: SubCategoriesCache.Result, missing: Id64Set, override: boolean = true): void {
-    for (const row of result){
+    for (const row of result) {
       this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), override);
     }
 
@@ -129,7 +129,7 @@ export class SubCategoriesCache {
       this._byCategoryId.set(categoryId, set = new Set<string>());
 
     set.add(subCategoryId);
-    if (override)
+    if (override || !this._appearances.has(subCategoryId))
       this._appearances.set(subCategoryId, appearance);
   }
 
@@ -178,7 +178,7 @@ export class SubCategoriesCache {
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
-export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
+export namespace SubCategoriesCache {
   export type Result = SubCategoryResultRow[];
 
   export class Request {
@@ -271,7 +271,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
     }
 
     /** Cancel all requests and empty the queue. */
-    public dispose(): void {
+    public [Symbol.dispose](): void {
       if (undefined !== this._request) {
         assert(undefined !== this._current);
         this._request.cancel();

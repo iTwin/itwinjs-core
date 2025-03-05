@@ -24,7 +24,7 @@ describe("default NativePlatform", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch (_e) {}
+      } catch {}
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -44,13 +44,13 @@ describe("default NativePlatform", () => {
   });
 
   afterEach(async () => {
-    nativePlatform.dispose();
+    nativePlatform[Symbol.dispose]();
     await IModelHost.shutdown();
   });
 
   it("calls addon's dispose", async () => {
     addonMock.setup((x) => x.dispose()).verifiable();
-    nativePlatform.dispose();
+    nativePlatform[Symbol.dispose]();
     addonMock.verifyAll();
   });
 

@@ -18,6 +18,7 @@ import {
   GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
   TerrainMeshProviderOptions, Tile, TileAvailability,
 } from "../internal";
+import { ScreenViewport } from "../../Viewport";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -60,7 +61,7 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, reques
       return {};
     }
     return { token: apiResponse.accessToken, url: apiResponse.url };
-  } catch (error) {
+  } catch {
     assert(false);
     return {};
   }
@@ -90,7 +91,7 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
-  } catch (error) {
+  } catch {
     notifyTerrainError();
     return undefined;
   }
@@ -199,6 +200,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (cards.dataset.cesiumIonLogoCard)
       return;
@@ -211,6 +213,12 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
     cards.appendChild(card);
   }
+
+  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
+  }
+
 
   public get maxDepth(): number { return this._maxDepth; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
@@ -236,7 +244,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     try {
       const response = await request(tileUrl, "arraybuffer", requestOptions);
       return new Uint8Array(response);
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

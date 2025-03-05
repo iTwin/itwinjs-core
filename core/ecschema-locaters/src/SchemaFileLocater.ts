@@ -227,7 +227,15 @@ export abstract class SchemaFileLocater {
     return foundFiles;
   }
 
-  public abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+  /**
+   * Attempts to retrieve a Schema with the given SchemaKey by using the configured search paths
+   * to locate the XML Schema file from the file system. Returns only Schemas from XML files with
+   * their keys populated.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType.
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
+  public abstract getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
 
   /**
    * Compares two Schema versions.  If the left-hand version is greater, 1 is returned. If the

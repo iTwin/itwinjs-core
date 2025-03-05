@@ -6,7 +6,6 @@
 import { expect } from "chai";
 import { ArrayPropertiesField, NestedContentField, NodePathElement, StructPropertiesField } from "../presentation-common";
 import { Content } from "../presentation-common/content/Content";
-import { Item } from "../presentation-common/content/Item";
 import { DisplayValueGroup, NavigationPropertyValue } from "../presentation-common/content/Value";
 import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition";
 import { LocalizationHelper } from "../presentation-common/LocalizationHelper";
@@ -268,8 +267,12 @@ describe("LocalizationHelper", () => {
     });
 
     it("does not translate content item non-translatable value", () => {
-      const contentItem = new Item([], createTestLabelDefinition(), "", undefined, {}, {}, []);
-      contentItem.values.property = 10;
+      const contentItem = createTestContentItem({
+        values: {
+          property: 10,
+        },
+        displayValues: {},
+      });
       const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       const result = localizationHelper.getLocalizedContent(content);
       expect(result.contentSet[0].values.property).to.be.eq(10);
@@ -326,7 +329,7 @@ describe("LocalizationHelper", () => {
     });
 
     it("translates content descriptor category label & description", () => {
-      const contentItem = new Item([], createTestLabelDefinition(), "", undefined, {}, {}, []);
+      const contentItem = createTestContentItem({ values: {}, displayValues: {} });
       const testCategory = createTestCategoryDescription({
         label: "@namespace:LocalizedLabel@",
         description: "@namespace:LocalizedDescription@",

@@ -24,7 +24,7 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
   };
 }
 export class ReferenceSchemaLocater implements ISchemaLocater {
-  private readonly _schemaList: Map<string, Object>;
+  private readonly _schemaList: Map<string, object>;
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema;
   private readonly _asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>;
 
@@ -37,11 +37,11 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   public addSchema(schemaName: string, schema: any) {
     this._schemaList.set(schemaName, schema);
   }
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       await this._asyncParser(schemaBody, context);
-      return await context.getCachedSchema(schemaKey, matchType) as T;
+      return context.getCachedSchema(schemaKey, matchType);
     }
     return undefined;
   }
@@ -55,13 +55,13 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
     return undefined;
   }
 
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
 
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       const schema = this._parser(schemaBody, context);
 
-      return schema as T;
+      return schema;
     }
 
     return undefined;

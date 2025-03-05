@@ -8,11 +8,11 @@
 
 import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttribute, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
+  CustomAttributeContainerProps, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
   SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, Unit,
 } from "@itwin/ecschema-metadata";
-import { formatTraitsToArray, formatTypeToString, scientificTypeToString, showSignOptionToString } from "@itwin/core-quantity";
+import { formatTraitsToArray } from "@itwin/core-quantity";
 import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
 import { SchemaCompareVisitor } from "./SchemaCompareVisitor";
@@ -51,6 +51,13 @@ export interface ISchemaComparer {
   compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): void;
   comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): void;
   compareConstants(constantA: Constant, constantB: Constant): void;
+
+  /** @internal */
+  resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined>;
+  /** @internal */
+  resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
+  /** @internal */
+  areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean;
 }
 
 function labelsMatch(label1?: string, label2?: string) {
@@ -76,6 +83,32 @@ export class SchemaComparer {
   constructor(...reporters: ISchemaCompareReporter[]) {
     this._compareDirection = SchemaCompareDirection.Forward;
     this._reporters = reporters;
+  }
+
+  /**
+   * Resolves a schema Item from the given lookup schema.
+   * @internal
+   */
+  public async resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined> {
+    return lookupSchema.lookupItem(item.name, itemConstructor);
+  }
+
+  /**
+   * Resolves a property from a class.
+   * @internal
+   */
+  public async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
+    return ecClass.getProperty(propertyA.name) as Promise<AnyProperty | undefined>;
+  }
+
+  /**
+   * Compares two schema items to determine if they are the same by name.
+   * @internal
+   */
+  public areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean {
+    const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
+    const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
+    return nameA === nameB;
   }
 
   /**
@@ -505,8 +538,8 @@ export class SchemaComparer {
       promises.push(this._reporter.reportFormatDelta(formatA, "roundFactor", formatA.roundFactor, formatB.roundFactor, this._compareDirection));
 
     if (formatA.type !== formatB.type) {
-      const typeAString = formatTypeToString(formatA.type);
-      const typeBString = formatTypeToString(formatB.type);
+      const typeAString = formatA.type;
+      const typeBString = formatB.type;
       promises.push(this._reporter.reportFormatDelta(formatA, "type", typeAString, typeBString, this._compareDirection));
     }
 
@@ -517,14 +550,14 @@ export class SchemaComparer {
       promises.push(this._reporter.reportFormatDelta(formatA, "minWidth", formatA.minWidth, formatB.minWidth, this._compareDirection));
 
     if (formatA.scientificType !== formatB.scientificType) {
-      const typeAString = formatA.scientificType !== undefined ? scientificTypeToString(formatA.scientificType) : undefined;
-      const typeBString = formatB.scientificType !== undefined ? scientificTypeToString(formatB.scientificType) : undefined;
+      const typeAString = formatA.scientificType !== undefined ? formatA.scientificType : undefined;
+      const typeBString = formatB.scientificType !== undefined ? formatB.scientificType : undefined;
       promises.push(this._reporter.reportFormatDelta(formatA, "scientificType", typeAString, typeBString, this._compareDirection));
     }
 
     if (formatA.showSignOption !== formatB.showSignOption) {
-      const optionA = showSignOptionToString(formatA.showSignOption);
-      const optionB = showSignOptionToString(formatB.showSignOption);
+      const optionA = formatA.showSignOption;
+      const optionB = formatB.showSignOption;
       promises.push(this._reporter.reportFormatDelta(formatA, "showSignOption", optionA, optionB, this._compareDirection));
     }
 
@@ -811,7 +844,7 @@ export class SchemaComparer {
     for (const unitA of formatA.units) {
       const unitB = formatB.units ? formatB.units.find((u) => this.areItemsSameByName(unitA[0], u[0], formatA.schema.name, formatB.schema.name)) : undefined;
       if (!unitB) {
-        promises.push(this._reporter.reportFormatUnitMissing(formatA, unitA[0], this._compareDirection));
+        promises.push(this._reporter.reportFormatUnitMissing(formatA, unitA, this._compareDirection));
         continue;
       }
 
@@ -821,7 +854,7 @@ export class SchemaComparer {
       if (unitA[1] !== unitB[1]) {
         const labelA = unitA[1];
         const labelB = unitB[1];
-        promises.push(this._reporter.reportUnitLabelOverrideDelta(formatA, unitB[0], labelA, labelB, this._compareDirection));
+        promises.push(this._reporter.reportUnitLabelOverrideDelta(formatA, unitA[0], labelA, labelB, this._compareDirection));
       }
     }
 
@@ -863,8 +896,7 @@ export class SchemaComparer {
     topLevelSchemaNameA: string,
     topLevelSchemaNameB: string | undefined ): boolean {
 
-    const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
-    const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
+    const equalByName = this.areEqualByName(itemKeyA, itemKeyB);
 
     const schemaNameA = itemKeyA
       ? SchemaItem.isSchemaItem(itemKeyA)
@@ -878,7 +910,7 @@ export class SchemaComparer {
         : itemKeyB.schemaName
       : undefined;
 
-    return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (nameA === nameB && schemaNameA === schemaNameB);
+    return (equalByName && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (equalByName && schemaNameA === schemaNameB);
   }
 
   /**

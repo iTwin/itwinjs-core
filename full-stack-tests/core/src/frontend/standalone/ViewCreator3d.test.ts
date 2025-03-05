@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
-import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d} from "@itwin/core-frontend";
+import { IModelConnection, ScreenViewport, ViewCreator3d } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
-import sinon = require("sinon");
+import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ViewCreator3d", async () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -35,6 +36,12 @@ describe("ViewCreator3d", async () => {
 
     expect(testVp.numReadyTiles).to.equal(1);
     expect(testVp.numSelectedTiles).to.equal(1);
+  });
+
+  it("should have subcategory be visible when default view is created", async () => {
+    const creator = new ViewCreator3d(imodel);
+    const view = await creator.createDefaultView();
+    expect(view.isSubCategoryVisible("0x18")).to.equal(true);
   });
 
   it("should optionally enable display of all subcategories", async () => {

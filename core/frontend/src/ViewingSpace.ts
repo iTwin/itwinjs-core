@@ -17,6 +17,7 @@ import { ViewRect } from "./common/ViewRect";
 import { ViewState } from "./ViewState";
 import { Frustum2d } from "./Frustum2d";
 import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
+import { TiledGraphicsProvider } from "./tile/internal";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
@@ -276,11 +277,11 @@ export class ViewingSpace {
 
     this.getViewedExtents = () => {
       const extents = this._view.getViewedExtents();
-      vp.forEachTiledGraphicsProvider((provider) => {
-        provider.forEachTileTreeRef(vp, (ref) => {
+      for (const provider of vp.tiledGraphicsProviders) {
+        for (const ref of TiledGraphicsProvider.getTileTreeRefs(provider, vp)) {
           ref.unionFitRange(extents);
-        });
-      });
+        }
+      }
 
       return extents;
     };
@@ -312,6 +313,9 @@ export class ViewingSpace {
         zMax = Math.max(zMax, 1.0); // make sure we have at least +-1m. Data may be purely planar
         delta.z = 2.0 * zMax;
         origin.z = -zMax;
+        const ds = this.view.displayStyle;
+        if (ds.getIsBackgroundMapVisible() && undefined !== ds.getBackgroundMapGeometry())
+          this.adjustZPlanes(origin, delta); // make sure view volume includes background map
       } else {
         if (view.isCameraOn)
           this.validateCamera();

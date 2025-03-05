@@ -34,11 +34,14 @@ export * from "./Entity";
 export * from "./EntityReferences";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./FontFile";
 export * from "./GeoCoordConfig";
 export * from "./GeographicCRSServices";
 export * from "./HubMock";
+export * from "./ImageSourceConversion";
 export * from "./IModelCloneContext";
 export * from "./IModelDb";
+export * from "./IModelDbFonts";
 export * from "./IModelElementCloneContext";
 export * from "./IModelHost";
 export * from "./IModelJsFs";
@@ -58,10 +61,16 @@ export * from "./Relationship";
 export * from "./rpc/tracing";
 export * from "./Schema";
 export * from "./SchemaUtils";
+export * from "./SheetIndex";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./TextAnnotationElement";
-export { computeLayoutTextBlockResult, LayoutTextBlockArgs } from "./TextAnnotationLayout";
+export {
+  computeGraphemeOffsets,
+  computeLayoutTextBlockResult,
+  ComputeGraphemeOffsetsArgs,
+  LayoutTextBlockArgs,
+} from "./TextAnnotationLayout";
 export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
@@ -129,6 +138,11 @@ export * from "./internal/cross-package";
 /**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
+ */
+
+/**
+ * @docs-group-description Images
+ * APIs for encoding and decoding images
  */
 
 /**

@@ -6,7 +6,9 @@
  * @module Merging
  */
 
+import type { ECClass, SchemaItem } from "@itwin/ecschema-metadata";
 import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
+import { NameMapping } from "./NameMapping";
 import { applyRenamePropertyEdit, applyRenameSchemaItemEdit } from "./RenameEditHandler";
 import { applySkipEdit } from "./SkipEditHandler";
 
@@ -80,35 +82,35 @@ abstract class Editor {
 
 class PropertyEditor extends Editor {
 
-  public rename(className: string, propertyName: string, newName: string) {
+  public rename(ecClass: ECClass, propertyName: string, newName: string) {
     this.add({
       type: SchemaEditType.RenameProperty,
-      key: `${className}.${propertyName}`,
+      key: `${ecClass.fullName}.${propertyName}`,
       value: newName,
     });
   }
 
-  public skip(className: string, propertyName: string) {
+  public skip(ecClass: ECClass, propertyName: string) {
     this.add({
       type: SchemaEditType.Skip,
-      key: `${className}.${propertyName}`,
+      key: `${ecClass.fullName}.${propertyName}`,
     });
   }
 }
 
 class ItemEditor extends Editor {
-  public rename(itemName: string, newName: string) {
+  public rename(schemaItem: SchemaItem, newName: string) {
     this.add({
       type: SchemaEditType.RenameSchemaItem,
-      key: itemName,
+      key: schemaItem.key.fullName,
       value: newName,
     });
   }
 
-  public skip(itemName: string) {
+  public skip(schemaItem: SchemaItem) {
     this.add({
       type: SchemaEditType.Skip,
-      key: itemName,
+      key: schemaItem.fullName,
     });
   }
 }
@@ -118,7 +120,7 @@ class ItemEditor extends Editor {
  * is to support saving of edits and load them again if needed.
  * @alpha
  */
-export class SchemaEdits {
+export class SchemaEdits implements Iterable<AnySchemaEdits> {
   private readonly _edits: Array<AnySchemaEdits>;
 
   public readonly properties: PropertyEditor;
@@ -141,26 +143,27 @@ export class SchemaEdits {
   /**
    * @internal
    */
-  public async applyTo(differenceResult: SchemaDifferenceResult): Promise<void> {
-    const postProcessing: Array<() => void> = [];
+  public async applyTo(differenceResult: SchemaDifferenceResult, nameMapping: NameMapping): Promise<void> {
     for (const schemaEdit of this._edits) {
       if (schemaEdit.type === SchemaEditType.RenameSchemaItem) {
-        applyRenameSchemaItemEdit(differenceResult, schemaEdit, postProcessing.push.bind(postProcessing));
+        applyRenameSchemaItemEdit(differenceResult, schemaEdit);
+        nameMapping.addItemMapping(schemaEdit.key, schemaEdit.value);
       }
       if (schemaEdit.type === SchemaEditType.RenameProperty) {
         applyRenamePropertyEdit(differenceResult, schemaEdit);
+        nameMapping.addPropertyMapping(schemaEdit.key, schemaEdit.value);
       }
       if (schemaEdit.type === SchemaEditType.Skip) {
         applySkipEdit(differenceResult, schemaEdit);
       }
     }
-
-    for (const callback of postProcessing) {
-      callback();
-    }
   }
 
   public toJSON(): ReadonlyArray<AnySchemaEdits> {
     return this._edits;
+  }
+
+  public [Symbol.iterator](): Iterator<AnySchemaEdits> {
+    return this._edits[Symbol.iterator]();
   }
 }

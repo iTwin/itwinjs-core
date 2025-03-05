@@ -10,7 +10,7 @@ import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/co
 import { EntityProps } from "@itwin/core-common";
 import { InstanceId, InstanceKey } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
-import { NodeKey, NodeKeyJSON } from "./hierarchy/Key";
+import { NodeKey } from "./hierarchy/Key";
 
 /**
  * A single key that identifies something in an iTwin.js application
@@ -51,8 +51,7 @@ export interface KeySetJSON {
   /** JSON representation of a list of instance keys */
   instanceKeys: Array<[string, string]>;
   /** An array of serialized node keys */
-  // eslint-disable-next-line deprecation/deprecation
-  nodeKeys: NodeKeyJSON[];
+  nodeKeys: NodeKey[];
 }
 
 /**
@@ -128,9 +127,7 @@ export class KeySet {
   public get nodeKeys(): Set<NodeKey> {
     const set = new Set<NodeKey>();
     for (const serialized of this._nodeKeys) {
-      // eslint-disable-next-line deprecation/deprecation
-      const key = NodeKey.fromJSON(JSON.parse(serialized));
-      set.add(key);
+      set.add(JSON.parse(serialized));
     }
     return set;
   }
@@ -168,8 +165,7 @@ export class KeySet {
 
   private addKeySet(keyset: Readonly<KeySet>, pred?: (key: Key) => boolean): void {
     for (const key of (keyset as any)._nodeKeys) {
-      // eslint-disable-next-line deprecation/deprecation
-      if (!pred || pred(NodeKey.fromJSON(JSON.parse(key)))) {
+      if (!pred || pred(JSON.parse(key))) {
         this._nodeKeys.add(key);
       }
     }
@@ -183,7 +179,7 @@ export class KeySet {
       }
       entry["1"].forEach((id: Id64String) => {
         if (!pred || pred({ className, id })) {
-          set!.add(id);
+          set.add(id);
         }
       });
     }
@@ -194,12 +190,13 @@ export class KeySet {
       this._nodeKeys.add(JSON.stringify(key));
     }
     for (const entry of keyset.instanceKeys) {
-      const lcClassName = normalizeClassName(entry["0"]);
+      const normalizedClassName = normalizeClassName(entry["0"]);
+      const lcClassName = normalizedClassName.toLowerCase();
       const idsJson: string | Id64String[] = entry["1"];
       const ids: Set<Id64String> =
         typeof idsJson === "string" ? (idsJson === Id64.invalid ? new Set([Id64.invalid]) : CompressedId64Set.decompressSet(idsJson)) : new Set(idsJson);
       this._instanceKeys.set(lcClassName, ids);
-      this._lowerCaseMap.set(lcClassName, entry["0"]);
+      this._lowerCaseMap.set(lcClassName, normalizedClassName);
     }
   }
 
@@ -222,12 +219,12 @@ export class KeySet {
       if (Key.isEntityProps(value)) {
         this.add({ className: value.classFullName, id: Id64.fromJSON(value.id) } as InstanceKey);
       } else if (Key.isInstanceKey(value)) {
-        const lcClassName = normalizeClassName(value.className);
+        const normalizedClassName = normalizeClassName(value.className);
+        const lcClassName = normalizedClassName.toLowerCase();
         if (!this._instanceKeys.has(lcClassName)) {
           this._instanceKeys.set(lcClassName, new Set());
-          this._lowerCaseMap.set(lcClassName, value.className);
         }
-        this._lowerCaseMap.set(lcClassName, value.className);
+        this._lowerCaseMap.set(lcClassName, normalizedClassName);
         this._instanceKeys.get(lcClassName)!.add(value.id);
       } else if (Key.isNodeKey(value)) {
         this._nodeKeys.add(JSON.stringify(value));
@@ -274,7 +271,8 @@ export class KeySet {
     } else if (Key.isEntityProps(value)) {
       this.delete({ className: value.classFullName, id: value.id! } as InstanceKey);
     } else if (Key.isInstanceKey(value)) {
-      const set = this._instanceKeys.get(normalizeClassName(value.className));
+      const normalizedClassName = normalizeClassName(value.className);
+      const set = this._instanceKeys.get(normalizedClassName.toLowerCase());
       if (set) {
         set.delete(value.id);
       }
@@ -301,7 +299,8 @@ export class KeySet {
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
     }
     if (Key.isInstanceKey(value)) {
-      const set = this._instanceKeys.get(normalizeClassName(value.className));
+      const normalizedClassName = normalizeClassName(value.className);
+      const set = this._instanceKeys.get(normalizedClassName.toLowerCase());
       return !!(set && set.has(value.id));
     }
     if (Key.isNodeKey(value)) {
@@ -429,8 +428,7 @@ export class KeySet {
         return true;
       }
     }
-    // eslint-disable-next-line deprecation/deprecation
-    return some(this._nodeKeys, (serializedKey: string) => callback(NodeKey.fromJSON(JSON.parse(serializedKey))));
+    return some(this._nodeKeys, (serializedKey: string) => callback(JSON.parse(serializedKey)));
   }
 
   /** Iterate over all keys in this keyset. */
@@ -441,8 +439,7 @@ export class KeySet {
       ids.forEach((id: Id64String) => callback({ className: recentClassName, id }, index++));
     });
     this._nodeKeys.forEach((serializedKey: string) => {
-      // eslint-disable-next-line deprecation/deprecation
-      callback(NodeKey.fromJSON(JSON.parse(serializedKey)), index++);
+      callback(JSON.parse(serializedKey), index++);
     });
   }
 
@@ -481,8 +478,7 @@ export class KeySet {
         instanceKeys.push([className!, compressedIds.length > 0 ? compressedIds : Id64.invalid]);
       }
     }
-    // eslint-disable-next-line deprecation/deprecation
-    const nodeKeys: NodeKeyJSON[] = [];
+    const nodeKeys: NodeKey[] = [];
     for (const serializedKey of this._nodeKeys.values()) {
       nodeKeys.push(JSON.parse(serializedKey));
     }
@@ -504,7 +500,7 @@ export class KeySet {
 }
 
 function normalizeClassName(className: string) {
-  return className.replace(".", ":").toLowerCase();
+  return className.replace(".", ":");
 }
 
 const some = <TItem>(set: Set<TItem>, cb: (item: TItem) => boolean) => {

@@ -17,6 +17,7 @@ import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
+import { _getHubAccess, _hubAccess } from "../internal/Symbols";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -36,11 +37,10 @@ describe("IModelHost", () => {
     await IModelHost.startup(opts);
 
     // Valid registered implemented RPCs
-    expect(RpcRegistry.instance.implementationClasses.size).to.equal(5);
+    expect(RpcRegistry.instance.implementationClasses.size).to.equal(4);
     expect(RpcRegistry.instance.implementationClasses.get("IModelReadRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("IModelTileRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("SnapshotIModelRpcInterface")).to.exist;
-    expect(RpcRegistry.instance.implementationClasses.get("WipRpcInterface")).to.exist;
     expect(RpcRegistry.instance.implementationClasses.get("DevToolsRpcInterface")).to.exist;
 
     expect(Schemas.getRegisteredSchema("BisCore")).to.exist;
@@ -203,8 +203,8 @@ describe("IModelHost", () => {
 
   it("should throw if hubAccess is undefined and getter is called", async () => {
     await IModelHost.startup(opts);
-    expect(IModelHost.getHubAccess()).undefined;
-    expect(() => IModelHost.hubAccess).throws();
+    expect(IModelHost[_getHubAccess]()).undefined;
+    expect(() => IModelHost[_hubAccess]).throws();
   });
 
   it("computeSchemaChecksum", () => {

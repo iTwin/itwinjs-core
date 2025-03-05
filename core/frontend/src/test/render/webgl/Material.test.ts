@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { Material } from "../../../render/webgl/Material";
+import { describe, expect, it } from "vitest";
+import { ColorDef, RenderMaterialParams } from "@itwin/core-common";
+import { Material } from "../../../internal/render/webgl/Material";
+
 
 // Equivalent to the glsl function used in glsl/Material.ts to unpack a vec3 material param from a packed float value.
 function unpackMaterialParam(f: number): XY {
@@ -91,8 +92,7 @@ function expectEqualFloats(expected: number, actual: number): void {
   expect(Math.abs(expected - actual)).to.be.at.most(epsilon, `Expected: ${expected} Actual: ${actual}`);
 }
 
-// eslint-disable-next-line deprecation/deprecation
-function expectMaterialParams(expected: RenderMaterial.Params): void {
+function expectMaterialParams(expected: RenderMaterialParams): void {
   const material = new Material(expected);
   const shaderParams = {
     x: material.fragUniforms[0],
@@ -104,34 +104,32 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
   const actual = decodeMaterialParams(shaderParams, material.rgba);
 
   expectEqualFloats(expected.diffuse, actual.diffuse);
-  expectEqualFloats(actual.specularExponent, expected.specularExponent); // 64-bit => 32-bit
+  expectEqualFloats(actual.specularExponent, expected.specularExponent);
 
   if (undefined === expected.diffuseColor) {
-    expect(actual.diffuseColor).to.be.undefined;
+    expect(actual.diffuseColor).toBeUndefined();
   } else {
-    expect(actual.diffuseColor).not.to.be.undefined;
-    expect(actual.diffuseColor!.tbgr).to.equal(expected.diffuseColor.tbgr);
+    expect(actual.diffuseColor).toBeDefined();
+    expect(actual.diffuseColor!.tbgr).toEqual(expected.diffuseColor.tbgr);
   }
 
-  expect(actual.specularColor).not.to.be.undefined;
+  expect(actual.specularColor).toBeDefined();
   if (undefined === expected.specularColor)
-    expect(actual.specularColor!.tbgr).to.equal(0xffffff);
+    expect(actual.specularColor!.tbgr).toEqual(0xffffff);
   else
-    expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
+    expect(actual.specularColor!.tbgr).toEqual(expected.specularColor.tbgr);
 
-  expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
-  expect(actual.alphaOverridden).to.equal(undefined !== expected.alpha);
+  expect(actual.rgbOverridden).toEqual(undefined !== expected.diffuseColor);
+  expect(actual.alphaOverridden).toEqual(undefined !== expected.alpha);
 
-  expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
+  expect(actual.textureWeight).toEqual(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
   expectEqualFloats(expected.specular, actual.specular);
   if (undefined !== expected.alpha)
     expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
-// eslint-disable-next-line deprecation/deprecation
-function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
-  // eslint-disable-next-line deprecation/deprecation
-  const params = RenderMaterial.Params.fromColors(undefined, input.diffuseColor, input.specularColor);
+function makeMaterialParams(input: MaterialParams): RenderMaterialParams {
+  const params = RenderMaterialParams.fromColors(undefined, input.diffuseColor, input.specularColor);
   params.diffuse = input.diffuse;
   params.alpha = 1.0 - input.transparency;
   params.specular = input.specular;
@@ -168,7 +166,6 @@ describe("Material", () => {
       specularColor: ColorDef.blue,
     }));
 
-    // eslint-disable-next-line deprecation/deprecation
-    expectMaterialParams(RenderMaterial.Params.defaults);
+    expectMaterialParams(RenderMaterialParams.defaults);
   });
 });

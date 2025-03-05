@@ -16,7 +16,6 @@ import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
-import { ProgressCallback } from "./request/Request";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
 
@@ -54,11 +53,6 @@ export interface GenericAbortSignal {
  * @public
  */
 export interface PullChangesOptions {
-  /**
-   * Function called regularly to report progress of changes download.
-   * @deprecated in 3.6. Use [[downloadProgressCallback]] instead.
-   */
-  progressCallback?: ProgressCallback; // eslint-disable-line deprecation/deprecation
   /** Function called regularly to report progress of changes download. */
   downloadProgressCallback?: OnDownloadProgress;
   /** Interval for calling progress callback (in milliseconds). */
@@ -263,7 +257,6 @@ export class BriefcaseConnection extends IModelConnection {
   /** Manages local changes to the briefcase via [Txns]($docs/learning/InteractiveEditing.md). */
   public readonly txns: BriefcaseTxns;
 
-  /** @internal */
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the iTwin that owns this iModel. */
@@ -313,7 +306,7 @@ export class BriefcaseConnection extends IModelConnection {
     await this._modelsMonitor.close();
 
     this.beforeClose();
-    this.txns.dispose();
+    this.txns[Symbol.dispose]();
 
     this._isClosed = true;
     await IpcApp.appFunctionIpc.closeIModel(this._fileKey);
@@ -336,6 +329,11 @@ export class BriefcaseConnection extends IModelConnection {
     await IpcApp.appFunctionIpc.saveChanges(this.key, description);
   }
 
+  /** Abandon pending changes to this briefcase. */
+  public async abandonChanges(): Promise<void> {
+    await IpcApp.appFunctionIpc.abandonChanges(this.key);
+  }
+
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
    * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
    * @param options Options for pulling changes.
@@ -343,13 +341,10 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     const removeListeners: VoidFunction[] = [];
-    // eslint-disable-next-line deprecation/deprecation
-    const shouldReportProgress = !!options?.progressCallback || !!options?.downloadProgressCallback;
+    const shouldReportProgress = !!options?.downloadProgressCallback;
 
     if (shouldReportProgress) {
       const handleProgress = (_evt: Event, data: { loaded: number, total: number }) => {
-        // eslint-disable-next-line deprecation/deprecation
-        options?.progressCallback?.(data);
         options?.downloadProgressCallback?.(data);
       };
 

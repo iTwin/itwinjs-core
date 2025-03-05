@@ -12,10 +12,11 @@ import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVect
 import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
-import { upsampleRealityMeshParams } from "../../render/UpsampleRealityMeshParams";
+import { upsampleRealityMeshParams } from "../../internal/render/UpsampleRealityMeshParams";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem, RenderTerrainGeometry, TerrainTexture } from "../../render/RenderSystem";
+import { RenderSystem } from "../../render/RenderSystem";
+import { RenderTerrainGeometry, TerrainTexture } from "../../internal/render/RenderTerrain";
 import { ViewingSpace } from "../../ViewingSpace";
 import {
   ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, RealityTileParams, Tile, TileContent, TileDrawArgs, TileGraphicType,
@@ -531,7 +532,7 @@ export class MapTile extends RealityTile {
 
     const textures = this.getDrapeTextures();
     const { baseColor, baseTransparent, layerClassifiers } = this.mapTree;
-    const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers }, true);
+    const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers, disableClipStyle: true }, true);
 
     // If there are no layer classifiers then we can save this graphic for re-use.  If layer classifiers exist they are regenerated based on view and we must collate them with the imagery.
     if (this.imageryIsReady && 0 === this.mapTree.layerClassifiers.size)

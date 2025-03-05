@@ -21,27 +21,31 @@ jobs:
   - job: Integration_Tests_Full
     strategy:
       matrix:
-        Linux_node_18_x:
-          imageName: ubuntu-latest
-          nodeVersion: 18.x
-        Windows_node_18_x:
-          imageName: windows-latest
-          nodeVersion: 18.16.1
-        MacOS_node_18_x:
-          imageName: macos-latest
-          nodeVersion: 18.x
         Linux_node_20_x:
           imageName: ubuntu-latest
           nodeVersion: 20.x
         Windows_node_20_x:
           imageName: windows-latest
-          nodeVersion: 20.12.1
+          nodeVersion: 20.x
         MacOS_node_20_x:
           imageName: macos-latest
           nodeVersion: 20.x
+        Linux_node_22_x:
+          imageName: macos-latest
+          nodeVersion: 22.x
+        Windows_node_22_x:
+          imageName: macos-latest
+          nodeVersion: 22.x
+        MacOS_node_22_x:
+          imageName: macos-latest
+          nodeVersion: 22.x
     pool:
       vmImage: $(imageName)
     steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
       - template: templates/integration-test-steps.yaml
         parameters:
           nodeVersion: $(nodeVersion)

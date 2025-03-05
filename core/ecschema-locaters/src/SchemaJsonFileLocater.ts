@@ -50,11 +50,11 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    */
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
 
     const schema = await context.getCachedSchema(schemaKey, matchType);
-    return schema as T;
+    return schema;
   }
 
   /**
@@ -70,7 +70,6 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
@@ -94,13 +93,12 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    * @param matchType The SchemaMatchType
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     // Grab all schema files that match the schema key
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
@@ -115,6 +113,6 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
     const schema = Schema.fromJsonSync(schemaText, context);
-    return schema as T;
+    return schema;
   }
 }

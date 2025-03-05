@@ -10,6 +10,7 @@ import * as sinon from "sinon";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
 import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
+import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
@@ -54,7 +55,7 @@ describe("BriefcaseManager", () => {
       iTwinId: testITwinId,
       iModelId: testIModelId,
       briefcaseId: BriefcaseIdValue.Unassigned,
-      asOf: {afterChangeSetId: changesetId},
+      asOf: { afterChangeSetId: changesetId },
     };
     const props = await BriefcaseManager.downloadBriefcase(args);
     const iModel = await BriefcaseDb.open({
@@ -84,7 +85,7 @@ describe("BriefcaseManager", () => {
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), accessToken, iModelId: readOnlyTestIModelId });
+    const expectedChangeSet = await IModelHost[_hubAccess].getChangesetFromVersion({ version: IModelVersion.first(), accessToken, iModelId: readOnlyTestIModelId });
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
@@ -207,7 +208,7 @@ describe("BriefcaseManager", () => {
     const fileName = BriefcaseManager.getFileName(args);
     await BriefcaseManager.deleteBriefcaseFiles(fileName);
     sinon.stub(CheckpointManager, "downloadCheckpoint").throws(new Error("testError"));
-    const downloadPromise = BriefcaseManager.downloadBriefcase({...args, fileName});
+    const downloadPromise = BriefcaseManager.downloadBriefcase({ ...args, fileName });
     await expect(downloadPromise).to.eventually.be.rejectedWith("testError");
     expect(IModelJsFs.existsSync(fileName)).to.be.false;
     sinon.restore();

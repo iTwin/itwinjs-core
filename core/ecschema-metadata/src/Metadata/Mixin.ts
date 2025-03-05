@@ -18,13 +18,15 @@ import { createNavigationProperty, createNavigationPropertySync, EntityClass } f
 import { NavigationProperty } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
 import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of a Mixin.
  * @beta
  */
 export class Mixin extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.Mixin; // eslint-disable-line
+  public override readonly schemaItemType = Mixin.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.Mixin; }
   protected _appliesTo?: LazyLoadedEntityClass;
 
   public get appliesTo(): LazyLoadedEntityClass | undefined {
@@ -33,7 +35,6 @@ export class Mixin extends ECClass {
 
   constructor(schema: Schema, name: string) {
     super(schema, name, ECClassModifier.Abstract);
-    this.schemaItemType = SchemaItemType.Mixin;
   }
 
   /**
@@ -104,7 +105,7 @@ export class Mixin extends ECClass {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
     this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey,
       async () => {
-        const appliesTo = await this.schema.lookupItem<EntityClass>(entityClassSchemaItemKey);
+        const appliesTo = await this.schema.lookupItem(entityClassSchemaItemKey, EntityClass);
         if (undefined === appliesTo)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
         return appliesTo;
@@ -124,6 +125,28 @@ export class Mixin extends ECClass {
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `Unable to locate the appliesTo ${this.appliesTo.fullName}.`);
 
     return appliesTo.is(entityClass);
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type Mixin.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Mixin, false otherwise.
+   */
+  public static isMixin(item?: SchemaItem): item is Mixin {
+    if (item && item.schemaItemType === SchemaItemType.Mixin)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Mixin.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Mixin if it is a Mixin, undefined otherwise.
+   */
+  public static assertIsMixin(item?: SchemaItem): asserts item is Mixin {
+    if (!this.isMixin(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Mixin}' (Mixin)`);
   }
 }
 /**

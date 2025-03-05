@@ -8,15 +8,13 @@ import {
   ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride,
   ViewFlags,
 } from "@itwin/core-common";
-import { FeatureSymbology, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { FeatureSymbology, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(view?: ViewState) { super(view); }
 
-  public override get neverDrawn() { return this._neverDrawn; }
-  public override get alwaysDrawn() { return this._alwaysDrawn; }
-  public get modelOverrides() { return this._modelOverrides; }
   public get elementOverrides() { return this._elementOverrides; }
   public get subCategoryOverrides() { return this._subCategoryOverrides; }
   public get visibleSubCategories() { return this._visibleSubCategories; }
@@ -35,7 +33,7 @@ describe("FeatureSymbology.Overrides", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows = await imodel.views.getViewList({ from: SpatialViewState.classFullName, limit: 1 });
     assert.exists(viewRows, "Should find some views");
     viewId = viewRows[0].id!;

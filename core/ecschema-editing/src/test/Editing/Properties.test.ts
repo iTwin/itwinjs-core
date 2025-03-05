@@ -1,4 +1,4 @@
-import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass, UnitSystem } from "@itwin/ecschema-metadata";
+import { ECClassModifier, EntityClass, Enumeration, EnumerationProperty, KindOfQuantity, PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, PropertyCategory, Schema, SchemaContext, SchemaItemKey, SchemaKey, StructClass } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import { SchemaContextEditor } from "../../ecschema-editing";
 import { ECEditingStatus } from "../../Editing/Exception";
@@ -18,7 +18,7 @@ describe("Properties editing tests", () => {
     testEditor = new SchemaContextEditor(context);
     testKey = await testEditor.createSchema("TestSchema", "test", 1, 0, 0);
     entityKey = await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
-    entity = await testEditor.schemaContext.getSchemaItem(entityKey);
+    entity = await testEditor.schemaContext.getSchemaItem(entityKey, EntityClass);
     structKey = await testEditor.structs.create(testKey, "testStruct");
   });
 
@@ -58,8 +58,8 @@ describe("Properties editing tests", () => {
       await testEditor.entities.createPrimitiveProperty(childResult, "TestPropertyName", PrimitiveType.Double);
       await testEditor.entities.createPrimitiveProperty(grandChildResult, "TestPropertyName", PrimitiveType.Double);
 
-      const childEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityChild");
-      const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem<EntityClass>("testEntityGrandChild");
+      const childEntity = await (await testEditor.getSchema(testKey)).getItem("testEntityChild", EntityClass);
+      const grandChildEntity = await (await testEditor.getSchema(testKey)).getItem("testEntityGrandChild", EntityClass);
 
       const childProperty = await childEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
       const grandChildProperty = await grandChildEntity?.getProperty("TestPropertyName") as PrimitiveProperty;
@@ -249,8 +249,8 @@ describe("Properties editing tests", () => {
       await expect(testEditor.entities.properties.setCategory(entityKey, "testProperty", unknownCategory)).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetCategory);
 
-        expect(error).to.have.nested.property("innerError.message", `PropertyCategory ${unknownCategory.fullName} could not be found in the schema ${testKey.name}.`);
-        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFound);
+        expect(error).to.have.nested.property("innerError.message", `PropertyCategory ${unknownCategory.fullName} could not be found in the schema context.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
       });
     });
 
@@ -281,7 +281,7 @@ describe("Properties editing tests", () => {
       context = new SchemaContext();
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await testSchema.getItem<EntityClass>("testEntity");
+      const testClass = await testSchema.getItem("testEntity", EntityClass);
       const property = await testClass?.getProperty("testProperty");
 
       await testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "testProperty", { className: "testCustomAttribute" });
@@ -332,7 +332,7 @@ describe("Properties editing tests", () => {
       await Schema.fromJson(schemaBJson, context);
       const schemaA = await Schema.fromJson(schemaAJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await schemaA.getItem<EntityClass>("testEntity");
+      const testClass = await schemaA.getItem("testEntity", EntityClass);
       const property = await testClass?.getProperty("testProperty");
 
       await testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "testProperty", { className: "SchemaB.testCustomAttribute" });
@@ -403,7 +403,7 @@ describe("Properties editing tests", () => {
       context = new SchemaContext();
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
-      const testClass = await testSchema.getItem<UnitSystem>("testEntity");
+      const testClass = await testSchema.getItem("testEntity", EntityClass);
 
       await expect(testEditor.entities.properties.addCustomAttribute(testClass?.key as SchemaItemKey, "badPropertyName", { className: "testCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToProperty);
@@ -505,8 +505,11 @@ describe("Properties editing tests", () => {
     });
 
     it("editing a primitive property attribute not belonging to the proper property type, rejected with error", async () =>  {
-      const structClass = await testEditor.schemaContext.getSchemaItem<StructClass>(structKey);
-      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      const structClass = await testEditor.schemaContext.getSchemaItem(structKey, StructClass);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
+      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
       await expect(testEditor.entities.primitiveProperties.setMinValue(entityKey, "TestProperty", 1)).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetMinValue);
         expect(error).to.have.nested.property("innerError.message", `Expected property TestProperty to be of type PrimitiveProperty.`);
@@ -582,8 +585,11 @@ describe("Properties editing tests", () => {
     });
 
     it("editing a enumeration property attribute not belonging to the proper property type, rejected with error", async () =>  {
-      const structClass = await testEditor.schemaContext.getSchemaItem<StructClass>(structKey);
-      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      const structClass = await testEditor.schemaContext.getSchemaItem(structKey, StructClass);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
+      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
       await expect(testEditor.entities.enumerationProperties.setName(entityKey, "TestProperty", "testName")).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetPropertyName);
         expect(error).to.have.nested.property("innerError.message", `Expected property TestProperty to be of type EnumerationProperty.`);
@@ -594,8 +600,14 @@ describe("Properties editing tests", () => {
 
   describe("Navigation property editing tests", () => {
     it("editing a property through navigationProperties that is not a NavigationProperty, rejected with error", async () =>  {
-      const structClass = await testEditor.schemaContext.getSchemaItem<StructClass>(structKey);
-      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass!);
+      const structClass = await testEditor.schemaContext.getSchemaItem(structKey, StructClass);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
+      await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
+      if(structClass === undefined) {
+        throw new Error("Expected StructClass to be defined.");
+      }
       await expect(testEditor.entities.navigationProperties.setName(entityKey, "TestProperty", "testName")).to.be.eventually.rejected.then(function (error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetPropertyName);
         expect(error).to.have.nested.property("innerError.message", `Expected property TestProperty to be of type NavigationProperty.`);
@@ -613,6 +625,49 @@ describe("Properties editing tests", () => {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetPropertyName);
         expect(error).to.have.nested.property("innerError.message", `Expected property TestProperty to be of type StructProperty.`);
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidPropertyType);
+      });
+    });
+  });
+
+  describe("Set KindOfQuantity tests", () => {
+    let unitKey: SchemaItemKey;
+
+    beforeEach(async () => {
+      const phenomenonKey = await testEditor.phenomenons.create(testKey, "testPhenomenon", "Units.LENGTH(2)");
+      const unitSystemKey = await testEditor.unitSystems.create(testKey, "testUnitSystem");
+      unitKey = await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey);
+    });
+
+    it("should successfully add KindOfQuantity to property", async () => {
+      const koqResult = await testEditor.kindOfQuantities.create(testKey, "testKindOfQuantity", unitKey);
+      await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
+      await testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", koqResult);
+
+      const property = await entity?.getProperty("testProperty") as PrimitiveProperty;
+      const koq = await testEditor.schemaContext.getSchemaItem(koqResult) as KindOfQuantity;
+      expect(await property.kindOfQuantity).to.eql(koq);
+    });
+
+    it("try setting property KindOfQuantity to a different type, throws error", async () => {
+      const notAKindOfQuantity = await testEditor.entities.create(testKey, "notAKindOfQuantity", ECClassModifier.None);
+      await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
+
+      await expect(testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", notAKindOfQuantity)).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.SetKindOfQuantity);
+        expect(error).to.have.nested.property("innerError.message", `Expected ${notAKindOfQuantity.fullName} to be of type KindOfQuantity.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaItemType);
+      });
+    });
+
+    it("try setting property KindOfQuantity to an unknown KindOfQuantity, throws error", async () => {
+      const unknownKOQ = new SchemaItemKey("unknownKindOfQuantity", testKey);
+      await testEditor.entities.createPrimitiveProperty(entityKey, "testProperty", PrimitiveType.String);
+
+      await expect(testEditor.entities.properties.setKindOfQuantity(entityKey, "testProperty", unknownKOQ)).to.be.eventually.rejected.then(function (error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.SetKindOfQuantity);
+
+        expect(error).to.have.nested.property("innerError.message", `KindOfQuantity ${unknownKOQ.fullName} could not be found in the schema context.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
       });
     });
   });
