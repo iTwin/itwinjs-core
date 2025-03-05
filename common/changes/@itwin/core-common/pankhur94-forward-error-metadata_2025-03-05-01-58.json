@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Adding metadata for bentley error in  IpcInvokeReturn ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

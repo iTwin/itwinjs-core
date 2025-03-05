@@ -33,7 +33,7 @@ export type RemoveFunction = () => void;
  * The presence of iTwinError indicates that the backend threw an exception of type [[ITwinError]] and the frontend will re-throw that same error.
  * Otherwise the `result` member holds the response.
  * @internal */
-export type IpcInvokeReturn = { result: any, error?: never, iTwinError?: never } | { result?: never, iTwinError?: never, error: { name: string, message: string, errorNumber: number, stack?: string } } |
+export type IpcInvokeReturn = { result: any, error?: never, iTwinError?: never } | { result?: never, iTwinError?: never, error: { name: string, message: string, errorNumber: number, stack?: string, metadata?: LoggingMetaData } } |
 { result?: never, error?: never, iTwinError: {namespace: string, errorKey: string, message: string, stack?: string, metadata?: LoggingMetaData, [key: string]: any } };
 /**
  * An inter-process socket connection between a single [IModelHost]($backend) on the backend (the node process), and an [IModelApp]($frontend) on
