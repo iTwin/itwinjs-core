@@ -1465,9 +1465,15 @@ export namespace IModelJson {
         capped: data.capped,
         start: centerA.toJSON(),
         end: centerB.toJSON(),
-        startRadius: radiusA,
-        endRadius: radiusB,
       };
+
+      if (Geometry.isSameCoordinate(radiusA, radiusB)) {
+        coneProps.radius = radiusA;
+      } else {
+        coneProps.startRadius = radiusA;
+        coneProps.endRadius = radiusB;
+      }
+
       // always specify an orthogonal frame if !identity for backwards compatibility
       Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, true);
 
@@ -1484,44 +1490,42 @@ export namespace IModelJson {
       const xData = data.cloneVectorX().normalizeWithLength();
       const yData = data.cloneVectorY().normalizeWithLength();
       const zData = data.cloneVectorZ().normalizeWithLength();
+      if (!xData.v || !yData.v || !zData.v)
+        return undefined;
+
+      const rigid = Matrix3d.createIdentity();
+      const skew = Matrix3d.createIdentity();
+      if (!data.cloneLocalToWorld().matrix.factorRigidSkew(rigid, skew))
+        return undefined;
+
+      const value: SphereProps = { center: data.cloneCenter().toJSON() };
+
+      // always specify an orthogonal frame if !identity for backwards compatibility
+      if (!rigid.isIdentity)
+        value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
+
+      // specify a general matrix if skew/mirror local frame
+      if (!skew.isDiagonal || skew.determinant() < 0.0)
+        value.xyzVectors = [xData.v.toJSON(), yData.v.toJSON(), zData.v.toJSON()];
+
       const latitudeSweep = data.cloneLatitudeSweep();
+      const fullSweep = latitudeSweep.isFullLatitudeSweep;
+      if (data.capped && !fullSweep)
+        value.capped = data.capped;
+      if (!fullSweep)
+        value.latitudeStartEnd = latitudeSweep.toJSON();
+
       const rX = xData.mag;
       const rY = yData.mag;
       const rZ = zData.mag;
-
-      if (xData.v && yData.v && zData.v) {
-        const value: SphereProps = { center: data.cloneCenter().toJSON() };
-
-        const rigid = Matrix3d.createIdentity();
-        const skew = Matrix3d.createIdentity();
-        const factored = data.cloneLocalToWorld().matrix.factorRigidSkew(rigid, skew);
-        if (!factored)
-          return undefined;
-
-        // always specify an orthogonal frame if !identity for backwards compatibility
-        if (!rigid.isIdentity)
-          value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
-
-        // specify a general matrix if skew/mirror local frame
-        if (!skew.isDiagonal || skew.determinant() < 0.0)
-          value.xyzVectors = [xData.v.toJSON(), yData.v.toJSON(), zData.v.toJSON()];
-
-        const fullSweep = latitudeSweep.isFullLatitudeSweep;
-        if (data.capped && !fullSweep)
-          value.capped = data.capped;
-        if (!fullSweep)
-          value.latitudeStartEnd = latitudeSweep.toJSON();
-
-        if (Geometry.isSameCoordinate(rX, rY) && Geometry.isSameCoordinate(rX, rZ))
-          value.radius = rX;
-        else {
-          value.radiusX = rX;
-          value.radiusY = rY;
-          value.radiusZ = rZ;
-        }
-        return { sphere: value };
+      if (Geometry.isSameCoordinate(rX, rY) && Geometry.isSameCoordinate(rX, rZ))
+        value.radius = rX;
+      else {
+        value.radiusX = rX;
+        value.radiusY = rY;
+        value.radiusZ = rZ;
       }
-      return undefined;
+      return { sphere: value };
     }
 
     /** Convert strongly typed instance to tagged json */
