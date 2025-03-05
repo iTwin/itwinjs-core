@@ -5,8 +5,8 @@
 
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
-import { Matrix3d } from "../../core-geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
@@ -16,14 +16,48 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("CrossPlatform", () => {
-  // fileNames[Platform][FileType] are names of files of given type written by the given platform
-  interface TestCase { fileNames: string[][][] }
+  interface TestCase {
+    // fileNames[Platform][FileType] is an array of relative pathnames of FileType files written by Platform
+    fileNames: string[][][],
+  }
   enum Platform { Native = 0, TypeScript = 1 }
   enum FileType { FlatBuffer = 0, JSON = 1 }
 
   const root = "./src/test/data/crossPlatform/";
   const nativeRoot = `${root}native/`;
   const typeScriptRoot = `${root}typescript/`;
+
+  const deserializeFirstGeom = (fileName: string, fileType: FileType): GeometryQuery | undefined => {
+    let geom: GeometryQuery | GeometryQuery[] | undefined;
+    if (FileType.FlatBuffer === fileType)
+      geom = GeometryCoreTestIO.flatBufferFileToGeometry(fileName);
+    else if (FileType.JSON === fileType)
+      geom = GeometryCoreTestIO.jsonFileToGeometry(fileName);
+    if (!geom)
+      return undefined;
+    if (!Array.isArray(geom))
+      return geom;
+    if (geom.length >= 1)
+      return geom[0];
+    return undefined;
+  };
+
+  const jsonIsContained = (subset: any, superset: any, matchValues: boolean = true): boolean => {
+    if (subset == null) // i.e., is null or undefined
+      return true;
+    if (typeof subset !== "object" || typeof superset !== "object")
+      return false;
+    for (const key of Object.keys(subset)) {
+      if (!superset.hasOwnProperty(key))
+        return false;
+      if (typeof subset[key] === "object") {
+        if (!jsonIsContained(subset[key], superset[key], matchValues))
+          return false;
+      } else if (matchValues && subset[key] !== superset[key])
+        return false;
+    }
+    return true;
+  };
 
   // Verify that the typescript API can read flatbuffer and json files written by the typescript and native APIs.
   // Each test case consists of at least four files that encode the same single geometry: native-authored fb and json, typescript-authored fb and json
@@ -41,30 +75,21 @@ describe("CrossPlatform", () => {
 
     // TODO: add other test cases
 
-    const geometry: GeometryQuery[] = [];
-    const pushFirstDeserializedGeom = (fileName: string, fileType: FileType) => {
-      const geom = FileType.FlatBuffer === fileType ? GeometryCoreTestIO.flatBufferFileToGeometry(fileName) : GeometryCoreTestIO.jsonFileToGeometry(fileName);
-      if (ck.testDefined(geom, `deserialized ${fileName}`)) {
-        let toPush: GeometryQuery | undefined;
-        if (Array.isArray(geom)) {
-          if (ck.testLE(1, geom.length, `deserialized at least one geometry from ${fileName}`))
-            toPush = geom[0];
-        } else {
-          toPush = geom;
-        }
-        if (toPush)
-          geometry.push(toPush);
-      }
-    };
-
     for (let iTestCase = 0; iTestCase < testCases.length; ++iTestCase) {
-      geometry.length = 0;
+      const geometry: GeometryQuery[] = [];
+
+      // deserialize and collect all geometries
       for (const platform of [Platform.Native, Platform.TypeScript]) {
         for (const fileType of [FileType.FlatBuffer, FileType.JSON]) {
-          for (const fileName of testCases[iTestCase].fileNames[platform][fileType])
-            pushFirstDeserializedGeom(fileName, fileType);
+          for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
+            const geom = deserializeFirstGeom(fileName, fileType);
+            if (ck.testDefined(geom, `deserialized at least one geometry from ${fileName}`))
+              geometry.push(geom);
+          }
         }
       }
+
+      // all TestCase geometries should be equivalent
       if (ck.testLE(4, geometry.length, "have at least four geometries to compare")) {
         for (let i = 1; i < geometry.length; ++i)
           ck.testTrue(geometry[0].isAlmostEqual(geometry[i]), `testCase[${iTestCase}]: geom0 compares to geom${i}`);
@@ -75,7 +100,7 @@ describe("CrossPlatform", () => {
   });
 
   it("SolidPrimitives", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
 
     const testCases: TestCase[] = [];
     for (const testName of ["sphere-nonuniform-scale", "sphere-skew-axes", "cone-elliptical-perp", "cone-elliptical-skew"])
@@ -103,12 +128,55 @@ describe("CrossPlatform", () => {
       serialize(cone1, "cone-elliptical-skew-new");
     }
 
-    // TODO:
-    // move files to root for native/TS repos
-    // add code here to verify for each testCase set:
-    // * all fb are the same, so reduce test cases
-    // * verify only NEW json files deserialize to the fb geometry
-    // * new json files are a superset of old json files
+    for (let iTestCase = 0; iTestCase < testCases.length; ++iTestCase) {
+      // all flatbuffer geometries should be equivalent
+      const fbGeom: GeometryQuery[] = [];
+      for (const platform of [Platform.Native, Platform.TypeScript]) {
+        const fileType = FileType.FlatBuffer;
+        for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
+          const geom = deserializeFirstGeom(fileName, fileType);
+          if (ck.testDefined(geom, `deserialized at least one FB geometry from ${fileName}`))
+            fbGeom.push(geom);
+        }
+      }
+      if (!ck.testLE(1, fbGeom.length, "have at least one FB geometry to compare"))
+        continue;
+      const geomToCompare = fbGeom[0]; // ASSUME correct
+      for (let i = 1; i < fbGeom.length; ++i)
+        ck.testTrue(geomToCompare.isAlmostEqual(fbGeom[i]), `testCase[${iTestCase}]: fb0 === fb${i}`);
+
+      // all "new" json geometries should equate to geomToCompare
+      for (const platform of [Platform.Native, Platform.TypeScript]) {
+        const fileType = FileType.JSON;
+        for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
+          if (fileName.includes("-new.imjs")) {
+            const geom = deserializeFirstGeom(fileName, fileType);
+            if (ck.testDefined(geom, `deserialized at least one JSON geometry from ${fileName}`))
+              ck.testTrue(geomToCompare.isAlmostEqual(geom), `${fileName} yields expected geometry`);
+          }
+        }
+      }
+
+      // verify each property of old JSON is present in new JSON
+      for (const platform of [Platform.Native, Platform.TypeScript]) {
+        const fileType = FileType.JSON;
+        let oldJson, newJson: any;
+        for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
+          const jsonString = fs.readFileSync(fileName, "utf8");
+          if (fileName.includes("-new.imjs")) {
+            ck.testUndefined(newJson, `${fileName} extraneous new JSON file encountered`);
+            newJson = jsonString.length > 0 ? JSON.parse(jsonString) : undefined;
+          } else if (fileName.includes("-old.imjs")) {
+            ck.testUndefined(oldJson, `${fileName} extraneous old JSON file encountered`);
+            oldJson = jsonString.length > 0 ? JSON.parse(jsonString) : undefined;
+          }
+        }
+        // We already checked geometry, so don't check property values, which can be different,
+        // e.g., scale can be distributed differently between frame axes and radii.
+        if (ck.testDefined(newJson, `test case[${iTestCase}][${platform}] has valid JSON`))
+          ck.testTrue(jsonIsContained(oldJson, newJson, false), `testCase[${iTestCase}][${platform}]: oldJson should be subset of newJson`);
+      }
+    }
 
     expect(ck.getNumErrors()).toBe(0);
   });
