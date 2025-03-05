@@ -57,6 +57,30 @@ export class ECDb implements Disposable {
     this._nativeDb.dispose();
     this._nativeDb = undefined;
   }
+  /**
+   * Attach an iModel file to this connection and load and register its schemas.
+   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param fileName IModel file name
+   * @param alias identifier for the attached file. This identifer is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
+   */
+  public attachDb(fileName: string, alias: string): void {
+    if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
+    }
+    this[_nativeDb].attachDb(fileName, alias);
+  }
+  /**
+   * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
+   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param alias identifer that was used in the call to [[attachDb]]
+   */
+  public detachDb(alias: string): void {
+    if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
+    }
+    this.clearStatementCache();
+    this[_nativeDb].detachDb(alias);
+  }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
   public dispose(): void {
