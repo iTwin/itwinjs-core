@@ -129,9 +129,11 @@ describe("AnalyticalSchema", () => {
         case "model":
         case "category":
         case "typeDefinition":
+          assert.isTrue(property.isNavigation());
+          break;
         case "codeValue":
         case "userLabel":
-        assert.isTrue(property.isNavigation());
+          assert.isFalse(property.isNavigation());
           break;
       }
     });
