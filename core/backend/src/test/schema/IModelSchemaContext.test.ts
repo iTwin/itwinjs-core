@@ -108,7 +108,7 @@ describe("IModel Schema Context", () => {
     // is picking up all expected properties.
     const testData = (await testDomainClass!.getProperties()).map(property => property.name);
     const expectedString = testData.find((testString: string) => {
-      return testString === "testMixinProperty";
+      return testString === "TestMixinProperty";
     });
 
     assert.isDefined(expectedString);
