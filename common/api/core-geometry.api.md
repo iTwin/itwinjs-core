@@ -3817,7 +3817,7 @@ export class NumberArray {
     static createArrayWithMaxStepSize(low: number, high: number, step: number): number[];
     static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance?: number): boolean;
     static isCoordinateInArray(x: number, data: number[] | undefined): boolean;
-    static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean;
+    static isExactEqual(dataA: any[] | Float64Array | Uint8Array | Uint32Array | undefined, dataB: any[] | Float64Array | Uint8Array | Uint32Array | undefined): boolean;
     static linearCombination(data: number[], scales: number[]): number;
     static linearCombinationOfColors(colors: number[], scales: number[]): number;
     static maxAbsArray(values: number[]): number;
