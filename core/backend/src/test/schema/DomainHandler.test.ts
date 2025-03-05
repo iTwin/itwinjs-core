@@ -1,10 +1,10 @@
-import { _nativeDb, ChannelControl, ChannelKey, ClassRegistry, ElementOwnsUniqueAspect, ElementUniqueAspect, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema, IModelHost, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, SubjectOwnsPartitionElements } from "../../core-backend";
+import { _nativeDb, ChannelControl, ClassRegistry, ElementOwnsChildElements, ElementOwnsUniqueAspect, ElementUniqueAspect, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema, IModelHost, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, SubjectOwnsPartitionElements } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import { assert, expect } from "chai";
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
+import { spy as sinonSpy } from "sinon";
 import { Guid, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { join } from "node:path";
 import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
@@ -163,6 +163,8 @@ class TestModelHandlers extends FunctionalModel {
   }
   public static override onDeleteElement(arg: OnElementInModelIdArg): void {
     super.onDeleteElement(arg);
+    if (arg.elementId === this.dontDelete)
+      throw new Error("dont delete my element");
     modelDomainHandlerOrder.push("Model: onDeleteElement");
   }
   public static override onDeletedElement(arg: OnElementInModelIdArg): void {
@@ -174,7 +176,6 @@ class TestModelHandlers extends FunctionalModel {
 /** for testing `ElementAspect.onXxx` methods */
 class TestAspectHandlers extends ElementUniqueAspect {
   public static override get className() { return "TestAspectHandlers"; }
-  public static expectedVal = "";
 
   public static override onInsert(arg: OnAspectPropsArg): void {
     super.onInsert(arg);
@@ -216,6 +217,8 @@ describe.only("Domain Handlers", () => {
   let partitionCode: Code;
   const testChannelKey1 = "channel 1 for tests";
   const testChannelKey2 = "channel 2 for tests";
+  const testChannelKey3 = "channel 3 for tests";
+  const testChannelKey4 = "channel 4 for tests";
 
   const spy = {
     model: {
@@ -418,6 +421,110 @@ describe.only("Domain Handlers", () => {
     assert.isTrue(spy.aspect.onUpdated.calledOnce);
     assert.isTrue(spy.aspect.onDelete.calledOnce);
     assert.isTrue(spy.aspect.onDeleted.calledOnce);
+
+    const model = iModelDb.models.getModel(modelId);
+    model.delete();
+  });
+
+  it("should call all handler functions for an inserted element", async () => {
+    codeSpec = CodeSpec.create(iModelDb, "Test Element Domain Handlers", CodeScopeSpec.Type.Model);
+    iModelDb.codeSpecs.insert(codeSpec);
+    assert.isTrue(Id64.isValidId64(codeSpec.id));
+    assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey3));
+    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Element Domain Handlers", channelKey: testChannelKey3 });
+    assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey3), subjectId);
+
+    partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
+
+    const partitionProps = {
+      classFullName: TestPartitionHandlers.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(subjectId),
+      code: partitionCode,
+    };
+    iModelDb.channels.addAllowedChannel(testChannelKey3);
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+
+    const elementProps: ElementProps = {
+      classFullName: TestElementHandlers.classFullName,
+      model: modelId,
+      code: {
+        spec: codeSpec.id,
+        scope: modelId,
+        value: "Breakdown3"
+      }
+    };
+    const elementId = iModelDb.elements.insertElement(elementProps);
+
+    codeSpec = CodeSpec.create(iModelDb, "Test Element Domain Handlers 2", CodeScopeSpec.Type.Model);
+    iModelDb.codeSpecs.insert(codeSpec);
+    assert.isTrue(Id64.isValidId64(codeSpec.id));
+    assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey4));
+    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Element Domain Handlers 2", channelKey: testChannelKey4 });
+    assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey4), subjectId);
+
+    partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
+
+    const elementProps2: ElementProps = {
+      classFullName: TestElementHandlers.classFullName,
+      model: modelId,
+      code: {
+        spec: codeSpec.id,
+        scope: modelId,
+        value: "Breakdown4"
+      }
+    };
+    const elementId2 = iModelDb.elements.insertElement(elementProps2);
+
+
+    const componentProps = {
+      classFullName: Component.classFullName,
+      model: modelId,
+      parent: { id: elementId, relClassName: ElementOwnsChildElements.classFullName },
+      code: { spec: codeSpec.id, scope: modelId, value: "Component1" },
+    };
+
+    const componentId = iModelDb.elements.insertElement(componentProps);
+    const component1 = iModelDb.elements.getElement(componentId);
+    component1.update();
+
+    componentProps.code.value = "comp2";
+    const componentId2 = iModelDb.elements.insertElement(componentProps);
+    const component2 = iModelDb.elements.getElement(componentId2);
+
+    TestModelHandlers.dontDelete = componentId2; // block deletion through model
+    expect(() => component2.delete()).to.throw("dont delete my element");
+    TestModelHandlers.dontDelete = ""; // allow deletion through model
+    TestElementHandlers.dontDeleteChild = componentId2; // but block through parent
+    expect(() => component2.delete()).to.throw("dont delete my child"); // nope
+    assert.equal(spy.model.onDeleteElement.callCount, 2, "Model.onElementDelete gets called even though element is not really deleted");
+    assert.equal(spy.model.onDeletedElement.callCount, 0, "make sure Model.onElementDeleted did not get called");
+
+    componentProps.parent.id = elementId;
+    const componentId3 = iModelDb.elements.insertElement(componentProps);
+    const component3Props = iModelDb.elements.getElementProps(componentId3);
+    component3Props.parent!.id = elementId2;
+
+    iModelDb.elements.updateElement(component3Props);
+
+    // Check that all aspect handler functions were called
+    assert.isTrue(spy.breakdown.onInsert.calledOnce);
+    assert.isTrue(spy.breakdown.onInserted.calledOnce);
+    assert.isTrue(spy.breakdown.onUpdate.calledOnce);
+    assert.isTrue(spy.breakdown.onUpdated.calledOnce);
+    assert.isTrue(spy.breakdown.onDelete.calledOnce);
+    assert.isTrue(spy.breakdown.onDeleted.calledOnce);
+    assert.isTrue(spy.breakdown.onChildDelete.calledOnce);
+    assert.isTrue(spy.breakdown.onChildDeleted.calledOnce);
+    assert.isTrue(spy.breakdown.onChildInsert.calledOnce);
+    assert.isTrue(spy.breakdown.onChildInserted.calledOnce);
+    assert.isTrue(spy.breakdown.onChildUpdate.calledOnce);
+    assert.isTrue(spy.breakdown.onChildUpdated.calledOnce);
+    assert.isTrue(spy.breakdown.onChildAdd.calledOnce);
+    assert.isTrue(spy.breakdown.onChildAdded.calledOnce);
+    assert.isTrue(spy.breakdown.onChildDrop.calledOnce);
+    assert.isTrue(spy.breakdown.onChildDropped.calledOnce);
 
     const model = iModelDb.models.getModel(modelId);
     model.delete();
