@@ -10,9 +10,9 @@ import { SnapshotDb } from "@itwin/core-backend";
 import { LocalFileName } from "@itwin/core-common";
 
 
-describe("Attach/Detach Db", () => {
+describe("Attach/Detach Db", async () => {
   it("attach simulation db", async () => {
-    // __PUBLISH_EXTRACT_START__ IModelDb_attachDb
+    // __PUBLISH_EXTRACT_START__ IModelDb_attachDb.code
     async function attachSimulationDb(masterFile: LocalFileName, simulationFile: LocalFileName): Promise<void> {
       const master = SnapshotDb.openFile(masterFile);
 
@@ -61,6 +61,7 @@ describe("Attach/Detach Db", () => {
       master.close();
     }
     // __PUBLISH_EXTRACT_END__
-    attachSimulationDb(IModelTestUtils.resolveAssetFile("sim-master.bim"), IModelTestUtils.resolveAssetFile("sim-attach.ecdb"));
+    await attachSimulationDb(IModelTestUtils.resolveAssetFile("sim-master.bim"), IModelTestUtils.resolveAssetFile("sim-attach.ecdb"));
+
   });
 });
