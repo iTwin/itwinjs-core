@@ -147,9 +147,10 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
 
   if (debugAnchorPt) {
     context.entries.push({
-      color: ColorDef.fromString("#58a4b0").toJSON()
+      color: ColorDef.blue.toJSON()
     });
 
+    // Draw a blue box to show the element's margin
     const marginCorners = layout.marginRange.corners3d(true);
     documentTransform.multiplyPoint3dArrayInPlace(marginCorners);
     marginCorners.forEach((corner, index) => {
@@ -164,8 +165,24 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       });
     });
 
+    // Draw a blue cross to show the element's origin
     context.entries.push({
-      color: ColorDef.fromString("#5d2e8c").toJSON()
+      separator: {
+        startPoint: [-1, 0, 0],
+        endPoint: [1, 0, 0],
+      },
+    });
+
+    context.entries.push({
+      separator: {
+        startPoint: [0, -1, 0],
+        endPoint: [0, 1, 0],
+      },
+    });
+
+    // Draw a red box to show the text range
+    context.entries.push({
+      color: ColorDef.red.toJSON(),
     });
 
     const rangeCorners = layout.range.corners3d(true);
@@ -182,12 +199,7 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       });
     });
 
-    context.entries.push({
-      color: ColorDef.red.toJSON(),
-    });
-
-    // const debugAnchorPt = documentTransform.multiplyPoint3d(layout.anchorPt);
-
+    // Draw a red x to show the anchor point
     context.entries.push({
       separator: {
         startPoint: [debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0],
@@ -204,38 +216,6 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
 
     context.entries.push({
       color: ColorDef.blue.toJSON(),
-    });
-
-    context.entries.push({
-      separator: {
-        startPoint: [documentTransform.origin.x - 1, documentTransform.origin.y - 1, 0],
-        endPoint: [documentTransform.origin.x + 1, documentTransform.origin.y + 1, 0],
-      },
-    });
-
-    context.entries.push({
-      separator: {
-        startPoint: [documentTransform.origin.x + 1, documentTransform.origin.y - 1, 0],
-        endPoint: [documentTransform.origin.x - 1, documentTransform.origin.y + 1, 0],
-      },
-    });
-
-    context.entries.push({
-      color: ColorDef.black.toJSON(),
-    });
-
-    context.entries.push({
-      separator: {
-        startPoint: [-1, -1, 0],
-        endPoint: [1, 1, 0],
-      },
-    });
-
-    context.entries.push({
-      separator: {
-        startPoint: [1, -1, 0],
-        endPoint: [-1, 1, 0],
-      },
     });
   }
 
