@@ -45,23 +45,6 @@ export class BeDuration {
     return new Promise<void>((resolve: any) => setTimeout(resolve, ms));
   }
 
-  /**
-   * Utility function to calculate exponential function value. Useful for implementing exponential backoff.
-   * @param coefficient The scaling factor for the calculation
-   * @param base The base value to be raised to the power of the exponent
-   * @param exponent The power to which the base is raised
-   * @param maxBackoff The maximum allowed value in milliseconds
-   * @returns The calculated time in milliseconds, capped at maxBackoff
-   *
-   * @example
-   * coefficient = 5, base = 10, exponent = 3, maxBackoff = 900
-   * min((coefficient * base^exponent), maxBackoff) = result
-   * min((5 * 10^3), 900) = min(5000, 900) = 900
-   */
-  public static exponentialTimeMilliseconds(coefficient: number, base: number, exponent: number, maxBackoff: number): number {
-    return Math.min(coefficient * (base ** exponent), maxBackoff);
-  }
-
   /** Utility function to wait for either the specified time or a promise, whichever resolves first
    * @param ms Maximum duration in milliseconds to wait
    * @param promise A pending promise to wait for
