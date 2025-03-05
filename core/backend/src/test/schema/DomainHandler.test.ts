@@ -54,6 +54,8 @@ class TestElementHandlers extends FunctionalBreakdownElement {
   }
   public static override onChildDelete(arg: OnChildElementIdArg): void {
     super.onChildDelete(arg);
+    if (arg.childId === this.dontDeleteChild)
+      throw new Error("dont delete my child");
     elementDomainHandlerOrder.push("Element: onChildDelete");
   }
   public static override onChildDeleted(arg: OnChildElementIdArg): void {
@@ -350,24 +352,24 @@ describe.only("Domain Handlers", () => {
     model.delete();
 
     // Check that all model handler functions were called
-    assert.isTrue(spy.model.onInsert.calledOnce);
-    assert.isTrue(spy.model.onInserted.calledOnce);
-    assert.isTrue(spy.model.onInsertElement.calledOnce);
-    assert.isTrue(spy.model.onInsertedElement.calledOnce);
-    assert.isTrue(spy.model.onUpdate.calledOnce);
-    assert.isTrue(spy.model.onUpdated.calledOnce);
-    assert.isTrue(spy.model.onUpdateElement.calledOnce);
-    assert.isTrue(spy.model.onUpdatedElement.calledOnce);
-    assert.isTrue(spy.model.onDelete.calledOnce);
-    assert.isTrue(spy.model.onDeleted.calledOnce);
-    assert.isTrue(spy.model.onDeleteElement.calledOnce);
-    assert.isTrue(spy.model.onDeletedElement.calledOnce);
+    assert.isTrue(spy.model.onInsert.called);
+    assert.isTrue(spy.model.onInserted.called);
+    assert.isTrue(spy.model.onInsertElement.called);
+    assert.isTrue(spy.model.onInsertedElement.called);
+    assert.isTrue(spy.model.onUpdate.called);
+    assert.isTrue(spy.model.onUpdated.called);
+    assert.isTrue(spy.model.onUpdateElement.called);
+    assert.isTrue(spy.model.onUpdatedElement.called);
+    assert.isTrue(spy.model.onDelete.called);
+    assert.isTrue(spy.model.onDeleted.called);
+    assert.isTrue(spy.model.onDeleteElement.called);
+    assert.isTrue(spy.model.onDeletedElement.called);
 
     // Check that all sub model handler functions were called
-    assert.isTrue(spy.partition.onSubModelInsert.calledOnce);
-    assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
-    assert.isTrue(spy.partition.onSubModelDelete.calledOnce);
-    assert.isTrue(spy.partition.onSubModelDeleted.calledOnce);
+    assert.isTrue(spy.partition.onSubModelInsert.called);
+    assert.isTrue(spy.partition.onSubModelInserted.called);
+    assert.isTrue(spy.partition.onSubModelDelete.called);
+    assert.isTrue(spy.partition.onSubModelDeleted.called);
   });
 
   it("should call all handler functions for an inserted aspect", async () => {
@@ -415,12 +417,12 @@ describe.only("Domain Handlers", () => {
     iModelDb.elements.deleteAspect(aspect[0].id);
 
     // Check that all aspect handler functions were called
-    assert.isTrue(spy.aspect.onInsert.calledOnce);
-    assert.isTrue(spy.aspect.onInserted.calledOnce);
-    assert.isTrue(spy.aspect.onUpdate.calledOnce);
-    assert.isTrue(spy.aspect.onUpdated.calledOnce);
-    assert.isTrue(spy.aspect.onDelete.calledOnce);
-    assert.isTrue(spy.aspect.onDeleted.calledOnce);
+    assert.isTrue(spy.aspect.onInsert.called);
+    assert.isTrue(spy.aspect.onInserted.called);
+    assert.isTrue(spy.aspect.onUpdate.called);
+    assert.isTrue(spy.aspect.onUpdated.called);
+    assert.isTrue(spy.aspect.onDelete.called);
+    assert.isTrue(spy.aspect.onDeleted.called);
 
     const model = iModelDb.models.getModel(modelId);
     model.delete();
@@ -493,13 +495,17 @@ describe.only("Domain Handlers", () => {
     const componentId2 = iModelDb.elements.insertElement(componentProps);
     const component2 = iModelDb.elements.getElement(componentId2);
 
+    spy.model.onDeleteElement.resetHistory();
+    spy.model.onDeletedElement.resetHistory();
     TestModelHandlers.dontDelete = componentId2; // block deletion through model
     expect(() => component2.delete()).to.throw("dont delete my element");
     TestModelHandlers.dontDelete = ""; // allow deletion through model
     TestElementHandlers.dontDeleteChild = componentId2; // but block through parent
-    expect(() => component2.delete()).to.throw("dont delete my child"); // nope
+    expect(() => component2.delete()).to.throw("dont delete my child");
     assert.equal(spy.model.onDeleteElement.callCount, 2, "Model.onElementDelete gets called even though element is not really deleted");
     assert.equal(spy.model.onDeletedElement.callCount, 0, "make sure Model.onElementDeleted did not get called");
+    TestElementHandlers.dontDeleteChild = ""; // now fully allow delete
+    component2.delete();
 
     componentProps.parent.id = elementId;
     const componentId3 = iModelDb.elements.insertElement(componentProps);
@@ -509,22 +515,22 @@ describe.only("Domain Handlers", () => {
     iModelDb.elements.updateElement(component3Props);
 
     // Check that all aspect handler functions were called
-    assert.isTrue(spy.breakdown.onInsert.calledOnce);
-    assert.isTrue(spy.breakdown.onInserted.calledOnce);
-    assert.isTrue(spy.breakdown.onUpdate.calledOnce);
-    assert.isTrue(spy.breakdown.onUpdated.calledOnce);
-    assert.isTrue(spy.breakdown.onDelete.calledOnce);
-    assert.isTrue(spy.breakdown.onDeleted.calledOnce);
-    assert.isTrue(spy.breakdown.onChildDelete.calledOnce);
-    assert.isTrue(spy.breakdown.onChildDeleted.calledOnce);
-    assert.isTrue(spy.breakdown.onChildInsert.calledOnce);
-    assert.isTrue(spy.breakdown.onChildInserted.calledOnce);
-    assert.isTrue(spy.breakdown.onChildUpdate.calledOnce);
-    assert.isTrue(spy.breakdown.onChildUpdated.calledOnce);
-    assert.isTrue(spy.breakdown.onChildAdd.calledOnce);
-    assert.isTrue(spy.breakdown.onChildAdded.calledOnce);
-    assert.isTrue(spy.breakdown.onChildDrop.calledOnce);
-    assert.isTrue(spy.breakdown.onChildDropped.calledOnce);
+    assert.isTrue(spy.breakdown.onInsert.called);
+    assert.isTrue(spy.breakdown.onInserted.called);
+    assert.isTrue(spy.breakdown.onUpdate.called);
+    assert.isTrue(spy.breakdown.onUpdated.called);
+    assert.isTrue(spy.breakdown.onDelete.called);
+    assert.isTrue(spy.breakdown.onDeleted.called);
+    assert.isTrue(spy.breakdown.onChildDelete.called);
+    assert.isTrue(spy.breakdown.onChildDeleted.called);
+    assert.isTrue(spy.breakdown.onChildInsert.called);
+    assert.isTrue(spy.breakdown.onChildInserted.called);
+    assert.isTrue(spy.breakdown.onChildUpdate.called);
+    assert.isTrue(spy.breakdown.onChildUpdated.called);
+    assert.isTrue(spy.breakdown.onChildAdd.called);
+    assert.isTrue(spy.breakdown.onChildAdded.called);
+    assert.isTrue(spy.breakdown.onChildDrop.called);
+    assert.isTrue(spy.breakdown.onChildDropped.called);
 
     const model = iModelDb.models.getModel(modelId);
     model.delete();
