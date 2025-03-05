@@ -215,6 +215,7 @@ describe.only("Domain Handlers", () => {
   let subjectId: Id64String;
   let partitionCode: Code;
   const testChannelKey1 = "channel 1 for tests";
+  const testChannelKey2 = "channel 2 for tests";
 
   const spy = {
     model: {
@@ -294,17 +295,31 @@ describe.only("Domain Handlers", () => {
     iModelDb.saveChanges("Import TestHandlers schema");
 
     assert.equal(iModelDb.channels.queryChannelRoot(ChannelControl.sharedChannelName), IModel.rootSubjectId);
+  });
 
-    codeSpec = CodeSpec.create(iModelDb, "Test Element Domain Handlers", CodeScopeSpec.Type.Model);
+  after(async () => {
+    // await IModelHost.shutdown();
+    sinon.restore();
+  });
+
+  beforeEach(async () => {
+
+  });
+
+  afterEach(() => {
+
+  });
+
+  it("should call all handler functions for an inserted model", async () => {
+    codeSpec = CodeSpec.create(iModelDb, "Test Model Domain Handlers", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
-
     assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey1));
-    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Subject Domain Handlers", channelKey: testChannelKey1 });
+    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Model Domain Handlers", channelKey: testChannelKey1 });
     assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey1), subjectId);
 
-    // Setup the Model
     partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
+
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
       model: IModel.repositoryModelId,
@@ -314,21 +329,7 @@ describe.only("Domain Handlers", () => {
     iModelDb.channels.addAllowedChannel(testChannelKey1);
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
-  });
 
-  after(async () => {
-    // await IModelHost.shutdown();
-  });
-
-  beforeEach(async () => {
-
-  });
-
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it("should call all handler functions for an inserted model", async () => {
     const elementProps: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
       model: modelId,
@@ -367,6 +368,25 @@ describe.only("Domain Handlers", () => {
   });
 
   it("should call all handler functions for an inserted aspect", async () => {
+    codeSpec = CodeSpec.create(iModelDb, "Test Aspect Domain Handlers", CodeScopeSpec.Type.Model);
+    iModelDb.codeSpecs.insert(codeSpec);
+    assert.isTrue(Id64.isValidId64(codeSpec.id));
+    assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey2));
+    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Aspect Domain Handlers", channelKey: testChannelKey2 });
+    assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey2), subjectId);
+
+    partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
+
+    const partitionProps = {
+      classFullName: TestPartitionHandlers.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(subjectId),
+      code: partitionCode,
+    };
+    iModelDb.channels.addAllowedChannel(testChannelKey2);
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+
     const elementProps: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
       model: modelId,
@@ -398,5 +418,8 @@ describe.only("Domain Handlers", () => {
     assert.isTrue(spy.aspect.onUpdated.calledOnce);
     assert.isTrue(spy.aspect.onDelete.calledOnce);
     assert.isTrue(spy.aspect.onDeleted.calledOnce);
+
+    const model = iModelDb.models.getModel(modelId);
+    model.delete();
   });
 });
