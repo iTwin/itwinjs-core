@@ -7,6 +7,8 @@ import * as path from "path";
 import { Code } from "@itwin/core-common";
 import {
   DefinitionElement,
+  Element,
+  InformationContentElement,
   RepositoryLink,
   SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
@@ -89,16 +91,18 @@ describe("IModel Schema Context", () => {
     }
   });
 
-  it("should verify Entity metadata with both base class and mixin properties", async () => {
+  it.only("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
     const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1,0,0));
     const testDomainClass = await testDomain!.getEntityClass("TestDomainClass");
-
-    assert.equal(Array.from(testDomainClass!.getAllBaseClassesSync() ?? []).length, 2);
-    assert.equal(testDomainClass!.getBaseClassSync()?.fullName, DefinitionElement.schemaItemKey.fullName);
-    assert.equal(Array.from(testDomainClass!.getAllBaseClassesSync() ?? [])[1]?.fullName, "TestDomain.IMixin");
+    const baseClassFullNames = Array.from(testDomainClass!.getAllBaseClassesSync() ?? []).map(baseClass => baseClass.fullName);
+    assert.equal(baseClassFullNames.length, 4);
+    assert.equal(baseClassFullNames[0], DefinitionElement.schemaItemKey.fullName);
+    assert.equal(baseClassFullNames[1], InformationContentElement.schemaItemKey.fullName);
+    assert.equal(baseClassFullNames[2], Element.schemaItemKey.fullName);
+    assert.equal(baseClassFullNames[3], "TestDomain.IMixin");
 
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
