@@ -13,7 +13,7 @@ import {
 import {
   BackgroundMapSettings,
   BaseLayerSettings,
-  Cartographic, DefaultSupportedTypes, GeoCoordStatus, MapImagerySettings, MapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, MapImagerySettings, MapLayerSettings, ModelMapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -589,7 +589,10 @@ export namespace RealityModelTileTree {
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
       super(false, props.iModel,
         (layerTreeRef?: MapLayerTileTreeReference) => {
-          return true === layerTreeRef?.layerSettings.toRealityData;
+          const mapLayerSettings = layerTreeRef?.layerSettings;
+          if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+            return true === mapLayerSettings.toRealityData;
+          return false;
         },
         props.backgroundBase, props.backgroundLayers);
       this._name = undefined !== props.name ? props.name : "";
