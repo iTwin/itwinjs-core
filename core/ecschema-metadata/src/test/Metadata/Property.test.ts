@@ -24,6 +24,7 @@ import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { PropertyType } from "../../PropertyTypes";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -418,7 +419,7 @@ describe("Property", () => {
       await context.addSchema(refSchema);
       const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
       await (testSchema as MutableSchema).addReference(refSchema);
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
       property.addCustomAttribute({ className: "RefSchema.TestCustomAttribute" });
       const serialized = await property.toXml(newDom);
@@ -435,7 +436,7 @@ describe("Property", () => {
         },
       };
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
       property.addCustomAttribute({ className: "TestCustomAttribute" });
       const serialized = await property.toXml(newDom);
@@ -482,6 +483,11 @@ describe("Property", () => {
             },
             {
               type: "PrimitiveProperty",
+              typeName: "dateTime",
+              name: "DateTimeString",
+            },
+            {
+              type: "PrimitiveProperty",
               typeName: "point2d",
               name: "Point2D",
             },
@@ -505,7 +511,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const nowTicks = Date.now();
@@ -517,6 +523,7 @@ describe("Property", () => {
         Long: 100,
         Double: 200,
         DateTime: new Date(nowTicks),
+        DateTimeString: "2021-08-19T16:37:42.278",
         Point2D: { x: 100, y: 200 },
         Point3D: { x: 100, y: 200, z: 300 },
         IGeometry: "geometry",
@@ -525,6 +532,7 @@ describe("Property", () => {
 
       property.addCustomAttribute(ca);
       const serialized = await property.toXml(newDom);
+      const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
       expect(element.textContent).to.equal("True");
@@ -538,6 +546,8 @@ describe("Property", () => {
       expect(element.textContent).to.equal("200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTime");
       expect(element.textContent).to.equal(nowTicks.toString());
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTimeString");
+      expect(element.textContent).to.equal(expectedTimeFromString.toString());
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point2D");
       expect(element.textContent).to.equal("100,200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point3D");
@@ -564,7 +574,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const ca = {
@@ -614,7 +624,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const ca = {
@@ -666,7 +676,7 @@ describe("Property", () => {
       };
 
       const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
-      const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
+      const entityClass = await testSchema.getItem("testClass", EntityClass) as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
 
       const ca = {
@@ -1399,3 +1409,213 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
     });
   });
 });
+
+describe("should get property from baseProperty", () => {
+
+  function createSchemaJson(schemaItemJson: any): any {
+    return createSchemaJsonWithItems({
+
+      // KOQ properties
+      MyKindOfQuantity: {
+        schemaItemType: "KindOfQuantity",
+        name: "myKindOfQuantity",
+        relativeError: 1.0,
+        persistenceUnit: "Formats.IN",
+      },
+      OverrideKindOfQuantity: {
+        schemaItemType: "KindOfQuantity",
+        name: "OverrideKindOfQuantity",
+        relativeError: 0.01,
+        persistenceUnit: "Formats.M",
+      },
+
+      // category properties
+      TestCategory: {
+        schemaItemType: "PropertyCategory",
+        type: "string",
+        typeName: "testCategory"
+      },
+
+      BasebaseClass: {
+        schemaItemType: "EntityClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.MyKindOfQuantity",
+            category: "TestSchema.TestCategory",
+            priority: 101,
+          },
+        ],
+      },
+      BaseClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BasebaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.MyKindOfQuantity",
+            category: "TestSchema.TestCategory",
+            priority: 100,
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp4",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.MyKindOfQuantity",
+          }
+        ],
+      },
+      TestClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp",
+            typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp3",
+            typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp4",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.OverrideKindOfQuantity",
+          }
+        ],
+      },
+
+      ...schemaItemJson,
+    }, {
+      references: [
+        {
+          name: "Formats",
+          version: "1.0.0",
+          alias: "f",
+        },
+      ],
+    });
+  }
+
+  const context = new SchemaContext();
+  context.addLocater(new TestSchemaLocater());
+  const schema: Schema = Schema.fromJsonSync(createSchemaJson(""), context);
+
+  let testClass: EntityClass;
+  beforeEach(() => {
+    testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+  });
+
+  it("should get from base property", async () => {
+    const testProp = testClass.getPropertySync("TestProp", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("MyKindOfQuantity");
+
+    const cat = testProp!.category;
+    expect(cat).to.exist;
+    expect(cat!.name).to.equal("TestCategory");
+
+    const priority = testProp!.priority;
+    expect(priority).to.exist;
+    expect(priority).to.equal(100);
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("MyKindOfQuantity");
+
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.exist;
+    expect(catfromSync!.name).to.equal("TestCategory");
+  });
+
+  it("should get from base property's base property", async () => {
+    const testProp = testClass.getPropertySync("TestProp2", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("MyKindOfQuantity");
+    const cat = testProp!.category;
+    expect(cat).to.exist;
+    expect(cat!.name).to.equal("TestCategory");
+    const priority = testProp!.priority;
+    expect(priority).to.exist;
+    expect(priority).to.equal(101);
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("MyKindOfQuantity");
+
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.exist;
+    expect(catfromSync!.name).to.equal("TestCategory");
+  });
+
+  it("should return undefined if property & base property all undefined", async () => {
+    const testProp = testClass.getPropertySync("TestProp3", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.be.undefined;
+    const cat = testProp!.category;
+    expect(cat).to.be.undefined;
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.be.undefined;
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.be.undefined;
+  });
+
+  it("should success with property override", async () => {
+    const testProp = testClass.getPropertySync("TestProp4", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("OverrideKindOfQuantity");
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("OverrideKindOfQuantity");
+  });
+
+  it("should not serialize with property override", async() => {
+    const testProp = testClass.getPropertySync("TestProp", false);
+    expect(testProp).to.exist;
+
+    const serializedJSON = testProp!.toJSON();
+    expect(serializedJSON.kindOfQuantity).to.be.undefined;
+    expect(serializedJSON.category).to.be.undefined;
+    expect(serializedJSON.priority).to.be.undefined;
+
+    const newDom = createEmptyXmlDocument();
+    const serializedXML = await testProp!.toXml(newDom);
+    expect(serializedXML.getAttribute("kindOfQuantity")).to.equal("");
+    expect(serializedXML.getAttribute("category")).to.equal("");
+    expect(serializedXML.getAttribute("priority")).to.equal("");
+  });
+})

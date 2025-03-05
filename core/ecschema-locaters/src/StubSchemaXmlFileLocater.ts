@@ -54,8 +54,8 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(key, matchType, context) as T;
+  public async getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
+    return this.getSchemaSync(key, matchType, context);
   }
 
   /**
@@ -77,15 +77,15 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
-  public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1]; // eslint-disable-line @typescript-eslint/unbound-method
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const alias = this.getSchemaAlias(maxCandidate.schemaText!);
-    const schema = new Schema(context, maxCandidate, alias) as T;
+    const schema = new Schema(context, maxCandidate, alias);
     context.addSchemaSync(schema);
 
     this.addSchemaReferences(schema, context, SchemaMatchType.LatestWriteCompatible);

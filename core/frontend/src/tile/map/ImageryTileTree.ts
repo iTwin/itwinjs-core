@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose, Logger} from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, Logger,} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerProviderArrayProperty, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -44,7 +44,7 @@ export class ImageryMapTile extends RealityTile {
   public get texture() { return this._texture; }
   public get tilingScheme() { return this.imageryTree.tilingScheme; }
   public override get isDisplayable() { return (this.depth > 1) && super.isDisplayable; }
-  public override get isOutOfLodRange(): boolean { return this._outOfLodRange;}
+  public override get isOutOfLodRange(): boolean { return this._outOfLodRange; }
 
   public override setContent(content: ImageryTileContent): void {
     this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
@@ -57,10 +57,10 @@ export class ImageryMapTile extends RealityTile {
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], highResolutionReplacementTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
     const isSmallerThanDrape = (this.rectangle.xLength() / this.maximumSize) < drapePixelSize;
-    if (  (this.isLeaf )           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
+    if ((this.isLeaf)           // Include leaves so tiles get stretched past max LOD levels. (Only for base imagery layer)
       || isSmallerThanDrape
       || this._anyChildNotFound) {
-      if (this.isOutOfLodRange ) {
+      if (this.isOutOfLodRange) {
         drapeTiles.push(this);
         this.setIsReady();
       } else if (this.isLeaf && !isSmallerThanDrape && !this._anyChildNotFound) {
@@ -120,7 +120,7 @@ export class ImageryMapTile extends RealityTile {
         const rectangle = imageryTree.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
         const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
         const maximumSize = imageryTree.imageryLoader.maximumScreenSize;
-        const tile = new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize}, imageryTree, quadId, rectangle);
+        const tile = new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle);
         children.push(tile);
       });
 
@@ -150,9 +150,9 @@ export class ImageryMapTile extends RealityTile {
   private disposeTexture(): void {
     this._texture = dispose(this._texture);
   }
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this._mapTileUsageCount = 0;
-    super.dispose();
+    super[Symbol.dispose]();
   }
 }
 
@@ -168,7 +168,7 @@ export class ImageryTileTreeState {
   /** Get the scale range visibility of the imagery tile tree.
    * @returns the scale range visibility of the imagery tile tree.
    */
-  public getScaleRangeVisibility() {return this._scaleRangeVis;}
+  public getScaleRangeVisibility() { return this._scaleRangeVis; }
 
   /** Makes a deep copy of the current object.
    */
@@ -208,8 +208,15 @@ export class ImageryMapTileTree extends RealityTileTree {
     this._rootTile = new ImageryMapTile(params.rootTile, this, rootQuadId, this.getTileRectangle(rootQuadId));
   }
   public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
+
+    /** @deprecated in 5.0 Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryLoader.addLogoCards(cards, vp);
+  }
+
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    return this._imageryLoader.addAttributions(cards, vp);
   }
 
   public getTileRectangle(quadId: QuadId): MapCartoRectangle {
@@ -258,8 +265,15 @@ class ImageryTileLoader extends RealityTileLoader {
   public get maxDepth(): number { return this._imageryProvider.maximumZoomLevel; }
   public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
+
+    /** @deprecated in 5.0 Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryProvider.addLogoCards(cards, vp);
+  }
+
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    await this._imageryProvider.addAttributions(cards, vp);
   }
 
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
@@ -333,12 +347,45 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
           if (0 === cmp) {
             cmp = compareBooleans(lhs.settings.transparentBackground, rhs.settings.transparentBackground);
             if (0 === cmp) {
-              cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
+              if (lhs.settings.properties || rhs.settings.properties) {
+                if (lhs.settings.properties && rhs.settings.properties) {
+                  const lhsKeysLength = Object.keys(lhs.settings.properties).length;
+                  const rhsKeysLength = Object.keys(rhs.settings.properties).length;
+
+                  if (lhsKeysLength !== rhsKeysLength) {
+                    cmp = lhsKeysLength - rhsKeysLength;
+                  } else {
+                    for (const key of Object.keys(lhs.settings.properties)) {
+                      const lhsProp = lhs.settings.properties[key];
+                      const rhsProp = rhs.settings.properties[key];
+                      cmp = compareStrings(typeof lhsProp, typeof rhsProp);
+                      if (0 !== cmp)
+                        break;
+                      if (Array.isArray(lhsProp) || Array.isArray(rhsProp)) {
+                        cmp = compareSimpleArrays(lhsProp as MapLayerProviderArrayProperty, rhsProp as MapLayerProviderArrayProperty);
+                        if (0 !== cmp)
+                          break;
+                      } else {
+                        cmp = compareSimpleTypes(lhsProp, rhsProp);
+                        if (0 !== cmp)
+                          break;
+                      }
+                    }
+                  }
+                } else if (!lhs.settings.properties) {
+                  cmp = 1;
+                } else {
+                  cmp = -1;
+                }
+              }
               if (0 === cmp) {
-                for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++) {
-                  cmp = compareStrings(lhs.settings.subLayers[i].name, rhs.settings.subLayers[i].name);
-                  if (0 === cmp) {
-                    cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+                cmp = compareNumbers(lhs.settings.subLayers.length, rhs.settings.subLayers.length);
+                if (0 === cmp) {
+                  for (let i = 0; i < lhs.settings.subLayers.length && 0 === cmp; i++) {
+                    cmp = compareStrings(lhs.settings.subLayers[i].name, rhs.settings.subLayers[i].name);
+                    if (0 === cmp) {
+                      cmp = compareBooleans(lhs.settings.subLayers[i].visible, rhs.settings.subLayers[i].visible);
+                    }
                   }
                 }
               }
@@ -368,7 +415,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
 
     const modelId = iModel.transientIds.getNext();
     const tilingScheme = imageryProvider.tilingScheme;
-    const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
+    const rootLevel = (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
     const rootTileId = new QuadId(rootLevel, 0, 0).contentId;
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };

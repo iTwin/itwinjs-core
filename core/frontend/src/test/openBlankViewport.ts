@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { Id64String, SortedArray } from "@itwin/core-bentley";
+import { expect } from "vitest";
+import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
@@ -54,10 +54,12 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
   class BlankViewport extends ScreenViewport {
     public ownedIModel?: BlankConnection;
 
-    public override dispose(): void {
-      document.body.removeChild(this.parentDiv);
-      super.dispose();
-      this.ownedIModel?.closeSync();
+    public override[Symbol.dispose](): void {
+      if (!this.isDisposed) {
+        document.body.removeChild(this.parentDiv);
+        super[Symbol.dispose]();
+        this.ownedIModel?.closeSync();
+      }
     }
   }
 
@@ -74,27 +76,22 @@ export type TestBlankViewportOptions = BlankViewportOptions & { test: (vp: Scree
  * @internal
  */
 export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): void {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    if (typeof args === "function")
-      args(vp);
-    else
-      args.test(vp);
-  } finally {
-    vp.dispose();
-  }
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  if (typeof args === "function")
+    args(vp);
+  else
+    args.test(vp);
 }
+
+export type TestBlankViewportAsyncOptions = BlankViewportOptions & { test: (vp: ScreenViewport) => Promise<void> };
 
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export async function testBlankViewportAsync(args: ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
-  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
-  try {
-    await args(vp);
-  } finally {
-    vp.dispose();
-  }
+export async function testBlankViewportAsync(args: TestBlankViewportAsyncOptions | ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
+  using vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  const result = (typeof args === "function") ? args(vp) : args.test(vp);
+  return await result;
 }
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
@@ -193,6 +190,11 @@ export class Color {
     const colors = def.colors;
     return colors.r === this.r && colors.g === this.g && colors.b === this.b && colors.t === 0xff - this.a;
   }
+
+  public toHexString(): string {
+    const color = ColorDef.create(this.v);
+    return color.toHexString();
+  }
 }
 
 /** A set of unique color values read from a viewport - see readUniqueColors.
@@ -201,37 +203,59 @@ export class Color {
 export class ColorSet extends SortedArray<Color> {
   public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
   public get array(): Color[] { return this._array; }
+  public containsColorDef(color: ColorDef): boolean { return this.contains(Color.fromColorDef(color)); }
+}
+
+export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>): void {
+  const rect = undefined !== readRect ? readRect : vp.viewRect;
+
+  vp.readPixels({
+    rect,
+    excludeNonLocatable,
+    excludedElements,
+    receiver: (pixels) => {
+      if (undefined === pixels)
+        return;
+
+      const sRect = rect.clone();
+      sRect.left = vp.cssPixelsToDevicePixels(sRect.left);
+      sRect.right = vp.cssPixelsToDevicePixels(sRect.right);
+      sRect.bottom = vp.cssPixelsToDevicePixels(sRect.bottom);
+      sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
+
+      for (let x = sRect.left; x < sRect.right; x++)
+        for (let y = sRect.top; y < sRect.bottom; y++)
+          processor(pixels.getPixel(x, y));
+    },
+  });
 }
 
 /** Read depth, geometry type, and feature for each pixel. Return only the unique ones.
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
-  const rect = undefined !== readRect ? readRect : vp.viewRect;
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): PixelDataSet {
   const set = new PixelDataSet();
-  vp.readPixels(rect, Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
-    if (undefined === pixels)
-      return;
-
-    const sRect = rect.clone();
-    sRect.left = vp.cssPixelsToDevicePixels(sRect.left);
-    sRect.right = vp.cssPixelsToDevicePixels(sRect.right);
-    sRect.bottom = vp.cssPixelsToDevicePixels(sRect.bottom);
-    sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
-
-    for (let x = sRect.left; x < sRect.right; x++)
-      for (let y = sRect.top; y < sRect.bottom; y++)
-        set.insert(pixels.getPixel(x, y));
-  }, excludeNonLocatable);
-
+  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements);
   return set;
+}
+
+export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): SortedArray<Feature> {
+  const features = new SortedArray<Feature>((lhs, rhs) => lhs.compare(rhs));
+  processPixels(vp, (pixel) => {
+    if (pixel.feature) {
+      features.insert(pixel.feature);
+    }
+  },
+    readRect, excludeNonLocatable, excludedElements);
+
+  return features;
 }
 
 /** Read a specific pixel. @internal */
 export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
   const pixels = readUniquePixelData(vp, new ViewRect(x, y, x + 1, y + 1), excludeNonLocatable);
-  expect(pixels.length).to.equal(1);
+  expect(pixels.length).toEqual(1);
   return pixels.array[0];
 }
 
@@ -242,7 +266,7 @@ export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatabl
 export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const buffer = vp.readImageBuffer({ rect })!;
-  expect(buffer).not.to.be.undefined;
+  expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);
   const colors = new ColorSet();
   for (const rgba of u32)
@@ -251,9 +275,25 @@ export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   return colors;
 }
 
+export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<Color, number> {
+  const colors = new Dictionary<Color, number>((lhs, rhs) => lhs.compare(rhs));
+
+  const rect = readRect ?? vp.viewRect;
+  const buffer = vp.readImageBuffer({ rect })!;
+  expect(buffer).toBeDefined();
+  const u32 = new Uint32Array(buffer.data.buffer);
+  for (const rgba of u32) {
+    const color = Color.from(rgba);
+    const count = colors.get(color) ?? 0;
+    colors.set(color, count + 1);
+  }
+
+  return colors;
+}
+
 /** Read the color of a specific pixel. @internal */
 export function readColor(vp: Viewport, x: number, y: number): Color {
   const colors = readUniqueColors(vp, new ViewRect(x, y, x + 1, y + 1));
-  expect(colors.length).to.equal(1);
+  expect(colors.length).toEqual(1);
   return colors.array[0];
 }

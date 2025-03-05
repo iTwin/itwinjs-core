@@ -355,7 +355,9 @@ export class ToolAdmin {
   private _mouseMoveOverTimeout?: NodeJS.Timeout;
   private _editCommandHandler?: EditCommandHandler;
 
-  /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
+  /** The name of the [[PrimitiveTool]] to use as the default tool.
+   * Defaults to "Select", referring to [[SelectionTool]].
+   * @note An empty string signifies no default tool allowing more events to be handled by [[idleTool]].
    * @see [[startDefaultTool]] to activate the default tool.
    * @see [[defaultToolArgs]] to supply arguments when starting the tool.
    */
@@ -685,8 +687,10 @@ export class ToolAdmin {
         if (undefined === current.touchTapTimer) {
           current.touchTapTimer = Date.now();
           current.touchTapCount = 1;
+          // NOTE: We cannot await the executeAfter call below, because that prevents any other
+          // taps from being processed, which makes it impossible for double tap to happen.
           // eslint-disable-next-line @typescript-eslint/unbound-method
-          await ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
+          void ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
         } else if (undefined !== current.touchTapCount) {
           current.touchTapCount++;
         }
@@ -852,6 +856,9 @@ export class ToolAdmin {
   /** The current tool. May be ViewTool, InputCollector, PrimitiveTool, or IdleTool - in that priority order. */
   public get currentTool(): InteractiveTool { return this.activeTool ? this.activeTool : this.idleTool; }
 
+  /** Allow applications to inhibit specific tooltips, such as for maps. */
+  public wantToolTip(_hit: HitDetail): boolean { return true; }
+
   /** Ask the current tool to provide tooltip contents for the supplied HitDetail. */
   public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> { return this.currentTool.getToolTip(hit); }
 
@@ -915,9 +922,20 @@ export class ToolAdmin {
       else
         this.fillEventFromCursorLocation(ev);
 
-      // NOTE: Do not call adjustPoint when snapped, refer to CurrentInputState.fromButton
-      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false))
-        this.adjustPoint(ev.point, ev.viewport);
+      if (adjustPoint && undefined !== ev.viewport) {
+        // Use ev.rawPoint for cursor location when not snapped as ev.point gets adjusted in fromButton...
+        const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+        if (undefined !== snap) {
+          // Account for changes to locks, reset and re-adjust snap point...
+          snap.adjustedPoint.setFrom(snap.getPoint());
+          this.adjustSnapPoint();
+          ev.point.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
+        } else {
+          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : ev.rawPoint);
+          this.adjustPoint(ev.point, ev.viewport);
+        }
+        IModelApp.accuDraw.onMotion(ev);
+      }
     }
 
     if (undefined === ev.viewport)
@@ -1070,6 +1088,7 @@ export class ToolAdmin {
 
     this._mouseMoveOverTimeout = setTimeout(async () => {
       await this.onMotionEnd(vp, pt2d, inputSource);
+      await processMotion();
     }, 100);
 
     const processMotion = async (): Promise<void> => {
@@ -1318,8 +1337,8 @@ export class ToolAdmin {
     if (!updateDynamics)
       return;
 
-    // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
-    this.updateDynamics(undefined, true, true);
+    // Update tool dynamics for current cursor location to not require a motion event.
+    this.updateDynamics(undefined, undefined, true);
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
@@ -1449,14 +1468,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    if (IModelStatus.Success !== await imodel.txns.reverseSingleTxn())
-      return false;
-
-    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
-    if (undefined !== this._primitiveTool)
-      await this._primitiveTool.onRestartTool();
-
-    return true;
+    return (IModelStatus.Success === await imodel.txns.reverseSingleTxn() ? true : false);
   }
 
   /** Called to redo previous data button for primitive tools or undo last write operation. */
@@ -1472,14 +1484,7 @@ export class ToolAdmin {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection())
       return false;
 
-    if (IModelStatus.Success !== await imodel.txns.reinstateTxn())
-      return false;
-
-    // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
-    if (undefined !== this._primitiveTool)
-      await this._primitiveTool.onRestartTool();
-
-    return true;
+    return (IModelStatus.Success === await imodel.txns.reinstateTxn() ? true : false);
   }
 
   private onActiveToolChanged(tool: Tool, start: StartOrResume): void {
@@ -1712,15 +1717,25 @@ export class ToolAdmin {
   }
 
   /**
-   * Starts the default [[Tool]], if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
-   * @note The default tool is expected to be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
-   * an active [[ViewTool]] or [[InputCollector]] and replace or clear the current [[PrimitiveTool]].
+   * Starts the default [[PrimitiveTool]], if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
+   * @note The default tool, when specified, must be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
+   * an active [[ViewTool]] or [[InputCollector]] and replace or clear the current [[PrimitiveTool]]. The default tool can not be
+   * a subclass of [[ViewTool]] as view tools replace each other and aren't suspended. This means [[ViewTool.exitTool]] would
+   * result in the active tool being undefined instead of making the default tool active.
    * The tool's [[Tool.run]] method is invoked with arguments specified by [[defaultToolArgs]].
    * @see [[defaultToolId]] to configure the default tool.
    */
   public async startDefaultTool(): Promise<void> {
-    if (!await IModelApp.tools.run(this.defaultToolId, this.defaultToolArgs))
-      return this.startPrimitiveTool(undefined);
+    const tool = IModelApp.tools.create(this.defaultToolId, this.defaultToolArgs);
+
+    if (tool instanceof PrimitiveTool) {
+      if (!await tool.run(this.defaultToolArgs))
+        return this.startPrimitiveTool(undefined);
+    } else {
+      await this.startPrimitiveTool(undefined); // Ensure active primitive tool is terminated...
+      if (undefined !== tool)
+        throw new Error("Default tool must be a subclass of PrimitiveTool");
+    }
   }
 
   /**

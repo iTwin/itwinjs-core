@@ -71,8 +71,6 @@ export interface SubCategoryResultRow {
 export interface HydrateViewStateRequestProps {
   acsId?: string;
   notLoadedModelSelectorStateModels?: CompressedId64Set;
-  /** @deprecated in 3.x. If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
-  notLoadedCategoryIds?: CompressedId64Set;
   sheetViewAttachmentIds?: CompressedId64Set;
   viewStateLoadProps?: ViewStateLoadProps;
   baseModelId?: Id64String;
@@ -90,8 +88,6 @@ export interface HydrateViewStateResponseProps {
   sheetViewViews?: (ViewStateProps | undefined)[];
   baseModelProps?: ModelProps;
   spatialViewProps?: ViewStateProps;
-  /** @deprecated in 3.x. If loading categoryIds is necessary, see [IModelConnection.SubCategoriesCache.load]($frontend)*/
-  categoryIdsResult?: SubCategoryResultRow[];
 }
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend).
@@ -255,7 +251,7 @@ export namespace ViewStoreRpc {
    * be incremented according to the rules of semantic versioning. See .\rpc\README-RpcInterfaceVersioning.md for more information.
    *  @internal
    */
-  export const version = "4.0.0" as const;
+  export const version = "4.0.0";
 
   /** an Id of a View, DisplayStyle, ModelSelector, CategorySelector, or Timeline in a ViewStore.
    * Will be a base-36 number with a leading "@".

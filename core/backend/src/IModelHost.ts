@@ -9,15 +9,16 @@
 // To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
+import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
-import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
+import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { BackendHubAccess } from "./BackendHubAccess";
+import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -30,14 +31,17 @@ import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
-import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
+import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
+import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl";
+import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
+import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -111,14 +115,13 @@ export interface IModelHostOptions {
   appAssetsDir?: LocalDirName;
 
   /**
-   * Options for creating the [[Workspace]]
+   * Options for creating the [[IModelHost.appWorkspace]]
    * @beta
    */
   workspace?: WorkspaceOpts;
 
   /**
    * The kind of iModel hub server to use.
-   * @internal
    */
   hubAccess?: BackendHubAccess;
 
@@ -192,6 +195,7 @@ export interface IModelHostOptions {
    * Will be changed to default to `false` in 5.0.
    */
   allowSharedChannel?: boolean;
+
 }
 
 /** Configuration of core-backend.
@@ -203,7 +207,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
-
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
@@ -234,24 +237,24 @@ export class IModelHostConfiguration implements IModelHostOptions {
  * Settings for `IModelHost.appWorkspace`.
  * @note this includes the default dictionary from the SettingsSpecRegistry
  */
-class ApplicationSettings extends BaseSettings {
+class ApplicationSettings extends SettingsImpl {
   private _remove?: VoidFunction;
   protected override verifyPriority(priority: SettingsPriority) {
-    if (priority >= SettingsPriority.iModel) // iModel settings may not appear in ApplicationSettings
+    if (priority > SettingsPriority.application) // only application or lower may appear in ApplicationSettings
       throw new Error("Use IModelSettings");
   }
   private updateDefaults() {
-    const defaults: SettingDictionary = {};
-    for (const [schemaName, val] of SettingsSchemas.allSchemas) {
+    const defaults: SettingsContainer = {};
+    for (const [schemaName, val] of IModelHost.settingsSchemas.settingDefs) {
       if (val.default)
         defaults[schemaName] = val.default;
     }
-    this.addDictionary("_default_", 0 as SettingsPriority, defaults);
+    this.addDictionary({ name: "_default_", priority: 0 }, defaults);
   }
 
   public constructor() {
     super();
-    this._remove = SettingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
+    this._remove = IModelHost.settingsSchemas.onSchemaChanged.addListener(() => this.updateDefaults());
     this.updateDefaults();
   }
 
@@ -262,6 +265,12 @@ class ApplicationSettings extends BaseSettings {
     }
   }
 }
+
+const definedInStartup = <T>(obj: T | undefined): T => {
+  if (obj === undefined)
+    throw new Error("IModelHost.startup must be called first");
+  return obj;
+};
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
  * See [the learning article]($docs/learning/backend/IModelHost.md)
@@ -276,17 +285,11 @@ export class IModelHost {
   public static backendVersion = "";
   private static _profileName: string;
   private static _cacheDir = "";
-  private static _appWorkspace?: Workspace;
+  private static _settingsSchemas?: SettingsSchemas;
+  private static _appWorkspace?: OwnedWorkspace;
 
-  private static _platform?: typeof IModelJsNative;
-  /** @internal */
-  public static get platform(): typeof IModelJsNative {
-    if (this._platform === undefined)
-      throw new Error("IModelHost.startup must be called first");
-    return this._platform;
-  }
-
-  public static configuration?: IModelHostOptions;
+  // Omit the hubAccess field from configuration so it stays internal.
+  public static configuration?: Omit<IModelHostOptions, "hubAccess">;
 
   /**
    * The name of the *Profile* directory (a subdirectory of "[[cacheDir]]/profiles/") for this process.
@@ -347,10 +350,18 @@ export class IModelHost {
    * attempting to add them to this Workspace will fail.
    * @beta
    */
-  public static get appWorkspace(): Workspace { return this._appWorkspace!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
 
-  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
-  public static snapshotFileNameResolver?: FileNameResolver;
+  /** The registry of schemas describing the [[Setting]]s for the application session.
+   * Applications should register their schemas via methods like [[SettingsSchemas.addGroup]].
+   * @beta
+   */
+  public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
+
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
+   * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   */
+  public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Get the current access token for this IModelHost, or a blank string if none is available.
    * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
@@ -362,24 +373,16 @@ export class IModelHost {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }
 
-  private static syncNativeLogLevels() {
-    this.platform.clearLogLevelCache();
-  }
   private static loadNative(options: IModelHostOptions) {
-    if (undefined !== this._platform)
-      return;
-
-    this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
-    this._platform.logger = Logger;
-    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
+    loadNativePlatform();
 
     if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
-      this.platform.setCrashReporting(options.crashReportingConfig);
+      IModelNative.platform.setCrashReporting(options.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", {
         enableCrashDumps: options.crashReportingConfig?.enableCrashDumps,
@@ -406,19 +409,19 @@ export class IModelHost {
 
   private static _hubAccess?: BackendHubAccess;
   /** @internal */
-  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
+  public static [_setHubAccess](hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
 
   /** get the current hubAccess, if present.
    * @internal
    */
-  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
+  public static [_getHubAccess](): BackendHubAccess | undefined { return this._hubAccess; }
 
   /** Provides access to the IModelHub for this IModelHost
    * @internal
    * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
-   * To determine whether one is present, use [[getHubAccess]].
+   * To determine whether one is present, use [[_getHubAccess]].
    */
-  public static get hubAccess(): BackendHubAccess {
+  public static get [_hubAccess](): BackendHubAccess {
     if (IModelHost._hubAccess === undefined)
       throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
     return IModelHost._hubAccess;
@@ -426,8 +429,9 @@ export class IModelHost {
 
   private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = join(KnownLocations.packageAssetsDir, "Settings");
-    SettingsSchemas.addDirectory(join(settingAssets, "Schemas"));
-    this._appWorkspace = Workspace.construct(new ApplicationSettings(), configuration.workspace);
+    this._settingsSchemas = constructSettingsSchemas();
+    this._settingsSchemas.addDirectory(join(settingAssets, "Schemas"));
+    this._appWorkspace = constructWorkspace(new ApplicationSettings(), configuration.workspace);
 
     // Create the CloudCache for Workspaces. This will fail if another process is already using the same profile.
     try {
@@ -466,7 +470,7 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
-    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);
 
     this.loadNative(options);
@@ -478,8 +482,7 @@ export class IModelHost {
     [
       IModelReadRpcImpl,
       IModelTileRpcImpl,
-      SnapshotIModelRpcImpl,
-      WipRpcImpl,
+      SnapshotIModelRpcImpl, // eslint-disable-line @typescript-eslint/no-deprecated
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
@@ -489,10 +492,11 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    if (undefined !== options.hubAccess)
-      this._hubAccess = options.hubAccess;
+    const { hubAccess, ...otherOptions } = options;
+    if (undefined !== hubAccess)
+      this._hubAccess = hubAccess;
 
-    this.configuration = options;
+    this.configuration = otherOptions;
     this.setupTileCache();
 
     process.once("beforeExit", IModelHost.shutdown);
@@ -514,16 +518,29 @@ export class IModelHost {
     return IModelHost.doShutdown();
   }
 
+  /**
+   * Create a new iModel.
+   * @returns the Guid of the newly created iModel.
+   * @throws [IModelError]($common) in case of errors.
+   * @note If [[IModelHostOptions.hubAccess]] was undefined in the call to [[startup]], this function will throw an error.
+   */
+  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
+    return this[_hubAccess].createNewIModel(arg);
+  }
+
   private static async doShutdown() {
     if (!this._isValid)
       return;
 
     this._isValid = false;
     this.onBeforeShutdown.raiseEvent();
+
     this.configuration = undefined;
     this.tileStorage = undefined;
+
     this._appWorkspace?.close();
     this._appWorkspace = undefined;
+    this._settingsSchemas = undefined;
 
     CloudSqlite.CloudCaches.destroy();
     process.removeListener("beforeExit", IModelHost.shutdown);
@@ -534,7 +551,7 @@ export class IModelHost {
    * @internal
    */
   public static setCrashReportProperty(name: string, value: string): void {
-    this.platform.setCrashReportProperty(name, value);
+    IModelNative.platform.setCrashReportProperty(name, value);
   }
 
   /**
@@ -542,7 +559,7 @@ export class IModelHost {
    * @internal
    */
   public static removeCrashReportProperty(name: string): void {
-    this.platform.setCrashReportProperty(name, undefined);
+    IModelNative.platform.setCrashReportProperty(name, undefined);
   }
 
   /**
@@ -550,7 +567,7 @@ export class IModelHost {
    * @internal
    */
   public static getCrashReportProperties(): CrashReportingConfigNameValuePair[] {
-    return this.platform.getCrashReportProperties();
+    return IModelNative.platform.getCrashReportProperties();
   }
 
   /** The directory where application assets may be found */
@@ -608,11 +625,11 @@ export class IModelHost {
     const credentials = config.tileCacheAzureCredentials;
 
     if (!storage && !credentials) {
-      this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
+      IModelNative.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
       return;
     }
 
-    this.platform.setMaxTileCacheSize(0);
+    IModelNative.platform.setMaxTileCacheSize(0);
     if (credentials) {
       if (storage)
         throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
@@ -640,7 +657,7 @@ export class IModelHost {
 
   /** @internal */
   public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string {
-    return this.platform.computeSchemaChecksum(arg);
+    return IModelNative.platform.computeSchemaChecksum(arg);
   }
 }
 
@@ -661,7 +678,7 @@ export class KnownLocations {
 
   /** The directory where the imodeljs-native assets are stored. */
   public static get nativeAssetsDir(): LocalDirName {
-    return IModelHost.platform.DgnDb.getAssetsDir();
+    return IModelNative.platform.DgnDb.getAssetsDir();
   }
 
   /** The directory where the core-backend assets are stored. */
@@ -679,6 +696,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
+ * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

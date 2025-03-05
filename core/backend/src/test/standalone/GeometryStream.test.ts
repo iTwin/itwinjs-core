@@ -7,9 +7,9 @@ import { assert, expect } from "chai";
 import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
-  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range2d, Range3d, SolidPrimitive, Sphere,
-  StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
+  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps,
+  LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range2d, Range3d,
+  SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
   AreaPattern, BackgroundFill, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
@@ -20,7 +20,7 @@ import {
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
+import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
 import { createBRepDataProps } from "../GeometryTestUtil";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Timer } from "../TestUtils";
@@ -29,20 +29,20 @@ function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
 }
 
-function createGeometryPartProps(geom?: GeometryStreamProps): GeometryPartProps {
+function createGeometryPartProps(geom?: GeometryStreamProps, modelId?: Id64String): GeometryPartProps {
   const partProps: GeometryPartProps = {
     classFullName: GeometryPart.classFullName,
-    model: IModel.dictionaryId,
+    model: modelId ?? IModel.dictionaryId,
     code: Code.createEmpty(),
     geom,
   };
   return partProps;
 }
 
-function createPhysicalElementProps(seedElement: GeometricElement, placement?: Placement3dProps, geom?: GeometryStreamProps): PhysicalElementProps {
+function createPhysicalElementProps(seedElement: GeometricElement, placement?: Placement3dProps, geom?: GeometryStreamProps, modelId?: Id64String): PhysicalElementProps {
   const elementProps: PhysicalElementProps = {
     classFullName: PhysicalObject.classFullName,
-    model: seedElement.model,
+    model: modelId ?? seedElement.model,
     category: seedElement.category,
     code: Code.createEmpty(),
     geom,
@@ -179,7 +179,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const brep = ElementGeometry.toBRep(entry);
           assert.exists(brep);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toBRep(expected[i].originalEntry!);
+            const other = ElementGeometry.toBRep(expected[i].originalEntry);
             assert.exists(other);
             // NOTE: Don't compare brep type; set from entity data by backend, ignored if supplied to update...
             const transform = Transform.fromJSON(brep?.transform);
@@ -194,7 +194,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const text = ElementGeometry.toTextString(entry);
           assert.exists(text);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toTextString(expected[i].originalEntry!);
+            const other = ElementGeometry.toTextString(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(text?.font === other?.font);
             assert.isTrue(text?.text === other?.text);
@@ -215,7 +215,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const image = ElementGeometry.toImageGraphic(entry);
           assert.exists(image);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry!);
+            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(image?.textureId === other?.textureId);
             assert.isTrue(image?.hasBorder === other?.hasBorder);
@@ -241,7 +241,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
       assert.exists(part);
       if (!isWorld && undefined !== expected[i].originalEntry) {
         const otherToElement = Transform.createIdentity();
-        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry!, otherToElement);
+        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry, otherToElement);
         assert.exists(other);
         assert.isTrue(partToElement.isAlmostEqual(otherToElement));
       }
@@ -250,7 +250,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
         const updated = ElementGeometry.updateGeometryParams(entry, geomParams);
         assert.isTrue(updated);
         if (!isWorld && undefined !== expected[i].geomParams)
-          assert.isTrue(geomParams.isEquivalent(expected[i].geomParams!));
+          assert.isTrue(geomParams.isEquivalent(expected[i].geomParams));
       }
     }
   });
@@ -469,11 +469,17 @@ describe("GeometryStream", () => {
     }
   });
 
-  it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
+  function createGeometricElem3dUsingArrowHeadNoStrokePattern(definitionModelId?: Id64String, physicalModelId?: Id64String) {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    if (definitionModelId === undefined)
+      definitionModelId = IModel.dictionaryId;
+
+    if (physicalModelId === undefined)
+      physicalModelId = seedElement.model;
 
     const partBuilder = new GeometryStreamBuilder();
     const partParams = new GeometryParams(Id64.invalid); // category won't be used
@@ -482,7 +488,7 @@ describe("GeometryStream", () => {
     partBuilder.appendGeometryParamsChange(partParams);
     partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
 
-    const partProps = createGeometryPartProps(partBuilder.geometryStream);
+    const partProps = createGeometryPartProps(partBuilder.geometryStream, definitionModelId);
     const partId = imodel.elements.insertElement(partProps);
     assert.isTrue(Id64.isValidId64(partId));
 
@@ -496,7 +502,7 @@ describe("GeometryStream", () => {
     const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
     assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestArrowStyle", compoundData);
+    const styleId = LineStyleDefinition.Utils.createStyle(imodel, definitionModelId, "TestArrowStyle", compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
@@ -506,16 +512,42 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
-    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
+    const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream, physicalModelId);
     const newId = imodel.elements.insertElement(elementProps);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId, styleId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
     assert.isTrue(usageInfo.usedIds!.includes(partId));
     assert.isTrue(usageInfo.usedIds!.includes(styleId));
+  }
+
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
+    createGeometricElem3dUsingArrowHeadNoStrokePattern();
+  });
+
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree fails", async () => {
+    const mySubject = Subject.insert(imodel, IModel.rootSubjectId, "My Subject - fails");
+    const myDefModel = DefinitionModel.insert(imodel, mySubject, "My Definitions - fails");
+    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), false, mySubject)[0];
+
+    createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
+
+    deleteElementTree({ iModel: imodel, topElement: mySubject, maxPasses: 1 });
+    expect(imodel.elements.tryGetElement(mySubject)).not.undefined;
+  });
+
+  it("create GeometricElement3d using arrow head style w/o using stroke pattern - deleteElementTree succeeds with 2 passes", async () => {
+    const mySubject = Subject.insert(imodel, IModel.rootSubjectId, "My Subject - success");
+    const myDefModel = DefinitionModel.insert(imodel, mySubject, "My Definitions - success");
+    const myPhysicalModel = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), false, mySubject)[0];
+
+    createGeometricElem3dUsingArrowHeadNoStrokePattern(myDefModel, myPhysicalModel);
+
+    deleteElementTree({ iModel: imodel, topElement: mySubject, maxPasses: 2 });
+    expect(imodel.elements.tryGetElement(mySubject)).undefined;
   });
 
   it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
@@ -574,7 +606,7 @@ describe("GeometryStream", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId, styleId, seedElement.category])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId, styleId, seedElement.category])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isTrue(usageInfo.lineStyleIds!.includes(styleId));
     assert.isTrue(usageInfo.spatialCategoryIds!.includes(seedElement.category));
@@ -1082,7 +1114,7 @@ describe("GeometryStream", () => {
     }
     assert.isTrue(6 === iShape);
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isTrue(usageInfo.usedIds!.includes(partId));
   });
@@ -1093,7 +1125,7 @@ describe("GeometryStream", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const foundFont = imodel.fontMap.getFont("Vera");
+    const foundFont = imodel.fonts.findId({ name: "Vera" })!;
     assert.exists(foundFont);
 
     const testOrigin = Point3d.create(5, 10, 0);
@@ -1104,7 +1136,7 @@ describe("GeometryStream", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: foundFont!.id,
+      font: foundFont,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -1195,7 +1227,7 @@ describe("GeometryStream", () => {
       assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
     }
 
-    const usageInfo = imodel.nativeDb.queryDefinitionElementUsage([partId])!;
+    const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isUndefined(usageInfo.usedIds, "GeometryPart should not to be used by any GeometricElement");
   });
@@ -1586,6 +1618,43 @@ describe("ElementGeometry", () => {
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
+  it("create GeometricElement3d from local coordinate interpolation curve flatbuffer data", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const testOrigin = Point3d.create(5, 10, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
+    const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
+
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
+    pts.push(Point3d.create(10, 15, 0));
+    pts.push(Point3d.create(5, 15, 0));
+
+    const expected: ExpectedElementGeometryEntry[] = [];
+    const newEntries: ElementGeometryDataEntry[] = [];
+
+    const interpolationProps: InterpolationCurve3dProps = { fitPoints: pts, closed: false, isChordLenKnots: 1, isColinearTangents: 1 };
+    const interpolationOpts = InterpolationCurve3dOptions.create(interpolationProps);
+    const interpolationCurve = InterpolationCurve3d.createCapture(interpolationOpts);
+    assert.isDefined(interpolationCurve);
+
+    const entry1 = ElementGeometry.fromGeometryQuery(interpolationCurve!);
+    assert.exists(entry1);
+    newEntries.push(entry1!);
+    expected.push({ opcode: ElementGeometryOpcode.CurvePrimitive, geometryCategory: "curvePrimitive" });
+
+    elementProps.elementGeometryBuilderParams = { entryArray: newEntries };
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+  });
+
   it("create GeometricElement3d with local coordinate indexed polyface flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
@@ -1725,13 +1794,65 @@ describe("ElementGeometry", () => {
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
 
+  it("test BRep entity transform", async () => {
+    const localToWorld = Transform.createOriginAndMatrix(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0).toMatrix3d());
+    const worldToLocal = localToWorld.inverse()!;
+
+    // Specify an entity transform that won't have translation/rotation fully cancelled out by placement...
+    const brepProps = createBRepDataProps(Point3d.create(15, 25, 5), YawPitchRollAngles.createDegrees(90, 0, 0));
+    const brepEntry = ElementGeometry.fromBRep(brepProps, worldToLocal);
+    assert.exists(brepEntry);
+
+    const brepToWorldExpected = Transform.fromJSON(brepProps.transform);
+    const brepToLocalExpected = worldToLocal.multiplyTransformTransform(brepToWorldExpected);
+
+    // Check for expected brep to local transform...
+    const brepPropsLocal = ElementGeometry.toBRep(brepEntry!, false);
+    assert.exists(brepPropsLocal);
+    const brepToLocal = Transform.fromJSON(brepPropsLocal!.transform);
+    assert.isTrue(brepToLocalExpected.isAlmostEqual(brepToLocal));
+
+    // Check for expected brep to world transform...
+    const brepPropsWorld = ElementGeometry.toBRep(brepEntry!, false, localToWorld);
+    assert.exists(brepPropsWorld);
+    const brepToWorld = Transform.fromJSON(brepPropsWorld!.transform);
+    assert.isTrue(brepToWorldExpected.isAlmostEqual(brepToWorld));
+
+    // Ensure that applying transform directly to flat buffer data produces same result...
+    ElementGeometry.transformBRep(brepEntry!, localToWorld);
+
+    const brepPropsWorld2 = ElementGeometry.toBRep(brepEntry!, false);
+    assert.exists(brepPropsWorld2);
+    const brepToWorld2 = Transform.fromJSON(brepPropsWorld2!.transform);
+    assert.isTrue(brepToWorldExpected.isAlmostEqual(brepToWorld2));
+
+    // Check json format geometry stream...
+    const builder = new GeometryStreamBuilder();
+    builder.setLocalToWorld(localToWorld);
+    builder.appendBRepData(brepProps);
+
+    const itLocal = new GeometryStreamIterator(builder.geometryStream);
+    for (const entry of itLocal) {
+      assertTrue(entry.primitive.type === "brep");
+      const brepToLocalGSB = Transform.fromJSON(entry.primitive.brep.transform);
+      assert.isTrue(brepToLocalExpected.isAlmostEqual(brepToLocalGSB));
+    }
+
+    const itWorld = new GeometryStreamIterator(builder.geometryStream, undefined, localToWorld);
+    for (const entry of itWorld) {
+      assertTrue(entry.primitive.type === "brep");
+      const brepToWorldGSB = Transform.fromJSON(entry.primitive.brep.transform);
+      assert.isTrue(brepToWorldExpected.isAlmostEqual(brepToWorldGSB));
+    }
+  });
+
   it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const foundFont = imodel.fontMap.getFont("Vera");
+    const foundFont = imodel.fonts.findId({ name: "Vera" })!;
     assert.exists(foundFont);
 
     const testOrigin = Point3d.create(5, 10, 0);
@@ -1743,7 +1864,7 @@ describe("ElementGeometry", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: foundFont!.id,
+      font: foundFont,
       height: 2,
       bold: true,
       origin: testOrigin,

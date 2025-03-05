@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "4.7.0-dev.15",
+  "version": "5.0.0-dev.77",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -14,13 +14,13 @@
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "copy:locale": "cpx \"./public/**/*\" ./lib/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "npm -s test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-abstract/file.json --tsIndexFile=./appui-abstract.ts --onlyJson",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "docs": "betools docs --json=../../generated-docs/ui/appui-abstract/file.json --tsIndexFile=./appui-abstract.ts --onlyJson",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "extract-api": "betools extract-api --entry=appui-abstract",
     "test": "npm run -s webpackTests && certa -r chrome",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.7.0-dev.15"
+    "@itwin/core-bentley": "workspace:*"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -46,7 +46,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@itwin/certa": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
@@ -56,17 +56,17 @@
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "ignore-styles": "^5.0.1",
     "mocha": "^10.2.0",
     "raf": "^3.4.0",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.1",
+    "sinon": "^17.0.2",
     "sinon-chai": "^3.7.0",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
-    "webpack": "^5.76.0"
+    "typescript": "~5.6.2",
+    "webpack": "^5.97.1"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

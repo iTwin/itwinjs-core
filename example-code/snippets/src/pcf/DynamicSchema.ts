@@ -129,15 +129,11 @@ async function createDynamicSchema(
 
   const createEntityClass = async (schema: MetaSchema) => {
     for (const entity of map.entities) {
-      const entityResult = await editor.entities.createFromProps(schema.schemaKey, entity.props);
-      if (!entityResult.itemKey)
-        throw new Error(`Failed to create EC Entity Class - ${entityResult.errorMessage}`);
+      const entityKey = await editor.entities.createFromProps(schema.schemaKey, entity.props);
 
       if (entity.props.properties) {
         for (const prop of entity.props.properties) {
-          const propResult = await editor.entities.createPrimitiveProperty(entityResult.itemKey, prop.name, prop.type as any);
-          if (!propResult.itemKey)
-            throw new Error(`Failed to create EC Property - ${propResult.errorMessage}`);
+          await editor.entities.createPrimitiveProperty(entityKey, prop.name, prop.type as any);
         }
       }
     }
@@ -145,9 +141,7 @@ async function createDynamicSchema(
 
   const createRelClasses = async (schema: MetaSchema) => {
     for (const rel of map.relationships) {
-      const result = await editor.relationships.createFromProps(schema.schemaKey, rel.props);
-      if (!result.itemKey)
-        throw new Error(`Failed to create EC Relationship Class - ${result.errorMessage}`);
+      const _relationshipKey = await editor.relationships.createFromProps(schema.schemaKey, rel.props);
     }
   };
 

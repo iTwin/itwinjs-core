@@ -75,6 +75,8 @@ The following table shows additional core modeling perspectives that are typical
 | Physical Systems | Cold & Hot water, Air Conditioning or Electrical Systems | PhysicalSystemPartition (sealed) | PhysicalSystemModel |
 | Spatial Location-only | A Building's Grid, Roads' Alignments or Parcel boundaries. Subset of Physical. | SpatialLocationPartition (sealed) | SpatialLocationModel |
 
+Note that most `InformationPartitionElement` subclasses are *sealed* with the exception of FunctionalPartition and AnalyticalPartition. Each concrete implementation of those modeling perspectives, due to them being specialized according to the type of functional system or analysis being captured, always require subclassing of the appropriate Partition and Model classes. For more information, see [Functional Modeling Perspectives](#functional-modeling-perspectives) and [Analytical Modeling Perspectives](#analytical-modeling-perspectives) further below.
+
 If the need for a new core modeling perspective is discovered (none of the existing core modeling perspectives is appropriate as a parent perspective), new ones can be added.
 
 ### Physical Modeling Perspective

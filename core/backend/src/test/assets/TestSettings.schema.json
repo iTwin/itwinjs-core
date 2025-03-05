@@ -1,13 +1,9 @@
 {
-  "$id": "app1 schema",
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "app1 settings",
+  "$schema": "../../assets/Settings/Base.Schema.json",
   "description": "the settings for test application 1",
-  "type": "object",
-  "groupName": "app1",
-  "order": 7,
-  "properties": {
-    "app1/list/multiSelectModifier": {
+  "schemaPrefix": "testApp",
+  "settingDefs": {
+    "list/multiSelectModifier": {
       "type": "string",
       "enum": [
         "ctrlCmd",
@@ -20,7 +16,7 @@
       "default": "ctrlCmd",
       "description": "multiSelectModifier"
     },
-    "myApp/categories": {
+    "categories": {
       "type": "array",
       "description": "possible categories",
       "items": {
@@ -28,7 +24,7 @@
         "description": "category names"
       }
     },
-    "app1/list/openMode": {
+    "list/openMode": {
       "type": "string",
       "enum": [
         "singleClick",
@@ -37,19 +33,19 @@
       "default": "singleClick",
       "description": "openModeModifier"
     },
-    "app1/list/horizontalScrolling": {
+    "list/horizontalScrolling": {
       "type": "boolean",
       "default": false,
       "description": "horizontalScrolling setting"
     },
-    "app1/tree/indent": {
+    "tree/indent": {
       "type": "number",
       "default": 8,
       "minimum": 0,
       "maximum": 40,
       "description": "tree indent setting"
     },
-    "app1/tree/blah": {
+    "tree/blah": {
       "type": "boolean",
       "default": true,
       "description": "the setting for blah"
@@ -59,19 +55,39 @@
       "description": "array of fonts to load",
       "items": {
         "type": "object",
-        "required": [
-          "container",
-          "fontName"
-        ],
-        "properties": {
-          "container": {
-            "type": "string",
-            "description": "resource container name"
-          },
-          "fontName": {
-            "type": "string",
-            "description": "name of font within resource container"
+        "extends": "testApp/font"
+      }
+    }
+  },
+  "typeDefs": {
+    "font": {
+      "type": "object",
+      "description": "a single font",
+      "required": [
+        "workspace",
+        "fontName"
+      ],
+      "properties": {
+        "workspace": {
+          "type": "object",
+          "extends": "itwin/core/workspace/workspaceDb",
+          "description": "workspaceDb for font",
+          "required": [
+            "workspaceLimit"
+          ],
+          "properties": {
+            "workspaceLimit": {
+              "type": "integer"
+            }
           }
+        },
+        "fontName": {
+          "type": "string",
+          "description": "name of font within resource container"
+        },
+        "fontType": {
+          "type": "string",
+          "description": "the type of the font"
         }
       }
     }

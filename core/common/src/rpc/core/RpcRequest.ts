@@ -20,7 +20,7 @@ import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
@@ -41,7 +41,7 @@ export class ResponseLike implements Response {
   public get status() { return 200; }
   public get statusText() { return ""; }
   public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public get type(): ResponseType { return "basic"; }
+  public get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect" { return "basic"; }
   public get url() { return ""; }
   public clone() { return { ...this }; }
 
@@ -94,7 +94,6 @@ class Cancellable<T> {
 
   public constructor(task: Promise<T>) {
     this.promise = new Promise((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       this.cancel = () => resolve(undefined);
       task.then(resolve, reject);
     });
@@ -221,7 +220,7 @@ export abstract class RpcRequest<TResponse = any> {
     for (const param of this.parameters) {
       if (typeof (param) === "object" && param !== null) {
         for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
-          if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
+          if (prop in param && typeof (param[prop]) === requiredProperties[prop]) {
             return param;
           }
         }
@@ -505,7 +504,7 @@ export abstract class RpcRequest<TResponse = any> {
     }
 
     this.setStatus(RpcRequestStatus.Resolved);
-    this.dispose();
+    this[Symbol.dispose]();
   }
 
   private resolveRaw() {
@@ -517,7 +516,7 @@ export abstract class RpcRequest<TResponse = any> {
     this.setLastUpdatedTime();
     this._resolveRaw(this._response);
     this.setStatus(RpcRequestStatus.Resolved);
-    this.dispose();
+    this[Symbol.dispose]();
   }
 
   protected reject(reason: any): void {
@@ -533,11 +532,11 @@ export abstract class RpcRequest<TResponse = any> {
     }
 
     this.setStatus(RpcRequestStatus.Rejected);
-    this.dispose();
+    this[Symbol.dispose]();
   }
 
   /** @internal */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.setStatus(RpcRequestStatus.Disposed);
     this._raw = undefined;
     this._response = undefined;

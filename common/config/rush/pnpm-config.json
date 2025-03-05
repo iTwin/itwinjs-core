@@ -3,10 +3,15 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
+    "ignoreMissing": [
+      "@babel/core",
+      "@types/node",
+      "@typescript-eslint/parser"
+    ]
   },
   "globalOverrides": {
-    "mysql2": "^3.9.8" // https://github.com/advisories/GHSA-4rch-2fh8-94vw>azurite>mysql2, https://github.com/advisories/GHSA-pmh2-wpjm-fj45
+    "cross-spawn": "^7.0.5", // https://github.com/advisories/GHSA-3xgq-45jj-v275 npm-run-all>cross-spawn
+    "elliptic": "^6.6.1" // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
@@ -17,7 +22,9 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       "auditConfig": {
-        "ignoreCves": []
+        "ignoreCves": [
+          "CVE-2024-45296" // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
+        ]
       }
     }
   }

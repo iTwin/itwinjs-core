@@ -11,7 +11,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubMock } from "../../HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
-import { ChannelControl } from "../../core-backend";
+import { _nativeDb, ChannelControl } from "../../core-backend";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
@@ -55,7 +55,7 @@ describe("BriefcaseManager", async () => {
     const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
     const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: true };
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
-    assert.equal(BriefcaseIdValue.Unassigned, iModel1.nativeDb.getBriefcaseId(), "checkpoint should be 0");
+    assert.equal(BriefcaseIdValue.Unassigned, iModel1[_nativeDb].getBriefcaseId(), "checkpoint should be 0");
 
     const iModel2 = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
     assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
@@ -151,11 +151,11 @@ describe("BriefcaseManager", async () => {
     rootEl.userLabel = `${rootEl.userLabel}changed`;
     iModelPullAndPush.elements.updateElement(rootEl.toJSON());
 
-    assert.isTrue(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullAndPush.nativeDb.hasPendingTxns());
+    assert.isTrue(iModelPullAndPush[_nativeDb].hasUnsavedChanges());
+    assert.isFalse(iModelPullAndPush[_nativeDb].hasPendingTxns());
     iModelPullAndPush.saveChanges();
-    assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
+    assert.isFalse(iModelPullAndPush[_nativeDb].hasUnsavedChanges());
+    assert.isTrue(iModelPullAndPush[_nativeDb].hasPendingTxns());
 
     iModelPullAndPush.close();
 
@@ -165,8 +165,8 @@ describe("BriefcaseManager", async () => {
     const changesetPullAndPush = iModelPullAndPush.changeset;
     assert.strictEqual(iModelPullAndPush.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.pathName, pathname);
-    assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
+    assert.isFalse(iModelPullAndPush[_nativeDb].hasUnsavedChanges());
+    assert.isTrue(iModelPullAndPush[_nativeDb].hasPendingTxns());
 
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
@@ -183,8 +183,8 @@ describe("BriefcaseManager", async () => {
     assert.notStrictEqual(changesetPullAndPush3, changesetPullAndPush);
     assert.strictEqual(iModelPullAndPush.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.pathName, pathname);
-    assert.isFalse(iModelPullAndPush.nativeDb.hasUnsavedChanges());
-    assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
+    assert.isFalse(iModelPullAndPush[_nativeDb].hasUnsavedChanges());
+    assert.isTrue(iModelPullAndPush[_nativeDb].hasPendingTxns());
 
     // User2 should be able to push the changes now
     await iModelPullAndPush.pushChanges({ accessToken: userToken2, description: "test change" });

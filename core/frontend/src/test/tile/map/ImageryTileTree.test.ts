@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
-import { expect } from "chai";
-import * as sinon from "sinon";
-import { MockRender } from "../../../render/MockRender";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { MockRender } from "../../../internal/render/MockRender";
 import { createBlankConnection } from "../../createBlankConnection";
 import { ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree";
 import { IModelConnection } from "../../../IModelConnection";
@@ -46,19 +45,17 @@ interface DatasetEntry {
 }
 
 describe("ImageryTileTree", () => {
-
   let imodel: IModelConnection;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {   // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     imodel = createBlankConnection();
     IModelApp.mapLayerFormatRegistry.register(CustomFormat1);
     IModelApp.mapLayerFormatRegistry.register(CustomFormat2);
   });
 
-  const sandbox = sinon.createSandbox();
   afterEach(async () => {
-    sandbox.restore();
+    vi.restoreAllMocks();
   });
 
   it("tree supplier", async () => {
@@ -70,24 +67,33 @@ describe("ImageryTileTree", () => {
       {lhs: {...baseProps, formatId:"Custom2"}, rhs: {...baseProps}, expectSameTileTree:false},
       {lhs: {...baseProps, subLayers: [{name: "sub0", visible: false}]}, rhs: {...baseProps}, expectSameTileTree:false},
       {lhs: {...baseProps, subLayers: [{name: "sub1", visible: true}]}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps}, rhs: {...baseProps, properties: {key: "value"}}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps, properties: {key: "value"}}, expectSameTileTree:true},
+      {lhs: {...baseProps, properties: {key: [1,2,3]}}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3,4]}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3,4]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:true},
     ];
     for (const entry of dataset) {
       const settingsLhs = ImageMapLayerSettings.fromJSON(entry.lhs);
       const treeRefLhs = new ImageryMapLayerTreeReference({ layerSettings: settingsLhs, layerIndex: 0, iModel: imodel });
       const treeOwnerLhs = treeRefLhs.treeOwner;
       const tileTreeLhs = await treeOwnerLhs.loadTree();
-      expect(tileTreeLhs).to.not.undefined;
+      expect(tileTreeLhs).toBeDefined();
 
       const settingsRhs = ImageMapLayerSettings.fromJSON(entry.rhs);
       const treeRefRhs = new ImageryMapLayerTreeReference({ layerSettings: settingsRhs, layerIndex: 0, iModel: imodel });
       const treeOwnerRhs = treeRefRhs.treeOwner;
       const tileTreeRhs = await treeOwnerRhs.loadTree();
-      expect(tileTreeRhs).to.not.undefined;
+      expect(tileTreeRhs).toBeDefined();
 
       if (entry.expectSameTileTree)
-        expect(tileTreeLhs!.modelId).to.equals(tileTreeRhs!.modelId);
+        expect(tileTreeLhs!.modelId).toEqual(tileTreeRhs!.modelId);
       else
-        expect(tileTreeLhs!.modelId).to.not.equals(tileTreeRhs!.modelId);
+        expect(tileTreeLhs!.modelId).not.toEqual(tileTreeRhs!.modelId);
     }
   });
 });

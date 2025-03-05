@@ -8,7 +8,7 @@
  */
 import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem } from "../numerics/SmallSystem";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Vector2d } from "./Point2dVector2d";
@@ -267,7 +267,7 @@ export class Ray3d implements BeJSONFunctions {
    * Return a transform for rigid axes at ray origin with z in ray direction.
    * * If the direction vector is zero, axes default to identity (from [[Matrix3d.createRigidHeadsUp]])
    */
-  public toRigidZFrame(result?: Transform): Transform | undefined {
+  public toRigidZFrame(result?: Transform): Transform {
     const axes = Ray3d._workMatrix = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY, Ray3d._workMatrix);
     return Transform.createOriginAndMatrix(this.origin, axes, result);
   }
@@ -388,8 +388,8 @@ export class Ray3d implements BeJSONFunctions {
    * @param vertex2 third vertex of the triangle
    * @param distanceTol optional tolerance used to check if ray is parallel to the triangle or if we have line
    * intersection but not ray intersection (if tolerance is not provided, Geometry.smallMetricDistance is used)
-   * @param parameterTol optional tolerance used to snap barycentric coordinates of the intersection point to
-   * a triangle edge or vertex (if tolerance is not provided, Geometry.smallFloatingPoint is used)
+   * @param parameterTol optional tolerance used to allow intersections just beyond an edge/vertex in barycentric
+   * coordinate space (if tolerance is not provided, Geometry.smallFloatingPoint is used)
    * @param result optional pre-allocated object to fill and return
    * @returns the intersection point if ray intersects the triangle. Otherwise, return undefined.
   */
@@ -447,12 +447,12 @@ export class Ray3d implements BeJSONFunctions {
     const s = Ray3d._workVector3 = Vector3d.createStartEnd(vertex0, this.origin, Ray3d._workVector3);
     let u = f * s.dotProduct(h);
     if (u < 0.0) {
-      if (u > -parameterTol)
+      if (u >= -parameterTol)
         u = 0.0;
       else
         return undefined; // ray does not intersect the triangle
     } else if (u > 1.0) {
-      if (u < 1.0 + parameterTol)
+      if (u <= 1.0 + parameterTol)
         u = 1.0;
       else
         return undefined; // ray does not intersect the triangle
@@ -460,19 +460,16 @@ export class Ray3d implements BeJSONFunctions {
     const q = Ray3d._workVector4 = s.crossProduct(edge1, Ray3d._workVector4);
     let v = f * this.direction.dotProduct(q);
     if (v < 0.0) {
-      if (v > -parameterTol)
+      if (v >= -parameterTol)
         v = 0.0;
       else
         return undefined;  // ray does not intersect the triangle
-    } else if (u + v > 1.0) {
-      if (u + v < 1.0 + parameterTol)
-        v = 1.0 - u;
-      else
-        return undefined;  // ray does not intersect the triangle
+    } else if (u + v > 1.0 + parameterTol) {
+      return undefined;  // ray does not intersect the triangle
     }
     // at this stage, we know the line (parameterized as the ray) intersects the triangle
     const t = f * edge2.dotProduct(q);
-    if (t <= distanceTol) // line intersection but not ray intersection
+    if (t < -distanceTol) // line intersection but not ray intersection
       return undefined;
     return this.origin.plusScaled(this.direction, t, result); // ray intersection
   }

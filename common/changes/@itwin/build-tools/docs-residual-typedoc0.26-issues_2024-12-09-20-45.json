@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "add temporary fix for typedoc@0.26 issue #2802",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

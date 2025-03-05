@@ -14,7 +14,7 @@ import {
   OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
-import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
+import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
 
 function precondition(condition: boolean, message: string | (() => string)): asserts condition {
   if (condition)

@@ -8,7 +8,7 @@ import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
 
 /**
  * Defines a schema locater that retrieves schemas using an RPC interface.
- * @alpha
+ * @beta
  */
 export class ECSchemaRpcLocater implements ISchemaLocater {
   public readonly token: IModelRpcProps;
@@ -21,11 +21,11 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param matchType How to match key against candidate schemas
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
   */
-  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
 
     const schema = await context.getCachedSchema(schemaKey, matchType);
-    return schema as T;
+    return schema;
   }
 
   /**
@@ -49,13 +49,13 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param matchType How to match key against candidate schemas
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
   */
-  public getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const schemaJson = ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name).then((props: SchemaProps) => {
       return props;
     });
     const schema = Schema.fromJsonSync(schemaJson, context || new SchemaContext());
     if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
-      return schema as T;
+      return schema;
     }
     return undefined;
   }

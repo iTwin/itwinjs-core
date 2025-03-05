@@ -1,4 +1,4 @@
 sep=;
-Release Tag;API Item
-public;ITwinLocalization 
-public;LocalizationOptions
+Release Tag;API Item Type;API Item Name
+public;class;ITwinLocalization
+public;interface;LocalizationOptions

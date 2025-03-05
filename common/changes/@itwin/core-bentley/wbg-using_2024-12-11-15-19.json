@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Deprecated IDisposable interface (along with related isIDisposable and using utilities) in favor of TypeScript's built-in `Disposable` type and `using` declarations. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

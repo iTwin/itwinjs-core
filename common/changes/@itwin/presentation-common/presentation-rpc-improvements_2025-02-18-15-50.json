@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Refactor RPC \"pending\" response handling to rely on our RPC system rather than custom implementation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

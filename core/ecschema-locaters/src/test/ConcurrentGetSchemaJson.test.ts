@@ -216,7 +216,7 @@ describe("Concurrent schema JSON deserialization", () => {
         label: "BIS Core",
         name: "BisCore",
         version: "01.00.15",
-        references:[{name:"CoreCustomAttributes", version:"01.00.04"}],
+        references:[{name:"CoreCustomAttributes", version:"01.00.04"},{name:"ECDbMap", version:"02.00.00"},{name:"ECDbSchemaPolicies", version:"01.00.00"}],
       };
     }
     if (schemaName === "CoreCustomAttributes") {
@@ -229,6 +229,26 @@ describe("Concurrent schema JSON deserialization", () => {
         version: "01.00.04",
       };
     }
+    if (schemaName === "ECDbMap") {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        alias: "ECDbMap",
+        description: "ECDbMap Desc",
+        label: "ECDbMap",
+        name: "ECDbMap",
+        version: "02.00.00",
+      };
+    }
+    if (schemaName === "ECDbSchemaPolicies") {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        alias: "ECDbSchemaPolicies",
+        description: "ECDbSchemaPolicies Desc",
+        label: "ECDbSchemaPolicies",
+        name: "ECDbSchemaPolicies",
+        version: "01.00.00",
+      };
+    }
 
     return undefined;
   };
@@ -238,12 +258,13 @@ describe("Concurrent schema JSON deserialization", () => {
     const jsonLocater = new SchemaJsonLocater(getSchemaProps);
     schemaContext.addLocater(jsonLocater);
 
+    const schemaCount = 1000;
     const schemas = await Promise.all(
-      [...Array(100).keys()].map(async () => {
+      [...Array(schemaCount).keys()].map(async () => {
         return schemaContext.getSchema(new SchemaKey("BisCore"));
       }),
     );
-    expect(schemas.length).to.equal(100);
+    expect(schemas.length).to.equal(schemaCount);
     schemas.forEach((schema) => {
       assert(schema !== undefined);
       expect(schema.fullName).to.equal("BisCore");
@@ -256,8 +277,9 @@ describe("Concurrent schema JSON deserialization", () => {
     schemaContext.addLocater(jsonLocater);
 
     let getBisCoreFirst = 0;
+    const schemaCount = 1000;
     const schemas = await Promise.all(
-      [...Array(2).keys()].map(async () => {
+      [...Array(schemaCount).keys()].map(async () => {
         if (getBisCoreFirst === 0) {
           getBisCoreFirst = 1;
           return schemaContext.getSchema(new SchemaKey("BisCore"));
@@ -265,7 +287,7 @@ describe("Concurrent schema JSON deserialization", () => {
         return schemaContext.getSchema(new SchemaKey("CoreCustomAttributes"));
       }),
     );
-    expect(schemas.length).to.equal(2);
+    expect(schemas.length).to.equal(schemaCount);
     schemas.forEach((schema) => {
       expect(schema).to.not.be.undefined;
     });

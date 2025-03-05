@@ -21,7 +21,6 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export abstract class PhysicalMaterial extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "PhysicalMaterial"; }
   /** Create a Code for a PhysicalMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -54,15 +53,14 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  * @public
  */
 export class RenderMaterialElement extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "RenderMaterial"; }
 
   /** The name of a palette that can be used to categorize multiple materials. */
   public paletteName: string;
   /** An optional description of the material. */
   public description?: string;
-  /** @internal */
-  constructor(props: RenderMaterialProps, iModel: IModelDb) {
+
+  private constructor(props: RenderMaterialProps, iModel: IModelDb) {
     super(props, iModel);
     this.paletteName = props.paletteName;
     this.description = props.description;
@@ -186,13 +184,18 @@ export class RenderMaterialElement extends DefinitionElement {
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 
-  /** @internal */
+  /** @beta */
   protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
     super.onCloned(context, sourceProps, targetProps);
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
       if (typeof mapName !== "string")
         continue;
       const sourceMap = sourceProps.jsonProperties.materialAssets.renderMaterial.Map[mapName];
+      // sourceMap could be null/undefined, keep it the same in targetProps
+      if (!sourceMap) {
+        targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName] = sourceMap;
+        continue;
+      }
       if (!Id64.isValid(sourceMap.TextureId) || sourceMap.TextureId === undefined)
         continue;
       targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(sourceMap.TextureId ?? Id64.invalid);
@@ -201,7 +204,7 @@ export class RenderMaterialElement extends DefinitionElement {
 }
 
 /** @public */
-export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
+export namespace RenderMaterialElement {
   /** Parameters used to construct a [[RenderMaterial]].
    * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
    * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
@@ -262,5 +265,5 @@ export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
  * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
  * @public
  */
-export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line deprecation/deprecation, @typescript-eslint/no-empty-interface
+export interface RenderMaterialElementParams extends RenderMaterialElement.Params { // eslint-disable-line @typescript-eslint/no-deprecated, @typescript-eslint/no-empty-object-type
 }

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.7.0-dev.15",
+  "version": "5.0.0-dev.77",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -9,21 +9,20 @@
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm && npm run -s webpackWorkers && npm run -s copy:workers",
     "build:cjs": "npm run -s copy:js:cjs && tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "npm run -s copy:js:esm && tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:public": "cpx \"./src/public/**/*\" ./lib/public",
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
     "copy:workers": "cpx \"./lib/workers/webpack/parse-imdl-worker.js\" ./lib/public/scripts",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
+    "docs": "betools docs --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
-    "test": "npm run -s webpackTests && certa -r chrome",
-    "cover": "npm -s test",
-    "test:debug": "certa -r chrome --debug",
+    "test": "npm run webpackTestWorker && vitest --run",
+    "cover": "npm run webpackTestWorker && vitest --run",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2 && npm run -s webpackTestWorker",
     "webpackTestWorker": "webpack --config ./src/test/worker/webpack.config.js 1>&2 && cpx \"./lib/test/test-worker.js\" ./lib/test",
     "webpackWorkers": "webpack --config ./src/workers/ImdlParser/webpack.config.js 1>&2"
@@ -45,12 +44,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.7.0-dev.15",
-    "@itwin/core-bentley": "workspace:^4.7.0-dev.15",
-    "@itwin/core-common": "workspace:^4.7.0-dev.15",
-    "@itwin/core-geometry": "workspace:^4.7.0-dev.15",
-    "@itwin/core-orbitgt": "workspace:^4.7.0-dev.15",
-    "@itwin/core-quantity": "workspace:^4.7.0-dev.15"
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-orbitgt": "workspace:*",
+    "@itwin/core-quantity": "workspace:*"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -64,45 +63,35 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
-    "@types/chai": "4.3.1",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai-as-promised": "^7",
-    "@types/mocha": "^10.0.6",
-    "@types/sinon": "^17.0.2",
-    "babel-loader": "~8.2.5",
-    "babel-plugin-istanbul": "~6.1.1",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
+    "@vitest/browser": "^3.0.6",
+    "@vitest/coverage-v8": "^3.0.6",
     "cpx2": "^3.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "glob": "^10.3.12",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
+    "playwright": "~1.47.1",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.1",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "typemoq": "^2.1.0",
-    "webpack": "^5.76.0"
+    "vitest": "^3.0.6",
+    "vite-multiple-assets": "^1.3.1",
+    "vite-plugin-static-copy": "1.0.6",
+    "webpack": "^5.97.1"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/cloud-agnostic-core": "^2.1.0",
-    "@itwin/object-storage-core": "^2.2.2",
+    "@itwin/cloud-agnostic-core": "^2.2.4",
+    "@itwin/object-storage-core": "^2.2.5",
     "@itwin/core-i18n": "workspace:*",
-    "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "fuse.js": "^3.3.0",
-    "meshoptimizer": "~0.20.0",
     "wms-capabilities": "0.4.0"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

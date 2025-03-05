@@ -2,16 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { randomInt } from "crypto";
 import * as fs from "fs";
-import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
+import { describe, expect, it } from "vitest";
+import { CloneFunction, compareWithTolerance, Dictionary, OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveFactory, MiteredSweepOptions, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -24,11 +26,14 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { MomentData } from "../../geometry4d/MomentData";
 import { FacetFaceData } from "../../polyface/FacetFaceData";
+import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
 import { IndexedPolyfaceSubsetVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -38,6 +43,9 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { RotationalSweep } from "../../solid/RotationalSweep";
+import { RuledSweep } from "../../solid/RuledSweep";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
@@ -176,7 +184,7 @@ it("Polyface.HelloWorld", () => {
     exercisePolyface(ck, pf, true);
   }
   ck.checkpoint("Polyface.HelloWorld");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.Compress", () => {
@@ -226,7 +234,7 @@ it("Polyface.Compress", () => {
   loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
   ck.testCoordinate(loops.sumLengths(), 4 + 2 * Math.sqrt(2), "after compress loops length");
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.Box", () => {
@@ -268,7 +276,7 @@ it("Polyface.Box", () => {
   polyfaceB.data.pointIndex[0] -= 1;
   ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.RaggedBoxVolume", () => {
@@ -298,11 +306,13 @@ it("Polyface.RaggedBoxVolume", () => {
     );
   }
   // In other planes, the missing facets are NOT perpendicular and
-  // we expect to detect the mismatched projections in the moments.
+  // we expect to detect the mismatched projections in the moments
   const planeB = Plane3dByOriginAndUnitNormal.createXYZUVW(0, 0, 0, 1, 2, 3)!;
   const volumeB = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(polyface, planeB);
-  ck.testFalse(MomentData.areEquivalentPrincipalAxes(volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments), "Expect mismatched moments");
-  expect(ck.getNumErrors()).equals(0);
+  ck.testFalse(MomentData.areEquivalentPrincipalAxes(
+    volumeB.positiveProjectedFacetAreaMoments, volumeB.negativeProjectedFacetAreaMoments), "Expect mismatched moments",
+  );
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.RaggedBoxMisMatch", () => {
@@ -354,7 +364,7 @@ it("Polyface.RaggedBoxMisMatch", () => {
       "Expect mismatched moments",
     );
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function writeMeshes(
@@ -505,7 +515,7 @@ function writeAllMeshes(
   for (let i = 0; i < options.length; i++) {
     writeMeshes(ck, geometry, name, checkClosure, options[i], 0, y0 + i * dy);
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 type GeometryData = GeometryQuery | GeometryQuery[];
@@ -647,7 +657,6 @@ describe("Polyface.Facets", () => {
       ck.testExactNumber(countsA[1], countsA[2], "angleTol counts not affected by radius");
       ck.testLT(countsB[0], countsB[1], "radiusTol count increases with radius");
       ck.testLT(countsB[1], countsB[2], "radiusTol count increases with radius");
-
       ck.testExactNumber(countsC[0], countsC[1], "fractional maxEdgeLength counts no affected by radius");
       ck.testExactNumber(countsC[1], countsC[2], "fractional maxEdgeLength counts no affected by radius");
 
@@ -658,7 +667,7 @@ describe("Polyface.Facets", () => {
     }
     GeometryCoreTestIO.consoleLog({ angleCounts: allCountsA, chordCounts: allCountsB, maxEdgeLengthCounts: allCountsC });
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SphereDensity");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Moments", () => {
@@ -684,7 +693,6 @@ describe("Polyface.Facets", () => {
 
   it("ExactMoments", () => {
     const ck = new Checker();
-    // const allGeometry: GeometryQuery[] = [];
     const builder = PolyfaceBuilder.create();
     const a = 5;
     const b = 3;
@@ -708,7 +716,7 @@ describe("Polyface.Facets", () => {
     ck.testCoordinate(iY, ryB * ryB * volumeB, "box Y moment");
     ck.testCoordinate(iZ, rzB * rzB * volumeB, "box Z moment");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -778,12 +786,10 @@ describe("Polyface.Faces", () => {
     numPoints.push(polyface.pointCount - totalPoints);
     totalFacets += polyface.facetCount;
     totalPoints += polyface.pointCount;
-    //   (cone handles faces itself !!)  ck.testTrue(builder.endFace());
-
     ck.testExactNumber(3, polyface.faceCount);
     verifyFaceData(ck, polyface, false);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Add grid w/ params, normals", () => {
@@ -855,9 +861,7 @@ describe("Polyface.Faces", () => {
           // ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
           if (!compress)
             ck.testExactNumber(polyface.pointCount, polyface.paramCount, "Number of params matches point count");
-          if (useParams) {
-
-          } else {
+          if (!useParams) {
             if (numPerFacet === 4 && !compress) {
               // Check params
               for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
@@ -868,7 +872,12 @@ describe("Polyface.Faces", () => {
                   ck.testCoordinate(currentParam.y, 0);
                 } else if (idx % 4 === 1) {
                   const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
-                  ck.testCoordinate(currentParam.x, Geometry.hypotenuseXYZ(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
+                  ck.testCoordinate(
+                    currentParam.x,
+                    Geometry.hypotenuseXYZ(
+                      currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z,
+                    ),
+                  );
                   ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
                 }
               }
@@ -878,7 +887,7 @@ describe("Polyface.Faces", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddCoordinateFacets");
   });
 });
@@ -894,7 +903,8 @@ it("PartialSawToothTriangulation", () => {
     Point3d.create(2, 1, 0),
     Point3d.create(1, 1, 0),
     Point3d.create(1, 2, 0),
-    Point3d.create(0, 2, 0)];
+    Point3d.create(0, 2, 0),
+  ];
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0.0;
   const dy = 10.0;
@@ -917,7 +927,7 @@ it("PartialSawToothTriangulation", () => {
     x0 += dy;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PartialSawToothTriangulation");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("facets from sweep contour with holes", () => {
@@ -926,21 +936,21 @@ it("facets from sweep contour with holes", () => {
   const arc = Arc3d.createCircularStartMiddleEnd(
     Point3d.create(3, 3, 0),
     Point3d.create(4, 3, 0),
-    Point3d.create(4, 4, 0)) as Arc3d;
+    Point3d.create(4, 4, 0),
+  ) as Arc3d;
   arc.sweep = (AngleSweep.createStartEndDegrees(0, 360));
   const region = ParityRegion.create(
     Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), 5, 5)),
     Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 1, 0), 1, 1)),
-    Loop.create(arc));
+    Loop.create(arc),
+  );
   const step = 10;
   const x0 = 0;
   const y0 = 0;
   const y1 = step;
-
   GeometryCoreTestIO.captureGeometry(allGeometry, region, x0, y0);
 
   let x1 = x0;
-
   const options = new StrokeOptions();
   options.needNormals = false;
   options.needParams = false;
@@ -954,13 +964,13 @@ it("facets from sweep contour with holes", () => {
     builder1.addGeometryQuery(region);
     GeometryCoreTestIO.captureGeometry(allGeometry, builder1.claimPolyface(), x1, y1);
   }
-
   GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ParityRegion");
-  expect(ck.getNumErrors()).equals(0);
-
+  expect(ck.getNumErrors()).toBe(0);
 });
 
-function createGridMeshByCoordinates(numXEdge: number, numYEdge: number, xShiftCounter: number, reverseFacets: boolean, needParams: boolean, needNormals: boolean) {
+function createGridMeshByCoordinates(
+  numXEdge: number, numYEdge: number, xShiftCounter: number, reverseFacets: boolean, needParams: boolean, needNormals: boolean,
+): IndexedPolyface {
   const options = StrokeOptions.createForFacets();
   options.needNormals = needNormals;
   options.needParams = needParams;
@@ -973,14 +983,21 @@ function createGridMeshByCoordinates(numXEdge: number, numYEdge: number, xShiftC
 
   for (let iRow = 0; iRow < numXEdge; iRow++) {
     for (let iColumn = 0; iColumn < numYEdge; iColumn++) {
-      const quad = [Point3d.create(xShift + iRow * spacing, iColumn * spacing, 0.0), Point3d.create(xShift + (iRow + 1) * spacing, iColumn * spacing, 0.0), Point3d.create(xShift + (iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0), Point3d.create(xShift + iRow * spacing, (iColumn + 1) * spacing)];
+      const quad = [
+        Point3d.create(xShift + iRow * spacing, iColumn * spacing, 0.0),
+        Point3d.create(xShift + (iRow + 1) * spacing, iColumn * spacing, 0.0),
+        Point3d.create(xShift + (iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
+        Point3d.create(xShift + iRow * spacing, (iColumn + 1) * spacing),
+      ];
       builder.addQuadFacet(quad);
     }
   }
   return builder.claimPolyface();
 }
 
-function createMeshByUVSurface(surface: UVSurface, numXEdge: number, numYEdge: number, reverseFacets: boolean, needParams: boolean, needNormals: boolean) {
+function createMeshByUVSurface(
+  surface: UVSurface, numXEdge: number, numYEdge: number, reverseFacets: boolean, needParams: boolean, needNormals: boolean,
+): IndexedPolyface {
   const options = StrokeOptions.createForFacets();
   options.needNormals = needNormals;
   options.needParams = needParams;
@@ -997,7 +1014,7 @@ it("LargeMeshCompression", () => {
   const allGeometry: GeometryQuery[] = [];
   allGeometry.push(createGridMeshByCoordinates(100, 100, 0.0, false, false, false));
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "LargeMeshCompression");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 class UVSinusoidalSurface implements UVSurface {
@@ -1028,8 +1045,8 @@ class UVSinusoidalSurface implements UVSurface {
     this.transform.multiplyVectorXYZ(0.0, 1.0, -cU * sV, result.vectorV);
     return result;
   }
-
 }
+
 it("SolidPrimitiveBoundary", () => {
   const allGeometry: GeometryQuery[] = [];
   const ck = new Checker();
@@ -1038,8 +1055,11 @@ it("SolidPrimitiveBoundary", () => {
   const delta = 10;
   const z1 = 10.0;
   for (const capped of [true, false]) {
-    for (const solid of
-      [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!, TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!, Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)]) {
+    for (const solid of [
+      Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!,
+      TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!,
+      Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped),
+    ]) {
       const builder = PolyfaceBuilder.create();
       builder.addGeometryQuery(solid);
       const mesh = builder.claimPolyface();
@@ -1054,10 +1074,12 @@ it("SolidPrimitiveBoundary", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0 + 3 * delta);
 
       let y1 = y0 + 5 * delta;
-      for (const angle of [undefined, Angle.createDegrees(0.1),
+      for (const angle of [
+        undefined, Angle.createDegrees(0.1),
         Angle.createDegrees(15),
         Angle.createDegrees(30),
-        Angle.createDegrees(50)]) {
+        Angle.createDegrees(50),
+      ]) {
         PolyfaceQuery.markPairedEdgesInvisible(mesh, angle);
         const boundary1 = PolyfaceQuery.boundaryEdges(mesh);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
@@ -1073,23 +1095,25 @@ it("SolidPrimitiveBoundary", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "SolidPrimitiveBoundary");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("UVGridSurface", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const surface = new UVSinusoidalSurface(AngleSweep.createStartEndDegrees(0, 180), AngleSweep.createStartEndDegrees(20, 100),
+  const surface = new UVSinusoidalSurface(
+    AngleSweep.createStartEndDegrees(0, 180), AngleSweep.createStartEndDegrees(20, 100),
     Transform.createRowValues(
       4, 0, 0, 0,
       0, 4, 0, 0,
-      0, 0, 1, 0));
-
+      0, 0, 1, 0,
+    ),
+  );
   allGeometry.push(createMeshByUVSurface(surface, 4, 6, false, true, true));
   surface.transform.origin.set(10, 0, 0);
   allGeometry.push(createMeshByUVSurface(surface, 4, 6, true, true, true));
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "UVGridSurface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddTriangleFan", () => {
@@ -1098,10 +1122,12 @@ it("AddTriangleFan", () => {
   const options = StrokeOptions.createForFacets();
   options.shouldTriangulate = true;
   const builder = PolyfaceBuilder.create(options);
-  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
+  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0));
   const strokes = LineString3d.create();
   arc.emitStrokes(strokes, options);
-  ck.testUndefined(builder.findOrAddPointInLineString(strokes, strokes.numPoints() + 10), " confirm bad index in linestring");
+  ck.testUndefined(
+    builder.findOrAddPointInLineString(strokes, strokes.numPoints() + 10), " confirm bad index in linestring",
+  );
   ck.testUndefined(builder.findOrAddPointInLineString(strokes, -1), " confirm bad index in linestring");
   const coneA = Point3d.create(0, 0, 5);
   const coneB = Point3d.create(0, 0, -3);
@@ -1113,7 +1139,7 @@ it("AddTriangleFan", () => {
   const polyface = builder.claimPolyface();
   allGeometry.push(polyface);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddTriangleFan");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddSweptLineStrings", () => {
@@ -1126,8 +1152,7 @@ it("AddSweptLineStrings", () => {
   const mesh = builder.claimPolyface();
   ck.testExactNumber(4, mesh.facetCount);
 
-  builder.applyStrokeCountsToCurvePrimitives(path);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddTriangles", () => {
@@ -1138,19 +1163,15 @@ it("AddTriangles", () => {
   options.needParams = true;
   const builder = PolyfaceBuilder.create(options);
   builder.addTriangleFacet([Point3d.create(0, 1, 2)]);
-  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
+  const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0));
   const strokes = LineString3d.create();
   arc.emitStrokes(strokes, options);
-
   const coneA = Point3d.create(0, 0, 10);
   const coneB = Point3d.create(0, 0, -1);
-
   const points = [];
   const params = [];
   const normals = [];
   const normalA = Vector3d.create();
-  //  const params = [];
-  //  const normals = [];
   const du = 1.0 / strokes.numPoints();
   const pointA = new GrowableXYZArray();
   for (let i = 1; i < strokes.numPoints(); i++) {
@@ -1168,20 +1189,17 @@ it("AddTriangles", () => {
     normals.push(normalA);
     normals.push(normalA);
     builder.addTriangleFacet(points, params, normals);
-
     // build lower half without params, use GrowableArray for coverage . ..
     pointA.length = 0;
     pointA.push(coneB);
     pointA.push(strokes.pointAt(i)!);
     pointA.push(strokes.pointAt(i - 1)!);
     builder.addTriangleFacet(pointA);
-
   }
-
   const polyface = builder.claimPolyface();
   allGeometry.push(polyface);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddTriangles");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function buildWrappedVertexCrossProducts(points: Point3d[]): Vector3d[] {
@@ -1194,6 +1212,7 @@ function buildWrappedVertexCrossProducts(points: Point3d[]): Vector3d[] {
   }
   return normals;
 }
+
 it("AddQuads", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -1224,31 +1243,36 @@ it("AddQuads", () => {
     points.push(pointA[i]);
     points.push(pointB[i]);
     points.push(pointB[k]);
-    builder.addQuadFacet(points,
+    builder.addQuadFacet(
+      points,
       [paramA[k], paramA[i], paramB[i], paramB[k]],
-      buildWrappedVertexCrossProducts(points));
+      buildWrappedVertexCrossProducts(points),
+    );
   }
-
   const polyface = builder.claimPolyface();
   allGeometry.push(polyface);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddQuads");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddPolyface", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-
   // triangulate to test edge hiding in reversed mesh
   const polyfaceA = Sample.createTriangularUnitGridPolyface(
     Point3d.create(0, 0, 0),
     Vector3d.unitX(),
-    Vector3d.unitY(), 2, 3, true, true, true, true);
+    Vector3d.unitY(),
+    2, 3,
+    true, true, true, true,
+  );
   const polyfaceB = Sample.createTriangularUnitGridPolyface(
     Point3d.create(5, 0, 0),
     Vector3d.unitX(),
-    Vector3d.unitY(), 2, 3, true, true, true, true);
-
+    Vector3d.unitY(),
+    2, 3,
+    true, true, true, true,
+  );
   const options = StrokeOptions.createForFacets();
   options.needNormals = true;
   options.needParams = true;
@@ -1257,29 +1281,29 @@ it("AddPolyface", () => {
   builder.addIndexedPolyface(polyfaceA, false);
   builder.addIndexedPolyface(polyfaceB, true);
   const mergedPolyface = builder.claimPolyface(true);
-
   GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceA, 0, 0, 0);
   GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceB, 0, 0, 0);
-
   GeometryCoreTestIO.captureGeometry(allGeometry, mergedPolyface, 0, 10, 0);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddPolyface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("AddSweptIndexedPolyface", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-
   // generate triangulated square flat grid with size pts on a side
   const size = 10;
   const seed = 10;
-  const baseMesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), size, size, true, true, true, true);
-
+  const baseMesh = Sample.createTriangularUnitGridPolyface(
+    Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), size, size, true, true, true, true,
+  );
   // randomly perturb grid in z, and compute new tri normals
   const xyz = Point3d.create();
   for (let i = 0; i < baseMesh.data.pointCount; ++i) {
     baseMesh.data.point.getPoint3dAtUncheckedPointIndex(i, xyz);
-    baseMesh.data.point.setXYZAtCheckedPointIndex(i, xyz.x, xyz.y, xyz.z + (i % 2 ? -1 : 1) * (randomInt(0, seed) / seed) / 2);
+    baseMesh.data.point.setXYZAtCheckedPointIndex(
+      i, xyz.x, xyz.y, xyz.z + (i % 2 ? -1 : 1) * (randomInt(0, seed) / seed) / 2,
+    );
   }
   const normal = Vector3d.create();
   const visitor = baseMesh.createVisitor(0);
@@ -1290,30 +1314,38 @@ it("AddSweptIndexedPolyface", () => {
     for (let i = baseMesh.facetIndex0(visitor.currentReadIndex()); i < baseMesh.facetIndex1(visitor.currentReadIndex()); i++)
       baseMesh.data.normalIndex![i] = newNormalIndex;
   }
-
   const options = StrokeOptions.createForFacets();
-  options.needNormals = options.needParams = options.needColors = true; // only applies to new side faces!
+  options.needNormals = options.needParams = options.needColors = true; // only applies to new side faces
   const sweepDir = Vector3d.create(1, 1, 2);
-
   const builder3 = PolyfaceBuilder.create(options);
   builder3.addSweptIndexedPolyface(baseMesh, sweepDir, true);
   const sweptPolyface3 = builder3.claimPolyface(true);
-
   const sideFacetCount = 2 * 4 * (size - 1);
-  ck.testExactNumber(2 * baseMesh.facetCount + sideFacetCount, sweptPolyface3.facetCount, "Triangulated swept polyface has expected facet count.");
-  ck.testBoolean(true, PolyfaceQuery.isPolyfaceManifold(sweptPolyface3, false), "Triangulated swept polyface is closed manifold.");
-
+  ck.testExactNumber(
+    2 * baseMesh.facetCount + sideFacetCount, sweptPolyface3.facetCount,
+    "Triangulated swept polyface has expected facet count.",
+  );
+  ck.testBoolean(
+    true,
+    PolyfaceQuery.isPolyfaceManifold(sweptPolyface3, false),
+    "Triangulated swept polyface is closed manifold.",
+  );
   options.needColors = false;
   const builder4 = PolyfaceBuilder.create(options);
   builder4.addSweptIndexedPolyface(baseMesh, sweepDir, false);
   const sweptPolyface4 = builder4.claimPolyface(true);
-
   ck.testUndefined(sweptPolyface4.data.color, "Swept polyface colors ignored.");
-  ck.testExactNumber(2 * baseMesh.facetCount + sideFacetCount / 2, sweptPolyface4.facetCount, "Swept polyface has expected facet count.");
+  ck.testExactNumber(
+    2 * baseMesh.facetCount + sideFacetCount / 2, sweptPolyface4.facetCount, "Swept polyface has expected facet count.",
+  );
   ck.testBoolean(true, PolyfaceQuery.isPolyfaceManifold(sweptPolyface4, false), "Swept polyface is closed manifold.");
 
   const badBuilder = PolyfaceBuilder.create(options);
-  ck.testBoolean(false, badBuilder.addSweptIndexedPolyface(sweptPolyface4, sweepDir, false), "Closed mesh does not create a simple sweep.");
+  ck.testBoolean(
+    false,
+    badBuilder.addSweptIndexedPolyface(sweptPolyface4, sweepDir, false),
+    "Closed mesh does not create a simple sweep.",
+  );
   const badPolyface = badBuilder.claimPolyface(false);
 
   GeometryCoreTestIO.captureGeometry(allGeometry, baseMesh, 0, 0, 0);
@@ -1321,7 +1353,7 @@ it("AddSweptIndexedPolyface", () => {
   GeometryCoreTestIO.captureGeometry(allGeometry, sweptPolyface4, 0, 3 * size, 0);
   GeometryCoreTestIO.captureGeometry(allGeometry, badPolyface, 0, 4.5 * size, 0);
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddSweptPolyface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("EmptyPolyface", () => {
@@ -1332,7 +1364,7 @@ it("EmptyPolyface", () => {
   ck.testTrue(emptyPolyface.isSameGeometryClass(emptyPolyface));
   ck.testUndefined(PolyfaceQuery.computePrincipalAreaMoments(emptyPolyface), "Expect moment failure in empty polyface");
   ck.testUndefined(PolyfaceQuery.computePrincipalVolumeMoments(emptyPolyface), "Expect moment failure in empty polyface");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.VisitorParamQueries", () => {
@@ -1382,48 +1414,25 @@ it("Polyface.VisitorQueryFailures", () => {
   ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "invalid vertex index");
   const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
   ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("Polyface.IndexValidation", () => {
   const ck = new Checker();
   const indices = [0, 1, 2, 3, 4, 7, 6, 5];
   const data = [9, 8, 7, 6, 5, 4, 3, 2, 1, 100];
-  ck.testFalse(Polyface.areIndicesValid(undefined,
-    -1, 3,   // range to examine
-    data, 1), "one of indices and data cannot be undefined");
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    -1, 3,   // range to examine
-    undefined, 1), "one of indices and data cannot be undefined");
+  ck.testFalse(Polyface.areIndicesValid(undefined, -1, 3, data, 1), "one of indices and data cannot be undefined");
+  ck.testFalse(Polyface.areIndicesValid(indices, -1, 3, undefined, 1), "one of indices and data cannot be undefined");
+  ck.testFalse(Polyface.areIndicesValid(indices, -1, 3, data, 10), "first index is out of bounds");
+  ck.testFalse(Polyface.areIndicesValid(indices, 15, 3, data, 10), "first index is out of bounds");
+  ck.testFalse(Polyface.areIndicesValid(indices, 0, 20, data, 1), "second index is out of bounds");
+  ck.testFalse(Polyface.areIndicesValid(indices, 3, 0, data, 10), "first index cannot be greater than second index");
+  ck.testFalse(Polyface.areIndicesValid(indices, 0, 0, data, 10), "first index and second index cannot be equal");
+  ck.testFalse(Polyface.areIndicesValid(indices, 0, 3, data, 1), "confirm index out of bounds detected");
+  ck.testTrue(Polyface.areIndicesValid(indices, 0, 3, data, 10), "validate indices");
+  ck.testTrue(Polyface.areIndicesValid(undefined, 0, 3, undefined, 10), "both of indices and data can be undefined");
 
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    -1, 3,   // range to examine
-    data, 10), "first index is out of bounds");
-
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    15, 3,   // range to examine
-    data, 10), "first index is out of bounds");
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    0, 20,   // range to examine
-    data, 1), "second index is out of bounds");
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    3, 0,   // range to examine
-    data, 10), "first index cannot be greater than second index");
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    0, 0,   // range to examine
-    data, 10), "first index and second index cannot be equal");
-
-  ck.testFalse(Polyface.areIndicesValid(indices,
-    0, 3,   // range to examine
-    data, 1), "confirm index out of bounds detected");
-  ck.testTrue(Polyface.areIndicesValid(indices,
-    0, 3,   // range to examine
-    data, 10), "validate indices");
-  ck.testTrue(Polyface.areIndicesValid(undefined,
-    0, 3,   // range to examine
-    undefined, 10), "both of indices and data can be undefined");
-
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 // disable naming to allow exact names from synchro mesh
@@ -1442,7 +1451,7 @@ it("Synchro", () => {
   };
   const numVertexX = 4;
   const numVertexY = 3;
-  // build a regular point grid ...
+  // build a regular point grid
   const myUVArray: Point2d[] = [];
   const myNormalArray: Vector3d[] = [];
   const zScale = 0.1;
@@ -1455,7 +1464,7 @@ it("Synchro", () => {
       normal.normalizeInPlace();
       myNormalArray.push(normal);
     }
-  // push indices for 2 triangles in each quad ...
+  // push indices for 2 triangles in each quad
   for (let iy = 0; iy + 1 < numVertexY; iy++)
     for (let ix = 0; ix + 1 < numVertexX; ix++) {
       const i00 = iy * numVertexX + ix;
@@ -1465,7 +1474,7 @@ it("Synchro", () => {
       synchroMesh.index_array.push(i00, i10, i01);
       synchroMesh.index_array.push(i10, i11, i01);
     }
-  // create and output all 4 combinations of uv and normal content ..
+  // create and output all 4 combinations of uv and normal content
   const polyface = createPolyfaceFromSynchro(synchroMesh);
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, 0);
 
@@ -1485,7 +1494,7 @@ it("Synchro", () => {
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceWithParamsAndNormals, numVertexX, numVertexY);
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "Synchro");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("SmallSynchroMesh", () => {
@@ -1510,13 +1519,13 @@ it("SmallSynchroMesh", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "082020BFromSynchro");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("synchroPolyface", () => {
+  const ck = new Checker();
   const synchroMesh = JSON.parse(fs.readFileSync("./src/test/data/synchro/082020B/synchromesh.json", "utf8"));
 
-  const ck = new Checker();
   for (const polyfaceA of [createPolyfaceFromSynchro(synchroMesh)]) {
     const polyfaceJson = JSON.parse(fs.readFileSync("./src/test/data/synchro/082020B/polyface.json", "utf8"));
     const xyzArray = enumerateToNumberArray(polyfaceJson.data.point._data);
@@ -1538,7 +1547,7 @@ it("synchroPolyface", () => {
     polyfaceB.data.paramIndex!.push(...paramIndexArray);
     polyfaceB.data.normalIndex!.push(...normalIndexArray);
     const facetStartB = (polyfaceB as any)._facetStart;
-    // purge initialization from ctor ...
+    // purge initialization from ctor
     facetStartB.length = 0;
     for (const s of polyfaceJson._facetStart) {
       facetStartB.push(s);
@@ -1553,11 +1562,9 @@ it("synchroPolyface", () => {
     polyfaceB.twoSided = polyfaceA.twoSided;
     ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
-/**
- * This is the Synchro mesh structure, as deduced by looking at prior code to transfer to polyface.
- */
+/** This is the Synchro mesh structure, as deduced by looking at prior code to transfer to polyface. */
 interface SynchroMesh {
   vertex_array: XYAndZ[];
   index_array: number[];
@@ -1575,10 +1582,9 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
   const hasNormals: boolean = geom.normal_array != null && geom.normal_array.length !== 0;
   const polyface = IndexedPolyface.create(hasNormals, hasUV);
   // const numVertex = geom.vertex_array.length;
-  // Always load point data ...
+  // Always load point data
   for (const xyz of geom.vertex_array)
     polyface.data.point.pushXYZ(xyz.x, xyz.y, xyz.z);
-
   // OPTIONAL uv array
   if (hasUV) {
     for (const xy of geom.uv_array)
@@ -1590,12 +1596,12 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
       polyface.data.normal!.pushXYZ(xyz.x, xyz.y, xyz.z);
   }
 
-  // build up the index sets one facet at a time, let terminateFacet () get the facetStart table right . . .
-  // Note that polyface has separate index arrays for params and normals.
-  // (When there are sharp edges in the mesh, this allows smaller param, point, and normal arrays.
-  //    The single-index style of Synchro and other
-  //   browser software saves memory by sharing the index array but wastes it with redundant data arrays.
-  //   The polyface compress function can get this effect)
+  // Build up the index sets one facet at a time: let terminateFacet() get the facetStart table right.
+  // Note that polyface has separate index arrays for params and normals (when there are sharp
+  // edges in the mesh, this allows smaller param, point, and normal arrays.
+  // The single-index style of Synchro and other browser software saves memory by sharing the
+  // index array but wastes it with redundant data arrays.
+  // The polyface compress function can remove this effect.
   const indexArray = geom.index_array;
   let i0, i1, i2;
   for (let k = 0; k + 2 < indexArray.length; k += 3) {
@@ -1612,7 +1618,6 @@ function createPolyfaceFromSynchro(geom: any): Polyface {
   }
   if (polyface.data.paramIndex) {
     const paramCount = polyface.data.paramCount;
-    // let bp = 0;
     let lastJ = -1;
     for (let j = 0; j < polyface.data.paramIndex.length; j++) {
       if (polyface.data.paramIndex[j] > paramCount) {
@@ -1672,44 +1677,38 @@ function createPolyfaceFromSynchroA(geom: any): Polyface {
   const polyface = IndexedPolyface.create(hasNormals, hasUV);
   // const numVertex = geom.vertex_array.length;
 
-  // Always load point data ...
+  // always load point data
   for (const xyz of geom.vertex_array)
     polyface.data.point.pushXYZ(xyz.x, xyz.y, xyz.z);
-
   // OPTIONAL uv array
   if (hasUV) {
     for (const xy of geom.uv_array)
       polyface.data.param!.pushXY(xy.x, xy.y);
   }
-
   // OPTIONAL normal array
   if (hasNormals) {
     for (const xyz of geom.normal_array)
       polyface.data.normal!.pushXYZ(xyz.x, xyz.y, xyz.z);
   }
 
-  // build up the index sets one facet at a time, let terminateFacet () get the facetStart table right . . .
-  // Note that polyface has separate index arrays for params and normals.
-  // (When there are sharp edges in the mesh, this allows smaller param, point, and normal arrays.
-  //    The single-index style of Synchro and other
-  //   browser software saves memory by sharing the index array but wastes it with redundant data arrays.
-  //   The polyface compress function can get this effect)
+  // build up the index sets one facet at a time, let terminateFacet () get the facetStart table right
+  // note that polyface has separate index arrays for params and normals.
+  // (when there are sharp edges in the mesh, this allows smaller param, point, and normal arrays.
+  // the single-index style of Synchro and other
+  // browser software saves memory by sharing the index array but wastes it with redundant data arrays.
+  //  the polyface compress function can get this effect)
   const indexArray = geom.index_array;
   let i0, i1, i2;
   for (let k = 0; k + 2 < indexArray.length; k += 3) {
     i0 = indexArray[k];
     i1 = indexArray[k + 1];
     i2 = indexArray[k + 2];
-
     polyface.data.pointIndex.push(i0, i1, i2);
     polyface.data.edgeVisible.push(true, true, true);
-
     if (polyface.data.paramIndex)
       polyface.data.paramIndex.push(i0, i1, i2);
-
     if (polyface.data.normalIndex)
       polyface.data.normalIndex.push(i0, i1, i2);
-
     polyface.terminateFacet();
   }
 
@@ -1779,7 +1778,9 @@ describe("SphericalMeshData", () => {
             const iAuxData = auxIndices[readIndex];
             const inserted = normalToAuxIndex.insert(normal, iAuxData);
             if (!inserted)
-              ck.testExactNumber(normalToAuxIndex.get(normal)!, iAuxData, "at a vertex, sectors with same normal have same uv/color");
+              ck.testExactNumber(
+                normalToAuxIndex.get(normal)!, iAuxData, "at a vertex, sectors with same normal have same uv/color",
+              );
           }
         }
       }
@@ -1792,14 +1793,11 @@ describe("SphericalMeshData", () => {
 
     const normal = Vector3d.createZero();
     const vertex = Point3d.createZero();
-
     const mesh = ImportedSample.createPolyhedron62();
     if (!ck.testPointer(mesh, "imported mesh"))
       return;
-
     mesh.data.color = undefined;
     mesh.data.colorIndex = undefined;
-
     // install per-vertex spherical uv-parameters
     mesh.data.param?.clear();
     for (let vi = 0; vi < mesh.data.pointCount; ++vi) {
@@ -1810,7 +1808,6 @@ describe("SphericalMeshData", () => {
       }
     }
     mesh.data.paramIndex = mesh.data.pointIndex.slice();
-
     // install per-vertex spherical normals
     mesh.data.normal?.clear();
     for (let vi = 0; vi < mesh.data.pointCount; ++vi) {
@@ -1821,13 +1818,12 @@ describe("SphericalMeshData", () => {
       }
     }
     mesh.data.normalIndex = mesh.data.pointIndex.slice();
-
-    // This yields a mesh with uv different from, say, those computed by QV in MicroStation.
+    // this yields a mesh with uv different from, say, those computed by QV in MicroStation.
     mesh.data.compress();
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Triangulate", () => {
@@ -1837,7 +1833,6 @@ describe("SphericalMeshData", () => {
     const normal = Vector3d.createZero();
     const vertex = Point3d.createZero();
     const vertex1 = Point3d.createZero();
-
     const mesh = ImportedSample.createPolyhedron62();
     if (!ck.testPointer(mesh, "imported mesh"))
       return;
@@ -1853,9 +1848,12 @@ describe("SphericalMeshData", () => {
     ) {
       colors = mesh.data.color.slice();
       for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet();)
-        ck.testTrue(normalToColorIndex.insert(visitor.getNormal(0, normal)!, visitor.colorIndex![0]), "associate normal to color of face");
+        ck.testTrue(
+          normalToColorIndex.insert(visitor.getNormal(0, normal)!,
+            visitor.colorIndex![0]),
+          "associate normal to color of face",
+        );
     }
-
     // preserve per-sector uv-parameters
     let params: GrowableXYArray | undefined;
     const vertexIndexToSector = [];
@@ -1876,7 +1874,6 @@ describe("SphericalMeshData", () => {
         vertexIndexToSector.push(normalToParamIndex);
       }
     }
-
     // triangulate via graph roundtrip (loses normals, params, colors)
     const graph = PolyfaceQuery.convertToHalfEdgeGraph(mesh);
     ck.testTrue(Triangulator.triangulateAllInteriorFaces(graph, true), "triangulated the graph");
@@ -1885,13 +1882,15 @@ describe("SphericalMeshData", () => {
 
     ck.testExactNumber(mesh1.pointCount, mesh.pointCount, "triangulation didn't add any vertices");
     ck.testExactNumber(mesh1.facetCount, 54 + mesh.facetCount, "triangulation produced expected facet count");
-    ck.testExactNumber(mesh1.data.pointIndex.length, 108 + mesh.data.pointIndex.length, "triangulation produced expected edge count");
-    ck.testExactNumber(mesh1.pointCount - (mesh1.data.pointIndex.length / 2) + mesh1.facetCount, 2, "triangulation satisfies Euler equation");
-
+    ck.testExactNumber(
+      mesh1.data.pointIndex.length, 108 + mesh.data.pointIndex.length, "triangulation produced expected edge count",
+    );
+    ck.testExactNumber(
+      mesh1.pointCount - (mesh1.data.pointIndex.length / 2) + mesh1.facetCount, 2, "triangulation satisfies Euler equation",
+    );
     // reinstall per-facet normals
     PolyfaceQuery.buildPerFaceNormals(mesh1);
     ck.testDefined(mesh1.data.normal, "normals successfully installed");
-
     // restore per-facet colors
     if (colors) {
       for (const visitor = mesh1.createVisitor(); visitor.moveToNextFacet();) {
@@ -1928,7 +1927,171 @@ describe("SphericalMeshData", () => {
     sectorsWithSameNormalAtVertexShareUVParamAndColor(ck, mesh1.data);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Triangulate");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("Mirror", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    const delta = 10;
+    // accumulator for ray intersection params, ignoring hits at the ray origin
+    const rayHits = new OrderedSet<FacetLocationDetail>(
+      (f0: FacetLocationDetail, f1: FacetLocationDetail) => compareWithTolerance(f0.a, f1.a, Geometry.smallMetricDistance),
+    );
+    const intersectOptions = new FacetIntersectOptions();
+    intersectOptions.parameterTolerance = Geometry.smallFraction;
+    intersectOptions.acceptIntersection = (d: FacetLocationDetail) => {
+      if (d.a > Geometry.smallMetricDistance)
+        rayHits.add(d.clone());
+      return false;
+    };
+    const normalPointsOutward = (closedMesh: Polyface, normal: Ray3d): boolean => {
+      rayHits.clear();
+      PolyfaceQuery.intersectRay3d(closedMesh, normal, intersectOptions);
+      return 0 === rayHits.size % 2; // ASSUME mesh is closed and adjacent facets have dihedral angle < 180
+    };
+    const hasOutwardOrientationAndFacetNormals = (closedMesh: Polyface): boolean => {
+      let outward = true;
+      const storedNormal = Ray3d.createZero();
+      for (const visitor = closedMesh.createVisitor(0); visitor.moveToNextFacet();) {
+        for (let i = 0; i < visitor.point.length; ++i) {
+          if (!visitor.getNormal(i, storedNormal.direction))
+            outward = false;
+          else if (!visitor.getPoint(i, storedNormal.origin))
+            outward = false;
+          else if (!normalPointsOutward(closedMesh, storedNormal)) { // stored normal points outward
+            GeometryCoreTestIO.captureCloneGeometry(
+              allGeometry, [storedNormal.origin, storedNormal.fractionToPoint(2.5)], x0, y0,
+            );
+            outward = false;
+          }
+        }
+        const computedNormal = PolygonOps.centroidAreaNormal(visitor.point);
+        if (!computedNormal)
+          outward = false;
+        else if (!normalPointsOutward(closedMesh, computedNormal)) { // facet orientation points outward
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry, [computedNormal.origin, computedNormal.fractionToPoint(4)], x0, y0,
+          );
+          outward = false;
+        }
+      }
+      return outward;
+    };
+    const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform): void => {
+      if (!ck.testDefined(g, "geometry is defined"))
+        return;
+      ck.testTrue(t.matrix.determinant() < 0, "transform is a mirror");
+      let closedMesh = g;
+      let type = g.geometryCategory;
+      if (closedMesh instanceof SolidPrimitive) {
+        type = closedMesh.solidPrimitiveType;
+        const options = StrokeOptions.createForFacets();
+        options.needNormals = true;
+        const builder = PolyfaceBuilder.create(options);
+        builder.addGeometryQuery(closedMesh);
+        closedMesh = builder.claimPolyface();
+      }
+      y0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedMesh, x0, y0);
+      const outward = hasOutwardOrientationAndFacetNormals(closedMesh);
+      ck.testTrue(outward, `${type} facets and normals point outward`);
+      y0 = delta;
+      const mirrorMesh = closedMesh.cloneTransformed(t);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh, x0, y0);
+      const mirrorOutward = hasOutwardOrientationAndFacetNormals(mirrorMesh);
+      ck.testTrue(mirrorOutward, `${type} mirrored facets and normals point outward`);
+    };
+    // mirror across plane at origin with normal (1,1,0)
+    const mirrorMatrix = Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -1.0);
+    const mirrorTrans = Transform.createFixedPointAndMatrix(Point3d.createZero(), mirrorMatrix);
+
+    // all solids are centered at zero
+    const geometry: (IndexedPolyface | SolidPrimitive | undefined)[] = [];
+
+    geometry.push(ImportedSample.createPolyhedron62());
+
+    geometry.push(Box.createRange(Range3d.create(Point3d.create(-1.5, -1, -0.5), Point3d.create(1.5, 1, 0.5)), true));
+
+    geometry.push(Cone.createAxisPoints(Point3d.create(-1), Point3d.create(1), 2, 1, true));
+
+    const sweepLength = 3;
+    const washer = RegionOps.sortOuterAndHoleLoopsXY([
+      Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 2)),
+      Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 1.5))
+    ]);
+    const arcNormal = Vector3d.createNormalized(3, 0, -1)!;
+    const rotation = Matrix3d.createRotationVectorToVector(Vector3d.unitZ(), arcNormal);
+    washer.tryTransformInPlace(Transform.createOriginAndMatrix(undefined, rotation));
+    geometry.push(LinearSweep.create(washer, arcNormal.scale(sweepLength), true));
+
+    const polygonCCW = [Point3d.create(-1, -1), Point3d.create(-1, -2), Point3d.create(1, -2), Point3d.create(1, -1)];
+    const polygonCW = polygonCCW.slice().reverse();
+    const sweepRay = Ray3d.create(Point3d.createZero(), Vector3d.unitX());
+    const sweepAngle = Angle.createDegrees(20);
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCCW), sweepRay, sweepAngle, true));
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCCW), sweepRay, sweepAngle.cloneScaled(-1), true));
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle, true));
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle.cloneScaled(-1), true));
+
+    const sections = [
+      Loop.create(Arc3d.createXY(Point3d.create(0, -1, -1), 1)),
+      Loop.create(Arc3d.createXY(Point3d.create(0, 1, 1), 1.5)),
+    ];
+    geometry.push(RuledSweep.create(sections, true));
+
+    const eAxes = Transform.createOriginAndMatrix(undefined, Matrix3d.createScale(2, 3, 1))
+    geometry.push(Sphere.createEllipsoid(eAxes, AngleSweep.createStartEndDegrees(-45, 0), true));
+
+    geometry.push(TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(undefined, Vector3d.unitY(-1), 2), 0.25, true));
+
+    const centerlineSweeps: AngleSweep[] = [AngleSweep.createStartEndDegrees(0, 90), AngleSweep.createStartEndDegrees(0, -90)];
+    const sectionDataSweeps: AngleSweep[] = [AngleSweep.create360(), AngleSweep.createStartEndDegrees(360, 0)];
+    const strokeOptions = StrokeOptions.createForFacets();
+    strokeOptions.needNormals = true;
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        // pipes with circular arc rails
+        const centerline = Arc3d.createXY(Point3d.create(), 1.0, centerlineSweep);
+        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0), sectionDataSweep);
+        const pipeBuilder = PolyfaceBuilder.create(strokeOptions);
+        pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
+        const pipeMesh = pipeBuilder.claimPolyface();
+        if (ck.testFalse(pipeMesh.isEmpty, "addMiteredPipes computed a nonempty mesh"))
+          geometry.push(pipeMesh);
+      }
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        // mitered pipes with elliptical arc rails
+        // NOTE: tiny section radii to avoid section clash at high rail curvature
+        const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
+        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
+        const pipeBuilder = PolyfaceBuilder.create(strokeOptions);
+        pipeBuilder.addMiteredPipes(centerline, sectionData, 9, true);
+        const pipeMesh = pipeBuilder.claimPolyface();
+        if (ck.testFalse(pipeMesh.isEmpty, "addMiteredPipes computed a nonempty mesh"))
+          geometry.push(pipeMesh);
+      }
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
+        const sectionData = Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
+        const miterOptions: MiteredSweepOptions = { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: true, strokeOptions };
+        const sweepSections = CurveFactory.createMiteredSweepSections(centerline, sectionData, miterOptions);
+        if (ck.testDefined(sweepSections, "computed miteredSweepSections"))
+          geometry.push(sweepSections.mesh);
+      }
+
+    // verify outward normals for closed meshes/solids, both before and after mirroring
+    for (const geom of geometry) {
+      testMirror(geom, mirrorTrans);
+      x0 += delta;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Mirror");
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1947,33 +2110,46 @@ describe("PolyfaceVisitor", () => {
     for (const mesh of meshes) {
       if (ck.testDefined(mesh, "imported mesh")) {
         // transform disparately sourced mesh into scaled cube
-        const toWorld = mesh.range().getLocalToWorldTransform().multiplyTransformMatrix3d(Matrix3d.createScale(1/cubeSize, 1/cubeSize, 1/cubeSize));
+        const toWorld = mesh.range().getLocalToWorldTransform().multiplyTransformMatrix3d(
+          Matrix3d.createScale(1 / cubeSize, 1 / cubeSize, 1 / cubeSize),
+        );
         mesh.tryTransformInPlace(toWorld.inverse()!);
       }
     }
 
-    const testMesh = (mesh: IndexedPolyface, expectedFacetCount: number, compare?: Vector3d, sideAngle?: Angle, numWrap?: number): void => {
+    const testMesh = (
+      mesh: IndexedPolyface, expectedFacetCount: number, compare?: Vector3d, sideAngle?: Angle, numWrap?: number,
+    ): void => {
       y0 += delta;
       const visitor = IndexedPolyfaceSubsetVisitor.createNormalComparison(mesh, compare, sideAngle, numWrap);
-      if (ck.testExactNumber(visitor.getVisitableFacetCount(), expectedFacetCount, "visitor has expected subset size") && expectedFacetCount > 0) {
+      if (
+        ck.testExactNumber(visitor.getVisitableFacetCount(), expectedFacetCount, "visitor has expected subset size") &&
+        expectedFacetCount > 0
+      ) {
         const currReadIndex = visitor.currentReadIndex();
         ck.testLE(visitor.getVisitableFacetCount(), mesh.facetCount, "visitor does not increase mesh facet count");
-        ck.testExactNumber(visitor.getVisitableFacetCount(), PolyfaceQuery.visitorClientFacetCount(visitor), "visitor facet count agrees with general facet count query");
-        ck.testExactNumber(visitor.currentReadIndex(), currReadIndex, "visitorClientFacetCount does not change the read index");
-
-        visitor.reset();  // visit first facet
-        ck.testExactNumber(visitor.point.length - visitor.numEdgesThisFacet, numWrap ?? 0, "visitor has expected numWrap");
-
+        ck.testExactNumber(
+          visitor.getVisitableFacetCount(),
+          PolyfaceQuery.visitorClientFacetCount(visitor),
+          "visitor facet count agrees with general facet count query",
+        );
+        ck.testExactNumber(
+          visitor.currentReadIndex(), currReadIndex, "visitorClientFacetCount does not change the read index",
+        );
+        visitor.reset(); // visit first facet
+        ck.testExactNumber(
+          visitor.point.length - visitor.numEdgesThisFacet, numWrap ?? 0, "visitor has expected numWrap",
+        );
         const builder = PolyfaceBuilder.create();
         builder.addFacetsFromVisitor(visitor);
         const subsetMesh = builder.claimPolyface();
-        ck.testExactNumber(subsetMesh.facetCount, visitor.getVisitableFacetCount(), "visitor sends all of its facets to the builder");
-
+        ck.testExactNumber(
+          subsetMesh.facetCount, visitor.getVisitableFacetCount(), "visitor sends all of its facets to the builder",
+        );
         if (numWrap === undefined)
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, subsetMesh, x0, y0);
       }
     };
-
     const toBottom = Vector3d.create(0, 0, -1);
     const toFront = Vector3d.create(0, -1, 0);
     const toIso = Vector3d.create(-1, -1, 1);
@@ -2020,6 +2196,6 @@ describe("PolyfaceVisitor", () => {
     testMesh(myMesh, 28, toIso, Angle.createDegrees(0.01), undefined);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceVisitor", "SubsetConstructor");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

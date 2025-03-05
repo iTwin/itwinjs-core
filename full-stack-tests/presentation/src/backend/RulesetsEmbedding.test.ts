@@ -5,13 +5,14 @@
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
-import { IModelDb, StandaloneDb } from "@itwin/core-backend";
+import { IModelDb, StandaloneDb, Subject } from "@itwin/core-backend";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 import { prepareOutputFilePath } from "../Utils";
+import { IModel, SubjectProps } from "@itwin/core-common";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -78,6 +79,35 @@ describe("RulesEmbedding", () => {
     expect(rulesets.length).equals(1);
 
     expect(ruleset).to.deep.eq(rulesets[0]);
+  });
+
+  it("inserts a ruleset under specified parent subject", async () => {
+    // Setup ruleset subject
+    const subjectProps: SubjectProps = {
+      classFullName: Subject.classFullName,
+      code: Subject.createCode(imodel, IModel.rootSubjectId, "test-ruleset-subject"),
+      model: IModel.repositoryModelId,
+      parent: {
+        id: IModel.rootSubjectId,
+        relClassName: "bis.SubjectOwnsSubjects",
+      },
+    };
+    const parentSubjectId = imodel.elements.insertElement(subjectProps);
+
+    // Insert a ruleset into custom subject
+    const ruleset1 = { id: "1", rules: [] };
+    embedder = new RulesetEmbedder({ imodel, parentSubjectId });
+    const rulesetId1 = await embedder.insertRuleset(ruleset1);
+    expect(Id64.isValid(rulesetId1)).true;
+
+    // Obtain all rulesets
+    const rulesets: Ruleset[] = await embedder.getRulesets();
+    expect(rulesets.sort((a, b) => a.id.localeCompare(b.id))).to.deep.eq([ruleset1]);
+
+    // Validate if ruleset subject has been created under the correct subject
+    const reader = imodel.createQueryReader("SELECT Parent.Id parentId FROM bis.Subject WHERE CodeValue = 'PresentationRules'");
+    const row = await reader.next();
+    expect(row.value.parentId).to.eq(parentSubjectId);
   });
 
   it("inserts multiple different rulesets to iModel", async () => {

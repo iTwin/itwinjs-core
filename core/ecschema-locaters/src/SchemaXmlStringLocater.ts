@@ -45,11 +45,11 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    */
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
 
     const schema = await context.getCachedSchema(schemaKey, matchType);
-    return schema as T;
+    return schema as Schema;
   }
 
   /**
@@ -65,7 +65,6 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaText = maxCandidate.schemaText;
 
@@ -85,13 +84,12 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    */
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     // Grab all schema strings that match the schema key
     const candidates: StringSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType);
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaText = maxCandidate.schemaText;
 
@@ -102,7 +100,7 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
     let schema: Schema = new Schema(context);
     schema = reader.readSchemaSync(schema, document);
 
-    return schema as T;
+    return schema;
   }
 
   /**

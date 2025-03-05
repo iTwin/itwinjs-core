@@ -21,6 +21,7 @@ class TextEditor implements Decorator {
   public rotation = 0;
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
+  public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
   public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
@@ -54,6 +55,7 @@ class TextEditor implements Decorator {
     this.rotation = 0;
     this.offset.x = this.offset.y = 0;
     this.anchor = { horizontal: "center", vertical: "middle" };
+    this.debugAnchorPointAndRange = false;
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
   }
@@ -113,7 +115,7 @@ class TextEditor implements Decorator {
     });
 
     const rpcProps = this._iModel.getRpcProps();
-    const geom = await DtaRpcInterface.getClient().produceTextAnnotationGeometry(rpcProps, annotation.toJSON());
+    const geom = await DtaRpcInterface.getClient().produceTextAnnotationGeometry(rpcProps, annotation.toJSON(), this.debugAnchorPointAndRange);
     const builder = new GeometryStreamBuilder();
     builder.appendTextBlock(geom);
 
@@ -283,6 +285,10 @@ export class TextDecorationTool extends Tool {
           default:
             throw new Error("Expected top, middle, bottom, left, center, or right");
         }
+        break;
+      }
+      case "debug": {
+        editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
         break;
       }
 

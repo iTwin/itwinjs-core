@@ -15,6 +15,7 @@ import { ScreenViewport } from "../../Viewport";
 import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
+import { DecorateContext } from "../../ViewContext";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -67,8 +68,12 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   public get status() { return this._status; }
 
-  /** @alpha */
-  public get supportsMapFeatureInfo() { return false; }
+  /** Determine if this provider supports map feature info.
+   * For example, this can be used to show the map feature info tool only when a provider is registered to support it.
+   * @returns true if provider supports map feature info else return false.
+   * @public
+   */
+  public get supportsMapFeatureInfo(): boolean { return false; }
 
   public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
 
@@ -127,13 +132,19 @@ export abstract class MapLayerImageryProvider {
 
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
 
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+
   /**
    * Add attribution logo cards for the data supplied by this provider to the [[Viewport]]'s logo div.
    * @param _cards Logo cards HTML element that may contain custom data attributes.
    * @param _viewport Viewport to add logo cards to.
    * @beta
    */
-  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards, vp));
+  }
 
   /** @internal */
   protected _missingTileData?: Uint8Array;
@@ -189,6 +200,10 @@ export abstract class MapLayerImageryProvider {
   public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<void> {
     // default implementation; simply return an empty feature info
     featureInfos.push({ layerName: this._settings.name });
+  }
+
+  /** @internal */
+  public  decorate(_context: DecorateContext): void {
   }
 
   /** @internal */

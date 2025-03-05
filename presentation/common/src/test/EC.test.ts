@@ -49,17 +49,6 @@ describe("InstanceKey", () => {
 });
 
 describe("RelatedClassInfo", () => {
-  describe("to/from JSON", () => {
-    it("passes roundtrip", () => {
-      const src = createTestRelatedClassInfo();
-      // eslint-disable-next-line deprecation/deprecation
-      const json = RelatedClassInfo.toJSON(src);
-      // eslint-disable-next-line deprecation/deprecation
-      const res = RelatedClassInfo.fromJSON(json);
-      expect(res).to.deep.eq(src);
-    });
-  });
-
   describe("to/from compressed JSON", () => {
     it("passes roundtrip", () => {
       const src = createTestRelatedClassInfo();

@@ -12,7 +12,7 @@ import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
 import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions } from "./IModel";
+import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Options for pulling changes into iModel.
@@ -149,10 +149,14 @@ export interface IpcAppFunctions {
   openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
   openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+  /** see SnapshotConnection.openFile */
+  openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
+  /** see BriefcaseConnection.abandonChanges */
+  abandonChanges: (key: string) => Promise<void>;
   /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
   /** see BriefcaseTxns.isUndoPossible */

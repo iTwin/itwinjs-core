@@ -19,7 +19,17 @@ export * from "./presentation-common/RegisteredRuleset";
 export * from "./presentation-common/RulesetVariables";
 export * from "./presentation-common/RulesetsFactory";
 export * from "./presentation-common/Update";
-export * from "./presentation-common/Utils";
+export {
+  DEFAULT_KEYS_BATCH_SIZE,
+  Omit,
+  PagedResponse,
+  PartialBy,
+  Subtract,
+  ValuesDictionary,
+  getInstancesCount,
+  deepReplaceNullsToUndefined,
+  createCancellableTimeoutPromise,
+} from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
 export * from "./presentation-common/LocalizationHelper";
 export * from "./presentation-common/InstanceFilterDefinition";
@@ -34,7 +44,6 @@ export * from "./presentation-common/KoqPropertyValueFormatter";
  */
 export * from "./presentation-common/PresentationRpcInterface";
 export * from "./presentation-common/RpcRequestsHandler";
-export * from "./presentation-common/ElementProperties";
 
 /**
  * @module UnifiedSelection
@@ -63,6 +72,7 @@ export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
 export * from "./presentation-common/content/ContentTraverser";
 export * from "./presentation-common/content/PropertyValueFormatter";
+export * from "./presentation-common/ElementProperties";
 
 /**
  * @module Hierarchies
@@ -91,15 +101,11 @@ export * from "./presentation-common/rules/hierarchy/NodeArtifactsRule";
 export * from "./presentation-common/rules/hierarchy/RelatedInstanceNodesSpecification";
 export * from "./presentation-common/rules/hierarchy/RootNodeRule";
 export * from "./presentation-common/rules/hierarchy/SubCondition";
-export * from "./presentation-common/rules/customization/CheckBoxRule";
 export * from "./presentation-common/rules/customization/CustomizationRule";
 export * from "./presentation-common/rules/customization/ExtendedDataRule";
 export * from "./presentation-common/rules/customization/GroupingRule";
-export * from "./presentation-common/rules/customization/ImageIdOverride";
 export * from "./presentation-common/rules/customization/InstanceLabelOverride";
-export * from "./presentation-common/rules/customization/LabelOverride";
 export * from "./presentation-common/rules/customization/SortingRule";
-export * from "./presentation-common/rules/customization/StyleOverride";
 export * from "./presentation-common/rules/content/ContentInstancesOfSpecificClassesSpecification";
 export * from "./presentation-common/rules/content/ContentRelatedInstancesSpecification";
 export * from "./presentation-common/rules/content/ContentRule";

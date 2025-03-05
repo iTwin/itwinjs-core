@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
 import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -29,7 +30,8 @@ export type AnyEnumerator = Enumerator<string | number>;
  * @beta
  */
 export class Enumeration extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Enumeration; // eslint-disable-line
+  public override readonly schemaItemType = Enumeration.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.Enumeration; }
   protected _type?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
@@ -40,7 +42,6 @@ export class Enumeration extends SchemaItem {
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Enumeration;
     this._type = primitiveType;
     this._isStrict = true;
     this._enumerators = [];
@@ -154,12 +155,16 @@ export class Enumeration extends SchemaItem {
   public override fromJSONSync(enumerationProps: EnumerationProps) {
     super.fromJSONSync(enumerationProps);
     if (undefined === this._type) {
-      if (/int/i.test(enumerationProps.type))
+      if (/int/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.Integer;
-      else if (/string/i.test(enumerationProps.type))
+      } else if (/string/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.String;
-      else
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
+      } else {
+        if (SchemaReadHelper.isECSpecVersionNewer({readVersion: enumerationProps.originalECSpecMajorVersion, writeVersion: enumerationProps.originalECSpecMinorVersion} as ECSpecVersion))
+          this._type = PrimitiveType.String;
+        else
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
+      }
     } else {
       const primitiveTypePattern = (this.isInt) ? /int/i : /string/i;
       if (!primitiveTypePattern.test(enumerationProps.type))
@@ -187,6 +192,24 @@ export class Enumeration extends SchemaItem {
     this._isStrict = isStrict;
   }
 
+  /**
+   * Type guard to check if the SchemaItem is of type Enumeration.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is an Enumeration, false otherwise.
+   */
+  public static isEnumeration(item?: SchemaItem): item is Enumeration {
+    return item?.schemaItemType === SchemaItemType.Enumeration;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Enumeration.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Enumeration if it is an Enumeration, undefined otherwise.
+   */
+  public static assertIsEnumeration(item?: SchemaItem): asserts item is Enumeration {
+    if (!this.isEnumeration(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Enumeration}' (Enumeration)`);
+  }
 }
 
 /** @internal

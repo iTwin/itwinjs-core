@@ -5,7 +5,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BatchType } from "../FeatureTable";
 import {
   ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, EdgeOptions, IModelTileTreeId, iModelTileTreeIdToString,

@@ -38,6 +38,9 @@ export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
 
+// Temporarily (until 5.0) export top-level internal APIs to avoid breaking callers.
+export * from "./internal/cross-package";
+
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.
  */

@@ -21,6 +21,8 @@ import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
+import { IModelNative } from "./internal/NativePlatform";
+import { _hubAccess, _nativeDb } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -175,7 +177,7 @@ export class V2CheckpointManager {
       // the sasToken is checked for refresh (before it expires) on every Rpc request using that user's accessToken. For Ipc, the
       // accessToken in the checkpoint request is undefined, and the sasToken is requested by IModelHost.getAccessToken(). It is refreshed on a timer.
       if (undefined === checkpoint.accessToken) {
-        tokenFn = async () => (await IModelHost.hubAccess.queryV2Checkpoint(checkpoint))?.sasToken ?? "";
+        tokenFn = async () => (await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint))?.sasToken ?? "";
         tokenRefreshSeconds = undefined;
       }
       container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds, logId: process.env.POD_NAME, tokenFn });
@@ -187,7 +189,7 @@ export class V2CheckpointManager {
   public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer }> {
     let v2props: V2CheckpointAccessProps | undefined;
     try {
-      v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
+      v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);
       if (!v2props)
         throw new Error("no checkpoint");
     } catch (err: any) {
@@ -197,6 +199,8 @@ export class V2CheckpointManager {
     try {
       const container = this.getContainer(v2props, checkpoint);
       const dbName = v2props.dbName;
+      // Use the new token from the recently queried v2 checkpoint just incase the one we currently have is expired.
+      container.accessToken = v2props.sasToken;
       if (!container.isConnected)
         container.connect(this.cloudCache);
       container.checkForChanges();
@@ -232,7 +236,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({ ...request.checkpoint, allowPreceding: true });
+    const v2props: V2CheckpointAccessProps | undefined = await IModelHost[_hubAccess].queryV2Checkpoint({ ...request.checkpoint, allowPreceding: true });
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
@@ -291,8 +295,8 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
-    // eslint-disable-next-line deprecation/deprecation
-    return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return (await IModelHost[_hubAccess].downloadV1Checkpoint(job.request)).id;
   }
 }
 
@@ -333,7 +337,7 @@ export class CheckpointManager {
       const prevLogLevel = Logger.getLevel(NativeLoggerCategory.SQLite) ?? LogLevel.Error; // Get log level before we set it to None.
       Logger.setLevel(NativeLoggerCategory.SQLite, LogLevel.None); // Ignores noisy error messages when applying changesets.
       const db = SnapshotDb.openForApplyChangesets(targetFile);
-      const nativeDb = db.nativeDb;
+      const nativeDb = db[_nativeDb];
       try {
 
         if (nativeDb.hasPendingTxns()) {
@@ -350,7 +354,7 @@ export class CheckpointManager {
         if (currentChangeset.id !== checkpoint.changeset.id) {
           const accessToken = checkpoint.accessToken;
           const toIndex = checkpoint.changeset.index ??
-            (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
+            (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
           await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
@@ -397,7 +401,7 @@ export class CheckpointManager {
   public static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb) {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
-    const nativeDb = snapshotDb.nativeDb;
+    const nativeDb = snapshotDb[_nativeDb];
     const dbChangeset = nativeDb.getCurrentChangeset();
     const iModelId = Guid.normalize(nativeDb.getIModelId());
     if (iModelId !== Guid.normalize(checkpoint.iModelId)) {
@@ -424,10 +428,10 @@ export class CheckpointManager {
     if (!IModelJsFs.existsSync(fileName))
       return false;
 
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.Readonly);
-    } catch (error) {
+    } catch {
       return false;
     }
 
@@ -458,14 +462,14 @@ export class CheckpointManager {
   }
 
   public static async toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps> {
-    const changeset = args.changeset ?? await IModelHost.hubAccess.getLatestChangeset({ ...args, accessToken: await IModelHost.getAccessToken() });
+    const changeset = args.changeset ?? await IModelHost[_hubAccess].getLatestChangeset({ ...args, accessToken: await IModelHost.getAccessToken() });
 
     return {
       iModelId: args.iModelId,
       iTwinId: args.iTwinId,
       changeset: {
         index: changeset.index,
-        id: changeset.id ?? (await IModelHost.hubAccess.queryChangeset({ ...args, changeset, accessToken: await IModelHost.getAccessToken() })).id,
+        id: changeset.id ?? (await IModelHost[_hubAccess].queryChangeset({ ...args, changeset, accessToken: await IModelHost.getAccessToken() })).id,
       },
     };
   }

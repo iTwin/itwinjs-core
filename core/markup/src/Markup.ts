@@ -238,6 +238,7 @@ export class MarkupApp {
    * @note see [MarkupApp.props.result] for options.
    */
   public static async stop(): Promise<MarkupData> {
+    await IModelApp.toolAdmin.startDefaultTool(); // Make sure current markup tool exits first...
     const data = await this.readMarkup();
     if (!this.markup)
       return data;
@@ -308,7 +309,7 @@ export class MarkupApp {
   /** @internal */
   protected static async readMarkup(): Promise<MarkupData> {
     const result = this.props.result;
-    let canvas = this.markup!.vp.readImageToCanvas();
+    let canvas = this.markup!.vp.readImageToCanvas({omitCanvasDecorations: false});
     let svg, image;
     try {
       svg = this.readMarkupSvg(); // read the current svg data for the markup

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
-import { GeometricElement3d, SnapshotDb } from "../../core-backend";
+import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementGraphics", () => {
@@ -35,7 +35,7 @@ describe("ElementGraphics", () => {
       formatVersion: CurrentImdlVersion.Major,
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -64,7 +64,7 @@ describe("ElementGraphics", () => {
       geometry: { format: "json", data: element!.geom! },
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -107,7 +107,7 @@ describe("ElementGraphics", () => {
       geometry: { format: "flatbuffer", data: entries },
     };
 
-    const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -144,7 +144,7 @@ describe("ElementGraphics", () => {
         ...testCase[1],
       };
 
-      const result = await imodel.nativeDb.generateElementGraphics(request as any); // ###TODO update package versions in addon
+      const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
       expect(result.status).to.equal(testCase[0]);
       if (result.status === ElementGraphicsStatus.Success)
         expect(result.content).not.to.be.undefined;

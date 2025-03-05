@@ -5,10 +5,11 @@
 
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
 import { ECClassHierarchyInfo } from "../../ECClasHierarchy";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { TestIModelConnection } from "../../IModelSetupUtils";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 
 interface ContentTestSuiteParams {
   getDefaultSuiteIModel: () => Promise<IModelConnection>;
@@ -19,13 +20,13 @@ interface ContentTestSuiteFunction extends ExclusiveContentTestSuiteFunction {
   only: ExclusiveContentTestSuiteFunction;
   skip: ExclusiveContentTestSuiteFunction;
 }
-export function createContentTestSuite(): ContentTestSuiteFunction {
+export function createContentTestSuite(props?: { skipInitialize?: boolean }): ContentTestSuiteFunction {
   const suiteTitle = "Content";
   const suiteFn = (title: string, fn: (params: ContentTestSuiteParams) => void) => {
     let suiteIModel: IModelConnection;
     const openDefaultSuiteIModel = async () => {
       if (!suiteIModel || !suiteIModel.isOpen) {
-        suiteIModel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+        suiteIModel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       }
       expect(suiteIModel).is.not.null;
       return suiteIModel;
@@ -38,7 +39,9 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
     };
 
     before(async () => {
-      await initialize();
+      if (!props?.skipInitialize) {
+        await initialize({ imodelAppProps: { localization: testLocalization } });
+      }
     });
 
     after(async () => {

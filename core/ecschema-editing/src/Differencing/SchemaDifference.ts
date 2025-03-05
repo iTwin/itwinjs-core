@@ -6,16 +6,19 @@
  * @module Differencing
  */
 
+import { AnySchemaDifferenceConflict } from "./SchemaConflicts";
+import { AnySchemaEdits, SchemaEditType } from "../Merging/Edits/SchemaEdits";
+import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
-import { SchemaDifferenceConflict } from "./SchemaConflicts";
-import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
-import {
-  AnyEnumerator, AnyPropertyProps, ConstantProps, CustomAttribute,
-  CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
+import { AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
+  CustomAttributeClassProps, ECClass, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
-  type Schema, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
+  type Schema, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
+import { validateDifferences } from "./SchemaDifferenceValidator";
+import { AnyDiagnostic } from "../Validation/Diagnostic";
+import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
 type PartialEditable<T> = {
@@ -50,6 +53,9 @@ export enum SchemaOtherTypes {
   RelationshipConstraint = "RelationshipConstraint",
   RelationshipConstraintClass = "RelationshipConstraintClass",
   EntityClassMixin = "EntityClassMixin",
+  KindOfQuantityPresentationFormat = "KindOfQuantityPresentationFormat",
+  FormatUnit = "FormatUnit",
+  FormatUnitLabel = "FormatUnitLabel",
 }
 
 /**
@@ -59,210 +65,10 @@ export enum SchemaOtherTypes {
 export type SchemaType = SchemaOtherTypes | SchemaItemType;
 
 /**
+ * Definition of the difference result between two Schemas.
  * @alpha
  */
-export namespace SchemaDifference {
-  /**
-   * Creates a [[SchemaDifference]] for two given schemas.
-   * @param targetSchema  The schema the differences gets merged into.
-   * @param sourceSchema  The schema to get merged in the target.
-   * @returns             An [[SchemaDifference]] object.
-   * @alpha
-   */
-  export async function fromSchemas(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferences> {
-    const changesList: SchemaChanges[] = [];
-    const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
-    await schemaComparer.compareSchemas(sourceSchema, targetSchema);
-
-    return fromSchemaChanges(targetSchema, changesList[0]);
-  }
-
-  /**
-   * Creates a [[SchemaDifference]] for a given [[SchemaChanges]] report.
-   * @param targetSchema
-   * @param schemaChanges   A changes report of two schemas.
-   * @returns               An [[SchemaDifference]] object.
-   * @internal
-   */
-  export async function fromSchemaChanges(targetSchema: Schema, schemaChanges: SchemaChanges): Promise<SchemaDifferences> {
-    const visitor = new SchemaDiagnosticVisitor();
-    for (const diagnostic of schemaChanges.allDiagnostics) {
-      visitor.visit(diagnostic);
-    }
-
-    const differences: AnySchemaDifference[] = [
-      ...visitor.schemaDifferences,
-      ...visitor.schemaItemDifferences,
-      ...visitor.schemaItemPathDifferences,
-      ...visitor.customAttributeDifferences,
-    ];
-
-    return {
-      sourceSchemaName: schemaChanges.schema.schemaKey.toString(),
-      targetSchemaName: targetSchema.schemaKey.toString(),
-      conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
-      differences,
-    };
-  }
-
-  /**
-   * Indicates whether the given difference is type of ConstantDifference.
-   * @alpha
-   */
-  export function isConstantDifference(difference: AnySchemaDifference): difference is ConstantDifference {
-    return difference.schemaType === SchemaItemType.Constant;
-  }
-
-  /**
-   * Indicates whether the given difference is type of ClassPropertyDifference.
-   * @alpha
-   */
-  export function isClassPropertyDifference(difference: AnySchemaDifference): difference is ClassPropertyDifference {
-    return difference.schemaType === SchemaOtherTypes.Property;
-  }
-
-  /**
-   * Indicates whether the given difference is type of CustomAttributeClassDifference.
-   * @alpha
-   */
-  export function isCustomAttributeClassDifference(difference: AnySchemaDifference): difference is CustomAttributeClassDifference {
-    return difference.schemaType === SchemaItemType.CustomAttributeClass;
-  }
-
-  /**
-   * Indicates whether the given difference is type of CustomAttributeDifference.
-   * @alpha
-   */
-  export function isCustomAttributeDifference(difference: AnySchemaDifference): difference is CustomAttributeDifference {
-    return difference.schemaType === SchemaOtherTypes.CustomAttributeInstance;
-  }
-
-  /**
-   * Indicates whether the given difference is type of EntityClassDifference.
-   * @alpha
-   */
-  export function isEntityClassDifference(difference: AnySchemaDifference): difference is EntityClassDifference {
-    return difference.schemaType === SchemaItemType.EntityClass;
-  }
-
-  /**
-   * Indicates whether the given difference is type of EntityClassMixinDifference.
-   * @alpha
-   */
-  export function isEntityClassMixinDifference(difference: AnySchemaDifference): difference is EntityClassMixinDifference {
-    return difference.schemaType === SchemaOtherTypes.EntityClassMixin;
-  }
-
-  /**
-   * Indicates whether the given difference is type of EnumerationDifference.
-   * @alpha
-   */
-  export function isEnumerationDifference(difference: AnySchemaDifference): difference is EnumerationDifference {
-    return difference.schemaType === SchemaItemType.Enumeration;
-  }
-
-  /**
-   * Indicates whether the given difference is type of EnumeratorDifference.
-   * @alpha
-   */
-  export function isEnumeratorDifference(difference: AnySchemaDifference): difference is EnumeratorDifference {
-    return difference.schemaType === SchemaOtherTypes.Enumerator;
-  }
-
-  /**
-   * Indicates whether the given difference is type of KindOfQuantityDifference.
-   * @alpha
-   */
-  export function isKindOfQuantityDifference(difference: AnySchemaDifference): difference is KindOfQuantityDifference {
-    return difference.schemaType === SchemaItemType.KindOfQuantity;
-  }
-
-  /**
-   * Indicates whether the given difference is type of MixinClassDifference.
-   * @alpha
-   */
-  export function isMixinClassDifference(difference: AnySchemaDifference): difference is MixinClassDifference {
-    return difference.schemaType === SchemaItemType.Mixin;
-  }
-
-  /**
-   * Indicates whether the given difference is type of PhenomenonDifference.
-   * @alpha
-   */
-  export function isPhenomenonDifference(difference: AnySchemaDifference): difference is PhenomenonDifference {
-    return difference.schemaType === SchemaItemType.Phenomenon;
-  }
-
-  /**
-   * Indicates whether the given difference is type of PropertyCategoryDifference.
-   * @alpha
-   */
-  export function isPropertyCategoryDifference(difference: AnySchemaDifference): difference is PropertyCategoryDifference {
-    return difference.schemaType === SchemaItemType.PropertyCategory;
-  }
-
-  /**
-   * Indicates whether the given difference is type of SchemaDifference.
-   * @alpha
-   */
-  export function isSchemaDifference(difference: AnySchemaDifference): difference is SchemaDifference {
-    return difference.schemaType === SchemaOtherTypes.Schema;
-  }
-
-  /**
-   * Indicates whether the given difference is type of SchemaReferenceDifference.
-   * @alpha
-   */
-  export function isSchemaReferenceDifference(difference: AnySchemaDifference): difference is SchemaReferenceDifference {
-    return difference.schemaType === SchemaOtherTypes.SchemaReference;
-  }
-
-  /**
-   * Indicates whether the given difference is type of CustomAttributeDifference.
-   * @alpha
-   */
-  export function isStructClassDifference(difference: AnySchemaDifference): difference is StructClassDifference {
-    return difference.schemaType === SchemaItemType.StructClass;
-  }
-
-  /**
-   * Indicates whether the given difference is type of UnitSystemDifference.
-   * @alpha
-   */
-  export function isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference {
-    return difference.schemaType === SchemaItemType.UnitSystem;
-  }
-
-  /**
-   * Indicates whether the given difference is type of RelationshipClassDifference.
-   * @alpha
-   */
-  export function isRelationshipClassDifference(difference: AnySchemaDifference): difference is RelationshipClassDifference {
-    return difference.schemaType === SchemaItemType.RelationshipClass;
-  }
-
-  /**
-   * Indicates whether the given difference is type of RelationshipConstraintDifference.
-   * @alpha
-   */
-  export function isRelationshipConstraintDifference(difference: AnySchemaDifference): difference is RelationshipConstraintDifference {
-    return difference.schemaType === SchemaOtherTypes.RelationshipConstraint;
-  }
-
-  /**
-   * Indicates whether the given difference is type of RelationshipConstraintClassDifference.
-   * @alpha
-   */
-  export function isRelationshipConstraintClassDifference(difference: AnySchemaDifference): difference is RelationshipConstraintClassDifference {
-    return difference.schemaType === SchemaOtherTypes.RelationshipConstraintClass;
-  }
-}
-
-/**
- * Definition of the differences between two Schemas.
- * @alpha
- */
-export interface SchemaDifferences {
+export interface SchemaDifferenceResult {
   /** Full name of the source schema */
   readonly sourceSchemaName: string;
   /** Full name of the target schema */
@@ -272,7 +78,7 @@ export interface SchemaDifferences {
   readonly differences: AnySchemaDifference[];
 
   /** List of conflicts found while comparing the schemas. */
-  readonly conflicts?: SchemaDifferenceConflict[];
+  readonly conflicts?: AnySchemaDifferenceConflict[];
 }
 
 /**
@@ -284,7 +90,10 @@ export type AnySchemaDifference =
   SchemaReferenceDifference |
   AnySchemaItemDifference |
   AnySchemaItemPathDifference |
-  CustomAttributeDifference;
+  EntityClassMixinDifference |
+  CustomAttributeDifference |
+  KindOfQuantityPresentationFormatDifference |
+  FormatUnitDifference;
 
 /**
  * Differencing entry for changes on a Schema.
@@ -314,10 +123,9 @@ export interface SchemaReferenceDifference {
  * @alpha
  */
 export type AnySchemaItemDifference =
-  ClassItemDifference |
+  AnyClassItemDifference |
   ConstantDifference |
   EnumerationDifference |
-  EntityClassMixinDifference |
   FormatDifference |
   KindOfQuantityDifference |
   InvertedUnitDifference |
@@ -330,7 +138,7 @@ export type AnySchemaItemDifference =
  * Union for supported class Schema Items.
  * @alpha
  */
-export type ClassItemDifference =
+export type AnyClassItemDifference =
   EntityClassDifference |
   MixinClassDifference |
   StructClassDifference |
@@ -346,7 +154,8 @@ export type AnySchemaItemPathDifference =
   RelationshipConstraintClassDifference |
   CustomAttributePropertyDifference |
   EnumeratorDifference |
-  ClassPropertyDifference;
+  ClassPropertyDifference |
+  FormatUnitLabelDifference;
 
 /**
  * Internal base class for all Schema Item differencing entries.
@@ -585,4 +394,130 @@ export interface RelationshipConstraintClassDifference {
   readonly itemName: string;
   readonly path: "$source" | "$target";
   readonly difference: string[];
+}
+
+/**
+ * Differencing entry for presentation formats added to KindOfQuantities.
+ * @alpha
+ */
+export interface KindOfQuantityPresentationFormatDifference {
+  readonly changeType: "add";
+  readonly schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat;
+  readonly itemName: string;
+  readonly difference: string[];
+}
+
+/**
+ * Differencing entry for changed Units on Formats.
+ * @alpha
+ */
+export interface FormatUnitDifference {
+  readonly changeType: "modify";
+  readonly schemaType: SchemaOtherTypes.FormatUnit;
+  readonly itemName: string;
+  readonly difference: {
+    name: string;
+    label?: string;
+  }[];
+}
+
+/**
+ * Differencing entry for changed labels on Format Units.
+ * @alpha
+ */
+export interface FormatUnitLabelDifference {
+  readonly changeType: "modify";
+  readonly schemaType: SchemaOtherTypes.FormatUnitLabel;
+  readonly itemName: string;
+  readonly path: string;
+  readonly difference: {
+    label?: string;
+  };
+}
+
+/**
+ * Creates a [[SchemaDifferenceResult]] for two given schemas.
+ * @param targetSchema  The schema the differences gets merged into.
+ * @param sourceSchema  The schema to get merged in the target.
+ * @returns             An [[SchemaDifferenceResult]] object.
+ * @alpha
+ */
+export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema, schemaEdits?: Iterable<AnySchemaEdits>): Promise<SchemaDifferenceResult> {
+  const schemaComparer = new DifferenceSchemaComparer();
+  if(schemaEdits) {
+    for(const edit of schemaEdits) {
+      if(edit.type === SchemaEditType.RenameSchemaItem) {
+        schemaComparer.nameMappings.addItemMapping(edit.key, edit.value);
+      }
+      if(edit.type === SchemaEditType.RenameProperty) {
+        schemaComparer.nameMappings.addPropertyMapping(edit.key, edit.value);
+      }
+    }
+  }
+
+  await schemaComparer.compareSchemas(sourceSchema, targetSchema);
+
+  const visitor = new SchemaDiagnosticVisitor();
+  for (const diagnostic of schemaComparer.diagnostics) {
+    visitor.visit(diagnostic);
+  }
+
+  const differences: AnySchemaDifference[] = [
+    ...visitor.schemaDifferences,
+    ...visitor.schemaItemDifferences,
+    ...visitor.schemaItemPathDifferences,
+    ...visitor.customAttributeDifferences,
+  ];
+
+  const conflicts = await validateDifferences(differences, targetSchema, sourceSchema, schemaComparer.nameMappings);
+
+  return {
+    sourceSchemaName: sourceSchema.schemaKey.toString(),
+    targetSchemaName: targetSchema.schemaKey.toString(),
+    conflicts: conflicts.length > 0 ? conflicts : undefined,
+    differences,
+  };
+}
+
+/**
+ * Implementation of a SchemaComparer that is used in the schema differencing process.
+ * It extends the SchemaComparer base class with additional functionality to store the
+ * name mappings of renamed schema items and properties.
+ *
+ * @internal
+ */
+class DifferenceSchemaComparer extends SchemaComparer {
+  public readonly nameMappings: NameMapping;
+  private readonly _changes: Array<SchemaChanges>;
+
+  public get diagnostics(): Iterable<AnyDiagnostic> {
+    return this._changes[0].allDiagnostics;
+  }
+
+  constructor() {
+    super({ report: (changes) => this._changes.push(changes as SchemaChanges) });
+
+    this._changes = [];
+    this.nameMappings = new NameMapping();
+  }
+
+  public override async resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined> {
+    const classKey = this.nameMappings.resolveItemKey(item.key);
+    return lookupSchema.lookupItem(classKey.name, itemConstructor);
+  }
+
+  public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
+    const propertyKey = this.nameMappings.resolvePropertyKey(new PropertyKey(propertyA.name, propertyA.class.key));
+    return ecClass.getProperty(propertyKey.propertyName) as Promise<AnyProperty | undefined>;
+  }
+
+  public override areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean {
+    if (itemKeyA) {
+      if (SchemaItem.isSchemaItem(itemKeyA)) {
+        itemKeyA = itemKeyA.key;
+      }
+      itemKeyA = this.nameMappings.resolveItemKey(itemKeyA);
+    }
+    return super.areEqualByName(itemKeyA, itemKeyB);
+  }
 }

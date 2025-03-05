@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String, using } from "@itwin/core-bentley";
+import * as sinon from "sinon";
+import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -13,9 +14,8 @@ describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;
 
   it("should be able to create a new ECDb", () => {
-    using(ECDbTestHelper.createECDb(outDir, "create.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen);
-    });
+    using ecdb = ECDbTestHelper.createECDb(outDir, "create.ecdb");
+    assert.isTrue(ecdb.isOpen);
   });
 
   it("should be able to close an ECDb", () => {
@@ -28,47 +28,50 @@ describe("ECDb", () => {
   it("should be able to open an ECDb", () => {
     const fileName = "open.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
-    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
+    {
+      using testECDb = ECDbTestHelper.createECDb(outDir, fileName);
       assert.isTrue(testECDb.isOpen);
-    });
+    }
 
-    using(new ECDb(), (ecdb: ECDb) => {
-      ecdb.openDb(ecdbPath, ECDbOpenMode.ReadWrite);
-      assert.isTrue(ecdb.isOpen);
-    });
+    using ecdb = new ECDb();
+    ecdb.openDb(ecdbPath, ECDbOpenMode.ReadWrite);
+    assert.isTrue(ecdb.isOpen);
   });
 
   it("Open ECDb with upgrade option", () => {
     const fileName = "open.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
-    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
+    {
+      using testECDb = ECDbTestHelper.createECDb(outDir, fileName);
       assert.isTrue(testECDb.isOpen);
-    });
-
-    using(new ECDb(), (ecdb: ECDb) => {
+    }
+    {
+      using ecdb = new ECDb();
       assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly));
-    });
-
-    using(new ECDb(), (ecdb: ECDb) => {
+    }
+    {
+      using ecdb = new ECDb();
       assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.ReadWrite));
-    });
-
-    using(new ECDb(), (ecdb: ECDb) => {
+    }
+    {
+      using ecdb = new ECDb();
       assert.doesNotThrow(() => ecdb.openDb(ecdbPath, ECDbOpenMode.FileUpgrade));
-    });
+    }
+
   });
 
   it("should be able to import a schema", () => {
     const fileName = "schemaimport.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
     let id: Id64String;
-    using(ECDbTestHelper.createECDb(outDir, fileName,
-      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    {
+      using testECDb = ECDbTestHelper.createECDb(outDir, fileName,
+        `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECEntityClass typeName="Person" modifier="Sealed">
-        <ECProperty propertyName="Name" typeName="string"/>
+      <ECProperty propertyName="Name" typeName="string"/>
         <ECProperty propertyName="Age" typeName="int"/>
-      </ECEntityClass>
-      </ECSchema>`), (testECDb: ECDb) => {
+        </ECEntityClass>
+        </ECSchema>`);
       assert.isTrue(testECDb.isOpen);
       id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
@@ -78,39 +81,39 @@ describe("ECDb", () => {
         return res.id!;
       });
       testECDb.saveChanges();
-    });
+    }
 
-    using(new ECDb(), (ecdb: ECDb) => {
-      ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
-      assert.isTrue(ecdb.isOpen);
+    using ecdb = new ECDb();
+    ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
+    assert.isTrue(ecdb.isOpen);
 
-      ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
-        stmt.bindId(1, id);
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-        const row = stmt.getRow();
-        assert.equal(row.name, "Mary");
-        assert.equal(row.age, 45);
-      });
+    ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+      stmt.bindId(1, id);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      const row = stmt.getRow();
+      assert.equal(row.name, "Mary");
+      assert.equal(row.age, 45);
     });
   });
 
   it("should be able to get schema props", () => {
     const fileName = "schema-props.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
-    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
+    {
+      using testECDb = ECDbTestHelper.createECDb(outDir, fileName);
       assert.isTrue(testECDb.isOpen);
-    });
-    using(new ECDb(), (ecdb) => {
-      ecdb.openDb(ecdbPath);
-      const schema = ecdb.getSchemaProps("ECDbMeta");
-      assert.equal(schema.name, "ECDbMeta");
-    });
+    }
+    using ecdb = new ECDb();
+    ecdb.openDb(ecdbPath);
+    const schema = ecdb.getSchemaProps("ECDbMeta");
+    assert.equal(schema.name, "ECDbMeta");
   });
 
   it("Run plain SQL", () => {
     const fileName = "plainseql.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
-    using(ECDbTestHelper.createECDb(outDir, fileName), (testECDb: ECDb) => {
+    {
+      using testECDb = ECDbTestHelper.createECDb(outDir, fileName);
       assert.isTrue(testECDb.isOpen);
 
       testECDb.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
@@ -140,41 +143,40 @@ describe("ECDb", () => {
       });
 
       testECDb.saveChanges();
-    });
+    }
 
-    using(new ECDb(), (ecdb: ECDb) => {
-      ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
-      assert.isTrue(ecdb.isOpen);
+    using ecdb = new ECDb();
+    ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
+    assert.isTrue(ecdb.isOpen);
 
-      ecdb.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
-        for (let i: number = 1; i <= 4; i++) {
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-          assert.equal(stmt.getColumnCount(), 3);
-          const val0: SqliteValue = stmt.getValue(0);
-          assert.equal(val0.columnName, "Id");
-          assert.equal(val0.type, SqliteValueType.Integer);
-          assert.isFalse(val0.isNull);
-          assert.equal(val0.getInteger(), i);
+    ecdb.withPreparedSqliteStatement("SELECT Id,Name,Code FROM Test ORDER BY Id", (stmt: SqliteStatement) => {
+      for (let i: number = 1; i <= 4; i++) {
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+        assert.equal(stmt.getColumnCount(), 3);
+        const val0: SqliteValue = stmt.getValue(0);
+        assert.equal(val0.columnName, "Id");
+        assert.equal(val0.type, SqliteValueType.Integer);
+        assert.isFalse(val0.isNull);
+        assert.equal(val0.getInteger(), i);
 
-          const val1: SqliteValue = stmt.getValue(1);
-          assert.equal(val1.columnName, "Name");
-          assert.equal(val1.type, SqliteValueType.String);
-          assert.isFalse(val1.isNull);
-          assert.equal(val1.getString(), `Dummy ${i}`);
+        const val1: SqliteValue = stmt.getValue(1);
+        assert.equal(val1.columnName, "Name");
+        assert.equal(val1.type, SqliteValueType.String);
+        assert.isFalse(val1.isNull);
+        assert.equal(val1.getString(), `Dummy ${i}`);
 
-          const val2: SqliteValue = stmt.getValue(2);
-          assert.equal(val2.columnName, "Code");
-          assert.equal(val2.type, SqliteValueType.Integer);
-          assert.isFalse(val2.isNull);
-          assert.equal(val2.getInteger(), i * 100);
+        const val2: SqliteValue = stmt.getValue(2);
+        assert.equal(val2.columnName, "Code");
+        assert.equal(val2.type, SqliteValueType.Integer);
+        assert.isFalse(val2.isNull);
+        assert.equal(val2.getInteger(), i * 100);
 
-          const row: any = stmt.getRow();
-          assert.equal(row.id, i);
-          assert.equal(row.name, `Dummy ${i}`);
-          assert.equal(row.code, i * 100);
-        }
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+        const row: any = stmt.getRow();
+        assert.equal(row.id, i);
+        assert.equal(row.name, `Dummy ${i}`);
+        assert.equal(row.code, i * 100);
+      }
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     });
   });
 
@@ -236,6 +238,46 @@ describe("ECDb", () => {
       }
     });
 
+    ecdb.closeDb();
+  });
+
+  it("should make importSchema fail if new schema changes are observed without version bump", () => {
+    const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
+    const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
+
+    IModelJsFs.writeFileSync(xmlpathOriginal, `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+      </ECEntityClass>
+    </ECSchema>`);
+    ecdb.importSchema(xmlpathOriginal);
+    ecdb.saveChanges();
+
+    const xmlpathUpdated = path.join(outDir, "importSchemaNoVersionBump2.ecschema.xml");
+    IModelJsFs.writeFileSync(xmlpathUpdated, `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECEntityClass typeName="Person" modifier="Sealed">
+        <ECProperty propertyName="Name" typeName="string"/>
+        <ECProperty propertyName="Age" typeName="int"/>
+        <ECProperty propertyName="Height" typeName="int"/>
+      </ECEntityClass>
+    </ECSchema>`);
+
+    let calledCategory = "";
+    let calledMessage = "";
+    const stubbedLogError = sinon.stub(Logger, "logError").callsFake((category: string, message: string) => {
+      calledCategory = category;
+      calledMessage = message;
+    });
+
+    // although an error should be logged, no error is actually returned to not disrupt currently existing workflows and to alert the user about some wrong/unexpected behavior
+    expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
+    expect(calledCategory).to.equal("ECDb");
+    expect(calledMessage).to.equal("ECSchema import has failed. Schema Test has new changes, but the schema version is not incremented.");
+
+    stubbedLogError.restore();
     ecdb.closeDb();
   });
 });

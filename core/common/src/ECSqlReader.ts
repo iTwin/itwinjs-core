@@ -19,6 +19,8 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
 
   public constructor(public readonly properties: QueryPropertyMetaData[]) {
     for (const property of this.properties) {
+      property.extendType = property.extendedType !== undefined ? property.extendedType : "";   // eslint-disable-line @typescript-eslint/no-deprecated
+      property.extendedType = property.extendedType === "" ? undefined : property.extendedType;
       this._byPropName.set(property.name, property.index);
       this._byJsonName.set(property.jsonName, property.index);
       this._byNoCase.set(property.name.toLowerCase(), property.index);
@@ -135,6 +137,8 @@ export interface QueryStats {
   totalTime: number;
   /** The number of retries attempted to execute the query. */
   retryCount: number;
+  /** Total time in millisecond to prepare ECSQL or grabing it from cache and binding parameters */
+  prepareTime: number;
 }
 
 /**
@@ -171,11 +175,11 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   private _props = new PropertyMetaDataMap([]);
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
-  private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0 };
+  private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0, prepareTime: 0 };
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
   private _rowProxy = new Proxy<ECSqlReader>(this, {
-    get: (target: ECSqlReader, key: string | Symbol) => {
+    get: (target: ECSqlReader, key: string | symbol) => {
       if (typeof key === "string") {
         const idx = Number.parseInt(key, 10);
         if (!Number.isNaN(idx)) {
@@ -366,11 +370,12 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
    * @internal
    */
   protected async runWithRetry(request: DbQueryRequest) {
-    const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout) && (rs.data === undefined || rs.data.length === 0);
+    const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout || rs.status === DbResponseStatus.ShuttingDown) && (rs.data === undefined || rs.data.length === 0);
     const updateStats = (rs: DbQueryResponse) => {
       this._stats.backendCpuTime += rs.stats.cpuTime;
       this._stats.backendTotalTime += rs.stats.totalTime;
       this._stats.backendMemUsed += rs.stats.memUsed;
+      this._stats.prepareTime += rs.stats.prepareTime;
       this._stats.backendRowsReturned += (rs.data === undefined) ? 0 : rs.data.length;
     };
     const execQuery = async (req: DbQueryRequest) => {
@@ -404,20 +409,11 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       return this.getRowInternal();
     }
     const formattedRow = {};
-    const uniqueNames = new Map<string, number>();
     for (const prop of this._props) {
       const propName = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = this.getRowInternal()[prop.index];
       if (typeof val !== "undefined" && val !== null) {
-        let uniquePropName = propName;
-        if (uniqueNames.has(propName)) {
-          uniqueNames.set(propName, uniqueNames.get(propName)! + 1);
-          uniquePropName = `${propName}_${uniqueNames.get(propName)!}`;
-        } else {
-          uniqueNames.set(propName,0);
-        }
-
-        Object.defineProperty(formattedRow, uniquePropName, {
+        Object.defineProperty(formattedRow, propName, {
           value: val,
           enumerable: true,
         });
