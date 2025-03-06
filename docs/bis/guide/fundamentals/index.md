@@ -4,6 +4,7 @@
 - [Codes](./codes.md)
 - [FederationGuids](./federationGuids.md)
 - [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
+- [Attribution: Guidelines](./attribution-guidelines.md)
 - [Mixins](./mixins.md)
 - [Model Fundamentals](./model-fundamentals.md)
 - [Relationship Fundamentals](./relationship-fundamentals.md)
