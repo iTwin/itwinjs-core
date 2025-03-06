@@ -8,7 +8,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { BaseMapLayerSettings, ColorDef, ModelMapLayerSettings } from "@itwin/core-common";
+import { BaseMapLayerSettings, ColorDef, ModelMapLayerDrapeTarget, ModelMapLayerSettings } from "@itwin/core-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -86,7 +86,7 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, toRealityData });
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: true === toRealityData ? ModelMapLayerDrapeTarget.RealityData : undefined });
       vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } });
     }
     return true;

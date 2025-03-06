@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
 } from "@itwin/core-common";
 import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
@@ -731,8 +731,8 @@ export class MapTileTreeReference extends LayerTileTreeReference {
       (layerTreeRef?: MapLayerTileTreeReference) => {
         const mapLayerSettings = layerTreeRef?.layerSettings;
         if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
-          return true !== mapLayerSettings.toRealityData;
-        return true;
+          return ModelMapLayerDrapeTarget.BackgroundMap === mapLayerSettings.drapeTarget;
+        return true; // catch-all for other cases (skip reality models, though).
       },
       baseLayerSettings, layerSettings);
 

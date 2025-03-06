@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
-  Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, Npc, NpcCenter, Placement,
   Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -957,14 +957,14 @@ export abstract class Viewport implements Disposable, TileUser {
 
     // Extract model IDs from the previous layers in reality tile using a for loop
     for (const layer of prevLayers) {
-        if (layer instanceof ModelMapLayerSettings && layer.toRealityData === true) {
+        if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
             prevModelIds.push(layer.modelId);
         }
     }
 
     // Extract model IDs from the new layers in reality tile using a for loop
     for (const layer of newLayers) {
-        if (layer instanceof ModelMapLayerSettings && layer.toRealityData === true) {
+        if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
             newModelIds.push(layer.modelId);
         }
     }

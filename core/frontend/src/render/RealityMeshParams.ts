@@ -46,6 +46,7 @@ export interface RealityMeshParams {
   featureID?: number; // default 0
   /** @alpha unused by terrain meshes */
   texture?: RenderTexture;
+  /** @internal */
   tile?: RealityTile;
 }
 
