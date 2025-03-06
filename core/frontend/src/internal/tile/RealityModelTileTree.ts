@@ -632,52 +632,6 @@ export namespace RealityModelTileTree {
       return this._isGlobal === undefined ? false : this._isGlobal;
     }
 
-    // ###TODO lifted from MapTileTree.ts - should be refactored
-    public setBaseLayerSettings(baseLayerSettings: BaseLayerSettings) {
-      let tree;
-      this._baseLayerSettings = baseLayerSettings;
-
-      if (baseLayerSettings instanceof MapLayerSettings) {
-        tree = createMapLayerTreeReference(baseLayerSettings, 0, this._iModel);
-        this._baseColor = undefined;
-        this._baseTransparent = baseLayerSettings.transparency > 0;
-      } else {
-        this._baseColor = baseLayerSettings;
-        this._baseTransparent = this._baseColor.getTransparency() > 0;
-      }
-
-      if (tree) {
-        if (this._baseImageryLayerIncluded)
-          this._layerTrees[0] = tree;
-        else
-          this._layerTrees.splice(0, 0, tree);
-      } else {
-        if (this._baseImageryLayerIncluded)
-          this._layerTrees.shift();
-      }
-      this._baseImageryLayerIncluded = tree !== undefined;
-      this.clearLayers();
-    }
-
-    public setLayerSettings(layerSettings: MapLayerSettings[]) {
-      this._layerSettings = layerSettings;
-      const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
-
-      this._layerTrees.length = Math.min(layerSettings.length + baseLayerIndex, this._layerTrees.length);    // Truncate if number of layers reduced.
-      for (let i = 0; i < layerSettings.length; i++) {
-        const treeIndex = i + baseLayerIndex;
-        if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex]?.layerSettings.displayMatches(layerSettings[i]))
-          this._layerTrees[treeIndex] = createMapLayerTreeReference(layerSettings[i], treeIndex, this._iModel)!;
-      }
-      this.clearLayers();
-    }
-
-    public clearLayers() {
-      const tree = this.treeOwner.tileTree as RealityModelTileTree;
-      if (undefined !== tree)
-        tree.clearLayers();
-    }
-
     public override initializeLayers(context: SceneContext): boolean {
       const removals = this._detachFromDisplayStyle;
       if (0 === removals.length) {

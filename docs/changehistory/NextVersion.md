@@ -103,6 +103,10 @@ If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [View
 
 A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. Supported reality data formats include glTF or b3dm. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.BackgroundMap]($common), which will only drape the model map layer onto the background map.
 
+Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
+
+![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
+
 ## Back-end image conversion
 
 @itwin/core-backend provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
