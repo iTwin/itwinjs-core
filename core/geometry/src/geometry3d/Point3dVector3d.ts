@@ -1100,14 +1100,14 @@ export class Vector3d extends XYZ {
   }
   /**
    * Rotate this vector 90 degrees around an axis vector.
-   * * Note that simple cross is in the plane perpendicular to axis -- it loses the part
-   * of "this" that is along the axis. The unit and scale is supposed to fix that.
-   * This matches with Rodrigues' rotation formula because cos(theta) = 0 and sin(theta) = 1
    * @returns the (new or optionally reused result) rotated vector, or undefined if the axis
    * vector cannot be normalized.
    */
   public rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined {
     const unitNormal = axis.normalize();
+    // The cross product is in the plane perpendicular to axis -- it loses the part
+    // of "this" that is along the axis. The unit and scale is supposed to fix that.
+    // This matches with Rodrigues' rotation formula because cos(theta) = 0 and sin(theta) = 1.
     return unitNormal ? unitNormal.crossProduct(this).plusScaled(unitNormal, unitNormal.dotProduct(this), result) : undefined;
   }
   /**
