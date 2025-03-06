@@ -144,7 +144,7 @@ deprecated;interface;ConflictingLock
 public;class;ConflictingLocksError
 deprecated;class;ConflictingLocksError
 beta;function;constructDetailedError
-beta;function;constructError
+beta;function;constructITwinError
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -168,9 +168,9 @@ public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 internal;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
+beta;function;createITwinErrorTypeAsserter
 public;interface;CreateSnapshotIModelProps
 internal;interface;CreateStandaloneIModelProps
-beta;function;createTypeAsserter
 internal;const;CURRENT_INVOCATION
 internal;const;CURRENT_REQUEST
 internal;enum;CurrentImdlVersion
@@ -365,8 +365,8 @@ public;type;GeometryStreamProps
 public;interface;GeometrySummaryOptions
 public;interface;GeometrySummaryRequestProps
 public;enum;GeometrySummaryVerbosity
+beta;function;getITwinErrorMetaData
 internal;function;getMaximumMajorTileFormatVersion
-beta;function;getMetaData
 internal;const;getPullChangesIpcChannel
 internal;function;getTileObjectReference
 internal;class;GlbHeader
@@ -476,8 +476,8 @@ public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 beta;interface;ITwinError
-beta;const;ITwinErrorKeys
-beta;const;ITwinErrorNamespaces
+beta;const;iTwinErrorKeys
+beta;const;iTwinErrorNamespaces
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps

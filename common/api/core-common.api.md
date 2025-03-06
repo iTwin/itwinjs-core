@@ -1647,7 +1647,7 @@ export class ConflictingLocksError extends IModelError {
 export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
 
 // @beta
-export function constructError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
+export function constructITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
 
 // @alpha
 export enum ContentFlags {
@@ -1908,6 +1908,9 @@ export interface CreateIModelProps extends IModelProps {
     readonly thumbnail?: ThumbnailProps;
 }
 
+// @beta
+export function createITwinErrorTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
+
 // @public
 export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
@@ -1917,9 +1920,6 @@ export interface CreateSnapshotIModelProps {
 export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
-
-// @beta
-export function createTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
 
 // @internal (undocumented)
 export const CURRENT_INVOCATION: unique symbol;
@@ -4134,11 +4134,11 @@ export enum GeometrySummaryVerbosity {
     Full = 30
 }
 
+// @beta
+export function getITwinErrorMetaData(error: ITwinError): object | undefined;
+
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
-
-// @beta
-export function getMetaData(error: ITwinError): object | undefined;
 
 // @internal
 export const getPullChangesIpcChannel: (iModelId: string) => string;
@@ -5244,7 +5244,7 @@ export type InterpolationFunction = (v: any, k: number) => number;
 
 // @beta
 export interface InUseLock {
-    briefcaseIds: number[];
+    briefcaseIds: BriefcaseId[];
     objectId: string;
     state: LockState;
 }
@@ -5481,7 +5481,7 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 export const iTwinChannel: (channel: string) => string;
 
 // @beta
-export interface ITwinError {
+export interface ITwinError extends Error {
     errorKey: string;
     message: string;
     metadata?: LoggingMetaData;
@@ -5490,16 +5490,16 @@ export interface ITwinError {
 }
 
 // @beta
-export const ITwinErrorKeys: {
-    InUseLocks: string;
-    ChannelNest: string;
-    ChannelNotAllowed: string;
-    ChannelRootExists: string;
+export const iTwinErrorKeys: {
+    readonly inUseLocks: "in-use-locks";
+    readonly channelNest: "channel-may-not-nest";
+    readonly channelNotAllowed: "channel-not-allowed";
+    readonly channelRootExists: "channel-root-exists";
 };
 
 // @beta
-export const ITwinErrorNamespaces: {
-    ItwinJsCore: string;
+export const iTwinErrorNamespaces: {
+    readonly iTwinJsCore: "itwinjs-core";
 };
 
 // @public

@@ -6,8 +6,9 @@
  * @module iModels
  */
 
-import { BentleyError, LoggingMetaData } from "@itwin/core-bentley";
+import { LoggingMetaData } from "@itwin/core-bentley";
 import { LockState } from "./IModelError";
+import { BriefcaseId } from "./BriefcaseTypes";
 
 /**
  * Detailed information about a particular object Lock that is causing the Lock update conflict.
@@ -23,28 +24,26 @@ export interface InUseLock {
    */
   state: LockState;
   /** An array of Briefcase ids that hold this lock. */
-  briefcaseIds: number[];
+  briefcaseIds: BriefcaseId[];
 }
 
 /**
  * error namespaces object to describe namespaces for a developer/application.
  * @beta
  */
-/* eslint-disable @typescript-eslint/naming-convention */
-export const ITwinErrorNamespaces = {
-  ITwinJsCore: "itwinjs-core"
+export const iTwinErrorNamespaces = {
+  iTwinJsCore: "itwinjs-core"
 } as const;
 
 /**
  * error keys object used to describe an error keys for a developer/application.
  * @beta
  */
-/* eslint-disable @typescript-eslint/naming-convention */
-export const ITwinErrorKeys = {
-  InUseLocks: "in-use-locks",
-  ChannelNest: "channel-may-not-nest",
-  ChannelNotAllowed: "channel-not-allowed",
-  ChannelRootExists: "channel-root-exists"
+export const iTwinErrorKeys = {
+  inUseLocks: "in-use-locks",
+  channelNest: "channel-may-not-nest",
+  channelNotAllowed: "channel-not-allowed",
+  channelRootExists: "channel-root-exists"
 } as const;
 
 /**
@@ -75,23 +74,23 @@ export interface InUseLocksError extends ITwinError {
 }
 
 /**
-* A function which will be used to construct an error.
+* A function which will be used to construct an [[ITwinError]].
 * @param namespace The namespace associated with the error.
 * @param errorKey The errorKey associated with the error.
 * @param message The message associated with the error.
 * @param metadata Metadata associated with the error.
 * @beta
 */
-export function constructError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError {
+export function constructITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError {
 
-  const error: ITwinError = {
-    name: `${namespace}:${errorKey}`,
-    namespace,
-    errorKey,
-    message: message ?? `${errorKey} occurred`,
-    metadata,
-  };
+  const error = new Error() as ITwinError;
+  error.message = message ?? `${errorKey} occurred`;
+  error.name = `${namespace}:${errorKey}`;
+  error.namespace = namespace;
+  error.errorKey = errorKey;
+  error.metadata = metadata;
 
+  Error.captureStackTrace(error,constructITwinError); // Optional, but this would hide constructITwinError from stack.
   return error;
 }
 
@@ -105,8 +104,9 @@ export function constructError(namespace: string, errorKey: string, message?: st
 * @beta
 */
 export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T {
-  const baseError = constructError(namespace, errorKey, message, metadata);
+  const baseError = constructITwinError(namespace, errorKey, message, metadata);
 
+  Error.captureStackTrace(baseError,constructDetailedError); // Optional, but this would hide constructDetailedError from stack.
   return Object.assign(baseError, details) as T;
 }
 
@@ -116,7 +116,7 @@ export function constructDetailedError<T extends ITwinError>(namespace: string, 
  * @param errorKey The errorKey associated with the error.
  * @beta
 */
-export function createTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string) {
+export function createITwinErrorTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string) {
   return (error: unknown): error is T => isITwinError(error, namespace, errorKey);
 }
 
@@ -125,8 +125,8 @@ export function createTypeAsserter<T extends ITwinError>(namespace: string, erro
  * @param error The error for which metadata is required.
  * @beta
 */
-export function getMetaData(error: ITwinError): object | undefined {
-  return BentleyError.getMetaData(error.metadata);
+export function getITwinErrorMetaData(error: ITwinError): object | undefined {
+  return (typeof error.metadata === "function") ? error.metadata() : error.metadata;
 }
 
 /**
@@ -137,5 +137,8 @@ export function getMetaData(error: ITwinError): object | undefined {
  * @beta
 */
 export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError {
-  return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error && (namespace === undefined || (error as ITwinError).namespace === namespace) && (errorKey === undefined || (error as ITwinError).errorKey === errorKey);
+  return error !== undefined && error !== null && typeof error === "object"
+  && "namespace" in error && "errorKey" in error && "message" in error
+  && (namespace === undefined || (error as ITwinError).namespace === namespace)
+  && (errorKey === undefined || (error as ITwinError).errorKey === errorKey);
 }

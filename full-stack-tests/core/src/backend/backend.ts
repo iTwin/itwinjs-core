@@ -11,7 +11,7 @@ import {
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, constructDetailedError, constructError, ElementProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, CodeProps, constructDetailedError, constructITwinError, ElementProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -83,7 +83,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   }
 
   public async throwITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void> {
-    const error = constructError(namespace, errorKey, message, metadata);
+    const error = constructITwinError(namespace, errorKey, message, metadata);
     throw error;
   }
 }
