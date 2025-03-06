@@ -28,7 +28,7 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
-  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, GeometryTileTreeReference,
+  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
   getGcsConverterAvailable, LayerTileTree, LayerTileTreeReference, MapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
