@@ -172,7 +172,7 @@ export class SchemaKey {
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
-  public matches(rhs: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Exact): boolean {
+  public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Exact): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
       case SchemaMatchType.Exact:
