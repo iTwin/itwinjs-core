@@ -1518,9 +1518,14 @@ export namespace IModelJson {
       const rX = xData.mag;
       const rY = yData.mag;
       const rZ = zData.mag;
-      if (Geometry.isSameCoordinate(rX, rY) && Geometry.isSameCoordinate(rX, rZ))
-        value.radius = rX;
-      else {
+      if (Geometry.isSameCoordinate(rX, rY)) {
+        if (Geometry.isSameCoordinate(rX, rZ))
+          value.radius = rX;
+        else { // radiusY will pick up radiusX
+          value.radiusX = rX;
+          value.radiusZ = rZ;
+        }
+      } else {
         value.radiusX = rX;
         value.radiusY = rY;
         value.radiusZ = rZ;

@@ -62,7 +62,7 @@ describe("CrossPlatform", () => {
   // Verify that the typescript API can read flatbuffer and json files written by the typescript and native APIs.
   // Each test case consists of at least four files that encode the same single geometry: native-authored fb and json, typescript-authored fb and json
   // The same test exists in imodel-native geomlibs and operates on the same data files; these tests and data should be kept in sync.
-  it("Equivalence", () => {
+  it("IndexedMeshAuxData", () => {
     const ck = new Checker();
 
     const testCases: TestCase[] = [];
@@ -99,7 +99,7 @@ describe("CrossPlatform", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("SolidPrimitives", () => {
+  it("SkewSolidPrimitives", () => {
     const ck = new Checker();
 
     const testCases: TestCase[] = [];
