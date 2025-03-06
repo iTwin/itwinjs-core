@@ -34,16 +34,12 @@ export class Entity {
    */
   public static get className(): string { return "Entity"; }
 
-  private static _schemaItemKey?: SchemaItemKey;
-
   /** Serves as a unique identifier for this class. Typed variant of [[classFullName]].
    * @beta
    */
   public static get schemaItemKey(): SchemaItemKey {
-    if (!this._schemaItemKey) {
-      this._schemaItemKey = new SchemaItemKey(this.className, this.schema.schemaKey);
-    }
-    return this._schemaItemKey;
+    // We cannot cache this here because the className gets overridden in subclasses
+    return new SchemaItemKey(this.className, this.schema.schemaKey);
   }
 
   private _metadata?: EntityClass;
