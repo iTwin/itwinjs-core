@@ -78,7 +78,7 @@ These two rules imply that a given class of Element cannot be both sub-modeled *
 
 ### ElementAspect
 
-[ElementAspects](../references/glossary.md#elementaspect) are a flexible way to augment the properties of an Element. They are sets of properties that typically hold information needed only in certain contexts, e.g. during the construction phase or when we have a link to information about the modeled Entity in a different repository. ElementAspects are not individually identifiable (thus relationships cannot point to them), but they may be the "source" of a relationship pointing to an Element.
+[ElementAspects](../references/glossary.md#elementaspect) are a flexible way to augment the properties of an Element. They are sets of properties that typically hold information needed only in certain contexts, e.g. during the construction phase or when we have a link to information about the modeled Entity in a different repository. An ElementAspect may be associated to a relationship pointing to an Element only when such relationship backs up a navigation property defined within it. No link-table relationship can reference an ElementAspect, nor relationships among two ElementAspects are allowed.
 
 ### Identifiers
 
