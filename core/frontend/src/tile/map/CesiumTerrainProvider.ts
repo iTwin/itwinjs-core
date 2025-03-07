@@ -27,6 +27,27 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
+type ContentType =
+  | "3DTiles"
+  | "GLTF"
+  | "IMAGERY"
+  | "TERRAIN"
+  | "KML"
+  | "CZML"
+  | "GEOJSON";
+
+interface ContentTileAttribution {
+  html: string;
+  collapsible: boolean;
+}
+
+interface CesiumContentAccessTileProps {
+  type: ContentType;
+  url: string;
+  accessToken: string;
+  attributions: ContentTileAttribution[];
+}
+
 /** Return the URL for a Cesium ION asset from its asset ID and request Key.
  * @public
  */
@@ -47,13 +68,13 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
 export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{ token?: string, url?: string }> {
   if (undefined === requestKey) {
     requestKey = IModelApp.tileAdmin.cesiumIonKey;
-    if (undefined === requestKey)
+    if (undefined === requestKey) {
+      notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
       return {};
+    }
   }
 
-  const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
-  const apiUrl: string = requestTemplate.replace("{CesiumRequestToken}", requestKey);
-
+  const apiUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token=${requestKey}`;
   try {
     const apiResponse = await request(apiUrl, "json");
     if (undefined === apiResponse || undefined === apiResponse.url) {
@@ -78,18 +99,17 @@ function notifyTerrainError(detailedDescription?: string): void {
   IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), detailedDescription);
 }
 
-/** @internal */
-export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
-  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(opts.dataSource || CesiumTerrainAssetId.Default);
-  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
-    notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
+/** @beta */
+export async function createCesiumTerrainProvider(opts: TerrainMeshProviderOptions & Partial<CesiumContentAccessTileProps>): Promise<TerrainMeshProvider | undefined> {
+  if (opts.url === undefined || opts.accessToken === undefined) {
+    notifyTerrainError();
     return undefined;
   }
 
   let layers;
   try {
-    const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
-    const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
+    const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${opts.accessToken}` } };
+    const layerUrl = `${opts.url}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
   } catch {
     notifyTerrainError();
@@ -120,14 +140,31 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     }
   }
 
-  let tileUrlTemplate = accessTokenAndEndpointUrl.url + layers.tiles[0].replace("{version}", layers.version);
+  let tileUrlTemplate = opts.url + layers.tiles[0].replace("{version}", layers.version);
   if (opts.wantNormals)
     tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
-  // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumTerrainProvider(opts, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, tilingScheme, tileAvailability, layers.metadataAvailability);
+  // TBD -- When we have an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
+ return new CesiumTerrainProvider({
+   opts,
+   accessToken: opts.accessToken,
+   tileUrlTemplate,
+   maxDepth,
+   tilingScheme,
+   tileAvailability,
+   metaDataAvailableLevel: layers.metadataAvailability,
+ });
+}
+
+/** @internal */
+export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
+  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(opts.dataSource || CesiumTerrainAssetId.Default);
+  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
+    return undefined;
+  }
+  return createCesiumTerrainProvider({ ...opts, ...accessTokenAndEndpointUrl });
 }
 
 function zigZagDecode(value: number) {
@@ -157,6 +194,16 @@ function zigZagDeltaDecode(uBuffer: Uint16Array, vBuffer: Uint16Array, heightBuf
   }
 }
 
+interface CesiumTerrainProviderOptions {
+  opts: TerrainMeshProviderOptions;
+  accessToken: string;
+  tileUrlTemplate: string;
+  maxDepth: number;
+  tilingScheme: MapTilingScheme;
+  tileAvailability: TileAvailability | undefined;
+  metaDataAvailableLevel: number | undefined;
+}
+
 /** @internal */
 class CesiumTerrainProvider extends TerrainMeshProvider {
   private _accessToken: string;
@@ -183,8 +230,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
-  constructor(opts: TerrainMeshProviderOptions, accessToken: string, tileUrlTemplate: string, maxDepth: number, tilingScheme: MapTilingScheme,
-    tileAvailability: TileAvailability | undefined, metaDataAvailableLevel: number | undefined) {
+  constructor({ opts, accessToken, tileUrlTemplate, maxDepth, tilingScheme, tileAvailability, metaDataAvailableLevel }: CesiumTerrainProviderOptions) {
     super();
     this._wantSkirts = opts.wantSkirts;
     this._exaggeration = opts.exaggeration;
