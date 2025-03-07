@@ -6170,8 +6170,6 @@ export class MapTileTreeReference extends LayerTileTreeReference {
     // (undocumented)
     get castsShadows(): boolean;
     // (undocumented)
-    clearLayers(): void;
-    // (undocumented)
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
     protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
@@ -6204,10 +6202,6 @@ export class MapTileTreeReference extends LayerTileTreeReference {
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
     get planarClipMaskPriority(): number;
-    // (undocumented)
-    setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
-    // (undocumented)
-    setLayerSettings(layerSettings: MapLayerSettings[]): void;
     // (undocumented)
     get settings(): BackgroundMapSettings;
     set settings(settings: BackgroundMapSettings);
