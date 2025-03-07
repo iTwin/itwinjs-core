@@ -497,6 +497,7 @@ public;type;MapLayerProps
 beta;type;MapLayerProviderArrayProperty
 beta;interface;MapLayerProviderProperties
 public;class;MapLayerSettings
+internal;function;mapNativeElementProps
 public;interface;MapSubLayerProps
 public;class;MapSubLayerSettings
 public;function;mapToGeoServiceStatus
@@ -537,6 +538,7 @@ internal;class;MultiModelPackedFeatureTable
 internal;interface;NativeAppFunctions
 internal;const;nativeAppIpcStrings
 internal;interface;NativeAppNotifications
+internal;type;NativeInterfaceMap
 public;interface;NavigationBindingValue
 public;interface;NavigationValue
 public;function;nextHighestPowerOfTwo

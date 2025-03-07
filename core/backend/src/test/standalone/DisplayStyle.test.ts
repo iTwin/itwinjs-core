@@ -110,7 +110,7 @@ describe("DisplayStyle", () => {
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
       const displayStyleClone = cloneContext.cloneElement(displayStyle);
 
-      const contourSubCatsClone = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties.styles.contours.groups[0].subCategories);
+      const contourSubCatsClone = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties?.styles.contours.groups[0].subCategories);
       expect(contourSubCatsClone.length).to.equal(2);
       expect(contourSubCatsClone).to.contain.members(["0xa", "0xc"]);
     });
@@ -125,7 +125,7 @@ describe("DisplayStyle", () => {
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
       const displayStyleClone = cloneContext.cloneElement(displayStyle);
 
-      const excludedElementsClone  = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties.styles.excludedElements);
+      const excludedElementsClone  = CompressedId64Set.decompressArray(displayStyleClone.jsonProperties?.styles.excludedElements);
       expect(excludedElementsClone.length).to.equal(2);
       expect(excludedElementsClone).to.contain.members(["0xa", "0xc"]);
     });
@@ -150,7 +150,7 @@ describe("DisplayStyle", () => {
       const displayStyle = db.elements.getElement<DisplayStyle3d>(displayStyleId);
       const displayStyleClone = cloneContext.cloneElement(displayStyle);
 
-      const subCategoryOvrClone  = displayStyleClone.jsonProperties.styles.subCategoryOvr;
+      const subCategoryOvrClone  = displayStyleClone.jsonProperties?.styles.subCategoryOvr;
       expect(subCategoryOvrClone.length).to.equal(2);
       expect(subCategoryOvrClone).to.deep.contain.members([
         {subCategory: "0xa", weight: 5},

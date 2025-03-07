@@ -13,6 +13,8 @@ import { IModelTestUtils } from "../IModelTestUtils";
 
 interface TestElement extends GeometricElementProps {
   addresses: [null, {city: "Pune", zip: 28}];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  i_Array: [null, 123];
 }
 
 function initElemProps( _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
@@ -83,13 +85,39 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
     const id = imodel.elements.insertElement(geomElement.toJSON());
-    assert.isTrue(Id64.isValidId64(id), "insert worked");
+    assert.isTrue(Id64.isValidId64(id), "insert worked"); // Insert should now fail
     imodel.saveChanges();
 
     // verify inserted element properties
     const actualValue = imodel.elements.getElementProps<TestElement>(id);
     expect(actualValue.addresses.length).to.equal(2);
     expect(actualValue.addresses[0]).to.be.empty;
+
+    imodel.close();
+  });
+
+  it("Test for primitive array to not return null or empty primitives", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
+    const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+
+    // create element with auto handled properties
+    const expectedValue = initElemProps( imodel, newModelId, spatialCategoryId!, {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      i_Array: [null, 123],
+    }) as TestElement;
+
+    // insert a element
+    const geomElement = imodel.elements.createElement(expectedValue);
+    const id = imodel.elements.insertElement(geomElement.toJSON());
+    assert.isTrue(Id64.isValidId64(id), "insert worked"); // Insert should now fail
+    imodel.saveChanges();
+
+    // verify inserted element properties
+    const actualValue = imodel.elements.getElementProps<TestElement>(id);
+    expect(actualValue.i_Array.length).to.equal(1);
+    expect(actualValue.i_Array[0]).to.equal(123);
 
     imodel.close();
   });

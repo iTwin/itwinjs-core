@@ -42,10 +42,10 @@ describe("Elements", () => {
       byId = await imodel.elements.loadProps(id, { wantGeometry: true }) as GeometryPartProps;
       const geom = byId.geom!;
       expect(geom).not.to.be.undefined;
-      expect(geom.length).to.equal(2);
+      expect(geom.length).to.equal(3);
       expect(geom[0].header!.flags).to.equal(0);
-      expect(geom[1].box!.baseX).to.equal(i + 1);
-      expect(geom[1].box!.baseY).to.equal(i + 1);
+      expect(geom[2].box!.baseX).to.equal(i + 1);
+      expect(geom[2].box!.baseY).to.equal(i + 1);
     }
   });
 
