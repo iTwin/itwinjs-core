@@ -5499,7 +5499,7 @@ export const iTwinErrorKeys: {
 };
 
 // @beta
-export const iTwinErrorMessages: Record<ErrorType, ErrorMessageFn>;
+export const iTwinErrorMessages: Record<keyof typeof iTwinErrorKeys, (...args: any[]) => string>;
 
 // @beta
 export const iTwinjsCoreNamespace = "itwinjs-core";

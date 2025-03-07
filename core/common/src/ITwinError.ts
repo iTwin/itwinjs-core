@@ -45,20 +45,10 @@ export const iTwinErrorKeys = {
 } as const;
 
 /**
- * error type of iTwinErrorKeys.
- */
-type ErrorType = keyof typeof iTwinErrorKeys;
-
-/**
- * function that accepts multiple arguments and returns corresponding message.
- */
-type ErrorMessageFn = (...args: any[]) => string;
-
-/**
  * Record for all itwin error messages.
  * @beta
  */
-export const iTwinErrorMessages: Record<ErrorType, ErrorMessageFn> = {
+export const iTwinErrorMessages: Record<keyof typeof iTwinErrorKeys, (...args: any[]) => string> = {
   "inUseLocks": () => 'Objects are locked by another briefcase',
   "channelNest": (id) => `Channel ${id} may not nest`,
   "channelNotAllowed": (id) => `Channel ${id} is not allowed`,
