@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { ChannelRootAspectProps, constructITwinError, IModel, IModelError, iTwinErrorKeys, iTwinErrorNamespaces } from "@itwin/core-common";
+import { ChannelRootAspectProps, constructITwinError, IModel, IModelError, iTwinErrorKeys, iTwinErrorMessages, iTwinjsCoreNamespace } from "@itwin/core-common";
 import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
@@ -73,7 +73,7 @@ class ChannelAdmin implements ChannelControl {
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel) {
-      const error = constructITwinError(iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.channelNotAllowed, `channel "${deniedChannel}" is not allowed`);
+      const error = constructITwinError(iTwinjsCoreNamespace, iTwinErrorKeys.channelNotAllowed, iTwinErrorMessages.channelNotAllowed(deniedChannel));
       throw error;
     }
 
@@ -88,13 +88,14 @@ class ChannelAdmin implements ChannelControl {
   }
 
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
-    if (ChannelControl.sharedChannelName !== this.getChannelKey(args.elementId)) {
-      const error = constructITwinError(iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.channelNest, `Channel ${this.getChannelKey(args.elementId)} may not nest`);
+    const channelKey = this.getChannelKey(args.elementId);
+    if (ChannelControl.sharedChannelName !== channelKey) {
+      const error = constructITwinError(iTwinjsCoreNamespace, iTwinErrorKeys.channelNest, iTwinErrorMessages.channelNest(channelKey));
       throw error;
     }
 
     if (this.queryChannelRoot(args.channelKey) !== undefined) {
-      const error = constructITwinError(iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.channelRootExists, `A channel root for ${args.channelKey} already exists`);
+      const error = constructITwinError(iTwinjsCoreNamespace, iTwinErrorKeys.channelRootExists, iTwinErrorMessages.channelRootExists(args.channelKey));
       throw error;
     }
 
@@ -107,7 +108,7 @@ class ChannelAdmin implements ChannelControl {
     // makeChannelRoot will check that again, but at that point the new Subject is already inserted.
     // Prefer to check twice instead of deleting the Subject in the latter option.
     if (this.queryChannelRoot(args.channelKey) !== undefined) {
-      const error = constructITwinError(iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.channelRootExists, `A channel root for ${args.channelKey} already exists`);
+      const error = constructITwinError(iTwinjsCoreNamespace, iTwinErrorKeys.channelRootExists, iTwinErrorMessages.channelRootExists(args.channelKey));
       throw error;
     }
 

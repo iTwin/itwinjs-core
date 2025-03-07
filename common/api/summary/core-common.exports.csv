@@ -477,7 +477,8 @@ public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 beta;interface;ITwinError
 beta;const;iTwinErrorKeys
-beta;const;iTwinErrorNamespaces
+beta;const;iTwinErrorMessages
+beta;const;iTwinjsCoreNamespace
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps

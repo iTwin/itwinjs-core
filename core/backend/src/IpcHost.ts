@@ -186,6 +186,7 @@ export abstract class IpcHandler {
               errorKey,
               message,
               ...(metadata && { metadata }), // Include metadata only when defined
+              ...rest
             },
           };
           if (!IpcHost.noStack)

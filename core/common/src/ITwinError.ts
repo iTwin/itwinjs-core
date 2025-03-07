@@ -28,12 +28,10 @@ export interface InUseLock {
 }
 
 /**
- * error namespaces object to describe namespaces for a developer/application.
+ * iTwinjs Core namespace namespace for a developer/application.
  * @beta
  */
-export const iTwinErrorNamespaces = {
-  iTwinJsCore: "itwinjs-core"
-} as const;
+export const iTwinjsCoreNamespace = "itwinjs-core";
 
 /**
  * error keys object used to describe an error keys for a developer/application.
@@ -45,6 +43,28 @@ export const iTwinErrorKeys = {
   channelNotAllowed: "channel-not-allowed",
   channelRootExists: "channel-root-exists"
 } as const;
+
+/**
+ * error type of iTwinErrorKeys.
+ */
+type ErrorType = keyof typeof iTwinErrorKeys;
+
+/**
+ * function that accepts multiple arguments and returns corresponding message.
+ */
+type ErrorMessageFn = (...args: any[]) => string;
+
+/**
+ * Record for all itwin error messages.
+ * @beta
+ */
+export const iTwinErrorMessages: Record<ErrorType, ErrorMessageFn> = {
+  "inUseLocks": () => 'Objects are locked by another briefcase',
+  "channelNest": (id) => `Channel ${id} may not nest`,
+  "channelNotAllowed": (id) => `Channel ${id} is not allowed`,
+  "channelRootExists": (id) => `Channel ${id} root already exist`,
+};
+
 
 /**
  * An interface used to describe an error for a developer/application. The message is not intended to be displayed to an end user.
@@ -90,7 +110,7 @@ export function constructITwinError(namespace: string, errorKey: string, message
   error.errorKey = errorKey;
   error.metadata = metadata;
 
-  Error.captureStackTrace(error,constructITwinError); // Optional, but this would hide constructITwinError from stack.
+  Error.captureStackTrace(error, constructITwinError); // Optional, but this would hide constructITwinError from stack.
   return error;
 }
 
@@ -106,7 +126,7 @@ export function constructITwinError(namespace: string, errorKey: string, message
 export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T {
   const baseError = constructITwinError(namespace, errorKey, message, metadata);
 
-  Error.captureStackTrace(baseError,constructDetailedError); // Optional, but this would hide constructDetailedError from stack.
+  Error.captureStackTrace(baseError, constructDetailedError); // Optional, but this would hide constructDetailedError from stack.
   return Object.assign(baseError, details) as T;
 }
 
@@ -138,7 +158,7 @@ export function getITwinErrorMetaData(error: ITwinError): object | undefined {
 */
 export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError {
   return error !== undefined && error !== null && typeof error === "object"
-  && "namespace" in error && "errorKey" in error && "message" in error
-  && (namespace === undefined || (error as ITwinError).namespace === namespace)
-  && (errorKey === undefined || (error as ITwinError).errorKey === errorKey);
+    && "namespace" in error && "errorKey" in error && "message" in error
+    && (namespace === undefined || (error as ITwinError).namespace === namespace)
+    && (errorKey === undefined || (error as ITwinError).errorKey === errorKey);
 }

@@ -1,5 +1,5 @@
 import { LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { createITwinErrorTypeAsserter, getITwinErrorMetaData, InUseLock, InUseLocksError, ITwinError, iTwinErrorKeys, iTwinErrorNamespaces, LockState } from "@itwin/core-common";
+import { createITwinErrorTypeAsserter, getITwinErrorMetaData, InUseLock, InUseLocksError, ITwinError, iTwinErrorKeys, iTwinErrorMessages, iTwinjsCoreNamespace, LockState } from "@itwin/core-common";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { expect } from "chai";
 import { coreFullStackTestIpc } from "../Editing";
@@ -19,15 +19,15 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should receive InUseLocksError on the frontend", async () => {
-      const message = "One or more objects are already locked by another briefcase";
+      const message = iTwinErrorMessages.inUseLocks();
       const inUseLocks: InUseLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
       let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwDetailedError<InUseLocksError>({ inUseLocks }, iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.inUseLocks, message, metadata);
+        await coreFullStackTestIpc.throwDetailedError<InUseLocksError>({ inUseLocks }, iTwinjsCoreNamespace, iTwinErrorKeys.inUseLocks, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isInUseError = createITwinErrorTypeAsserter<InUseLocksError>(iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.inUseLocks);
+        const isInUseError = createITwinErrorTypeAsserter<InUseLocksError>(iTwinjsCoreNamespace, iTwinErrorKeys.inUseLocks);
         expect(isInUseError(err)).to.be.true;
         if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
@@ -41,14 +41,14 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should receive iTwin error with channel key on the frontend", async () => {
-      const message = "Channel may not Nest";
+      const message = iTwinErrorMessages.channelNest("123");
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
       let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwITwinError(iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.channelNest, message, metadata);
+        await coreFullStackTestIpc.throwITwinError(iTwinjsCoreNamespace, iTwinErrorKeys.channelNest, message, metadata);
       } catch (err) {
         caughtError = true;
-        const isInUseError = createITwinErrorTypeAsserter<ITwinError>(iTwinErrorNamespaces.iTwinJsCore, iTwinErrorKeys.channelNest);
+        const isInUseError = createITwinErrorTypeAsserter<ITwinError>(iTwinjsCoreNamespace, iTwinErrorKeys.channelNest);
         expect(isInUseError(err)).to.be.true;
         if (isInUseError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.

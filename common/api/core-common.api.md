@@ -5499,9 +5499,10 @@ export const iTwinErrorKeys: {
 };
 
 // @beta
-export const iTwinErrorNamespaces: {
-    readonly iTwinJsCore: "itwinjs-core";
-};
+export const iTwinErrorMessages: Record<ErrorType, ErrorMessageFn>;
+
+// @beta
+export const iTwinjsCoreNamespace = "itwinjs-core";
 
 // @public
 export interface JsonGeometryStream {

@@ -366,7 +366,7 @@ describe("Functional Domain", () => {
     assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
     assert.equal(spy.partition.onSubModelInserted.getCall(0).args[0].subModelId, modelId, "Element.onSubModelInserted should have correct subModelId");
 
-    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1 })).to.throw(`A channel root for ${testChannelKey1} already exists`);
+    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1 })).to.throw(`Channel ${testChannelKey1} root already exist`);
     const subject2Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey2 });
     iModelDb.channels.addAllowedChannel(testChannelKey2);
 
