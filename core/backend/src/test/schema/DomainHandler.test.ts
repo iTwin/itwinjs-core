@@ -1,20 +1,21 @@
-import { _nativeDb, ChannelControl, ClassRegistry, ElementOwnsChildElements, ElementOwnsUniqueAspect, ElementUniqueAspect, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition, FunctionalSchema, IModelHost, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, SubjectOwnsPartitionElements } from "../../core-backend";
+import { _nativeDb, ClassRegistry, ElementOwnsChildElements, ElementOwnsUniqueAspect, ElementUniqueAspect, FunctionalBreakdownElement, FunctionalComponentElement,
+  FunctionalModel, FunctionalPartition, FunctionalSchema, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg,
+  OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas,
+  StandaloneDb, SubjectOwnsPartitionElements } from "../../core-backend";
+import { Guid, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
+import { join } from "node:path";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-
 import { assert, expect } from "chai";
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
-import { spy as sinonSpy } from "sinon";
-import { Guid, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { join } from "node:path";
-import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 
 Logger.initializeToConsole();
 Logger.setLevelDefault(LogLevel.Trace);
 
-const elementDomainHandlerOrder = [];
-const modelDomainHandlerOrder = [];
-const aspectDomainHandlerOrder = [];
+let elementDomainHandlerOrder = [];
+let modelDomainHandlerOrder = [];
+let aspectDomainHandlerOrder = [];
 
 /** test schema for supplying element/model/aspect classes */
 class TestSchema extends FunctionalSchema {
@@ -209,71 +210,65 @@ class Component extends FunctionalComponentElement {
   public static override get className() { return "Component"; }
 }
 
-describe.only("Domain Handlers", () => {
+describe.only("Domain Handlers - Old", () => {
 
   let iModelDb: StandaloneDb;
-  let modelId: Id64String;
 
+  const testChannelKey = "channel 1 for tests";
   let codeSpec: CodeSpec;
   let subjectId: Id64String;
-  let partitionCode: Code;
-  const testChannelKey1 = "channel 1 for tests";
-  const testChannelKey2 = "channel 2 for tests";
-  const testChannelKey3 = "channel 3 for tests";
-  const testChannelKey4 = "channel 4 for tests";
+  let modelId: Id64String;
 
-  const spy = {
+  const spies = {
     model: {
-      onInsert: sinonSpy(TestModelHandlers, "onInsert"),
-      onInserted: sinonSpy(TestModelHandlers, "onInserted"),
-      onUpdate: sinonSpy(TestModelHandlers, "onUpdate"),
-      onUpdated: sinonSpy(TestModelHandlers, "onUpdated"),
-      onDelete: sinonSpy(TestModelHandlers, "onDelete"),
-      onDeleted: sinonSpy(TestModelHandlers, "onDeleted"),
-      onInsertElement: sinonSpy(TestModelHandlers, "onInsertElement"),
-      onInsertedElement: sinonSpy(TestModelHandlers, "onInsertedElement"),
-      onUpdateElement: sinonSpy(TestModelHandlers, "onUpdateElement"),
-      onUpdatedElement: sinonSpy(TestModelHandlers, "onUpdatedElement"),
-      onDeleteElement: sinonSpy(TestModelHandlers, "onDeleteElement"),
-      onDeletedElement: sinonSpy(TestModelHandlers, "onDeletedElement"),
+      onInsert: sinon.spy(TestModelHandlers, "onInsert"),
+      onInserted: sinon.spy(TestModelHandlers, "onInserted"),
+      onUpdate: sinon.spy(TestModelHandlers, "onUpdate"),
+      onUpdated: sinon.spy(TestModelHandlers, "onUpdated"),
+      onDelete: sinon.spy(TestModelHandlers, "onDelete"),
+      onDeleted: sinon.spy(TestModelHandlers, "onDeleted"),
+      onInsertElement: sinon.spy(TestModelHandlers, "onInsertElement"),
+      onInsertedElement: sinon.spy(TestModelHandlers, "onInsertedElement"),
+      onUpdateElement: sinon.spy(TestModelHandlers, "onUpdateElement"),
+      onUpdatedElement: sinon.spy(TestModelHandlers, "onUpdatedElement"),
+      onDeleteElement: sinon.spy(TestModelHandlers, "onDeleteElement"),
+      onDeletedElement: sinon.spy(TestModelHandlers, "onDeletedElement"),
     },
-    partition: {
-      onSubModelInsert: sinonSpy(TestPartitionHandlers, "onSubModelInsert"),
-      onSubModelInserted: sinonSpy(TestPartitionHandlers, "onSubModelInserted"),
-      onSubModelDelete: sinonSpy(TestPartitionHandlers, "onSubModelDelete"),
-      onSubModelDeleted: sinonSpy(TestPartitionHandlers, "onSubModelDeleted"),
+    sub: {
+      onSubModelInsert: sinon.spy(TestPartitionHandlers, "onSubModelInsert"),
+      onSubModelInserted: sinon.spy(TestPartitionHandlers, "onSubModelInserted"),
+      onSubModelDelete: sinon.spy(TestPartitionHandlers, "onSubModelDelete"),
+      onSubModelDeleted: sinon.spy(TestPartitionHandlers, "onSubModelDeleted"),
     },
-    breakdown: {
-      onInsert: sinonSpy(TestElementHandlers, "onInsert"),
-      onInserted: sinonSpy(TestElementHandlers, "onInserted"),
-      onUpdate: sinonSpy(TestElementHandlers, "onUpdate"),
-      onUpdated: sinonSpy(TestElementHandlers, "onUpdated"),
-      onDelete: sinonSpy(TestElementHandlers, "onDelete"),
-      onDeleted: sinonSpy(TestElementHandlers, "onDeleted"),
-      onChildDelete: sinonSpy(TestElementHandlers, "onChildDelete"),
-      onChildDeleted: sinonSpy(TestElementHandlers, "onChildDeleted"),
-      onChildInsert: sinonSpy(TestElementHandlers, "onChildInsert"),
-      onChildInserted: sinonSpy(TestElementHandlers, "onChildInserted"),
-      onChildUpdate: sinonSpy(TestElementHandlers, "onChildUpdate"),
-      onChildUpdated: sinonSpy(TestElementHandlers, "onChildUpdated"),
-      onChildAdd: sinonSpy(TestElementHandlers, "onChildAdd"),
-      onChildAdded: sinonSpy(TestElementHandlers, "onChildAdded"),
-      onChildDrop: sinonSpy(TestElementHandlers, "onChildDrop"),
-      onChildDropped: sinonSpy(TestElementHandlers, "onChildDropped"),
+    element: {
+      onInsert: sinon.spy(TestElementHandlers, "onInsert"),
+      onInserted: sinon.spy(TestElementHandlers, "onInserted"),
+      onUpdate: sinon.spy(TestElementHandlers, "onUpdate"),
+      onUpdated: sinon.spy(TestElementHandlers, "onUpdated"),
+      onDelete: sinon.spy(TestElementHandlers, "onDelete"),
+      onDeleted: sinon.spy(TestElementHandlers, "onDeleted"),
+      onChildDelete: sinon.spy(TestElementHandlers, "onChildDelete"),
+      onChildDeleted: sinon.spy(TestElementHandlers, "onChildDeleted"),
+      onChildInsert: sinon.spy(TestElementHandlers, "onChildInsert"),
+      onChildInserted: sinon.spy(TestElementHandlers, "onChildInserted"),
+      onChildUpdate: sinon.spy(TestElementHandlers, "onChildUpdate"),
+      onChildUpdated: sinon.spy(TestElementHandlers, "onChildUpdated"),
+      onChildAdd: sinon.spy(TestElementHandlers, "onChildAdd"),
+      onChildAdded: sinon.spy(TestElementHandlers, "onChildAdded"),
+      onChildDrop: sinon.spy(TestElementHandlers, "onChildDrop"),
+      onChildDropped: sinon.spy(TestElementHandlers, "onChildDropped"),
     },
     aspect: {
-      onInsert: sinonSpy(TestAspectHandlers, "onInsert"),
-      onInserted: sinonSpy(TestAspectHandlers, "onInserted"),
-      onUpdate: sinonSpy(TestAspectHandlers, "onUpdate"),
-      onUpdated: sinonSpy(TestAspectHandlers, "onUpdated"),
-      onDelete: sinonSpy(TestAspectHandlers, "onDelete"),
-      onDeleted: sinonSpy(TestAspectHandlers, "onDeleted"),
+      onInsert: sinon.spy(TestAspectHandlers, "onInsert"),
+      onInserted: sinon.spy(TestAspectHandlers, "onInserted"),
+      onUpdate: sinon.spy(TestAspectHandlers, "onUpdate"),
+      onUpdated: sinon.spy(TestAspectHandlers, "onUpdated"),
+      onDelete: sinon.spy(TestAspectHandlers, "onDelete"),
+      onDeleted: sinon.spy(TestAspectHandlers, "onDeleted"),
     },
   };
 
   before(async () => {
-    // await IModelHost.startup();
-
     // Create iModel
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DomainHandlers", "DomainHandlers.bim"), {
       rootSubject: { name: "HandlerTest", description: "Test of Domain Handlers." },
@@ -293,48 +288,68 @@ describe.only("Domain Handlers", () => {
     ClassRegistry.registerModule({ TestElementHandlers, TestPartitionHandlers, TestModelHandlers, TestAspectHandlers, Component }, TestSchema);
     await FunctionalSchema.importSchema(iModelDb);
 
-
+    // Import Schemas
     iModelDb.saveChanges("Import Functional schema");
     IModelTestUtils.flushTxns(iModelDb);
     await iModelDb.importSchemas([join(KnownTestLocations.assetsDir, "TestHandlers.ecschema.xml")]);
     iModelDb.saveChanges("Import TestHandlers schema");
 
-    assert.equal(iModelDb.channels.queryChannelRoot(ChannelControl.sharedChannelName), IModel.rootSubjectId);
+    // Create Code
+    codeSpec = CodeSpec.create(iModelDb, "Test Domain Handlers", CodeScopeSpec.Type.Model);
+    iModelDb.codeSpecs.insert(codeSpec);
+    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Model Domain Handlers", channelKey: testChannelKey });
+    iModelDb.channels.addAllowedChannel(testChannelKey);
   });
 
   after(async () => {
-    // await IModelHost.shutdown();
     sinon.restore();
   });
 
-  beforeEach(async () => {
-
-  });
-
   afterEach(() => {
-
+    // Clear the call history of all spies
+    // Model
+    modelDomainHandlerOrder = [];
+    for (const method in spies.model) {
+      if (spies.model.hasOwnProperty(method)) {
+        (spies.model[method as keyof typeof spies.model]).resetHistory();
+      }
+    }
+    // SubModel
+    for (const method in spies.sub) {
+      if (spies.sub.hasOwnProperty(method)) {
+        (spies.sub[method as keyof typeof spies.sub]).resetHistory();
+      }
+    }
+    // Aspect
+    aspectDomainHandlerOrder = [];
+    for (const method in spies.aspect) {
+      if (spies.aspect.hasOwnProperty(method)) {
+        (spies.aspect[method as keyof typeof spies.aspect]).resetHistory();
+      }
+    }
+    // Element
+    elementDomainHandlerOrder = [];
+    for (const method in spies.element) {
+      if (spies.element.hasOwnProperty(method)) {
+        (spies.element[method as keyof typeof spies.element]).resetHistory();
+      }
+    }
   });
 
   it("should call all handler functions for an inserted model", async () => {
-    codeSpec = CodeSpec.create(iModelDb, "Test Model Domain Handlers", CodeScopeSpec.Type.Model);
-    iModelDb.codeSpecs.insert(codeSpec);
-    assert.isTrue(Id64.isValidId64(codeSpec.id));
-    assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey1));
-    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Model Domain Handlers", channelKey: testChannelKey1 });
-    assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey1), subjectId);
-
-    partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
-
+    const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Model Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(subjectId),
       code: partitionCode,
     };
-    iModelDb.channels.addAllowedChannel(testChannelKey1);
+
+    // New Element and a sub Model
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
+    // Insert Element into that sub Model
     const elementProps: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
       model: modelId,
@@ -346,49 +361,42 @@ describe.only("Domain Handlers", () => {
     };
     const elementId = iModelDb.elements.insertElement(elementProps);
     const model = iModelDb.models.getModel(modelId);
-    model.update();
+    model.update(); // Update the model as a whole
     const element = iModelDb.elements.getElement(elementId);
-    element.update();
-    model.delete();
+    element.update(); // Update the element
+    model.delete(); // delete the model
 
     // Check that all model handler functions were called
-    assert.isTrue(spy.model.onInsert.called);
-    assert.isTrue(spy.model.onInserted.called);
-    assert.isTrue(spy.model.onInsertElement.called);
-    assert.isTrue(spy.model.onInsertedElement.called);
-    assert.isTrue(spy.model.onUpdate.called);
-    assert.isTrue(spy.model.onUpdated.called);
-    assert.isTrue(spy.model.onUpdateElement.called);
-    assert.isTrue(spy.model.onUpdatedElement.called);
-    assert.isTrue(spy.model.onDelete.called);
-    assert.isTrue(spy.model.onDeleted.called);
-    assert.isTrue(spy.model.onDeleteElement.called);
-    assert.isTrue(spy.model.onDeletedElement.called);
+    assert.isTrue(spies.model.onInsert.called);
+    assert.isTrue(spies.model.onInserted.called);
+    assert.isTrue(spies.model.onInsertElement.called);
+    assert.isTrue(spies.model.onInsertedElement.called);
+    assert.isTrue(spies.model.onUpdate.called);
+    assert.isTrue(spies.model.onUpdated.called);
+    assert.isTrue(spies.model.onUpdateElement.called);
+    assert.isTrue(spies.model.onUpdatedElement.called);
+    assert.isTrue(spies.model.onDelete.called);
+    assert.isTrue(spies.model.onDeleted.called);
+    assert.isTrue(spies.model.onDeleteElement.called);
+    assert.isTrue(spies.model.onDeletedElement.called);
 
     // Check that all sub model handler functions were called
-    assert.isTrue(spy.partition.onSubModelInsert.called);
-    assert.isTrue(spy.partition.onSubModelInserted.called);
-    assert.isTrue(spy.partition.onSubModelDelete.called);
-    assert.isTrue(spy.partition.onSubModelDeleted.called);
+    assert.isTrue(spies.sub.onSubModelInsert.called);
+    assert.isTrue(spies.sub.onSubModelInserted.called);
+    assert.isTrue(spies.sub.onSubModelDelete.called);
+    assert.isTrue(spies.sub.onSubModelDeleted.called);
   });
 
   it("should call all handler functions for an inserted aspect", async () => {
-    codeSpec = CodeSpec.create(iModelDb, "Test Aspect Domain Handlers", CodeScopeSpec.Type.Model);
-    iModelDb.codeSpecs.insert(codeSpec);
-    assert.isTrue(Id64.isValidId64(codeSpec.id));
-    assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey2));
-    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Aspect Domain Handlers", channelKey: testChannelKey2 });
-    assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey2), subjectId);
-
-    partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
-
+    const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Aspect Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(subjectId),
       code: partitionCode,
     };
-    iModelDb.channels.addAllowedChannel(testChannelKey2);
+
+    // New Element and a Model
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
@@ -401,7 +409,7 @@ describe.only("Domain Handlers", () => {
         value: "Breakdown2"
       }
     };
-
+    // Insert Element into that Model
     const elementId = iModelDb.elements.insertElement(elementProps);
 
     const aspectProps = {
@@ -409,42 +417,35 @@ describe.only("Domain Handlers", () => {
       element: new ElementOwnsUniqueAspect(elementId),
       strProp: "prop 1"
     };
-
+    // Insert Aspect into that Element
     iModelDb.elements.insertAspect(aspectProps);
     aspectProps.strProp = "prop 2";
-    iModelDb.elements.updateAspect(aspectProps);
+    iModelDb.elements.updateAspect(aspectProps); // Update the aspect
     const aspect = iModelDb.elements.getAspects(elementId, TestAspectHandlers.classFullName);
-    iModelDb.elements.deleteAspect(aspect[0].id);
+    iModelDb.elements.deleteAspect(aspect[0].id); // delete the aspect
 
     // Check that all aspect handler functions were called
-    assert.isTrue(spy.aspect.onInsert.called);
-    assert.isTrue(spy.aspect.onInserted.called);
-    assert.isTrue(spy.aspect.onUpdate.called);
-    assert.isTrue(spy.aspect.onUpdated.called);
-    assert.isTrue(spy.aspect.onDelete.called);
-    assert.isTrue(spy.aspect.onDeleted.called);
+    assert.isTrue(spies.aspect.onInsert.called);
+    assert.isTrue(spies.aspect.onInserted.called);
+    assert.isTrue(spies.aspect.onUpdate.called);
+    assert.isTrue(spies.aspect.onUpdated.called);
+    assert.isTrue(spies.aspect.onDelete.called);
+    assert.isTrue(spies.aspect.onDeleted.called);
 
-    const model = iModelDb.models.getModel(modelId);
+    const model = iModelDb.models.getModel(modelId); // cleanup Model
     model.delete();
   });
 
   it("should call all handler functions for an inserted element", async () => {
-    codeSpec = CodeSpec.create(iModelDb, "Test Element Domain Handlers", CodeScopeSpec.Type.Model);
-    iModelDb.codeSpecs.insert(codeSpec);
-    assert.isTrue(Id64.isValidId64(codeSpec.id));
-    assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey3));
-    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Element Domain Handlers", channelKey: testChannelKey3 });
-    assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey3), subjectId);
-
-    partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
-
+    const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Element Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
       model: IModel.repositoryModelId,
       parent: new SubjectOwnsPartitionElements(subjectId),
       code: partitionCode,
     };
-    iModelDb.channels.addAllowedChannel(testChannelKey3);
+
+    // New Element and a Model
     const partitionId = iModelDb.elements.insertElement(partitionProps);
     modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
@@ -458,15 +459,7 @@ describe.only("Domain Handlers", () => {
       }
     };
     const elementId = iModelDb.elements.insertElement(elementProps);
-
-    codeSpec = CodeSpec.create(iModelDb, "Test Element Domain Handlers 2", CodeScopeSpec.Type.Model);
-    iModelDb.codeSpecs.insert(codeSpec);
-    assert.isTrue(Id64.isValidId64(codeSpec.id));
-    assert.isUndefined(iModelDb.channels.queryChannelRoot(testChannelKey4));
-    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Element Domain Handlers 2", channelKey: testChannelKey4 });
-    assert.equal(iModelDb.channels.queryChannelRoot(testChannelKey4), subjectId);
-
-    partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Functional Model");
+    const element = iModelDb.elements.getElement(elementId);
 
     const elementProps2: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
@@ -495,15 +488,15 @@ describe.only("Domain Handlers", () => {
     const componentId2 = iModelDb.elements.insertElement(componentProps);
     const component2 = iModelDb.elements.getElement(componentId2);
 
-    spy.model.onDeleteElement.resetHistory();
-    spy.model.onDeletedElement.resetHistory();
+    spies.model.onDeleteElement.resetHistory();
+    spies.model.onDeletedElement.resetHistory();
     TestModelHandlers.dontDelete = componentId2; // block deletion through model
     expect(() => component2.delete()).to.throw("dont delete my element");
     TestModelHandlers.dontDelete = ""; // allow deletion through model
     TestElementHandlers.dontDeleteChild = componentId2; // but block through parent
     expect(() => component2.delete()).to.throw("dont delete my child");
-    assert.equal(spy.model.onDeleteElement.callCount, 2, "Model.onElementDelete gets called even though element is not really deleted");
-    assert.equal(spy.model.onDeletedElement.callCount, 0, "make sure Model.onElementDeleted did not get called");
+    assert.equal(spies.model.onDeleteElement.callCount, 2, "Model.onElementDelete gets called even though element is not really deleted");
+    assert.equal(spies.model.onDeletedElement.callCount, 0, "make sure Model.onElementDeleted did not get called");
     TestElementHandlers.dontDeleteChild = ""; // now fully allow delete
     component2.delete();
 
@@ -513,24 +506,26 @@ describe.only("Domain Handlers", () => {
     component3Props.parent!.id = elementId2;
 
     iModelDb.elements.updateElement(component3Props);
+    element.update(); // Update the element (the above updates and deletes don't count since they aren't the same element type that we are spying on)
+    element.delete(); // delete the element
 
     // Check that all aspect handler functions were called
-    assert.isTrue(spy.breakdown.onInsert.called);
-    assert.isTrue(spy.breakdown.onInserted.called);
-    assert.isTrue(spy.breakdown.onUpdate.called);
-    assert.isTrue(spy.breakdown.onUpdated.called);
-    assert.isTrue(spy.breakdown.onDelete.called);
-    assert.isTrue(spy.breakdown.onDeleted.called);
-    assert.isTrue(spy.breakdown.onChildDelete.called);
-    assert.isTrue(spy.breakdown.onChildDeleted.called);
-    assert.isTrue(spy.breakdown.onChildInsert.called);
-    assert.isTrue(spy.breakdown.onChildInserted.called);
-    assert.isTrue(spy.breakdown.onChildUpdate.called);
-    assert.isTrue(spy.breakdown.onChildUpdated.called);
-    assert.isTrue(spy.breakdown.onChildAdd.called);
-    assert.isTrue(spy.breakdown.onChildAdded.called);
-    assert.isTrue(spy.breakdown.onChildDrop.called);
-    assert.isTrue(spy.breakdown.onChildDropped.called);
+    assert.isTrue(spies.element.onInsert.called);
+    assert.isTrue(spies.element.onInserted.called);
+    assert.isTrue(spies.element.onUpdate.called);
+    assert.isTrue(spies.element.onUpdated.called);
+    assert.isTrue(spies.element.onDelete.called);
+    assert.isTrue(spies.element.onDeleted.called);
+    assert.isTrue(spies.element.onChildDelete.called);
+    assert.isTrue(spies.element.onChildDeleted.called);
+    assert.isTrue(spies.element.onChildInsert.called);
+    assert.isTrue(spies.element.onChildInserted.called);
+    assert.isTrue(spies.element.onChildUpdate.called);
+    assert.isTrue(spies.element.onChildUpdated.called);
+    assert.isTrue(spies.element.onChildAdd.called);
+    assert.isTrue(spies.element.onChildAdded.called);
+    assert.isTrue(spies.element.onChildDrop.called);
+    assert.isTrue(spies.element.onChildDropped.called);
 
     const model = iModelDb.models.getModel(modelId);
     model.delete();
