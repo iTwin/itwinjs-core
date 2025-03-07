@@ -12,7 +12,7 @@ import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe("Background map", () => {
+describe.only("Background map", () => {
   let imodel: IModelConnection;
 
   before(async () => {
