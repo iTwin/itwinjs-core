@@ -7,9 +7,9 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, GetMetaDataFunction, IModelStatus, Logger, LoggingMetaData, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getITwinErrorMetaData, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, isITwinError, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
@@ -174,8 +174,11 @@ export abstract class IpcHandler {
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
         let ret: IpcInvokeReturn;
+        let metadata: Exclude<LoggingMetaData, GetMetaDataFunction>;
         if (isITwinError(err)) {
-          const { namespace, errorKey, message, stack, metadata, ...rest } = err;
+          const { namespace, errorKey, message, stack, ...rest } = err;
+          if(rest.metadata)
+            metadata = getITwinErrorMetaData(err);
           ret = {
             iTwinError:
             {
@@ -183,18 +186,20 @@ export abstract class IpcHandler {
               errorKey,
               message,
               ...(metadata && { metadata }), // Include metadata only when defined
-              ...rest,
             },
           };
           if (!IpcHost.noStack)
             ret.iTwinError.stack = stack;
         } else {
+          metadata = BentleyError.getErrorMetadata(err);
+
           ret = {
             error:
             {
               name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
               message: err.message ?? BentleyError.getErrorMessage(err),
               errorNumber: err.errorNumber ?? 0,
+              ...(metadata && { metadata }), // Include metadata only when defined.
             },
           };
           if (!IpcHost.noStack)
