@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestHandlers2" alias="testHandler2" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+
+    <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+    <ECSchemaReference name="Functional" version="1.0" alias="func" />
+
+    <ECCustomAttributes>
+        <SchemaHasBehavior xmlns="BisCore.1.0"/>
+    </ECCustomAttributes>
+
+    <ECEntityClass typeName="TestPartitionHandlers">
+        <BaseClass>bis:InformationPartitionElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestModelHandlers" displayLabel="Test Functional Model">
+        <BaseClass>func:FunctionalModel</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestElementHandlers" displayLabel="Test Element Handlers">
+        <BaseClass>func:FunctionalBreakdownElement</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Component" displayLabel="Test Functional Component">
+        <BaseClass>func:FunctionalComponentElement</BaseClass>
+        <ECProperty propertyName="DoubleProperty" typeName="double"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="Type" displayLabel="Test Functional Type">
+        <BaseClass>func:FunctionalType</BaseClass>
+        <ECProperty propertyName="StringProperty" typeName="string" />
+        <ECProperty propertyName="IntProperty" typeName="int" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestAspectHandlers">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECProperty propertyName="strProp" typeName="string"/>
+    </ECEntityClass>
+
+</ECSchema>
