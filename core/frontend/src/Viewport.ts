@@ -50,7 +50,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityModelTileTree, RealityTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -932,7 +932,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Refresh the Reality Tile Tree to reflect changes in the map layer. */
   private refreshRealityTile(): void {
     for (const { supplier, id, owner } of this.iModel.tiles) {
-      if (owner.tileTree instanceof RealityTileTree) {
+      if (owner.tileTree instanceof RealityModelTileTree) {
         this.iModel.tiles.resetTileTreeOwner(id, supplier);
       }
     }
