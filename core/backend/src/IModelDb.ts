@@ -99,6 +99,13 @@ export interface InsertElementOptions {
   forceUseId?: boolean;
 }
 
+/** Options supposed to [[IModelDb.Elements.insertElement2]].
+ * @public
+ */
+export interface InsertInstanceOptions {
+  useJsNames?: true;
+}
+
 /** Options supplied to [[IModelDb.computeProjectExtents]].
  * @public
  */
@@ -2000,21 +2007,67 @@ export namespace IModelDb {
      */
     public createElement<T extends Element>(elProps: ElementProps): T { return this._iModel.constructEntity<T>(elProps); }
 
-    /**
-     * Generic insert that inserts an instance of an Element, Model, or Aspect into the iModel.
-     * @param instance Instance to be inserted.
-     * @returns The Id of the instance that was inserted.
+    // /**
+    //  * Generic insert that inserts an instance of an Element, Model, or Aspect into the iModel.
+    //  * @param instance Instance to be inserted.
+    //  * @returns The Id of the instance that was inserted.
+    //  * @throws [[IModelError]] if unable to insert the element.
+    //  */
+    // public insertInstance(classFullName: string): Id64String {
+    //   try {
+    //     const classDef = ClassRegistry.getClass(classFullName, this._iModel);
+    //     classDef.onInsert({});
+    //     const id = this._iModel[_nativeDb].insertInstance();
+    //     classDef.onInserted({});
+    //     return id;
+    //   } catch (err: any) {
+    //     err.message = `Error inserting instance [${err.message}]`;
+    //     throw err;
+    //   }
+    // }
+
+    /** Insert a new element into the iModel.
+     * @param elProps The properties of the new element.
+     * @returns The newly inserted element's Id.
      * @throws [[IModelError]] if unable to insert the element.
+     * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
+     * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
+     * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
+     * if you intend to continue working with it. That will ensure its values reflect the persistent state.
      */
-    public insertInstance(classFullName: string): Id64String {
+    public insertElement2(elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
       try {
-        const classDef = ClassRegistry.getClass(classFullName, this._iModel);
-        classDef.onInsert({});
-        const id = this._iModel[_nativeDb].insertInstance();
-        classDef.onInserted({});
-        return id;
+        // Check if ClassId is valid
+        const classDef = ClassRegistry.getClass(elProps.classFullName, this._iModel);
+        const classId = IModelDb.Elements.classMap.get(elProps.classFullName); // TODO: is this the right classId
+        if (classId === undefined) { // TODO: How do we check if its valid?
+          throw new IModelError(IModelStatus.WrongClass, "Invalid class name");
+        }
+
+        // TODO: Check Element handler?
+
+        // TODO: Check if the element args are valid?
+
+        // Check if classDef is a subclass of Element
+        if (!(classDef.prototype instanceof Element)) {
+          throw new IModelError(IModelStatus.WrongElement, "Invalid element class");
+        }
+
+        (classDef as typeof Element).onInsert({ iModel: this._iModel, props: elProps });
+
+        elProps.id = this._iModel[_nativeDb].insertInstance(elProps, {...options});
+
+        (classDef as typeof Element).onInserted({
+          iModel: this._iModel,
+          id: elProps.id,
+          federationGuid: elProps.federationGuid ?? Guid.createValue(),
+          model: elProps.model,
+        });
+
+        return elProps.id;
       } catch (err: any) {
-        err.message = `Error inserting instance [${err.message}]`;
+        err.message = `Error inserting element [${err.message}]`;
+        err.metadata = { elProps };
         throw err;
       }
     }
