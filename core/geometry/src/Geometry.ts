@@ -834,6 +834,27 @@ export class Geometry {
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }
+    /**
+   * Return fractional length of the projection of the first vector ("the space vector") ux,uy to the vector vx,vy ("the direction vector")
+   * @param ux x component of space vector
+   * @param uy y component of spact vector
+   * @param vx x component of direction vector
+   * @param vy y component of direction vector
+   * @param defaultFraction the returned value in case the magnitude of `direction` is too small
+   * @returns the signed length of the projection divided by the length of `target`
+   */
+    public static fractionOfProjectionToVectorXYXY(ux: number, uy: number, vx: number, vy: number, defaultFraction: number = 0): number {
+      /*
+       * projection length is (this.target)/||target||
+       * but here we return (this.target)/||target||^2
+       */
+      const denominator = vx * vx + vy * vy;
+      if (denominator < Geometry.smallMetricDistanceSquared)
+        return defaultFraction;
+      const numerator = ux * vx + uy * vy;
+      return numerator / denominator;
+    }
+  
   /**
    * Return the mean curvature for two radii.
    * * Curvature is the reciprocal of radius.
