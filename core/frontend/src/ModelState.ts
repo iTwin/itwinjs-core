@@ -121,7 +121,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
 
     const mapSettings = view.displayStyle.backgroundMapSettings;
-    const mapImagery = view.displayStyle.settings.mapImagery;
+    const mapImagery = view.displayStyle.settings?.mapImagery;
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
