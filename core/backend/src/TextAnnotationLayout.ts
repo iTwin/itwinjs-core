@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -497,6 +497,7 @@ export class LineLayout {
 export class TextBlockLayout {
   public source: TextBlock;
   public range = new Range2d();
+  public marginRange = new Range2d();
   public lines: LineLayout[] = [];
   private _context: LayoutContext;
 
@@ -511,6 +512,7 @@ export class TextBlockLayout {
 
     this.populateLines(context);
     this.justifyLines();
+    this.applyMargins(source.margins);
   }
 
   public toResult(): TextBlockLayoutResult {
@@ -647,5 +649,17 @@ export class TextBlockLayout {
 
     this.lines.push(line);
     return new LineLayout(nextParagraph);
+  }
+
+  private applyMargins(margins: TextBlockMargins) {
+    this.marginRange = this.range.clone();
+
+    const xHigh = this.range.high.x + margins.right;
+    const yHigh = this.range.high.y + margins.top;
+    const xLow = this.range.low.x - margins.left;
+    const yLow = this.range.low.y - margins.bottom;
+
+    this.marginRange.extendXY(xHigh, yHigh);
+    this.marginRange.extendXY(xLow, yLow);
   }
 }
