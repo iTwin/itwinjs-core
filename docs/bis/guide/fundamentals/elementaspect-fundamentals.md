@@ -38,11 +38,13 @@ For an ElementUniqueAspect, the combination of subclass and the Element identity
 
 For an ElementMultiAspect, the combination of subclass and the Element identity identifies a list of ElementMultiAspects. Every ElementMultiAspect also has a *private* Id if an individual ElementMultiAspect instance has to be referenced.
 
-ElementAspects can also be used to separate groups of properties according to their applicability.  Consider the need to capture the `Shape` and related dimension properties from a set of objects. The list of dimension properties applicable to each object depends on its specific `Shape`. This situation can be modeled via an ElementAspect class-hierarchy that captures all the `Shape`s to be supported by such a system as well as their respective properties.
+## Sub-properties and ElementAspects
+
+ElementAspects can also be used to separate groups of properties according to their applicability. Consider the need to capture the `Shape` and related dimension properties from a set of objects. The list of dimension properties applicable to each object depends on its specific `Shape`. This situation can be modeled via an ElementAspect class-hierarchy that captures all the `Shape`s to be supported by such a system as well as their respective properties.
 
 ![ElementAspect hierarchy example](../media/elementaspect-shapeaspect-hierarchy.png)
 
-In this case, the `ShapeAspect` base-class should be used as the *key-class* to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy at any given time.
+In this case, the `ShapeAspect` base-class should be used as the *key-class* to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy at any given time. Furthermore, if the `Shape` attribution modeled by this class-hierarchy is considered essential (or [`First-class`](./attribution-fundamentals.md#first-class-attributes)) to the Entity whose Element-class representation owns the `Element-Aspect`, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively) in order to advertise that it is not optional.
 
 ## ElementAspects and Relationships
 
@@ -61,5 +63,5 @@ ElementAspects are often used when the same set of properties needs to be stored
 However, if the data is more ad-hoc, then Element `JsonProperties` are probably more appropriate.
 
 ---
-| Next: [Mixins](./mixins.md)
+| Next: [Attribution: Guidelines](./attribution-guidelines.md)
 |:---
