@@ -14,6 +14,8 @@ import { ImplicitCurve2d } from "./implicitCurve2d";
 import { ImplicitLine2d as UnboundedLine2dByPointAndNormal } from "./implicitLine2d";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Vector3d } from "../geometry3d/Point3dVector3d";
+import { SmallSystem } from "../numerics/SmallSystem";
+import { Degree2PowerPolynomial } from "../numerics/Polynomials";
 
 export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
   /** The Cartesian coordinates of any center on the line. */
@@ -199,5 +201,78 @@ export class ConstrainedConstruction {
       }
     return result;
   }
+/*--------------------------------------------------------------------------------------
+Put origin at circle center.
+A,B are line points.
+M,N are line normals.
+(X).(X) = (a +- r)^2 = 0
+(X-A).M     = +-r
+(X-B).N     = +-r
+Need to consider 4 combinations of signs: (+++) (++-) (-++) (-+-) The other 4 are negations.
+Write the linear part as
+[M N]^ * X = [M.A N.B]^ + r Ei       where Ei is one of E0=[1 1]^   or  E1=[1 -1]^
+Mutliply by inverse of matrix
+   X = F + r G
+The quadratic part is
+(F + rG).(F + rG) = (a +- r)^2
+(F + rG).(F + rG) = a^2 +- 2ar + r^2
+F.F + 2r G.F + r^2 G.G = a^2 +- 2ar + r^2
+r^2 (1-G.G) + 2(+-a - G.F)r + a^2-F.F = 0.
+Solve with positive, negative branch.  Each generates 2 solutions to go back through Ei.
+----------------------------------------------------------------------------------------*/
+public static circlesTangentLLC(
+  lineA: UnboundedLine2dByPointAndNormal,
+  lineB: UnboundedLine2dByPointAndNormal,
+  circleC: UnboundedCircle2dByCenterAndRadius):
+      ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    // lines with unit vector and point coordinates from circle center.
+    const lineA1 = lineA.cloneNormalizedFromOrigin (circleC.center);
+    const lineB1 = lineB.cloneNormalizedFromOrigin(circleC.center);
 
+    if (lineA1 === undefined || lineB1 === undefined)
+        return undefined;
+    // perpendicular distance from each line to center of circle.
+    const dotMA = lineA1.normal.dotProduct (lineA1.point);
+    const dotMB = lineB1.normal.dotProduct (lineB1.point);
+
+    const a = circleC.radius;
+    const vectorF = Vector2d.create ();  // vector from circle center to intersection of the lines !
+    if (lineA1.normal.isParallelTo (lineB1.normal)
+      || !SmallSystem.linearSystem2d (
+        lineA1.normal.x, lineA1.normal.y,
+        lineB1.normal.x, lineB1.normal.y,
+        dotMA, dotMB, vectorF)){
+          // SPECIAL CASE:  PARALLEL LINES
+          return undefined;
+            }
+
+    const result = [];
+
+    for (const sign1 of [-1,1])
+      {
+        const vectorG = Vector2d.create ();
+        if (SmallSystem.linearSystem2d (
+            lineA1.normal.x, lineA1.normal.y,
+            lineB1.normal.x, lineB1.normal.y, 1.0, sign1, vectorG)){
+
+          for (const sign2 of [-1,1])
+              {
+              const coffA = 1.0 - vectorG.dotProduct(vectorG);
+              const coffB = 2.0 * (sign2 * a - vectorG.dotProduct(vectorF));
+              const coffC = a * a - vectorF.dotProduct(vectorF);
+              const roots = Degree2PowerPolynomial.solveQuadratic (coffA, coffB, coffC);
+              if (roots !== undefined){
+               for (const r of roots)
+                  {
+                  const center = circleC.center.plus2Scaled (vectorF, 1.0, vectorG, r);
+                  const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (center, r);
+                  const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+                  result.push (markup);
+                  }
+                }
+              }
+          }
+      }
+      return result;
+  }
 }
