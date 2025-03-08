@@ -12,6 +12,9 @@ import { headersIncludeAuthMethod } from "../../request/utils";
  * @module Tiles
  */
 
+
+const restServicesSubPath = "/rest/services/";
+
 /**
  * Class representing an ArcGIS error code.
  * @internal
@@ -162,9 +165,10 @@ export class ArcGisUtilities {
    */
   public static validateUrl(url: string, serviceType: string): MapLayerSourceStatus {
     const urlObj = new URL(url.toLowerCase());
-    if (urlObj.pathname.includes("/rest/services/")) {
+    const restServicesPos = urlObj.pathname.search(restServicesSubPath);
+    if (restServicesPos !== -1) {
       // This seem to be an ArcGIS URL, lets check the service type
-      if (urlObj.pathname.endsWith(`${serviceType.toLowerCase()}`)) {
+      if (urlObj.pathname.includes(serviceType.toLowerCase(), restServicesPos + restServicesSubPath.length)) {
         return MapLayerSourceStatus.Valid;
       } else {
         return MapLayerSourceStatus.IncompatibleFormat;
