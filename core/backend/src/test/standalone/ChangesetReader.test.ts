@@ -171,6 +171,7 @@ describe("Changeset Reader API", async () => {
   });
 
   function getClassIdByName(iModel: BriefcaseDb, className: string): Id64String {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModel.withPreparedStatement(`SELECT ECInstanceId from meta.ECClassDef where Name=?`, (stmt) => {
       stmt.bindString(1, className);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
