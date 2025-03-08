@@ -243,6 +243,7 @@ public static circlesTangentLLC(
         lineB1.normal.x, lineB1.normal.y,
         dotMA, dotMB, vectorF)){
           // SPECIAL CASE:  PARALLEL LINES
+
           return undefined;
             }
 
