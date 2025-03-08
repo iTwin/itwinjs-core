@@ -17,6 +17,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
+import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 
 /// cspell:ignore accum
 
@@ -104,7 +105,7 @@ describe("TxnManager", () => {
     let model = models.getModel<PhysicalModel>(modelId);
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
-    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
+    assert.isDefined(await imodel.schemaContext.getSchemaItem(new SchemaItemKey("TestPhysicalObject", new SchemaKey("TestBim", 1,0,0)), EntityClass), "TestPhysicalObject is present");
 
     const txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);

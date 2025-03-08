@@ -94,6 +94,7 @@ export class ClassRegistry {
   /** Generate a JavaScript class from Entity metadata.
    * @param entityMetaData The Entity metadata that defines the class
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private static generateClassForEntity(entityMetaData: EntityMetaData, iModel: IModelDb): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
     const domainName = name[0];
@@ -124,6 +125,7 @@ export class ClassRegistry {
         generatedClassHasNonGeneratedNonCoreAncestor = true;
         break;
       }
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const superclassMetaData = iModel.classMetaDataRegistry.find(currentSuperclass.classFullName);
       if (superclassMetaData === undefined)
         throw new IModelError(IModelStatus.BadSchema, `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`);
@@ -217,6 +219,7 @@ export class ClassRegistry {
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
   private static generateClass(classFullName: string, iModel: IModelDb): typeof Entity {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined || metadata.ecclass === undefined)
       throw this.makeMetaDataNotFoundError(classFullName);
@@ -273,22 +276,27 @@ export class ClassRegistry {
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
+ * @deprecated in 5.0. Use schemaContext on the imodel instead
  */
 export class MetaDataRegistry {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _registry = new Map<string, EntityMetaData>();
   private _classIdToName = new Map<Id64String, string>();
 
   /** Get the specified Entity metadata */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public find(classFullName: string): EntityMetaData | undefined {
     return this._registry.get(classFullName.toLowerCase());
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public findByClassId(classId: Id64String): EntityMetaData | undefined {
     const name = this._classIdToName.get(classId);
     return undefined !== name ? this.find(name) : undefined;
   }
 
   /** Add metadata to the cache */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public add(classFullName: string, metaData: EntityMetaData): void {
     const name = classFullName.toLowerCase();
     this._registry.set(name, metaData);
