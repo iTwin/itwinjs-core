@@ -13,10 +13,18 @@ import { Arc3d } from "../../curve/Arc3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../core-geometry";
 
-function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z: number = 0.0 ):Arc3d | undefined{
-return Arc3d.createCenterNormalRadius (Point3d.create (circle.center.x, circle.center.y, z),
+function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z: number = 0.0 ):Arc3d | LineString3d|undefined{
+  if (circle.radius !== 0.0)
+  return Arc3d.createCenterNormalRadius (Point3d.create (circle.center.x, circle.center.y, z),
     Vector3d.create (0,0,1), circle.radius);
+  const size = 0.1;
+  const x0 = circle.center.x - size;
+  const x1 = circle.center.x + size;
+  const y0 = circle.center.y - size;
+  const y1 = circle.center.y + size;
+  return LineString3d.create ([[x0,y0,z],[x1,y1,z],[x1,y0,z],[x0,y1,z]]);
 }
 function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
   a0: number,
@@ -129,17 +137,21 @@ function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
     const allGeometry: GeometryQuery[] = [];
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,3,2);
-    const axisX = ImplicitLine2d.createPointXYNormalXY (1,-0.5, 0,1);
+    const pointY4 = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,4,0);
+    const axisX = ImplicitLine2d.createPointXYNormalXY (1,0, 0,1);
+    const axisX4 = ImplicitLine2d.createPointXYNormalXY (2,4, 0,1);
     const axisY = ImplicitLine2d.createPointXYNormalXY (0,1,1,0);
     const line3 = ImplicitLine2d.createPointXYNormalXY (1,0,-1,4);
     const line4 = ImplicitLine2d.createPointXYNormalXY (-3,1,3,3);
 
     const allLinePairs = [
       [axisX, axisY],
+      [axisX, axisX4],
+      [axisX4, axisX],
       [axisY, line3],
       [line4, axisX]
     ];
-  const allCircles = [circleA, circleB];
+  const allCircles = [circleA, circleB, pointY4];
 
     let x0 = 0;
     let y0 = 0;

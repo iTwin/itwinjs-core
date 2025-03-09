@@ -242,10 +242,63 @@ public static circlesTangentLLC(
         lineA1.normal.x, lineA1.normal.y,
         lineB1.normal.x, lineB1.normal.y,
         dotMA, dotMB, vectorF)){
-          // SPECIAL CASE:  PARALLEL LINES
-
-          return undefined;
+        // SPECIAL CASE:  PARALLEL LINES
+        // Lines are parallel.
+        // Make a midline.  Half of line separation is the tangent circle radius.
+        const  midLinePoint =  lineA1.point.interpolate (0.5, lineB1.point);
+        const lineDirection = lineA1.normal.rotate90CCWXY();
+        const a1 = lineA1.functionValue (midLinePoint);
+        // vector from centerC to midline point midline point is vectorCP + s * lineDirectionA
+        const coffSine2 = lineDirection.dotProduct(lineDirection);
+        const coffSine  = 2.0 * lineDirection.dotProduct(midLinePoint);
+        const coffConstant  = Geometry.hypotenuseSquaredXY (midLinePoint.x, midLinePoint.y);
+        const targetRadius = [];
+        // special case zero radius.
+        if (!Geometry.isSmallMetricDistance (circleC.radius)){
+          targetRadius.push (circleC.radius + a1);
+          targetRadius.push (circleC.radius - a1);
+        } else {
+            // circle is just a point -- the quadratic solver only has to happen once.
+            targetRadius.push (circleC.radius + a1);
+            //  But if the center is ON one of the lines, construct by projecting to the other.
+            // REMARK: In C++ code this pointOnLine test was done with messy
+            // tolerance relative to the various line points' distance to origin.
+            // Here we trust metric distance condition . . .
+            let center;
+            if (Geometry.isSmallMetricDistance (dotMA))
+                {
+                // Tangency is on lineA.  Move towards line B...
+                center = circleC.center.plusScaled (lineA1.normal, dotMB > 0.0 ? -a1 : a1);
+                }
+            else if (Geometry.isSmallMetricDistance (dotMB))
+                {
+                // Tangency is on lineB.  Move towards line A
+                center = circleC.center.plusScaled (lineB1.normal, dotMA > 0.0 ? a1 : -a1);
+                }
+            if (center !== undefined)
+                {
+                const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (center, a1);
+                const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+                return [markup];
+                }
             }
+
+        const resultA = [];
+        for (const radius of targetRadius)
+            {
+            const roots = Degree2PowerPolynomial.solveQuadratic (coffSine2, coffSine, coffConstant - radius * radius);
+            if (roots){
+              for (const alpha of roots)
+                {
+                  const center = circleC.center.plus2Scaled (midLinePoint, 1.0, lineDirection, alpha);
+                  const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (center, a1);
+                  const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+                  resultA.push (markup);
+                }
+              }
+            }
+        return resultA;
+        }
 
     const result = [];
 

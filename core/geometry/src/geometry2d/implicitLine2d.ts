@@ -89,10 +89,17 @@ export class ImplicitLine2d extends ImplicitCurve2d {
        */
     // eslint-disable-next-line @itwin/prefer-get
     public override isDegenerate ():boolean{return this.normal.isAlmostZero;}
-
+/**
+ * @param xy space point for evaluation
+ * @returns dot prodcut of the line normal with the vector from the line's point to the space point.
+ */
     public override functionValue(xy: XAndY): number {
-        return this.normal.dotProductStartEnd (this.point, xy);
-    }
+        return this.normal.dotProductStartEnd (this.point, xy);}
+        /**
+         * @returns a vector along the line, i.e. rotated 90 degrees from the normal vector.
+         */
+    public vectorAlongLine () : Vector2d {return this.normal.rotate90CCWXY();}
+
     public override closestPoint(xy: XAndY, _biasPoint?: XAndY): Point2d {
         const fraction = Geometry.fractionOfProjectionToVectorXYXY (
             xy.x - this.point.x, xy.y-this.point.y, this.normal.x, this.normal.y);
