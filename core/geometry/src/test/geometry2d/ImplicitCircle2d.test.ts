@@ -179,5 +179,51 @@ function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("CircleTangentCCL", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,2);
+    const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,5,2);
+
+    const axisX = ImplicitLine2d.createPointXYNormalXY (1,0, 0,1);
+    const axisX4 = ImplicitLine2d.createPointXYNormalXY (2,4, 0,1);
+    const axisY = ImplicitLine2d.createPointXYNormalXY (0,1,1,0);
+    const line3 = ImplicitLine2d.createPointXYNormalXY (1,0,-1,4);
+    const line4 = ImplicitLine2d.createPointXYNormalXY (-3,1,3,3);
+
+    const allCirclePairs = [
+      [circleA, circleB]
+    ];
+    const allLines = [axisX, axisX4, axisY, line3, line4];
+
+
+    let x0 = 0;
+    let y0 = 0;
+    for (const inputCircles of allCirclePairs){
+      y0 = 0;
+      for (const line of allLines){
+        const circle0 = inputCircles[0];
+        const circle1 = inputCircles[1];
+        GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+          implicitCircle2dToArc3d (circle0), x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+            implicitCircle2dToArc3d (circle1), x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+          implicitLine2dToLineSegment3d (line, 0, -2, 6), x0, y0);
+        const circles = ConstrainedConstruction.circlesTangentCCL(circle0, circle1, line);
+        if (circles){
+          for(const c of circles){
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+              implicitCircle2dToArc3d (c.curve), x0, y0);
+          }
+        }
+        y0 += 200;
+      }
+      x0 += 200;
+    }
+    GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCL");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
 });
 

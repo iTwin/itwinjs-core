@@ -329,4 +329,90 @@ public static circlesTangentLLC(
       }
       return result;
   }
+public static circlesTangentCCL(
+  circleA: UnboundedCircle2dByCenterAndRadius,
+  circleB: UnboundedCircle2dByCenterAndRadius,
+  lineC: UnboundedLine2dByPointAndNormal,
+):ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+  /*--------------------------------------------------------------------------------------
+
+(x-x0)^2 + (y-y0)^2 - (r + r0)^2 = 0
+
+(x-x1)^2 + (y-y1)^2 - (r + r1)^2 = 0
+    y = r       NOTE: Cannot arbitrarily change sign of r as is done in 3-circle case.
+-------------------------------------------
+x^2 -2 x0 x + x0^2 -2 y0 y + y0^2 - 2 r0 y - r0^2 = 0
+x^2 -2 x1 x + x1^2 -2 y1 y + y1^2 - 2 r1 y - r1^2 = 0
+-------------------------------------------
+x^2 -2 x0 x + -2 (y0 + r0) y + a0= 0          a0 = x0^2 + y0^2 - r0^2
+x^2 -2 x1 x + -2 (y1 + r1) y + a1= 0          a1 = x1^2 + y1^2 - r1^2
+-------------------------------------------
+
+(A0) x^2 + b0 x + c0 y + a0= 0          b0 = -2x0    c0 = -2 (y0 + r0)
+
+(A1) x^2 + b1 x + c1 y + a1= 0          b1 = -2x1    c1 = -2 (y1 + r1)
+-------------------------------------------
+c1 x^2             c1 c0 y + c1 a0= 0
+c0 x^2 + c0 b1 x + c0 c1 y + c0 a1= 0
+---------------------------------------
+Subtract first from second.
+
+(c0 - c1) x^2 + (c0 b1 - c1 b0) x + (c0 a1 - c1 a0) = 0.
+Solve for two x values.  Substitute in with largest c0, c1.
+----------------------------------------------------------------------------------------*/
+  const lineUnitNormal = lineC.normal.normalize();
+  if (lineUnitNormal === undefined)
+    return undefined;
+  const lineUnitAlong = lineUnitNormal.rotate90CCWXY();
+  const circleGlobalOffets = [
+    Vector2d.createStartEnd (lineC.point, circleA.center),
+    Vector2d.createStartEnd (lineC.point, circleB.center)];
+  const circleLocalOffset = [];
+  for (const i of [0,1]){
+    circleLocalOffset.push(
+      Vector2d.create (
+        circleGlobalOffets[i].dotProduct (lineUnitAlong),
+        circleGlobalOffets[i].dotProduct (lineUnitNormal)
+      ));
+    }
+  const coffA = [0,0];
+  const coffB = [0,0];
+  const coffC = [0,0];
+  const circleRadius = [0,0];
+  const result = [];
+  for (const signA of [1,-1]){
+    circleRadius[0] = signA * circleA.radius;
+    for (const signB of [1,-1]){
+      circleRadius[1] = signB * circleB.radius;
+      for (const i of [0,1]){
+        const r = circleRadius[i];
+        coffA[i] = circleLocalOffset[i].magnitudeSquared() - r * r;
+        coffB[i] = -2.0 * circleLocalOffset[i].x;
+        coffC[i] = -2.0 * (circleLocalOffset[i].y + r);
+        }
+        const k = Math.abs (circleRadius[0]) > Math.abs (circleRadius[1])
+                    ? 0 : 1;
+        const qa = coffC[0] - coffC[1];
+        const qb = coffC[0] * coffB[1] - coffC[1] * coffB[0];
+        const qc = coffC[0] * coffA[1] - coffC[1] * coffA[0];
+
+        const xRoot = Degree2PowerPolynomial.solveQuadratic (qa, qb, qc);
+        if (xRoot !== undefined){
+          for (const x of xRoot){
+            const y = Geometry.conditionalDivideCoordinate (
+              x * x + coffB[k] * x + coffA[k],
+              -coffC[k]);
+              if (y !== undefined){
+                const r = Math.abs (y);
+                const center = lineC.point.plus2Scaled (lineUnitAlong, x, lineUnitNormal, y);
+                const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (center, r);
+                const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+                result.push (markup);
+              }
+            }
+          }
+        }
+    }
+    return result;
+  }
 }
