@@ -10,7 +10,7 @@ import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/c
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps,
+  IModelTileTreeId, IModelTileTreeProps, MapLayerSettings, ModelGeometryChanges, RenderSchedule, TileProps
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -18,9 +18,11 @@ import { GraphicalEditingScope } from "../../GraphicalEditingScope";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import {
-  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileRequestChannel, TileTree, TileTreeParams,
+  acquireImdlDecoder, DynamicIModelTile, ImageryMapTileTree, ImageryTileTreeState, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, ModelMapLayerTileTreeReference, Tile,
+  TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
+import { SceneContext } from "../../ViewContext";
+import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 
 export interface IModelTileTreeOptions {
   readonly allowInstancing: boolean;
@@ -331,6 +333,14 @@ class RootTile extends Tile {
   }
 }
 
+// TODO
+interface MapLayerTreeSetting {
+  tree: ImageryMapTileTree;
+  settings: MapLayerSettings;
+  baseImageryLayer: boolean;
+}
+// End TODO
+
 /** A TileTree whose contents are derived from geometry stored in a Model in an IModelDb.
  * @internal exported strictly for display-test-app until we remove CommonJS support.
  */
@@ -354,6 +364,15 @@ export class IModelTileTree extends TileTree {
    * used by draw().
    */
   private _numStaticTilesSelected = 0;
+
+  // TODO
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+  protected _layerSettings = new Map<Id64String, MapLayerSettings>();
+  protected _imageryTreeState = new Map<Id64String, ImageryTileTreeState>();
+  protected _modelIdToIndex = new Map<Id64String, number>();
+  /** @internal */
+  public layerClassifiers = new Map<number, RenderPlanarClassifier>();
+  // End TODO
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
@@ -450,4 +469,42 @@ export class IModelTileTree extends TileTree {
   public get containsTransformNodes(): boolean {
     return undefined !== this._transformNodeRanges;
   }
+
+  // TODO
+  /** Add a new imagery tile tree / map-layer settings pair and initialize the imagery tile tree state.
+   * @internal
+   */
+  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean) {
+    this.layerImageryTrees.push({ tree, settings, baseImageryLayer });
+    this._layerSettings.set(tree.modelId, settings);
+    if (!this._imageryTreeState.has(tree.modelId))
+      this._imageryTreeState.set(tree.modelId, new ImageryTileTreeState());
+    this._modelIdToIndex.set(tree.modelId, index);
+  }
+
+  /** @internal */
+  public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
+    const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
+    if (classifier)
+      this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
+  }
+
+  // // /** @internal */
+  // public clearLayers() {
+  //   this._rootTile.clearLayers();
+  // }
+
+  /** @internal */
+  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: IModelTile[]) {
+    const classifier = args.context.planarClassifiers.get(this.modelId);
+    if (classifier)
+      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+
+    this.layerClassifiers.forEach((layerClassifier: RenderPlanarClassifier) => {
+      // if (!(args instanceof GraphicsCollectorDrawArgs))
+      layerClassifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+
+    });
+  }
+  // End TODO
 }

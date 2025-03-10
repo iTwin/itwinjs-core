@@ -54,7 +54,13 @@ export abstract class LayerTileTreeReference extends TileTreeReference {
 
   public initializeLayers(context: SceneContext): boolean {
     let hasLoadedTileTree = false;
-    const tree = this.treeOwner.load() as LayerTileTree;
+
+    // TODO
+    const tree = this.treeOwner.load() as any;
+    // End TODO
+
+    tree.layerImageryTrees.length = 0;
+
     if (undefined === tree) {
       return hasLoadedTileTree;     // Not loaded yet.
     }

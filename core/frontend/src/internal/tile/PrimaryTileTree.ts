@@ -11,7 +11,7 @@ import {
   OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import {
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapImagerySettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings,
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
@@ -26,7 +26,7 @@ import { SpatialViewState } from "../../SpatialViewState";
 import { SceneContext } from "../../ViewContext";
 import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
 import {
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReference, MapLayerTileTreeReference, SpatialClassifierTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "../../tile/internal";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
@@ -129,7 +129,7 @@ export function disposeTileTreesForGeometricModels(modelIds: Set<Id64String>, iM
   }
 }
 
-class PrimaryTreeReference extends TileTreeReference {
+class PrimaryTreeReference extends LayerTileTreeReference {
   public readonly view: ViewState;
   public readonly model: GeometricModelState;
   /** Chiefly for debugging - disables iteration of this reference in SpatialModelRefs to e.g. omit the reference from the scene. */
@@ -140,9 +140,16 @@ class PrimaryTreeReference extends TileTreeReference {
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   protected readonly _animationTransformNodeId?: number;
+  private readonly _detachFromDisplayStyle: VoidFunction[] = [];
+  protected _classifier?: SpatialClassifierTileTreeReference;
 
   public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId: number | undefined, sectionClip?: StringifiedClipVector) {
-    super();
+    super(false, model.iModel, (layerTreeRef?: MapLayerTileTreeReference) => {
+                                  const mapLayerSettings = layerTreeRef?.layerSettings;
+                                  if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+                                    return ModelMapLayerDrapeTarget.RealityData === mapLayerSettings.drapeTarget;
+                                  return false;
+                                });
     this.view = view;
     this.model = model;
     this._animationTransformNodeId = transformNodeId;
@@ -267,6 +274,31 @@ class PrimaryTreeReference extends TileTreeReference {
       return baseTf;
 
     return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
+  }
+
+  public override initializeLayers(context: SceneContext): boolean {
+    // const removals = this._detachFromDisplayStyle;
+    // if (0 === removals.length) {
+    //   removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
+    //     this.setBaseLayerSettings(imagery.backgroundBase);
+    //     this.setLayerSettings(imagery.backgroundLayers);
+    //     this.clearLayers();
+    //   }));
+    // }
+
+    return super.initializeLayers(context);
+  }
+
+  public override addToScene(context: SceneContext): void {
+    const tree = this.treeOwner.load() as IModelTileTree;
+    if (undefined === tree || !this.initializeLayers(context))
+      return;     // Not loaded yet.
+
+    // NB: The classifier must be added first, so we can find it when adding our own tiles.
+    if (this._classifier && this._classifier.activeClassifier)
+      this._classifier.addToScene(context);
+
+    super.addToScene(context);
   }
 }
 
