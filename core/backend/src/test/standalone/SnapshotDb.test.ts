@@ -6,12 +6,12 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
-import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
+import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../HubMock";
-import { _hubAccess, _nativeDb } from "../../internal/Symbols";
+import { _hubAccess, _nativeDb, _openCheckpoint } from "../../internal/Symbols";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -170,10 +170,11 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
-    const snapshot = V1CheckpointManager.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
+    const snapshot = CheckpointManager[_openCheckpoint]("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.refreshContainerForRpc("");
     snapshot.close();
     expect(nowStub.called).to.be.false;
+    nowStub.restore();
   });
 });
