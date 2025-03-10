@@ -415,4 +415,63 @@ Solve for two x values.  Substitute in with largest c0, c1.
     }
     return result;
   }
+  private static circlesTangentCCCThisOrder(
+    circles: UnboundedCircle2dByCenterAndRadius [],
+  ):ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+  const result = [];
+  const r0 = circles[0].radius;
+  const vector01 = Vector2d.createStartEnd (circles[0].center, circles[1].center);
+  const vector02 = Vector2d.createStartEnd (circles[0].center, circles[2].center);
+  const dot12 = vector01.dotProduct (vector02);
+  const determinant = vector01.crossProduct (vector02);
+  const determinantTol = 1.0e-8;
+  const oneOverDeterminant = Geometry.conditionalDivideFraction (1.0, determinant);
+  // Messy tolerance test ported.  Why not just a parallel test on the vectors?
+  // Maybe having 1/determinant is worth it?
+  if (Math.abs (determinant) <= determinantTol * Math.abs (dot12) || oneOverDeterminant === undefined){
+    return undefined;
+    }
+    const inverseMatrix = Matrix3d.createRowValues(
+      vector02.y * oneOverDeterminant,  -vector01.y * oneOverDeterminant, 0.0,
+     -vector02.x * oneOverDeterminant,   vector01.x * oneOverDeterminant, 0.0,
+      0.0,          0.0,        1.0);
+
+  for (const r1 of [circles[1].radius, -circles[1].radius]){
+    for (const r2 of [circles[2].radius, -circles[2].radius]){
+      const vectorA = Vector3d.create (
+        -0.5 * (square(r1) - square(vector01.x) - square(vector01.y)- square(r0)),
+        -0.5 * (square(r2) - square(vector02.x) - square(vector02.y) - square(r0)),
+        0.0);
+
+      const vectorB = Vector3d.create ( -(r1-r0), -(r2-r0), 0.0);
+      const vectorA1 = inverseMatrix.multiplyVector (vectorA);
+      const vectorB1 = inverseMatrix.multiplyVector (vectorB);
+
+      const qa = vectorB1.magnitudeSquared() - 1.0;
+      const qb = 2 * (vectorA1.dotProduct(vectorB1) - r0);
+      const qc = vectorA1.magnitudeSquared () - square(r0);
+      const roots = Degree2PowerPolynomial.solveQuadratic (qa, qb, qc);
+      if (roots !== undefined){
+        // TODO: filter equal or negated root cases.
+        for (const newRadius of roots){
+          const newCenter = circles[0].center.plus2Scaled (vectorA1, 1.0, vectorB1, newRadius);
+          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (newCenter, newRadius);
+          const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+          result.push (markup);
+          }
+      }
+    }
+  }
+  return result;
+  }
+  public static circlesTangentCCC(
+    circleA: UnboundedCircle2dByCenterAndRadius,
+    circleB: UnboundedCircle2dByCenterAndRadius,
+    circleC: UnboundedCircle2dByCenterAndRadius
+  ):ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    const circlesInOrder = [circleA, circleB, circleC];
+    return this.circlesTangentCCCThisOrder (circlesInOrder);
+    }
+
 }
+function square(x:number): number { return x * x;}

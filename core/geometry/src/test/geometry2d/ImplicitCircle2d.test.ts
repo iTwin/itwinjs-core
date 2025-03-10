@@ -225,5 +225,46 @@ function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
     expect(ck.getNumErrors()).toBe(0);
   });
 
-});
+  it("CircleTangentCCC", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,1);
+    const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (5,0,2);
+    const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,5,3);
+
+    const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius (1,5,1);
+    const circleE = UnboundedCircle2dByCenterAndRadius.createXYRadius (-4,2,2);
+    const circleF = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,-2,3);
+
+    const allCircleTriples = [
+      [circleA, circleB, circleC],
+      [circleD, circleE, circleF]
+    ];
+
+
+    let x0 = 0;
+    let y0 = 0;
+    for (const inputCircles of allCircleTriples){
+      y0 = 0;
+      const circle0 = inputCircles[0];
+      const circle1 = inputCircles[1];
+      const circle2 = inputCircles[2];
+      for (const circle of inputCircles){
+        GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+          implicitCircle2dToArc3d (circle), x0, y0);
+        }
+      const circles = ConstrainedConstruction.circlesTangentCCC(circle0, circle1, circle2);
+      if (circles){
+        for(const c of circles){
+          GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+            implicitCircle2dToArc3d (c.curve), x0, y0);
+        }
+      }
+      x0 += 200;
+    }
+    GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCC");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+}
+);
 
