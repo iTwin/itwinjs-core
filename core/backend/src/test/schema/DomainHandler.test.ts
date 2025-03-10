@@ -264,7 +264,7 @@ const spies = {
   },
 };
 
-describe.only("Domain Handlers - Old", () => {
+describe("Domain Handlers - Old", () => {
 
   let iModelDb: StandaloneDb;
 
@@ -539,7 +539,7 @@ describe.only("Domain Handlers - Old", () => {
 });
 
 
-describe.only("Domain Handlers - New", () => {
+describe("Domain Handlers - New", () => {
 
   let iModelDb: StandaloneDb;
 
