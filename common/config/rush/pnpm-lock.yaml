@@ -153,8 +153,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       source-map-loader:
         specifier: ^5.0.0
         version: 5.0.0(webpack@5.97.1)
@@ -319,8 +319,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -437,8 +437,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -506,8 +506,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -752,8 +752,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       supertest:
         specifier: ^7.0.0
         version: 7.0.0
@@ -1929,8 +1929,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       source-map-loader:
         specifier: ^5.0.0
         version: 5.0.0(webpack@5.97.1)
@@ -1989,11 +1989,11 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.6
@@ -2083,11 +2083,11 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.6
@@ -2243,8 +2243,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -2370,11 +2370,11 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -2789,11 +2789,11 @@ importers:
         specifier: ^1.6.3
         version: 1.6.3
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.6
@@ -3179,11 +3179,11 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.6
@@ -3287,11 +3287,11 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.6
@@ -3420,11 +3420,11 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
       source-map-support:
         specifier: ^0.5.6
         version: 0.5.6
@@ -4332,11 +4332,11 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1
       sinon:
-        specifier: ^18.0.1
-        version: 18.0.1
+        specifier: ^17.0.2
+        version: 17.0.2
       sinon-chai:
         specifier: ^3.7.0
-        version: 3.7.0(chai@4.3.10)(sinon@18.0.1)
+        version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
       source-map-loader:
         specifier: ^5.0.0
         version: 5.0.0(webpack@5.97.1)
@@ -5553,9 +5553,6 @@ packages:
 
   '@sinonjs/fake-timers@11.2.2':
     resolution: {integrity: sha512-G2piCSxQ7oWOxwGSAyFHfPIsyeJGXYtc6mFbnFA+kRXkiEnTl8c/8jul2S329iFBnDI9HGoeWWAZvuvOkZccgw==}
-
-  '@sinonjs/fake-timers@13.0.5':
-    resolution: {integrity: sha512-36/hTbH2uaWuGVERyC6da9YwGWnzUZXuPro/F2LfsdOsLnCojz/iSH8MxUt/FD2S5XBSVPhmArFUXcpCQ2Hkiw==}
 
   '@sinonjs/samsam@8.0.2':
     resolution: {integrity: sha512-v46t/fwnhejRSFTGqbpn9u+LQ9xJDse10gNnPgAcxgdoCDMXj/G2asWAC/8Qs+BAZDicX+MNZouXT1A7c83kVw==}
@@ -8668,8 +8665,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nise@6.1.1:
-    resolution: {integrity: sha512-aMSAzLVY7LyeM60gvBS423nBmIPP+Wy7St7hsb+8/fc1HmeoHJfLO8CKse4u3BtOZvQLJghYPI2i/1WZrEj5/g==}
+  nise@5.1.9:
+    resolution: {integrity: sha512-qOnoujW4SV6e40dYxJOb3uvuoPHtmLzIk4TFo+j0jPJoC+5Z9xja5qH5JZobEPsa8+YYphMrOSwnrshEhG2qww==}
 
   nock@12.0.3:
     resolution: {integrity: sha512-QNb/j8kbFnKCiyqi9C5DD0jH/FubFGj5rt9NQFONXwQm3IPB0CULECg/eS3AU1KgZb/6SwUa4/DTRKhVxkGABw==}
@@ -8972,10 +8969,6 @@ packages:
 
   path-to-regexp@6.3.0:
     resolution: {integrity: sha512-Yhpw4T9C6hPpgPeA28us07OJeqZ5EzQTkbfwuhsUg0c237RomFoETJgmp2sa3F/41gfLE6G5cqcYwznmeEeOlQ==}
-
-  path-to-regexp@8.2.0:
-    resolution: {integrity: sha512-TdrF7fW9Rphjq4RjrW0Kp2AW0Ahwu9sRGTkS6bvDi0SCwZlEZYmcfDbEsTz8RVk0EHIS/Vd1bv3JhG+1xZuAyQ==}
-    engines: {node: '>=16'}
 
   path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
@@ -9580,8 +9573,9 @@ packages:
       chai: ^4.0.0
       sinon: '>=4.0.0'
 
-  sinon@18.0.1:
-    resolution: {integrity: sha512-a2N2TDY1uGviajJ6r4D1CyRAkzE9NNVlYOV1wX5xQDuAk0ONgzgRl0EjCQuRCPxOwp13ghsMwt9Gdldujs39qw==}
+  sinon@17.0.2:
+    resolution: {integrity: sha512-uihLiaB9FhzesElPDFZA7hDcNABzsVHwr3YfmM9sBllVwab3l0ltGlRV1XhpNfIacNDLGD1QRZNLs5nU5+hTuA==}
+    deprecated: There
 
   sirv@3.0.1:
     resolution: {integrity: sha512-FoqMu0NCGBLCcAkS1qA+XJIQTR6/JHfQXl+uGteNCQ76T91DMUjPa9xfmeqMY3z80nLSg9yQmNjK0Px6RWsH/A==}
@@ -11799,10 +11793,6 @@ snapshots:
       type-detect: 4.0.8
 
   '@sinonjs/fake-timers@11.2.2':
-    dependencies:
-      '@sinonjs/commons': 3.0.1
-
-  '@sinonjs/fake-timers@13.0.5':
     dependencies:
       '@sinonjs/commons': 3.0.1
 
@@ -15503,13 +15493,13 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nise@6.1.1:
+  nise@5.1.9:
     dependencies:
       '@sinonjs/commons': 3.0.1
-      '@sinonjs/fake-timers': 13.0.5
+      '@sinonjs/fake-timers': 11.2.2
       '@sinonjs/text-encoding': 0.7.3
       just-extend: 6.2.0
-      path-to-regexp: 8.2.0
+      path-to-regexp: 6.3.0
 
   nock@12.0.3:
     dependencies:
@@ -15845,8 +15835,6 @@ snapshots:
   path-to-regexp@0.1.12: {}
 
   path-to-regexp@6.3.0: {}
-
-  path-to-regexp@8.2.0: {}
 
   path-type@4.0.0: {}
 
@@ -16484,18 +16472,18 @@ snapshots:
     dependencies:
       is-arrayish: 0.3.2
 
-  sinon-chai@3.7.0(chai@4.3.10)(sinon@18.0.1):
+  sinon-chai@3.7.0(chai@4.3.10)(sinon@17.0.2):
     dependencies:
       chai: 4.3.10
-      sinon: 18.0.1
+      sinon: 17.0.2
 
-  sinon@18.0.1:
+  sinon@17.0.2:
     dependencies:
       '@sinonjs/commons': 3.0.1
       '@sinonjs/fake-timers': 11.2.2
       '@sinonjs/samsam': 8.0.2
       diff: 5.2.0
-      nise: 6.1.1
+      nise: 5.1.9
       supports-color: 7.2.0
 
   sirv@3.0.1:
