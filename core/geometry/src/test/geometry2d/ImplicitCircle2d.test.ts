@@ -7,8 +7,8 @@
 import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
-import { ImplicitLine2d } from "../../geometry2d/implicitLine2d";
-import { ConstrainedConstruction, UnboundedCircle2dByCenterAndRadius } from "../../geometry2d/implicitCircle2d";
+import { UnboundedLine2d } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
+import { ConstrainedConstruction, UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
 import { Arc3d } from "../../curve/Arc3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -26,7 +26,7 @@ function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z:
   const y1 = circle.center.y + size;
   return LineString3d.create ([[x0,y0,z],[x1,y1,z],[x1,y0,z],[x0,y1,z]]);
 }
-function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
+function implicitLine2dToLineSegment3d (line: UnboundedLine2d, z: number = 0.0,
   a0: number,
   a1: number
 ):LineSegment3d | undefined{
@@ -41,16 +41,16 @@ function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
   it("CircleTangentLLL", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
-    const lineXAxis = ImplicitLine2d.createPointXYNormalXY(0, 0, 0, 1);
-    const lineYAxis = ImplicitLine2d.createPointXYNormalXY(0, 0, 1, 0);
+    const lineXAxis = UnboundedLine2d.createPointXYNormalXY(0, 0, 0, 1);
+    const lineYAxis = UnboundedLine2d.createPointXYNormalXY(0, 0, 1, 0);
     const a = 1;
     const b = 0.8;
     const lineA0 = -4.0;
     const lineA1 = 4.0;
-    const lineDiagonal11 = ImplicitLine2d.createPointXYNormalXY(1, 1, a, a);
-    const lineY1 = ImplicitLine2d.createPointXYNormalXY(0, 1, 0, 1);
-    const lineQ11 = ImplicitLine2d.createPointXYNormalXY(1, 1, a, b);
-    const lineR = ImplicitLine2d.createPointXYNormalXY(5, 4, a, -b);
+    const lineDiagonal11 = UnboundedLine2d.createPointXYNormalXY(1, 1, a, a);
+    const lineY1 = UnboundedLine2d.createPointXYNormalXY(0, 1, 0, 1);
+    const lineQ11 = UnboundedLine2d.createPointXYNormalXY(1, 1, a, b);
+    const lineR = UnboundedLine2d.createPointXYNormalXY(5, 4, a, -b);
     let x0 = 0;
     for (const lines of [
       [lineXAxis,lineYAxis,lineY1],
@@ -138,11 +138,11 @@ function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,3,2);
     const pointY4 = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,4,0);
-    const axisX = ImplicitLine2d.createPointXYNormalXY (1,0, 0,1);
-    const axisX4 = ImplicitLine2d.createPointXYNormalXY (2,4, 0,1);
-    const axisY = ImplicitLine2d.createPointXYNormalXY (0,1,1,0);
-    const line3 = ImplicitLine2d.createPointXYNormalXY (1,0,-1,4);
-    const line4 = ImplicitLine2d.createPointXYNormalXY (-3,1,3,3);
+    const axisX = UnboundedLine2d.createPointXYNormalXY (1,0, 0,1);
+    const axisX4 = UnboundedLine2d.createPointXYNormalXY (2,4, 0,1);
+    const axisY = UnboundedLine2d.createPointXYNormalXY (0,1,1,0);
+    const line3 = UnboundedLine2d.createPointXYNormalXY (1,0,-1,4);
+    const line4 = UnboundedLine2d.createPointXYNormalXY (-3,1,3,3);
 
     const allLinePairs = [
       [axisX, axisY],
@@ -185,11 +185,11 @@ function implicitLine2dToLineSegment3d (line: ImplicitLine2d, z: number = 0.0,
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,5,2);
 
-    const axisX = ImplicitLine2d.createPointXYNormalXY (1,0, 0,1);
-    const axisX4 = ImplicitLine2d.createPointXYNormalXY (2,4, 0,1);
-    const axisY = ImplicitLine2d.createPointXYNormalXY (0,1,1,0);
-    const line3 = ImplicitLine2d.createPointXYNormalXY (1,0,-1,4);
-    const line4 = ImplicitLine2d.createPointXYNormalXY (-3,1,3,3);
+    const axisX = UnboundedLine2d.createPointXYNormalXY (1,0, 0,1);
+    const axisX4 = UnboundedLine2d.createPointXYNormalXY (2,4, 0,1);
+    const axisY = UnboundedLine2d.createPointXYNormalXY (0,1,1,0);
+    const line3 = UnboundedLine2d.createPointXYNormalXY (1,0,-1,4);
+    const line4 = UnboundedLine2d.createPointXYNormalXY (-3,1,3,3);
 
     const allCirclePairs = [
       [circleA, circleB]

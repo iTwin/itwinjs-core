@@ -7,15 +7,15 @@
  */
 
 
-import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { XAndY } from "../geometry3d/XYZProps";
+import { Geometry } from "../../../Geometry";
+import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
+import { XAndY } from "../../../geometry3d/XYZProps";
 import { ImplicitCurve2d } from "./implicitCurve2d";
-import { ImplicitLine2d as UnboundedLine2dByPointAndNormal } from "./implicitLine2d";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Vector3d } from "../geometry3d/Point3dVector3d";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { Degree2PowerPolynomial } from "../numerics/Polynomials";
+import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
+import { Matrix3d } from "../../../geometry3d/Matrix3d";
+import { Vector3d } from "../../../geometry3d/Point3dVector3d";
+import { SmallSystem } from "../../../numerics/SmallSystem";
+import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
 
 export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
   /** The Cartesian coordinates of any center on the line. */

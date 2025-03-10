@@ -7,8 +7,8 @@
  */
 
 
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { XAndY } from "../geometry3d/XYZProps";
+import { Point2d } from "../../../geometry3d/Point2dVector2d";
+import { XAndY } from "../../../geometry3d/XYZProps";
 
 export abstract class ImplicitCurve2d {
    public abstract functionValue (xy: XAndY):number;

@@ -8,13 +8,13 @@
 
 
 
-import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Geometry } from "../../../Geometry";
+import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { ImplicitCurve2d } from "./implicitCurve2d";
-import { XAndY } from "../geometry3d/XYZProps";
+import { XAndY } from "../../../geometry3d/XYZProps";
 
 
-export class ImplicitLine2d extends ImplicitCurve2d {
+export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
   /** The Cartesian coordinates of any point on the line. */
   public point: Point2d;
   /** The vector perpendicular to the line */
@@ -34,8 +34,8 @@ export class ImplicitLine2d extends ImplicitCurve2d {
    * @param normalY
    * @returns
    */
-  public static createPointXYNormalXY (pointX: number, pointY: number, normalX: number, normalY: number): ImplicitLine2d{
-    return new ImplicitLine2d (Point2d.create (pointX, pointY), Vector2d.create (normalX, normalY));
+  public static createPointXYNormalXY (pointX: number, pointY: number, normalX: number, normalY: number): UnboundedLine2dByPointAndNormal{
+    return new UnboundedLine2dByPointAndNormal (Point2d.create (pointX, pointY), Vector2d.create (normalX, normalY));
   }
   /**
    * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
@@ -45,8 +45,8 @@ export class ImplicitLine2d extends ImplicitCurve2d {
    * @param normalY
    * @returns
    */
-  public static createPointNormal (point: Point2d, normal: Vector2d): ImplicitLine2d{
-    return new ImplicitLine2d (point.clone(),normal.clone ());
+  public static createPointNormal (point: Point2d, normal: Vector2d): UnboundedLine2dByPointAndNormal{
+    return new UnboundedLine2dByPointAndNormal (point.clone(),normal.clone ());
   }
     /**
    * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
@@ -57,8 +57,8 @@ export class ImplicitLine2d extends ImplicitCurve2d {
    * @param normalY
    * @returns
    */
-    public static createPointXYDirectionXY (pointX: number, pointY: number, directionX: number, directionY: number): ImplicitLine2d{
-        return new ImplicitLine2d (Point2d.create (pointX, pointY), Vector2d.create (directionY, -directionX));
+    public static createPointXYDirectionXY (pointX: number, pointY: number, directionX: number, directionY: number): UnboundedLine2dByPointAndNormal{
+        return new UnboundedLine2dByPointAndNormal (Point2d.create (pointX, pointY), Vector2d.create (directionY, -directionX));
       }
     /**
    * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
@@ -69,7 +69,7 @@ export class ImplicitLine2d extends ImplicitCurve2d {
    * @param directionY
    * @returns
    */
-    public static createPointXYPointXY (pointAX: number, pointAY: number, pointBX: number, pointBY: number): ImplicitLine2d{
+    public static createPointXYPointXY (pointAX: number, pointAY: number, pointBX: number, pointBY: number): UnboundedLine2dByPointAndNormal{
         return this.createPointXYDirectionXY (pointAX, pointAY, pointBX-pointAX, pointBY-pointAY);
       }
     /**
@@ -81,7 +81,7 @@ export class ImplicitLine2d extends ImplicitCurve2d {
    * @param directionY
    * @returns
    */
-    public static createPointPoint (pointA: XAndY, pointB: XAndY): ImplicitLine2d{
+    public static createPointPoint (pointA: XAndY, pointB: XAndY): UnboundedLine2dByPointAndNormal{
       return this.createPointXYDirectionXY (pointA.x, pointA.y, pointB.x-pointA.x, pointB.y-pointA.y);
     }
     /**
@@ -116,11 +116,11 @@ export class ImplicitLine2d extends ImplicitCurve2d {
  * @return undefined if perpendicular vector has zero length.
  * @param newOrigin origin coordinates to subtract from existing origin.
 */
-public cloneNormalizedFromOrigin (newOrigin: Point2d): ImplicitLine2d | undefined{
+public cloneNormalizedFromOrigin (newOrigin: Point2d): UnboundedLine2dByPointAndNormal | undefined{
 const unitNormal = this.normal.normalize ();
 if (unitNormal === undefined)
     return undefined;
-return new ImplicitLine2d (
+return new UnboundedLine2dByPointAndNormal (
     Point2d.create (this.point.x - newOrigin.x, this.point.y - newOrigin.y),
     Vector2d.create (unitNormal.x, unitNormal.y));
 }
