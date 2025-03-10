@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as moq from "typemoq";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { ElementProps, EntityMetaData, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
+import { ElementProps, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
@@ -158,19 +158,6 @@ describe("SelectionScopesHelper", () => {
       imodelMock.reset();
       imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
       imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
-      imodelMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        .setup((x) => x.getMetaData(moq.It.isAnyString()))
-        .returns(
-          (className: string) =>
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            new EntityMetaData({
-              classId: "0x123",
-              baseClasses: [],
-              properties: {},
-              ecclass: className,
-            }),
-        );
     });
 
     it("throws on invalid scopeId", async () => {
