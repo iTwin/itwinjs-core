@@ -28,11 +28,11 @@ import { SolidPrimitive } from "./SolidPrimitive";
  * * The curved surface of the cone `C` with axis `vectorZ = centerB - centerA` is parameterized over (u,v) in [0,1]x[0,1] by
  * `C(u,v) = centerA + vFractionToRadius(v) * (cos(u * 2pi) * vectorX + sin(u * 2pi) * vectorY) + v * vectorZ`.
  * * Either radius may be zero, but they may not both be zero.
+ * * Cross section size is determined by the lengths of `vectorX`, `vectorY`, and the radii.
  * * If `vectorX` and `vectorY` are orthonormal, the cross sections are circular, with sections at v = 0 and v = 1 having radius
  * `radiusA` and `radiusB`, respectively; otherwise, the cross sections are elliptical.
- * * Typically,
- *
- * the stored matrix has unit vectors in the xy columns, and full-length z column.
+ * * The stored matrix encapsulates `vectorX`, `vectorY`, and `vectorZ` in the respective columns. Typically the first two columns
+ * are unit length, and the last is full length.
  * @public
  */
 export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
