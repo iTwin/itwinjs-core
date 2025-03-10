@@ -6025,7 +6025,7 @@ export interface ModelLoadProps {
     id?: Id64String;
 }
 
-// @public
+// @beta
 export enum ModelMapLayerDrapeTarget {
     BackgroundMap = 0,
     RealityData = 1
@@ -6035,6 +6035,7 @@ export enum ModelMapLayerDrapeTarget {
 export interface ModelMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     accessKey?: never;
+    // @beta
     drapeTarget?: ModelMapLayerDrapeTarget;
     // @internal (undocumented)
     formatId?: never;
@@ -6055,7 +6056,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
     protected cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps;
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
-    // (undocumented)
+    // @beta
     readonly drapeTarget: ModelMapLayerDrapeTarget;
     static fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings;
     // (undocumented)
