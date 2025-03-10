@@ -11,13 +11,14 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-  - [Display](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
+  - [Display](#display)
+    - [Read image to canvas](#read-image-to-canvas)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
+  - [Quantity](#quantity)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -54,7 +55,7 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
-    - [Attach/detach db](#attachdetach-db)
+  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -137,6 +138,14 @@ Can also be attached as a map-layer:
 ## Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
+
+## Quantity
+
+Following APIs have been added to support persistence:
+
+- [PresentationFormatSet]($quantity) defines an interface to support loading/saving formats.
+
+Learn more at the [Quantity](../learning/quantity/index.md#persistence) learnings article for examples and use cases.
 
 ## API deprecations
 
