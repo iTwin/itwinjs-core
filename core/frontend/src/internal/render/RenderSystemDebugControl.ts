@@ -32,6 +32,7 @@ export interface GLTimerResult {
 
 export type GLTimerResultCallback = (result: GLTimerResult) => void;
 
+/** @internal exported strictly for display-test-app until we remove CommonJS support. */
 export class DebugShaderFile {
   public constructor(
     public readonly filename: string,

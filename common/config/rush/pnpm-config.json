@@ -10,7 +10,8 @@
     ]
   },
   "globalOverrides": {
-    "rollup-plugin-copy>globby": "^11.0.0" // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
+    "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
+    "elliptic": "^6.6.1" // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures

@@ -53,17 +53,17 @@ describe("PresentationManager", () => {
               getSchemaSync() {
                 throw new Error(`getSchemaSync not implemented`);
               },
-              async getSchemaInfo(key: Readonly<SchemaKey>, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<SchemaInfo | undefined> {
+              async getSchemaInfo(key: SchemaKey, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<SchemaInfo | undefined> {
                 const schemaInfo = await Schema.startLoadingFromJson(schemaIModel.getSchemaProps(key.name), schemaContext);
                 if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(key, matchType)) {
                   return schemaInfo;
                 }
                 return undefined;
               },
-              async getSchema<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<T | undefined> {
+              async getSchema(key: SchemaKey, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<Schema | undefined> {
                 await this.getSchemaInfo(key, matchType, schemaContext);
                 const schema = await schemaContext.getCachedSchema(key, matchType);
-                return schema as T;
+                return schema;
               },
             });
             return schemas;
@@ -148,7 +148,7 @@ describe("PresentationManager", () => {
         });
 
         async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
-          using manager = new PresentationManager({ defaultFormats, defaultLocale: "en-PSEUDO", ...config });
+          using manager = new PresentationManager({ defaultFormats, ...config });
           const descriptor = await manager.getContentDescriptor({
             imodel,
             rulesetOrId: ruleset,

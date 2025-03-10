@@ -12,6 +12,11 @@ Object {
       "displayValues": Object {
         "Uzbekistan": "Massachusetts technologies",
       },
+      "label": Object {
+        "displayValue": "Handmade",
+        "rawValue": "Cotton",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Handmade",
         "rawValue": "Cotton",
@@ -83,6 +88,11 @@ Object {
       },
       "displayValues": Object {
         "Investor": "protocol Credit Card Account",
+      },
+      "label": Object {
+        "displayValue": "Security",
+        "rawValue": "syndicate",
+        "typeName": "string",
       },
       "labelDefinition": Object {
         "displayValue": "Security",
@@ -156,6 +166,11 @@ Object {
       "displayValues": Object {
         "Virginia": "Expressway Avon Valley",
       },
+      "label": Object {
+        "displayValue": "Electronics",
+        "rawValue": "composite",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Electronics",
         "rawValue": "composite",
@@ -228,6 +243,11 @@ Object {
       "displayValues": Object {
         "6th generation": "Intelligent Fresh Cheese copying Pass",
       },
+      "label": Object {
+        "displayValue": "alarm",
+        "rawValue": "Mobility",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "alarm",
         "rawValue": "Mobility",
@@ -286,6 +306,11 @@ Object {
         "name": "optimizing",
       },
       "displayValues": Object {},
+      "label": Object {
+        "displayValue": "Electronics",
+        "rawValue": "Intelligent Plastic Keyboard",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Electronics",
         "rawValue": "Intelligent Plastic Keyboard",
@@ -367,6 +392,11 @@ Object {
       "displayValues": Object {
         "HTTP": "1.23",
       },
+      "label": Object {
+        "displayValue": "payment",
+        "rawValue": "mesh",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "payment",
         "rawValue": "mesh",
@@ -447,6 +477,11 @@ Object {
       },
       "displayValues": Object {
         "Legacy": "Not specified",
+      },
+      "label": Object {
+        "displayValue": "Not specified",
+        "rawValue": "Not specified",
+        "typeName": "string",
       },
       "labelDefinition": Object {
         "displayValue": "Not specified",
@@ -753,6 +788,11 @@ Array [
     "displayValues": Object {
       "test field": "test display value",
     },
+    "label": Object {
+      "displayValue": "Argentine Peso",
+      "rawValue": "Functionality",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "Argentine Peso",
       "rawValue": "Functionality",
@@ -782,6 +822,11 @@ Array [
     },
     "displayValues": Object {
       "test field": "test display value",
+    },
+    "label": Object {
+      "displayValue": "Director",
+      "rawValue": "Refined",
+      "typeName": "string",
     },
     "labelDefinition": Object {
       "displayValue": "Director",
@@ -813,6 +858,11 @@ Array [
     "displayValues": Object {
       "test field": "test display value",
     },
+    "label": Object {
+      "displayValue": "Nebraska",
+      "rawValue": "primary",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "Nebraska",
       "rawValue": "primary",
@@ -841,6 +891,11 @@ Array [
       "name": "Seamless",
     },
     "displayValues": Object {},
+    "label": Object {
+      "displayValue": "neural",
+      "rawValue": "grey",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "neural",
       "rawValue": "grey",
@@ -871,6 +926,11 @@ Array [
     "displayValues": Object {
       "test field": "1.23",
     },
+    "label": Object {
+      "displayValue": "port",
+      "rawValue": "interactive",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "port",
       "rawValue": "interactive",
@@ -900,6 +960,11 @@ Array [
     },
     "displayValues": Object {
       "test field": "Not specified",
+    },
+    "label": Object {
+      "displayValue": "Not specified",
+      "rawValue": "Not specified",
+      "typeName": "string",
     },
     "labelDefinition": Object {
       "displayValue": "Not specified",

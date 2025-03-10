@@ -25,6 +25,8 @@ public;function;compareBooleansOrUndefined
 public;function;compareNumbers
 public;function;compareNumbersOrUndefined
 public;function;comparePossiblyUndefined
+beta;function;compareSimpleArrays
+beta;function;compareSimpleTypes
 public;function;compareStrings
 public;function;compareStringsOrUndefined
 public;function;compareWithTolerance
@@ -125,6 +127,7 @@ internal;enum;RepositoryStatus
 public;type;RequireAtLeastOne
 beta;enum;RpcInterfaceStatus
 public;function;shallowClone
+beta;type;SimpleTypesArray
 public;class;SortedArray
 public;enum;SpanKind
 deprecated;enum;SpanKind

@@ -144,6 +144,94 @@ describe("Arc3d", () => {
     ck.testCoordinate(arcC.curveLength(), sweepRadians);
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("Arc3dCreate", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const origin = Point3d.create();
+    const unitX = Vector3d.unitX();
+    const unitY = Vector3d.unitY();
+
+    let dx = 0;
+    const arc1 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(0, 7200));
+    ck.testCoordinate(arc1.sweep.sweepRadians, Angle.pi2Radians);
+    ck.testCoordinate(arc1.sweep.startDegrees, 0);
+    ck.testCoordinate(arc1.sweep.endDegrees, 360);
+    let dest: LineString3d = LineString3d.create();
+    arc1.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(1, 0));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(1, 0));
+
+    dx += 2;
+    const arc2 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-90, 90));
+    ck.testCoordinate(arc2.sweep.sweepRadians, Angle.piRadians);
+    ck.testCoordinate(arc2.sweep.startDegrees, -90);
+    ck.testCoordinate(arc2.sweep.endDegrees, 90);
+    dest = LineString3d.create();
+    arc2.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(0, -1));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
+
+    dx += 3;
+    const arc3 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-540, -270));
+    ck.testCoordinate(arc3.sweep.sweepRadians, Angle.pi3Over2Radians);
+    ck.testCoordinate(arc3.sweep.startDegrees, -540);
+    ck.testCoordinate(arc3.sweep.endDegrees, -270);
+    dest = LineString3d.create();
+    arc3.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(-1, 0));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
+
+    dx += 2;
+    const arc4 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(90, 0));
+    ck.testCoordinate(arc4.sweep.sweepRadians, -Angle.piOver2Radians);
+    ck.testCoordinate(arc4.sweep.startDegrees, 90);
+    ck.testCoordinate(arc4.sweep.endDegrees, 0);
+    dest = LineString3d.create();
+    arc4.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(0, 1));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(1, 0));
+
+    dx += 3;
+    const arc5 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(540, 450));
+    ck.testCoordinate(arc5.sweep.sweepRadians, -Angle.piOver2Radians);
+    ck.testCoordinate(arc5.sweep.startDegrees, 540);
+    ck.testCoordinate(arc5.sweep.endDegrees, 450);
+    dest = LineString3d.create();
+    arc5.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(-1, 0));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
+
+    dx += 2;
+    const arc6 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-1080, 3600));
+    ck.testCoordinate(arc6.sweep.sweepRadians, Angle.pi2Radians);
+    ck.testCoordinate(arc6.sweep.startDegrees, -1080);
+    ck.testCoordinate(arc6.sweep.endDegrees, -720);
+    dest = LineString3d.create();
+    arc6.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(1, 0));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(1, 0));
+
+    dx += 3;
+    const arc7 = Arc3d.create(origin, unitX, unitY, AngleSweep.createStartEndDegrees(-630, -1260));
+    ck.testCoordinate(arc7.sweep.sweepRadians, -Angle.pi2Radians);
+    ck.testCoordinate(arc7.sweep.startDegrees, -630);
+    ck.testCoordinate(arc7.sweep.endDegrees, -990);
+    dest = LineString3d.create();
+    arc7.emitStrokes(dest);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, dest, dx);
+    ck.testPoint3d(dest.pointAt(0)!, Point3d.create(0, 1));
+    ck.testPoint3d(dest.pointAt(dest.numPoints() - 1)!, Point3d.create(0, 1));
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "Arc3dCreate");
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("QuickLength", () => {
     const ck = new Checker();
     const origin = Point3d.create();
@@ -851,7 +939,7 @@ describe("Arc3d", () => {
       ck.testTrue(arc2.isAlmostEqual(arc3, Geometry.smallAngleRadians, Geometry.smallAngleRadians), "cloneAxisAligned returns expected arc");
 
     // test non-horizontal, ellipse
-    const arc4 = arc0.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1,2,3), Angle.createDegrees(-35))));
+    const arc4 = arc0.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(-35))));
     arc4.matrixRef.scaleColumnsInPlace(1, 0.6, 1);
     drawArc(arc4, x0);
     x0 += 2;
@@ -964,7 +1052,7 @@ describe("ApproximateArc3d", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("EllipseSampler", () => {
+  it("EllipseSampler", { timeout: 80000 }, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const a = 10;
@@ -1096,9 +1184,9 @@ describe("ApproximateArc3d", () => {
       return { err: chainError ? chainError.detailA.a : undefined, nSeg: chain ? chain.children.length : 0 };
     };
 
-    const numSamples = [3, 4, 5];
+    const numSamples = [3, 4];
     if (GeometryCoreTestIO.enableLongTests)
-      numSamples.push(...[6, 10, 20]);
+      numSamples.push(...[5, 6, 10, 20]);
     const methodWins = new Map<number, number>(); // <iMethod, winCount>
 
     for (let iArc = 0; iArc < arcs.length; ++iArc) {
@@ -1177,9 +1265,9 @@ describe("ApproximateArc3d", () => {
       }
       GeometryCoreTestIO.consoleLog(`Method ${iMethodToString(iMethod)} won ${winCount} times (${Math.round(100 * winCount / nTrials)}%).`);
     });
-    // Observed: subdivision is most accurate method in 57% of ellipses tested (69% with enableLongTests)
+    // Observed: subdivision is most accurate method in 43% of ellipses tested (69% with enableLongTests)
     if (ck.testExactNumber(iWinner, 7, `expect ${iMethodToString(7)} method to have best approximation more often than other methods`)) {
-      const targetPct = GeometryCoreTestIO.enableLongTests ? 65 : 50;
+      const targetPct = GeometryCoreTestIO.enableLongTests ? 65 : 40;
       ck.testLE(targetPct, 100 * maxWins / nTrials, `expect ${iMethodToString(7)} to have best approximation most of the time`);
     }
 

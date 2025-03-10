@@ -32,6 +32,7 @@ export class ArrayPropertiesField extends PropertiesField {
     static fromCompressedJSON(json: ArrayPropertiesFieldJSON<Id64String>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }, categories: CategoryDescription[]): ArrayPropertiesField;
+    // @deprecated
     static fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField;
     // (undocumented)
     isArrayPropertiesField(): this is ArrayPropertiesField;
@@ -40,6 +41,7 @@ export class ArrayPropertiesField extends PropertiesField {
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): ArrayPropertiesFieldJSON<string>;
+    // @deprecated
     toJSON(): ArrayPropertiesFieldJSON;
 }
 
@@ -272,7 +274,7 @@ export interface CompressedClassInfoJSON {
 // @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
-// @public
+// @public @deprecated
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
     // (undocumented)
     elementIds: Id64String[];
@@ -280,7 +282,7 @@ export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<
     scope: SelectionScopeProps;
 }
 
-// @public
+// @public @deprecated
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
 // @public
@@ -437,6 +439,12 @@ export enum ContentSpecificationTypes {
 
 // @public
 export type ContentUpdateInfo = typeof UPDATE_FULL;
+
+// @internal (undocumented)
+export function createCancellableTimeoutPromise(timeoutMs: number): {
+    promise: Promise<void>;
+    cancel: () => void;
+};
 
 // @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean): FieldHierarchy[];
@@ -833,7 +841,7 @@ export interface ElementPropertiesStructPropertyItem extends ElementPropertiesPr
     type: "struct";
 }
 
-// @public
+// @public @deprecated
 export interface ElementSelectionScopeProps {
     ancestorLevel?: number;
     id: "element";
@@ -877,6 +885,7 @@ export class Field {
     static fromCompressedJSON(json: FieldJSON<string> | undefined, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }, categories: CategoryDescription[]): Field | undefined;
+    // @deprecated
     static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
     // (undocumented)
     protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories: CategoryDescription[]): CategoryDescription;
@@ -895,6 +904,7 @@ export class Field {
     toCompressedJSON(_classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): FieldJSON<string>;
+    // @deprecated
     toJSON(): FieldJSON;
     type: TypeDescription;
 }
@@ -1280,9 +1290,6 @@ export interface IntsRulesetVariable extends RulesetVariableBase {
     value: number[];
 }
 
-// @internal (undocumented)
-export function isComputeSelectionRequestOptions<TIModel>(options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>): options is ComputeSelectionRequestOptions<TIModel>;
-
 // @internal
 export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent = any>(options: SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel, TParsedContent>): options is SingleElementPropertiesRequestOptions<TIModel>;
 
@@ -1321,6 +1328,8 @@ export interface ItemJSON {
     // (undocumented)
     inputKeys?: InstanceKey[];
     // (undocumented)
+    label?: LabelDefinition;
+    // @deprecated (undocumented)
     labelDefinition: LabelDefinition;
     // (undocumented)
     mergedFieldNames: string[];
@@ -1564,6 +1573,7 @@ export class NestedContentField extends Field {
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): NestedContentFieldJSON<string>;
+    // @deprecated
     toJSON(): NestedContentFieldJSON;
 }
 
@@ -1586,6 +1596,9 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfo> extends Base
 // @public
 export interface NestedContentValue {
     displayValues: ValuesDictionary<DisplayValue>;
+    // (undocumented)
+    label?: LabelDefinition;
+    // @deprecated
     labelDefinition?: LabelDefinition;
     mergedFieldNames: string[];
     primaryKeys: InstanceKey[];
@@ -1820,6 +1833,7 @@ export interface PresentationRpcResponseData<TResult = undefined> {
 
 // @public
 export enum PresentationStatus {
+    // @deprecated
     BackendTimeout = 65543,
     Canceled = 1,
     Error = 65536,
@@ -1873,6 +1887,7 @@ export class PropertiesField extends Field {
     static fromCompressedJSON(json: PropertiesFieldJSON<Id64String>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }, categories: CategoryDescription[]): PropertiesField | undefined;
+    // @deprecated
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
     getFieldDescriptor(): FieldDescriptor;
     isArrayPropertiesField(): this is ArrayPropertiesField;
@@ -1882,6 +1897,7 @@ export class PropertiesField extends Field {
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): PropertiesFieldJSON<string>;
+    // @deprecated
     toJSON(): PropertiesFieldJSON;
 }
 
@@ -2538,23 +2554,23 @@ export interface SelectionInfo {
     providerName: string;
 }
 
-// @public
+// @public @deprecated
 export interface SelectionScope {
     description?: string;
     id: string;
     label: string;
 }
 
-// @public
+// @public @deprecated
 export type SelectionScopeProps = ElementSelectionScopeProps | {
     id: string;
 };
 
-// @public
+// @public @deprecated
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
-// @public
+// @public @deprecated
 export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
 // @internal (undocumented)
@@ -2703,6 +2719,7 @@ export class StructPropertiesField extends PropertiesField {
     static fromCompressedJSON(json: StructPropertiesFieldJSON<Id64String>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }, categories: CategoryDescription[]): StructPropertiesField;
+    // @deprecated
     static fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField;
     // (undocumented)
     isStructPropertiesField(): this is StructPropertiesField;
@@ -2711,6 +2728,7 @@ export class StructPropertiesField extends PropertiesField {
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): StructPropertiesFieldJSON<string>;
+    // @deprecated
     toJSON(): StructPropertiesFieldJSON;
 }
 

@@ -128,19 +128,23 @@ class MergingSchemaContext extends SchemaContext {
     this._nameMappings = nameMapping;
   }
 
-  public override async getCachedSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined> {
-    return this._internalContext.getCachedSchema<T>(schemaKey, matchType);
+  public override async getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined> {
+    return this._internalContext.getCachedSchema(schemaKey, matchType);
   }
 
-  public override async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<T | undefined> {
-    return this._internalContext.getSchema<T>(schemaKey, matchType);
+  public override async getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined> {
+    return this._internalContext.getSchema(schemaKey, matchType);
   }
 
-  public override async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
+  public override async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
     const mappedKey = this._nameMappings.resolveItemKey(schemaItemKey);
     if(mappedKey !== undefined) {
       schemaItemKey = mappedKey as SchemaItemKey;
     }
-    return this._internalContext.getSchemaItem<T>(schemaItemKey);
+
+    if(itemConstructor === undefined)
+      return this._internalContext.getSchemaItem(schemaItemKey);
+
+    return this._internalContext.getSchemaItem(schemaItemKey, itemConstructor);
   }
 }

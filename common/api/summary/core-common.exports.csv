@@ -31,9 +31,9 @@ internal;class;B3dmHeader
 internal;type;BackendBuffer
 deprecated;type;BackendBuffer
 public;class;BackendError
-internal;type;BackendReadable
+public;type;BackendReadable
 deprecated;type;BackendReadable
-internal;type;BackendWritable
+public;type;BackendWritable
 deprecated;type;BackendWritable
 public;enum;BackgroundFill
 public;interface;BackgroundMapProps
@@ -57,6 +57,7 @@ beta;class;BentleyCloudRpcConfiguration
 beta;class;BentleyCloudRpcManager
 beta;interface;BentleyCloudRpcParams
 internal;class;BentleyCloudRpcProtocol
+public;interface;BinaryImageSource
 public;enum;BisCodeSpec
 internal;function;bisectTileRange2d
 internal;function;bisectTileRange3d
@@ -100,7 +101,7 @@ public;interface;ChangedEntities
 internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
-internal;interface;ChangesetFileProps
+public;interface;ChangesetFileProps
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex
 public;type;ChangesetIndex
@@ -289,6 +290,7 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
+beta;interface;FontFace
 public;interface;FontFamilyDescriptor
 beta;interface;FontFamilySelector
 public;type;FontId
@@ -462,6 +464,7 @@ internal;interface;IpcWebSocketMessage
 internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
+public;function;isBinaryImageSource
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
@@ -491,6 +494,8 @@ public;interface;MapImageryProps
 public;class;MapImagerySettings
 public;interface;MapLayerKey
 public;type;MapLayerProps
+beta;type;MapLayerProviderArrayProperty
+beta;interface;MapLayerProviderProperties
 public;class;MapLayerSettings
 public;interface;MapSubLayerProps
 public;class;MapSubLayerSettings
@@ -499,7 +504,9 @@ internal;interface;MarshalingBinaryMarker
 internal;namespace;MarshalingBinaryMarker
 public;enum;MassPropertiesOperation
 public;interface;MassPropertiesPerCandidateRequestProps
+deprecated;interface;MassPropertiesPerCandidateRequestProps
 public;interface;MassPropertiesPerCandidateResponseProps
+deprecated;interface;MassPropertiesPerCandidateResponseProps
 public;interface;MassPropertiesRequestProps
 public;interface;MassPropertiesResponseProps
 public;interface;MaterialProps
@@ -914,6 +921,7 @@ public;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 public;class;VerticalCRS

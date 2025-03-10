@@ -420,7 +420,7 @@ ORDER BY
 ```sql
 SELECT
   e.ECInstanceId AS ElementId,
-  c.ECInstanceId AS ClassId,
+  ec_classname (c.ECInstanceId) AS ClassName,
   c.Name,
   e.NullProp
 FROM
@@ -433,19 +433,19 @@ ORDER BY
 | className                 | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   | originPropertyName |
 | ------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ | ------------------ |
 |                           | ElementId    | true      | 0     | elementId | ElementId | Id           | long     | Id     | ECInstanceId       |
-|                           | ClassId      | true      | 1     | classId   | ClassId   | Id           | long     | Id     | ECInstanceId       |
+|                           | ClassName    | true      | 1     | className | ClassName | undefined    | string   | String | undefined          |
 | ECDbMeta:ECClassDef       | Name         | false     | 2     | name      | Name      | undefined    | string   | String | Name               |
 | AllProperties:TestElement | NullProp     | false     | 3     | nullProp  | NullProp  | undefined    | string   | String | NullProp           |
 
-| ElementId | ClassId | Name        | NullProp  |
-| --------- | ------- | ----------- | --------- |
-| 0x15      | 0x153   | TestElement | NotNull   |
-| 0x17      | 0x153   | TestElement | NotNull   |
-| 0x19      | 0x153   | TestElement | NotNull   |
-| 0x1b      | 0x153   | TestElement | NotNull   |
-| 0x1d      | 0x153   | TestElement | NotNull   |
-| 0x14      | 0x153   | TestElement | undefined |
-| 0x16      | 0x153   | TestElement | undefined |
-| 0x18      | 0x153   | TestElement | undefined |
-| 0x1a      | 0x153   | TestElement | undefined |
-| 0x1c      | 0x153   | TestElement | undefined |
+| ElementId | ClassName                 | Name        | NullProp  |
+| --------- | ------------------------- | ----------- | --------- |
+| 0x15      | AllProperties:TestElement | TestElement | NotNull   |
+| 0x17      | AllProperties:TestElement | TestElement | NotNull   |
+| 0x19      | AllProperties:TestElement | TestElement | NotNull   |
+| 0x1b      | AllProperties:TestElement | TestElement | NotNull   |
+| 0x1d      | AllProperties:TestElement | TestElement | NotNull   |
+| 0x14      | AllProperties:TestElement | TestElement | undefined |
+| 0x16      | AllProperties:TestElement | TestElement | undefined |
+| 0x18      | AllProperties:TestElement | TestElement | undefined |
+| 0x1a      | AllProperties:TestElement | TestElement | undefined |
+| 0x1c      | AllProperties:TestElement | TestElement | undefined |
