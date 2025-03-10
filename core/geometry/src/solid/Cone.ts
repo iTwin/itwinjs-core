@@ -13,7 +13,7 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
+import { AxisOrder, Geometry } from "../Geometry";
 import { GeometryHandler, UVSurface, UVSurfaceIsoParametricDistance } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -124,6 +124,22 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const localToWorld = Transform.createOriginAndMatrixColumns(centerA, vectorX, vectorY, vectorZ);
     return new Cone(localToWorld, radiusA, radiusB, capped ?? false);
   }
+
+  /**
+   * Create a circular cone from the typical parameters of the DGN file.
+   * * This method calls [[createBaseAndTarget]] with normalized vectors, `vectorY` squared against `vectorX`, and
+   * `radiusA` and `radiusB` scaled by the original length of `vectorX`.
+   * * These restrictions allow the cone to be represented by an element in the DGN file.
+   */
+  public static createDgnCone(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined {
+    const rigidMatrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, AxisOrder.XYZ);
+    if (rigidMatrix) {
+      const vectorXMag = vectorX.magnitude();
+      return this.createBaseAndTarget(centerA, centerB, rigidMatrix.columnX(), rigidMatrix.columnY(), radiusA * vectorXMag, radiusB * vectorXMag, capped);
+    }
+    return undefined;
+  }
+
   /** (Property accessor) Return the center point at the base plane */
   public getCenterA(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
   /** (Property accessor) */

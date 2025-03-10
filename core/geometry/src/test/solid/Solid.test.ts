@@ -12,6 +12,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -457,6 +458,36 @@ describe("Solids", () => {
     ck.testFalse(contourA.isAlmostEqual(contourB));
     ck.testFalse(contourA.isAlmostEqual(path));
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "SweepContour");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("DgnSolids", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const center = Point3d.createZero();
+    const sectionAxis = Vector3d.create(1, 0, 1);
+    const zAxis = Vector3d.create(0, 0, 2);
+    const sphereDgn = Sphere.createDgnSphere(center, sectionAxis, zAxis, 1 / sectionAxis.magnitude(), 1 / zAxis.magnitude());
+    if (ck.testDefined(sphereDgn, "sphere is valid"))
+      ck.testTrue(sphereDgn.cloneLocalToWorld().isIdentity, "createDgnSphere squared the frame and scaled the axes");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphereDgn);
+
+    const centerB = center.plusScaled(zAxis, 2.0);
+    const yAxis = Vector3d.create(1, 1, 0);
+    const radiusA = 0.1;
+    const radiusB = 0.4;
+    const coneDgn = Cone.createDgnCone(center, centerB, sectionAxis, yAxis, radiusA, radiusB, true);
+    if (ck.testDefined(coneDgn, "cone is valid")) {
+      ck.testTrue(coneDgn.getVectorX().isPerpendicularTo(coneDgn.getVectorY()), "createDgnCone squared the frame");
+      ck.testFraction(coneDgn.getVectorX().magnitude(), 1.0, "createDgnCone normalized xAxis");
+      ck.testFraction(coneDgn.getVectorY().magnitude(), 1.0, "createDgnCone normalized yAxis");
+      ck.testCoordinate(coneDgn.getRadiusA(), radiusA * sectionAxis.magnitude(), "createDgnCone scaled radiusA");
+      ck.testCoordinate(coneDgn.getRadiusB(), radiusB * sectionAxis.magnitude(), "createDgnCone scaled radiusA");
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, coneDgn);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "DgnSolids");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

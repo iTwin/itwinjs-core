@@ -13,7 +13,7 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
+import { AxisOrder, Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -96,15 +96,17 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return new Sphere(localToWorld.clone(), latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
   }
 
-  /** Create a sphere from the typical parameters of the Dgn file */
-  public static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number,
-    latitudeSweep?: AngleSweep,
-    capped?: boolean): Sphere | undefined {
-    const vectorY = vectorX.rotate90Around(vectorZ);
-    if (vectorY && !vectorX.isParallelTo(vectorZ)) {
-      const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
-      matrix.scaleColumns(radiusXY, radiusXY, radiusZ, matrix);
-      const frame = Transform.createOriginAndMatrix(center, matrix);
+  /**
+   * Create a sphere from the typical parameters of the DGN file.
+   * * This method normalizes the input vectors, squares `vectorX` against `vectorZ`, and scales the radii by the vectors' original lengths.
+   * * These restrictions allow the sphere to be represented by an element in the DGN file.
+   */
+  public static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined {
+    const rigidMatrix = Matrix3d.createRigidFromColumns(vectorZ, vectorX, AxisOrder.ZXY);
+    if (rigidMatrix) {
+      radiusXY *= vectorX.magnitude();
+      rigidMatrix.scaleColumns(radiusXY, radiusXY, radiusZ * vectorZ.magnitude(), rigidMatrix);
+      const frame = Transform.createOriginAndMatrix(center, rigidMatrix);
       return new Sphere(frame, latitudeSweep ? latitudeSweep.clone() : AngleSweep.createFullLatitude(), capped ?? false);
     }
     return undefined;
