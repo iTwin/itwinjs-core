@@ -71,6 +71,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
     assert.isTrue(testECDb.isOpen);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -88,6 +89,7 @@ describe("ECDb", () => {
     testECDb.saveChanges();
 
     const runDbListPragmaUsingStatement = (ecdb: ECDb) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
         const result: { alias: string, filename: string, profile: string }[] = [];
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -107,6 +109,7 @@ describe("ECDb", () => {
     using testECDb0 = ECDbTestHelper.createECDb(outDir, "file2.ecdb");
     // following call will not fail but unknow ECDb profile will cause it to be attach as SQLite.
     testECDb0.attachDb(ecdbPath1, "source");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
     expect(runDbListPragmaUsingStatement(testECDb0)).deep.equals([
       {
@@ -131,6 +134,7 @@ describe("ECDb", () => {
         profile: "ECDb"
       },
     ]);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
 
     using testECDb1 = ECDbTestHelper.createECDb(outDir, "file4.ecdb");
@@ -181,6 +185,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
     assert.isTrue(testECDb.isOpen);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -191,6 +196,7 @@ describe("ECDb", () => {
     testECDb.saveChanges();
 
     const runDbListPragma = (ecdb: ECDb) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
         const result: { alias: string, filename: string, profile: string }[] = [];
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -201,6 +207,7 @@ describe("ECDb", () => {
     }
     using testECDb0 = ECDbTestHelper.createECDb(outDir, "file2.ecdb");
     testECDb0.attachDb(ecdbPath1, "source");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
@@ -230,6 +237,7 @@ describe("ECDb", () => {
         profile: "ECDb"
       },
     ]);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
 
     using testECDb1 = ECDbTestHelper.createECDb(outDir, "file3.ecdb");
