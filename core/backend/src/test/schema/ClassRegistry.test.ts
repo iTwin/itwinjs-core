@@ -782,7 +782,7 @@ describe("Global state of ClassRegistry", () => {
     imodel2?.close();
   });
 
-  it.only("registering a class in different imodels should not affect each other", async () => {
+  it("registering a class in different imodels should not affect each other", async () => {
     await imodel1.importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
