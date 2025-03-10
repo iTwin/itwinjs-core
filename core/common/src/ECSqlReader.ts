@@ -7,7 +7,7 @@
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
@@ -387,8 +387,8 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       const rs = await this._executor.execute(req);
       const generatedMeta: QueryPropertyMetaData[] = this.populateDeprecatedMetadataProps(rs.meta);
       this.stats.totalTime += (Date.now() - startTime);
-      const resp: DbQueryResponse = {...rs, meta: generatedMeta};
-      return resp;
+      const response: DbQueryResponse = {...rs, meta: generatedMeta};
+      return response;
     };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);
@@ -527,6 +527,33 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
         value: this.current,
       };
     }
+  }
+
+  /**
+   * Utility function that constructs a DbQueryResponse structure that mimics
+   * what would normally be returned from a database query.
+   *
+   * @param rows - rows of data that will be returned
+   * @param status - status of the database response
+   * @param meta - metadata that will be returned along with the rows
+   * @returns A database query response object with the provided rows and metadata
+   */
+  public static createDbResponseFromRows(rows: any[], status: DbResponseStatus, meta: MetadataWithOptionalLegacyFields[]): MinimalDbQueryResponse {
+    return {
+      rowCount: rows.length,
+      data: rows,
+      stats: {
+        cpuTime: 0,
+        totalTime: 0,
+        memLimit: 0,
+        timeLimit: 0,
+        memUsed: 0,
+        prepareTime: 0,
+      },
+      status,
+      kind: DbResponseKind.ECSql,
+      meta,
+    };
   }
 }
 
