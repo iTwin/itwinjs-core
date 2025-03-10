@@ -197,7 +197,7 @@ export namespace IModelJson {
      * A rotation specified by yaw, pitch, roll angles.
      * * Cases where only one of these angles is nonzero are intuitive.
      * * Cases where more than one is nonzero have difficult interactions and order issues.
-     * * See `YawPitchRollAngles` class for further information.
+     * * See [[YawPitchRollAngles]] for further information.
      * @public
      */
     yawPitchRollAngles?: YawPitchRollProps;
@@ -242,8 +242,9 @@ export namespace IModelJson {
   /**
    * Interface for a [[Cone]], defined by two centers and radii.
    * * A Cone typically has circular sections perpendicular to the axis line between centers.
-   * * The cross section xy-plane is specified by an [[AxesProps]].
-   * * Elliptical cross sections can be specified with `xyzVectors`. This AxesProps admits skew vectors
+   * * The cross section xy-plane is specified by an [[AxesProps]]:
+   *   * Typically this is an `xyVectors`.
+   *   * Elliptical cross sections can be specified with `xyzVectors`, which admits skew vectors
    * and/or vectors of different lengths. Elliptical cross sections are scaled by radius.
    * @public
    */
@@ -440,8 +441,9 @@ export namespace IModelJson {
 
   /**
    * Interface for a [[Sphere]].
-   * * Local coordinate frame is supplied by an [[AxesProps]].
-   * * An ellipsoid with skew axes can be specified with `xyzVectors`, in which case any radii specified scale these axes;
+   * * Local coordinate frame is supplied by an [[AxesProps]]:
+   *   * Typically this is a `zxVectors`.
+   *   * Skew axes can be specified with `xyzVectors`, in which case any specified radii scale these axes;
    * all other AxesProps specify a right-handed orthonormal triad.
    * @public
    */

@@ -39,13 +39,13 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   /** String name for schema properties */
   public readonly solidPrimitiveType = "cone";
 
-  /** Local to world transform. Axes may have nonzero length and may be non-perpendicular. */
+  /** Local to world transform. Axes may have any nonzero length and may be non-perpendicular. */
   private _localToWorld: Transform;
-  /** Nominal cross sectional radius at z=0. Skewed axes may make the cross section elliptical. */
+  /** Nominal cross sectional radius at z=0 (scales the cone's xy-axes). */
   private _radiusA: number;
-  /** Nominal cross sectional radius at z=1. Skewed axes may make the cross section elliptical. */
+  /** Nominal cross sectional radius at z=1 (scales the cone's xy-axes). */
   private _radiusB: number;
-  /** Maximum radius of a cross section. */
+  /** Maximum of _radiusA and _radiusB. */
   private _maxRadius: number;
 
   /** Constructor, inputs CONSUMED. */
@@ -136,7 +136,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   public getRadiusA(): number { return this._radiusA; }
   /** (Property accessor) return the radius at the top plane */
   public getRadiusB(): number { return this._radiusB; }
-  /** (Property accessor) return the larger of the base and top plane radii */
+  /** (Property accessor) return the larger of radiusA and radiusB */
   public getMaxRadius(): number { return this._maxRadius; }
   /** (Property accessor) return the radius at fraction `v` along the axis */
   public vFractionToRadius(v: number): number { return Geometry.interpolate(this._radiusA, v, this._radiusB); }

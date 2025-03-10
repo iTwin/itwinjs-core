@@ -24,13 +24,10 @@ import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
 
-// TODO: explain better. A sphere has arbitrary transform, but matrix axes are forced orthonormal and x=y when deserialized to DGN (cf. createDgnSphere).
 /**
- * A Sphere is
- *
- * * A unit sphere (but read on ....)
- * * mapped by an arbitrary (possibly skewed, non-uniform scaled) transform
- * * hence possibly the final geometry is ellipsoidal
+ * A sphere mapped by an arbitrary transform.
+ * * Typically, the stored matrix has orthogonal columns. In this case, if two columns have equal length, the
+ * resulting geometry is ellipsoidal; if all three columns have equal length, the resulting geometry is a sphere.
  * @public
  */
 export class Sphere extends SolidPrimitive implements UVSurface {
@@ -80,7 +77,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return result.tryTransformInPlace(transform) ? result : undefined;
   }
   /**
-   * Construct a rigid coordinate frame from the local coordinates frame.
+   * Construct a rigid coordinate frame from the local coordinate frame.
    * * The returned frame is right-handed, with perpendicular unit axes.
    * * Compare to [[cloneLocalToWorld]].
    */
