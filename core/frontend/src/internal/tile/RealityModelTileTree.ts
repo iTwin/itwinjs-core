@@ -11,7 +11,9 @@ import {
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  BackgroundMapSettings,
+  BaseLayerSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, MapImagerySettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -27,7 +29,7 @@ import { SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  getGcsConverterAvailable, LayerTileTree, LayerTileTreeReference, MapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
@@ -522,8 +524,10 @@ class RealityModelTileLoader extends RealityTileLoader {
 
 export type RealityModelSource = ViewState | DisplayStyleState;
 
-export class RealityModelTileTree extends RealityTileTree {
+/** @internal */
+export class RealityModelTileTree extends LayerTileTree {
   private readonly _isContentUnbounded: boolean;
+
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
@@ -543,6 +547,9 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
+    mapSettings?: BackgroundMapSettings;
+    backgroundBase?: BaseLayerSettings;
+    backgroundLayers?: MapLayerSettings[];
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {
@@ -551,16 +558,16 @@ export namespace RealityModelTileTree {
     produceGeometry?: boolean;
   }
 
-  export abstract class Reference extends TileTreeReference {
+  export abstract class Reference extends LayerTileTreeReference {
     protected readonly _name: string;
     protected _transform?: Transform;
-    protected _iModel: IModelConnection;
     private _isGlobal?: boolean;
     protected readonly _source: RealityModelSource;
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
+    private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
     public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -580,7 +587,14 @@ export namespace RealityModelTileTree {
     }
 
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
-      super();
+      super(false, props.iModel,
+        (layerTreeRef?: MapLayerTileTreeReference) => {
+          const mapLayerSettings = layerTreeRef?.layerSettings;
+          if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+            return ModelMapLayerDrapeTarget.RealityData === mapLayerSettings.drapeTarget;
+          return false;
+        },
+        props.backgroundBase, props.backgroundLayers);
       this._name = undefined !== props.name ? props.name : "";
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
@@ -591,7 +605,6 @@ export namespace RealityModelTileTree {
         this._transform = transform;
       }
 
-      this._iModel = props.iModel;
       this._source = props.source;
       this._getDisplaySettings = () => props.getDisplaySettings();
 
@@ -619,7 +632,24 @@ export namespace RealityModelTileTree {
       return this._isGlobal === undefined ? false : this._isGlobal;
     }
 
+    public override initializeLayers(context: SceneContext): boolean {
+      const removals = this._detachFromDisplayStyle;
+      if (0 === removals.length) {
+        removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
+          this.setBaseLayerSettings(imagery.backgroundBase);
+          this.setLayerSettings(imagery.backgroundLayers);
+          this.clearLayers();
+        }));
+      }
+
+      return super.initializeLayers(context);
+    }
+
     public override addToScene(context: SceneContext): void {
+      const tree = this.treeOwner.load() as RealityModelTileTree;
+      if (undefined === tree || !this.initializeLayers(context))
+        return;     // Not loaded yet.
+
       // NB: The classifier must be added first, so we can find it when adding our own tiles.
       if (this._classifier && this._classifier.activeClassifier)
         this._classifier.addToScene(context);

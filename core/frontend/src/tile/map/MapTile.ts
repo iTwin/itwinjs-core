@@ -91,7 +91,7 @@ class EllipsoidProjection extends MapTileProjection {
 }
 
 /** @alpha */
-class PlanarProjection extends MapTileProjection {
+export class PlanarProjection extends MapTileProjection {
   private _bilinearPatch: BilinearPatch;
   public transformFromLocal: Transform;
   public localRange: Range3d;
@@ -497,15 +497,6 @@ export class MapTile extends RealityTile {
   /** @internal */
   public override isContentCulled(args: TileDrawArgs): boolean {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this.getRangeCorners(scratchCorners));
-  }
-
-  /** @internal */
-  public clearLayers() {
-    this.clearImageryTiles();
-    this._graphic = undefined;
-    if (this.children)
-      for (const child of this.children)
-        (child as MapTile).clearLayers();
   }
 
   private clearImageryTiles() {

@@ -13,7 +13,7 @@ import {
 import {
   OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
 } from "@itwin/core-common";
-import { GltfMeshData } from "../tile/internal";
+import { GltfMeshData, RealityTile } from "../tile/internal";
 import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
 
 function precondition(condition: boolean, message: string | (() => string)): asserts condition {
@@ -46,6 +46,8 @@ export interface RealityMeshParams {
   featureID?: number; // default 0
   /** @alpha unused by terrain meshes */
   texture?: RenderTexture;
+  /** @internal */
+  tile?: RealityTile;
 }
 
 /** @public */
