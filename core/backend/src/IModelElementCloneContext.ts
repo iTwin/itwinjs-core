@@ -151,6 +151,7 @@ export class IModelElementCloneContext {
   public cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps {
     const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id, cloneOptions);
     // Ensure that all NavigationProperties in targetElementProps have a defined value so "clearing" changes will be part of the JSON used for update
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     sourceElement.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
       if ((meta.isNavigation) && (undefined === (sourceElement as any)[propertyName])) {
         (targetElementProps as any)[propertyName] = RelatedElement.none;

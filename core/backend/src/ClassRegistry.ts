@@ -18,12 +18,65 @@ import { _nativeDb } from "./internal/Symbols";
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
 /** Maintains the mapping between the name of a BIS [ECClass]($ecschema-metadata) (in "schema:class" format) and the JavaScript [[Entity]] class that implements it.
+ * @public
+ */
+export class EntityJsClassMap {
+  private readonly _classMap = new Map<string, typeof Entity>();
+
+  /** @internal */
+  public has(classFullName: string): boolean {
+    return this._classMap.has(classFullName.toLowerCase());
+  }
+
+  /** @internal */
+  public get(classFullName: string): typeof Entity | undefined {
+    return this._classMap.get(classFullName.toLowerCase());
+  }
+
+  /** @internal */
+  public set(classFullName: string, entityClass: typeof Entity): void {
+    this._classMap.set(classFullName.toLowerCase(), entityClass);
+  }
+
+  /** @internal */
+  public delete(classFullName: string): boolean {
+    return this._classMap.delete(classFullName.toLowerCase());
+  }
+
+  /** @internal */
+  public clear(): void {
+    this._classMap.clear();
+  }
+
+  /** @internal */
+  public [Symbol.iterator](): IterableIterator<[string, typeof Entity]> {
+    return this._classMap[Symbol.iterator]();
+  }
+
+  /** Register a single `entityClass` defined in the specified `schema`.
+   * @see [[registerModule]] to register multiple classes.
+   * This method registers the class globally. To register a class for a specific iModel, use [[IModelDb.jsClassMap]].
+   * @public
+   */
+  public register(entityClass: typeof Entity, schema: typeof Schema): void {
+    entityClass.schema = schema;
+    const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
+    if (this.has(key)) {
+      const errMsg = `Class ${key} is already registered. Make sure static className member is correct on JavaScript class ${entityClass.name}`;
+      Logger.logError("core-frontend.classRegistry", errMsg);
+      throw new Error(errMsg);
+    }
+    this.set(key, entityClass);
+  }
+}
+
+/** Maintains the mapping between the name of a BIS [ECClass]($ecschema-metadata) (in "schema:class" format) and the JavaScript [[Entity]] class that implements it.
  * Applications or modules that supply their own Entity subclasses should use [[registerModule]] or [[register]] at startup
  * to establish their mappings.
  * @public
  */
 export class ClassRegistry {
-  private static readonly _classMap = new Map<string, typeof Entity>();
+  private static readonly _globalClassMap = new EntityJsClassMap();
   /** @internal */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
   /** @internal */
@@ -33,15 +86,7 @@ export class ClassRegistry {
    * @public
    */
   public static register(entityClass: typeof Entity, schema: typeof Schema) {
-    entityClass.schema = schema;
-    const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
-    if (this._classMap.has(key)) {
-      const errMsg = `Class ${key} is already registered. Make sure static className member is correct on JavaScript class ${entityClass.name}`;
-      Logger.logError("core-frontend.classRegistry", errMsg);
-      throw new Error(errMsg);
-    }
-
-    this._classMap.set(key, entityClass);
+    this._globalClassMap.register(entityClass, schema);
   }
 
   /** Generate a proxy Schema for a domain that has not been registered. */
@@ -62,7 +107,7 @@ export class ClassRegistry {
       public static override get missingRequiredBehavior() { return hasBehavior; }
     };
 
-    Schemas.registerSchema(schemaClass); // register the class before we return it.
+    iModel.schemaMap.registerSchema(schemaClass); // register the class before we return it.
     return schemaClass;
   }
 
@@ -94,6 +139,7 @@ export class ClassRegistry {
   /** Generate a JavaScript class from Entity metadata.
    * @param entityMetaData The Entity metadata that defines the class
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private static generateClassForEntity(entityMetaData: EntityMetaData, iModel: IModelDb): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
     const domainName = name[0];
@@ -103,11 +149,12 @@ export class ClassRegistry {
       throw new IModelError(IModelStatus.BadArg, `class ${name} has no superclass`);
 
     // make sure schema exists
-    let schema = Schemas.getRegisteredSchema(domainName);
+    let schema = iModel.schemaMap.get(domainName) ?? Schemas.getRegisteredSchema(domainName);
     if (undefined === schema)
       schema = this.generateProxySchema(domainName, iModel); // no schema found, create it too
 
-    const superclass = this._classMap.get(entityMetaData.baseClasses[0].toLowerCase());
+    const superClassFullName = entityMetaData.baseClasses[0].toLowerCase();
+    const superclass = iModel.jsClassMap.get(superClassFullName) ?? this._globalClassMap.get(superClassFullName);
     if (undefined === superclass)
       throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
@@ -124,6 +171,7 @@ export class ClassRegistry {
         generatedClassHasNonGeneratedNonCoreAncestor = true;
         break;
       }
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const superclassMetaData = iModel.classMetaDataRegistry.find(currentSuperclass.classFullName);
       if (superclassMetaData === undefined)
         throw new IModelError(IModelStatus.BadSchema, `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`);
@@ -195,7 +243,8 @@ export class ClassRegistry {
       superclass.protectedOperations.forEach((operation) => (generatedClass as any)[operation] = throwError);
     }
 
-    this.register(generatedClass, schema); // register it before returning
+    iModel.jsClassMap.register(generatedClass, schema); // register it before returning
+    //this.register(generatedClass, schema); // register it before returning
     return generatedClass;
   }
 
@@ -217,6 +266,7 @@ export class ClassRegistry {
    * class. This function also ensures that all of the base classes of the Entity exist and are registered.
    */
   private static generateClass(classFullName: string, iModel: IModelDb): typeof Entity {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined || metadata.ecclass === undefined)
       throw this.makeMetaDataNotFoundError(classFullName);
@@ -235,7 +285,7 @@ export class ClassRegistry {
    * @returns The Entity class or undefined
    */
   public static findRegisteredClass(classFullName: string): typeof Entity | undefined {
-    return this._classMap.get(classFullName.toLowerCase());
+    return this._globalClassMap.get(classFullName.toLowerCase());
   }
 
   /** Get the Entity class for the specified Entity className.
@@ -245,8 +295,7 @@ export class ClassRegistry {
    */
   public static getClass(classFullName: string, iModel: IModelDb): typeof Entity {
     const key = classFullName.toLowerCase();
-    const ctor = this._classMap.get(key);
-    return ctor ? ctor : this.generateClass(key, iModel);
+    return iModel.jsClassMap.get(key) ?? this._globalClassMap.get(key) ?? this.generateClass(key, iModel);
   }
 
   /** Unregister a class, by name, if one is already registered.
@@ -255,14 +304,14 @@ export class ClassRegistry {
    * @return true if the class was unregistered
    * @internal
    */
-  public static unregisterCLass(classFullName: string) { return this._classMap.delete(classFullName.toLowerCase()); }
+  public static unregisterCLass(classFullName: string) { return this._globalClassMap.delete(classFullName.toLowerCase()); }
   /** Unregister all classes from a schema.
    * This function is not normally needed, but is useful for cases where a generated *proxy* schema needs to be replaced by the *real* schema.
    * @param schema Name of the schema to unregister
    * @internal
    */
   public static unregisterClassesFrom(schema: typeof Schema) {
-    for (const entry of Array.from(this._classMap)) {
+    for (const entry of Array.from(this._globalClassMap)) {
       if (entry[1].schema === schema)
         this.unregisterCLass(entry[0]);
     }
@@ -273,22 +322,27 @@ export class ClassRegistry {
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
+ * @deprecated in 5.0. Use schemaContext on the imodel instead
  */
 export class MetaDataRegistry {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _registry = new Map<string, EntityMetaData>();
   private _classIdToName = new Map<Id64String, string>();
 
   /** Get the specified Entity metadata */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public find(classFullName: string): EntityMetaData | undefined {
     return this._registry.get(classFullName.toLowerCase());
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public findByClassId(classId: Id64String): EntityMetaData | undefined {
     const name = this._classIdToName.get(classId);
     return undefined !== name ? this.find(name) : undefined;
   }
 
   /** Add metadata to the cache */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public add(classFullName: string, metaData: EntityMetaData): void {
     const name = classFullName.toLowerCase();
     this._registry.set(name, metaData);

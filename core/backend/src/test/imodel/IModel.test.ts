@@ -104,9 +104,11 @@ describe("iModel", () => {
     assert(!extents.isNull);
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
     const e1 = imodel1.constructEntity<LightLocation, LightLocationProps>({ category: "0x11", classFullName: "BisCore:LightLocation", model: "0x01", code: Code.createEmpty() });
     assert.isDefined(e1);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
 
@@ -1035,6 +1037,7 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, Element.classFullName);
@@ -1060,6 +1063,7 @@ describe("iModel", () => {
   }
 
   it("should get metadata for class", () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData: EntityMetaData = imodel1.getMetaData(Element.classFullName);
     assert.exists(metaData);
     checkElementMetaData(metaData);
@@ -1139,6 +1143,7 @@ describe("iModel", () => {
     assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
     assert.isDefined(obj.properties.restrictions);
     assert.equal(obj.properties.restrictions.primitiveType, 2305);
@@ -1146,12 +1151,14 @@ describe("iModel", () => {
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
     assert.exists(metaData);
     checkClassHasHandlerMetaData(metaData);
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData = imodel1.getMetaData("BisCore:ClassHasHandler");
     assert.exists(metaData);
     checkClassHasHandlerMetaData(metaData);
@@ -1357,6 +1364,7 @@ describe("iModel", () => {
   });
 
   it("should import schemas", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
     assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
@@ -1397,6 +1405,7 @@ describe("iModel", () => {
   it("should create model with custom relationship to modeled element", async () => {
     const testImodel = imodel1;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
@@ -1523,6 +1532,7 @@ describe("iModel", () => {
   it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testImodel.getMetaData("TestBim:TestPhysicalObject");
 
     // Create a new physical model
