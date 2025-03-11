@@ -18,7 +18,7 @@ import { GraphicalEditingScope } from "../../GraphicalEditingScope";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import {
-  acquireImdlDecoder, DynamicIModelTile, ImageryMapTileTree, ImageryTileTreeState, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, ModelMapLayerTileTreeReference, Tile,
+  acquireImdlDecoder, DynamicIModelTile, GraphicsCollectorDrawArgs, ImageryMapTileTree, ImageryTileTreeState, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, ModelMapLayerTileTreeReference, Tile,
   TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -444,6 +444,8 @@ export class IModelTileTree extends TileTree {
   public draw(args: TileDrawArgs): void {
     const tiles = this.selectTiles(args);
     this._rootTile.draw(args, tiles, this._numStaticTilesSelected);
+    if (!(args instanceof GraphicsCollectorDrawArgs))
+          this.collectClassifierGraphics(args, tiles);
   }
 
   public prune(): void {
@@ -491,11 +493,11 @@ export class IModelTileTree extends TileTree {
 
   // // /** @internal */
   public clearLayers() {
-    this._rootTile.clearLayers();
+    // this._rootTile.clearLayers();
   }
 
   /** @internal */
-  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: IModelTile[]) {
+  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: Tile[]) {
     const classifier = args.context.planarClassifiers.get(this.modelId);
     if (classifier)
       classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
