@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 11 Mar 2025 05:17:33 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Mar 2025 15:25:11 GMT and should not be manually modified.
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+### Updates
+
+- Resolves CVE-2025-27152
 
 ## 4.10.9
 Tue, 11 Mar 2025 05:17:33 GMT
