@@ -349,9 +349,14 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+<<<<<<< HEAD
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+=======
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toEqual(testEntry.result);
+>>>>>>> ee05c4dc84 (Add limitations to quantity parsing logic (#7671))
     }
   });
 
