@@ -9758,6 +9758,7 @@ export class TextBlock extends TextBlockComponent {
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
     justification: TextBlockJustification;
+    margins: TextBlockMargins;
     readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -9821,8 +9822,17 @@ export interface TextBlockLayoutResult {
 }
 
 // @beta
+export interface TextBlockMargins {
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+}
+
+// @beta
 export interface TextBlockProps extends TextBlockComponentProps {
     justification?: TextBlockJustification;
+    margins?: Partial<TextBlockMargins>;
     paragraphs?: ParagraphProps[];
     width?: number;
 }
