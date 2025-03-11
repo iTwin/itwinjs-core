@@ -22,7 +22,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RelatedElementProps, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreRpc,
@@ -75,6 +75,24 @@ import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+// NEEDED UNTIL CAN IMPORT FROM SARUNAS PR
+type NativeInterfaceMapping =
+| [NativeElementProps, ElementProps];
+
+type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties" | "isInstanceOfEntity"> & {
+  model: RelatedElementProps;
+  className: string;
+  codeValue?: string;
+  codeSpec: RelatedElementProps;
+  codeScope: RelatedElementProps;
+  jsonProperties?: string;
+  lastMod: string;
+};
+/** Type that maps a native interface to its corresponding props interface. This helps ensure type safety when mapping native elements to their props.
+ * @internal */
+type NativeInterfaceMap<T> = Extract<NativeInterfaceMapping, [unknown, T]>[0];
+// END
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -2026,6 +2044,26 @@ export namespace IModelDb {
     //   }
     // }
 
+    /** Function to map native Bis.Element properties to ElementProps.
+    * @param props A JSON representation of the native element properties.
+    * @param loadProps Load options to match the expected element representation.
+    * @returns The JSON representation of the mapped element properties.
+    * @internal
+    */
+    public mapNativeElementProps(props: ElementProps): NativeElementProps {
+      const element: NativeElementProps = {
+        className: props.classFullName,
+        codeSpec: { id: props.code.spec },
+        codeScope: { id: props.code.scope },
+        lastMod: this.queryLastModifiedTime(props.model),
+        model: {
+          id: props.model,
+          relClassName: this._iModel.models.getModel(props.model).classFullName,
+        },
+      };
+      return element;
+    }
+
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
@@ -2039,10 +2077,10 @@ export namespace IModelDb {
       try {
         // Check if ClassId is valid
         const classDef = ClassRegistry.getClass(elProps.classFullName, this._iModel);
-        const classId = IModelDb.Elements.classMap.get(elProps.classFullName); // TODO: is this the right classId
-        if (classId === undefined) { // TODO: How do we check if its valid?
-          throw new IModelError(IModelStatus.WrongClass, "Invalid class name");
-        }
+        // const classId = IModelDb.Elements.classMap.get(elProps.classFullName); // TODO: is this the right classId
+        // if (classId === undefined) { // TODO: How do we check if its valid?
+        //   throw new IModelError(IModelStatus.WrongClass, "Invalid class name");
+        // }
 
         // TODO: Check Element handler?
 
@@ -2055,7 +2093,7 @@ export namespace IModelDb {
 
         (classDef as typeof Element).onInsert({ iModel: this._iModel, props: elProps });
 
-        elProps.id = this._iModel[_nativeDb].insertInstance(elProps, {...options});
+        elProps.id = this._iModel[_nativeDb].insertInstance(this.mapNativeElementProps(elProps), {...options});
 
         (classDef as typeof Element).onInserted({
           iModel: this._iModel,
