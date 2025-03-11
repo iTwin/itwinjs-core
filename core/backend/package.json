@@ -102,9 +102,14 @@
   "dependencies": {
     "@bentley/imodeljs-native": "4.11.22",
     "@itwin/cloud-agnostic-core": "^2.2.4",
+<<<<<<< HEAD
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.5",
     "@itwin/object-storage-core": "^2.2.5",
+=======
+    "@itwin/object-storage-azure": "^2.3.0",
+    "@itwin/object-storage-core": "^2.3.0",
+>>>>>>> 5088628820 (resolve cve GHSA-jr5f-v2jv-69x6 (#7824))
     "form-data": "^4.0.1",
     "fs-extra": "^8.1.0",
     "inversify": "~6.0.1",

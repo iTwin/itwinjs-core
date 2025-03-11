@@ -52,10 +52,14 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodels-access-backend": "^5.2.1",
     "@itwin/imodels-client-authoring": "^5.8.1",
-    "@itwin/itwins-client": "^1.2.0",
+    "@itwin/itwins-client": "^1.6.1",
     "@itwin/oidc-signin-tool": "^4.4.1",
     "@itwin/perf-tools": "workspace:*",
+<<<<<<< HEAD
     "azurite": "^3.32.0",
+=======
+    "azurite": "^3.34.0",
+>>>>>>> 5088628820 (resolve cve GHSA-jr5f-v2jv-69x6 (#7824))
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
