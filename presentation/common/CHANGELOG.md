@@ -1,6 +1,11 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Thu, 06 Mar 2025 14:14:59 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Mar 2025 05:18:54 GMT and should not be manually modified.
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+_Version update only_
 
 ## 4.10.8
 Thu, 06 Mar 2025 14:13:37 GMT
