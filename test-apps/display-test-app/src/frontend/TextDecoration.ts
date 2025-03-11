@@ -9,6 +9,9 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
+// Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
+// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
+
 class TextEditor implements Decorator {
   // Geometry properties
   private _categoryId: Id64String = Id64.invalid;
@@ -175,7 +178,11 @@ export class TextDecorationTool extends Tool {
       case "init":
         // Use the first category if the user doesn't specify one. This is just a convenience.
         const category = arg ?? vp.view.categorySelector.categories.values().next().value;
-        editor.init(vp.iModel, category ?? "");
+        if (undefined === category || category === "") {
+          throw new Error("No category provided.");
+        }
+
+        editor.init(vp.iModel, category);
         break;
       case "center":
         editor.origin = vp.view.getCenter();
@@ -297,7 +304,7 @@ export class TextDecorationTool extends Tool {
         const marginLocation = inArgs[1].toLowerCase();
         const val = Number(inArgs[2]);
         if (isNaN(val)) {
-          throw new Error("Expected a number");
+          throw new Error("Expected margin location followed by a number. Margin location can be left, right, top, bottom, all, horizontal, or vertical");
         }
 
         switch (marginLocation) {
@@ -317,7 +324,7 @@ export class TextDecorationTool extends Tool {
             editor.setMargins({ top: val, bottom: val });
             break;
           default:
-            throw new Error("Expected left, right, top, or bottom");
+            throw new Error("Expected left, right, top, bottom, all, horizontal, or vertical");
         }
         break;
       }
