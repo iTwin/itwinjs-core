@@ -5,6 +5,9 @@
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaInfo } from "./Interfaces";
+import type { EntityClass } from "./Metadata/EntityClass";
+import type { Mixin } from "./Metadata/Mixin";
+import { PropertyHandler } from "./Metadata/Property";
 import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
@@ -58,31 +61,6 @@ export interface ISchemaLocater {
    * @param context context for loading schema references
    */
   getSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
-}
-
-/**
- * Base interface for types that allow location of items inside a schema
- * @beta
- */
-export interface ISchemaItemLocater {
-  /**
-   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
-   * Will await a partially loaded schema then look in it for the requested item.
-   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
-   * @returns The requested schema item.
-   */
-  getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
-  getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-
-  /**
-   * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
-   * Will skip a partially loaded schema and return undefined if the item belongs to that schema. Use the async method to await partially loaded schemas.
-   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
-   * @param itemConstructor The constructor of the item to return.
-   * @returns The requested schema item.
-   */
-  getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
-  getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
 }
 
 /**
@@ -263,7 +241,7 @@ export class SchemaCache implements ISchemaLocater {
  * The context is made up of a group of Schema Locators.
  * @beta
  */
-export class SchemaContext implements ISchemaItemLocater {
+export class SchemaContext {
   private _locaters: ISchemaLocater[];
 
   private _knownSchemas: SchemaCache;
@@ -450,6 +428,35 @@ export class SchemaContext implements ISchemaItemLocater {
   }
 
   /**
+   * Gets the schema item from the specified schema by its name if it exists in this [[SchemaContext]].
+   * Will await a partially loaded schema then look in it for the requested item
+   *
+   * @param schemaName The name of the schema containing the item.
+   * @param itemName The name of the item to find.
+   * @returns The requested schema item, or `undefined` if the item could not be found.
+   *
+   * @example
+   * ```typescript
+   * await schemaContext.getSchemaItemByName("BisCore", "Element");
+   * await schemaContext.getSchemaItemByName("BisCore", "Element", EntityClass);
+   * await schemaContext.getSchemaItemByName("Units", "THOUSAND_SQ_FT");
+   * await schemaContext.getSchemaItemByName("Units", "THOUSAND_SQ_FT", Unit);
+   * ```
+   */
+  public async getSchemaItemByName(schemaName: string, itemName: string): Promise<SchemaItem | undefined>
+  public async getSchemaItemByName<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): Promise<InstanceType<T> | undefined>
+  public async getSchemaItemByName<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
+    const schema = await this.getSchema(new SchemaKey(schemaName), SchemaMatchType.Latest);
+    if (undefined === schema)
+      return undefined;
+
+    if(undefined === itemConstructor)
+      return schema.getItem(itemName);
+
+    return schema.getItem(itemName, itemConstructor);
+  }
+
+  /**
    * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
    * Will return undefined if the cached schema is partially loaded. Use [[getSchemaItem]] to await until the schema is completely loaded.
    * @param schemaItemKey The SchemaItemKey identifying the item to return. SchemaMatchType.Latest is used to match the schema.
@@ -467,6 +474,35 @@ export class SchemaContext implements ISchemaItemLocater {
       return schema.getItemSync(schemaItemKey.name);
 
     return schema.getItemSync(schemaItemKey.name, itemConstructor);
+  }
+
+  /**
+   * Gets the schema item from the specified schema by its name if it exists in this [[SchemaContext]].
+   * Will return `undefined` if the cached schema is partially loaded. Use [[getSchemaItemByName]] to await until the schema is completely loaded.
+   *
+   * @param schemaName The name of the schema containing the item.
+   * @param itemName The name of the item to find.
+   * @returns The requested schema item, or `undefined` if the item could not be found.
+   *
+   * @example
+   * ```typescript
+   * schemaContext.getSchemaItemByNameSync("BisCore", "Element");
+   * schemaContext.getSchemaItemByNameSync("BisCore", "Element", EntityClass);
+   * schemaContext.getSchemaItemByNameSync("Units", "THOUSAND_SQ_FT");
+   * schemaContext.getSchemaItemByNameSync("Units", "THOUSAND_SQ_FT", Unit);
+   * ```
+   */
+  public getSchemaItemByNameSync(schemaName: string, itemName: string): SchemaItem | undefined
+  public getSchemaItemByNameSync<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): InstanceType<T> | undefined
+  public getSchemaItemByNameSync<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor?: T): SchemaItem | InstanceType<T> | undefined {
+    const schema = this.getSchemaSync(new SchemaKey(schemaName), SchemaMatchType.Latest);
+    if (undefined === schema)
+      return undefined;
+
+    if(undefined === itemConstructor)
+      return schema.getItemSync(itemName);
+
+    return schema.getItemSync(itemName, itemConstructor);
   }
 
   /**
@@ -488,5 +524,90 @@ export class SchemaContext implements ISchemaItemLocater {
    */
   public getKnownSchemas(): Schema[] {
     return this._knownSchemas.getAllSchemas();
+  }
+
+  /**
+   * Get metadata for a schema item. This method will load the metadata from the schema context if necessary.
+   *
+   * @param classFullName The full name of the class in the format "SchemaName:SchemaItemName".
+   * @param itemConstructor The constructor of the schema item to return.
+   * @returns The requested schema item metadata.
+   * @throws [[ECObjectsError]] if the metadata cannot be found or loaded.
+   *
+   * @example
+   * ```typescript
+   * const entityClass = schemaContext.getSchemaItemMetaData("BisCore:Element", EntityClass);
+   * const customAttributeClass = schemaContext.getSchemaItemMetaData("BisCore:SchemaHasBehavior", CustomAttributeClass);
+   * const relationshipClass = schemaContext.getSchemaItemMetaData("BisCore:ElementOwnsChildElements", RelationshipClass);
+   * ```
+   */
+  public getSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> {
+    const [schemaName, className] = classFullName.replace(":",".").split(".");
+    const metaData = this.getSchemaItemByNameSync(schemaName, className, itemConstructor);
+    if (metaData === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Metadata not found for ${className}.`);
+    return metaData;
+  }
+
+  /**
+   * Attempt to get metadata for a schema item. This method will load the metadata from the schema context if necessary.
+   * If the metadata cannot be found or loaded, it returns `undefined` instead of throwing an error.
+   *
+   * @param classFullName The full name of the class in the format "SchemaName:SchemaItemName".
+   * @param itemConstructor The constructor of the schema item to return.
+   * @returns The requested schema item metadata, or `undefined` if the metadata cannot be found or loaded.
+   *
+   * @example
+   * ```typescript
+   * const entityClass = schemaContext.tryGetSchemaItemMetaData("BisCore:Element", EntityClass);
+   * ```
+   */
+  public tryGetSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined {
+    try {
+      return this.getSchemaItemMetaData(classFullName, itemConstructor);
+    } catch {
+      return undefined;
+    }
+  }
+
+  public async forEachMetaDataOfClass<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true): Promise<void> {
+    const metaData = this.getSchemaItemMetaData(classFullName, itemConstructor) as EntityClass | Mixin;
+    if (metaData instanceof (await import("./Metadata/EntityClass")).EntityClass)
+      await this.forEachMetaDataOfEntityClass(metaData, wantSuper, func, includeCustom);
+    else if (metaData instanceof (await import("./Metadata/Mixin")).Mixin)
+      await this.forEachMetaDataOfMixin(metaData, wantSuper, func, includeCustom);
+  }
+
+  private async forEachMetaDataOfEntityClass(metaData: EntityClass, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean): Promise<void> {
+    if (metaData.properties) {
+      for (const property of metaData.properties) {
+        if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+          func(property.name, property);
+      }
+    }
+
+    if (wantSuper) {
+      if (metaData.baseClass !== undefined)
+        await this.forEachMetaDataOfClass(metaData.baseClass.fullName, true, func, (await import("./Metadata/EntityClass")).EntityClass, includeCustom);
+
+      if (metaData.mixins) {
+        metaData.mixins.forEach(async (mixinClass) => {
+          await this.forEachMetaDataOfClass(mixinClass.fullName, true, func, (await import("./Metadata/Mixin")).Mixin, includeCustom);
+        });
+      }
+    }
+  }
+
+  private async forEachMetaDataOfMixin(metaData: Mixin, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean): Promise<void> {
+    if (metaData.properties) {
+      for (const property of metaData.properties) {
+        if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+          func(property.name, property);
+      }
+    }
+
+    if (wantSuper && metaData.baseClass !== undefined) {
+      await this.forEachMetaDataOfClass(metaData.baseClass.fullName, true, func, (await import("./Metadata/Mixin")).Mixin, includeCustom);
+    }
   }
 }

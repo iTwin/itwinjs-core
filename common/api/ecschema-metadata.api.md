@@ -797,16 +797,6 @@ export interface InvertedUnitProps extends SchemaItemProps {
 }
 
 // @beta
-export interface ISchemaItemLocater {
-    getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
-    // (undocumented)
-    getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-    getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
-    // (undocumented)
-    getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
-}
-
-// @beta
 export interface ISchemaLocater {
     getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
@@ -1078,7 +1068,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1376,6 +1366,9 @@ export interface PropertyCategoryProps extends SchemaItemProps {
     // (undocumented)
     readonly priority: number;
 }
+
+// @beta
+export type PropertyHandler = (name: string, property: Property) => void;
 
 // @beta (undocumented)
 export interface PropertyProps {
@@ -1830,7 +1823,7 @@ export class SchemaCache implements ISchemaLocater {
 }
 
 // @beta
-export class SchemaContext implements ISchemaItemLocater {
+export class SchemaContext {
     constructor();
     addFallbackLocater(locater: ISchemaLocater): void;
     addLocater(locater: ISchemaLocater): void;
@@ -1839,6 +1832,8 @@ export class SchemaContext implements ISchemaItemLocater {
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync(schema: Schema): void;
+    // (undocumented)
+    forEachMetaDataOfClass<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom?: boolean): Promise<void>;
     // @internal
     getCachedSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal
@@ -1849,6 +1844,13 @@ export class SchemaContext implements ISchemaItemLocater {
     getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
     // (undocumented)
     getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
+    getSchemaItemByName(schemaName: string, itemName: string): Promise<SchemaItem | undefined>;
+    // (undocumented)
+    getSchemaItemByName<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
+    getSchemaItemByNameSync(schemaName: string, itemName: string): SchemaItem | undefined;
+    // (undocumented)
+    getSchemaItemByNameSync<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): InstanceType<T> | undefined;
+    getSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T>;
     getSchemaItems(): IterableIterator<SchemaItem>;
     getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
     // (undocumented)
@@ -1857,6 +1859,7 @@ export class SchemaContext implements ISchemaItemLocater {
     // (undocumented)
     get locaters(): ISchemaLocater[];
     schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
+    tryGetSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined;
 }
 
 // @internal

@@ -7076,7 +7076,7 @@ export interface ProjectionProps {
     zoneNumber?: number;
 }
 
-// @beta
+// @beta @deprecated
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta @deprecated

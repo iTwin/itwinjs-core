@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
-import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { EntityClass, PropertyHandler, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 
 // spell:ignore fontid fontmap
 
@@ -1159,7 +1159,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Use [schemaContext] instead.
+   * @deprecated in 5.0. Use [[getSchemaItemMetaData]] from SchemaContext class instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getMetaData(classFullName: string): EntityMetaData {
@@ -1177,7 +1177,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Use [schemaContext] instead.
+   * @deprecated in 5.0. Use [[tryGetSchemaItemMetaData]] from SchemaContext class instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
@@ -1196,11 +1196,35 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [schemaContext] instead.
+   * @deprecated in 5.0. Use [[forEachMetaDataOfClass]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
+  }
+
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   *
+   * @param iModel The IModelDb instance that contains the schema.
+   * @param classFullName The full class name to load the metadata, if necessary.
+   * @param wantSuper If true, superclass properties will also be processed.
+   * @param func The callback to be invoked on each property.
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   *
+   * @example
+   * ```typescript
+   * const callback: PropertyHandler = (name, property) => {
+   *   console.log(`Property Name: ${name}`);
+   *   console.log(`Property Class:`, property.class);
+   * };
+   *
+   * IModelDb.forEachMetaDataOfClass(imodel, "BisCore:Element", true, callback);
+   * ```
+   */
+  public static async forEachMetaDataOfClass(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean = true): Promise<void> {
+    await iModel.schemaContext.forEachMetaDataOfClass(classFullName, wantSuper, func, EntityClass, includeCustom);
   }
 
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.
@@ -1209,8 +1233,9 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [schemaContext] instead.
+   * @deprecated in 5.0. Use [forEachMetaDataOfClass] from SchemaContext class instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const meta = this.getMetaData(classFullName); // will load if necessary

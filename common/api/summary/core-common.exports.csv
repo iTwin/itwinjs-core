@@ -632,6 +632,7 @@ public;class;Projection
 public;type;ProjectionMethod
 public;interface;ProjectionProps
 beta;type;PropertyCallback
+deprecated;type;PropertyCallback
 beta;class;PropertyMetaData
 deprecated;class;PropertyMetaData
 public;class;PropertyMetaDataMap
