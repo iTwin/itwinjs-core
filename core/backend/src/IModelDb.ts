@@ -2055,10 +2055,11 @@ export namespace IModelDb {
         className: props.classFullName,
         codeSpec: { id: props.code.spec },
         codeScope: { id: props.code.scope },
+        codeValue: props.code.value,
         lastMod: this.queryLastModifiedTime(props.model),
         model: {
           id: props.model,
-          relClassName: this._iModel.models.getModel(props.model).classFullName,
+          relClassName: this._iModel.models.getModel(props.model).classFullName ?? "",
         },
       };
       return element;
@@ -2091,9 +2092,20 @@ export namespace IModelDb {
           throw new IModelError(IModelStatus.WrongElement, "Invalid element class");
         }
 
+        const nativeElementProps = this.mapNativeElementProps(elProps);
+
         (classDef as typeof Element).onInsert({ iModel: this._iModel, props: elProps });
 
-        elProps.id = this._iModel[_nativeDb].insertInstance(this.mapNativeElementProps(elProps), {...options});
+        if (nativeElementProps.model.relClassName !== undefined) {
+          const modelClassDef = ClassRegistry.getClass(nativeElementProps.model.relClassName, this._iModel);
+          (modelClassDef as typeof Model).onInsertElement({
+            iModel: this._iModel,
+            elementProps: elProps,
+            id: elProps.model,
+          });
+        }
+
+        elProps.id = this._iModel[_nativeDb].insertInstance(nativeElementProps, {...options});
 
         (classDef as typeof Element).onInserted({
           iModel: this._iModel,
@@ -2101,6 +2113,15 @@ export namespace IModelDb {
           federationGuid: elProps.federationGuid ?? Guid.createValue(),
           model: elProps.model,
         });
+
+        if (nativeElementProps.model.relClassName !== undefined) {
+          const modelClassDef = ClassRegistry.getClass(nativeElementProps.model.relClassName, this._iModel);
+          (modelClassDef as typeof Model).onInsertedElement({
+            iModel: this._iModel,
+            id: elProps.model,
+            elementId: elProps.id,
+          });
+        }
 
         return elProps.id;
       } catch (err: any) {
