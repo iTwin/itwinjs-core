@@ -763,4 +763,69 @@ describe("Static Properties", () => {
 
 });
 
+describe("Global state of ClassRegistry", () => {
+  let imodel1: SnapshotDb;
+  let imodel2: SnapshotDb;
+
+  before(() => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const testFileName1 = IModelTestUtils.prepareOutputFile("ClassRegistry", "GlobalState1.bim");
+    const testFileName2 = IModelTestUtils.prepareOutputFile("ClassRegistry", "GlobalState2.bim");
+    imodel1 = IModelTestUtils.createSnapshotFromSeed(testFileName1, seedFileName);
+    imodel2 = IModelTestUtils.createSnapshotFromSeed(testFileName2, seedFileName);
+    assert.exists(imodel1);
+    assert.exists(imodel2);
+  });
+
+  after(() => {
+    imodel1?.close();
+    imodel2?.close();
+  });
+
+  it("registering a class in different imodels should not affect each other", async () => {
+    await imodel1.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
+          <ECEntityClass typeName="TestClass">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="foo" typeName="string"/>
+            <ECNavigationProperty propertyName="RelatedTestClass" relationshipName="MyRelationship" direction="backward"/>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="MyRelationship" modifier="None" strength="embedding">
+            <Source multiplicity="(0..1)" roleLabel="has" polymorphic="false">
+                <Class class="TestClass"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="has" polymorphic="false">
+                <Class class="TestClass"/>
+            </Target>
+          </ECRelationshipClass>
+        </ECSchema>
+      `,
+    ]);
+    await imodel2.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestClass">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="bar" typeName="string"/>
+          </ECEntityClass>
+        </ECSchema>
+      `,
+    ]);
+
+    const testClass1 = imodel1.getJsClass("TestSchema:TestClass");
+    assert.isFalse(testClass1.hasOwnProperty("testPropertyGuard"));
+    (testClass1 as any).testPropertyGuard = true;
+    assert.isTrue(testClass1.hasOwnProperty("testPropertyGuard"));
+
+    const testClass2 = imodel2.getJsClass("TestSchema:TestClass");
+    assert.isFalse(testClass2.hasOwnProperty("testPropertyGuard"));
+  });
+
+
+});
 // TODO: add tests on the new model/aspect prefixes

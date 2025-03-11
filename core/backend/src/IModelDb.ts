@@ -33,7 +33,7 @@ import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs }
 import { ChannelControl } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
-import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
@@ -71,6 +71,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { EntityClass, PropertyHandler, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { SchemaMap } from "./Schema";
 
 // spell:ignore fontid fontmap
 
@@ -230,6 +231,8 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
+  private _jsClassMap?: EntityJsClassMap;
+  private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
   /** @deprecated in 5.0.0. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
@@ -760,6 +763,8 @@ export abstract class IModelDb extends IModel {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this._classMetaDataRegistry = undefined;
+    this._jsClassMap = undefined;
+    this._schemaMap = undefined;
     this._schemaContext = undefined;
   }
 
@@ -1085,6 +1090,20 @@ export abstract class IModelDb extends IModel {
       this._classMetaDataRegistry = new MetaDataRegistry();
 
     return this._classMetaDataRegistry;
+  }
+
+  public get jsClassMap(): EntityJsClassMap {
+    if (this._jsClassMap === undefined)
+      this._jsClassMap = new EntityJsClassMap();
+
+    return this._jsClassMap;
+  }
+
+  public get schemaMap(): SchemaMap {
+    if (this._schemaMap === undefined)
+      this._schemaMap = new SchemaMap();
+
+    return this._schemaMap;
   }
 
   /**
