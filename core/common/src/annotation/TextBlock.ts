@@ -415,13 +415,13 @@ export type TextBlockJustification = "left" | "center" | "right";
  * @beta
  */
 export interface TextBlockMargins {
-  /** The left margin. Must be a positive integer >= 0. Negative values are disregarded */
+  /** The left margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
   left: number;
-  /** The right margin. Must be a positive integer >= 0. Negative values are disregarded */
+  /** The right margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
   right: number;
-  /** The top margin. Must be a positive integer >= 0. Negative values are disregarded */
+  /** The top margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
   top: number;
-  /** The bottom margin. Must be a positive integer >= 0. Negative values are disregarded */
+  /** The bottom margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
   bottom: number;
 };
 
@@ -465,8 +465,15 @@ export class TextBlock extends TextBlockComponent {
     super(props);
     this.width = props.width ?? 0;
     this.justification = props.justification ?? "left";
+
     // Assign default margins if not provided
-    this.margins = { left: 0, right: 0, top: 0, bottom: 0, ...props.margins };
+    this.margins = {
+      left: props.margins?.left ?? 0,
+      right: props.margins?.right ?? 0,
+      top: props.margins?.top ?? 0,
+      bottom: props.margins?.bottom ?? 0,
+    };
+
     this.paragraphs = props.paragraphs?.map((x) => Paragraph.create(x)) ?? [];
   }
 

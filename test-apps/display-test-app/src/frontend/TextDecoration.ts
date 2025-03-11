@@ -101,7 +101,12 @@ class TextEditor implements Decorator {
   }
 
   public setMargins(margins: Partial<TextBlockMargins>): void {
-    this._textBlock.margins = { ...this._textBlock.margins, ...margins };
+    this._textBlock.margins = {
+      left: margins.left ?? this._textBlock.margins.left,
+      right: margins.right ?? this._textBlock.margins.right,
+      top: margins.top ?? this._textBlock.margins.top,
+      bottom: margins.bottom ?? this._textBlock.margins.bottom,
+    };
   }
 
   public async update(): Promise<void> {
