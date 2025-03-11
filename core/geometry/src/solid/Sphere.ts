@@ -8,12 +8,12 @@
  */
 
 import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { AxisOrder, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
@@ -236,11 +236,27 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleSphere(this);
   }
+
+  /**
+   * Return the Arc3d section at uFraction.  For the sphere, this is a meridian arc.
+   * @param uFraction fractional position along the equator.
+   */
+  public constantUSection(uFraction: number): Arc3d {
+    const phi = AngleSweep.fractionToSignedPeriodicFractionStartEnd(uFraction, 0, Angle.pi2Radians, false);
+    const s1 = Math.sin(phi);
+    const c1 = Math.cos(phi);
+    const transform = this._localToWorld;
+    const center = transform.getOrigin();
+    const vector0 = transform.matrix.multiplyXYZ(c1, s1, 0);
+    const vector90 = transform.matrix.multiplyXYZ(0, 0, 1);
+    return Arc3d.create(center, vector0, vector90, this._latitudeSweep);
+  }
+
   /**
    * Return the Arc3d section at vFraction.  For the sphere, this is a latitude circle.
    * @param vFraction fractional position along the sweep direction
    */
-  public constantVSection(vFraction: number): CurveCollection | undefined {
+  public constantVSection(vFraction: number): Loop {
     const phi = this._latitudeSweep.fractionToRadians(vFraction);
     const s1 = Math.sin(phi);
     const c1 = Math.cos(phi);

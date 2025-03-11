@@ -5650,7 +5650,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     cloneVectorX(): Vector3d;
     cloneVectorY(): Vector3d;
     cloneVectorZ(): Vector3d;
-    constantVSection(vFraction: number): CurveCollection | undefined;
+    constantUSection(uFraction: number): Arc3d;
+    constantVSection(vFraction: number): Loop;
     static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere;
     static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined;
     static createEllipsoid(localToWorld: Transform, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined;

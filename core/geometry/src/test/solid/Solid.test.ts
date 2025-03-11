@@ -461,30 +461,63 @@ describe("Solids", () => {
   });
 
   it("DgnSolids", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
+    // exercise the "Dgn" flavors of Sphere and Cone. These coerce inputs to produce circular-section solids which can import as-is to DGN.
     const center = Point3d.createZero();
-    const sectionAxis = Vector3d.create(1, 0, 1);
-    const zAxis = Vector3d.create(0, 0, 2);
-    const sphereDgn = Sphere.createDgnSphere(center, sectionAxis, zAxis, 1 / sectionAxis.magnitude(), 1 / zAxis.magnitude());
-    if (ck.testDefined(sphereDgn, "sphere is valid"))
-      ck.testTrue(sphereDgn.cloneLocalToWorld().isIdentity, "createDgnSphere squared the frame and scaled the axes");
+    const axes = Matrix3d.createColumns(Vector3d.create(2, 0, 0), Vector3d.create(1, 1, 0), Vector3d.create(1, 1, 3));
+    const radiusX = 1 / axes.columnXMagnitude();
+    const radiusY = 1 / axes.columnYMagnitude();
+    const radiusZ = 2 / axes.columnZMagnitude();
+    const sphereDgn = Sphere.createDgnSphere(center, axes.columnX(), axes.columnZ(), radiusX, radiusZ);
+    if (ck.testDefined(sphereDgn, "sphere is valid")) {
+      const rigid = Matrix3d.identity.clone();
+      const skew = Matrix3d.identity.clone();
+      if (ck.testTrue(sphereDgn.cloneLocalToWorld().matrix.factorRigidSkew(rigid, skew), "factored axes")) {
+        if (ck.testTrue(skew.isDiagonal, "createDgnSphere squared the frame")) {
+          ck.testCoordinate(skew.columnX().x, 1.0, "createDgnSphere scaled x-axis as expected");
+          ck.testCoordinate(skew.columnY().y, 1.0, "createDgnSphere scaled y-axis as expected");
+          ck.testCoordinate(skew.columnZ().z, 2.0, "createDgnSphere scaled z-axis as expected");
+        }
+      }
+    }
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphereDgn);
 
-    const centerB = center.plusScaled(zAxis, 2.0);
-    const yAxis = Vector3d.create(1, 1, 0);
+    const centerB = center.plusScaled(axes.columnZ(), 0.5);
     const radiusA = 0.1;
     const radiusB = 0.4;
-    const coneDgn = Cone.createDgnCone(center, centerB, sectionAxis, yAxis, radiusA, radiusB, true);
+    const coneDgn = Cone.createDgnCone(center, centerB, axes.columnX(), axes.columnY(), radiusA, radiusB, true);
     if (ck.testDefined(coneDgn, "cone is valid")) {
-      ck.testTrue(coneDgn.getVectorX().isPerpendicularTo(coneDgn.getVectorY()), "createDgnCone squared the frame");
+      ck.testTrue(coneDgn.getVectorX().isPerpendicularTo(coneDgn.getVectorY()), "createDgnCone squared the section axes");
+      ck.testFalse(coneDgn.getVectorX().isPerpendicularTo(axes.columnZ()), "createDgnCone did not square the frame");
       ck.testFraction(coneDgn.getVectorX().magnitude(), 1.0, "createDgnCone normalized xAxis");
       ck.testFraction(coneDgn.getVectorY().magnitude(), 1.0, "createDgnCone normalized yAxis");
-      ck.testCoordinate(coneDgn.getRadiusA(), radiusA * sectionAxis.magnitude(), "createDgnCone scaled radiusA");
-      ck.testCoordinate(coneDgn.getRadiusB(), radiusB * sectionAxis.magnitude(), "createDgnCone scaled radiusA");
+      ck.testCoordinate(coneDgn.getRadiusA(), radiusA * axes.columnX().magnitude(), "createDgnCone scaled radiusA");
+      ck.testCoordinate(coneDgn.getRadiusB(), radiusB * axes.columnX().magnitude(), "createDgnCone scaled radiusA");
     }
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, coneDgn);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, coneDgn, 5, 0, 0);
+
+    // now create some elliptical-section Spheres and Cones that do NOT import exactly to DGN.
+    const sphere0 = Sphere.createFromAxesAndScales(center, axes, radiusX, radiusY, radiusZ);
+    if (ck.testDefined(sphere0, "create sphere with elliptical cross sections")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sphere0, 10, 0, 0);
+      const equator = sphere0.constantVSection(0.5);
+      const primeMeridian = sphere0.constantUSection(0.0);
+      const builder = PolyfaceBuilder.create();
+      builder.options.angleTol = Angle.createDegrees(5);  // super fine mesh shows what the solid really is
+      builder.addSphere(sphere0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [builder.claimPolyface(), equator, primeMeridian], 10, 10, 0);
+    }
+
+    const cone0 = Cone.createBaseAndTarget(center, centerB, axes.columnX(), axes.columnY(), radiusA, radiusB, true);
+    if (ck.testDefined(cone0, "create cone with elliptical cross sections")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cone0, 15, 0, 0);
+      const builder = PolyfaceBuilder.create();
+      builder.options.angleTol = Angle.createDegrees(5);  // super fine mesh shows what the solid really is
+      builder.addCone(cone0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, builder.claimPolyface(), 15, 10, 0);
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "DgnSolids");
     expect(ck.getNumErrors()).toBe(0);

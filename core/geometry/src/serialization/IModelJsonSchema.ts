@@ -1477,7 +1477,7 @@ export namespace IModelJson {
       }
 
       // always specify an orthogonal frame if !identity for backwards compatibility
-      Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, true);
+      Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, false);
 
       // specify a general matrix if elliptical sections
       const ellipticalSections = !xySameLength || !vectorX.isPerpendicularTo(vectorY, true);
