@@ -22,7 +22,7 @@ export class TestSchemaLocater implements ISchemaLocater {
     return context.getCachedSchema(schemaKey, matchType);
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 

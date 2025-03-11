@@ -89,7 +89,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
-    "electron": "^34.0.0",
+    "electron": "^35.0.0",
     "eslint": "^9.13.0",
     "express": "^4.21.2",
     "express-ws": "^5.0.2",

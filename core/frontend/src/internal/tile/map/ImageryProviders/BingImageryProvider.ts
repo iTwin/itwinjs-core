@@ -145,7 +145,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     }
     return matchingAttributions;
   }
-
+   /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
@@ -161,6 +161,11 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     }
 
     cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg }));
+  }
+
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards, vp));
   }
 
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.

@@ -16,6 +16,7 @@ Table of contents:
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
+  - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
@@ -53,6 +54,7 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
+    - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -108,6 +110,30 @@ The Presentation system is moving towards a more modular approach, with smaller 
 
 The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
 
+## Google Maps 2D tiles API
+
+The `@itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
+
+To enable it as a base map, it's simple as:
+
+ ```typescript
+import { GoogleMaps } from "@itwin/map-layers-formats";
+const ds = IModelApp.viewManager.selectedView.displayStyle;
+ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
+```
+
+Can also be attached as a map-layer:
+
+```ts
+[[include:GoogleMaps_AttachMapLayerSimple]]
+```
+
+  > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+
+```ts
+[[include:GoogleMaps_SetGoogleMapsApiKey]]
+```
+
 ## Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
@@ -138,7 +164,7 @@ The unified selection system has been part of `@itwin/presentation-frontend` for
   }
   ```
 
-  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement *both* `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - *either* with [IDisposable.dispose]($core-bentley) *or* `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
 
 ### @itwin/core-common
 
@@ -157,6 +183,10 @@ The unified selection system has been part of `@itwin/presentation-frontend` for
   - `SelectionSetEvent.added` and `SelectionSetEvent.removed` - use `SelectionSetEvent.additions.elements` and `SelectionSetEvent.removals.elements` instead.
 
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
+
+- Deprecated synchronous [addLogoCards]($core-frontend)-related APIs in favor of new asynchronous ones:
+  - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
+  - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
 
@@ -229,7 +259,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release (Electron 34) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only the latest Electron release ([Electron 35](https://www.electronjs.org/blog/electron-35-0)) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
@@ -541,7 +571,7 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the *fast-forward* method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
@@ -610,3 +640,13 @@ class MyElement extends Element {
   ...
 }
 ```
+
+## Attach/detach db
+
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
+
+```ts
+[[include:IModelDb_attachDb.code]]
+```
+
+> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'

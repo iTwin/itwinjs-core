@@ -1,6 +1,6 @@
 {
   "name": "@itwin/hypermodeling-frontend",
-  "version": "5.0.0-dev.68",
+  "version": "5.0.0-dev.80",
   "description": "iTwin.js hypermodeling package",
   "main": "lib/cjs/hypermodeling-frontend.js",
   "module": "lib/esm/hypermodeling-frontend.js",

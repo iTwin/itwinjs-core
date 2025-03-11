@@ -224,6 +224,12 @@ export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number;
 // @public (undocumented)
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number;
 
+// @beta
+export function compareSimpleArrays(lhs?: SimpleTypesArray, rhs?: SimpleTypesArray): number;
+
+// @beta
+export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number;
+
 // @public (undocumented)
 export function compareStrings(a: string, b: string): number;
 
@@ -1557,6 +1563,9 @@ export enum RpcInterfaceStatus {
 
 // @public
 export function shallowClone<T>(value: T): T;
+
+// @beta
+export type SimpleTypesArray = number[] | string[] | boolean[];
 
 // @public
 export class SortedArray<T> extends ReadonlySortedArray<T> {

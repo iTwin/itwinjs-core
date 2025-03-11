@@ -31,7 +31,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
-  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
     return context.getCachedSchema(schemaKey, matchType);
   }
@@ -41,7 +41,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     const schemaProps = this._getSchema(schemaKey.name);
     if (!schemaProps)
       return undefined;
@@ -59,13 +59,11 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [Error]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
-  public getSchemaSync(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const schemaProps = this._getSchema(schemaKey.name);
     if (!schemaProps)
       return undefined;
 
-    context = context ? context : new SchemaContext();
-    return Schema.fromJsonSync(schemaProps, context);
+    return Schema.fromJsonSync(schemaProps, context || new SchemaContext());
   }
-
 }
