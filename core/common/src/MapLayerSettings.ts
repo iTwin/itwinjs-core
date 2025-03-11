@@ -191,7 +191,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 }
 
 /** The target onto which to drape a model map layer.
- * @public
+ * @beta
  */
 export enum ModelMapLayerDrapeTarget {
   /** Drape only onto the background map. */
@@ -208,6 +208,7 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
   /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
   modelId: Id64String;
   /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.BackgroundMap]($common).
+   * @beta
    */
   drapeTarget?: ModelMapLayerDrapeTarget;
 
@@ -534,6 +535,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  * @public
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
+  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.BackgroundMap]($common).
+   * @beta
+   */
   public readonly drapeTarget: ModelMapLayerDrapeTarget;
   public readonly modelId: Id64String;
   public override get source(): string { return this.modelId; }
