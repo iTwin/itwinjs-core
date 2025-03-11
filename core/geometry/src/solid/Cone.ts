@@ -32,7 +32,9 @@ import { SolidPrimitive } from "./SolidPrimitive";
  * * If `vectorX` and `vectorY` are orthonormal, the cross sections are circular, with sections at v = 0 and v = 1 having radius
  * `radiusA` and `radiusB`, respectively; otherwise, the cross sections are elliptical.
  * * The stored matrix encapsulates `vectorX`, `vectorY`, and `vectorZ` in the respective columns. Typically the first two columns
- * are unit length, and the last is full length.
+ * are orthogonal and unit length, and the last is full length.
+ * * Creating a Cone without orthogonal xy-axes of equal length is possible, but not recommended, for the resulting geometry
+ * lacks portability; for example, such a Cone cannot be represented as a DGN element (see [[createDgnCone]]).
  * @public
  */
 export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {

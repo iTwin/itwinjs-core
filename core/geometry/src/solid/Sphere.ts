@@ -28,6 +28,8 @@ import { SolidPrimitive } from "./SolidPrimitive";
  * A sphere mapped by an arbitrary transform.
  * * Typically, the stored matrix has orthogonal columns. In this case, if two columns have equal length, the
  * resulting geometry is ellipsoidal; if all three columns have equal length, the resulting geometry is a sphere.
+ * * Creating a Sphere without orthogonal columns is possible, but not recommended, for the resulting geometry
+ * lacks portability; for example, such a Sphere cannot be represented as a DGN element (see [[createDgnSphere]]).
  * @public
  */
 export class Sphere extends SolidPrimitive implements UVSurface {
