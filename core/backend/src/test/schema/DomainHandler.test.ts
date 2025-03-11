@@ -308,7 +308,7 @@ describe("Domain Handlers - Old", () => {
 
   after(async () => {
     iModelDb.close();
-    sinon.restore();
+    Schemas.unregisterSchema(TestSchema.schemaName);
   });
 
   afterEach(() => {
@@ -477,7 +477,6 @@ describe("Domain Handlers - Old", () => {
       }
     };
     const elementId2 = iModelDb.elements.insertElement(elementProps2);
-
 
     const componentProps = {
       classFullName: Component.classFullName,
@@ -550,8 +549,8 @@ describe("Domain Handlers - New", () => {
 
   before(async () => {
     // Create iModel
-    iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DomainHandlers", "DomainHandlers.bim"), {
-      rootSubject: { name: "HandlerTest", description: "Test of Domain Handlers." },
+    iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DomainHandlers", "DomainHandlers2.bim"), {
+      rootSubject: { name: "HandlerTest2", description: "Test of New Domain Handlers." },
       client: "Functional",
       globalOrigin: { x: 0, y: 0 },
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
@@ -583,7 +582,7 @@ describe("Domain Handlers - New", () => {
 
   after(async () => {
     iModelDb.close();
-    sinon.restore();
+    Schemas.unregisterSchema(TestSchema2.schemaName);
   });
 
   afterEach(() => {
@@ -627,7 +626,7 @@ describe("Domain Handlers - New", () => {
     };
 
     // New Element and a sub Model
-    const partitionId = iModelDb.elements.insertElement2(partitionProps);
+    const partitionId = iModelDb.elements.insertElement2(partitionProps, {useJsNames: true});
     modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     // Insert Element into that sub Model
@@ -640,7 +639,7 @@ describe("Domain Handlers - New", () => {
         value: "Breakdown1"
       }
     };
-    const elementId = iModelDb.elements.insertElement2(elementProps);
+    const elementId = iModelDb.elements.insertElement2(elementProps, {useJsNames: true});
     const model = iModelDb.models.getModel(modelId);
     model.update(); // Update the model as a whole
     const element = iModelDb.elements.getElement(elementId);
@@ -753,7 +752,6 @@ describe("Domain Handlers - New", () => {
     };
     const elementId2 = iModelDb.elements.insertElement(elementProps2);
 
-
     const componentProps = {
       classFullName: Component.classFullName,
       model: modelId,
@@ -811,4 +809,8 @@ describe("Domain Handlers - New", () => {
     const model = iModelDb.models.getModel(modelId);
     model.delete();
   });
+});
+
+after(async () => {
+  sinon.restore();
 });
