@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Point3d, Range2d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
+import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
@@ -147,21 +147,17 @@ export class TextAnnotation {
    * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
    * The text block will be rotated around the fixed anchor point according to [[orientation]], then translated by [[offset]].
-   * The anchor point will coincide with (0, 0, 0).
-   * @param boundingBox A box fully containing the [[textBlock]].
+   * The anchor point will coincide with (0, 0, 0) unless an [[offset]] is present.
+   * @param boundingBox A box fully containing the [[textBlock]]. This range should include the margins.
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
+   * @see [computeLayoutTextBlockResult]($backend) to lay out a `TextBlock`.
    */
   public computeTransform(boundingBox: Range2d): Transform {
     const anchorPt = this.computeAnchorPoint(boundingBox);
     const matrix = this.orientation.toMatrix3d();
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
-
-    const marginOffset = this.computeMarginOffset(boundingBox);
-    rotation.multiplyVector(marginOffset, marginOffset);
-
-    const offset = this.offset.plus(marginOffset);
-    const translation = Transform.createTranslation(offset.minus(anchorPt));
+    const translation = Transform.createTranslation(this.offset.minus(anchorPt));
 
     return translation.multiplyTransformTransform(rotation, rotation);
   }
@@ -193,44 +189,6 @@ export class TextAnnotation {
     }
 
     return new Point3d(x, y, 0);
-  }
-
-  /**
-   * TODO
-   */
-  public computeMarginOffset(_boundingBox: Range2d): Vector3d {
-    const offset = Vector3d.createZero();
-    const xVec = Vector3d.unitX();
-    const yVec = Vector3d.unitY().negate(); // Y axis points up in screen space.
-
-    // If not defined, margins are 0.
-    const margins = this.textBlock.margins;
-
-    switch (this.anchor.horizontal) {
-      case "left":
-        offset.plusScaled(xVec, margins.left, offset);
-        break;
-      case "center":
-        offset.plusScaled(xVec, (margins.left - margins.right) / 2, offset);
-        break;
-      case "right":
-        offset.plusScaled(xVec.negate(), margins.right, offset);
-        break;
-    }
-
-    switch (this.anchor.vertical) {
-      case "top":
-        offset.plusScaled(yVec, margins.top, offset);
-        break;
-      case "middle":
-        offset.plusScaled(yVec, (margins.top - margins.bottom) / 2, offset);
-        break;
-      case "bottom":
-        offset.plusScaled(yVec.negate(), margins.bottom, offset);
-        break;
-    }
-
-    return offset;
   }
 
   /** Returns true if this annotation is logically equivalent to `other`. */

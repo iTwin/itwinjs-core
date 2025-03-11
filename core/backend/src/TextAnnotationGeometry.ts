@@ -165,18 +165,18 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       });
     });
 
-    // Draw a blue cross to show the element's origin
+    // Draw a blue x to show the anchor point - Rotation occurs around this point. The x will be 1 m by 1 m.
     context.entries.push({
       separator: {
-        startPoint: [-1, 0, 0],
-        endPoint: [1, 0, 0],
+        startPoint: [debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0],
+        endPoint: [debugAnchorPt.x + 1, debugAnchorPt.y + 1, 0],
       },
     });
 
     context.entries.push({
       separator: {
-        startPoint: [0, -1, 0],
-        endPoint: [0, 1, 0],
+        startPoint: [debugAnchorPt.x + 1, debugAnchorPt.y - 1, 0],
+        endPoint: [debugAnchorPt.x - 1, debugAnchorPt.y + 1, 0],
       },
     });
 
@@ -197,25 +197,6 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
           endPoint: [next.x, next.y, 0],
         },
       });
-    });
-
-    // Draw a red x to show the anchor point
-    context.entries.push({
-      separator: {
-        startPoint: [debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0],
-        endPoint: [debugAnchorPt.x + 1, debugAnchorPt.y + 1, 0],
-      },
-    });
-
-    context.entries.push({
-      separator: {
-        startPoint: [debugAnchorPt.x + 1, debugAnchorPt.y - 1, 0],
-        endPoint: [debugAnchorPt.x - 1, debugAnchorPt.y + 1, 0],
-      },
-    });
-
-    context.entries.push({
-      color: ColorDef.blue.toJSON(),
     });
   }
 
@@ -253,7 +234,7 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
     textBlock: args.annotation.textBlock,
   });
 
-  const dimensions = layout.range;
+  const dimensions = layout.marginRange;
   const transform = args.annotation.computeTransform(dimensions);
 
   const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
