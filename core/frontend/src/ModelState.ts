@@ -197,7 +197,8 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     });
     }
 
-    return createPrimaryTileTreeReference(view, this);
+    return createPrimaryTileTreeReference(view, this, mapImagery.backgroundBase, mapImagery.backgroundLayers);
+
   }
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).

@@ -8,7 +8,7 @@
 
 import { BaseLayerSettings, ColorDef, MapLayerSettings } from "@itwin/core-common";
 import { SceneContext } from "../ViewContext";
-import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, LayerTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeReference } from "./internal";
+import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, IModelTileTree, LayerTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeReference } from "./internal";
 import { IModelConnection } from "../IModelConnection";
 
 export abstract class LayerTileTreeReference extends TileTreeReference {
@@ -144,8 +144,9 @@ export abstract class LayerTileTreeReference extends TileTreeReference {
 
   public clearLayers() {
     const tree = this.treeOwner.tileTree;
-    if (undefined !== tree)
-      (tree as LayerTileTree).clearLayers();
+    if (tree instanceof LayerTileTree || tree instanceof IModelTileTree) {
+      tree.clearLayers();
+    }
   }
 
   public setLayerSettings(layerSettings: MapLayerSettings[]) {

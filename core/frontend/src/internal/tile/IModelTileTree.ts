@@ -490,9 +490,9 @@ export class IModelTileTree extends TileTree {
   }
 
   // // /** @internal */
-  // public clearLayers() {
-  //   this._rootTile.clearLayers();
-  // }
+  public clearLayers() {
+    this._rootTile.clearLayers();
+  }
 
   /** @internal */
   protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: IModelTile[]) {
