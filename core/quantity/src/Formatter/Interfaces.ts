@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-import { UnitProps } from "../Interfaces";
+import { UnitProps, UnitSystemKey } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
 /** This interface defines the persistence format for describing the formatting of quantity values.
@@ -93,4 +93,19 @@ export interface CloneOptions {
   precision?: DecimalPrecision | FractionalPrecision;
   /** allows primary unit and label to be specified */
   primaryUnit?: CloneUnit;
+}
+
+/**
+ * This interface defines properties necessary to support persistence of a set of formats.
+ * @beta
+ */
+export interface PresentationFormatSet {
+  id: string;
+  name: string;
+  unitSystem: UnitSystemKey; // ????? Do we want this? Maybe this is an application level thing instead of in core?
+  formats: (FormatProps & { // Similarities with SchemaItemProps
+    id: string;
+    description?: string;
+    label?: string; // For display
+  })[];
 }

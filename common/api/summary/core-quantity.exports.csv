@@ -39,6 +39,7 @@ beta;class;ParserSpec
 beta;function;parseScientificType
 beta;function;parseShowSignOption
 beta;interface;PotentialParseUnit
+beta;interface;PresentationFormatSet
 beta;class;Quantity
 internal;class;QuantityConstants
 beta;class;QuantityError
