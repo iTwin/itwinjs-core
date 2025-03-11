@@ -2,6 +2,18 @@
   "name": "@itwin/map-layers-formats",
   "entries": [
     {
+      "version": "4.10.10",
+      "tag": "@itwin/map-layers-formats_v4.10.10",
+      "date": "Tue, 11 Mar 2025 15:25:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.9",
+      "tag": "@itwin/map-layers-formats_v4.10.9",
+      "date": "Tue, 11 Mar 2025 05:17:33 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.10.8",
       "tag": "@itwin/map-layers-formats_v4.10.8",
       "date": "Thu, 06 Mar 2025 14:13:37 GMT",

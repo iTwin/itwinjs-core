@@ -31,11 +31,11 @@
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodel-transformer": "^0.4.2",
-    "@itwin/itwins-client": "^1.2.0",
+    "@itwin/itwins-client": "^1.6.1",
     "@itwin/map-layers-formats": "workspace:*",
     "@itwin/service-authorization": "^1.0.0",
     "@xmldom/xmldom": "~0.8.5",
-    "azurite": "^3.33.0",
+    "azurite": "^3.34.0",
     "fs-extra": "^8.1.0",
     "get-system-fonts": "^2.0.2"
   },
