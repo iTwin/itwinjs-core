@@ -13,7 +13,12 @@ import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { ImplicitCurve2d } from "./implicitCurve2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 
-
+/**
+ * An UnboundedLine2dByPointAndNormal represents an infinite line by
+ * a single point on the line and a normal vector.
+ * * The normal vector is NOT required to be a unit (normalized) vector.
+ * * Use method `cloneNormalizedFromOrigin` to create a line with unit normal.
+ */
 export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
   /** The Cartesian coordinates of any point on the line. */
   public point: Point2d;
@@ -27,59 +32,54 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
 
   }
   /**
-   * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
-   * @param pointX
-   * @param pointY
-   * @param normalX
-   * @param normalY
-   * @returns
+   * Create an UnboundedLine2dByPointAndNormal from XY parts of a point on the line and the normal vector.
+   * @param pointX x coordinate of a reference point on the line
+   * @param pointY y coordinate of the reference point
+   * @param normalX x component of normal vector
+   * @param normalY y componnet of normal vector
+   * @returns new line object.
    */
   public static createPointXYNormalXY (pointX: number, pointY: number, normalX: number, normalY: number): UnboundedLine2dByPointAndNormal{
     return new UnboundedLine2dByPointAndNormal (Point2d.create (pointX, pointY), Vector2d.create (normalX, normalY));
   }
   /**
-   * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
-   * @param pointX
-   * @param pointY
-   * @param normalX
-   * @param normalY
-   * @returns
+   * Create an UnboundedLine2dByPointAndNormal from a point on the line and a normal vector.
+   * @param point any point on the line
+   * @param normal the normal vector
+   * @returns new line object.
    */
   public static createPointNormal (point: Point2d, normal: Vector2d): UnboundedLine2dByPointAndNormal{
-    return new UnboundedLine2dByPointAndNormal (point.clone(),normal.clone ());
+    return new UnboundedLine2dByPointAndNormal (
+      Point2d.create (point.x, point.y), Vector2d.create (normal.x, normal.y));
   }
     /**
-   * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
-   * * The normal vector points to the left of the direction vector.
-   * @param pointX
-   * @param pointY
-   * @param directionX
-   * @param normalY
-   * @returns
+   * Create an UnboundedLine2dByPointAndNormal from XY parts of a point on the line and a vector along the line
+   * @param pointX x coordinate of a reference point on the line
+   * @param pointY y coordinate of the reference point
+   * @param directionX x component of the vector along the line
+   * @param directionY y componnet of the vector along the line
+   * @returns new line object.
    */
     public static createPointXYDirectionXY (pointX: number, pointY: number, directionX: number, directionY: number): UnboundedLine2dByPointAndNormal{
         return new UnboundedLine2dByPointAndNormal (Point2d.create (pointX, pointY), Vector2d.create (directionY, -directionX));
       }
     /**
-   * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
-   * * The normal vector points to the left of the direction vector.
-   * @param pointX
-   * @param pointY
-   * @param directionX
-   * @param directionY
+   * Create an UnboundedLine2dByPointAndNormal from XY parts of two points on the line.
+   * @param pointAX x coordinate of first point on the line
+   * @param ApointY y coordinate of first point on the line
+   * @param pointBX x coordinate of second point on the line
+   * @param pointBY y componnet of second pont on the line
+   * @returns new line object.
    * @returns
    */
     public static createPointXYPointXY (pointAX: number, pointAY: number, pointBX: number, pointBY: number): UnboundedLine2dByPointAndNormal{
         return this.createPointXYDirectionXY (pointAX, pointAY, pointBX-pointAX, pointBY-pointAY);
       }
     /**
-   * Create an ImplicitLine2d from XY parts of a point on the line and the normal vector.
-   * * The normal vector points to the left of the direction vector.
-   * @param pointX
-   * @param pointY
-   * @param directionX
-   * @param directionY
-   * @returns
+   * Create an UnboundedLine2dByPointAndNormal from two points on the line.
+   * @param pointA first point on the line
+   * @param pointB second point on the line
+   * @returns new line object.
    */
     public static createPointPoint (pointA: XAndY, pointB: XAndY): UnboundedLine2dByPointAndNormal{
       return this.createPointXYDirectionXY (pointA.x, pointA.y, pointB.x-pointA.x, pointB.y-pointA.y);
@@ -95,16 +95,28 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
  */
     public override functionValue(xy: XAndY): number {
         return this.normal.dotProductStartEnd (this.point, xy);}
-        /**
-         * @returns a vector along the line, i.e. rotated 90 degrees from the normal vector.
-         */
-    public vectorAlongLine () : Vector2d {return this.normal.rotate90CCWXY();}
+  /**
+   *
+   * @param xy space paoint
+   * @returns unnit normal of the line.
+   */
+  public override gradiant (_xy: XAndY) : Vector2d {
+    const unit = this.normal.normalize ();
+    if (unit !== undefined)
+      return unit;
+    return Vector2d.create (0,0);
+    }
 
-    public override closestPoint(xy: XAndY, _biasPoint?: XAndY): Point2d {
+    /**
+     * @returns a vector along the line, i.e. rotated 90 degrees from the normal vector, with normal to the left
+     */
+    public vectorAlongLine () : Vector2d {return this.normal.rotate90CWXY();}
+    public override emitPerpendiculars(spacePoint: Point2d,
+      handler :(curvePoint: Point2d)=>any):any{
         const fraction = Geometry.fractionOfProjectionToVectorXYXY (
-            xy.x - this.point.x, xy.y-this.point.y, this.normal.x, this.normal.y);
-        return Point2d.create (xy.x - fraction * this.normal.x, xy.y - fraction * this.normal.y);
-   }
+          spacePoint.x - this.point.x, spacePoint.y-this.point.y, this.normal.x, this.normal.y);
+        handler (spacePoint.plusScaled (this.normal, -fraction));
+      }
    public  allNormalsToPoint(xy: XAndY):Point2d[] | undefined {
     const fraction = Geometry.fractionOfProjectionToVectorXYXY (
         xy.x - this.point.x, xy.y-this.point.y, this.normal.x, this.normal.y);
