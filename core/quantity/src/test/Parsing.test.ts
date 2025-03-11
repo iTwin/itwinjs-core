@@ -176,10 +176,56 @@ describe("Parsing tests:", () => {
     ];
     for (const test of tests) {
       const tokens = Parser.parseQuantitySpecification(test.input, format);
-      expect(tokens.length).toEqual(test.expectedTokens.length);
+      expect(tokens.length).to.eql(test.expectedTokens.length);
 
       for (let j = 0; j < tokens.length; j++) {
-        expect(tokens[j].value).toEqual(test.expectedTokens[j].value);
+        expect(tokens[j].value).to.eql(test.expectedTokens[j].value);
+      }
+    }
+  });
+
+  it("Generate Parse Tokens from composite string with dash spacer without math operations allowed", async () => {
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "-",
+        units: [
+          {
+            label: "'",
+            name: "Units.FT",
+          },
+          {
+            label: `"`,
+            name: "Units.IN",
+          },
+        ],
+      },
+      decimalSeparator: ".",
+      formatTraits: [
+        "KeepSingleZero",
+        "ShowUnitLabel",
+      ],
+      precision: 8,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      type: "Fractional",
+      uomSeparator: "",
+      allowMathematicOperations: false,
+    };
+    const format = new Format("test");
+    const unitsProvider = new TestUnitsProvider();
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+
+    const tests = [
+      {input: "12'-6 1/2\"", expectedTokens: [{ value: 12 }, { value: "'" }, { value: 6.5 }, { value: '"' }]},
+      {input: "-2FT-6IN + 6IN", expectedTokens: [{value: "-", isOperand: true}, { value: 2 }, { value: "FT" }, { value: 6 }, { value: "IN" }, { value: "+", isOperand: true }, { value: 6 }, { value: "IN" }]},
+    ];
+    for (const test of tests) {
+      const tokens = Parser.parseQuantitySpecification(test.input, format);
+      expect(tokens.length).to.eql(test.expectedTokens.length);
+
+      for (let j = 0; j < tokens.length; j++) {
+        expect(tokens[j].value).to.eql(test.expectedTokens[j].value);
       }
     }
   });
@@ -690,7 +736,7 @@ describe("Parsing tests:", () => {
     for (const testEntry of testData) {
       const result = parserSpec.parseToQuantityValue(testEntry.value);
       expect(result.ok).to.be.true;
-      expect((result as ParsedQuantity).value).toEqual(testEntry.magnitude);
+      expect((result as ParsedQuantity).value).to.eql(testEntry.magnitude);
     }
   });
 
