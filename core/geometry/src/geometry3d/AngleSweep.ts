@@ -185,10 +185,20 @@ export class AngleSweep implements BeJSONFunctions {
       return AngleSweep.createStartEndRadians(this.endRadians, this.startRadians + s * Math.PI, result);
   }
   /** Restrict start and end angles to the degree range [-90,+90]. */
-  public capLatitudeInPlace() {
+  public capLatitudeInPlace(): void {
     const limit = 0.5 * Math.PI;
     this._radians0 = Geometry.clampToStartEnd(this._radians0, -limit, limit);
     this._radians1 = Geometry.clampToStartEnd(this._radians1, -limit, limit);
+  }
+  /**
+   * Restrict [[sweepDegrees]] to the range [-360, 360].
+   * The start angle and sign of the sweep angle are unchanged.
+   */
+  public clampToFullCircle(result?: AngleSweep): AngleSweep {
+    result = result ?? new AngleSweep();
+    const sweepRadians = Geometry.clampToStartEnd(this.sweepRadians, -Angle.pi2Radians, Angle.pi2Radians);
+    result.setStartEndRadians(this._radians0, this._radians0 + sweepRadians);
+    return result;
   }
   /** Ask if the sweep is counterclockwise, i.e. positive sweep. */
   public get isCCW(): boolean {

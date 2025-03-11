@@ -3447,14 +3447,13 @@ export interface FlatBufferGeometryStream {
 }
 
 // @beta
-interface FontFace_2 {
+export interface FontFace {
     familyName: string;
     // (undocumented)
     isBold: boolean;
     // (undocumented)
     isItalic: boolean;
 }
-export { FontFace_2 as FontFace }
 
 // @public
 export interface FontFamilyDescriptor {
@@ -4793,6 +4792,8 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     modelId?: never;
     // @beta
+    properties?: MapLayerProviderProperties;
+    // @beta
     queryParams?: {
         [key: string]: string;
     };
@@ -4826,6 +4827,8 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
+    // @beta
+    readonly properties?: MapLayerProviderProperties;
     // @beta
     savedQueryParams?: {
         [key: string]: string;
@@ -5321,6 +5324,7 @@ export type IpcInvokeReturn = {
         errorKey: string;
         message: string;
         stack?: string;
+        metadata?: LoggingMetaData;
         [key: string]: any;
     };
 };
@@ -5737,6 +5741,15 @@ export interface MapLayerKey {
 
 // @public
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
+
+// @beta
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
+
+// @beta
+export interface MapLayerProviderProperties {
+    // (undocumented)
+    [key: string]: number | string | boolean | MapLayerProviderArrayProperty;
+}
 
 // @public
 export abstract class MapLayerSettings {
@@ -8183,7 +8196,7 @@ export class ResponseLike implements Response {
     // (undocumented)
     get trailer(): Promise<Headers>;
     // (undocumented)
-    get type(): ResponseType;
+    get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
     // (undocumented)
     get url(): string;
 }
@@ -10615,7 +10628,7 @@ export class Tween {
     // (undocumented)
     onStop(callback: TweenCallback): this;
     // (undocumented)
-    onUpdate(callback: UpdateCallback_2): this;
+    onUpdate(callback: UpdateCallback): this;
     // (undocumented)
     pause(time: number): this;
     // (undocumented)
@@ -10648,7 +10661,7 @@ export class Tweens {
     create(from: any, opts?: {
         to: any;
         duration: number;
-        onUpdate: UpdateCallback_2;
+        onUpdate: UpdateCallback;
         onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
@@ -10747,8 +10760,7 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
-type UpdateCallback_2 = (obj: any, t: number) => void;
-export { UpdateCallback_2 as UpdateCallback }
+export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {
