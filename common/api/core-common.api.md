@@ -1262,7 +1262,7 @@ export class Code implements CodeProps {
     // (undocumented)
     toString(): string;
     get value(): string;
-    set value(val: string);
+    set value(val: string | undefined);
 }
 
 // @public
@@ -3005,7 +3005,6 @@ export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
 export interface ElementProps extends EntityProps {
     code: CodeProps;
     federationGuid?: GuidString;
-    jsonProperties?: any;
     model: Id64String;
     parent?: RelatedElementProps;
     userLabel?: string;
@@ -3447,13 +3446,14 @@ export interface FlatBufferGeometryStream {
 }
 
 // @beta
-export interface FontFace {
+interface FontFace_2 {
     familyName: string;
     // (undocumented)
     isBold: boolean;
     // (undocumented)
     isItalic: boolean;
 }
+export { FontFace_2 as FontFace }
 
 // @public
 export interface FontFamilyDescriptor {
@@ -4018,7 +4018,7 @@ export class GeometryStreamBuilder {
     appendGeometryParamsChange(geomParams: GeometryParams): boolean;
     appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
     appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
-    appendGeometryRanges(): void;
+    appendGeometryRanges(subRange?: Range3d): void;
     appendImage(image: ImageGraphic): boolean;
     appendSubCategoryChange(subCategoryId: Id64String): boolean;
     // @beta
@@ -5781,6 +5781,9 @@ export abstract class MapLayerSettings {
     readonly visible: boolean;
 }
 
+// @internal
+export function mapNativeElementProps<T extends ElementProps>(props: NativeInterfaceMap<T>, loadProps?: ElementLoadOptions): T;
+
 // @public
 export interface MapSubLayerProps {
     // (undocumented)
@@ -6177,6 +6180,9 @@ export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
 }
+
+// @internal
+export type NativeInterfaceMap<T> = Extract<NativeInterfaceMapping, [unknown, T]>[0];
 
 // @public
 export interface NavigationBindingValue {
@@ -8196,7 +8202,7 @@ export class ResponseLike implements Response {
     // (undocumented)
     get trailer(): Promise<Headers>;
     // (undocumented)
-    get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
+    get type(): ResponseType;
     // (undocumented)
     get url(): string;
 }
@@ -10628,7 +10634,7 @@ export class Tween {
     // (undocumented)
     onStop(callback: TweenCallback): this;
     // (undocumented)
-    onUpdate(callback: UpdateCallback): this;
+    onUpdate(callback: UpdateCallback_2): this;
     // (undocumented)
     pause(time: number): this;
     // (undocumented)
@@ -10661,7 +10667,7 @@ export class Tweens {
     create(from: any, opts?: {
         to: any;
         duration: number;
-        onUpdate: UpdateCallback;
+        onUpdate: UpdateCallback_2;
         onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
@@ -10760,7 +10766,8 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
-export type UpdateCallback = (obj: any, t: number) => void;
+type UpdateCallback_2 = (obj: any, t: number) => void;
+export { UpdateCallback_2 as UpdateCallback }
 
 // @beta
 export interface UpgradeOptions {

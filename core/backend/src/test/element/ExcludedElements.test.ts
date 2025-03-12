@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { BisCodeSpec, DisplayStyle3dProps, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -63,5 +63,62 @@ describe("ExcludedElements", () => {
 
     await test(true);
     await test(false);
+  });
+
+  it("should exclude script element ids if requested", async () => {
+    const styleHasNonEmptyElementIds = (styleProps: DisplayStyleProps) => {
+      expect(styleProps.jsonProperties).not.to.be.undefined;
+      expect(styleProps.jsonProperties!.styles).not.to.be.undefined;
+      const script = styleProps.jsonProperties!.styles!.scheduleScript!;
+      expect(script).not.to.be.undefined;
+
+      expect(script.length).least(1);
+      let numElementIdProps = 0;
+      let numNonEmptyElementIdProps = 0;
+      for (const modelTimeline of script) {
+        expect(modelTimeline.elementTimelines.length).least(1);
+        for (const elementTimeline of modelTimeline.elementTimelines) {
+          expect(elementTimeline.elementIds).not.to.be.undefined;
+          ++numElementIdProps;
+          if (0 < elementTimeline.elementIds.length)
+            ++numNonEmptyElementIdProps;
+        }
+      }
+
+      expect(numElementIdProps).least(1);
+      return numNonEmptyElementIdProps > 0;
+    };
+
+    const props: DisplayStyleProps = {
+      classFullName: DisplayStyle3d.classFullName,
+      model: IModel.dictionaryId,
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      isPrivate: false,
+      jsonProperties: {
+        styles: {
+          scheduleScript: [{
+            modelId: "0xadf",
+            realityModelUrl: "askjeeves.com",
+            elementTimelines: [{
+              batchId: 54,
+              elementIds: ["0x1", "0x2", "0x3", "0x4"],
+            }],
+          }],
+        },
+      },
+    };
+
+    const styleId = imodel.elements.insertElement(props);
+    expect(styleId).not.to.equal(Id64.invalid);
+    imodel.saveChanges();
+
+    let elementProps = imodel.elements.getElementProps<DisplayStyle3dProps>({ id: styleId});
+    expect(styleHasNonEmptyElementIds(elementProps)).to.be.true;
+
+    elementProps = imodel.elements.getElementProps<DisplayStyle3dProps>({ id: styleId, displayStyle: { omitScheduleScriptElementIds: false }});
+    expect(styleHasNonEmptyElementIds(elementProps)).to.be.true;
+
+    elementProps = imodel.elements.getElementProps<DisplayStyle3dProps>({ id: styleId, displayStyle: { omitScheduleScriptElementIds: true }});
+    expect(styleHasNonEmptyElementIds(elementProps)).to.be.false;
   });
 });
