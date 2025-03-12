@@ -51,11 +51,7 @@
     "@itwin/imodels-client-authoring": "^5.8.1",
     "@itwin/imodels-client-management": "^5.8.1",
     "@itwin/reality-data-client": "^1.2.1",
-<<<<<<< HEAD
-    "azurite": "^3.32.0",
-=======
     "azurite": "^3.34.0",
->>>>>>> 5088628820 (resolve cve GHSA-jr5f-v2jv-69x6 (#7824))
     "chai-as-promised": "^7.1.1",
     "chai": "^4.3.10",
     "electron": "^33.0.0",
