@@ -461,7 +461,7 @@ describe("Solids", () => {
   });
 
   it("DgnSolids", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     // exercise the "Dgn" flavors of Sphere and Cone. These coerce inputs to produce circular-section solids which can import as-is to DGN.
