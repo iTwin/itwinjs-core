@@ -102,6 +102,7 @@ describe("CrossPlatform", () => {
   it("SkewSolidPrimitives", () => {
     const ck = new Checker();
 
+    // NOTE: some old native JSON files are empty or trivial because old serialization code returned error
     const testCases: TestCase[] = [];
     for (const testName of ["sphere-nonuniform-scale", "sphere-skew-axes", "cone-elliptical-perp", "cone-elliptical-skew"])
       testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}-new.imjs`, `${nativeRoot}${testName}-old.imjs`]], [[`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}-new.imjs`, `${typeScriptRoot}${testName}-old.imjs`]]] });
