@@ -104,21 +104,25 @@ export class Entity {
   }
 
   /**
- * Invoke a callback on each property of the specified class, optionally including superclass properties.
- *
- * @param func The callback to be invoked on each property.
- * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
- *
- * @example
- * ```typescript
- * const callback: PropertyHandler = (name, property) => {
- *   console.log(`Property Name: ${name}`);
- *   console.log(`Property Class:`, property.class);
- * };
- *
- * entity.executeForEachProperty(callback);
- * ```
- */
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   *
+   * This method iterates over the properties of the class, including those inherited from base classes and mixins,
+   * and applies the provided callback function to each property. The callback function can be used to perform
+   * operations on each property, such as logging or processing property metadata.
+   *
+   * @param func The callback to be invoked on each property. The callback receives the property name and the property metadata as arguments.
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   *
+   * @example
+   * ```typescript
+   * const callback: PropertyHandler = (name, property) => {
+   *   console.log(`Property Name: ${name}`);
+   *   console.log(`Property Class:`, property.class);
+   * };
+   *
+   * await entity.executeForEachProperty(callback);
+   * ```
+   */
   public async executeForEachProperty(func: PropertyHandler, includeCustom: boolean = true) {
     await this.iModel.schemaContext.forEachMetaDataOfClass(this.classFullName, true, func, EntityClass, includeCustom);
   }
