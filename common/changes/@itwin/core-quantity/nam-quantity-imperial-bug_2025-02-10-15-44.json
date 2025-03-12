@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Add limitations to quantity parsing logic",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
