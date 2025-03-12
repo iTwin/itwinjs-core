@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
 import {
-  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ElementAspectProps, ElementProps, EntityMetaData, EntityReferenceSet, ModelProps,
+  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
   RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
 import {
@@ -19,6 +19,7 @@ import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { OpenMode } from "@itwin/core-bentley";
+import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -34,47 +35,43 @@ describe("Class Registry", () => {
     imodel?.close();
   });
 
-  it("should verify the Entity metadata of known element subclasses", () => {
+  it("should verify the Entity metadata of known element subclasses", async () => {
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const metaData: EntityMetaData | undefined = el.getClassMetaData();
+      const metaData = await el.getMetaData();
       assert.exists(metaData);
-      if (undefined === metaData)
-        return;
-      assert.equal(metaData.ecclass, el.classFullName);
+
+      assert.equal(metaData.fullName, el.classFullName.replace(":", "."));
       // I happen to know that this is a BisCore:RepositoryLink
-      assert.equal(metaData.ecclass, RepositoryLink.classFullName);
+      assert.equal(metaData.fullName, RepositoryLink.classFullName.replace(":", "."));
       //  Check the metadata on the class itself
-      assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0], UrlLink.classFullName);
-      assert.equal(metaData.customAttributes![0].ecclass, "BisCore:ClassHasHandler");
+      assert.isDefined(metaData.baseClass);
+      assert.equal(metaData.baseClass?.fullName, UrlLink.classFullName.replace(":", "."));
+      assert.isTrue(metaData.customAttributes?.has("BisCore.ClassHasHandler"));
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.exists(metaData.properties);
-      assert.isDefined(metaData.properties.repositoryGuid);
-      const p = metaData.properties.repositoryGuid;
-      assert.equal(p.extendedType, "BeGuid");
-      assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
+      assert.isDefined(metaData.properties);
+      const repositoryGuidProperty = await metaData.getProperty("repositoryGuid") as PrimitiveProperty;
+      assert.isDefined(repositoryGuidProperty);
+      assert.equal(repositoryGuidProperty.extendedTypeName, "BeGuid");
+      assert.isTrue(repositoryGuidProperty.customAttributes?.has("CoreCustomAttributes.HiddenProperty"));
     }
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      const metaData = el2.getClassMetaData();
+      const metaData = await el2.getMetaData();
       assert.exists(metaData);
-      if (undefined === metaData)
-        return;
-      assert.equal(metaData.ecclass, el2.classFullName);
+
+      assert.equal(metaData.fullName, el2.classFullName.replace(":", "."));
       // I happen to know that this is a BisCore.SpatialViewDefinition
-      assert.equal(metaData.ecclass, SpatialViewDefinition.classFullName);
-      assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0], ViewDefinition3d.classFullName);
-      assert.exists(metaData.properties);
-      assert.isDefined(metaData.properties.modelSelector);
-      const n = metaData.properties.modelSelector;
-      assert.equal(n.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
+      assert.equal(metaData.fullName, SpatialViewDefinition.classFullName.replace(":", "."));
+      assert.isDefined(metaData.baseClass);
+      assert.equal(metaData.baseClass?.fullName, ViewDefinition3d.classFullName.replace(":", "."));
+      assert.isDefined(metaData.properties);
+      const modelSelectorProperty = await metaData.getProperty("modelSelector") as NavigationProperty;
+      assert.isDefined(modelSelectorProperty);
+      assert.equal(modelSelectorProperty.relationshipClass.fullName, "BisCore.SpatialViewDefinitionUsesModelSelector");
     }
   });
 
@@ -82,23 +79,22 @@ describe("Class Registry", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
+    const testDomainClass = await imodel.schemaContext.getSchemaItemByName("TestDomain", "TestDomainClass", EntityClass);
+    assert.isDefined(testDomainClass);
 
-    assert.equal(testDomainClass.baseClasses.length, 2);
-    assert.equal(testDomainClass.baseClasses[0], DefinitionElement.classFullName);
-    assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
+    assert.isDefined(testDomainClass?.baseClass);
+    assert.equal(testDomainClass?.baseClass?.fullName, DefinitionElement.classFullName.replace(":", "."));
 
-    // Ensures the IMixin has been loaded as part of getMetadata call above.
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    assert.isDefined(imodel.classMetaDataRegistry.find("TestDomain:IMixin"));
+    assert.isDefined(testDomainClass?.mixins);
+    assert.equal(testDomainClass?.mixins.length, 1);
+    assert.equal(testDomainClass?.mixins[0].fullName, "TestDomain.IMixin");
 
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
     const testData: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName) => {
-      testData.push(propName);
+
+    await IModelDb.forEachMetaDataOfClass(imodel, "TestDomain.TestDomainClass", true, (propName, _property) => {
+      testData.push(ECJsNames.toJsName(propName));
     }, false);
 
     const expectedString = testData.find((testString: string) => {

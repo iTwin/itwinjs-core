@@ -571,43 +571,27 @@ export class SchemaContext {
   }
 
   public async forEachMetaDataOfClass<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true): Promise<void> {
+    const { EntityClass: entityClass } = await import("./Metadata/EntityClass");
+    const { Mixin: mixin } = await import("./Metadata/Mixin");
+
+    const promises: Promise<void>[] = [];
+
     const metaData = this.getSchemaItemMetaData(classFullName, itemConstructor) as EntityClass | Mixin;
-    if (metaData instanceof (await import("./Metadata/EntityClass")).EntityClass)
-      await this.forEachMetaDataOfEntityClass(metaData, wantSuper, func, includeCustom);
-    else if (metaData instanceof (await import("./Metadata/Mixin")).Mixin)
-      await this.forEachMetaDataOfMixin(metaData, wantSuper, func, includeCustom);
-  }
-
-  private async forEachMetaDataOfEntityClass(metaData: EntityClass, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean): Promise<void> {
-    if (metaData.properties) {
+    if (metaData.properties !== undefined) {
       for (const property of metaData.properties) {
         if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
           func(property.name, property);
       }
     }
 
-    if (wantSuper) {
-      if (metaData.baseClass !== undefined)
-        await this.forEachMetaDataOfClass(metaData.baseClass.fullName, true, func, (await import("./Metadata/EntityClass")).EntityClass, includeCustom);
+    if (wantSuper && metaData.baseClass !== undefined)
+      promises.push(this.forEachMetaDataOfClass(metaData.baseClass.fullName, wantSuper, func, entityClass, includeCustom));
 
-      if (metaData.mixins) {
-        metaData.mixins.forEach(async (mixinClass) => {
-          await this.forEachMetaDataOfClass(mixinClass.fullName, true, func, (await import("./Metadata/Mixin")).Mixin, includeCustom);
-        });
-      }
-    }
-  }
-
-  private async forEachMetaDataOfMixin(metaData: Mixin, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean): Promise<void> {
-    if (metaData.properties) {
-      for (const property of metaData.properties) {
-        if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
-          func(property.name, property);
-      }
+    if (metaData instanceof entityClass && metaData.mixins !== undefined) {
+      for (const mixinClass of metaData.mixins)
+        promises.push(this.forEachMetaDataOfClass(mixinClass.fullName, wantSuper, func, mixin, includeCustom));
     }
 
-    if (wantSuper && metaData.baseClass !== undefined) {
-      await this.forEachMetaDataOfClass(metaData.baseClass.fullName, true, func, (await import("./Metadata/Mixin")).Mixin, includeCustom);
-    }
+    await Promise.all(promises);
   }
 }
