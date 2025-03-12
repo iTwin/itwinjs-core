@@ -1476,7 +1476,7 @@ export namespace IModelJson {
         coneProps.endRadius = radiusB;
       }
 
-      // always specify an orthogonal frame if !identity for backwards compatibility
+      // always specify an orthogonal frame for backwards compatibility
       Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, false);
 
       // specify a general matrix if elliptical sections
