@@ -242,7 +242,7 @@ export namespace IModelJson {
   /**
    * Interface for a [[Cone]], defined by two centers and radii.
    * * A Cone typically has circular sections perpendicular to the axis line between centers.
-   * * The cross section xy-plane is specified by an [[AxesProps]]:
+   * * The cross section xy-plane is specified by an [[IModelJson.AxesProps]]:
    *   * Typically this is an `xyVectors`.
    *   * Elliptical cross sections can be specified with `xyzVectors`, which admits skew vectors
    * and/or vectors of different lengths. Elliptical cross sections are scaled by radius.
@@ -441,7 +441,7 @@ export namespace IModelJson {
 
   /**
    * Interface for a [[Sphere]].
-   * * Local coordinate frame is supplied by an [[AxesProps]]:
+   * * Local coordinate frame is supplied by an [[IModelJson.AxesProps]]:
    *   * Typically this is a `zxVectors`.
    *   * Skew axes can be specified with `xyzVectors`, in which case any specified radii scale these axes;
    * all other AxesProps specify a right-handed orthonormal triad.
