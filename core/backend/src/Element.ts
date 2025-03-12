@@ -150,7 +150,7 @@ export class Element extends Entity {
    * @note `this` is the class of the Element to be inserted
    * @beta
    */
-  protected static onInsert(arg: OnElementPropsArg): void {
+  public static onInsert(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
     const operation = "insert";
     iModel.channels[_verifyChannel](arg.props.model);
@@ -165,7 +165,7 @@ export class Element extends Entity {
    * @note `this` is the class of the Element that was inserted
    * @beta
    */
-  protected static onInserted(arg: OnElementIdArg): void {
+  public static onInserted(arg: OnElementIdArg): void {
     const locks = arg.iModel.locks;
     if (locks && !locks.holdsExclusiveLock(arg.model))
       locks[_elementWasCreated](arg.id);
@@ -177,7 +177,7 @@ export class Element extends Entity {
    * @note `this` is the class of the Element to be updated
    * @beta
    */
-  protected static onUpdate(arg: OnElementPropsArg): void {
+  public static onUpdate(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
     iModel.channels[_verifyChannel](props.model);
     iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -189,7 +189,7 @@ export class Element extends Entity {
    * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(_arg: OnElementIdArg): void { }
+  public static onUpdated(_arg: OnElementIdArg): void { }
 
   /** Called before an Element is deleted.
    * @note throw an exception to disallow the delete
@@ -197,7 +197,7 @@ export class Element extends Entity {
    * @note `this` is the class of the Element to be deleted
    * @beta
    */
-  protected static onDelete(arg: OnElementIdArg): void {
+  public static onDelete(arg: OnElementIdArg): void {
     arg.iModel.channels[_verifyChannel](arg.model);
     arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
@@ -207,7 +207,7 @@ export class Element extends Entity {
    * @note `this` is the class of the Element that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnElementIdArg): void { }
+  public static onDeleted(_arg: OnElementIdArg): void { }
 
   /** Called when an element with an instance of this class as its parent is about to be deleted.
    * @note throw an exception if the element should not be deleted
@@ -216,91 +216,91 @@ export class Element extends Entity {
    * @note `this` is the class of the parent Element whose child will be deleted
    * @beta
    */
-  protected static onChildDelete(_arg: OnChildElementIdArg): void { }
+  public static onChildDelete(_arg: OnChildElementIdArg): void { }
 
   /** Called after an element with an instance of this class as its parent was successfully deleted.
    * @note `this` is the class of the parent Element whose child was deleted
    * @beta
    */
-  protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
+  public static onChildDeleted(_arg: OnChildElementIdArg): void { }
 
   /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
    * @note throw an exception if the element should not be inserted
    * @note `this` is the class of the prospective parent Element.
    * @beta
    */
-  protected static onChildInsert(_arg: OnChildElementPropsArg): void { }
+  public static onChildInsert(_arg: OnChildElementPropsArg): void { }
 
   /** Called after a *new element* with an instance of this class as its parent was inserted.
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildInserted(_arg: OnChildElementIdArg): void { }
+  public static onChildInserted(_arg: OnChildElementIdArg): void { }
 
   /** Called when an element with an instance of this class as its parent is about to be updated.
    * @note throw an exception if the element should not be updated
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildUpdate(_arg: OnChildElementPropsArg): void { }
+  public static onChildUpdate(_arg: OnChildElementPropsArg): void { }
 
   /** Called after an element with an instance of this the class as its parent was updated.
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
+  public static onChildUpdated(_arg: OnChildElementIdArg): void { }
 
   /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
    * @note throw an exception if the element should not be added
    * @note `this` is the class of the prospective parent Element.
    * @beta
    */
-  protected static onChildAdd(_arg: OnChildElementPropsArg): void { }
+  public static onChildAdd(_arg: OnChildElementPropsArg): void { }
 
   /** Called after an *existing element* has been updated so that an instance of this class is its new parent.
    * @note `this` is the class of the new parent Element.
    * @beta
    */
-  protected static onChildAdded(_arg: OnChildElementIdArg): void { }
+  public static onChildAdded(_arg: OnChildElementIdArg): void { }
 
   /** Called when an element with an instance of this class as its parent is about to be updated change to a different parent.
    * @note throw an exception if the element should not be dropped
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildDrop(_arg: OnChildElementIdArg): void { }
+  public static onChildDrop(_arg: OnChildElementIdArg): void { }
 
   /** Called after an element with an instance of this class as its previous parent was updated to have a new parent.
    * @note `this` is the class of the previous parent Element.
    * @beta
    */
-  protected static onChildDropped(_arg: OnChildElementIdArg): void { }
+  public static onChildDropped(_arg: OnChildElementIdArg): void { }
 
   /** Called when an instance of this class is being *sub-modeled* by a new Model.
    * @note throw an exception if model should not be inserted
    * @note `this` is the class of Element to be sub-modeled.
    * @beta
    */
-  protected static onSubModelInsert(_arg: OnSubModelPropsArg): void { }
+  public static onSubModelInsert(_arg: OnSubModelPropsArg): void { }
 
   /** Called after an instance of this class was *sub-modeled* by a new Model.
    * @note `this` is the class of Element that is now sub-modeled.
    * @beta
    */
-  protected static onSubModelInserted(_arg: OnSubModelIdArg): void { }
+  public static onSubModelInserted(_arg: OnSubModelIdArg): void { }
 
   /** Called when a sub-model of an instance of this class is being deleted.
    * @note throw an exception if model should not be deleted
    * @note `this` is the class of Element that is sub-modeled.
    * @beta
    */
-  protected static onSubModelDelete(_arg: OnSubModelIdArg): void { }
+  public static onSubModelDelete(_arg: OnSubModelIdArg): void { }
 
   /** Called after a sub-model of an instance of this class was deleted.
    * @note `this` is the class of Element that was sub-modeled.
    * @beta
    */
-  protected static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
+  public static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
 
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
