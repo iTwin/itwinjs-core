@@ -6,13 +6,13 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -23,7 +23,7 @@ import { V2CheckpointManager } from "../../CheckpointManager";
 import {
   _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
-  Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
@@ -35,6 +35,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
+import { _hubAccess } from "../../internal/Symbols";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -724,25 +725,24 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    using _r = new DisableNativeAssertions();
+    let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
-    });
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
   });
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
@@ -2222,11 +2222,11 @@ describe("iModel", () => {
       storageType: "azure?sas=1",
     };
 
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: { accessToken: "sas" } as any };
     });
-    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    const queryStub = sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
@@ -2266,8 +2266,8 @@ describe("iModel", () => {
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.CHECKPOINT_CACHE_DIR = "/foo/";
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
+    sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => undefined);
 
     const accessToken = "token";
     const error = await getIModelError(SnapshotDb.openCheckpointFromRpc({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
@@ -2561,10 +2561,9 @@ describe("iModel", () => {
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
     assert.throws(() => imodel1.prepareStatement(invalidSql, false));
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
-    const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
+    using statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);
     assert.isTrue(statement?.isPrepared);
-    statement!.dispose();
   });
 
   it("containsClass", () => {
@@ -2896,10 +2895,11 @@ describe("iModel", () => {
     const id0 = elements.insertElement(elementProps);
     const id1 = elements.insertElement(elementProps);
 
-    const props: RelationshipProps = {
+    const props: ElementGroupsMembersProps = {
       classFullName: "BisCore:ElementGroupsMembers",
       sourceId: id0,
       targetId: id1,
+      memberPriority: 1,
     };
 
     imodel.relationships.insertInstance(props)

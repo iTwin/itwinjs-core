@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import Backend from "i18next-http-backend";
 import * as path from "path";
-import rimraf from "rimraf";
+import { rimrafSync } from "rimraf";
 import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
@@ -74,16 +74,11 @@ export const initialize = async (props?: {
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const outputRoot = setupTestsOutputDirectory();
-  const tempCachesDir = path.join(outputRoot, "caches");
-  if (!fs.existsSync(tempCachesDir)) {
-    fs.mkdirSync(tempCachesDir);
-  }
 
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
     requestTimeout: DEFAULT_BACKEND_TIMEOUT,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
-    defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
@@ -106,7 +101,7 @@ export const initialize = async (props?: {
 
   const presentationTestingInitProps: PresentationInitProps = {
     backendProps: backendInitProps,
-    backendHostProps: { cacheDir: tempCachesDir },
+    backendHostProps: { cacheDir: outputRoot },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,
@@ -213,7 +208,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
   PresentationBackend.terminate();
   await IModelHost.shutdown();
   if (hierarchiesCacheDirectory) {
-    rimraf.sync(hierarchiesCacheDirectory);
+    rimrafSync(hierarchiesCacheDirectory);
   }
 
   // terminate frontend

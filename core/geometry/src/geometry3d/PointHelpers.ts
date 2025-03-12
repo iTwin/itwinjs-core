@@ -57,7 +57,7 @@ export class NumberArray {
     return sum;
   }
   /** Return true if arrays have identical counts and equal entries (using `!==` comparison) */
-  public static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean {
+  public static isExactEqual(dataA: any[] | Float64Array | Uint8Array | Uint32Array | undefined, dataB: any[] | Float64Array | Uint8Array | Uint32Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
         return false;
@@ -717,9 +717,9 @@ export class Point3dArray {
   }
 
   /**
-   * return an 2-dimensional array containing all the values of `data` in arrays of numPerBlock
-   * @param data simple array of numbers
-   * @param numPerBlock number of values in each block at first level down
+   * Return a 2-dimensional array containing all the values of `data` in arrays of numPerBlock
+   * @param data simple array of numbers.
+   * @param numPerBlock number of values in each block at first level down.
    */
   public static unpackNumbersToNestedArrays(data: Float64Array, numPerBlock: number): any[] {
     const result = [];

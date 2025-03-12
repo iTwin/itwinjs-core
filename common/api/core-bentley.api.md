@@ -224,6 +224,12 @@ export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number;
 // @public (undocumented)
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number;
 
+// @beta
+export function compareSimpleArrays(lhs?: SimpleTypesArray, rhs?: SimpleTypesArray): number;
+
+// @beta
+export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number;
+
 // @public (undocumented)
 export function compareStrings(a: string, b: string): number;
 
@@ -501,9 +507,15 @@ export class DisposableList implements IDisposable {
 }
 
 // @public
+export function dispose(disposable?: Disposable): undefined;
+
+// @public @deprecated (undocumented)
 export function dispose(disposable?: IDisposable): undefined;
 
 // @public
+export function disposeArray(list?: Disposable[]): undefined;
+
+// @public @deprecated (undocumented)
 export function disposeArray(list?: IDisposable[]): undefined;
 
 // @public
@@ -565,7 +577,7 @@ export enum GeoServiceStatus {
     OutOfMathematicalDomain = 147458,
     // (undocumented)
     OutOfUsefulRange = 147457,
-    // (undocumented)
+    // @deprecated (undocumented)
     Pending = 147462,
     // (undocumented)
     Success = 0,
@@ -674,7 +686,7 @@ export type Id64Set = Set<Id64String>;
 // @public
 export type Id64String = string;
 
-// @public
+// @public @deprecated
 export interface IDisposable {
     dispose(): void;
 }
@@ -988,6 +1000,9 @@ export class IndexMap<T> {
 }
 
 // @public
+export function isDisposable(obj: unknown): obj is Disposable;
+
+// @public @deprecated
 export function isIDisposable(obj: unknown): obj is IDisposable;
 
 // @public
@@ -1385,9 +1400,11 @@ export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
 // @public
-export class PerfLogger implements IDisposable {
-    constructor(operation: string, metaData?: LoggingMetaData);
+export class PerfLogger implements Disposable {
     // (undocumented)
+    [Symbol.dispose](): void;
+    constructor(operation: string, metaData?: LoggingMetaData);
+    // @deprecated (undocumented)
     dispose(): void;
 }
 
@@ -1546,6 +1563,9 @@ export enum RpcInterfaceStatus {
 
 // @public
 export function shallowClone<T>(value: T): T;
+
+// @beta
+export type SimpleTypesArray = number[] | string[] | boolean[];
 
 // @public
 export class SortedArray<T> extends ReadonlySortedArray<T> {
@@ -1726,7 +1746,7 @@ export class UnexpectedErrors {
     static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
 }
 
-// @public
+// @public @deprecated
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
 
 // @public

@@ -55,9 +55,8 @@ import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { SerializationHelpers } from "./SerializationHelpers";
 
-// cspell:word bagof
 /**
- * `ImodelJson` namespace has classes for serializing and deserialization json objects
+ * `IModelJson` namespace has classes for serializing and deserialization json objects
  * @public
  */
 export namespace IModelJson {
@@ -127,14 +126,20 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for a collection of curves, eg. as used as a swept contour.
+   * Interface for a collection of curves, e.g. as used as a swept contour.
    * @public
    */
   export interface CurveCollectionProps extends PlanarRegionProps {
-    /** A sequence of curves joined head to tail: */
+    /** A sequence of curves joined head to tail. */
     path?: [CurvePrimitiveProps];
-    /** A collection of curves with no required structure or connections: */
+    // cspell:word bagof
+    /**
+     * A collection of curves with no required structure or connections
+     * @deprecated in 5.x. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
+    */
     bagofCurves?: [CurveCollectionProps];
+    /** A collection of curves with no required structure or connections. */
+    bagOfCurves?: [CurveCollectionProps | CurvePrimitiveProps];
   }
 
   /**
@@ -154,7 +159,6 @@ export namespace IModelJson {
     /** `{unionRegion:...}`
      * * A collection of loops and parityRegions
      */
-
     unionRegion?: [PlanarRegionProps];
   }
   /**
@@ -179,44 +183,45 @@ export namespace IModelJson {
     /** `{ruledSweep:...}` */
     ruledSweep?: RuledSweepProps;
   }
+
   /**
-   * * There are multiple ways to specify an orientation
-   * * A "Best" among these is application specific.
-   * * An object with AxesProps should only specify one of the variants.
-   * * YawPitchRollAngles uses 3 angles.
-   * * * Cases where only one of the 3 is nonzero are intuitive
-   * * * Cases where more than one is nonzero have difficult interactions and order issues.
-   * * xyVectors uses a vector along the x direction and a vector into positive xy plane
-   *    along any direction not parallel to x.
-   * * * In most cases, users supply a normalized x and the actual normalized y vector.
-   * * zxVectors uses a z vector and another vector into the positive zx plane.
-   * * * In most cases, users supply a normalized z and the actual normalized x vector.
+   * Ways to specify an object's local coordinate frame.
+   * * Most objects that implement AxesProps specify their local coordinate frame by a right-handed
+   * rotation matrix (`yawPitchRollAngles`, `xyVectors`, `zxVectors`).
+   * * A general invertible matrix can be specified by `xyzVectors`.
+   * * An object that implements AxesProps typically specifies only one variant, or none for Identity.
    * @public
    */
   export interface AxesProps {
     /**
-     * See YawPitchAngles class for further information about using 3 rotations to specify orientation.
+     * A rotation specified by yaw, pitch, roll angles.
+     * * Cases where only one of these angles is nonzero are intuitive.
+     * * Cases where more than one is nonzero have difficult interactions and order issues.
+     * * See [[YawPitchRollAngles]] for further information.
      * @public
      */
     yawPitchRollAngles?: YawPitchRollProps;
     /**
-     * Cartesian coordinate directions defined by X direction then Y direction.
-     * * The right side contains two vectors in an array.
-     * * The first vector gives the x axis direction
-     * * * This is normalized to unit length.
-     * * The second vector gives the positive y direction in the xy plane.
-     * * * This vector is adjusted to be unit length and perpendicular to the x direction.
+     * A rotation specified by an array of two vectors [xAxis, yAxis].
+     * * The first vector gives the local x-axis direction; the second determines the local xy-plane.
+     * * A third implied axis is perpendicular to these.
+     * * The implied rotation is `Matrix3d.createRigidFromColumns(xAxis, yAxis, AxisOrder.XYZ)`.
      */
     xyVectors?: [XYZProps, XYZProps];
     /**
-     * Cartesian coordinate directions defined by Z direction then X direction.
-     * * The right side contains two vectors in an array.
-     * * The first vector gives the z axis direction
-     * * * This is normalized to unit length.
-     * * The second vector gives the positive x direction in the zx plane.
-     * * * This vector is adjusted to be unit length and perpendicular to the z direction.
+     * A rotation specified by an array of two vectors [zAxis, xAxis].
+     * * The first vector gives the local z-axis direction; the second determines the local zx-plane.
+     * * A third implied axis is perpendicular to these.
+     * * The implied rotation is `Matrix3d.createRigidFromColumns(zAxis, xAxis, AxisOrder.ZXY)`.
      */
     zxVectors?: [XYZProps, XYZProps];
+    /**
+     * A local coordinate system specified by an array of three vectors [xAxis, yAxis, zAxis].
+     * * The vectors should have positive length and be linearly independent, but otherwise they are unrestricted.
+     * * This allows skew coordinate systems, left-handed frames, and non-uniform scaling.
+     * * The implied matrix is `Matrix3d.createColumns(xAxis, yAxis, zAxis)`.
+     */
+    xyzVectors?: [XYZProps, XYZProps, XYZProps];
   }
 
   /**
@@ -235,27 +240,38 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for Cone value defined by centers, radii, and (optional) vectors for circular section planes.
-   * * VectorX and vectorY are optional.
-   * * If either one is missing, both vectors are constructed perpendicular to the vector from start to end.
+   * Interface for a [[Cone]], defined by two centers and radii.
+   * * A Cone typically has circular sections perpendicular to the axis line between centers.
+   * * The cross section xy-plane is specified by an [[IModelJson.AxesProps]]:
+   *   * Typically this is an `xyVectors`.
+   *   * Elliptical cross sections can be specified with `xyzVectors`, which admits skew vectors
+   * and/or vectors of different lengths. Elliptical cross sections are scaled by radius.
    * @public
    */
   export interface ConeProps extends AxesProps {
-    /** Point on axis at start section. */
+    /** Point on axis at center of start section. */
     start: XYZProps;
-    /** Point on axis at end section  */
+    /** Point on axis at center of end section. */
     end: XYZProps;
 
-    /** radius at `start` section */
+    /** Radius of the section at `start` if circular, or scale factor if elliptical. */
     startRadius?: number;
-    /** radius at `end` section */
+    /** Radius of the section at `end` if circular, or scale factor if elliptical. */
     endRadius?: number;
-    /** single radius to be applied as both start and end */
+    /** Constant radius of all sections if circular, or scale factor if elliptical. */
     radius?: number;
-    /** optional x vector in start section.  Omit for circular sections perpendicular to axis. */
+
+    /**
+     * Optional section x-axis.
+     * @deprecated in 5.x. This property has never been written. Optional axes are specified by an AxesProps.
+     */
     vectorX?: XYZProps;
-    /** optional y vector in start section.  Omit for circular sections perpendicular to axis. */
+    /**
+     * Optional section y-axis.
+     * @deprecated in 5.x. This property has never been written. Optional axes are specified by an AxesProps.
+     */
     vectorY?: XYZProps;
+
     /** flag for circular end caps. */
     capped?: boolean;
   }
@@ -306,13 +322,13 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for a surface with ruled sweeps between corresponding curves on successive contours
+   * Interface for a surface with rule lines between corresponding curves on successive contours
    * @public
    */
   export interface RuledSweepProps {
-    /** The swept curve or region.  An array of curve collections.  */
+    /** An array of swept curves or regions. */
     contour: [CurveCollectionProps];
-    /** flag for circular end caps. */
+    /** Optional capping flag. */
     capped?: boolean;
   }
 
@@ -392,9 +408,8 @@ export namespace IModelJson {
     origin: XYZProps;
     /** A previous mismatch existed between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
      * Now both native and TypeScript will output both and accept either, preferring "origin".
-     * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
+     * "baseOrigin" is undocumented in TypeScript; it should not be used.
      * @internal
-     * @deprecated in 3.x. use origin
      */
     baseOrigin?: XYZProps;
     /** base x size (required) */
@@ -425,8 +440,11 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for Sphere (with optionally different radius to pole versus equator)
-   * * Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors)
+   * Interface for a [[Sphere]].
+   * * Local coordinate frame is supplied by an [[IModelJson.AxesProps]]:
+   *   * Typically this is a `zxVectors`.
+   *   * Skew axes can be specified with `xyzVectors`, in which case any specified radii scale these axes;
+   * all other AxesProps specify a right-handed orthonormal triad.
    * @public
    */
   export interface SphereProps extends AxesProps {
@@ -439,8 +457,7 @@ export namespace IModelJson {
     radiusX?: number;
     /** optional y radius */
     radiusY?: number;
-
-    /** optional radius at poles.  */
+    /** optional z radius */
     radiusZ?: number;
 
     /** optional sweep range for latitude.  Default latitude limits are [-90,90 ] degrees. */
@@ -473,17 +490,6 @@ export namespace IModelJson {
      */
     sweepAngle?: AngleProps;
     /** optional capping flag. If missing, implied false */
-    capped?: boolean;
-  }
-
-  /**
-   * Interface for a ruled sweep.
-   * @public
-   */
-  export interface RuledSweepProps {
-    /** Array of contours */
-    contour: [CurveCollectionProps];
-    /** optional capping flag. */
     capped?: boolean;
   }
 
@@ -736,33 +742,46 @@ export namespace IModelJson {
     }
 
     private static parseAxesFromVectors(json: any, axisOrder: AxisOrder, createDefaultIdentity: boolean): Matrix3d | undefined {
-      if (Array.isArray(json) && json.length === 2) {
-        const xVector = Vector3d.fromJSON(json[0]);
-        const yVector = Vector3d.fromJSON(json[1]);
-        const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, axisOrder);
-        if (matrix) return matrix;
+      if (Array.isArray(json)) {
+        let matrix: Matrix3d | undefined;
+        if (json.length === 2) { // square and normalize
+          const xVector = Vector3d.fromJSON(json[0]);
+          const yVector = Vector3d.fromJSON(json[1]);
+          matrix = Matrix3d.createRigidFromColumns(xVector, yVector, axisOrder);
+        }
+        else if (json.length === 3) { // preserve axes
+          const xVector = Vector3d.fromJSON(json[0]);
+          const yVector = Vector3d.fromJSON(json[1]);
+          const zVector = Vector3d.fromJSON(json[2]);
+          matrix = Matrix3d.createColumnsInAxisOrder(axisOrder, xVector, yVector, zVector);
+        }
+        if (matrix)
+          return matrix;
       }
       if (createDefaultIdentity)
         return Matrix3d.createIdentity();
       return undefined;
     }
+
     /**
      * Look for orientation data and convert to Matrix3d.
-     * * Search order is:
-     * * * yawPitchRollAngles
-     * * * xyVectors
-     * * * zxVectors
+     * * Search order and interpretation:
+     * * * xyzVectors - general matrix, axes preserved
+     * * * yawPitchRollAngles - right-handed rotation via axial rotations
+     * * * xyVectors - right-handed rotation, xy-plane specified, axes squared and normalized
+     * * * zxVectors - right-handed rotation, zx-plane specified, axes squared and normalized
      * @param json [in] json source data
      * @param createDefaultIdentity [in] If true and no orientation is present, return an identity matrix.  If false and no orientation is present, return undefined.
      */
     private static parseOrientation(json: any, createDefaultIdentity: boolean): Matrix3d | undefined {
-      if (json.yawPitchRollAngles) {
+      if (json.xyzVectors)
+        return Reader.parseAxesFromVectors(json.xyzVectors, AxisOrder.XYZ, createDefaultIdentity);
+      if (json.yawPitchRollAngles)
         return Reader.parseYawPitchRollAnglesToMatrix3d(json.yawPitchRollAngles);
-      } else if (json.xyVectors) {
+      if (json.xyVectors)
         return Reader.parseAxesFromVectors(json.xyVectors, AxisOrder.XYZ, createDefaultIdentity);
-      } else if (json.zxVectors) {
+      if (json.zxVectors)
         return Reader.parseAxesFromVectors(json.zxVectors, AxisOrder.ZXY, createDefaultIdentity);
-      }
       if (createDefaultIdentity)
         return Matrix3d.createIdentity();
       return undefined;
@@ -808,7 +827,7 @@ export namespace IModelJson {
         return CoordinateXYZ.create(point);
       return undefined;
     }
-    /** Parse TransitionSpiral content (right side) to TransitionSpiral3d. */
+    /** Parse `transitionSpiral` content (right side) to TransitionSpiral3d. */
     public static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined {
       const axes = Reader.parseOrientation(data, true)!;
       const origin = Reader.parsePoint3dProperty(data, "origin");
@@ -879,14 +898,14 @@ export namespace IModelJson {
       return newCurve;
     }
 
-    /** Parse `bcurve` content to an InterpolationCurve3d object. */
+    /** Parse `interpolationCurve` content to an InterpolationCurve3d object. */
     public static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined {
       if (data === undefined)
         return undefined;
       return InterpolationCurve3d.create(data);
     }
 
-    /** Parse `bcurve` content to an Akima curve object. */
+    /** Parse `akimaCurve` content to an Akima curve object. */
     public static parseAkimaCurve3d(data?: any): AkimaCurve3d | undefined {
       if (data === undefined)
         return undefined;
@@ -1063,22 +1082,17 @@ export namespace IModelJson {
       const radius = Reader.parseNumberProperty(json, "radius");
       const startRadius = Reader.parseNumberProperty(json, "startRadius", radius);
       const endRadius = Reader.parseNumberProperty(json, "endRadius", startRadius);
+      const capped = Reader.parseBooleanProperty(json, "capped");
 
-      const capped = Reader.parseBooleanProperty(json, "capped", false) as boolean;
-
-      if (start
-        && end
-        && startRadius !== undefined
-        && endRadius !== undefined) {
+      if (start && end && startRadius !== undefined && endRadius !== undefined) {
         if (axes === undefined) {
           const axisVector = Vector3d.createStartEnd(start, end);
           const frame = Matrix3d.createRigidHeadsUp(axisVector, AxisOrder.ZXY);
           const vectorX = frame.columnX();
           const vectorY = frame.columnY();
           return Cone.createBaseAndTarget(start, end, vectorX, vectorY, startRadius, endRadius, capped);
-        } else {
-          return Cone.createBaseAndTarget(start, end, axes.columnX(), axes.columnY(), startRadius, endRadius, capped);
         }
+        return Cone.createBaseAndTarget(start, end, axes.columnX(), axes.columnY(), startRadius, endRadius, capped);
       }
       return undefined;
     }
@@ -1174,29 +1188,21 @@ export namespace IModelJson {
       }
       return undefined;
     }
+
     /** Parse `SphereProps` to `Sphere` instance. */
     public static parseSphere(json?: SphereProps): Sphere | undefined {
       const center = Reader.parsePoint3dProperty(json, "center");
-      // optional unqualified radius . . .
       const radius = Reader.parseNumberProperty(json, "radius");
-      // optional specific X
       const radiusX = Reader.parseNumberProperty(json, "radiusX", radius);
-      // missing Y and Z both pick up radiusX  (which may have already been defaulted from unqualified radius)
       const radiusY = Reader.parseNumberProperty(json, "radiusY", radiusX);
-      const radiusZ = Reader.parseNumberProperty(json, "radiusZ", radiusX);
-      const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd"); // this may be undefined!!
+      const radiusZ = Reader.parseNumberProperty(json, "radiusZ", radiusY);
+      const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd");
+      const axes = Reader.parseOrientation(json, false);
+      const capped = Reader.parseBooleanProperty(json, "capped");
 
-      const axes = Reader.parseOrientation(json, true)!;
-
-      const capped = Reader.parseBooleanProperty(json, "capped", false);
-
-      if (center !== undefined
-        && radiusX !== undefined
-        && radiusY !== undefined
-        && radiusZ !== undefined
-        && capped !== undefined) {
+      if (center && radiusX && radiusY && radiusZ)
         return Sphere.createFromAxesAndScales(center, axes, radiusX, radiusY, radiusZ, latitudeStartEnd, capped);
-      }
+
       return undefined;
     }
     /** Parse RuledSweepProps to RuledSweep instance. */
@@ -1251,7 +1257,6 @@ export namespace IModelJson {
           return Reader.parseArcObject(json.arc);
         } else if (json.hasOwnProperty("point")) {
           return Reader.parseCoordinate(json.point);
-
         } else if (json.hasOwnProperty("bcurve")) {
           return Reader.parseBcurve(json.bcurve);
         } else if (json.hasOwnProperty("interpolationCurve")) {
@@ -1298,11 +1303,7 @@ export namespace IModelJson {
       return undefined;
     }
   }
-  // ISSUE: include 3d in names?
-  // ISSUE: would like shorter term than lineSegment
-  // ISSUE: is arc clear?
-  // ISSUE: label center, vectorX, vector90 on arc?
-  // ISSUE: sweep data on arc -- serialize as AngleSweep?
+
   /**
    * Class to deserialize json objects into GeometryQuery objects
    * @public
@@ -1453,39 +1454,55 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleCone(data: Cone): any {
-
       const radiusA = data.getRadiusA();
       const radiusB = data.getRadiusB();
       const centerA = data.getCenterA();
       const centerB = data.getCenterB();
       const vectorX = data.getVectorX();
       const vectorY = data.getVectorY();
+      const xMag = vectorX.magnitude();
+      const yMag = vectorY.magnitude();
+      const xySameLength = Geometry.isSameCoordinate(xMag, yMag);
       const axisVector = Vector3d.createStartEnd(centerA, centerB);
 
+      // special case of cylinder
       if (Geometry.isSameCoordinate(radiusA, radiusB)
         && vectorX.isPerpendicularTo(axisVector)
         && vectorY.isPerpendicularTo(axisVector)
-        && Geometry.isSameCoordinate(vectorX.magnitude(), 1.0)
-        && Geometry.isSameCoordinate(vectorY.magnitude(), 1.0)) {
+        && xySameLength
+        && Geometry.isSameCoordinate(xMag, 1.0)) {
         return {
           cylinder: {
             capped: data.capped,
-            start: data.getCenterA().toJSON(),
-            end: data.getCenterB().toJSON(),
+            start: centerA.toJSON(),
+            end: centerB.toJSON(),
             radius: radiusA,
           },
         };
-      } else {
-        const coneProps: ConeProps = {
-          capped: data.capped,
-          start: data.getCenterA().toJSON(),
-          end: data.getCenterB().toJSON(),
-          startRadius: data.getRadiusA(),
-          endRadius: data.getRadiusB(),
-        };
-        Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, false);
-        return { cone: coneProps };
       }
+
+      const coneProps: ConeProps = {
+        capped: data.capped,
+        start: centerA.toJSON(),
+        end: centerB.toJSON(),
+      };
+
+      if (Geometry.isSameCoordinate(radiusA, radiusB)) {
+        coneProps.radius = radiusA;
+      } else {
+        coneProps.startRadius = radiusA;
+        coneProps.endRadius = radiusB;
+      }
+
+      // always specify an orthogonal frame for backwards compatibility
+      Writer.insertOrientationFromXYVectors(coneProps, vectorX, vectorY, false);
+
+      // specify a general matrix if elliptical sections
+      const ellipticalSections = !xySameLength || !vectorX.isPerpendicularTo(vectorY, true);
+      if (ellipticalSections)
+        coneProps.xyzVectors = [vectorX.toJSON(), vectorY.toJSON(), axisVector.toJSON()];
+
+      return { cone: coneProps };
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -1493,34 +1510,47 @@ export namespace IModelJson {
       const xData = data.cloneVectorX().normalizeWithLength();
       const yData = data.cloneVectorY().normalizeWithLength();
       const zData = data.cloneVectorZ().normalizeWithLength();
+      if (!xData.v || !yData.v || !zData.v)
+        return undefined;
+
+      const rigid = Matrix3d.createIdentity();
+      const skew = Matrix3d.createIdentity();
+      if (!data.cloneLocalToWorld().matrix.factorRigidSkew(rigid, skew))
+        return undefined;
+
+      const value: SphereProps = { center: data.cloneCenter().toJSON() };
+
+      // always specify an orthogonal frame if !identity for backwards compatibility
+      if (!rigid.isIdentity)
+        value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
+
+      // specify a general matrix if skew/mirror local frame
+      if (!skew.isDiagonal || skew.determinant() < 0.0)
+        value.xyzVectors = [xData.v.toJSON(), yData.v.toJSON(), zData.v.toJSON()];
+
       const latitudeSweep = data.cloneLatitudeSweep();
+      const fullSweep = latitudeSweep.isFullLatitudeSweep;
+      if (data.capped && !fullSweep)
+        value.capped = data.capped;
+      if (!fullSweep)
+        value.latitudeStartEnd = latitudeSweep.toJSON();
 
       const rX = xData.mag;
       const rY = yData.mag;
       const rZ = zData.mag;
-      if (xData.v && zData.v) {
-        const value: SphereProps = {
-          center: data.cloneCenter().toJSON(),
-        };
-        if (!(data.getConstructiveFrame()!).matrix.isIdentity)
-          value.zxVectors = [zData.v.toJSON(), xData.v.toJSON()];
-        const fullSweep = latitudeSweep.isFullLatitudeSweep;
-
-        if (data.capped && !fullSweep)
-          value.capped = data.capped;
-
-        if (Geometry.isSameCoordinate(rX, rY) && Geometry.isSameCoordinate(rX, rZ))
+      if (Geometry.isSameCoordinate(rX, rY)) {
+        if (Geometry.isSameCoordinate(rX, rZ))
           value.radius = rX;
-        else {
+        else { // radiusY will pick up radiusX
           value.radiusX = rX;
-          value.radiusY = rY;
           value.radiusZ = rZ;
         }
-        if (!fullSweep)
-          value.latitudeStartEnd = latitudeSweep.toJSON();
-        return { sphere: value };
+      } else {
+        value.radiusX = rX;
+        value.radiusY = rY;
+        value.radiusZ = rZ;
       }
-      return undefined;
+      return { sphere: value };
     }
 
     /** Convert strongly typed instance to tagged json */

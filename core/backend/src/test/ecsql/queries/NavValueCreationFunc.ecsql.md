@@ -42,7 +42,14 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 0x1d, 0x155)
 - dataset: AllProperties.bim
 
 ```sql
-select navigation_value(aps.TestFeature.FeatureUsesElement, 0x1c)
+SELECT
+  FeatureUsesElement.Id AS Id,
+  ec_classname (FeatureUsesElement.RelECClassId) AS RelECClassName
+FROM
+  (
+    SELECT
+      navigation_value (aps.TestFeature.FeatureUsesElement, 0x1c)
+  )
 ```
 
 ```json
@@ -50,14 +57,24 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 0x1c)
   "columns": [
     {
       "className": "",
-      "accessString": "FeatureUsesElement",
+      "accessString": "Id",
       "generated": true,
       "index": 0,
-      "jsonName": "FeatureUsesElement",
-      "name": "FeatureUsesElement",
-      "typeName": "navigation",
-      "type": "Navigation",
-      "originPropertyName": "FeatureUsesElement"
+      "jsonName": "id",
+      "name": "Id",
+      "extendedType": "NavId",
+      "typeName": "long",
+      "type": "Id"
+    },
+    {
+      "className": "",
+      "accessString": "RelECClassName",
+      "generated": true,
+      "index": 1,
+      "jsonName": "relECClassName",
+      "name": "RelECClassName",
+      "typeName": "string",
+      "type": "String"
     }
   ]
 }
@@ -66,10 +83,8 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 0x1c)
 ```json
 [
   {
-    "FeatureUsesElement": {
-      "Id": "0x1c",
-      "RelECClassId": "0x158"
-    }
+    "Id": "0x1c",
+    "RelECClassName": "AllProperties:TestFeatureUsesElement"
   }
 ]
 ```
@@ -116,7 +131,14 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 29, 341)
 - dataset: AllProperties.bim
 
 ```sql
-select navigation_value(aps.TestFeature.FeatureUsesElement, 29)
+SELECT
+  FeatureUsesElement.Id AS Id,
+  ec_classname (FeatureUsesElement.RelECClassId) AS RelECClassName
+FROM
+  (
+    SELECT
+      navigation_value (aps.TestFeature.FeatureUsesElement, 29)
+  )
 ```
 
 ```json
@@ -124,14 +146,24 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 29)
   "columns": [
     {
       "className": "",
-      "accessString": "FeatureUsesElement",
+      "accessString": "Id",
       "generated": true,
       "index": 0,
-      "jsonName": "FeatureUsesElement",
-      "name": "FeatureUsesElement",
-      "typeName": "navigation",
-      "type": "Navigation",
-      "originPropertyName": "FeatureUsesElement"
+      "jsonName": "id",
+      "name": "Id",
+      "extendedType": "NavId",
+      "typeName": "long",
+      "type": "Id"
+    },
+    {
+      "className": "",
+      "accessString": "RelECClassName",
+      "generated": true,
+      "index": 1,
+      "jsonName": "relECClassName",
+      "name": "RelECClassName",
+      "typeName": "string",
+      "type": "String"
     }
   ]
 }
@@ -140,10 +172,8 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 29)
 ```json
 [
   {
-    "FeatureUsesElement": {
-      "Id": "0x1d",
-      "RelECClassId": "0x158"
-    }
+    "Id": "0x1d",
+    "RelECClassName": "AllProperties:TestFeatureUsesElement"
   }
 ]
 ```
@@ -234,13 +264,19 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, ?, ?)
 
 ```sql
 SELECT
-  navigation_value (
-    aps.TestFeature.FeatureUsesElement,
-    FeatureUsesElement.Id,
-    FeatureUsesElement.RelECClassId
-  )
+  FeatureUsesElement.Id AS Id,
+  ec_classname (FeatureUsesElement.RelECClassId) AS RelECClassName
 FROM
-  aps.TestFeature
+  (
+    SELECT
+      navigation_value (
+        aps.TestFeature.FeatureUsesElement,
+        FeatureUsesElement.Id,
+        FeatureUsesElement.RelECClassId
+      )
+    FROM
+      aps.TestFeature
+  )
 ```
 
 ```json
@@ -248,14 +284,24 @@ FROM
   "columns": [
     {
       "className": "",
-      "accessString": "FeatureUsesElement",
+      "accessString": "Id",
       "generated": true,
       "index": 0,
-      "jsonName": "featureUsesElement",
-      "name": "FeatureUsesElement",
-      "typeName": "navigation",
-      "type": "Navigation",
-      "originPropertyName": "FeatureUsesElement"
+      "jsonName": "id",
+      "name": "Id",
+      "extendedType": "NavId",
+      "typeName": "long",
+      "type": "Id"
+    },
+    {
+      "className": "",
+      "accessString": "RelECClassName",
+      "generated": true,
+      "index": 1,
+      "jsonName": "relECClassName",
+      "name": "RelECClassName",
+      "typeName": "string",
+      "type": "String"
     }
   ]
 }
@@ -264,16 +310,12 @@ FROM
 ```json
 [
   {
-    "FeatureUsesElement": {
-      "Id": "0x1d",
-      "RelECClassId": "0x158"
-    }
+    "Id": "0x1d",
+    "RelECClassName": "AllProperties:TestFeatureUsesElement"
   },
   {
-    "FeatureUsesElement": {
-      "Id": "0x1c",
-      "RelECClassId": "0x158"
-    }
+    "Id": "0x1c",
+    "RelECClassName": "AllProperties:TestFeatureUsesElement"
   }
 ]
 ```
@@ -338,9 +380,8 @@ SELECT
 
 ```sql
 SELECT
-  FeatureUsesElement,
   FeatureUsesElement.Id,
-  FeatureUsesElement.RelECClassId
+  ec_classname (FeatureUsesElement.RelECClassId) AS RelECClassName
 FROM
   aps.TestFeature
 ```
@@ -349,21 +390,10 @@ FROM
 {
   "columns": [
     {
-      "className": "AllProperties:TestFeature",
-      "accessString": "FeatureUsesElement",
-      "generated": false,
-      "index": 0,
-      "jsonName": "featureUsesElement",
-      "name": "FeatureUsesElement",
-      "typeName": "navigation",
-      "type": "Navigation",
-      "originPropertyName": "FeatureUsesElement"
-    },
-    {
       "className": "",
       "accessString": "FeatureUsesElement.Id",
       "generated": false,
-      "index": 1,
+      "index": 0,
       "jsonName": "featureUsesElement.id",
       "name": "Id",
       "extendedType": "NavId",
@@ -373,15 +403,13 @@ FROM
     },
     {
       "className": "",
-      "accessString": "FeatureUsesElement.RelECClassId",
-      "generated": false,
-      "index": 2,
-      "jsonName": "featureUsesElement.relClassName",
-      "name": "RelECClassId",
-      "extendedType": "NavRelClassId",
-      "typeName": "long",
-      "type": "Id",
-      "originPropertyName": "RelECClassId"
+      "accessString": "RelECClassName",
+      "generated": true,
+      "index": 1,
+      "jsonName": "relECClassName",
+      "name": "RelECClassName",
+      "typeName": "string",
+      "type": "String"
     }
   ]
 }
@@ -390,20 +418,12 @@ FROM
 ```json
 [
   {
-    "FeatureUsesElement": {
-      "Id": "0x1d",
-      "RelECClassId": "0x158"
-    },
     "Id": "0x1d",
-    "RelECClassId": "0x158"
+    "RelECClassName": "AllProperties:TestFeatureUsesElement"
   },
   {
-    "FeatureUsesElement": {
-      "Id": "0x1c",
-      "RelECClassId": "0x158"
-    },
     "Id": "0x1c",
-    "RelECClassId": "0x158"
+    "RelECClassName": "AllProperties:TestFeatureUsesElement"
   }
 ]
 ```
@@ -484,28 +504,34 @@ WHERE
 
 ```sql
 SELECT
-  NAVIGATION_VALUE (
-    aps.TestFeature.FeatureUsesElement,
-    (
-      SELECT
-        FeatureUsesElement.Id
-      FROM
-        aps.TestFeature
-      WHERE
-        FeatureUsesElement.RelECClassId = 0x158
-      LIMIT
-        1
-      OFFSET
-        1
-    ),
-    (
-      SELECT
-        FeatureUsesElement.RelECClassId
-      FROM
-        aps.TestFeature
-      WHERE
-        FeatureUsesElement.Id = 0x1d
-    )
+  FeatureUsesElement.Id AS Id,
+  ec_classname (FeatureUsesElement.RelECClassId) AS RelECClassName
+FROM
+  (
+    SELECT
+      NAVIGATION_VALUE (
+        aps.TestFeature.FeatureUsesElement,
+        (
+          SELECT
+            FeatureUsesElement.Id
+          FROM
+            aps.TestFeature
+          WHERE
+            ec_classname (FeatureUsesElement.RelECClassId) = 'AllProperties:TestFeatureUsesElement'
+          LIMIT
+            1
+          OFFSET
+            1
+        ),
+        (
+          SELECT
+            FeatureUsesElement.RelECClassId
+          FROM
+            aps.TestFeature
+          WHERE
+            FeatureUsesElement.Id = 0x1d
+        )
+      )
   )
 ```
 
@@ -514,14 +540,24 @@ SELECT
   "columns": [
     {
       "className": "",
-      "accessString": "FeatureUsesElement",
+      "accessString": "Id",
       "generated": true,
       "index": 0,
-      "jsonName": "FeatureUsesElement",
-      "name": "FeatureUsesElement",
-      "typeName": "navigation",
-      "type": "Navigation",
-      "originPropertyName": "FeatureUsesElement"
+      "jsonName": "id",
+      "name": "Id",
+      "extendedType": "NavId",
+      "typeName": "long",
+      "type": "Id"
+    },
+    {
+      "className": "",
+      "accessString": "RelECClassName",
+      "generated": true,
+      "index": 1,
+      "jsonName": "relECClassName",
+      "name": "RelECClassName",
+      "typeName": "string",
+      "type": "String"
     }
   ]
 }
@@ -530,10 +566,8 @@ SELECT
 ```json
 [
   {
-    "FeatureUsesElement": {
-      "Id": "0x1c",
-      "RelECClassId": "0x158"
-    }
+    "Id": "0x1c",
+    "RelECClassName": "AllProperties:TestFeatureUsesElement"
   }
 ]
 ```

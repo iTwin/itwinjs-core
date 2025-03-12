@@ -20,6 +20,13 @@ export class ECVersion {
   private _minor: number = 0;
 
   /**
+   * Using a version with all zero is invalid
+   * for a schema, but it can be used to indicate
+   * "no version has been specified" when locating things
+   */
+  public static readonly NO_VERSION = new ECVersion(0, 0, 0);
+
+  /**
    * The constructor will throw an ECObjectsError if any of the parameters below are above the threshold.
    * @param read Can support up to 999.
    * @param write Can support up to 999.
@@ -165,7 +172,7 @@ export class SchemaKey {
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
-  public matches(rhs: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Exact): boolean {
+  public matches(rhs: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Exact): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
       case SchemaMatchType.Exact:

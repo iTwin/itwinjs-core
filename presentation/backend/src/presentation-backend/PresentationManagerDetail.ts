@@ -5,7 +5,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { BeEvent, IDisposable, Logger } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content,
@@ -13,6 +13,7 @@ import {
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -29,6 +30,7 @@ import {
   HierarchyRequestOptions,
   InstanceKey,
   Item,
+  ItemJSON,
   Key,
   KeySet,
   LabelDefinition,
@@ -60,7 +62,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
 
 /** @internal */
-export class PresentationManagerDetail implements IDisposable {
+export class PresentationManagerDetail implements Disposable {
   private _disposed: boolean;
   private _nativePlatform: NativePlatformDefinition | undefined;
   private _onManagerUsed: (() => void) | undefined;
@@ -91,12 +93,12 @@ export class PresentationManagerDetail implements IDisposable {
     this._diagnosticsOptions = params.diagnostics;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._disposed) {
       return;
     }
 
-    this.getNativePlatform().dispose();
+    this.getNativePlatform()[Symbol.dispose]();
     this._nativePlatform = undefined;
 
     this._disposed = true;
@@ -162,7 +164,8 @@ export class PresentationManagerDetail implements IDisposable {
       ...strippedOptions,
       paths: instancePaths,
     };
-    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+    const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
+    return paths;
   }
 
   public async getFilteredNodePaths(
@@ -174,7 +177,8 @@ export class PresentationManagerDetail implements IDisposable {
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
     };
-    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+    const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
+    return paths;
   }
 
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>): Promise<string> {
@@ -200,7 +204,7 @@ export class PresentationManagerDetail implements IDisposable {
     const reviver = (key: string, value: any) => {
       return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
     };
-    return JSON.parse(await this.request(params), reviver);
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params), reviver));
   }
 
   public async getContentSetSize(
@@ -230,8 +234,9 @@ export class PresentationManagerDetail implements IDisposable {
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    return JSON.parse(await this.request(params), Item.listReviver);
+    return JSON.parse(await this.request(params))
+      .map((json: ItemJSON) => Item.fromJSON(deepReplaceNullsToUndefined(json)))
+      .filter((item: Item | undefined): item is Item => !!item);
   }
 
   public async getContent(
@@ -246,7 +251,7 @@ export class PresentationManagerDetail implements IDisposable {
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    return JSON.parse(await this.request(params), (key, value) => Content.reviver(key, value));
+    return Content.fromJSON(deepReplaceNullsToUndefined(JSON.parse(await this.request(params))));
   }
 
   public async getPagedDistinctValues(
@@ -262,16 +267,7 @@ export class PresentationManagerDetail implements IDisposable {
       keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    const reviver = (key: string, value: any) => {
-      return key === ""
-        ? {
-            total: value.total,
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            items: value.items.map(DisplayValueGroup.fromJSON),
-          }
-        : value;
-    };
-    return JSON.parse(await this.request(params), reviver);
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
   }
 
   public async getDisplayLabelDefinition(
@@ -281,7 +277,7 @@ export class PresentationManagerDetail implements IDisposable {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
     };
-    return JSON.parse(await this.request(params));
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
   }
 
   public async getDisplayLabelDefinitions(

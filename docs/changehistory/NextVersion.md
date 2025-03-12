@@ -11,11 +11,22 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
+  - [Display](#graphics)
+    - [Read Image To Canvas](#read-image-to-canvas)
+  - [Back-end image conversion](#back-end-image-conversion)
+  - [Presentation](#presentation)
+    - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
+  - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
+  - [Delete all transactions](#delete-all-transactions)
   - [API deprecations](#api-deprecations)
+    - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
     - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/ecschema-metadata](#itwinecschema-metadata)
     - [@itwin/presentation-common](#itwinpresentation-common)
+    - [@itwin/presentation-backend](#itwinpresentation-backend)
+    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Breaking Changes](#breaking-changes)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Updated minimum requirements](#updated-minimum-requirements)
@@ -25,14 +36,25 @@ Table of contents:
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
-      - [@itwin/core-bentley](#itwincore-bentley)
-      - [@itwin/core-electron](#itwincore-electron)
-    - [API removals](#api-removals)
+      - [@itwin/core-bentley](#itwincore-bentley-1)
       - [@itwin/core-common](#itwincore-common-1)
+      - [@itwin/core-electron](#itwincore-electron)
+      - [@itwin/core-frontend](#itwincore-frontend-1)
+      - [@itwin/core-geometry](#itwincore-geometry)
+      - [@itwin/presentation-common](#itwinpresentation-common-1)
+      - [@itwin/presentation-backend](#itwinpresentation-backend-1)
+      - [@itwin/presentation-frontend](#itwinpresentation-frontend-1)
+    - [API removals](#api-removals)
+      - [@itwin/core-common](#itwincore-common-2)
+      - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
     - [Packages dropped](#packages-dropped)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
+    - [TypeScript configuration changes](#typescript-configuration-changes)
+      - [`target`](#target)
+      - [`useDefineForClassFields`](#usedefineforclassfields)
+    - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -68,7 +90,81 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
 
+## Display
+
+### Read image to canvas
+
+Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
+
+If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
+
+## Back-end image conversion
+
+@itwin/core-backend provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
+
+## Presentation
+
+The Presentation system is moving towards a more modular approach, with smaller packages intended for more specific tasks and having less peer dependencies. You can find more details about that in the [README of `@itwin/presentation` repo](https://github.com/iTwin/presentation/blob/master/README.md#the-packages). As part of that move, some Presentation APIs in `@itwin/itwinjs-core` repository, and, more specifically, 3 Presentation packages: `@itwin/presentation-common`, `@itwin/presentation-backend`, and `@itwin/presentation-frontend` have received a number of deprecations for APIs that already have replacements.
+
+### Unified selection move to `@itwin/unified-selection`
+
+The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
+
+## Google Maps 2D tiles API
+
+The `@itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
+
+To enable it as a base map, it's simple as:
+
+ ```typescript
+import { GoogleMaps } from "@itwin/map-layers-formats";
+const ds = IModelApp.viewManager.selectedView.displayStyle;
+ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
+```
+
+Can also be attached as a map-layer:
+
+```ts
+[[include:GoogleMaps_AttachMapLayerSimple]]
+```
+
+  > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+
+```ts
+[[include:GoogleMaps_SetGoogleMapsApiKey]]
+```
+
+## Delete all transactions
+
+[BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
+
 ## API deprecations
+
+### @itwin/core-bentley
+
+- The [IDisposable]($core-bentley) interface, along with related [isIDisposable]($core-bentley) and [using]($core-bentley) utilities, have been deprecated in favor of [TypeScript's built-in](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) `Disposable` type and `using` declarations (from the upcoming [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) feature in ECMAScript).
+
+  For example, the following:
+
+  ```typescript
+  import { using } from "@itwin/core-bentley";
+  export function doSomeWork() {
+    using(new SomethingDisposable(), (temp) => {
+      // do something with temp
+    });
+  }
+  ```
+
+  should now be rewritten as:
+
+  ```typescript
+  export function doSomeWork() {
+    using temp = new SomethingDisposable();
+    // do something with temp
+  }
+  ```
+
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement *both* `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - *either* with [IDisposable.dispose]($core-bentley) *or* `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
 
 ### @itwin/core-common
 
@@ -77,6 +173,7 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 ### @itwin/core-backend
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
+- Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
 
 ### @itwin/core-frontend
 
@@ -87,11 +184,64 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
+- Deprecated synchronous [addLogoCards]($core-frontend)-related APIs in favor of new asynchronous ones:
+  - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
+  - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
+
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
+
+### @itwin/ecschema-metadata
+
+Reworked the ISchemaItemLocater and Schema classes' APIs so it's type-safe.
+The original was never type-safe like it suggested. It just returned any schema item found.
+The new safe overload takes a constructor of a schema item subclass to only return items of that type.
+
+Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. EntityClass.isEntityClass())
 
 ### @itwin/presentation-common
 
 - All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
+- `PresentationStatus.BackendTimeout` has been deprecated as it's no longer used. The Presentation library now completely relies on RPC system to handle timeouts.
+- `imageId` properties of [CustomNodeSpecification]($presentation-common) and [PropertyRangeGroupSpecification]($presentation-common) have been deprecated. [ExtendedData](../presentation/customization/ExtendedDataUsage.md#customize-tree-node-item-icon) rule should be used instead.
+- `fromJSON` and `toJSON` methods of [Field]($presentation-common), [PropertiesField]($presentation-common), [ArrayPropertiesField]($presentation-common), [StructPropertiesField]($presentation-common) and [NestedContentField]($presentation-common) have been deprecated. Use `fromCompressedJSON` and `toCompressedJSON` methods instead.
+- `ItemJSON.labelDefinition` has been deprecated in favor of newly added optional `label` property.
+- `NestedContentValue.labelDefinition` has been deprecated in favor of newly added optional `label` property.
+- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
+  - `ComputeSelectionRequestOptions`,
+  - `ComputeSelectionRpcRequestOptions`,
+  - `ElementSelectionScopeProps`,
+  - `SelectionScope`,
+  - `SelectionScopeProps`,
+  - `SelectionScopeRequestOptions`,
+  - `SelectionScopeRpcRequestOptions`.
+
+### @itwin/presentation-backend
+
+- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
+  - `PresentationManager.computeSelection`,
+  - `PresentationManager.getSelectionScopes`.
+
+### @itwin/presentation-frontend
+
+- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
+  - `createSelectionScopeProps`,
+  - `HiliteSet`,
+  - `HiliteSetProvider`,
+  - `HiliteSetProviderProps`,
+  - `ISelectionProvider`,
+  - `Presentation.selection`,
+  - `PresentationProps.selection`,
+  - `SelectionChangeEvent`,
+  - `SelectionChangeEventArgs`,
+  - `SelectionChangesListener`,
+  - `SelectionChangeType`,
+  - `SelectionHandler`,
+  - `SelectionHandlerProps`,
+  - `SelectionHelper`,
+  - `SelectionManager`,
+  - `SelectionManagerProps`,
+  - `SelectionScopesManager`,
+  - `SelectionScopesManagerProps`.
 
 ## Breaking Changes
 
@@ -109,7 +259,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only the latest Electron release ([Electron 35](https://www.electronjs.org/blog/electron-35-0)) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
@@ -123,50 +273,50 @@ The following previously-deprecated APIs have been removed:
 
 The following APIs have been removed in `@itwin/appui-abstract`.
 
-| **Removed**                     | **Replacement**                                           |
-|----------------------------------|-----------------------------------------------------------|
-| `AbstractStatusBarActionItem`    | Use `StatusBarActionItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarCustomItem`    | Use `StatusBarCustomItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarItem`          | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarItemUtilities` | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead. |
-| `AbstractStatusBarLabelItem`     | Use `StatusBarLabelItem` in `@itwin/appui-react` instead. |
-| `AbstractWidgetProps`            | Use `Widget` in `@itwin/appui-react` instead.             |
-| `AllowedUiItemProviderOverrides` | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`. |
-| `BackstageActionItem`            | `BackstageActionItem` in `@itwin/appui-react`.            |
-| `BackstageItem`                  | `BackstageItem` in `@itwin/appui-react`.                  |
-| `BackstageItemType`              | Use Type Guard instead.                                   |
-| `BackstageItemsChangedArgs`      | N/A                                                       |
-| `BackstageItemsManager`          | N/A                                                       |
-| `BackstageItemUtilities`         | `BackstageItemUtilities` in `@itwin/appui-react`.         |
-| `BackstageStageLauncher`         | `BackstageStageLauncher` in `@itwin/appui-react`.         |
-| `BaseUiItemsProvider`            | `BaseUiItemsProvider` in `@itwin/appui-react`.            |
-| `CommonBackstageItem`            | `CommonBackstageItem` in `@itwin/appui-react`.            |
-| `CommonStatusBarItem`            | Use `StatusBarItem` in `@itwin/appui-react` instead.      |
-| `createSvgIconSpec`              | Use `IconSpecUtilities.createWebComponentIconSpec()` instead. |
-| `EditorPosition.columnSpan`      | N/A                                                       |
-| `getSvgSource`                   | Use `IconSpecUtilities.getWebComponentSource()` instead.  |
-| `isAbstractStatusBarActionItem`  | Use `isStatusBarActionItem` in `@itwin/appui-react` instead. |
-| `isAbstractStatusBarCustomItem`  | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead. |
-| `isAbstractStatusBarLabelItem`   | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead. |
-| `isActionItem`                   | Use `isBackstageActionItem` in `@itwin/appui-react` instead. |
-| `isStageLauncher`                | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead. |
-| `ProvidedItem`                   | `ProvidedItem` in `@itwin/appui-react`.                   |
-| `StagePanelLocation`             | `StagePanelLocation` in `@itwin/appui-react`.             |
-| `StagePanelSection`              | `StagePanelSection` in `@itwin/appui-react`.              |
-| `StageUsage`                     | `StageUsage` in `@itwin/appui-react`.                     |
-| `StatusBarItemId`                | Use `CommonStatusBarItem` in `@itwin/appui-react` instead. |
-| `StatusBarLabelSide`             | `StatusBarLabelSide` in `@itwin/appui-react`.             |
-| `StatusBarSection`               | `StatusBarSection` in `@itwin/appui-react`.               |
-| `ToolbarItemId`                  | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.  |
-| `ToolbarManager`                 | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
-| `ToolbarOrientation`             | `ToolbarOrientation` in `@itwin/appui-react`.            |
-| `ToolbarUsage`                   | `ToolbarUsage` in `@itwin/appui-react`.                   |
-| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`. |
-| `UiItemProviderOverrides`        | `UiItemProviderOverrides` in `@itwin/appui-react`.        |
-| `UiItemsApplicationAction`       | N/A                                                       |
-| `UiItemsManager`                 | `UiItemsManager` in `@itwin/appui-react`.                 |
-| `UiItemsProvider`                | `UiItemsProvider` in `@itwin/appui-react`.                |
-| `WidgetState`                    | `WidgetState` in `@itwin/appui-react`.
+| **Removed**                         | **Replacement**                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------- |
+| `AbstractStatusBarActionItem`       | Use `StatusBarActionItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarCustomItem`       | Use `StatusBarCustomItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItem`             | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `AbstractStatusBarItemUtilities`    | Use `StatusBarItemUtilities` in `@itwin/appui-react` instead.                          |
+| `AbstractStatusBarLabelItem`        | Use `StatusBarLabelItem` in `@itwin/appui-react` instead.                              |
+| `AbstractWidgetProps`               | Use `Widget` in `@itwin/appui-react` instead.                                          |
+| `AllowedUiItemProviderOverrides`    | `AllowedUiItemProviderOverrides` in `@itwin/appui-react`.                              |
+| `BackstageActionItem`               | `BackstageActionItem` in `@itwin/appui-react`.                                         |
+| `BackstageItem`                     | `BackstageItem` in `@itwin/appui-react`.                                               |
+| `BackstageItemType`                 | Use Type Guard instead.                                                                |
+| `BackstageItemsChangedArgs`         | N/A                                                                                    |
+| `BackstageItemsManager`             | N/A                                                                                    |
+| `BackstageItemUtilities`            | `BackstageItemUtilities` in `@itwin/appui-react`.                                      |
+| `BackstageStageLauncher`            | `BackstageStageLauncher` in `@itwin/appui-react`.                                      |
+| `BaseUiItemsProvider`               | `BaseUiItemsProvider` in `@itwin/appui-react`.                                         |
+| `CommonBackstageItem`               | `CommonBackstageItem` in `@itwin/appui-react`.                                         |
+| `CommonStatusBarItem`               | Use `StatusBarItem` in `@itwin/appui-react` instead.                                   |
+| `createSvgIconSpec`                 | Use `IconSpecUtilities.createWebComponentIconSpec()` instead.                          |
+| `EditorPosition.columnSpan`         | N/A                                                                                    |
+| `getSvgSource`                      | Use `IconSpecUtilities.getWebComponentSource()` instead.                               |
+| `isAbstractStatusBarActionItem`     | Use `isStatusBarActionItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarCustomItem`     | Use `isStatusBarCustomItem` in `@itwin/appui-react` instead.                           |
+| `isAbstractStatusBarLabelItem`      | Use `isStatusBarLabelItem` in `@itwin/appui-react` instead.                            |
+| `isActionItem`                      | Use `isBackstageActionItem` in `@itwin/appui-react` instead.                           |
+| `isStageLauncher`                   | Use `isBackstageStageLauncher` in `@itwin/appui-react` instead.                        |
+| `ProvidedItem`                      | `ProvidedItem` in `@itwin/appui-react`.                                                |
+| `StagePanelLocation`                | `StagePanelLocation` in `@itwin/appui-react`.                                          |
+| `StagePanelSection`                 | `StagePanelSection` in `@itwin/appui-react`.                                           |
+| `StageUsage`                        | `StageUsage` in `@itwin/appui-react`.                                                  |
+| `StatusBarItemId`                   | Use `CommonStatusBarItem` in `@itwin/appui-react` instead.                             |
+| `StatusBarLabelSide`                | `StatusBarLabelSide` in `@itwin/appui-react`.                                          |
+| `StatusBarSection`                  | `StatusBarSection` in `@itwin/appui-react`.                                            |
+| `ToolbarItemId`                     | Use `ToolbarItem["id"]` in `@itwin/appui-react` instead.                               |
+| `ToolbarManager`                    | For replacement, check [here]($docs/ui/appui/provide-ui-items/#provide-toolbar-items). |
+| `ToolbarOrientation`                | `ToolbarOrientation` in `@itwin/appui-react`.                                          |
+| `ToolbarUsage`                      | `ToolbarUsage` in `@itwin/appui-react`.                                                |
+| `UiItemProviderRegisteredEventArgs` | `UiItemProviderRegisteredEventArgs` in `@itwin/appui-react`.                           |
+| `UiItemProviderOverrides`           | `UiItemProviderOverrides` in `@itwin/appui-react`.                                     |
+| `UiItemsApplicationAction`          | N/A                                                                                    |
+| `UiItemsManager`                    | `UiItemsManager` in `@itwin/appui-react`.                                              |
+| `UiItemsProvider`                   | `UiItemsProvider` in `@itwin/appui-react`.                                             |
+| `WidgetState`                       | `WidgetState` in `@itwin/appui-react`.                                                 |
 
 #### @itwin/core-backend
 
@@ -194,11 +344,18 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `ByteStream.nextUint24`    | `ByteStream.readUint32`                                     |
 | `TransientIdSequence.next` | `TransientIdSequence.getNext`                               |
 
-#### @itwin/appui-abstract
+#### @itwin/core-common
 
-| Removed                     | Replacement |
-| --------------------------- | ----------- |
-| `EditorPosition.columnSpan` | N/A         |
+| Removed                                        | Replacement                                          |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `CodeSpec.isManagedWithIModel`                 | `CodeSpec.scopeReq`                                  |
+| `FeatureOverrides.overrideModel`               | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideSubCategory`         | `FeatureOverrides.override`                          |
+| `FeatureOverrides.overrideElement`             | `FeatureOverrides.override`                          |
+| `Localization.getLocalizedStringWithNamespace` | `Localization.getLocalizedString`                    |
+| `TerrainProviderName`                          | `string`                                             |
+| `RenderMaterial.Params`                        | `CreateRenderMaterialArgs`                           |
+| `RenderTexture.Params`                         | `RenderSystem.createTexture` and `CreateTextureArgs` |
 
 #### @itwin/core-electron
 
@@ -206,6 +363,160 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | ----------------------------------- | --------------------------------------------------------- |
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+
+#### @itwin/core-frontend
+
+| **Removed**                                          | **Replacement**                                                                                                   |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `callIpcHost`                                        | Use `appFunctionIpc` instead.                                                                                     |
+| `callNativeHost`                                     | Use `nativeAppIpc` instead.                                                                                       |
+| `createMaterial`                                     | Use `createRenderMaterial` instead.                                                                               |
+| `createTextureFromImage`                             | Use `createTexture` instead.                                                                                      |
+| `createTextureFromImageBuffer`                       | Use `createTexture` instead.                                                                                      |
+| `createTextureFromImageSource`                       | Use `RenderSystem.createTextureFromSource` instead.                                                               |
+| `displayStyleState.getThumbnail`                     | N/A (in almost all cases it throws "no content" due to no thumbnail existing.)                                    |
+| `displayStyleState.onScheduleScriptReferenceChanged` | Use [DisplayStyleState.onScheduleScriptChanged]($frontend) instead                                                |
+| `displayStyleState.scheduleScriptReference`          | Use [DisplayStyleState.scheduleScript]($frontend) instead                                                         |
+| `GraphicBuilder.pickId`                              | Deprecated in 3.x. Maintain the current pickable ID yourself.                                                     |
+| `getDisplayedExtents`                                | These extents are based on `IModelConnection.displayedExtents`. Consider `computeFitRange` or `getViewedExtents`. |
+| `IModelConnection.displayedExtents`                  | N/A                                                                                                               |
+| `IModelConnection.expandDisplayedExtents`            | Use `displayedExtents` instead.                                                                                   |
+| `IModelConnection.query`                             | Use `createQueryReader` instead (same parameter).                                                                 |
+| `IModelConnection.queryRowCount`                     | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`.    |
+| `IModelConnection.restartQuery`                      | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.      |
+| `requestDownloadBriefcase(progress)`                 | `progress` is removed, use `DownloadBriefcaseOptions.progressCallback` instead.                                   |
+| `readImage`                                          | Use `readImageBuffer` instead.                                                                                    |
+| `setEventController`                                 | Removed (was for internal use).                                                                                   |
+| `PullChangesOptions.progressCallback`                | Use `downloadProgressCallback` instead.                                                                           |
+
+#### @itwin/core-geometry
+
+| Removed                                           | Replacement                                 |
+| ------------------------------------------------- | ------------------------------------------- |
+| `PathFragment.childFractionTChainDistance`        | `PathFragment.childFractionToChainDistance` |
+| `GrowableXYArray.setXYZAtCheckedPointIndex`       | `GrowableXYArray.setXYAtCheckedPointIndex`  |
+| `PolyfaceBuilder.findOrAddPoint`                  | `PolyfaceBuilder.addPoint`                  |
+| `PolyfaceBuilder.findOrAddParamXY`                | `PolyfaceBuilder.addParamXY`                |
+| `PolyfaceBuilder.findOrAddParamInGrowableXYArray` | `PolyfaceBuilder.addParamInGrowableXYArray` |
+| `PolyfaceBuilder.findOrAddPointXYZ`               | `PolyfaceBuilder.addPointXYZ`               |
+
+#### @itwin/presentation-common
+
+| Removed                                                      | Replacement                                                                                                                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BaseNodeKeyJSON`                                            | `BaseNodeKey`                                                                                                                                                 |
+| `BooleanRulesetVariableJSON`                                 | `BooleanRulesetVariable`                                                                                                                                      |
+| `CheckBoxRule`                                               | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `ClassInfo.fromJSON`                                         | `ClassInfo`                                                                                                                                                   |
+| `ClassInfo.toJSON`                                           | `ClassInfo`                                                                                                                                                   |
+| `ClassInfoJSON`                                              | `ClassInfo`                                                                                                                                                   |
+| `ConditionContainer`                                         | n/a                                                                                                                                                           |
+| `ContentFlags.ShowImages`                                    | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `ContentSpecificationBase.showImages`                        | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `Descriptor.contentOptions`                                  | n/a                                                                                                                                                           |
+| `Descriptor.filterExpression`                                | `Descriptor.fieldsFilterExpression`                                                                                                                           |
+| `DescriptorJSON.contentOptions`                              | n/a                                                                                                                                                           |
+| `DescriptorJSON.filterExpression`                            | `DescriptorJSON.fieldsFilterExpression`                                                                                                                       |
+| `DescriptorSource.filterExpression`                          | `DescriptorSource.fieldsFilterExpression`                                                                                                                     |
+| `DisplayValue.fromJSON`                                      | `DisplayValue`                                                                                                                                                |
+| `DisplayValue.toJSON`                                        | `DisplayValue`                                                                                                                                                |
+| `DisplayValueJSON`                                           | `DisplayValue`                                                                                                                                                |
+| `DisplayValuesArrayJSON`                                     | `DisplayValuesArray`                                                                                                                                          |
+| `DisplayValuesMapJSON`                                       | `DisplayValuesMap`                                                                                                                                            |
+| `DisplayValueGroup.fromJSON`                                 | `DisplayValueGroup`                                                                                                                                           |
+| `DisplayValueGroup.toJSON`                                   | `DisplayValueGroup`                                                                                                                                           |
+| `DisplayValueGroupJSON`                                      | `DisplayValueGroup`                                                                                                                                           |
+| `ECClassGroupingNodeKeyJSON`                                 | `ECClassGroupingNodeKeyJSON`                                                                                                                                  |
+| `ECInstancesNodeKeyJSON`                                     | `ECInstancesNodeKey`                                                                                                                                          |
+| `ECPropertyGroupingNodeKeyJSON`                              | `ECPropertyGroupingNodeKeyJSON`                                                                                                                               |
+| `GroupingNodeKeyJSON`                                        | `GroupingNodeKey`                                                                                                                                             |
+| `HierarchyCompareInfo.fromJSON`                              | `HierarchyCompareInfo`                                                                                                                                        |
+| `HierarchyCompareInfo.toJSON`                                | `HierarchyCompareInfo`                                                                                                                                        |
+| `HierarchyCompareInfoJSON`                                   | `HierarchyCompareInfo`                                                                                                                                        |
+| `HierarchyLevel.fromJSON`                                    | `HierarchyLevel`                                                                                                                                              |
+| `HierarchyLevelJSON`                                         | `HierarchyLevel`                                                                                                                                              |
+| `Id64RulesetVariableJSON`                                    | `Id64RulesetVariable`                                                                                                                                         |
+| `ImageIdOverride`                                            | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `InstanceKey.fromJSON`                                       | `InstanceKey`                                                                                                                                                 |
+| `InstanceKey.toJSON`                                         | `InstanceKey`                                                                                                                                                 |
+| `InstanceKeyJSON`                                            | `InstanceKey`                                                                                                                                                 |
+| `InstanceNodesOfSpecificClassesSpecification.arePolymorphic` | The attribute was replaced with `arePolymorphic` attribute specified individually for each class definition under `classes` and `excludedClasses` attributes. |
+| `IntRulesetVariableJSON`                                     | `IntRulesetVariable`                                                                                                                                          |
+| `IntsRulesetVariableJSON`                                    | `IntsRulesetVariable`                                                                                                                                         |
+| `Item.imageId`                                               | Use `Item.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `ItemJSON.imageId`                                           | Use `Item.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `LabelCompositeValue.fromJSON`                               | `LabelCompositeValue`                                                                                                                                         |
+| `LabelCompositeValue.toJSON`                                 | `LabelCompositeValue`                                                                                                                                         |
+| `LabelCompositeValueJSON`                                    | `LabelCompositeValue`                                                                                                                                         |
+| `LabelDefinition.fromJSON`                                   | `LabelDefinition`                                                                                                                                             |
+| `LabelDefinition.toJSON`                                     | `LabelDefinition`                                                                                                                                             |
+| `LabelDefinitionJSON`                                        | `LabelDefinition`                                                                                                                                             |
+| `LabelGroupingNodeKeyJSON`                                   | `LabelGroupingNodeKey`                                                                                                                                        |
+| `LabelOverride`                                              | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `LabelRawValueJSON`                                          | `LabelRawValue`                                                                                                                                               |
+| `NavigationPropertyInfo.fromJSON`                            | `NavigationPropertyInfo.fromCompressedJSON`                                                                                                                   |
+| `NavigationPropertyInfo.toJSON`                              | `NavigationPropertyInfo.toCompressedJSON`                                                                                                                     |
+| `NestedContentField.fromJSON`                                | `NestedContentField.fromCompressedJSON`                                                                                                                       |
+| `NestedContentValue.fromJSON`                                | `NestedContentValue`                                                                                                                                          |
+| `NestedContentValue.toJSON`                                  | `NestedContentValue`                                                                                                                                          |
+| `NestedContentValueJSON`                                     | `NestedContentValue`                                                                                                                                          |
+| `Node.backColor`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.fontStyle`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.foreColor`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.isCheckboxEnabled`                                     | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.isCheckboxVisible`                                     | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.isChecked`                                             | Use `Node.extendedData` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                         |
+| `Node.fromJSON`                                              | `Node`                                                                                                                                                        |
+| `Node.toJSON`                                                | `Node`                                                                                                                                                        |
+| `NodeJSON`                                                   | `Node`                                                                                                                                                        |
+| `NodeDeletionInfoJSON`                                       | `NodeDeletionInfo`                                                                                                                                            |
+| `NodeInsertionInfoJSON`                                      | `NodeInsertionInfo`                                                                                                                                           |
+| `NodeKey.fromJSON`                                           | `NodeKey`                                                                                                                                                     |
+| `NodeKey.toJSON`                                             | `NodeKey`                                                                                                                                                     |
+| `NodeKeyJSON`                                                | `NodeKey`                                                                                                                                                     |
+| `NodePathElement.fromJSON`                                   | `NodePathElement`                                                                                                                                             |
+| `NodePathElement.toJSON`                                     | `NodePathElement`                                                                                                                                             |
+| `NodePathElementJSON`                                        | `NodePathElement`                                                                                                                                             |
+| `NodePathFilteringData.fromJSON`                             | `NodePathFilteringData`                                                                                                                                       |
+| `NodePathFilteringData.toJSON`                               | `NodePathFilteringData`                                                                                                                                       |
+| `NodePathFilteringDataJSON`                                  | `NodePathFilteringData`                                                                                                                                       |
+| `NodeUpdateInfoJSON`                                         | `NodeUpdateInfo`                                                                                                                                              |
+| `PartialHierarchyModification.fromJSON`                      | `PartialHierarchyModification`                                                                                                                                |
+| `PartialHierarchyModification.toJSON`                        | `PartialHierarchyModification`                                                                                                                                |
+| `PartialHierarchyModificationJSON`                           | `PartialHierarchyModification`                                                                                                                                |
+| `PartialNodeJSON`                                            | `PartialNode`                                                                                                                                                 |
+| `Property.fromJSON`                                          | `Property`                                                                                                                                                    |
+| `Property.toJSON`                                            | `Property.toCompressedJSON`                                                                                                                                   |
+| `PropertyGroup.groupingValue`                                | n/a - display value should always be used for grouping.                                                                                                       |
+| `PropertyGroup.sortingValue`                                 | n/a - property grouping nodes should always be sorted by display label.                                                                                       |
+| `PropertyGroupingValue`                                      | n/a                                                                                                                                                           |
+| `PropertyInfo.fromJSON`                                      | `PropertyInfo.fromCompressedJSON`                                                                                                                             |
+| `PropertyInfo.toJSON`                                        | `PropertyInfo.toCompressedJSON`                                                                                                                               |
+| `RelatedClassInfo.fromJSON`                                  | `RelatedClassInfo.fromCompressedJSON`                                                                                                                         |
+| `RelatedClassInfo.toJSON`                                    | `RelatedClassInfo.toCompressedJSON`                                                                                                                           |
+| `StringRulesetVariableJSON`                                  | `StringRulesetVariable`                                                                                                                                       |
+| `StyleOverride`                                              | Use `ExtendedDataRule` instead. See [extended data usage page](../presentation/customization/ExtendedDataUsage.md) for more details.                          |
+| `Value.fromJSON`                                             | `Value`                                                                                                                                                       |
+| `Value.toJSON`                                               | `Value`                                                                                                                                                       |
+| `ValueJSON`                                                  | `Value`                                                                                                                                                       |
+| `ValuesArrayJSON`                                            | `ValuesArray`                                                                                                                                                 |
+| `ValuesMapJSON`                                              | `ValuesMap`                                                                                                                                                   |
+
+#### @itwin/presentation-backend
+
+| Removed                                                                                                                       | Replacement                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `PresentationAssetsRootConfig.common`                                                                                         | n/a - the prop isn't used anymore                                                                                       |
+| `PresentationManager.computeSelection(arg: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[]; scopeId: string; })` | `PresentationManager.computeSelection` overload that takes a single `ComputeSelectionRequestOptions<IModelDb>` argument |
+| `PresentationManager.activeLocale`, `PresentationManagerProps.defaultLocale` and `PresentationManagerProps.localeDirectories` | `PresentationManagerProps.getLocalizedString`                                                                           |
+| `PresentationManagerMode` and `PresentationManagerProps.mode`                                                                 | n/a - the prop isn't used anymore                                                                                       |
+| `PresentationManagerProps.enableSchemasPreload`                                                                               | `PresentationProps.enableSchemasPreload`                                                                                |
+
+#### @itwin/presentation-frontend
+
+| Removed      | Replacement                                                           |
+| ------------ | --------------------------------------------------------------------- |
+| `getScopeId` | n/a - this is an internal utility that should've never become public. |
 
 ### API removals
 
@@ -227,28 +538,40 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 | `LogFunction`         |
 | `LoggingMetaData`     |
 
+#### @itwin/ecschema-metadata
+
+- Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
+- Replaced existing generic `getItem()` methods from `schemaItemLocater`, `schemaContext` and `Schema` as it suggested type safety when there was none. The new overload requires either no generic type at all, or providing an additional ctor parameter of the desired schemaItem class.
+
+Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted either into
+`context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
+A regex can be used to do bulk renaming:
+`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
+This applies to SchemaContext.getSchemaItem/Sync, Schema.getItem/Sync and Schema.lookupItem/Sync
+
 ### Packages dropped
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
 
-| Removed                        | Replacement                                                                                                            |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
-| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends.          |
+| Removed                        | Replacement                                                                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all. |
+| `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client.        |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                             |
 
 ### Change to pullMerge
 
-Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fastforward method for merging changes. This change is transparent to users and is enabled by default.
+Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
 
 #### No pending/local changes
 
-- Incomming changes are applied using "fast-forward" method.
+- Incoming changes are applied using "fast-forward" method.
 
 #### With pending/local changes
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the _fastforward_ method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the *fast-forward* method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
@@ -264,3 +587,66 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
+
+### TypeScript configuration changes
+
+There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
+
+#### `target`
+
+[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
+
+#### `useDefineForClassFields`
+
+Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
+
+This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
+
+```ts
+interface MyElementProps extends ElementProps {
+  property: string;
+}
+
+class MyElement extends Element {
+  public property!: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+  }
+}
+
+const myElement = new MyElement({ property: "value" });
+console.log(myElement.property); // undefined
+```
+
+To fix this, you can either initialize your properties in your class constructor:
+
+```ts
+class MyElement extends Element {
+  public property: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+    property = props.property;
+  }
+}
+```
+
+or just define your properties using `declare` keyword:
+
+```ts
+class MyElement extends Element {
+  declare public property: string;
+  ...
+}
+```
+
+## Attach/detach db
+
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
+
+```ts
+[[include:IModelDb_attachDb.code]]
+```
+
+> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'

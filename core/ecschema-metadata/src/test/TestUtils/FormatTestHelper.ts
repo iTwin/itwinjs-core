@@ -14,7 +14,7 @@ import { SchemaKey } from "../../SchemaKey";
 const formatsKey = new SchemaKey("Formats", 1, 0, 0);
 
 export class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 
@@ -22,18 +22,18 @@ export class TestSchemaLocater implements ISchemaLocater {
     return context.getCachedSchema(schemaKey, matchType);
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 
     return Schema.startLoadingFromJson(testFormatSchema, context);
   }
 
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     if (!schemaKey.matches(formatsKey, matchType))
       return undefined;
 
-    return Schema.fromJsonSync(testFormatSchema, context) as T;
+    return Schema.fromJsonSync(testFormatSchema, context);
   }
 }
 

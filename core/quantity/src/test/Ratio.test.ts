@@ -1,4 +1,4 @@
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { Format } from "../Formatter/Format";
 import { Formatter } from "../Formatter/Formatter";
 
@@ -34,11 +34,11 @@ describe("Ratio format tests", () => {
 
     const unitsProvider = new TestUnitsProvider();
     const ratioFormat = new Format("Ratio");
-    await ratioFormat.fromJSON(unitsProvider, ratioJson).catch(() => {});
-    assert.isTrue(ratioFormat.hasUnits);
+    await ratioFormat.fromJSON(unitsProvider, ratioJson);
+    expect(ratioFormat.hasUnits).to.be.true;
 
     const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(persistenceUnitStr);
-    assert.isTrue(persistenceUnit.isValid);
+    expect(persistenceUnit.isValid).to.be.true;
 
     const ratioFormatterSpec = await FormatterSpec.create(`${ratioType}`, ratioFormat, unitsProvider, persistenceUnit); // persisted unit
     const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit); // persistence unit
@@ -132,11 +132,11 @@ describe("Ratio format tests", () => {
         { magnitude: 3, ratio: "1:0.333", precision: 3 },
         { magnitude: 3, ratio: "1:0.3333", precision: 4 },
 
-        { magnitude: 0.667, ratio: "1:1.49925", precision: 5},
-        { magnitude: 0.667, ratio: "1:1.4993", precision: 4},
-        { magnitude: 0.667, ratio: "1:1.499", precision: 3},
-        { magnitude: 0.667, ratio: "1:1.5", precision: 2},
-        { magnitude: 0.667, ratio: "1:1.5", precision: 1},
+        { magnitude: 0.667, ratio: "1:1.49925", precision: 5 },
+        { magnitude: 0.667, ratio: "1:1.4993", precision: 4 },
+        { magnitude: 0.667, ratio: "1:1.499", precision: 3 },
+        { magnitude: 0.667, ratio: "1:1.5", precision: 2 },
+        { magnitude: 0.667, ratio: "1:1.5", precision: 1 },
       ];
       await testRatioType("OneToN", testData);
     });
@@ -180,9 +180,9 @@ describe("Ratio format tests", () => {
       try {
         await ratioFormat.fromJSON(unitsProvider, ratioJson);
         expect.fail("Expected error was not thrown");
-      } catch (e: any){
-        assert.strictEqual(e.message, "The Format Ratio is 'Ratio' type therefore the attribute 'ratioType' is required.");
-        assert.instanceOf(e, QuantityError);
+      } catch (e: any) {
+        expect(e.message).toEqual("The Format Ratio is 'Ratio' type therefore the attribute 'ratioType' is required.");
+        expect(e).toBeInstanceOf(QuantityError);
       }
     });
 
@@ -203,9 +203,9 @@ describe("Ratio format tests", () => {
       try {
         await ratioFormat.fromJSON(unitsProvider, ratioJson);
         expect.fail("Expected error was not thrown");
-      } catch (e: any){
-        assert.strictEqual(e.message, "The Format Ratio has an invalid 'ratioType' attribute.");
-        assert.instanceOf(e, QuantityError);
+      } catch (e: any) {
+        expect(e.message).toEqual("The Format Ratio has an invalid 'ratioType' attribute.");
+        expect(e).toBeInstanceOf(QuantityError);
       }
     });
 
@@ -250,8 +250,8 @@ describe("Ratio format tests", () => {
       const testData: TestData[] = [
         { magnitude: 1.0 / 7, ratio: "143:1000" },
         { magnitude: 2.0 / 7, ratio: "143:500" }, // comes down from 286:1000
-        { magnitude: 1.0 / 7, ratio: "1429:10000", precision: 4},
-        { magnitude: 2.0 / 7, ratio: "2857:10000", precision: 4},
+        { magnitude: 1.0 / 7, ratio: "1429:10000", precision: 4 },
+        { magnitude: 2.0 / 7, ratio: "2857:10000", precision: 4 },
       ];
       await testRatioType("useGreatestCommonDivisor", testData);
     });
@@ -280,17 +280,17 @@ describe("Ratio format tests", () => {
         assert.fail("Failed to create ratio format from JSON");
       }
 
-      assert.isTrue(ratioFormat.hasUnits, "Ratio format should have units");
+      expect(ratioFormat.hasUnits).to.be.true;
 
       const persistenceUnit: UnitProps = await unitsProvider.findUnitByName(persistenceUnitStr);
-      assert.isTrue(persistenceUnit.isValid, "Persistence unit should be valid");
+      expect(persistenceUnit.isValid).to.be.true;
 
       const ratioParser = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
       for (const entry of testData) {
         const parserRatioResult = Parser.parseQuantityString(entry.ratio, ratioParser);
 
         if (entry.parseError) { // if it is expecting an error
-          assert.isTrue(Parser.isParseError(parserRatioResult));
+          expect(Parser.isParseError(parserRatioResult)).to.be.true;
           // Check if parserRatioResult has the err property, which signifies a ParseQuantityError
           if ("error" in parserRatioResult)
             expect(parserRatioResult.error).to.equal(entry.parseError);
@@ -330,10 +330,10 @@ describe("Ratio format tests", () => {
         { magnitude: 1.0, ratio: "10:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
 
         { magnitude: 1.0, ratio: "", parseError: ParseError.NoValueOrUnitFoundInString },
-        { magnitude: 1.0, ratio: "1:", parseError: ParseError.NoValueOrUnitFoundInString},
-        { magnitude: 1.0, ratio: "1:A", parseError: ParseError.NoValueOrUnitFoundInString},
+        { magnitude: 1.0, ratio: "1:", parseError: ParseError.NoValueOrUnitFoundInString },
+        { magnitude: 1.0, ratio: "1:A", parseError: ParseError.NoValueOrUnitFoundInString },
 
-        { magnitude: 1.0, ratio: "1:2:3", parseError: ParseError.UnableToConvertParseTokensToQuantity},
+        { magnitude: 1.0, ratio: "1:2:3", parseError: ParseError.UnableToConvertParseTokensToQuantity },
       ];
       await testRatioParser(testData);
     });
@@ -392,21 +392,21 @@ describe("Ratio format tests", () => {
       const unitsProvider = new TestUnitsProvider();
       const vphRatioFormat = new Format("VpH");
       await vphRatioFormat.fromJSON(unitsProvider, vphRatioFormatJson);
-      assert.isTrue(vphRatioFormat.hasUnits);
+      expect(vphRatioFormat.hasUnits).to.be.true;
 
       const hvpRatioFormat = new Format("HpV");
       await hvpRatioFormat.fromJSON(unitsProvider, hpvRatioFormatJson);
-      assert.isTrue(hvpRatioFormat.hasUnits);
+      expect(hvpRatioFormat.hasUnits).to.be.true;
 
       const vH: UnitProps = await unitsProvider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
-      assert.isTrue(vH.isValid);
+      expect(vH.isValid).to.be.true;
       const hV: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
-      assert.isTrue(hV.isValid);
+      expect(hV.isValid).to.be.true;
 
-      const vphToVphFormatter = await FormatterSpec.create("vph_to_vph_formatter", vphRatioFormat, unitsProvider,vH);
-      const hpvToVphFormatter = await FormatterSpec.create("hvp_to_vph_formatter", vphRatioFormat, unitsProvider,hV);
-      const vphToHpvFormatter = await FormatterSpec.create("vph_to_hpv_formatter", hvpRatioFormat, unitsProvider,vH);
-      const hpvToHpvFormatter = await FormatterSpec.create("hpv_to_hpv_formatter", hvpRatioFormat, unitsProvider,hV);
+      const vphToVphFormatter = await FormatterSpec.create("vph_to_vph_formatter", vphRatioFormat, unitsProvider, vH);
+      const hpvToVphFormatter = await FormatterSpec.create("hvp_to_vph_formatter", vphRatioFormat, unitsProvider, hV);
+      const vphToHpvFormatter = await FormatterSpec.create("vph_to_hpv_formatter", hvpRatioFormat, unitsProvider, vH);
+      const hpvToHpvFormatter = await FormatterSpec.create("hpv_to_hpv_formatter", hvpRatioFormat, unitsProvider, hV);
 
       const vphToVphParser = await ParserSpec.create(vphRatioFormat, unitsProvider, vH);
       const hpvToVphParser = await ParserSpec.create(vphRatioFormat, unitsProvider, hV);

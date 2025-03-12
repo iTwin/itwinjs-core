@@ -2,6 +2,36 @@
   "name": "@itwin/frontend-devtools",
   "entries": [
     {
+      "version": "4.10.10",
+      "tag": "@itwin/frontend-devtools_v4.10.10",
+      "date": "Tue, 11 Mar 2025 15:25:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.9",
+      "tag": "@itwin/frontend-devtools_v4.10.9",
+      "date": "Tue, 11 Mar 2025 05:17:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.8",
+      "tag": "@itwin/frontend-devtools_v4.10.8",
+      "date": "Thu, 06 Mar 2025 14:13:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.7",
+      "tag": "@itwin/frontend-devtools_v4.10.7",
+      "date": "Tue, 18 Feb 2025 17:27:03 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.6",
+      "tag": "@itwin/frontend-devtools_v4.10.6",
+      "date": "Fri, 24 Jan 2025 08:02:40 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.10.5",
       "tag": "@itwin/frontend-devtools_v4.10.5",
       "date": "Tue, 21 Jan 2025 21:56:45 GMT",

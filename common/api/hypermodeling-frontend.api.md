@@ -62,6 +62,8 @@ export interface HyperModelingConfig {
 
 // @public
 export class HyperModelingDecorator implements Decorator {
+    // @internal (undocumented)
+    [Symbol.dispose](): void;
     get activeMarker(): SectionMarker | undefined;
     alignToSpatialView(marker: SectionMarker): Promise<boolean>;
     alignView(marker: SectionMarker): void;
@@ -71,8 +73,6 @@ export class HyperModelingDecorator implements Decorator {
     static create(vp: ScreenViewport, config: SectionMarkerConfig): Promise<HyperModelingDecorator | undefined>;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // @internal (undocumented)
-    dispose(): void;
     static getForViewport(vp: ScreenViewport): HyperModelingDecorator | undefined;
     readonly markers: SectionMarkerSet;
     openSection(marker: SectionMarker): Promise<boolean>;

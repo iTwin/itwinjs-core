@@ -211,20 +211,12 @@
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/core-telemetry",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
-      "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "backend", "internal", "tools" ]
-    },
-    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-metadata",
@@ -611,6 +603,10 @@
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "global-jsdom",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "google-protobuf",
       "allowedCategories": [ "extensions" ]
     },
@@ -720,6 +716,10 @@
     },
     {
       "name": "npm-run-all",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "npm-run-all2",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {

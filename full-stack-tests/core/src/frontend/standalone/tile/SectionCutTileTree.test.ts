@@ -11,7 +11,10 @@ import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
-  view.forEachModelTreeRef((_) => ++numTrees);
+  for (const _ of view.getModelTreeRefs()) {
+    ++numTrees;
+  }
+
   return numTrees;
 }
 

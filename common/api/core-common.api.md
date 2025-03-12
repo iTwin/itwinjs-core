@@ -30,7 +30,6 @@ import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IndexedPolyface } from '@itwin/core-geometry';
@@ -614,6 +613,8 @@ export interface BaseReaderOptions {
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
+    // @internal (undocumented)
+    testingArgs?: TestingArgs;
     usePrimaryConn?: boolean;
 }
 
@@ -668,6 +669,12 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     serializedClientRequestContextHeaderNames: SerializedRpcActivity;
     supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined): string;
     supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
+}
+
+// @public
+export interface BinaryImageSource {
+    readonly data: Uint8Array;
+    readonly format: ImageSourceFormat.Jpeg | ImageSourceFormat.Png;
 }
 
 // @public
@@ -1095,7 +1102,7 @@ export enum ChangeOpCode {
     Update = 2
 }
 
-// @internal
+// @public
 export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
@@ -1291,9 +1298,6 @@ export class CodeSpec {
     iModel: IModel;
     // (undocumented)
     get isExternal(): boolean;
-    // @deprecated
-    get isManagedWithIModel(): boolean;
-    set isManagedWithIModel(value: boolean);
     get isValid(): boolean;
     name: string;
     // @internal
@@ -1639,6 +1643,12 @@ export class ConflictingLocksError extends IModelError {
     conflictingLocks?: ConflictingLock[];
 }
 
+// @beta
+export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
+
+// @beta
+export function constructITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -1898,6 +1908,9 @@ export interface CreateIModelProps extends IModelProps {
     readonly thumbnail?: ThumbnailProps;
 }
 
+// @beta
+export function createITwinErrorTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
+
 // @public
 export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
@@ -1988,15 +2001,19 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
+    allowTestingArgs?: boolean;
+    autoShutdowWhenIdlelForSeconds?: number;
+    // (undocumented)
+    doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
-    // (undocumented)
     ignoreDelay?: boolean;
-    // (undocumented)
     ignorePriority?: boolean;
+    memoryMapFileSize?: number;
     // (undocumented)
+    monitorPollInterval?: number;
     requestQueueSize?: number;
-    // (undocumented)
+    statementCacheSizePerWorker?: number;
     workerThreads?: number;
 }
 
@@ -2035,6 +2052,8 @@ export interface DbQueryResponse extends DbResponse {
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
     kind?: DbRequestKind;
+    // (undocumented)
+    testingArgs?: TestingArgs;
 }
 
 // @internal (undocumented)
@@ -2086,17 +2105,19 @@ export enum DbResponseStatus {
     // (undocumented)
     Error_BlobIO_OutOfRange = 106,/*  could not submit the query as queue was full.*/
     // (undocumented)
-    Error_ECSql_BindingFailed = 104,/*  generic error*/
+    Error_ECSql_BindingFailed = 104,/*  Shutdown is in progress. */
     // (undocumented)
-    Error_ECSql_PreparedFailed = 101,/*  ecsql prepared failed*/
+    Error_ECSql_PreparedFailed = 101,/*  generic error*/
     // (undocumented)
-    Error_ECSql_RowToJsonFailed = 103,/*  ecsql step failed*/
+    Error_ECSql_RowToJsonFailed = 103,/*  ecsql prepared failed*/
     // (undocumented)
-    Error_ECSql_StepFailed = 102,/*  ecsql failed to serialized row to json.*/
+    Error_ECSql_StepFailed = 102,/*  ecsql step failed*/
     // (undocumented)
-    Partial = 3,/*  ecsql binding failed.*/
+    Partial = 3,/*  ecsql failed to serialized row to json.*/
     // (undocumented)
-    QueueFull = 5,/*  class or property or instance specified was not found or property as not of type blob.*/
+    QueueFull = 5,/*  ecsql binding failed.*/
+    // (undocumented)
+    ShuttingDown = 6,/*  class or property or instance specified was not found or property as not of type blob.*/
     // (undocumented)
     Timeout = 4
 }
@@ -2109,6 +2130,8 @@ export interface DbRuntimeStats {
     memLimit: number;
     // (undocumented)
     memUsed: number;
+    // (undocumented)
+    prepareTime: number;
     // (undocumented)
     timeLimit: number;
     // (undocumented)
@@ -3022,8 +3045,6 @@ export class EmptyLocalization implements Localization {
     // (undocumented)
     getLocalizedString(key: string | string[]): string;
     // (undocumented)
-    getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string;
-    // (undocumented)
     getNamespacePromise(): Promise<void> | undefined;
     // (undocumented)
     initialize(): Promise<void>;
@@ -3345,12 +3366,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     readonly neverDrawnAnimationNodes: Set<number>;
     override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
-    // @deprecated
-    overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
-    // @deprecated
-    overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
-    // @deprecated
-    overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     protected _patterns: boolean;
     setAlwaysDrawn(id: Id64String): void;
     setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory?: boolean): void;
@@ -3441,14 +3456,13 @@ export interface FlatBufferGeometryStream {
 }
 
 // @beta
-interface FontFace_2 {
+export interface FontFace {
     familyName: string;
     // (undocumented)
     isBold: boolean;
     // (undocumented)
     isItalic: boolean;
 }
-export { FontFace_2 as FontFace }
 
 // @public
 export interface FontFamilyDescriptor {
@@ -3724,6 +3738,7 @@ export enum GeoCoordStatus {
     NoGCSDefined = 100,
     OutOfMathematicalDomain = 2,
     OutOfUsefulRange = 1,
+    // @deprecated
     Pending = -41556,
     Success = 0,
     VerticalDatumConvertError = 26
@@ -4118,6 +4133,9 @@ export enum GeometrySummaryVerbosity {
     Detailed = 20,
     Full = 30
 }
+
+// @beta
+export function getITwinErrorMetaData(error: ITwinError): object | undefined;
 
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
@@ -4653,8 +4671,6 @@ export interface HydrateViewStateRequestProps {
     acsId?: string;
     // (undocumented)
     baseModelId?: Id64String;
-    // @deprecated (undocumented)
-    notLoadedCategoryIds?: CompressedId64Set;
     // (undocumented)
     notLoadedModelSelectorStateModels?: CompressedId64Set;
     // (undocumented)
@@ -4671,8 +4687,6 @@ export interface HydrateViewStateResponseProps {
     acsElementProps?: ElementProps;
     // (undocumented)
     baseModelProps?: ModelProps;
-    // @deprecated (undocumented)
-    categoryIdsResult?: SubCategoryResultRow[];
     // (undocumented)
     modelSelectorStateModels?: ModelProps[];
     // (undocumented)
@@ -4790,6 +4804,8 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     modelId?: never;
     // @beta
+    properties?: MapLayerProviderProperties;
+    // @beta
     queryParams?: {
         [key: string]: string;
     };
@@ -4823,6 +4839,8 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // (undocumented)
     password?: string;
+    // @beta
+    readonly properties?: MapLayerProviderProperties;
     // @beta
     savedQueryParams?: {
         [key: string]: string;
@@ -5226,7 +5244,7 @@ export type InterpolationFunction = (v: any, k: number) => number;
 
 // @beta
 export interface InUseLock {
-    briefcaseIds: number[];
+    briefcaseIds: BriefcaseId[];
     objectId: string;
     state: LockState;
 }
@@ -5234,17 +5252,7 @@ export interface InUseLock {
 // @beta
 export interface InUseLocksError extends ITwinError {
     // (undocumented)
-    errorKey: "in-use-locks";
-    // (undocumented)
     inUseLocks: InUseLock[];
-    // (undocumented)
-    namespace: "itwinjs-core";
-}
-
-// @beta (undocumented)
-export namespace InUseLocksError {
-    export function isInUseLocksError(error: unknown): error is InUseLocksError;
-    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
 }
 
 // @internal (undocumented)
@@ -5257,6 +5265,7 @@ export const ipcAppChannels: {
 
 // @internal
 export interface IpcAppFunctions {
+    abandonChanges: (key: string) => Promise<void>;
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
     cancelPullChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
@@ -5308,6 +5317,7 @@ export type IpcInvokeReturn = {
         message: string;
         errorNumber: number;
         stack?: string;
+        metadata?: LoggingMetaData;
     };
 } | {
     result?: never;
@@ -5317,6 +5327,7 @@ export type IpcInvokeReturn = {
         errorKey: string;
         message: string;
         stack?: string;
+        metadata?: LoggingMetaData;
         [key: string]: any;
     };
 };
@@ -5446,6 +5457,12 @@ export abstract class IpcWebSocketTransport {
     protected unwrap(data: any): any;
 }
 
+// @public
+export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
+
+// @beta
+export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError;
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5465,7 +5482,7 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 export const iTwinChannel: (channel: string) => string;
 
 // @beta
-export interface ITwinError {
+export interface ITwinError extends Error {
     errorKey: string;
     message: string;
     metadata?: LoggingMetaData;
@@ -5473,11 +5490,19 @@ export interface ITwinError {
     stack?: string;
 }
 
-// @beta (undocumented)
-export namespace ITwinError {
-    export function getMetaData(err: ITwinError): object | undefined;
-    export function isITwinError(error: unknown): error is ITwinError;
-}
+// @beta
+export const iTwinErrorKeys: {
+    readonly inUseLocks: "in-use-locks";
+    readonly channelNest: "channel-may-not-nest";
+    readonly channelNotAllowed: "channel-not-allowed";
+    readonly channelRootExists: "channel-root-exists";
+};
+
+// @beta
+export const iTwinErrorMessages: Record<keyof typeof iTwinErrorKeys, (...args: any[]) => string>;
+
+// @beta
+export const iTwinjsCoreNamespace = "itwinjs-core";
 
 // @public
 export interface JsonGeometryStream {
@@ -5679,8 +5704,6 @@ export interface Localization {
     getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
     getLocalizedString(key: string | string[], options?: TranslationOptions): string;
-    // @deprecated
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;
@@ -5732,6 +5755,15 @@ export interface MapLayerKey {
 
 // @public
 export type MapLayerProps = ImageMapLayerProps | ModelMapLayerProps;
+
+// @beta
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
+
+// @beta
+export interface MapLayerProviderProperties {
+    // (undocumented)
+    [key: string]: number | string | boolean | MapLayerProviderArrayProperty;
+}
 
 // @public
 export abstract class MapLayerSettings {
@@ -5828,7 +5860,7 @@ export enum MassPropertiesOperation {
     AccumulateVolumes = 2
 }
 
-// @public
+// @public @deprecated
 export interface MassPropertiesPerCandidateRequestProps {
     // (undocumented)
     candidates: CompressedId64Set;
@@ -5836,7 +5868,7 @@ export interface MassPropertiesPerCandidateRequestProps {
     operations: MassPropertiesOperation[];
 }
 
-// @public
+// @public @deprecated
 export interface MassPropertiesPerCandidateResponseProps extends MassPropertiesResponseProps {
     // (undocumented)
     candidate: Id64String;
@@ -7413,6 +7445,8 @@ export class QueryOptionsBuilder {
     setRestartToken(val: string): this;
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
+    // @internal
+    setTestingArgs(val: TestingArgs): this;
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -7486,6 +7520,7 @@ export interface QueryStats {
     backendMemUsed: number;
     backendRowsReturned: number;
     backendTotalTime: number;
+    prepareTime: number;
     retryCount: number;
     totalTime: number;
 }
@@ -7663,38 +7698,6 @@ export abstract class RenderMaterial {
     readonly textureMapping?: TextureMapping;
 }
 
-// @public (undocumented)
-export namespace RenderMaterial {
-    // @deprecated (undocumented)
-    export class Params {
-        constructor(key?: string);
-        get alpha(): number | undefined;
-        set alpha(alpha: number | undefined);
-        // @alpha
-        ambient: number;
-        static readonly defaults: Params;
-        diffuse: number;
-        diffuseColor?: ColorDef;
-        // @alpha
-        emissiveColor?: ColorDef;
-        static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params;
-        key?: string;
-        // @alpha
-        reflect: number;
-        // @alpha
-        reflectColor?: ColorDef;
-        // @alpha
-        refract: number;
-        // @alpha
-        shadows: boolean;
-        specular: number;
-        specularColor?: ColorDef;
-        // (undocumented)
-        specularExponent: number;
-        textureMapping?: TextureMapping;
-    }
-}
-
 // @public
 export interface RenderMaterialAssetMapsProps {
     Bump?: TextureMapProps;
@@ -7730,6 +7733,35 @@ export interface RenderMaterialAssetProps {
     specular?: number;
     specular_color?: RgbFactorProps;
     transmit?: number;
+}
+
+// @internal
+export class RenderMaterialParams {
+    constructor(key?: string);
+    get alpha(): number | undefined;
+    set alpha(alpha: number | undefined);
+    // @alpha
+    ambient: number;
+    static readonly defaults: RenderMaterialParams;
+    diffuse: number;
+    diffuseColor?: ColorDef;
+    // @alpha
+    emissiveColor?: ColorDef;
+    static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): RenderMaterialParams;
+    key?: string;
+    // @alpha
+    reflect: number;
+    // @alpha
+    reflectColor?: ColorDef;
+    // @alpha
+    refract: number;
+    // @alpha
+    shadows: boolean;
+    specular: number;
+    specularColor?: ColorDef;
+    // (undocumented)
+    specularExponent: number;
+    textureMapping?: TextureMapping;
 }
 
 // @public
@@ -8075,11 +8107,13 @@ export namespace RenderSchedule {
 }
 
 // @public
-export abstract class RenderTexture implements IDisposable {
+export abstract class RenderTexture implements Disposable {
+    [Symbol.dispose](): void;
     protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
     compare(other: RenderTexture): number;
+    // @deprecated (undocumented)
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -8092,19 +8126,6 @@ export abstract class RenderTexture implements IDisposable {
 
 // @public (undocumented)
 export namespace RenderTexture {
-    // @deprecated
-    export class Params {
-        constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
-        // (undocumented)
-        get isGlyph(): boolean;
-        readonly isOwned: boolean;
-        // (undocumented)
-        get isSkyBox(): boolean;
-        // (undocumented)
-        get isTileSection(): boolean;
-        readonly key?: string;
-        readonly type: RenderTexture.Type;
-    }
     export enum Type {
         FilteredTileSection = 4,
         Glyph = 1,
@@ -8113,6 +8134,20 @@ export namespace RenderTexture {
         ThematicGradient = 5,
         TileSection = 2
     }
+}
+
+// @internal
+export class RenderTextureParams {
+    constructor(key?: string, type?: RenderTexture.Type, isOwned?: boolean);
+    // (undocumented)
+    get isGlyph(): boolean;
+    readonly isOwned: boolean;
+    // (undocumented)
+    get isSkyBox(): boolean;
+    // (undocumented)
+    get isTileSection(): boolean;
+    readonly key?: string;
+    readonly type: RenderTexture.Type;
 }
 
 // @public
@@ -8175,7 +8210,7 @@ export class ResponseLike implements Response {
     // (undocumented)
     get trailer(): Promise<Headers>;
     // (undocumented)
-    get type(): ResponseType;
+    get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
     // (undocumented)
     get url(): string;
 }
@@ -8715,6 +8750,8 @@ export class RpcRegistry {
 
 // @internal
 export abstract class RpcRequest<TResponse = any> {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(client: RpcInterface, operation: string, parameters: any[]);
     static get activeRequests(): ReadonlyMap<string, RpcRequest>;
     static get aggregateLoad(): RpcOperationsProfile;
@@ -8725,8 +8762,6 @@ export abstract class RpcRequest<TResponse = any> {
     protected computeRetryAfter(attempts: number): number;
     get connecting(): boolean;
     static current(context: RpcInterface): RpcRequest;
-    // (undocumented)
-    dispose(): void;
     get elapsed(): number;
     static readonly events: BeEvent<RpcRequestEventHandler>;
     get extendedStatus(): string;
@@ -9634,9 +9669,6 @@ export interface TerrainProps {
     providerName?: string;
 }
 
-// @public @deprecated
-export type TerrainProviderName = string;
-
 // @public
 export class TerrainSettings {
     // @deprecated
@@ -9659,6 +9691,12 @@ export class TerrainSettings {
     readonly providerName: string;
     // (undocumented)
     toJSON(): TerrainProps;
+}
+
+// @internal (undocumented)
+export interface TestingArgs {
+    // (undocumented)
+    interrupt?: boolean;
 }
 
 // @internal
@@ -10604,7 +10642,7 @@ export class Tween {
     // (undocumented)
     onStop(callback: TweenCallback): this;
     // (undocumented)
-    onUpdate(callback: UpdateCallback_2): this;
+    onUpdate(callback: UpdateCallback): this;
     // (undocumented)
     pause(time: number): this;
     // (undocumented)
@@ -10637,7 +10675,7 @@ export class Tweens {
     create(from: any, opts?: {
         to: any;
         duration: number;
-        onUpdate: UpdateCallback_2;
+        onUpdate: UpdateCallback;
         onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
@@ -10736,8 +10774,7 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
-type UpdateCallback_2 = (obj: any, t: number) => void;
-export { UpdateCallback_2 as UpdateCallback }
+export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {

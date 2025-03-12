@@ -1055,7 +1055,7 @@ export class XmlParser extends AbstractParser<Element> {
     let enumeration: Enumeration | undefined;
     if (propertyClass.isPrimitive()) {
       if (propertyClass.isEnumeration() && propertyClass.enumeration) {
-        enumeration = propertyClass.schema.lookupItemSync(propertyClass.enumeration.fullName);
+        enumeration = propertyClass.schema.lookupItemSync(propertyClass.enumeration.fullName, Enumeration);
         if (!enumeration)
           throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The Enumeration class '${propertyClass.enumeration.fullName}' could not be found.`);
       }

@@ -21,7 +21,7 @@ import { GraphicBranch } from "./render/GraphicBranch";
 import { Frustum2d } from "./Frustum2d";
 import { Scene } from "./render/Scene";
 import { Decorations } from "./render/Decorations";
-import { MockRender } from "./render/MockRender";
+import { MockRender } from "./internal/render/MockRender";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -288,9 +288,9 @@ class ViewAttachments {
     }
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const attachment of this._attachments)
-      attachment.dispose();
+      attachment[Symbol.dispose]();
 
     this._attachments.length = 0;
   }
@@ -606,14 +606,13 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 }
 
 /** Draws the contents of a view attachment into a sheet view. */
-interface Attachment {
+interface Attachment extends Disposable {
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
   discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
   readonly zDepth: number;
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
-  dispose(): void;
   readonly viewport?: Viewport;
 }
 
@@ -748,8 +747,8 @@ class OrthographicAttachment {
       this._hiddenLineSettings = style.settings.hiddenLineSettings;
   }
 
-  public dispose(): void {
-    this._viewport.dispose();
+  public [Symbol.dispose](): void {
+    this._viewport[Symbol.dispose]();
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
@@ -974,8 +973,8 @@ class RasterAttachment {
     this.zDepth = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
   }
 
-  public dispose(): void {
-    this._viewport?.dispose();
+  public [Symbol.dispose](): void {
+    this._viewport?.[Symbol.dispose]();
   }
 
   public get viewAttachmentProps() {

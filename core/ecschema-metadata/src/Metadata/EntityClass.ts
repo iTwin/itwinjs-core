@@ -11,19 +11,21 @@ import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedMixin } from "../Interfaces";
+import { HasMixins, LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
+import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECEntityClass.
  * @beta
  */
-export class EntityClass extends ECClass {
-  public override readonly schemaItemType = SchemaItemType.EntityClass;
+export class EntityClass extends ECClass implements HasMixins {
+  public override readonly schemaItemType = EntityClass.schemaItemType;
+  public static override get schemaItemType() { return SchemaItemType.EntityClass; }
   protected _mixins?: LazyLoadedMixin[];
 
   public get mixins(): LazyLoadedMixin[] {
@@ -37,7 +39,7 @@ export class EntityClass extends ECClass {
       return function* (): Iterable<Mixin> { }(); // empty iterable
 
     for (const mixin of this._mixins) {
-      const mObj = this.schema.lookupItemSync<Mixin>(mixin);
+      const mObj = this.schema.lookupItemSync(mixin, Mixin);
       if (mObj) {
         yield mObj;
       }
@@ -88,8 +90,8 @@ export class EntityClass extends ECClass {
     }
 
     for (const mixin of this._mixins) {
-      const mObj = this.schema.lookupItemSync<ECClass>(mixin);
-      if (mObj) {
+      const mObj = this.schema.lookupItemSync(mixin);
+      if (mObj && ECClass.isECClass(mObj)) {
         const result = mObj.getPropertySync(name, true);
         if (result) {
           return result;
@@ -200,13 +202,35 @@ export class EntityClass extends ECClass {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
         this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
           async () => {
-            const mixin = await this.schema.lookupItem<Mixin>(mixinSchemaItemKey);
+            const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
             if (undefined === mixin)
               throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
             return mixin;
           }));
       }
     }
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type EntityClass.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is an EntityClass, false otherwise.
+   */
+  public static isEntityClass(item?: SchemaItem): item is EntityClass {
+    if (item && item.schemaItemType === SchemaItemType.EntityClass)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type EntityClass.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to EntityClass if it is an EntityClass, undefined otherwise.
+   */
+  public static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass {
+    if(!this.isEntityClass(item))
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.EntityClass}' (EntityClass)`);
   }
 }
 
@@ -228,7 +252,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
-    resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(relationship);
+    resolvedRelationship = await ecClass.schema.lookupItem(relationship, RelationshipClass);
   } else
     resolvedRelationship = relationship;
 
@@ -253,7 +277,7 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
-    resolvedRelationship = ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
+    resolvedRelationship = ecClass.schema.lookupItemSync(relationship, RelationshipClass);
   } else
     resolvedRelationship = relationship;
 

@@ -7,19 +7,18 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, GetMetaDataFunction, IModelStatus, Logger, LoggingMetaData, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
-  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  ITwinError,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getITwinErrorMetaData, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, isITwinError, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
-import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
   * Options for [[IpcHost.startup]]
@@ -175,28 +174,33 @@ export abstract class IpcHandler {
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
         let ret: IpcInvokeReturn;
-        if (ITwinError.isITwinError(err)) {
-          // TODO: Should metadata be left out? It is left out in the original error implementation..
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { namespace, errorKey, message, stack, metadata, ...rest } = err;
+        let metadata: Exclude<LoggingMetaData, GetMetaDataFunction>;
+        if (isITwinError(err)) {
+          const { namespace, errorKey, message, stack, ...rest } = err;
+          if(rest.metadata)
+            metadata = getITwinErrorMetaData(err);
           ret = {
             iTwinError:
             {
               namespace,
               errorKey,
               message,
-              ...rest,
+              ...(metadata && { metadata }), // Include metadata only when defined
+              ...rest
             },
           };
           if (!IpcHost.noStack)
             ret.iTwinError.stack = stack;
         } else {
+          metadata = BentleyError.getErrorMetadata(err);
+
           ret = {
             error:
             {
               name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
               message: err.message ?? BentleyError.getErrorMessage(err),
               errorNumber: err.errorNumber ?? 0,
+              ...(metadata && { metadata }), // Include metadata only when defined.
             },
           };
           if (!IpcHost.noStack)
@@ -263,6 +267,9 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
   public async saveChanges(key: string, description?: string): Promise<void> {
     IModelDb.findByKey(key).saveChanges(description);
+  }
+  public async abandonChanges(key: string): Promise<void> {
+    IModelDb.findByKey(key).abandonChanges();
   }
   public async hasPendingTxns(key: string): Promise<boolean> {
     return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();

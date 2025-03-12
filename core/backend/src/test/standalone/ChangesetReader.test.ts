@@ -169,6 +169,15 @@ describe("Changeset Reader API", async () => {
     assert.isTrue(assertOnOverflowTable);
     rwIModel.close();
   });
+
+  function getClassIdByName(iModel: BriefcaseDb, className: string): Id64String {
+    return iModel.withPreparedStatement(`SELECT ECInstanceId from meta.ECClassDef where Name=?`, (stmt) => {
+      stmt.bindString(1, className);
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      return stmt.getValue(0).getId();
+    });
+  }
+
   it("Changeset reader / EC adaptor", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
@@ -259,7 +268,7 @@ describe("Changeset Reader API", async () => {
 
     if (true || "test local changes") {
       const reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
@@ -327,7 +336,6 @@ describe("Changeset Reader API", async () => {
         stage: "New",
         fallbackClassId: undefined,
       });
-      adaptor.dispose();
     }
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
@@ -346,9 +354,11 @@ describe("Changeset Reader API", async () => {
       const changes = Array.from(cci.instances);
       assert.equal(changes.length, 4);
 
+      const classId: Id64String = getClassIdByName(rwIModel, "Test2dElement");
+
       // new value
       assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.equal(changes[0].ECClassId, "0x14d");
+      assert.equal(changes[0].ECClassId, classId);
       assert.equal(changes[0].s, "updated property");
       assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
       assert.equal(changes[0].$meta?.op, "Updated");
@@ -356,7 +366,7 @@ describe("Changeset Reader API", async () => {
 
       // old value
       assert.equal(changes[1].ECInstanceId, "0x20000000004");
-      assert.equal(changes[1].ECClassId, "0x14d");
+      assert.equal(changes[1].ECClassId, classId);
       assert.equal(changes[1].s, "xxxxxxxxx");
       assert.equal(changes[1].$meta?.classFullName, "TestDomain:Test2dElement");
       assert.equal(changes[1].$meta?.op, "Updated");
@@ -396,7 +406,7 @@ describe("Changeset Reader API", async () => {
     }
     if (true || "test changeset file") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
         cci.appendFrom(adaptor);
@@ -464,11 +474,10 @@ describe("Changeset Reader API", async () => {
         stage: "New",
         fallbackClassId: undefined,
       });
-      adaptor.dispose();
     }
     if (true || "test ChangesetAdaptor.acceptClass()") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptClass("TestDomain.Test2dElement");
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
@@ -477,11 +486,10 @@ describe("Changeset Reader API", async () => {
       const changes = Array.from(cci.instances);
       assert.equal(changes.length, 1);
       assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-      adaptor.dispose();
     }
     if (true || "test ChangesetAdaptor.adaptor()") {
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
+      using adaptor = new ECChangesetAdaptor(reader);
       adaptor.acceptOp("Updated");
       const cci = new PartialECChangeUnifier();
       while (adaptor.step()) {
@@ -497,7 +505,6 @@ describe("Changeset Reader API", async () => {
       assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
       assert.equal(changes[1].$meta?.op, "Updated");
       assert.equal(changes[1].$meta?.stage, "Old");
-      adaptor.dispose();
     }
     rwIModel.close();
   });
@@ -730,6 +737,9 @@ describe("Changeset Reader API", async () => {
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     const changesets = (await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir })).slice(1);
 
+    const testElementClassId: Id64String = getClassIdByName(rwIModel, "Test2dElement");
+    const drawingModelClassId: Id64String = getClassIdByName(rwIModel, "DrawingModel");
+
     if (true || "Grouping changeset [2,3,4] should not contain TestDomain:Test2dElement as insert+update+delete=noop") {
       const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ECChangesetAdaptor(reader);
@@ -741,9 +751,10 @@ describe("Changeset Reader API", async () => {
           instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
         }
       }
+
       expect(instances.length).to.eq(1);
       expect(instances[0].id).to.eq("0x20000000001");
-      expect(instances[0].classId).to.eq("0xa5");
+      expect(instances[0].classId).to.eq(drawingModelClassId);
       expect(instances[0].op).to.eq("Updated");
       expect(instances[0].classFullName).to.eq("BisCore:DrawingModel");
     }
@@ -762,23 +773,24 @@ describe("Changeset Reader API", async () => {
       expect(instances.length).to.eq(3);
       expect(instances[0]).deep.eq({
         id: "0x20000000004",
-        classId: "0x14d",
+        classId: testElementClassId,
         op: "Deleted",
         classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[1]).deep.eq({
         id: "0x20000000004",
-        classId: "0x14d",
+        classId: testElementClassId,
         op: "Deleted",
         classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[2]).deep.eq({
         id: "0x20000000001",
-        classId: "0xa5",
+        classId: drawingModelClassId,
         op: "Updated",
         classFullName: "BisCore:DrawingModel",
       });
     }
+
     const groupCsFile = path.join(KnownTestLocations.outputDir, "changeset_grouping.ec");
     if (true || "Grouping changeset [2,3] should contain insert+update=insert TestDomain:Test2dElement") {
       const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.slice(0, 2).map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
@@ -794,19 +806,19 @@ describe("Changeset Reader API", async () => {
       expect(instances.length).to.eq(3);
       expect(instances[0]).deep.eq({
         id: "0x20000000004",
-        classId: "0x14d",
+        classId: testElementClassId,
         op: "Inserted",
         classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[1]).deep.eq({
         id: "0x20000000004",
-        classId: "0x14d",
+        classId: testElementClassId,
         op: "Inserted",
         classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[2]).deep.eq({
         id: "0x20000000001",
-        classId: "0xa5",
+        classId: drawingModelClassId,
         op: "Updated",
         classFullName: "BisCore:DrawingModel",
       });
@@ -827,19 +839,19 @@ describe("Changeset Reader API", async () => {
       expect(instances.length).to.eq(3);
       expect(instances[0]).deep.eq({
         id: "0x20000000004",
-        classId: "0x14d",
+        classId: testElementClassId,
         op: "Inserted",
         classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[1]).deep.eq({
         id: "0x20000000004",
-        classId: "0x14d",
+        classId: testElementClassId,
         op: "Inserted",
         classFullName: "TestDomain:Test2dElement",
       });
       expect(instances[2]).deep.eq({
         id: "0x20000000001",
-        classId: "0xa5",
+        classId: drawingModelClassId,
         op: "Updated",
         classFullName: "BisCore:DrawingModel",
       });
