@@ -54,16 +54,21 @@ describe("BriefcaseManager", async () => {
     const iModelId = await HubWrappers.createIModel(accessToken, testITwinId, "imodel1");
     const args = { accessToken, iTwinId: testITwinId, iModelId, deleteFirst: true };
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
-    assert.equal(BriefcaseIdValue.Unassigned, iModel1[_nativeDb].getBriefcaseId(), "checkpoint should be 0");
+    assert.equal(BriefcaseIdValue.Unassigned, iModel1.getBriefcaseId(), "checkpoint should be 0");
 
     const iModel2 = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
-    assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
+    assert.equal(BriefcaseIdValue.Unassigned, iModel2.getBriefcaseId(), "pullOnly should be 0");
 
     const iModel3 = await HubWrappers.openBriefcaseUsingRpc(args);
     assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid, "valid briefcaseId");
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
+    try {
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
+      assert.fail("iModel2 failure should fail due to already being closed when iModel1 closed");
+    } catch (err: any) {
+      assert.isTrue(err.message.includes("db is not open"), "iModel2 failure must be due to db not being open");
+    }
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
   });
 

@@ -221,7 +221,7 @@ export class HubMock {
     return {
       accountName: "none",
       sasToken: "none",
-      containerId: "none",
+      containerId: Guid.createValue(),
       dbName: `${arg.changeset.index ?? 0}.bim`,
       storageType: "mock",
       isMock: true,
