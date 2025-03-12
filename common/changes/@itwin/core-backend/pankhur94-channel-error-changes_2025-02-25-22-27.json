@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Enhancing errors for Channels",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

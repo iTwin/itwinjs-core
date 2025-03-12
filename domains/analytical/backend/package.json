@@ -1,6 +1,6 @@
 {
   "name": "@itwin/analytical-backend",
-  "version": "5.0.0-dev.75",
+  "version": "5.0.0-dev.82",
   "main": "lib/cjs/analytical-backend.js",
   "typings": "lib/cjs/analytical-backend",
   "license": "MIT",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2 --outDir lib/cjs && npm run -s copy:test-assets",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "cover": "nyc npm -s test",
     "docs": "betools docs --json=../../../generated-docs/domains/analytical-backend/file.json --tsIndexFile=./analytical-backend.ts --onlyJson",
@@ -52,11 +52,11 @@
     "@types/node": "~20.17.0",
     "@types/semver": "7.3.10",
     "chai": "^4.3.10",
-    "cpx2": "^3.0.0",
+    "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "mocha": "^11.1.0",
+    "nyc": "^17.1.0",
+    "rimraf": "^6.0.1",
     "semver": "^7.5.2",
     "typescript": "~5.6.2"
   },
