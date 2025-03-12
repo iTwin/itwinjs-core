@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Sending metadata for bentley error over ipc & checking function is not sent as metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
