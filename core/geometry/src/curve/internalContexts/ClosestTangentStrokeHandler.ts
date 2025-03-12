@@ -17,18 +17,19 @@ import { CurvePrimitive } from "../CurvePrimitive";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
 /**
- * Context for searching for the closest point to a CurvePrimitive.
+ * Context for searching for the closest tangent to a CurvePrimitive.
  * @internal
  */
-export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implements IStrokeHandler {
+export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler implements IStrokeHandler {
   private _curve: CurvePrimitive | undefined;
-  private _closestPoint: CurveLocationDetail | undefined;
+  private _closestTangents: CurveLocationDetail[];
   private _spacePoint: Point3d;
+  private _normal: Vector3d;
   private _extend: VariantCurveExtendParameter;
-  // fractions near the closest point
+  // fractions near the closest tangent
   private _fractionA: number = 0;
   private _functionA: number = 0;
-  // dot product of fractions near the closest point
+  // dot product of fractions near the closest tangent
   private _functionB: number = 0;
   private _fractionB: number = 0;
   private _numThisCurve: number = 0;
@@ -37,27 +38,51 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail) {
+  public constructor(
+    spacePoint: Point3d, normal: Vector3d = Vector3d.unitZ(), extend: VariantCurveExtendParameter = false,
+  ) {
     super();
     this._spacePoint = spacePoint;
+    this._normal = normal;
+    this._closestTangents = [];
     this._workPoint = Point3d.create();
     this._workRay = Ray3d.createZero();
-    this._closestPoint = result;
     this._extend = extend;
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
-  public claimResult(): CurveLocationDetail | undefined {
-    if (this._closestPoint) {
-      this._newtonSolver.setX(this._closestPoint.fraction);
-      this._curve = this._closestPoint.curve;
-      if (this._newtonSolver.runIterations()) {
-        let fraction = this._newtonSolver.getX();
-        fraction = CurveExtendOptions.correctFraction(this._extend, fraction);
-        this.announceSolutionFraction(fraction);
+  public claimResult(): CurveLocationDetail[] {
+    // second run of Newton here seems unnecessary and you can just "return this._closestTangents" in this method.
+    // for Arc3d and B-spline, if I remove second Newton run, the tests still pass.
+    // for line segments and line strings, the second run mostly fail and cannot find all tangents.
+    if (this._closestTangents.length > 0) {
+      const closestTangents = this._closestTangents;
+      this._closestTangents = [];
+      for (const closestTangent of closestTangents) {
+        if (closestTangent) {
+          this._newtonSolver.setX(closestTangent.fraction);
+          this._curve = closestTangent.curve;
+          if (this._newtonSolver.runIterations()) {
+            let fraction = this._newtonSolver.getX();
+            fraction = CurveExtendOptions.correctFraction(this._extend, fraction);
+            this.announceSolutionFraction(fraction);
+          }
+        }
       }
     }
-    return this._closestPoint;
+    return this._closestTangents;
+  }
+  public findClosestTangentIndex(hintPoint: Point3d): number {
+    let minDistance = Number.MAX_VALUE;
+    let minIndex = -1;
+    for (let i = 0; i < this._closestTangents.length; i++) {
+      const distance = this._closestTangents[i].point.distance(hintPoint);
+      if (distance < minDistance) {
+        minDistance = distance;
+        minIndex = i;
+      }
+    }
+    return minIndex;
   }
   public needPrimaryGeometryForStrokes() {
     return true;
@@ -74,8 +99,6 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
   ): void {
     this.startCurvePrimitive(cp);
-    this.announceSolutionFraction(0.0); // test start point as closest
-    this.announceSolutionFraction(1.0); // test end point as closest
     if (numStrokes < 1)
       numStrokes = 1;
     const df = 1.0 / numStrokes;
@@ -86,14 +109,17 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     }
   }
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
-    const distance = this._spacePoint.distance(point);
-    if (this._closestPoint && distance > this._closestPoint.a)
-      return;
-    this._closestPoint = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point, this._closestPoint);
-    this._closestPoint.a = distance;
+    if (this._closestTangents.length > 0) { // avoid adding duplicate tangents
+      const lastFraction = this._closestTangents[this._closestTangents.length - 1].fraction;
+      if (Math.abs(fraction - lastFraction) < Geometry.smallFraction)
+        return;
+    }
+    const closestTangent = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point);
     if (this._parentCurvePrimitive !== undefined)
-      this._closestPoint.curve = this._parentCurvePrimitive;
+      closestTangent.curve = this._parentCurvePrimitive;
+    this._closestTangents?.push(closestTangent);
   }
+  // needs update; current code returns closest point rather than closest tangent for line segment and line string
   public announceSegmentInterval(
     cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
   ): void {
@@ -138,13 +164,15 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
       curve = this._parentCurvePrimitive;
     if (curve) {
       this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
-      this.currentF = this._workRay.dotProductToPoint(this._spacePoint);
+      const cross = this._normal.crossProduct(this._workRay.direction);
+      this.currentF = cross.dotProductStartEnd(this._workRay.origin, this._spacePoint);
       return true;
     }
     return false;
   }
   private announceRay(fraction: number, data: Ray3d): void {
-    this._functionB = data.dotProductToPoint(this._spacePoint);
+    const cross = this._normal.crossProduct(data.direction);
+    this._functionB = cross.dotProductStartEnd(data.origin, this._spacePoint);
     this._fractionB = fraction;
     if (this._numThisCurve++ > 0)
       this.searchInterval();
