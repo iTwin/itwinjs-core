@@ -9,8 +9,10 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import { FontFile, IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
 import {
+  FontFamilyDescriptor,
+  FontProps,
   IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
@@ -183,6 +185,25 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const iModel = IModelDb.findByKey(iModelToken.key);
     const annotation = TextAnnotation.fromJSON(annotationProps);
     return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
+  }
+
+  public override async embedFont(iModelToken: IModelRpcProps, fontUrl: string): Promise<FontProps> {
+    const iModel = IModelDb.findByKey(iModelToken.key);
+    const file = FontFile.createFromTrueTypeFileName(fontUrl);
+    if (file.faces.length === 0)
+      throw new Error("No font faces found in the file.");
+    const descriptor: FontFamilyDescriptor = {
+      name: file.faces[0].familyName,
+      type: file.type,
+    }
+    const existingId = iModel.fonts.findId(descriptor);
+    if (existingId)
+      throw new Error("Font already embedded in the iModel.");
+    await iModel.fonts.embedFontFile({ file });
+    const id = iModel.fonts.findId(descriptor);
+    if (!id)
+      throw new Error("Failed to embed font in the iModel.");
+    return { id, name: descriptor.name, type: descriptor.type };
   }
 }
 

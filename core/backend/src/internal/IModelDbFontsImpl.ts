@@ -82,7 +82,9 @@ class IModelDbFontsImpl implements IModelDbFonts {
       id = await codes.writeLocker.reserveEmbeddedFaceDataId(args.file[_key]);
     } else {
       // CodeService not configured - schema lock required to prevent conflicting Ids in be_Prop table.
-      await this.#db.acquireSchemaLock();
+      // This requires an access token. I could not get the sign-in process to work in DTA,
+      // so I commented this out for the sake of a quick reproduction.
+      // await this.#db.acquireSchemaLock();
       const sql = `SELECT MAX(Id) FROM be_Prop WHERE Namespace="dgn_Font" AND Name="EmbeddedFaceData"`;
       id = this.#db.withSqliteStatement(sql, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
     }
