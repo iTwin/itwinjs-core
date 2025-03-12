@@ -654,10 +654,16 @@ export class TextBlockLayout {
   private applyMargins(margins: TextBlockMargins) {
     this.marginRange = this.range.clone();
 
-    const xHigh = this.range.high.x + margins.right;
-    const yHigh = this.range.high.y + margins.top;
-    const xLow = this.range.low.x - margins.left;
-    const yLow = this.range.low.y - margins.bottom;
+    // Disregard negative margins.
+    const right = margins.right >= 0 ? margins.right : 0;
+    const left = margins.left >= 0 ? margins.left : 0;
+    const top = margins.top >= 0 ? margins.top : 0;
+    const bottom = margins.bottom >= 0 ? margins.bottom : 0;
+
+    const xHigh = this.range.high.x + right;
+    const yHigh = this.range.high.y + top;
+    const xLow = this.range.low.x - left;
+    const yLow = this.range.low.y - bottom;
 
     this.marginRange.extendXY(xHigh, yHigh);
     this.marginRange.extendXY(xLow, yLow);

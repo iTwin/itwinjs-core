@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -1108,6 +1108,68 @@ describe("produceTextAnnotationGeometry", () => {
       "text",
     ]);
   });
+
+  it("offsets geometry entries by margins", () => {
+    function makeGeometryWithMargins(anchor: TextAnnotationAnchor, margins: TextBlockMargins): TextStringProps | undefined {
+      const runs = [makeText()];
+      const block = makeTextBlock(runs);
+      block.margins = margins;
+
+      const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
+      annotation.anchor = anchor;
+
+      const geom = produceTextAnnotationGeometry({ iModel: mockIModel(), annotation }).entries;
+      return geom[1].text;
+    }
+
+    function testMargins(margins: TextBlockMargins, height: number, width: number) {
+      // We want to disregard negative margins. Note, I'm not changing the margins object itself. It gets passed into makeGeometryWithMargins as it is.
+      const left = margins.left >= 0 ? margins.left : 0;
+      const right = margins.right >= 0 ? margins.right : 0;
+      const top = margins.top >= 0 ? margins.top : 0;
+      const bottom = margins.bottom >= 0 ? margins.bottom : 0;
+
+      // Test case: bottom, left
+      let props = makeGeometryWithMargins({ horizontal: "left", vertical: "bottom" }, margins);
+      expect(props).not.to.be.undefined;
+      expect(props?.origin, "Expected geometry to be offset by left and bottom margins").to.deep.equal({ x: left, y: bottom, z: 0 });
+
+      // Test case: top, right
+      props = makeGeometryWithMargins({ vertical: "top", horizontal: "right" }, margins);
+
+      let x = (right + width) * -1;
+      let y = (top + height) * -1;
+      expect(props).not.to.be.undefined;
+      expect(props?.origin, "Expected geometry to be offset by top and right margins").to.deep.equal({ x, y, z: 0 });
+
+      // Test case: middle, center
+      props = makeGeometryWithMargins({ vertical: "middle", horizontal: "center" }, margins);
+
+      x = (left - right - width) / 2;
+      y = (bottom - top - height) / 2;
+      expect(props).not.to.be.undefined;
+      expect(props?.origin, "Expected geometry to be centered in the margins").to.deep.equal({ x, y, z: 0 });
+    }
+
+    // Getting the range from the same mock the native code uses to compute the range of a text block.
+    const textRange = mockIModel().computeRangesForText({
+      chars: "text",
+      bold: false,
+      italic: false,
+      fontId: 1,
+      widthFactor: 1,
+      lineHeight: 1,
+      baselineShift: "none",
+    });
+
+    const xLength = textRange.layout.xLength(); // Will be 1 because of the mock implementation.
+    const yLength = textRange.layout.yLength(); // Will be 1 because of the mock implementation.
+
+    testMargins({ top: 0, right: 0, bottom: 0, left: 0 }, yLength, xLength);
+    testMargins({ top: 1, right: 2, bottom: 3, left: 4 }, yLength, xLength);
+    testMargins({ top: -1, right: -2, bottom: -3, left: -4 }, yLength, xLength);
+  });
+
 });
 
 describe("TextAnnotation element", () => {
