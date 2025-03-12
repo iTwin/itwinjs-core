@@ -71,28 +71,11 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { insertElementWithHandlers } from "./NativeInstaceHandlers";
 
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
-
-// NEEDED UNTIL CAN IMPORT FROM SARUNAS PR
-type NativeInterfaceMapping =
-| [NativeElementProps, ElementProps];
-
-type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties" | "isInstanceOfEntity"> & {
-  model: RelatedElementProps;
-  className: string;
-  codeValue?: string;
-  codeSpec: RelatedElementProps;
-  codeScope: RelatedElementProps;
-  jsonProperties?: string;
-  lastMod: string;
-};
-/** Type that maps a native interface to its corresponding props interface. This helps ensure type safety when mapping native elements to their props.
- * @internal */
-type NativeInterfaceMap<T> = Extract<NativeInterfaceMapping, [unknown, T]>[0];
-// END
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -2044,27 +2027,6 @@ export namespace IModelDb {
     //   }
     // }
 
-    /** Function to map native Bis.Element properties to ElementProps.
-    * @param props A JSON representation of the native element properties.
-    * @param loadProps Load options to match the expected element representation.
-    * @returns The JSON representation of the mapped element properties.
-    * @internal
-    */
-    public mapNativeElementProps(props: ElementProps): NativeElementProps {
-      const element: NativeElementProps = {
-        className: props.classFullName,
-        codeSpec: { id: props.code.spec },
-        codeScope: { id: props.code.scope },
-        codeValue: props.code.value,
-        lastMod: this.queryLastModifiedTime(props.model),
-        model: {
-          id: props.model,
-          relClassName: this._iModel.models.getModel(props.model).classFullName ?? "",
-        },
-      };
-      return element;
-    }
-
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
@@ -2076,54 +2038,7 @@ export namespace IModelDb {
      */
     public insertElement2(elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
       try {
-        // Check if ClassId is valid
-        const classDef = ClassRegistry.getClass(elProps.classFullName, this._iModel);
-        // const classId = IModelDb.Elements.classMap.get(elProps.classFullName); // TODO: is this the right classId
-        // if (classId === undefined) { // TODO: How do we check if its valid?
-        //   throw new IModelError(IModelStatus.WrongClass, "Invalid class name");
-        // }
-
-        // TODO: Check Element handler?
-
-        // TODO: Check if the element args are valid?
-
-        // Check if classDef is a subclass of Element
-        if (!(classDef.prototype instanceof Element)) {
-          throw new IModelError(IModelStatus.WrongElement, "Invalid element class");
-        }
-
-        const nativeElementProps = this.mapNativeElementProps(elProps);
-
-        (classDef as typeof Element).onInsert({ iModel: this._iModel, props: elProps });
-
-        if (nativeElementProps.model.relClassName !== undefined) {
-          const modelClassDef = ClassRegistry.getClass(nativeElementProps.model.relClassName, this._iModel);
-          (modelClassDef as typeof Model).onInsertElement({
-            iModel: this._iModel,
-            elementProps: elProps,
-            id: elProps.model,
-          });
-        }
-
-        elProps.id = this._iModel[_nativeDb].insertInstance(nativeElementProps, {...options});
-
-        (classDef as typeof Element).onInserted({
-          iModel: this._iModel,
-          id: elProps.id,
-          federationGuid: elProps.federationGuid ?? Guid.createValue(),
-          model: elProps.model,
-        });
-
-        if (nativeElementProps.model.relClassName !== undefined) {
-          const modelClassDef = ClassRegistry.getClass(nativeElementProps.model.relClassName, this._iModel);
-          (modelClassDef as typeof Model).onInsertedElement({
-            iModel: this._iModel,
-            id: elProps.model,
-            elementId: elProps.id,
-          });
-        }
-
-        return elProps.id;
+        return insertElementWithHandlers(this._iModel, elProps, options);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
         err.metadata = { elProps };
