@@ -277,6 +277,7 @@ class PrimaryTreeReference extends LayerTileTreeReference {
     return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
   }
 
+  // TODO
   public override initializeLayers(context: SceneContext): boolean {
     const removals = this._detachFromDisplayStyle;
     if (0 === removals.length) {
@@ -301,6 +302,7 @@ class PrimaryTreeReference extends LayerTileTreeReference {
 
     super.addToScene(context);
   }
+  // End TODO
 }
 
 export class AnimatedTreeReference extends PrimaryTreeReference {
