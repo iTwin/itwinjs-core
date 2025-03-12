@@ -194,17 +194,19 @@ The `IModelDb.getMetaData(classFullName: string)` method has been deprecated in 
 
 **Replacement:**
 
-Use the `schemaContext.getSchemaItemMetaData` method from the `ecschema-metadata` package instead. This method provides a more comprehensive and type-safe way to retrieve schema items.
+Use the async `schemaContext.getSchemaItem` method from the `ecschema-metadata` package instead. This method provides a more comprehensive and type-safe way to retrieve schema items.
 
 **Example Replacement:**
 
 ```typescript
 // Deprecated method
-const metadata = iModelDb.getMetaData("SchemaName:ClassName");
+iModelDb.getMetaData("SchemaName:ClassName");
 
-// Replacement using schemaContext with a schema key
-const metadata = await iModelDb.schemaContext.getSchemaItemMetaData("SchemaName:ClassName");
-
+// Replacement using schemaContext with a schema key/schemaName-itemName combination/schema item full name
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName", "ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName.ClassName");
 ```
 
 Similarly, other functions to retrieve metadata also have replacements

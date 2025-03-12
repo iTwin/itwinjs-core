@@ -409,101 +409,95 @@ export class SchemaContext {
 
   /**
    * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
-   * Will await a partially loaded schema then look in it for the requested item
-   * @param schemaItemKey The SchemaItemKey identifying the item to return.  SchemaMatchType.Latest is used to match the schema.
-   * @param itemConstructor The constructor of the item to return.
-   * @returns The requested schema item
-   */
-  public async getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>
-  public async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>
-  public async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
-    const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
-    if (undefined === schema)
-      return undefined;
-
-    if(undefined === itemConstructor)
-      return schema.getItem(schemaItemKey.name);
-
-    return schema.getItem(schemaItemKey.name, itemConstructor);
-  }
-
-  /**
-   * Gets the schema item from the specified schema by its name if it exists in this [[SchemaContext]].
-   * Will await a partially loaded schema then look in it for the requested item
+   * Will await a partially loaded schema then look in it for the requested item.
    *
-   * @param schemaName The name of the schema containing the item.
-   * @param itemName The name of the item to find.
+   * @param schemaNameOrKey - The SchemaItemKey identifying the item to return or the name of the schema or the schema item full name.
+   * @param itemNameOrCtor - The name of the item to return or the constructor of the item to return.
+   * @param itemConstructor - The constructor of the item to return.
    * @returns The requested schema item, or `undefined` if the item could not be found.
    *
-   * @example
+   * @examples
    * ```typescript
-   * await schemaContext.getSchemaItemByName("BisCore", "Element");
-   * await schemaContext.getSchemaItemByName("BisCore", "Element", EntityClass);
-   * await schemaContext.getSchemaItemByName("Units", "THOUSAND_SQ_FT");
-   * await schemaContext.getSchemaItemByName("Units", "THOUSAND_SQ_FT", Unit);
+   * const schemaItem = await schemaContext.getSchemaItem(new SchemaItemKey("TestElement", new SchemaKey("TestSchema")));
+   * const schemaItemWithCtor = await schemaContext.getSchemaItem(new SchemaItemKey("TestElement", new SchemaKey("TestSchema")), EntityClass);
+   * const schemaItemByName = await schemaContext.getSchemaItem("TestSchema", "TestElement");
+   * const schemaItemByNameWithCtor = await schemaContext.getSchemaItem("TestSchema", "TestElement", EntityClass);
+   * const schemaItemFullName = await schemaContext.getSchemaItem("TestSchema:TestElement", EntityClass);
+   * const schemaItemFullNameWithCtor = await schemaContext.getSchemaItem("TestSchema:TestElement", EntityClass);
+   * const schemaItemFullNameSep = await schemaContext.getSchemaItem("TestSchema.TestElement", EntityClass);
+   * const schemaItemFullNameSepWithCtor = await schemaContext.getSchemaItem("TestSchema.TestElement", EntityClass);
    * ```
    */
-  public async getSchemaItemByName(schemaName: string, itemName: string): Promise<SchemaItem | undefined>
-  public async getSchemaItemByName<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): Promise<InstanceType<T> | undefined>
-  public async getSchemaItemByName<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
-    const schema = await this.getSchema(new SchemaKey(schemaName), SchemaMatchType.Latest);
-    if (undefined === schema)
+  public async getSchemaItem(schemaNameOrKey: SchemaItemKey): Promise<SchemaItem | undefined>
+  public async getSchemaItem(schemaNameOrKey: string, itemNameOrCtor: string): Promise<SchemaItem | undefined>
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): Promise<InstanceType<T> | undefined>
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): Promise<InstanceType<T> | undefined>
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T | string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
+    const schemaKey = (typeof schemaNameOrKey === "string") ? new SchemaKey(schemaNameOrKey) : schemaNameOrKey.schemaKey;
+    const schema = await this.getSchema(schemaKey, SchemaMatchType.Latest);
+
+    if (!schema)
       return undefined;
 
-    if(undefined === itemConstructor)
-      return schema.getItem(itemName);
+    if (typeof itemNameOrCtor === "string") // Separate schema and item name arguments with/without an itemConstructor
+      return itemConstructor ? schema.getItem(itemNameOrCtor, itemConstructor) : schema.getItem(itemNameOrCtor);
 
-    return schema.getItem(itemName, itemConstructor);
-  }
+    if (typeof schemaNameOrKey === "string") // Single schema item full name argument with/without an itemConstructor
+      return itemConstructor ? schema.lookupItem(schemaNameOrKey, itemConstructor) : schema.lookupItem(schemaNameOrKey);
+
+    // Schema Item Key with/without an itemConstructor
+    return itemNameOrCtor ? schema.getItem(schemaNameOrKey.name, itemNameOrCtor) : schema.getItem(schemaNameOrKey.name);
+    }
 
   /**
    * Gets the schema item from the specified schema if it exists in this [[SchemaContext]].
    * Will return undefined if the cached schema is partially loaded. Use [[getSchemaItem]] to await until the schema is completely loaded.
-   * @param schemaItemKey The SchemaItemKey identifying the item to return. SchemaMatchType.Latest is used to match the schema.
-   * @param itemConstructor The constructor of the item to return.
-   * @returns The requested schema item
-   */
-  public getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined
-  public getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined
-  public getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor?: T): SchemaItem | InstanceType<T> | undefined {
-    const schema = this.getSchemaSync(schemaItemKey.schemaKey, SchemaMatchType.Latest);
-    if (undefined === schema)
-      return undefined;
-
-    if(undefined === itemConstructor)
-      return schema.getItemSync(schemaItemKey.name);
-
-    return schema.getItemSync(schemaItemKey.name, itemConstructor);
-  }
-
-  /**
-   * Gets the schema item from the specified schema by its name if it exists in this [[SchemaContext]].
-   * Will return `undefined` if the cached schema is partially loaded. Use [[getSchemaItemByName]] to await until the schema is completely loaded.
    *
-   * @param schemaName The name of the schema containing the item.
-   * @param itemName The name of the item to find.
+   * @param nameOrKey - The SchemaItemKey identifying the item to return or the name of the schema or the schema item full name.
+   * @param nameOrCtor - The name of the item to return or the constructor of the item to return.
+   * @param ctor - The constructor of the item to return.
    * @returns The requested schema item, or `undefined` if the item could not be found.
    *
    * @example
    * ```typescript
-   * schemaContext.getSchemaItemByNameSync("BisCore", "Element");
-   * schemaContext.getSchemaItemByNameSync("BisCore", "Element", EntityClass);
-   * schemaContext.getSchemaItemByNameSync("Units", "THOUSAND_SQ_FT");
-   * schemaContext.getSchemaItemByNameSync("Units", "THOUSAND_SQ_FT", Unit);
+   * const schemaItem = schemaContext.getSchemaItemSync(new SchemaItemKey("TestElement", new SchemaKey("TestSchema")));
+   * const schemaItemWithCtor = schemaContext.getSchemaItemSync(new SchemaItemKey("TestElement", new SchemaKey("TestSchema")), EntityClass);
+   * const schemaItemByName = schemaContext.getSchemaItemSync("TestSchema", "TestElement");
+   * const schemaItemByNameWithCtor = schemaContext.getSchemaItemSync("TestSchema", "TestElement", EntityClass);
+   * const schemaItemFullName = schemaContext.getSchemaItemSync("TestSchema:TestElement", EntityClass);
+   * const schemaItemFullNameWithCtor = schemaContext.getSchemaItemSync("TestSchema:TestElement", EntityClass);
+   * const schemaItemFullNameSep = schemaContext.getSchemaItemSync("TestSchema.TestElement", EntityClass);
+   * const schemaItemFullNameSepWithCtor = schemaContext.getSchemaItemSync("TestSchema.TestElement", EntityClass);
    * ```
    */
-  public getSchemaItemByNameSync(schemaName: string, itemName: string): SchemaItem | undefined
-  public getSchemaItemByNameSync<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): InstanceType<T> | undefined
-  public getSchemaItemByNameSync<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor?: T): SchemaItem | InstanceType<T> | undefined {
-    const schema = this.getSchemaSync(new SchemaKey(schemaName), SchemaMatchType.Latest);
-    if (undefined === schema)
+  public getSchemaItemSync(schemaNameOrKey: SchemaItemKey): SchemaItem | undefined
+  public getSchemaItemSync(schemaNameOrKey: string, itemNameOrCtor: string): SchemaItem | undefined
+  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): InstanceType<T> | undefined
+  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): InstanceType<T> | undefined
+  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T | string, itemConstructor?: T): SchemaItem | InstanceType<T> | undefined {
+    let schemaKey: SchemaKey;
+    if (typeof schemaNameOrKey === "string") {
+      const [schemaName, itemName] = SchemaItem.parseFullName(schemaNameOrKey);
+      schemaKey = (!schemaName) ? new SchemaKey(itemName) : new SchemaKey(schemaName);
+    } else {
+      schemaKey = schemaNameOrKey.schemaKey;
+    }
+
+    const schema = this.getSchemaSync(schemaKey, SchemaMatchType.Latest);
+    if (!schema)
       return undefined;
 
-    if(undefined === itemConstructor)
-      return schema.getItemSync(itemName);
+    // Separate schema and item name arguments with/without an itemConstructor
+    if (typeof itemNameOrCtor === "string") {
+      return itemConstructor ? schema.getItemSync(itemNameOrCtor, itemConstructor) : schema.getItemSync(itemNameOrCtor);
+    }
 
-    return schema.getItemSync(itemName, itemConstructor);
-  }
+    if (typeof schemaNameOrKey === "string") // Single schema item full name argument with/without an itemConstructor
+      return itemConstructor ? schema.lookupItemSync(schemaNameOrKey, itemConstructor) : schema.lookupItemSync(schemaNameOrKey);
+
+    // Schema Item Key with/without an itemConstructor
+    return itemNameOrCtor ? schema.getItemSync(schemaNameOrKey.name, itemNameOrCtor) : schema.getItemSync(schemaNameOrKey.name);
+    }
 
   /**
    * Iterates through the items of each schema known to the context.  This includes schemas added to the
@@ -527,29 +521,6 @@ export class SchemaContext {
   }
 
   /**
-   * Get metadata for a schema item. This method will load the metadata from the schema context if necessary.
-   *
-   * @param classFullName The full name of the class in the format "SchemaName:SchemaItemName".
-   * @param itemConstructor The constructor of the schema item to return.
-   * @returns The requested schema item metadata.
-   * @throws [[ECObjectsError]] if the metadata cannot be found or loaded.
-   *
-   * @example
-   * ```typescript
-   * const entityClass = schemaContext.getSchemaItemMetaData("BisCore:Element", EntityClass);
-   * const customAttributeClass = schemaContext.getSchemaItemMetaData("BisCore:SchemaHasBehavior", CustomAttributeClass);
-   * const relationshipClass = schemaContext.getSchemaItemMetaData("BisCore:ElementOwnsChildElements", RelationshipClass);
-   * ```
-   */
-  public getSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> {
-    const [schemaName, className] = classFullName.replace(":",".").split(".");
-    const metaData = this.getSchemaItemByNameSync(schemaName, className, itemConstructor);
-    if (metaData === undefined)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Metadata not found for ${className}.`);
-    return metaData;
-  }
-
-  /**
    * Attempt to get metadata for a schema item. This method will load the metadata from the schema context if necessary.
    * If the metadata cannot be found or loaded, it returns `undefined` instead of throwing an error.
    *
@@ -564,7 +535,7 @@ export class SchemaContext {
    */
   public tryGetSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined {
     try {
-      return this.getSchemaItemMetaData(classFullName, itemConstructor);
+      return this.getSchemaItemSync(classFullName, itemConstructor);
     } catch {
       return undefined;
     }
@@ -576,7 +547,7 @@ export class SchemaContext {
 
     const promises: Promise<void>[] = [];
 
-    const metaData = this.getSchemaItemMetaData(classFullName, itemConstructor) as EntityClass | Mixin;
+    const metaData = this.getSchemaItemSync(classFullName, itemConstructor) as EntityClass | Mixin;
     if (metaData.properties !== undefined) {
       for (const property of metaData.properties) {
         if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))

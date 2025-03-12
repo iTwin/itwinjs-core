@@ -1841,20 +1841,21 @@ export class SchemaContext {
     getKnownSchemas(): Schema[];
     getSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
-    getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
+    getSchemaItem(schemaNameOrKey: SchemaItemKey): Promise<SchemaItem | undefined>;
     // (undocumented)
-    getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-    getSchemaItemByName(schemaName: string, itemName: string): Promise<SchemaItem | undefined>;
+    getSchemaItem(schemaNameOrKey: string, itemNameOrCtor: string): Promise<SchemaItem | undefined>;
     // (undocumented)
-    getSchemaItemByName<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-    getSchemaItemByNameSync(schemaName: string, itemName: string): SchemaItem | undefined;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
     // (undocumented)
-    getSchemaItemByNameSync<T extends typeof SchemaItem>(schemaName: string, itemName: string, itemConstructor: T): InstanceType<T> | undefined;
-    getSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T>;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): Promise<InstanceType<T> | undefined>;
     getSchemaItems(): IterableIterator<SchemaItem>;
-    getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
+    getSchemaItemSync(schemaNameOrKey: SchemaItemKey): SchemaItem | undefined;
     // (undocumented)
-    getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
+    getSchemaItemSync(schemaNameOrKey: string, itemNameOrCtor: string): SchemaItem | undefined;
+    // (undocumented)
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): InstanceType<T> | undefined;
+    // (undocumented)
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): InstanceType<T> | undefined;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     // (undocumented)
     get locaters(): ISchemaLocater[];

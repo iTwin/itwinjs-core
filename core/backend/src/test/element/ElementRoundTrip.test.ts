@@ -591,9 +591,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       verifySystemProperty(stmt.getRow() as TestElement, expectedSystemProperty);
     });
 
-    const testElementMetaData = await imodel.schemaContext.getSchemaItemByName("ElementRoundTripTest", "TestElement", EntityClass);
+    const testElementMetaData = imodel.schemaContext.getSchemaItemSync("ElementRoundTripTest", "TestElement", EntityClass);
     assert.isDefined(testElementMetaData);
-    const relClassMetaData = await imodel.schemaContext.getSchemaItemByName("BisCore", "ModelContainsElements", RelationshipClass);
+    const relClassMetaData = imodel.schemaContext.getSchemaItemSync("BisCore", "ModelContainsElements", RelationshipClass);
     assert.isDefined(relClassMetaData);
 
     // Verify system properties via concurrent query

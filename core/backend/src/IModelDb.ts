@@ -1178,7 +1178,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Use [[getSchemaItemMetaData]] from SchemaContext class instead.
+   * @deprecated in 5.0. Use [[getSchemaItem]] from SchemaContext class instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getMetaData(classFullName: string): EntityMetaData {

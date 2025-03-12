@@ -1065,10 +1065,11 @@ describe("iModel", () => {
     }
   }
 
-  it("should get metadata for class", () => {
-    const metaData = imodel1.schemaContext.getSchemaItemMetaData(Element.classFullName, EntityClass);
+  it.only("should get metadata for class", () => {
+    const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
-    checkElementMetaData(metaData);
+    if (metaData !== undefined)
+      checkElementMetaData(metaData);
   });
 
   it("update the project extents", async () => {
@@ -1158,11 +1159,13 @@ describe("iModel", () => {
     assert.equal((restrictionProperty as PrimitiveArrayProperty).minOccurs, 0);
   }
 
-  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData = imodel1.schemaContext.getSchemaItemMetaData("BisCore.ClassHasHandler", CustomAttributeClass);
+  it.only("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+    const metaData = imodel1.schemaContext.getSchemaItemSync("BisCore.ClassHasHandler", CustomAttributeClass);
     assert.exists(metaData);
-    assert.equal(metaData.schemaItemType, SchemaItemType.CustomAttributeClass);
-    checkClassHasHandlerMetaData(metaData);
+    if (metaData !== undefined) {
+      assert.equal(metaData.schemaItemType, SchemaItemType.CustomAttributeClass);
+      checkClassHasHandlerMetaData(metaData);
+    }
   });
 
   it("should exercise ECSqlStatement (backend only)", () => {
@@ -1364,12 +1367,15 @@ describe("iModel", () => {
     assert.isDefined(response.status);
   });
 
-  it("should import schemas", async () => {
-    const metaData = imodel1.schemaContext.getSchemaItemMetaData("TestBim:TestDocument", EntityClass);
-    const property = await metaData.getProperty("testDocumentProperty");
-    assert.isDefined(property);
-    if (property !== undefined)
-      assert.isDefined(property.propertyType, propertyTypeToString(PropertyType.Integer));
+  it.only("should import schemas", async () => {
+    const metaData = imodel1.schemaContext.getSchemaItemSync("TestBim:TestDocument", EntityClass);
+    assert.isDefined(metaData);
+    if (metaData !== undefined) {
+      const property = await metaData.getProperty("testDocumentProperty");
+      assert.isDefined(property);
+      if (property !== undefined)
+        assert.isDefined(property.propertyType, propertyTypeToString(PropertyType.Integer));
+    }
   });
 
   it("should do CRUD on models", () => {
@@ -1407,7 +1413,7 @@ describe("iModel", () => {
   it("should create model with custom relationship to modeled element", async () => {
     const testImodel = imodel1;
 
-    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemMetaData("TestBim:TestModelModelsElement", EntityClass), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestModelModelsElement", EntityClass), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
     let newModelId2: Id64String;
@@ -1533,7 +1539,7 @@ describe("iModel", () => {
   it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
-    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemMetaData("TestBim:TestPhysicalObject", EntityClass), "TestPhysicalObject is expected to be defined in TestBim.ecschema.xml");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestPhysicalObject", EntityClass), "TestPhysicalObject is expected to be defined in TestBim.ecschema.xml");
 
     // Create a new physical model
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);

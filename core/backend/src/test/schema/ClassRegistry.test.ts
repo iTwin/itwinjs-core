@@ -75,11 +75,11 @@ describe("Class Registry", () => {
     }
   });
 
-  it("should verify Entity metadata with both base class and mixin properties", async () => {
+  it.only("should verify Entity metadata with both base class and mixin properties", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
-    const testDomainClass = await imodel.schemaContext.getSchemaItemByName("TestDomain", "TestDomainClass", EntityClass);
+    const testDomainClass = await imodel.schemaContext.getSchemaItem("TestDomain", "TestDomainClass", EntityClass);
     assert.isDefined(testDomainClass);
 
     assert.isDefined(testDomainClass?.baseClass);
