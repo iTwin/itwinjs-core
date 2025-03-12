@@ -17,6 +17,7 @@ import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./Cur
 import { GeometryQuery } from "./GeometryQuery";
 import { AppendPlaneIntersectionStrokeHandler } from "./internalContexts/AppendPlaneIntersectionStrokeHandler";
 import { ClosestPointStrokeHandler } from "./internalContexts/ClosestPointStrokeHandler";
+import { ClosestTangentStrokeHandler } from "./internalContexts/ClosestTangentStrokeHandler";
 import { CurveLengthContext } from "./internalContexts/CurveLengthContext";
 import { LineString3d } from "./LineString3d";
 
@@ -528,12 +529,12 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
    * succeed.
    * @param spacePoint point in space.
-   * @param extend if applicable, compute the closest point to the curve extended according to variant type:
+   * @param extend (optional) compute the closest point to the curve extended according to variant type:
    * * false: do not extend the curve
    * * true: extend the curve at both start and end
    * * CurveExtendOptions: extend the curve in the specified manner at both start and end
    * * CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored
-   * @param result optional pre-allocated detail to populate and return.
+   * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
   public closestPoint(
@@ -542,6 +543,31 @@ export abstract class CurvePrimitive extends GeometryQuery {
     const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result);
     this.emitStrokableParts(strokeHandler);
     return strokeHandler.claimResult();
+  }
+  /**
+   * Search for points on the curve where lines from the spacePoint to those points are tangent to the curve.
+   * * If the space point is inside a closed curve or is exactly on the curve, no tangent is returned.
+   * @param spacePoint point in space.
+   * @param hintPoint (optional) a point to be used to find the closest tangent to that point.
+   * @param normal (optional) view plane normal. The tangent is found from the view provided by the normal.
+   * @param extend (optional) compute the tangents to the curve extended according to variant type:
+   * * false: do not extend the curve
+   * * true: extend the curve at both start and end
+   * * CurveExtendOptions: extend the curve in the specified manner at both start and end
+   * * CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored
+   * @returns an array of details of the tangent points plus the array index for closest tangent if hintPoint is
+   * provided. If hintPoint is not provided or no tangent is found, -1 is returned.
+   */
+  public closestTangent(
+    spacePoint: Point3d, hintPoint?: Point3d, normal?: Vector3d, extend?: VariantCurveExtendParameter,
+  ): { tangents: CurveLocationDetail[], closestIndex: number } {
+    const strokeHandler = new ClosestTangentStrokeHandler(spacePoint, normal, extend);
+    this.emitStrokableParts(strokeHandler);
+    const tangents = strokeHandler.claimResult();
+    if (!hintPoint)
+      return { tangents, closestIndex: -1 }
+    const closestIndex = strokeHandler.findClosestTangentIndex(hintPoint);
+    return { tangents, closestIndex };
   }
   /**
    * Find intervals of this curvePrimitive that are interior to a clipper

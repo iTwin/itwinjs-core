@@ -913,4 +913,55 @@ describe("BsplineCurve", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("ClosestTangent", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+    let hintPoint: Point3d | undefined;
+
+    const captureGeometry = () => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.1, dx, dy);
+      if (hintPoint)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
+      for (const tangent of tangents) {
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangent.point, 0.1, dx, dy);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tangent.point), dx, dy);
+      }
+    };
+
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    const knotArray = [0, 0, 0, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    let spacePoint = Point3d.create(4, 1.5);
+    let { tangents, closestIndex } = bspline.closestTangent(spacePoint);
+    ck.testCoordinate(1, tangents.length, "1 tangent found");
+    ck.testCoordinate(0.5, tangents[0].fraction, "the tangent fraction");
+    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
+    captureGeometry();
+
+    dx += 7;
+    spacePoint = Point3d.create(2, 3);
+    hintPoint = Point3d.create(0, 2);
+    ({ tangents, closestIndex } = bspline.closestTangent(spacePoint, hintPoint));
+    ck.testCoordinate(2, tangents.length, "2 tangents found");
+    ck.testCoordinate(0.0792257, tangents[0].fraction, "first tangent fraction");
+    ck.testCoordinate(1 - .0792257, tangents[1].fraction, "second tangent fraction");
+    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    captureGeometry();
+    dy += 5;
+    hintPoint = Point3d.create(5, 2);
+    ({ tangents, closestIndex } = bspline.closestTangent(spacePoint, hintPoint));
+    ck.testCoordinate(2, tangents.length, "2 tangents found");
+    ck.testCoordinate(0.0792257, tangents[0].fraction, "first tangent fraction");
+    ck.testCoordinate(1 - .0792257, tangents[1].fraction, "second tangent fraction");
+    ck.testCoordinate(1, closestIndex, "closestIndex is 1");
+    captureGeometry();
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "ClosestTangent");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });

@@ -375,6 +375,89 @@ describe("LineString3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "FractionMap");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("ClosestTangent", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+    let hintPoint: Point3d | undefined;
+
+    const captureGeometry = () => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, dx, dy);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.1, dx, dy);
+      if (hintPoint)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
+      for (const tangent of tangents) {
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangent.point, 0.1, dx, dy);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tangent.point), dx, dy);
+      }
+    };
+
+    const lineSeg = LineSegment3d.create(Point3d.create(), Point3d.create(5, 0));
+    let spacePoint = Point3d.create(2, 2);
+    let { tangents, closestIndex } = lineSeg.closestTangent(spacePoint);
+    ck.testCoordinate(0, tangents.length, "no tangent found");
+    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
+    captureGeometry();
+    dy += 10;
+    spacePoint = Point3d.create(7, 0);
+    ({ tangents, closestIndex } = lineSeg.closestTangent(spacePoint));
+    ck.testCoordinate(1, tangents.length, "1 tangent found");
+    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    captureGeometry();
+
+    dy = 0;
+    dx += 10;
+    let ls = LineString3d.create(Point3d.create(), Point3d.create(5, 0), Point3d.create(5, 5));
+    spacePoint = Point3d.create(2, 2);
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ck.testCoordinate(0, tangents.length, "no tangent found");
+    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
+    captureGeometry();
+    dy += 10;
+    spacePoint = Point3d.create(7, 0);
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ck.testCoordinate(1, tangents.length, "1 tangent found");
+    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    captureGeometry();
+    dy += 10;
+    spacePoint = Point3d.create(5, 6);
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ck.testCoordinate(1, tangents.length, "1 tangent found");
+    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    captureGeometry();
+    dy += 10;
+    spacePoint = Point3d.create(5, -1);
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ck.testCoordinate(1, tangents.length, "1 tangent found");
+    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    captureGeometry();
+
+    dy = 0;
+    dx += 10;
+    ls = LineString3d.create(
+      Point3d.create(), Point3d.create(5, 0), Point3d.create(5, 5),
+      Point3d.create(10, 5), Point3d.create(10, 0), Point3d.create(15, 0),
+    );
+    spacePoint = Point3d.create(7, 0);
+    hintPoint = Point3d.create(5, -1);
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ck.testCoordinate(2, tangents.length, "2 tangents found");
+    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    captureGeometry();
+    dy += 10;
+    hintPoint = Point3d.create(10, -2);
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ck.testCoordinate(2, tangents.length, "2 tangents found");
+    ck.testCoordinate(1, closestIndex, "closestIndex is 1");
+    captureGeometry();
+
+    // TODO: test with extend = true
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "ClosestTangent");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 /**
