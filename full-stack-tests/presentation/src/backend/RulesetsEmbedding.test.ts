@@ -7,12 +7,11 @@ import faker from "faker";
 import fs from "fs";
 import { IModelDb, StandaloneDb, Subject } from "@itwin/core-backend";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
+import { IModel, SubjectProps } from "@itwin/core-common";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 import { prepareOutputFilePath } from "../Utils";
-import { IModel, SubjectProps } from "@itwin/core-common";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -112,7 +111,7 @@ describe("RulesEmbedding", () => {
 
   it("inserts multiple different rulesets to iModel", async () => {
     // Create another ruleset
-    const otherRuleset = { ...(await createRandomRuleset()), id: `${ruleset.id}_different` };
+    const otherRuleset = { id: `${ruleset.id}_different`, rules: [] };
 
     // Insert a ruleset
     const insertId1 = await embedder.insertRuleset(ruleset);
