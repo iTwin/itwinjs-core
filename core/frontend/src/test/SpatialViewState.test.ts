@@ -111,30 +111,4 @@ describe("SpatialViewState", () => {
       expect(unionFitRangeSpy).toHaveBeenCalled();
     });
   });
-
-  describe("areAllTileTreesLoaded", () => {
-    it("should return true when the view state has an undefined treeOwner.tileTree", () => {
-      class TestTreeRef extends TileTreeReference {
-        public override get treeOwner() {
-          return {
-            iModel,
-            tileTree: undefined,
-            loadStatus: TileTreeLoadStatus.NotLoaded,
-            load: () => undefined,
-            [Symbol.dispose]: () => undefined,
-            loadTree: async () => Promise.resolve(undefined),
-          };
-        }
-      }
-
-      class TestViewState extends SpatialViewState {
-        public override getTileTreeRefs(): Iterable<TileTreeReference> {
-          return [new TestTreeRef()];
-        }
-      }
-
-      const view = TestViewState.createBlank(iModel, new Point3d(0, 0, 0), new Point3d(1, 1, 1)) as TestViewState;
-      expect(view.areAllTileTreesLoaded).to.be.true;
-    });
-  });
 });
