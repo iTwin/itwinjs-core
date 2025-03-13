@@ -433,7 +433,14 @@ export class SchemaContext {
   public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): Promise<InstanceType<T> | undefined>
   public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): Promise<InstanceType<T> | undefined>
   public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T | string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
-    const schemaKey = (typeof schemaNameOrKey === "string") ? new SchemaKey(schemaNameOrKey) : schemaNameOrKey.schemaKey;
+    let schemaKey: SchemaKey;
+    if (typeof schemaNameOrKey === "string") {
+      const [schemaName, itemName] = SchemaItem.parseFullName(schemaNameOrKey);
+      schemaKey = (!schemaName) ? new SchemaKey(itemName) : new SchemaKey(schemaName);
+    } else {
+      schemaKey = schemaNameOrKey.schemaKey;
+    }
+
     const schema = await this.getSchema(schemaKey, SchemaMatchType.Latest);
 
     if (!schema)
