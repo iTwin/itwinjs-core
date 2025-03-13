@@ -456,10 +456,10 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     meta.forEach((value, index) => {
       metaWithGeneratedProps.push({
         ...value,
-        generated: value.generated ?? false,
+        generated: value.generated ?? value.className === "",
         index: value.index ?? index,
         jsonName: value.jsonName ?? "",
-        extendType: value.extendType ?? ""
+        extendType: value.extendType ?? value.extendedType ?? ""
       })
     });
     return metaWithGeneratedProps
