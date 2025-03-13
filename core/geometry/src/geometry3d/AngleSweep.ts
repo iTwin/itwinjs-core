@@ -184,7 +184,7 @@ export class AngleSweep implements BeJSONFunctions {
     else
       return AngleSweep.createStartEndRadians(this.endRadians, this.startRadians + s * Math.PI, result);
   }
-  /** Restrict start and end angles into the range (-90,+90) in degrees. */
+  /** Restrict start and end angles to the degree range [-90,+90]. */
   public capLatitudeInPlace(): void {
     const limit = 0.5 * Math.PI;
     this._radians0 = Geometry.clampToStartEnd(this._radians0, -limit, limit);

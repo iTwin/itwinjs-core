@@ -128,11 +128,11 @@ class MergingSchemaContext extends SchemaContext {
     this._nameMappings = nameMapping;
   }
 
-  public override async getCachedSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined> {
+  public override async getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined> {
     return this._internalContext.getCachedSchema(schemaKey, matchType);
   }
 
-  public override async getSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined> {
+  public override async getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined> {
     return this._internalContext.getSchema(schemaKey, matchType);
   }
 

@@ -33,11 +33,11 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public async getSchema(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
+  public async getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     return this.getSchemaSync(key, matchType, context);
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     return this.getSchema(schemaKey, matchType, context);
   }
 
@@ -47,7 +47,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public getSchemaSync(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
+  public getSchemaSync(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const localPath: Set<string> = new Set<string>();
     return this.getSchemaRecursively(key, matchType, context, localPath);
   }
@@ -83,7 +83,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param context The schema context used to parse schema
    * @param localPath The path of the recursion is following used to detect cyclic dependency
    */
-  private getSchemaRecursively(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): Schema | undefined {
+  private getSchemaRecursively(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): Schema | undefined {
     // load the schema file
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
     if (0 === candidates.length)

@@ -15,14 +15,14 @@ import { SchemaMatchType } from "../../ECObjects";
 import { SchemaKey } from "../../SchemaKey";
 
 class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext): Promise<Schema | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<Schema | undefined> {
     return this.getSchemaSync(schemaKey, matchType, context);
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<SchemaInfo | undefined> {
     return this.getSchema(schemaKey, matchType, context);
   }
-  public getSchemaSync(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context?: SchemaContext): Schema | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext): Schema | undefined {
     if (schemaKey.name !== "Units")
       return undefined;
 

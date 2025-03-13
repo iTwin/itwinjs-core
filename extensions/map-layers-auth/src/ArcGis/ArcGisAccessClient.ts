@@ -82,7 +82,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   private initOauthCallbackFunction() {
-    (window as any).arcGisOAuth2Callback = (redirectLocation?: Location) => {
+    (globalThis as any).arcGisOAuth2Callback = (redirectLocation?: Location) => {
       let eventSuccess = false;
       let stateData;
 
@@ -120,7 +120,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   public unInitialize() {
     this._redirectUri = undefined;
     this._expiration = undefined;
-    (window as any).arcGisOAuth2Callback = undefined;
+    (globalThis as any).arcGisOAuth2Callback = undefined;
   }
 
   public async getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined> {

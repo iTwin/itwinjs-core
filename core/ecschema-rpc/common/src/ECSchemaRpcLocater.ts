@@ -21,7 +21,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param matchType How to match key against candidate schemas
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
   */
-  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
 
     const schema = await context.getCachedSchema(schemaKey, matchType);
@@ -34,7 +34,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     * @param schemaKey The SchemaKey describing the schema to get from the cache.
     * @param matchType The match type to use when locating the schema
     */
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
     const schemaInfo = await Schema.startLoadingFromJson(schemaJson, context || new SchemaContext());
     if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType)) {
@@ -49,7 +49,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param matchType How to match key against candidate schemas
    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
   */
-  public getSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const schemaJson = ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name).then((props: SchemaProps) => {
       return props;
     });

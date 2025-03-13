@@ -57,7 +57,7 @@ export class NumberArray {
     return sum;
   }
   /** Return true if arrays have identical counts and equal entries (using `!==` comparison) */
-  public static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean {
+  public static isExactEqual(dataA: any[] | Float64Array | Uint8Array | Uint32Array | undefined, dataB: any[] | Float64Array | Uint8Array | Uint32Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
         return false;

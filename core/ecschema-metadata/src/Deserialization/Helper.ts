@@ -200,7 +200,7 @@ export class SchemaReadHelper<T = unknown> {
    * Ensures that the schema references can be located and adds them to the schema.
    * @param ref The object to read the SchemaReference's props from.
    */
-  private async loadSchemaReference(schemaInfo: SchemaInfo, refKey: Readonly<SchemaKey>): Promise<void> {
+  private async loadSchemaReference(schemaInfo: SchemaInfo, refKey: SchemaKey): Promise<void> {
     const refSchema = await this._context.getSchema(refKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${refKey.name}.${refKey.version.toString()}, of ${schemaInfo.schemaKey.name}`);

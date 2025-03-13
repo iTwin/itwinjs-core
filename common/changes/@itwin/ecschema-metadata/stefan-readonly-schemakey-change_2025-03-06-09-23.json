@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "Since the properties on SchemaKey are already readonly, wrapping the type in a Readonly Utility-Type is not necessary. Changed the locater method argument from Readonly<SchemaKey> to SchemaKey and applied the change to all callers and implementations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}
