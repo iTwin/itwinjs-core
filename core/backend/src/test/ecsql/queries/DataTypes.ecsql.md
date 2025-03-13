@@ -327,7 +327,6 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 - dataset: AllProperties.bim
 - abbreviateBlobs: true
 - mode: ConcurrentQuery
-- skip: abbreviate blobs does not seem to be thread safe, this affects other tests that run in parallel
 
 ```sql
 SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
