@@ -1643,6 +1643,12 @@ export class ConflictingLocksError extends IModelError {
     conflictingLocks?: ConflictingLock[];
 }
 
+// @beta
+export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
+
+// @beta
+export function constructITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -1901,6 +1907,9 @@ export interface CreateIModelProps extends IModelProps {
     // @alpha
     readonly thumbnail?: ThumbnailProps;
 }
+
+// @beta
+export function createITwinErrorTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
 
 // @public
 export interface CreateSnapshotIModelProps {
@@ -3447,14 +3456,13 @@ export interface FlatBufferGeometryStream {
 }
 
 // @beta
-interface FontFace_2 {
+export interface FontFace {
     familyName: string;
     // (undocumented)
     isBold: boolean;
     // (undocumented)
     isItalic: boolean;
 }
-export { FontFace_2 as FontFace }
 
 // @public
 export interface FontFamilyDescriptor {
@@ -4125,6 +4133,9 @@ export enum GeometrySummaryVerbosity {
     Detailed = 20,
     Full = 30
 }
+
+// @beta
+export function getITwinErrorMetaData(error: ITwinError): object | undefined;
 
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
@@ -5233,7 +5244,7 @@ export type InterpolationFunction = (v: any, k: number) => number;
 
 // @beta
 export interface InUseLock {
-    briefcaseIds: number[];
+    briefcaseIds: BriefcaseId[];
     objectId: string;
     state: LockState;
 }
@@ -5241,17 +5252,7 @@ export interface InUseLock {
 // @beta
 export interface InUseLocksError extends ITwinError {
     // (undocumented)
-    errorKey: "in-use-locks";
-    // (undocumented)
     inUseLocks: InUseLock[];
-    // (undocumented)
-    namespace: "itwinjs-core";
-}
-
-// @beta (undocumented)
-export namespace InUseLocksError {
-    export function isInUseLocksError(error: unknown): error is InUseLocksError;
-    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
 }
 
 // @internal (undocumented)
@@ -5316,6 +5317,7 @@ export type IpcInvokeReturn = {
         message: string;
         errorNumber: number;
         stack?: string;
+        metadata?: LoggingMetaData;
     };
 } | {
     result?: never;
@@ -5458,6 +5460,9 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
+// @beta
+export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError;
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5477,7 +5482,7 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 export const iTwinChannel: (channel: string) => string;
 
 // @beta
-export interface ITwinError {
+export interface ITwinError extends Error {
     errorKey: string;
     message: string;
     metadata?: LoggingMetaData;
@@ -5485,11 +5490,19 @@ export interface ITwinError {
     stack?: string;
 }
 
-// @beta (undocumented)
-export namespace ITwinError {
-    export function getMetaData(err: ITwinError): object | undefined;
-    export function isITwinError(error: unknown): error is ITwinError;
-}
+// @beta
+export const iTwinErrorKeys: {
+    readonly inUseLocks: "in-use-locks";
+    readonly channelNest: "channel-may-not-nest";
+    readonly channelNotAllowed: "channel-not-allowed";
+    readonly channelRootExists: "channel-root-exists";
+};
+
+// @beta
+export const iTwinErrorMessages: Record<keyof typeof iTwinErrorKeys, (...args: any[]) => string>;
+
+// @beta
+export const iTwinjsCoreNamespace = "itwinjs-core";
 
 // @public
 export interface JsonGeometryStream {
@@ -8197,7 +8210,7 @@ export class ResponseLike implements Response {
     // (undocumented)
     get trailer(): Promise<Headers>;
     // (undocumented)
-    get type(): ResponseType;
+    get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
     // (undocumented)
     get url(): string;
 }
@@ -10629,7 +10642,7 @@ export class Tween {
     // (undocumented)
     onStop(callback: TweenCallback): this;
     // (undocumented)
-    onUpdate(callback: UpdateCallback_2): this;
+    onUpdate(callback: UpdateCallback): this;
     // (undocumented)
     pause(time: number): this;
     // (undocumented)
@@ -10662,7 +10675,7 @@ export class Tweens {
     create(from: any, opts?: {
         to: any;
         duration: number;
-        onUpdate: UpdateCallback_2;
+        onUpdate: UpdateCallback;
         onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
@@ -10761,8 +10774,7 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
-type UpdateCallback_2 = (obj: any, t: number) => void;
-export { UpdateCallback_2 as UpdateCallback }
+export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {

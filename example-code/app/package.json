@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json ../../generated-docs",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json ../../generated-docs",
     "extract-assets": "cpx \"./src/backend/assets/**/*\" ../../generated-docs/extract",
     "copy:backend-assets": "cpx \"./src/backend/assets/**/*\" ./lib/backend/assets",
     "copy:test-backend-assets": "cpx \"./src/backend/test/assets/**/*\" ./lib/backend/test/assets",
@@ -23,7 +23,7 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "electron": "^34.0.0"
+    "electron": "^35.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -33,10 +33,10 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
-    "cpx2": "^3.0.0",
+    "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
-    "mocha": "^10.2.0",
-    "rimraf": "^3.0.2",
+    "mocha": "^11.1.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "mocha": {
@@ -47,8 +47,7 @@
       "lib/backend/test/**/*.test.js"
     ],
     "require": [
-      "source-map-support/register",
-      "jsdom-global/register"
+      "source-map-support/register"
     ],
     "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporter-options": "mochaFile=lib/test/junit_results.xml",
