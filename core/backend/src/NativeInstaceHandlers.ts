@@ -35,6 +35,7 @@ function mapNativeElementProps(iModel: IModelDb, elProps: ElementProps): NativeE
     codeScope: { id: elProps.code.scope },
     codeValue: elProps.code.value,
     parent: elProps.parent ?? undefined,
+    // lastMod: iModel.models.queryLastModifiedTime(elProps.id),
     model: {
       id: elProps.model,
       relClassName: iModel.models.getModel(elProps.model).classFullName ?? undefined,
