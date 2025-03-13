@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "new test for 3d linestyle part export",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
