@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { Point3d, Range3d } from "@itwin/core-geometry";
+import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization } from "@itwin/core-common";
 import { SpatialViewState } from "../SpatialViewState";
 import type { IModelConnection } from "../IModelConnection";
