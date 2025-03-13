@@ -198,9 +198,6 @@ function runECSqlStatementTest(test: ECDbTestProps, dataset: TestDataset) {
         let expectedResult = test.expectedResults[resultCount];
         expectedResult = buildBinaryData(expectedResult);
         const rowArgs: ECSqlRowArg = { rowFormat: getRowFormat(test.rowFormat), classIdsToClassNames: test.convertClassIdsToClassNames };
-        // TODO: abbreviate blobs is not supported here?
-        if(test.abbreviateBlobs)
-          logWarning("Abbreviate blobs is not supported for statement tests");
 
         const actualResult = stmt.getRow(rowArgs);
         checkingExpectedResults(test.rowFormat, actualResult, expectedResult, test.indexesToIncludeInResults);
