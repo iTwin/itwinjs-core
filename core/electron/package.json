@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "5.0.0-dev.71",
+  "version": "5.0.0-dev.83",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -10,7 +10,7 @@
     "build": "npm run -s build:cjs && npm run -s webpack:test && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -40,7 +40,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "electron": "^34.0.0"
+    "electron": "^35.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -54,13 +54,13 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
-    "cpx2": "^3.0.0",
-    "electron": "^34.0.0",
+    "cpx2": "^8.0.0",
+    "electron": "^35.0.0",
     "eslint": "^9.13.0",
     "glob": "^10.3.12",
-    "mocha": "^10.2.0",
-    "rimraf": "^3.0.2",
-    "source-map-loader": "^4.0.0",
+    "mocha": "^11.1.0",
+    "rimraf": "^6.0.1",
+    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.0.1"
