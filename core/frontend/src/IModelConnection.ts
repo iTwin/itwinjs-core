@@ -727,8 +727,8 @@ export class BlankConnection extends IModelConnection {
   /** @internal */
   protected constructor(props: IModelConnectionProps) {
     const mockIModelReadApi: IModelReadAPI = {
-      getConnectionProps: async () => Promise.resolve(props),
-      getTooltipMessage: async () => Promise.resolve({ lines: [] }),
+      getConnectionProps: async () => props,
+      getTooltipMessage: async () => ({ lines: [] }),
       async *runQuery () {},
     }
 
