@@ -1833,7 +1833,7 @@ export class SchemaContext {
     addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync(schema: Schema): void;
     // (undocumented)
-    forEachMetaDataOfClass<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom?: boolean): Promise<void>;
+    forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom?: boolean): Promise<void>;
     // @internal
     getCachedSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal
@@ -1841,26 +1841,26 @@ export class SchemaContext {
     getKnownSchemas(): Schema[];
     getSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
-    getSchemaItem(schemaNameOrKey: SchemaItemKey): Promise<SchemaItem | undefined>;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<InstanceType<T> | undefined>;
     // (undocumented)
-    getSchemaItem(schemaNameOrKey: string, itemNameOrCtor: string): Promise<SchemaItem | undefined>;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<SchemaItem | undefined>;
     // (undocumented)
-    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): Promise<InstanceType<T> | undefined>;
     // (undocumented)
-    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): Promise<InstanceType<T> | undefined>;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): Promise<SchemaItem | undefined>;
     getSchemaItems(): IterableIterator<SchemaItem>;
-    getSchemaItemSync(schemaNameOrKey: SchemaItemKey): SchemaItem | undefined;
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): InstanceType<T> | undefined;
     // (undocumented)
-    getSchemaItemSync(schemaNameOrKey: string, itemNameOrCtor: string): SchemaItem | undefined;
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): SchemaItem | undefined;
     // (undocumented)
-    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): InstanceType<T> | undefined;
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): InstanceType<T> | undefined;
     // (undocumented)
-    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): InstanceType<T> | undefined;
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): SchemaItem | undefined;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     // (undocumented)
     get locaters(): ISchemaLocater[];
     schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
-    tryGetSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined;
+    tryGetItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined;
 }
 
 // @internal

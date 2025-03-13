@@ -1196,7 +1196,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Use [[tryGetSchemaItemMetaData]] from SchemaContext class instead.
+   * @deprecated in 5.0. Use [[tryGetItem]] from SchemaContext class instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
@@ -1215,7 +1215,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [[forEachMetaDataOfClass]] instead.
+   * @deprecated in 5.0. Use [[forEachProperty]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
@@ -1239,11 +1239,11 @@ export abstract class IModelDb extends IModel {
    *   console.log(`Property Class:`, property.class);
    * };
    *
-   * IModelDb.forEachMetaDataOfClass(imodel, "BisCore:Element", true, callback);
+   * IModelDb.forEachProperty(imodel, "BisCore:Element", true, callback);
    * ```
    */
-  public static async forEachMetaDataOfClass(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean = true): Promise<void> {
-    await iModel.schemaContext.forEachMetaDataOfClass(classFullName, wantSuper, func, EntityClass, includeCustom);
+  public static async forEachProperty(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean = true): Promise<void> {
+    await iModel.schemaContext.forEachProperty(classFullName, wantSuper, func, EntityClass, includeCustom);
   }
 
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.
@@ -1252,7 +1252,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [forEachMetaDataOfClass] from SchemaContext class instead.
+   * @deprecated in 5.0. Use [forEachProperty] from SchemaContext class instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {

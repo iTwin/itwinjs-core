@@ -124,7 +124,7 @@ export class Entity {
    * ```
    */
   public async executeForEachProperty(func: PropertyHandler, includeCustom: boolean = true) {
-    await this.iModel.schemaContext.forEachMetaDataOfClass(this.classFullName, true, func, EntityClass, includeCustom);
+    await this.iModel.schemaContext.forEachProperty(this.classFullName, true, func, EntityClass, includeCustom);
   }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */

@@ -93,7 +93,7 @@ describe("Class Registry", () => {
     // is picking up all expected properties.
     const testData: string[] = [];
 
-    await IModelDb.forEachMetaDataOfClass(imodel, "TestDomain.TestDomainClass", true, (propName, _property) => {
+    await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName, _property) => {
       testData.push(ECJsNames.toJsName(propName));
     }, false);
 

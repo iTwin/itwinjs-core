@@ -537,10 +537,10 @@ export class SchemaContext {
    *
    * @example
    * ```typescript
-   * const entityClass = schemaContext.tryGetSchemaItemMetaData("BisCore:Element", EntityClass);
+   * const entityClass = schemaContext.tryGetItem("BisCore:Element", EntityClass);
    * ```
    */
-  public tryGetSchemaItemMetaData<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined {
+  public tryGetItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined {
     try {
       return this.getSchemaItemSync(classFullName, itemConstructor);
     } catch {
@@ -548,7 +548,7 @@ export class SchemaContext {
     }
   }
 
-  public async forEachMetaDataOfClass<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true): Promise<void> {
+  public async forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true): Promise<void> {
     const { EntityClass: entityClass } = await import("./Metadata/EntityClass");
     const { Mixin: mixin } = await import("./Metadata/Mixin");
 
@@ -563,11 +563,11 @@ export class SchemaContext {
     }
 
     if (wantSuper && metaData.baseClass !== undefined)
-      promises.push(this.forEachMetaDataOfClass(metaData.baseClass.fullName, wantSuper, func, entityClass, includeCustom));
+      promises.push(this.forEachProperty(metaData.baseClass.fullName, wantSuper, func, entityClass, includeCustom));
 
     if (metaData instanceof entityClass && metaData.mixins !== undefined) {
       for (const mixinClass of metaData.mixins)
-        promises.push(this.forEachMetaDataOfClass(mixinClass.fullName, wantSuper, func, mixin, includeCustom));
+        promises.push(this.forEachProperty(mixinClass.fullName, wantSuper, func, mixin, includeCustom));
     }
 
     await Promise.all(promises);
