@@ -428,10 +428,10 @@ export class SchemaContext {
    * const schemaItemFullNameSepWithCtor = await schemaContext.getSchemaItem("TestSchema.TestElement", EntityClass);
    * ```
    */
-  public async getSchemaItem(schemaNameOrKey: SchemaItemKey): Promise<SchemaItem | undefined>
-  public async getSchemaItem(schemaNameOrKey: string, itemNameOrCtor: string): Promise<SchemaItem | undefined>
-  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): Promise<InstanceType<T> | undefined>
-  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): Promise<InstanceType<T> | undefined>
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<InstanceType<T> | undefined>
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<SchemaItem | undefined>
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): Promise<InstanceType<T> | undefined>
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): Promise<SchemaItem | undefined>
   public async getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T | string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
     let schemaKey: SchemaKey;
     if (typeof schemaNameOrKey === "string") {
@@ -450,7 +450,7 @@ export class SchemaContext {
       return itemConstructor ? schema.getItem(itemNameOrCtor, itemConstructor) : schema.getItem(itemNameOrCtor);
 
     if (typeof schemaNameOrKey === "string") // Single schema item full name argument with/without an itemConstructor
-      return itemConstructor ? schema.lookupItem(schemaNameOrKey, itemConstructor) : schema.lookupItem(schemaNameOrKey);
+      return itemNameOrCtor ? schema.lookupItem(schemaNameOrKey, itemNameOrCtor) : schema.lookupItem(schemaNameOrKey);
 
     // Schema Item Key with/without an itemConstructor
     return itemNameOrCtor ? schema.getItem(schemaNameOrKey.name, itemNameOrCtor) : schema.getItem(schemaNameOrKey.name);
@@ -477,10 +477,10 @@ export class SchemaContext {
    * const schemaItemFullNameSepWithCtor = schemaContext.getSchemaItemSync("TestSchema.TestElement", EntityClass);
    * ```
    */
-  public getSchemaItemSync(schemaNameOrKey: SchemaItemKey): SchemaItem | undefined
-  public getSchemaItemSync(schemaNameOrKey: string, itemNameOrCtor: string): SchemaItem | undefined
-  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor: T): InstanceType<T> | undefined
-  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor: T): InstanceType<T> | undefined
+  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): InstanceType<T> | undefined
+  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): SchemaItem | undefined
+  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): InstanceType<T> | undefined
+  public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): SchemaItem | undefined
   public getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T | string, itemConstructor?: T): SchemaItem | InstanceType<T> | undefined {
     let schemaKey: SchemaKey;
     if (typeof schemaNameOrKey === "string") {
@@ -500,7 +500,7 @@ export class SchemaContext {
     }
 
     if (typeof schemaNameOrKey === "string") // Single schema item full name argument with/without an itemConstructor
-      return itemConstructor ? schema.lookupItemSync(schemaNameOrKey, itemConstructor) : schema.lookupItemSync(schemaNameOrKey);
+      return itemNameOrCtor ? schema.lookupItemSync(schemaNameOrKey, itemNameOrCtor) : schema.lookupItemSync(schemaNameOrKey);
 
     // Schema Item Key with/without an itemConstructor
     return itemNameOrCtor ? schema.getItemSync(schemaNameOrKey.name, itemNameOrCtor) : schema.getItemSync(schemaNameOrKey.name);
