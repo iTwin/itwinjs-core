@@ -36,7 +36,7 @@ describe("Schema XML Import Tests", () => {
 
     await imodel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
-    const testDomainClass = await imodel.schemaContext.getSchemaItem("Test3.TestElement", EntityClass);
+    const testDomainClass = await imodel.schemaContext.getSchemaItem("Test3.Test3Element", EntityClass);
     assert.isDefined(testDomainClass);
 
     assert.isDefined(testDomainClass?.baseClass);
