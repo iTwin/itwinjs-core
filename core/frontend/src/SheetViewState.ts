@@ -309,7 +309,16 @@ class ViewAttachments {
   }
 
   public get areAllTileTreesLoaded(): boolean {
-    return this._attachments.every((x) => x.areAllTileTreesLoaded);
+    return this._attachments.every((x) => {
+      const vp = IModelApp.viewManager.selectedView;
+      if (vp) {
+        const placement = Placement2d.fromJSON(x.viewAttachmentProps.placement);
+        const attachmentRange = placement.calculateRange();
+        const viewRange = vp.view.getViewedExtents();
+        if (!attachmentRange.intersectsRangeXY(viewRange))
+          return true;
+      }
+      return x.areAllTileTreesLoaded});
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {

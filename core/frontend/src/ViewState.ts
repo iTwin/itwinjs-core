@@ -406,8 +406,7 @@ export abstract class ViewState extends ElementState {
    */
   public get areAllTileTreesLoaded(): boolean {
     for (const ref of this.getTileTreeRefs()) {
-      // If tile tree is undefined, we have nothing to load, so we can avoid checking isLoadingComplete.
-      if ((ref.treeOwner.tileTree !== undefined) && !ref.isLoadingComplete) {
+      if (!ref.isLoadingComplete) {
         return false;
       }
     }
