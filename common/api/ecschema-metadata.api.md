@@ -1860,7 +1860,7 @@ export class SchemaContext {
     // (undocumented)
     get locaters(): ISchemaLocater[];
     schemaExists(schemaKey: SchemaKey): boolean;
-    tryGetItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined;
+    tryGetSchemaItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined;
 }
 
 // @internal

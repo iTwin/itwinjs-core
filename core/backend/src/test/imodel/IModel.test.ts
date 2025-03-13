@@ -1065,7 +1065,7 @@ describe("iModel", () => {
     }
   }
 
-  it.only("should get metadata for class", () => {
+  it("should get metadata for class", () => {
     const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
     if (metaData !== undefined)
@@ -1159,7 +1159,7 @@ describe("iModel", () => {
     assert.equal((restrictionProperty as PrimitiveArrayProperty).minOccurs, 0);
   }
 
-  it.only("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
+  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
     const metaData = imodel1.schemaContext.getSchemaItemSync("BisCore.ClassHasHandler", CustomAttributeClass);
     assert.exists(metaData);
     if (metaData !== undefined) {
@@ -1367,8 +1367,8 @@ describe("iModel", () => {
     assert.isDefined(response.status);
   });
 
-  it.only("should import schemas", async () => {
-    const metaData = imodel1.schemaContext.getSchemaItemSync("TestBim:TestDocument", EntityClass);
+  it("should import schemas", async () => {
+    const metaData = await imodel1.schemaContext.getSchemaItem("TestBim:TestDocument", EntityClass);
     assert.isDefined(metaData);
     if (metaData !== undefined) {
       const property = await metaData.getProperty("testDocumentProperty");

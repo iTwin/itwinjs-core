@@ -214,7 +214,7 @@ Similarly, other functions to retrieve metadata also have replacements
 
 | **Removed**            | **Replacement function from `@itwin/ecschema-metadata`** | Usage |
 | -----------------------| ----------------------------------------------------------------------| - |
-| `tryGetMetaData`       | Use `tryGetItem` from `@itwin/ecschema-metadata` instead. | schemaContext.tryGetItem("BisCore:Element", EntityClass) |
+| `tryGetMetaData`       | Use `tryGetSchemaItem` from `@itwin/ecschema-metadata` instead. | schemaContext.tryGetSchemaItem("BisCore:Element", EntityClass) |
 | `forEachMetaData`      | Use async `forEachProperty` from `@itwin/ecschema-metadata` instead.  | await schemaContext.forEachProperty("BisCore:Element", true, callback, true, EntityClass) |
 | `forEachProperty`      | Use async `executeForEachProperty` from `@itwin/core-backend` instead.  | await entity.executeForEachProperty(callback) |
 

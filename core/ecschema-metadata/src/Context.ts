@@ -537,10 +537,10 @@ export class SchemaContext {
    *
    * @example
    * ```typescript
-   * const entityClass = schemaContext.tryGetItem("BisCore:Element", EntityClass);
+   * const entityClass = schemaContext.tryGetSchemaItem("BisCore:Element", EntityClass);
    * ```
    */
-  public tryGetItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined {
+  public tryGetSchemaItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined {
     try {
       return this.getSchemaItemSync(classFullName, itemConstructor);
     } catch {
