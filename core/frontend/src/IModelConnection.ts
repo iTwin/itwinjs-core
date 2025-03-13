@@ -726,11 +726,10 @@ export class BlankConnection extends IModelConnection {
 
   /** @internal */
   protected constructor(props: IModelConnectionProps) {
-    // TODO: investigate current RPC behavior with BlankConnection
     const mockIModelReadApi: IModelReadAPI = {
       getConnectionProps: async () => Promise.resolve(props),
-      getTooltipMessage: () => { throw new Error("getTooltipMessage not available for blank connection") },
-      runQuery: () => { throw new Error("runQuery not available for blank connection") },
+      getTooltipMessage: async () => Promise.resolve({ lines: [] }),
+      async *runQuery () {},
     }
 
     super(props, mockIModelReadApi);
