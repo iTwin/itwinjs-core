@@ -113,7 +113,7 @@ describe("IModelWriteTest", () => {
       fsWatcher.callback = fn;
       return fsWatcher;
     };
-    sinon.stub(fs, "watch").callsFake(watchStub);
+    const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -137,7 +137,10 @@ describe("IModelWriteTest", () => {
     expect(nClosed).equal(1);
 
     bc.close();
-    sinon.restore();
+    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for that
+    // HubMock.startup() put in place.
+    watchStubResult.restore();
   });
 
   function expectEqualChangesets(a: ChangesetIdWithIndex, b: ChangesetIdWithIndex): void {
@@ -164,7 +167,7 @@ describe("IModelWriteTest", () => {
       fsWatcher.callback = fn;
       return fsWatcher;
     };
-    sinon.stub(fs, "watch").callsFake(watchStub);
+    const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -209,7 +212,10 @@ describe("IModelWriteTest", () => {
     expect(nClosed).equal(1);
 
     bc.close();
-    sinon.restore();
+    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for that
+    // HubMock.startup() put in place.
+    watchStubResult.restore();
   });
 
   it("WatchForChanges - pull", async () => {
@@ -248,7 +254,7 @@ describe("IModelWriteTest", () => {
       fsWatcher.callback = fn;
       return fsWatcher;
     };
-    sinon.stub(fs, "watch").callsFake(watchStub);
+    const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -278,7 +284,10 @@ describe("IModelWriteTest", () => {
     expect(nClosed).equal(1);
 
     bc.close();
-    sinon.restore();
+    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for that
+    // HubMock.startup() put in place.
+    watchStubResult.restore();
   });
 
   it("should handle undo/redo", async () => {
