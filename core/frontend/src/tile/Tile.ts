@@ -576,7 +576,7 @@ export abstract class Tile {
 
   /** @internal */
   public clearLayers() {
-    this._graphic = undefined;
+    this.disposeContents();
     if (this.children)
       for (const child of this.children)
         (child).clearLayers();

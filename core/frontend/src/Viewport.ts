@@ -930,10 +930,11 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** Refresh the Reality Tile Tree to reflect changes in the map layer. */
-  private refreshRealityTile(): void {
-    for (const { supplier, id, owner } of this.iModel.tiles) {
+  private refreshLayerTiles(): void {
+    const { tiles } = this.iModel;
+    for (const { supplier, id, owner } of tiles) {
       if (owner.tileTree instanceof RealityModelTileTree || owner.tileTree instanceof IModelTileTree) {
-        this.iModel.tiles.resetTileTreeOwner(id, supplier);
+        tiles.resetTileTreeOwner(id, supplier);
       }
     }
   }
@@ -948,7 +949,7 @@ export abstract class Viewport implements Disposable, TileUser {
    * @returns {boolean} True if there is any difference in the model layer configuration; false otherwise.
    * @internal
    */
-  private compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
+  public compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
     const prevLayers = prevView.displayStyle.getMapLayers(false);
     const newLayers = newView.displayStyle.getMapLayers(false);
 
@@ -1369,7 +1370,7 @@ export abstract class Viewport implements Disposable, TileUser {
     const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-      this.refreshRealityTile();
+      this.refreshLayerTiles();
     };
 
     removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
@@ -1858,7 +1859,7 @@ export abstract class Viewport implements Disposable, TileUser {
       this._changeFlags.setViewState();
 
       if (isMapLayerChanged) {
-        this.refreshRealityTile();
+        this.refreshLayerTiles();
       }
     }
   }

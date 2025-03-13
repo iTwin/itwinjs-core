@@ -491,9 +491,9 @@ export class IModelTileTree extends TileTree {
       this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
   }
 
-  // // /** @internal */
+  /** @internal */
   public clearLayers() {
-    // this._rootTile.clearLayers();
+    this._rootTile.clearLayers();
   }
 
   /** @internal */

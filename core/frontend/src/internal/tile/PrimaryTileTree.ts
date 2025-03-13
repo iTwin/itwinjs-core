@@ -286,6 +286,11 @@ class PrimaryTreeReference extends LayerTileTreeReference {
         this.setLayerSettings(imagery.backgroundLayers);
         this.clearLayers();
       }));
+      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
+        if(context.viewport.compareMapLayer(previousViewState, vp.view)){
+          this.clearLayers();
+        }
+      }));
     }
 
     return super.initializeLayers(context);
