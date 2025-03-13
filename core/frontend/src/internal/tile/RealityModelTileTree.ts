@@ -29,7 +29,7 @@ import { SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, LayerTileTree, LayerTileTreeReference, MapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  getGcsConverterAvailable, LayerTileTree, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
@@ -558,7 +558,7 @@ export namespace RealityModelTileTree {
     produceGeometry?: boolean;
   }
 
-  export abstract class Reference extends LayerTileTreeReference {
+  export abstract class Reference extends TileTreeReference {
     protected readonly _name: string;
     protected _transform?: Transform;
     private _isGlobal?: boolean;
@@ -568,6 +568,8 @@ export namespace RealityModelTileTree {
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
     private readonly _detachFromDisplayStyle: VoidFunction[] = [];
+    private _layerRefHandler: LayerTileTreeReferenceHandler;
+    public readonly iModel: IModelConnection;
 
     public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -586,15 +588,20 @@ export namespace RealityModelTileTree {
       return this._planarClipMask?.settings.compressedModelIds;
     }
 
+    public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
+      const mapLayerSettings = layerTreeRef?.layerSettings;
+      if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+        return ModelMapLayerDrapeTarget.RealityData === mapLayerSettings.drapeTarget;
+      return false;
+    }
+
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
-      super(false, props.iModel,
-        (layerTreeRef?: MapLayerTileTreeReference) => {
-          const mapLayerSettings = layerTreeRef?.layerSettings;
-          if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
-            return ModelMapLayerDrapeTarget.RealityData === mapLayerSettings.drapeTarget;
-          return false;
-        },
-        props.backgroundBase, props.backgroundLayers);
+      super();
+
+      this.iModel = props.iModel;
+
+      this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, props.backgroundBase, props.backgroundLayers);
+
       this._name = undefined !== props.name ? props.name : "";
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
@@ -632,22 +639,20 @@ export namespace RealityModelTileTree {
       return this._isGlobal === undefined ? false : this._isGlobal;
     }
 
-    public override initializeLayers(context: SceneContext): boolean {
+    public preInitializeLayers(context: SceneContext): void {
       const removals = this._detachFromDisplayStyle;
       if (0 === removals.length) {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-          this.setBaseLayerSettings(imagery.backgroundBase);
-          this.setLayerSettings(imagery.backgroundLayers);
-          this.clearLayers();
+          this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
+          this._layerRefHandler.setLayerSettings(imagery.backgroundLayers);
+          this._layerRefHandler.clearLayers();
         }));
       }
-
-      return super.initializeLayers(context);
     }
 
     public override addToScene(context: SceneContext): void {
       const tree = this.treeOwner.load() as RealityModelTileTree;
-      if (undefined === tree || !this.initializeLayers(context))
+      if (undefined === tree || !this._layerRefHandler.initializeLayers(context))
         return;     // Not loaded yet.
 
       // NB: The classifier must be added first, so we can find it when adding our own tiles.
@@ -830,12 +835,12 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this._iModel);
+    return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this.iModel);
   }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference {
     const ref = new RealityTreeReference({
-      iModel: this._iModel,
+      iModel: this.iModel,
       modelId: this.modelId,
       source: this._source,
       rdSourceKey: this._rdSourceKey,
@@ -869,7 +874,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const drawArgs = super.createDrawArgs(context);
-    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded) {
+    if (drawArgs !== undefined && this.iModel.isGeoLocated && tree.isContentUnbounded) {
       const elevationBias = context.viewport.view.displayStyle.backgroundMapElevationBias;
 
       if (undefined !== elevationBias)

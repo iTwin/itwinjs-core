@@ -24,7 +24,7 @@ import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTree, LayerTileTreeReference, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapTile,
+  ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTree, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapTile,
   MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
@@ -720,21 +720,29 @@ type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
 /** Specialization of tile tree that represents background map.
  * @internal
  */
-export class MapTileTreeReference extends LayerTileTreeReference {
+export class MapTileTreeReference extends TileTreeReference {
   private _tileUserId: number;
   private _settings: BackgroundMapSettings;
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
+  private _layerRefHandler: LayerTileTreeReferenceHandler;
+  public readonly iModel: IModelConnection;
+
+  public get layerRefHandler() { return this._layerRefHandler; }
+
+  public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
+    const mapLayerSettings = layerTreeRef?.layerSettings;
+    if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+      return ModelMapLayerDrapeTarget.BackgroundMap === mapLayerSettings.drapeTarget;
+    return true; // catch-all for other cases (skip reality models, though).
+  }
 
   public constructor(settings: BackgroundMapSettings, baseLayerSettings: BaseLayerSettings | undefined, layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
-    super(isOverlay, iModel,
-      (layerTreeRef?: MapLayerTileTreeReference) => {
-        const mapLayerSettings = layerTreeRef?.layerSettings;
-        if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
-          return ModelMapLayerDrapeTarget.BackgroundMap === mapLayerSettings.drapeTarget;
-        return true; // catch-all for other cases (skip reality models, though).
-      },
-      baseLayerSettings, layerSettings);
+    super();
+
+    this.iModel = iModel;
+
+    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, isOverlay, baseLayerSettings, layerSettings);
 
     this._tileUserId = tileUserId;
     this._settings = settings;
@@ -747,21 +755,21 @@ export class MapTileTreeReference extends LayerTileTreeReference {
   }
 
   public forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    for (const layerTree of this._layerTrees) {
+    for (const layerTree of this._layerRefHandler.layerTrees) {
       assert(layerTree instanceof MapLayerTileTreeReference);
       func(layerTree);
     }
   }
 
   public override get isGlobal() { return true; }
-  public get baseColor(): ColorDef | undefined { return this._baseColor; }
+  public get baseColor(): ColorDef | undefined { return this.baseColor; }
   public override get planarClipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     if (!this._settings.applyTerrain || this._isDrape)
       return undefined;     // Don't bother generating non-terrain (flat) geometry.
 
-    const ref = new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._tileUserId, false, false, () => {
+    const ref = new MapTileTreeReference(this._settings, undefined, [], this.iModel, this._tileUserId, false, false, () => {
       return { produceGeometry: true };
     });
 
@@ -778,7 +786,7 @@ export class MapTileTreeReference extends LayerTileTreeReference {
   }
 
   public get layerSettings(): MapLayerSettings[] {
-    return this._layerSettings;
+    return this.layerRefHandler.layerSettings;
   }
 
   public override get castsShadows() {
@@ -787,18 +795,18 @@ export class MapTileTreeReference extends LayerTileTreeReference {
 
   protected override get _isLoadingComplete(): boolean {
     // Wait until drape tree is fully loaded too.
-    for (const drapeTree of this._layerTrees)
+    for (const drapeTree of this._layerRefHandler.layerTrees)
       if (drapeTree && !drapeTree.isLoadingComplete)
         return false;
 
     return super._isLoadingComplete;
   }
   public get useDepthBuffer() {
-    return !this.isOverlay && (this.settings.applyTerrain || this.settings.useDepthBuffer);
+    return !this._layerRefHandler.isOverlay && (this.settings.applyTerrain || this.settings.useDepthBuffer);
   }
 
   public get treeOwner(): TileTreeOwner {
-    let wantSkirts = (this.settings.applyTerrain || this.useDepthBuffer) && !this.settings.transparency && !this._baseTransparent;
+    let wantSkirts = (this.settings.applyTerrain || this.useDepthBuffer) && !this.settings.transparency && !this._layerRefHandler.baseTransparent;
     if (wantSkirts) {
       const maskTrans = this._planarClipMask?.settings.transparency;
       wantSkirts = (undefined === maskTrans || maskTrans <= 0);
@@ -817,10 +825,10 @@ export class MapTileTreeReference extends LayerTileTreeReference {
       // Can set to this.settings.terrainSettings.applyLighting if we want to ever apply lighting to terrain again so that normals are retrieved when lighting is on.
       wantNormals: false,
       globeMode: this._isDrape ? GlobeMode.Plane : this.settings.globeMode,
-      isOverlay: this.isOverlay,
+      isOverlay: this._layerRefHandler.isOverlay,
       useDepthBuffer: this.useDepthBuffer,
-      baseColor: this._baseColor,
-      baseTransparent: this._baseTransparent,
+      baseColor: this._layerRefHandler.baseColor,
+      baseTransparent: this._layerRefHandler.baseTransparent,
       mapTransparent: Number(this.settings.transparency) > 0,
       maskModelIds: this._planarClipMask?.settings.compressedModelIds,
       produceGeometry: false,
@@ -835,12 +843,12 @@ export class MapTileTreeReference extends LayerTileTreeReference {
       }
     }
 
-    return this._iModel.tiles.getTileTreeOwner(id, mapTreeSupplier);
+    return this.iModel.tiles.getTileTreeOwner(id, mapTreeSupplier);
   }
   public getLayerImageryTreeRef(index: number): MapLayerTileTreeReference | undefined {
-    const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
+    const baseLayerIndex = this._layerRefHandler.baseImageryLayerIncluded ? 1 : 0;
     const treeIndex = index + baseLayerIndex;
-    return index < 0 || treeIndex >= this._layerTrees.length ? undefined : this._layerTrees[treeIndex];
+    return index < 0 || treeIndex >= this._layerRefHandler.layerTrees.length ? undefined : this._layerRefHandler.layerTrees[treeIndex];
   }
 
   /** Return the map-layer scale range visibility for the provided map-layer index.
@@ -866,7 +874,7 @@ export class MapTileTreeReference extends LayerTileTreeReference {
       return;
 
     const tree = this.treeOwner.load() as MapTileTree;
-    if (undefined === tree || !this.initializeLayers(context))
+    if (undefined === tree || !this._layerRefHandler.initializeLayers(context))
       return;     // Not loaded yet.
 
     if (this._planarClipMask && this._planarClipMask.settings.isValid)
@@ -908,7 +916,7 @@ export class MapTileTreeReference extends LayerTileTreeReference {
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
-    for (const imageryTree of this._layerTrees)
+    for (const imageryTree of this._layerRefHandler.layerTrees)
       if (imageryTree)
         trees.disclose(imageryTree);
 
@@ -922,7 +930,7 @@ export class MapTileTreeReference extends LayerTileTreeReference {
     if (undefined === tree || tree.modelId !== mapTreeModelId)
       return imageryTrees;
 
-    for (const imageryTree of this._layerTrees)
+    for (const imageryTree of this._layerRefHandler.layerTrees)
       if (imageryTree && imageryTree.treeOwner.tileTree && imageryTree.treeOwner.tileTree.modelId === layerTreeModelId)
         imageryTrees.push(imageryTree);
 
@@ -932,10 +940,10 @@ export class MapTileTreeReference extends LayerTileTreeReference {
   public layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[] {
     const imageryTree = this.imageryTreeFromTreeModelIds(mapTreeModelId, layerTreeModelId);
     return imageryTree.map((tree) => {
-      const isBaseLayer = (this._baseImageryLayerIncluded && tree.layerIndex === 0);
+      const isBaseLayer = (this._layerRefHandler.baseImageryLayerIncluded && tree.layerIndex === 0);
       return {
         isBaseLayer,
-        index: isBaseLayer ? undefined : { isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex - 1 : tree.layerIndex },
+        index: isBaseLayer ? undefined : { isOverlay: this._layerRefHandler.isOverlay, index: this._layerRefHandler.baseImageryLayerIncluded ? tree.layerIndex - 1 : tree.layerIndex },
         settings: tree.layerSettings, provider: tree.imageryProvider,
       };
     });
@@ -1064,7 +1072,7 @@ export class MapTileTreeReference extends LayerTileTreeReference {
     if (tree) {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       tree.mapLoader.terrainProvider.addLogoCards(cards, vp);
-      for (const imageryTreeRef of this._layerTrees) {
+      for (const imageryTreeRef of this._layerRefHandler.layerTrees) {
         if (imageryTreeRef?.layerSettings.visible) {
           const imageryTree = imageryTreeRef.treeOwner.tileTree;
           if (imageryTree instanceof ImageryMapTileTree)
@@ -1082,7 +1090,7 @@ export class MapTileTreeReference extends LayerTileTreeReference {
     if (tree) {
       const promises = [tree.mapLoader.terrainProvider.addAttributions(cards, vp)];
 
-      for (const imageryTreeRef of this._layerTrees) {
+      for (const imageryTreeRef of this._layerRefHandler.layerTrees) {
         if (imageryTreeRef?.layerSettings.visible) {
           const imageryTree = imageryTreeRef.treeOwner.tileTree;
           if (imageryTree instanceof ImageryMapTileTree)
@@ -1094,7 +1102,7 @@ export class MapTileTreeReference extends LayerTileTreeReference {
   }
 
   public override decorate(context: DecorateContext): void {
-    for (const layerTree of this._layerTrees) {
+    for (const layerTree of this._layerRefHandler.layerTrees) {
       if (layerTree)
         layerTree.decorate(context);
     }
