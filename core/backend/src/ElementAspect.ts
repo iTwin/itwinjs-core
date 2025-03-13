@@ -63,7 +63,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onInsert(arg: OnAspectPropsArg): void {
+  public static onInsert(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
     iModel.channels[_verifyChannel](arg.model);
     iModel.locks.checkExclusiveLock(props.element.id, "element", "insert aspect");
@@ -73,7 +73,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onInserted(_arg: OnAspectPropsArg): void { }
+  public static onInserted(_arg: OnAspectPropsArg): void { }
 
   /** Called before an ElementAspect is updated.
    * @note throw an exception to disallow the update

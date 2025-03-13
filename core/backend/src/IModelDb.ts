@@ -71,7 +71,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
-import { insertElementWithHandlers } from "./NativeInstaceHandlers";
+import { insertAspectWithHandlers, insertElementWithHandlers } from "./NativeInstaceHandlers";
 
 // spell:ignore fontid fontmap
 
@@ -2381,6 +2381,22 @@ export namespace IModelDb {
       try {
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
+        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
+      }
+    }
+
+    /** Insert a new ElementAspect into the iModel.
+     * @param aspectProps The properties of the new ElementAspect.
+     * @throws [[IModelError]] if unable to insert the ElementAspect.
+     * @returns the id of the newly inserted aspect.
+     * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
+     *       use [EntityReference]($common) for that instead.
+     */
+    public insertAspect2(aspectProps: ElementAspectProps, options?: InsertInstanceOptions): Id64String {
+      try {
+        return insertAspectWithHandlers(this._iModel, aspectProps, options);
+      } catch (err: any) {
+        err.metadata = { aspectProps };
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }
     }
