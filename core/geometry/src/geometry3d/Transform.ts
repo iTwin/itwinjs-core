@@ -158,7 +158,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Return a modified copy of `this` Transform so that its `matrix` part is rigid (`origin` part is untouched).
-   * * @see [[Matrix3d.axisOrderCrossProductsInPlace]] documentation for details of how the matrix is modified to rigid.
+   * @see [[Matrix3d.axisOrderCrossProductsInPlace]] documentation for details of how the matrix is modified to rigid.
    */
   public cloneRigid(axisOrder: AxisOrder = AxisOrder.XYZ): Transform | undefined {
     const modifiedMatrix = Matrix3d.createRigidFromMatrix3d(this.matrix, axisOrder);

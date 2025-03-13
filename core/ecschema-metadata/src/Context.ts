@@ -43,7 +43,7 @@ export interface ISchemaLocater {
    * @param matchType how to match key against candidate schemas
    * @param context context for loading schema references
    */
-  getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
+  getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
 
   /**
   * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
@@ -51,7 +51,7 @@ export interface ISchemaLocater {
   * @param schemaKey The SchemaKey describing the schema to get from the cache.
   * @param matchType The match type to use when locating the schema
   */
-  getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
+  getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
 
   /**
    * Attempts to get a schema from the locater. Yields undefined if no matching schema is found.
@@ -60,7 +60,7 @@ export interface ISchemaLocater {
    * @param matchType how to match key against candidate schemas
    * @param context context for loading schema references
    */
-  getSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
+  getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
 }
 
 /**
@@ -75,25 +75,25 @@ export class SchemaCache implements ISchemaLocater {
 
   public get count() { return this._schema.length; }
 
-  private loadedSchemaExists(schemaKey: Readonly<SchemaKey>): boolean {
+  private loadedSchemaExists(schemaKey: SchemaKey): boolean {
     return undefined !== this._schema.find((entry: SchemaEntry) => entry.schemaInfo.schemaKey.matches(schemaKey, SchemaMatchType.Latest) && !entry.schemaPromise);
   }
 
-  private schemaPromiseExists(schemaKey: Readonly<SchemaKey>): boolean {
+  private schemaPromiseExists(schemaKey: SchemaKey): boolean {
     return undefined !== this._schema.find((entry: SchemaEntry) => entry.schemaInfo.schemaKey.matches(schemaKey, SchemaMatchType.Latest) && undefined !== entry.schemaPromise);
   }
 
-  private findEntry(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): SchemaEntry | undefined {
+  private findEntry(schemaKey: SchemaKey, matchType: SchemaMatchType): SchemaEntry | undefined {
     return this._schema.find((entry: SchemaEntry) => entry.schemaInfo.schemaKey.matches(schemaKey, matchType));
   }
 
-  private removeSchemaPromise(schemaKey: Readonly<SchemaKey>) {
+  private removeSchemaPromise(schemaKey: SchemaKey) {
     const entry = this.findEntry(schemaKey, SchemaMatchType.Latest);
     if (entry)
       entry.schemaPromise = undefined;
   }
 
-  private removeEntry(schemaKey: Readonly<SchemaKey>) {
+  private removeEntry(schemaKey: SchemaKey) {
     this._schema = this._schema.filter((entry: SchemaEntry) => !entry.schemaInfo.schemaKey.matches(schemaKey));
   }
 
@@ -101,7 +101,7 @@ export class SchemaCache implements ISchemaLocater {
    * Returns true if the schema exists in either the schema cache or the promise cache.  SchemaMatchType.Latest used.
    * @param schemaKey The key to search for.
    */
-  public schemaExists(schemaKey: Readonly<SchemaKey>): boolean {
+  public schemaExists(schemaKey: SchemaKey): boolean {
     return this.loadedSchemaExists(schemaKey) || this.schemaPromiseExists(schemaKey);
   }
 
@@ -154,7 +154,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
-  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<Schema | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<Schema | undefined> {
     if (this.count === 0)
       return undefined;
 
@@ -180,7 +180,7 @@ export class SchemaCache implements ISchemaLocater {
     * @param schemaKey The SchemaKey describing the schema to get from the cache.
     * @param matchType The match type to use when locating the schema
     */
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<SchemaInfo | undefined> {
     if (this.count === 0)
       return undefined;
 
@@ -196,7 +196,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
-  public getSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
     if (this.count === 0)
       return undefined;
 
@@ -320,7 +320,7 @@ export class SchemaContext {
    * Returns true if the schema is already in the context.  SchemaMatchType.Latest is used to find a match.
    * @param schemaKey
    */
-  public schemaExists(schemaKey: Readonly<SchemaKey>): boolean {
+  public schemaExists(schemaKey: SchemaKey): boolean {
     return this._knownSchemas.schemaExists(schemaKey);
   }
 
@@ -341,7 +341,7 @@ export class SchemaContext {
    * @param matchType Criteria by which to identify potentially matching schemas.
    * @returns the schema matching the input criteria, or `undefined` if no such schema could be located.
    */
-  public async getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<Schema | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<Schema | undefined> {
     // the first locater is _knownSchemas, so we don't have to check the cache explicitly here
     for (const locater of this._locaters) {
       const schema = await locater.getSchema(schemaKey, matchType, this);
@@ -358,7 +358,7 @@ export class SchemaContext {
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<SchemaInfo | undefined> {
     for (const locater of this._locaters) {
       const schemaInfo = await locater.getSchemaInfo(schemaKey, matchType, this);
       if (undefined !== schemaInfo)
@@ -392,7 +392,7 @@ export class SchemaContext {
    * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
    * @internal
    */
-  public async getCachedSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<Schema | undefined> {
+  public async getCachedSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<Schema | undefined> {
     return this._knownSchemas.getSchema(schemaKey, matchType);
   }
 
@@ -403,7 +403,7 @@ export class SchemaContext {
    * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
    * @internal
    */
-  public getCachedSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
+  public getCachedSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
     return this._knownSchemas.getSchemaSync(schemaKey, matchType);
   }
 

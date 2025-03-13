@@ -1793,11 +1793,13 @@ export class ECDb implements Disposable {
     [Symbol.dispose](): void;
     constructor();
     abandonChanges(): void;
+    attachDb(fileName: string, alias: string): void;
     // @internal
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
+    detachDb(alias: string): void;
     // @deprecated (undocumented)
     dispose(): void;
     // @internal
@@ -3173,6 +3175,7 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
     // @internal
@@ -3205,6 +3208,7 @@ export abstract class IModelDb extends IModel {
     deleteFileProperty(prop: FilePropertyProps): void;
     // @beta
     deleteSettingDictionary(name: string): void;
+    detachDb(alias: string): void;
     // @beta
     elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
     // @beta

@@ -798,9 +798,9 @@ export interface InvertedUnitProps extends SchemaItemProps {
 
 // @beta
 export interface ISchemaLocater {
-    getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
-    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
-    getSchemaSync(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
+    getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
+    getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
+    getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
 }
 
 // @beta
@@ -937,7 +937,7 @@ export type LazyLoadedRelationshipClass = LazyLoadedSchemaItem<RelationshipClass
 export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<EntityClass | Mixin | RelationshipClass>;
 
 // @beta (undocumented)
-export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;
+export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;
 
 // @beta (undocumented)
 export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
@@ -1815,11 +1815,11 @@ export class SchemaCache implements ISchemaLocater {
     // (undocumented)
     get count(): number;
     getAllSchemas(): Schema[];
-    getSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
-    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<SchemaInfo | undefined>;
+    getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
+    getSchemaInfo(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<SchemaInfo | undefined>;
     getSchemaItems(): IterableIterator<SchemaItem>;
-    getSchemaSync(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Schema | undefined;
-    schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
+    getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
+    schemaExists(schemaKey: SchemaKey): boolean;
 }
 
 // @beta
@@ -1835,12 +1835,12 @@ export class SchemaContext {
     // (undocumented)
     forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom?: boolean): Promise<void>;
     // @internal
-    getCachedSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
+    getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal
-    getCachedSchemaSync(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Schema | undefined;
+    getCachedSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     getKnownSchemas(): Schema[];
-    getSchema(schemaKey: Readonly<SchemaKey>, matchType?: SchemaMatchType): Promise<Schema | undefined>;
-    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
+    getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
+    getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
     getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<InstanceType<T> | undefined>;
     // (undocumented)
     getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<SchemaItem | undefined>;
@@ -1859,7 +1859,7 @@ export class SchemaContext {
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     // (undocumented)
     get locaters(): ISchemaLocater[];
-    schemaExists(schemaKey: Readonly<SchemaKey>): boolean;
+    schemaExists(schemaKey: SchemaKey): boolean;
     tryGetItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined;
 }
 
@@ -1881,7 +1881,7 @@ export interface SchemaInfo {
     // (undocumented)
     references: WithSchemaKey[];
     // (undocumented)
-    schemaKey: Readonly<SchemaKey>;
+    schemaKey: SchemaKey;
 }
 
 // @beta
@@ -2035,9 +2035,9 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
 // @beta
 export class SchemaJsonLocater implements ISchemaLocater {
     constructor(_getSchema: SchemaPropsGetter);
-    getSchema(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
-    getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
-    getSchemaSync(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
+    getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
+    getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
+    getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
 }
 
 // @beta
@@ -2048,7 +2048,7 @@ export class SchemaKey {
     compareByVersion(rhs: SchemaKey): number;
     static fromJSON(props: SchemaKeyProps): SchemaKey;
     // (undocumented)
-    matches(rhs: Readonly<SchemaKey>, matchType?: SchemaMatchType): boolean;
+    matches(rhs: SchemaKey, matchType?: SchemaMatchType): boolean;
     // (undocumented)
     get minorVersion(): number;
     // (undocumented)
@@ -2340,7 +2340,7 @@ export type UnitSystemProps = SchemaItemProps;
 // @beta (undocumented)
 export interface WithSchemaKey {
     // (undocumented)
-    schemaKey: Readonly<SchemaKey>;
+    schemaKey: SchemaKey;
 }
 
 // @internal (undocumented)
