@@ -264,7 +264,7 @@ const spies = {
   },
 };
 
-describe("Domain Handlers - Old", () => {
+describe.only("Domain Handlers - Old", () => {
 
   let iModelDb: StandaloneDb;
 
@@ -342,7 +342,7 @@ describe("Domain Handlers - Old", () => {
     }
   });
 
-  it("should call all handler functions for an inserted model", async () => {
+  it("should call all handler functions for an inserted model using old insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Model Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -393,7 +393,7 @@ describe("Domain Handlers - Old", () => {
     assert.isTrue(spies.sub.onSubModelDeleted.called);
   });
 
-  it("should call all handler functions for an inserted aspect", async () => {
+  it("should call all handler functions for an inserted aspect using old insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Aspect Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -442,7 +442,7 @@ describe("Domain Handlers - Old", () => {
     model.delete();
   });
 
-  it("should call all handler functions for an inserted element", async () => {
+  it("should call all handler functions for an inserted element using old insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Element Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -538,7 +538,7 @@ describe("Domain Handlers - Old", () => {
 });
 
 
-describe("Domain Handlers - New", () => {
+describe.only("Domain Handlers - New", () => {
 
   let iModelDb: StandaloneDb;
 
@@ -616,7 +616,7 @@ describe("Domain Handlers - New", () => {
     }
   });
 
-  it("should call all handler functions for an inserted model", async () => {
+  it("should call all handler functions for an inserted model using new insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Model Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -667,7 +667,7 @@ describe("Domain Handlers - New", () => {
     assert.isTrue(spies.sub.onSubModelDeleted.called);
   });
 
-  it("should call all handler functions for an inserted aspect", async () => {
+  it("should call all handler functions for an inserted aspect using new insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Aspect Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -716,7 +716,7 @@ describe("Domain Handlers - New", () => {
     model.delete();
   });
 
-  it("should call all handler functions for an inserted element", async () => {
+  it("should call all handler functions for an inserted element using new insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Element Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -726,7 +726,7 @@ describe("Domain Handlers - New", () => {
     };
 
     // New Element and a Model
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const partitionId = iModelDb.elements.insertElement2(partitionProps, {useJsNames: true});
     modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     const elementProps: ElementProps = {
@@ -738,7 +738,7 @@ describe("Domain Handlers - New", () => {
         value: "Breakdown3"
       }
     };
-    const elementId = iModelDb.elements.insertElement(elementProps);
+    const elementId = iModelDb.elements.insertElement2(elementProps, {useJsNames: true});
     const element = iModelDb.elements.getElement(elementId);
 
     const elementProps2: ElementProps = {
@@ -750,7 +750,7 @@ describe("Domain Handlers - New", () => {
         value: "Breakdown4"
       }
     };
-    const elementId2 = iModelDb.elements.insertElement(elementProps2);
+    const elementId2 = iModelDb.elements.insertElement2(elementProps2, {useJsNames: true});
 
     const componentProps = {
       classFullName: Component.classFullName,
@@ -759,12 +759,12 @@ describe("Domain Handlers - New", () => {
       code: { spec: codeSpec.id, scope: modelId, value: "Component1" },
     };
 
-    const componentId = iModelDb.elements.insertElement(componentProps);
+    const componentId = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
     const component1 = iModelDb.elements.getElement(componentId);
     component1.update();
 
     componentProps.code.value = "comp2";
-    const componentId2 = iModelDb.elements.insertElement(componentProps);
+    const componentId2 = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
     const component2 = iModelDb.elements.getElement(componentId2);
 
     spies.model.onDeleteElement.resetHistory();
@@ -780,7 +780,7 @@ describe("Domain Handlers - New", () => {
     component2.delete();
 
     componentProps.parent.id = elementId;
-    const componentId3 = iModelDb.elements.insertElement(componentProps);
+    const componentId3 = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
     const component3Props = iModelDb.elements.getElementProps(componentId3);
     component3Props.parent!.id = elementId2;
 
