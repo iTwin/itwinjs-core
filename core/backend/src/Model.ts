@@ -98,7 +98,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model to be inserted
    * @beta
    */
-  protected static onInsert(arg: OnModelPropsArg): void {
+  public static onInsert(arg: OnModelPropsArg): void {
     const { props, iModel } = arg;
     iModel.channels[_verifyChannel](props.modeledElement.id);
     if (props.parentModel)   // inserting requires shared lock on parent, if present
@@ -110,7 +110,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was inserted
    * @beta
    */
-  protected static onInserted(_arg: OnModelIdArg): void {
+  public static onInserted(_arg: OnModelIdArg): void {
     // we don't need to tell LockControl about models being created - their ModeledElement does that
   }
 

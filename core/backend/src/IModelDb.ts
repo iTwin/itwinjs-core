@@ -71,7 +71,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
-import { insertAspectWithHandlers, insertElementWithHandlers } from "./NativeInstaceHandlers";
+import { insertAspectWithHandlers, insertElementWithHandlers, insertModelWithHandlers } from "./NativeInstaceHandlers";
 
 // spell:ignore fontid fontmap
 
@@ -1757,6 +1757,20 @@ export namespace IModelDb {
       try {
         return props.id = this._iModel[_nativeDb].insertModel(props);
       } catch (err: any) {
+        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+      }
+    }
+
+    /** Insert a new model.
+     * @param props The data for the new model.
+     * @returns The newly inserted model's Id.
+     * @throws [[IModelError]] if unable to insert the model.
+     */
+    public insertModel2(props: ModelProps): Id64String {
+      try {
+        return props.id = insertModelWithHandlers(this._iModel, props);
+      } catch (err: any) {
+        err.metadata = props;
         throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
     }

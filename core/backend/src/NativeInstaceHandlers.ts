@@ -5,7 +5,7 @@
 
 import { IModelDb, InsertInstanceOptions } from "./IModelDb";
 import { Element } from "./Element";
-import { ElementAspectProps, ElementProps, RelatedElementProps } from "@itwin/core-common";
+import { ElementAspectProps, ElementProps, ModelProps, RelatedElementProps } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 import { _nativeDb } from "./internal/Symbols";
 import { Model } from "./Model";
@@ -35,7 +35,7 @@ function mapNativeElementProps(iModel: IModelDb, elProps: ElementProps): NativeE
     codeScope: { id: elProps.code.scope },
     codeValue: elProps.code.value,
     parent: elProps.parent ?? undefined,
-    // lastMod: iModel.models.queryLastModifiedTime(elProps.id),
+    lastMod: iModel.models.queryLastModifiedTime(elProps.model),
     model: {
       id: elProps.model,
       relClassName: iModel.models.getModel(elProps.model).classFullName ?? undefined,
@@ -108,9 +108,9 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
  * @returns The Id of the inserted element.
  * @internal
  */
-export function insertModelWithHandlers(iModel: IModelDb, elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
+export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps, options?: InsertInstanceOptions): Id64String {
   // Convert the ElementProps to NativeElementProps
-  const nativeElementProps = mapNativeElementProps(iModel, elProps);
+  // const nativeElementProps = mapNativeElementProps(iModel, elProps);
 
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
@@ -118,43 +118,18 @@ export function insertModelWithHandlers(iModel: IModelDb, elProps: ElementProps,
   // TODO: Check if the element args are valid?
 
   // Get the Element Class Definition and check if its valid
-  const classDef = iModel.getJsClass<typeof Element>(elProps.classFullName);
-  const modelClassDef = nativeElementProps.model.relClassName ? iModel.getJsClass<typeof Model>(nativeElementProps.model.relClassName) : undefined;
-  let parentClassDef: typeof Element | undefined;
-  try {
-    parentClassDef = nativeElementProps.parent?.relClassName ? iModel.getJsClass<typeof Element>(nativeElementProps.parent.relClassName) : undefined;
-  } catch (error) {
-    if (!ClassRegistry.isNotFoundError(error)) {
-      // throw error;
-    }
-    parentClassDef = undefined;
-  }
+  const classDef = iModel.getJsClass<typeof Model>(modelProps.classFullName);
 
   // Call pre-insert Domain Handlers
-  classDef.onInsert({ iModel, props: elProps });
-  if (modelClassDef !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    modelClassDef["onInsertElement"]({ iModel, elementProps: elProps, id: elProps.model });
-  }
-  if (parentClassDef !== undefined && nativeElementProps.parent?.id) {
-    parentClassDef.onChildInsert({ iModel, childProps: elProps, parentId: nativeElementProps.parent?.id });
-  }
+  classDef.onInsert({ iModel, props: modelProps });
 
   // Perform Insert
-  elProps.id = iModel[_nativeDb].insertInstance(nativeElementProps, {...insertOptions});
+  modelProps.id = iModel[_nativeDb].insertInstance(modelProps, {...insertOptions});
 
   // Call post-insert Domain Handlers
-  if (elProps.federationGuid !== undefined) {
-    classDef.onInserted({ iModel, id: elProps.id, federationGuid: elProps.federationGuid, model: elProps.model });
-  }
-  if (modelClassDef !== undefined) {
-    modelClassDef.onInsertedElement({ iModel, elementId: elProps.id, id: elProps.model });
-  }
-  if (parentClassDef !== undefined && nativeElementProps.parent?.id) {
-    parentClassDef.onChildInserted({ iModel, childId: elProps.id, parentId: nativeElementProps.parent?.id });
-  }
+  classDef.onInserted({ iModel, id: modelProps.id });
 
-  return elProps.id;
+  return modelProps.id;
 }
 
 
