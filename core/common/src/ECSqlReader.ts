@@ -7,8 +7,8 @@
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
-  QueryPropertyMetaData, QueryRowFormat,
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, MetadataWithOptionalLegacyFields, MinimalDbQueryResponse, QueryBinder,
+  QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryPropertyMetaDataHelpers, QueryRowFormat
 } from "./ConcurrentQuery";
 
 /** @public */
@@ -140,10 +140,6 @@ export interface QueryStats {
   /** Total time in millisecond to prepare ECSQL or grabing it from cache and binding parameters */
   prepareTime: number;
 }
-
-type MetadataWithOptionalLegacyFields = Omit<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'> & Partial<Pick<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'>>
-export type MinimalDbQueryResponse = Omit<DbQueryResponse, 'meta'> & { meta: MetadataWithOptionalLegacyFields[] }
-
 
 /**
  * Execute ECSQL statements and read the results.
@@ -385,7 +381,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     const execQuery = async (req: DbQueryRequest) => {
       const startTime = Date.now();
       const rs = await this._executor.execute(req);
-      this.populateDeprecatedMetadataProps(rs.meta);
+      QueryPropertyMetaDataHelpers.populateDeprecatedMetadataProps(rs.meta);
       this.stats.totalTime += (Date.now() - startTime);
       return rs as DbQueryResponse;
     };
@@ -448,106 +444,6 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     if (this._localRows.length === 0) {
       this._done = true;
     }
-  }
-
-  private populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
-    const jsonNameDict: {[jsonName: string] : number } = {}
-    meta.forEach((value, index) => {
-      value.generated = this.isGeneratedProperty(value);
-      value.index = value.index ?? index;
-      value.jsonName = value.jsonName ?? this.createJsonName(value, jsonNameDict);
-      value.extendType = value.extendType ?? value.extendedType ?? "";
-    });
-    return meta as QueryPropertyMetaData[]
-  }
-
-  private createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: {[jsonName: string] : number }): string {
-    let jsName;
-    if (this.isGeneratedProperty(meta)) {
-      jsName = this.lowerFirstChar(meta.name);
-    } else if (this.isSystem(this.getExtendedType(meta.extendedType))) {
-      const propertyPath = meta.accessString ? meta.accessString.split(".") : []
-      if (propertyPath.length > 1) {
-        jsName = propertyPath.slice(0, propertyPath.length - 1).join(".");
-        const leafEntry = propertyPath[propertyPath.length - 1]
-        if (leafEntry === "RelECClassId") {
-          jsName += "relClassName"
-        } else if (leafEntry === "Id" || leafEntry === "X" || leafEntry === "Y" || leafEntry === "Z") {
-          jsName += this.lowerFirstChar(leafEntry);
-        } else {
-          jsName += leafEntry
-        }
-        jsName = this.lowerFirstChar(jsName);
-      } else {
-        jsName = meta.name
-        const extendedTypeId = this.getExtendedType(meta.extendedType)
-        if (extendedTypeId === 1 && jsName === "ECInstanceId") {
-          jsName = "id"
-        } else if (extendedTypeId === 2 && jsName === "ECClassId") {
-          jsName = "className"
-        } else if (extendedTypeId === 4 && jsName === "SourceECInstanceId") {
-          jsName = "sourceId"
-        } else if (extendedTypeId === 8 && jsName === "TargetECInstanceId") {
-          jsName = "targetId"
-        } else if (extendedTypeId === 16 && jsName === "SourceECClassId") {
-          jsName = "sourceClassName"
-        } else if (extendedTypeId === 32 && jsName === "TargetECClassId") {
-          jsName = "targetClassName"
-        } else if (extendedTypeId === 64 && jsName === "Id") {
-          jsName = "id"
-        } else if (extendedTypeId === 128 && jsName === "RelECClassId") {
-          jsName = "relClassName"
-        } else {
-          jsName = this.lowerFirstChar(jsName)
-        }
-      }
-    } else {
-      jsName = this.lowerFirstChar(meta.accessString ?? "")
-    }
-
-    if (jsonNameDict[jsName] === undefined) {
-      jsonNameDict[jsName] = 0
-    } else {
-      jsonNameDict[jsName]++;
-      jsName += `_${jsonNameDict[jsName]}`;
-    }
-    return jsName
-  }
-
-  private isGeneratedProperty(meta: MetadataWithOptionalLegacyFields): boolean {
-    return meta.generated ?? meta.className === "";
-  }
-
-  private isSystem(extendedTypeId: number): boolean {
-    return extendedTypeId === 0
-  }
-
-  private getExtendedType(extendedType?: string): number {
-    switch (extendedType) {
-      case "Id":
-        return 1
-      case "ClassId":
-        return 2
-      case "SourceId":
-        return 4
-      case "TargetId":
-        return 8
-      case "SourceClassId":
-        return 16
-      case "TargetClassId":
-        return 32
-      case "NavId":
-        return 64
-      case "NavRelClassId":
-        return 128
-      default:
-        return 0
-    }
-  }
-
-  private lowerFirstChar(text: string): string {
-    if (!text || text.length === 0) return "";
-    return text[0].toLowerCase() + text.slice(1);
   }
 
   /**

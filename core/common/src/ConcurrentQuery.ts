@@ -71,6 +71,113 @@ export interface QueryPropertyMetaData {
   typeName: string;
 }
 
+export type MetadataWithOptionalLegacyFields = Omit<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'> & Partial<Pick<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'>>
+export type MinimalDbQueryResponse = Omit<DbQueryResponse, 'meta'> & { meta: MetadataWithOptionalLegacyFields[] }
+
+export class QueryPropertyMetaDataHelpers {
+  public static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
+    const jsonNameDict: {[jsonName: string] : number } = {}
+    meta.forEach((value, index) => {
+      value.generated = this.isGeneratedProperty(value);
+      value.index = value.index ?? index;
+      value.jsonName = value.jsonName ?? this.createJsonName(value, jsonNameDict);
+      value.extendType = value.extendType ?? value.extendedType ?? "";
+    });
+    return meta as QueryPropertyMetaData[]
+  }
+
+  private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: {[jsonName: string] : number }): string {
+    let jsName;
+    if (this.isGeneratedProperty(meta)) {
+      jsName = this.lowerFirstChar(meta.name);
+    } else if (this.isSystem(this.getExtendedType(meta.extendedType))) {
+      const propertyPath = meta.accessString ? meta.accessString.split(".") : []
+      if (propertyPath.length > 1) {
+        jsName = propertyPath.slice(0, propertyPath.length - 1).join(".");
+        const leafEntry = propertyPath[propertyPath.length - 1]
+        if (leafEntry === "RelECClassId") {
+          jsName += "relClassName"
+        } else if (leafEntry === "Id" || leafEntry === "X" || leafEntry === "Y" || leafEntry === "Z") {
+          jsName += this.lowerFirstChar(leafEntry);
+        } else {
+          jsName += leafEntry
+        }
+        jsName = this.lowerFirstChar(jsName);
+      } else {
+        jsName = meta.name
+        const extendedTypeId = this.getExtendedType(meta.extendedType)
+        if (extendedTypeId === 1 && jsName === "ECInstanceId") {
+          jsName = "id"
+        } else if (extendedTypeId === 2 && jsName === "ECClassId") {
+          jsName = "className"
+        } else if (extendedTypeId === 4 && jsName === "SourceECInstanceId") {
+          jsName = "sourceId"
+        } else if (extendedTypeId === 8 && jsName === "TargetECInstanceId") {
+          jsName = "targetId"
+        } else if (extendedTypeId === 16 && jsName === "SourceECClassId") {
+          jsName = "sourceClassName"
+        } else if (extendedTypeId === 32 && jsName === "TargetECClassId") {
+          jsName = "targetClassName"
+        } else if (extendedTypeId === 64 && jsName === "Id") {
+          jsName = "id"
+        } else if (extendedTypeId === 128 && jsName === "RelECClassId") {
+          jsName = "relClassName"
+        } else {
+          jsName = this.lowerFirstChar(jsName)
+        }
+      }
+    } else {
+      jsName = this.lowerFirstChar(meta.accessString ?? "")
+    }
+
+    if (jsonNameDict[jsName] === undefined) {
+      jsonNameDict[jsName] = 0
+    } else {
+      jsonNameDict[jsName]++;
+      jsName += `_${jsonNameDict[jsName]}`;
+    }
+    return jsName
+  }
+
+  private static isGeneratedProperty(meta: MetadataWithOptionalLegacyFields): boolean {
+    return meta.generated ?? meta.className === "";
+  }
+
+  private static isSystem(extendedTypeId: number): boolean {
+    return extendedTypeId === 0
+  }
+
+  private static getExtendedType(extendedType?: string): number {
+    switch (extendedType) {
+      case "Id":
+        return 1
+      case "ClassId":
+        return 2
+      case "SourceId":
+        return 4
+      case "TargetId":
+        return 8
+      case "SourceClassId":
+        return 16
+      case "TargetClassId":
+        return 32
+      case "NavId":
+        return 64
+      case "NavRelClassId":
+        return 128
+      default:
+        return 0
+    }
+  }
+
+  private static lowerFirstChar(text: string): string {
+    if (!text || text.length === 0) return "";
+    return text[0].toLowerCase() + text.slice(1);
+  }
+}
+
+
+
 /** @beta */
 export interface DbRuntimeStats {
   cpuTime: number;
