@@ -35,6 +35,7 @@ function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64
 }
 
 function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return iModel.withPreparedStatement(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
     stmt.bindId(1, modelId);
     stmt.step();
@@ -151,6 +152,7 @@ function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: Ele
   Logger.logTrace(loggerCategory, `${op} ${fmtModel(model)} ${scope ? scope.toString() : ""}`);
 
   if (logElements) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
       stmt.bindId(1, modelId);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -223,6 +225,7 @@ export abstract class ElementTreeBottomUp {
   private _processSubModel(model: Model, parenScope: ElementTreeWalkerScope): void {
     const scope = new ElementTreeWalkerScope(parenScope, model);
     // Visit only the top-level parents. processElementTree will visit their children (bottom-up).
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     model.iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (stmt) => {
       stmt.bindId(1, model.id);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -386,6 +389,7 @@ abstract class ElementTreeTopDown {
   private _processSubModel(subModel: Model, scope: ElementTreeWalkerScope) {
     const subModelScope = new ElementTreeWalkerScope(scope, subModel);
     // Visit only the top-level parents. processElementTree will recurse into their children.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._iModel.withPreparedStatement(`select ECInstanceId from bis:Element where Model.id=? and Parent.Id is null`, (stmt) => {
       stmt.bindId(1, subModel.id);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
