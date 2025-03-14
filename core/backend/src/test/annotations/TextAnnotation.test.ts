@@ -723,26 +723,26 @@ describe("layoutTextBlock", () => {
     let layout = doLayout(block);
 
     // Margins should be 0 by default
-    expect(layout.marginRange.isAlmostEqual(layout.range)).to.be.true;
-    expectMargins(layout.range, layout.marginRange, {});
+    expect(layout.range.isAlmostEqual(layout.textRange)).to.be.true;
+    expectMargins(layout.textRange, layout.range, {});
 
     // All margins should be applied to the range
     block = makeTextBlock({ left: 1, right: 2, top: 3, bottom: 4 })
     layout = doLayout(block);
 
-    expectMargins(layout.range, layout.marginRange, { left: 1, right: 2, top: 3, bottom: 4 });
+    expectMargins(layout.textRange, layout.range, { left: 1, right: 2, top: 3, bottom: 4 });
 
     // Just horisontal margins should be applied
     block = makeTextBlock({ left: 1, right: 2 });
     layout = doLayout(block);
 
-    expectMargins(layout.range, layout.marginRange, { left: 1, right: 2 });
+    expectMargins(layout.textRange, layout.range, { left: 1, right: 2 });
 
     // Just vertical margins should be applied
     block = makeTextBlock({ top: 1, bottom: 2 });
     layout = doLayout(block);
 
-    expectMargins(layout.range, layout.marginRange, { top: 1, bottom: 2 });
+    expectMargins(layout.textRange, layout.range, { top: 1, bottom: 2 });
 
   });
 

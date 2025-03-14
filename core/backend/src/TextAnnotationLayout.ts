@@ -496,8 +496,12 @@ export class LineLayout {
  */
 export class TextBlockLayout {
   public source: TextBlock;
+
+  /** @internal: This is primarily for debugging purposes. This is the range of text geometry */
+  public textRange = new Range2d();
+
+  /** The range including margins of the [[TextBlock]]. */
   public range = new Range2d();
-  public marginRange = new Range2d();
   public lines: LineLayout[] = [];
   private _context: LayoutContext;
 
@@ -506,8 +510,8 @@ export class TextBlockLayout {
     this.source = source;
 
     if (source.width > 0) {
-      this.range.low.x = 0;
-      this.range.high.x = source.width;
+      this.textRange.low.x = 0;
+      this.textRange.high.x = source.width;
     }
 
     this.populateLines(context);
@@ -518,7 +522,7 @@ export class TextBlockLayout {
   public toResult(): TextBlockLayoutResult {
     return {
       lines: this.lines.map((x) => x.toResult(this.source)),
-      range: this.range.toJSON(),
+      range: this.textRange.toJSON(),
     };
   }
 
@@ -609,8 +613,8 @@ export class TextBlockLayout {
 
     if (minOffset < 0) {
       // Shift left to accommodate lines that exceeded the document's minimum width.
-      this.range.low.x += minOffset;
-      this.range.high.x += minOffset;
+      this.textRange.low.x += minOffset;
+      this.textRange.high.x += minOffset;
     }
   }
 
@@ -645,14 +649,17 @@ export class TextBlockLayout {
     line.offsetFromDocument = lineOffset;
 
     // Update document range from computed line range and position
-    this.range.extendRange(line.range.cloneTranslated(lineOffset));
+    this.textRange.extendRange(line.range.cloneTranslated(lineOffset));
 
     this.lines.push(line);
     return new LineLayout(nextParagraph);
   }
 
   private applyMargins(margins: TextBlockMargins) {
-    this.marginRange = this.range.clone();
+    this.range = this.textRange.clone();
+
+    if (this.range.isNull)
+      return;
 
     // Disregard negative margins.
     const right = margins.right >= 0 ? margins.right : 0;
@@ -660,12 +667,12 @@ export class TextBlockLayout {
     const top = margins.top >= 0 ? margins.top : 0;
     const bottom = margins.bottom >= 0 ? margins.bottom : 0;
 
-    const xHigh = this.range.high.x + right;
-    const yHigh = this.range.high.y + top;
-    const xLow = this.range.low.x - left;
-    const yLow = this.range.low.y - bottom;
+    const xHigh = this.textRange.high.x + right;
+    const yHigh = this.textRange.high.y + top;
+    const xLow = this.textRange.low.x - left;
+    const yLow = this.textRange.low.y - bottom;
 
-    this.marginRange.extendXY(xHigh, yHigh);
-    this.marginRange.extendXY(xLow, yLow);
+    this.range.extendXY(xHigh, yHigh);
+    this.range.extendXY(xLow, yLow);
   }
 }

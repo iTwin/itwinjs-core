@@ -151,7 +151,7 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
     });
 
     // Draw a blue box to show the element's margin
-    const marginCorners = layout.marginRange.corners3d(true);
+    const marginCorners = layout.range.corners3d(true);
     documentTransform.multiplyPoint3dArrayInPlace(marginCorners);
     marginCorners.forEach((corner, index) => {
       const next = marginCorners[index + 1];
@@ -185,7 +185,7 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       color: ColorDef.red.toJSON(),
     });
 
-    const rangeCorners = layout.range.corners3d(true);
+    const rangeCorners = layout.textRange.corners3d(true);
     documentTransform.multiplyPoint3dArrayInPlace(rangeCorners);
     rangeCorners.forEach((corner, index) => {
       const next = rangeCorners[index + 1];
@@ -234,7 +234,7 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
     textBlock: args.annotation.textBlock,
   });
 
-  const dimensions = layout.marginRange;
+  const dimensions = layout.range;
   const transform = args.annotation.computeTransform(dimensions);
 
   const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
