@@ -308,16 +308,13 @@ class ViewAttachments {
     return 0 === this._attachments.length;
   }
 
-  public get areAllTileTreesLoaded(): boolean {
+  public areAllTileTreesLoaded(viewedExtents: Range3d): boolean {
     return this._attachments.every((x) => {
-      const vp = IModelApp.viewManager.selectedView;
-      if (vp) {
-        const placement = Placement2d.fromJSON(x.viewAttachmentProps.placement);
-        const attachmentRange = placement.calculateRange();
-        const viewRange = vp.view.getViewedExtents();
-        if (!attachmentRange.intersectsRangeXY(viewRange))
-          return true;
-      }
+      const placement = Placement2d.fromJSON(x.viewAttachmentProps.placement);
+      const attachmentRange = placement.calculateRange();
+      if (!attachmentRange.intersectsRangeXY(viewedExtents))
+        return true;
+
       return x.areAllTileTreesLoaded});
   }
 
@@ -464,6 +461,13 @@ export class SheetViewState extends ViewState2d {
     return this._viewedExtents;
   }
 
+  public getViewedExtentsFromFrustum(): Range3d {
+    const frustum = this.calculateFrustum();
+    if (frustum) {
+      return frustum.toRange();
+    }
+    return this._viewedExtents;
+  }
   /** @internal */
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
@@ -536,7 +540,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   public override get areAllTileTreesLoaded(): boolean {
-    return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
+    return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded(this.getViewedExtentsFromFrustum()));
   }
 
   /** Create a sheet border decoration graphic. */
