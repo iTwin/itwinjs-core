@@ -8,7 +8,7 @@
 
 import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
-import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
+import { Box, LineSegment3d, Loop, Point3d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
 
@@ -127,6 +127,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
 
 function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
+
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     for (const run of line.runs) {
@@ -199,6 +200,16 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       });
     });
   }
+
+  let shape = layout.range.corners3d(true);
+  shape = documentTransform.multiplyPoint3dArray(shape);
+  context.entries.push({
+    fillColor: ColorDef.blue.toJSON(),
+
+  });
+  context.entries.push({
+    shape: shape.map((point) => point.toJSON()),
+  });
 
   return { entries: context.entries };
 }

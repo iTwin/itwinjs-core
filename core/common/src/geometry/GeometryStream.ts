@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, Loop, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
@@ -349,6 +349,21 @@ export class GeometryStreamBuilder {
           this.geometryStream.push({ appearance: { color: entry.color } });
           result = true;
         }
+      }
+      else if (undefined !== entry.fillColor) {
+
+        if (entry.fillColor === "subcategory") {
+          result = this.appendSubCategoryChange(Id64.invalid);
+        } else {
+          const props: AreaFillProps = { display: FillDisplay.Blanking, color: entry.fillColor, transparency: 0.5 };
+          this.geometryStream.push({ fill: props });
+          result = true;
+        }
+      } else if (undefined !== entry.shape) {
+        const points = entry.shape.map((point) => Point3d.fromJSON(point));
+        const loop = Loop.createPolygon(points);
+
+        result = this.appendGeometry(loop);
       } else {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       }

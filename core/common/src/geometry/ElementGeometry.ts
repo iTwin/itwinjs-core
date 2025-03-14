@@ -442,6 +442,13 @@ export namespace ElementGeometry {
           }
 
           result = this.appendGeometryParamsChange(params);
+        } else if (entry.fillColor) {
+          const params = new GeometryParams(Id64.invalid);
+          if (entry.fillColor !== "subcategory") {
+            params.fillColor = ColorDef.fromJSON(entry.color);
+          }
+
+          result = this.appendGeometryParamsChange(params);
         } else {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
         }

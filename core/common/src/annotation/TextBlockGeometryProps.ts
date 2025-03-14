@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { XYZProps } from "@itwin/core-geometry";
+import { GeometryQuery, XYZProps } from "@itwin/core-geometry";
 import { TextStringProps } from "../geometry/TextString";
 import { TextStyleColor } from "./TextStyle";
 
@@ -21,6 +21,8 @@ export type TextBlockGeometryPropsEntry = {
   text: TextStringProps;
   separator?: never;
   color?: never;
+  shape?: never;
+  fillColor?: never;
 } | {
   text?: never;
   separator: {
@@ -28,10 +30,26 @@ export type TextBlockGeometryPropsEntry = {
     endPoint: XYZProps;
   };
   color?: never;
+  shape?: never;
+  fillColor?: never;
 } | {
   text?: never;
   separator?: never;
   color: TextStyleColor;
+  shape?: never;
+  fillColor?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  shape: XYZProps[];
+  fillColor?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  shape?: never;
+  fillColor: TextStyleColor;
 };
 
 /**
