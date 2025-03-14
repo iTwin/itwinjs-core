@@ -35,7 +35,7 @@ function mapNativeElementProps(iModel: IModelDb, elProps: ElementProps): NativeE
     codeScope: { id: elProps.code.scope },
     codeValue: elProps.code.value,
     parent: elProps.parent ?? undefined,
-    lastMod: iModel.models.queryLastModifiedTime(elProps.model),
+    // lastMod: iModel.models.queryLastModifiedTime(elProps.model),
     model: {
       id: elProps.model,
       relClassName: iModel.models.getModel(elProps.model).classFullName ?? undefined,
@@ -56,34 +56,40 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
   // Convert the ElementProps to NativeElementProps
   const nativeElementProps = mapNativeElementProps(iModel, elProps);
 
-  // TODO: if no options are provided, use the default options
+  // Default insert options
+  const insertOptions = options ?? { useJsNames: true };
+
   // TODO: Check if the element args are valid?
 
   // Get the Element Class Definition and check if its valid
   const classDef = iModel.getJsClass<typeof Element>(elProps.classFullName);
-  const modelClassDef = nativeElementProps.model.relClassName ? iModel.getJsClass<typeof Model>(nativeElementProps.model.relClassName) : undefined;
+  let modelClassDef: typeof Model | undefined;
   let parentClassDef: typeof Element | undefined;
   try {
-    parentClassDef = nativeElementProps.parent?.relClassName ? iModel.getJsClass<typeof Element>(nativeElementProps.parent.relClassName) : undefined;
+    modelClassDef = iModel.getJsClass<typeof Model>(iModel.models.getModel(nativeElementProps.model.id).classFullName);
   } catch (error) {
-    if (!ClassRegistry.isNotFoundError(error)) {
-      // throw error;
-    }
+    // TODO: Handle no model element found
+    modelClassDef = undefined;
+  }
+  try {
+    parentClassDef = nativeElementProps.parent ? iModel.getJsClass<typeof Element>(iModel.elements.getElement(nativeElementProps.parent.id).classFullName) : undefined;
+  } catch (error) {
+    // TODO: Handle no parent element found
     parentClassDef = undefined;
   }
 
   // Call pre-insert Domain Handlers
   classDef.onInsert({ iModel, props: elProps });
   if (modelClassDef !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    modelClassDef["onInsertElement"]({ iModel, elementProps: elProps, id: elProps.model });
+    modelClassDef.onInsertElement({ iModel, elementProps: elProps, id: elProps.model });
   }
   if (parentClassDef !== undefined && nativeElementProps.parent?.id) {
     parentClassDef.onChildInsert({ iModel, childProps: elProps, parentId: nativeElementProps.parent?.id });
   }
 
   // Perform Insert
-  elProps.id = iModel[_nativeDb].insertInstance(nativeElementProps, {...options});
+  // TODO: change to elProps and don't cast insertOptions
+  elProps.id = iModel[_nativeDb].insertInstance(nativeElementProps, insertOptions);
 
   // Call post-insert Domain Handlers
   if (elProps.federationGuid !== undefined) {
@@ -124,14 +130,13 @@ export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps
   classDef.onInsert({ iModel, props: modelProps });
 
   // Perform Insert
-  modelProps.id = iModel[_nativeDb].insertInstance(modelProps, {...insertOptions});
+  modelProps.id = iModel[_nativeDb].insertInstance(modelProps, insertOptions);
 
   // Call post-insert Domain Handlers
   classDef.onInserted({ iModel, id: modelProps.id });
 
   return modelProps.id;
 }
-
 
 /**
  * Function inserts an elementAspect into an iModel and calls the pre-insert and post-insert domain handlers.
@@ -142,25 +147,30 @@ export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps
  * @internal
  */
 export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps, options?: InsertInstanceOptions): Id64String {
-  // Get Relevant Model
-  const model = iModel.elements.getElement(aspectProps.element.id).model;
+  // Get Relevant Element
+  // TODO: Cache the Element, so that if multiple aspects are being inserted, we don't have to fetch the model each time.
+  const element = iModel.elements.getElement(aspectProps.element.id);
 
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
 
-  // TODO: Check if the element args are valid?
+  // TODO: Check if the element args are valid? Do this on Native?
 
   // Get the AspectElement Class Definition and check if its valid
   const classDef = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName);
 
   // Call pre-insert Domain Handlers
-  classDef.onInsert({ iModel, props: aspectProps, model });
+  classDef.onInsert({ iModel, props: aspectProps, model: element.model });
 
   // Perform Insert
-  aspectProps.id = iModel[_nativeDb].insertInstance(aspectProps, {...insertOptions});
+  aspectProps.id = iModel[_nativeDb].insertInstance(aspectProps, insertOptions);
 
   // Call post-insert Domain Handlers
-  classDef.onInserted({ iModel, props: aspectProps, model });
+  classDef.onInserted({ iModel, props: aspectProps, model: element.model });
+
+  // Call empty update on element and model to update lastMod
+  element.update();
+  iModel.models.getModel(element.model).update();
 
   return aspectProps.id;
 }

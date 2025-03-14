@@ -158,7 +158,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model to hold the element
    * @beta
    */
-  protected static onInsertElement(_arg: OnElementInModelPropsArg): void { }
+  public static onInsertElement(_arg: OnElementInModelPropsArg): void { }
 
   /** Called after an Element has been inserted into an instance of a Model of this class.
    * @note If you override this method, you must call super.
