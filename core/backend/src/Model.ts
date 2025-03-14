@@ -173,14 +173,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
+  public static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
 
   /** Called after an Element in an instance of a Model of this class has been updated.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+  public static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
 
   /** Called when an Element in an instance of a Model of this class is about to be deleted.
    * @note throw an exception to disallow the delete
