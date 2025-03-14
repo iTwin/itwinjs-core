@@ -1,0 +1,50 @@
+name: "CI"
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Rush install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Rush audit
+        run: node common/scripts/install-run-rush.js audit
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Rush install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Rush lint
+        run: node common/scripts/install-run-rush.js lint
