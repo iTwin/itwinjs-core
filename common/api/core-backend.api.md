@@ -184,6 +184,7 @@ import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
+import { PropertyHandler } from '@itwin/ecschema-metadata';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
@@ -2050,6 +2051,7 @@ class Element_2 extends Entity {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     federationGuid?: GuidString;
+    // @deprecated
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
@@ -2350,6 +2352,8 @@ export class Entity {
     protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
+    executeForEachProperty(func: PropertyHandler, includeCustom?: boolean): Promise<void>;
+    // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     // @beta
     getMetaData(): Promise<EntityClass>;
@@ -3178,7 +3182,7 @@ export abstract class IModelDb extends IModel {
     cancelSnap(sessionId: string): void;
     // @beta (undocumented)
     readonly channels: ChannelControl;
-    // @internal
+    // @internal @deprecated
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
     // @internal (undocumented)
@@ -3225,8 +3229,11 @@ export abstract class IModelDb extends IModel {
     protected _fontMap?: FontMap;
     // @beta
     get fonts(): IModelDbFonts;
+    // @deprecated
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    // @deprecated
     forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    static forEachProperty(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom?: boolean): Promise<void>;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
@@ -3235,6 +3242,7 @@ export abstract class IModelDb extends IModel {
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getLastError(): string;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @deprecated
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
@@ -3320,6 +3328,7 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
+    // @deprecated
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
@@ -4227,7 +4236,7 @@ export interface LockStatusShared {
     state: LockState_2.Shared;
 }
 
-// @internal
+// @internal @deprecated
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;

@@ -11,8 +11,8 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-  - [Display](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
+  - [Display](#display)
+    - [Read image to canvas](#read-image-to-canvas)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -169,11 +169,55 @@ Can also be attached as a map-layer:
 ### @itwin/core-common
 
 - [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
+- Some types which are now more comprehensively exposed by backend's new ecschema-metadata integration were made deprecated:
+  - [EntityClassMetadata]($common)
+  - [EntityClassMetadataProps]($common)
+  - [CustomAttribute]($common)
+  - [PropertyMetaData]($common)
+  - [PropertyMetaDataProps]($common)
 
 ### @itwin/core-backend
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
 - Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
+- metadata related methods now exposed through ecschema-metadata
+  - [Element.getClassMetaData()]($backend),
+  - [Entity.forEachProperty()]($backend),
+  - [IModelDb.classMetaDataRegistry]($backend),
+  - [IModelDb.getMetaData]($backend),
+  - [IModelDb.tryGetMetaData]($backend),
+  - [IModelDb.forEachMetaData()]($backend)
+  - [MetaDataRegistry]($backend)
+
+#### Deprecated metadata retrieval methods
+
+The `IModelDb.getMetaData(classFullName: string)` method has been deprecated in version 5.0. This method was used to get metadata for a class and would load the metadata from the iModel into the cache, if necessary.
+
+**Replacement:**
+
+Use the async `schemaContext.getSchemaItem` method from the `ecschema-metadata` package instead. This method provides a more comprehensive and type-safe way to retrieve schema items.
+
+**Example Replacement:**
+
+```typescript
+// Deprecated method
+iModelDb.getMetaData("SchemaName:ClassName");
+
+// Replacement using schemaContext with a schema key/schemaName-itemName combination/schema item full name
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName", "ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName.ClassName");
+```
+
+Similarly, other functions to retrieve metadata also have replacements
+
+| **Removed**            | **Replacement function from `@itwin/ecschema-metadata`** | Usage |
+| -----------------------| ----------------------------------------------------------------------| - |
+| `tryGetMetaData`       | Use `tryGetSchemaItem` from `@itwin/ecschema-metadata` instead. | schemaContext.tryGetSchemaItem("BisCore:Element", EntityClass) |
+| `forEachMetaData`      | Use async `forEachProperty` from `@itwin/ecschema-metadata` instead.  | await schemaContext.forEachProperty("BisCore:Element", true, callback, true, EntityClass) |
+| `forEachProperty`      | Use async `executeForEachProperty` from `@itwin/core-backend` instead.  | await entity.executeForEachProperty(callback) |
+
 
 ### @itwin/core-frontend
 

@@ -33,7 +33,7 @@ import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs }
 import { ChannelControl } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
-import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
@@ -70,7 +70,8 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
-import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { EntityClass, PropertyHandler, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { SchemaMap } from "./Schema";
 
 // spell:ignore fontid fontmap
 
@@ -228,7 +229,10 @@ export abstract class IModelDb extends IModel {
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
+  private _jsClassMap?: EntityJsClassMap;
+  private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
   /** @deprecated in 5.0.0. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
@@ -792,6 +796,8 @@ export abstract class IModelDb extends IModel {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this._classMetaDataRegistry = undefined;
+    this._jsClassMap = undefined;
+    this._schemaMap = undefined;
     this._schemaContext = undefined;
   }
 
@@ -1108,12 +1114,29 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
+   * @deprecated in 5.0. Use [[schemaContext]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._classMetaDataRegistry = new MetaDataRegistry();
 
     return this._classMetaDataRegistry;
+  }
+
+  public get jsClassMap(): EntityJsClassMap {
+    if (this._jsClassMap === undefined)
+      this._jsClassMap = new EntityJsClassMap();
+
+    return this._jsClassMap;
+  }
+
+  public get schemaMap(): SchemaMap {
+    if (this._schemaMap === undefined)
+      this._schemaMap = new SchemaMap();
+
+    return this._schemaMap;
   }
 
   /**
@@ -1179,6 +1202,7 @@ export abstract class IModelDb extends IModel {
         throw err;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.loadMetaData(classFullName);
       return ClassRegistry.getClass(classFullName, this) as T;
     }
@@ -1186,11 +1210,16 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
+   * @deprecated in 5.0. Use [[getSchemaItem]] from SchemaContext class instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getMetaData(classFullName: string): EntityMetaData {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let metadata = this.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.loadMetaData(classFullName);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       metadata = this.classMetaDataRegistry.find(classFullName);
       if (metadata === undefined)
         throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
@@ -1198,9 +1227,13 @@ export abstract class IModelDb extends IModel {
     return metadata;
   }
 
-  /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded. */
+  /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
+   * @deprecated in 5.0. Use [[tryGetSchemaItem]] from SchemaContext class instead.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this.getMetaData(classFullName);
     } catch {
       return undefined;
@@ -1214,9 +1247,35 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @deprecated in 5.0. Use [[forEachProperty]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
+  }
+
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   *
+   * @param iModel The IModelDb instance that contains the schema.
+   * @param classFullName The full class name to load the metadata, if necessary.
+   * @param wantSuper If true, superclass properties will also be processed.
+   * @param func The callback to be invoked on each property.
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   *
+   * @example
+   * ```typescript
+   * const callback: PropertyHandler = (name, property) => {
+   *   console.log(`Property Name: ${name}`);
+   *   console.log(`Property Class:`, property.class);
+   * };
+   *
+   * IModelDb.forEachProperty(imodel, "BisCore:Element", true, callback);
+   * ```
+   */
+  public static async forEachProperty(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean = true): Promise<void> {
+    await iModel.schemaContext.forEachProperty(classFullName, wantSuper, func, EntityClass, includeCustom);
   }
 
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.
@@ -1225,8 +1284,11 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @deprecated in 5.0. Use [forEachProperty] from SchemaContext class instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const meta = this.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
@@ -1235,11 +1297,16 @@ export abstract class IModelDb extends IModel {
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       meta.baseClasses.forEach((baseClass) => this.forEachMetaData(baseClass, true, func, includeCustom));
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated in 5.0. Use [schemaContext] instead.
+   */
   private loadMetaData(classFullName: string) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (this.classMetaDataRegistry.find(classFullName))
       return;
 
@@ -1252,11 +1319,14 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
     assert(undefined !== val.result);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData = new EntityMetaData(JSON.parse(val.result));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.classMetaDataRegistry.add(classFullName, metaData);
 
     // Recursive, to make sure that base classes are cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
@@ -2327,6 +2397,7 @@ export namespace IModelDb {
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel[_nativeDb].getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const metaData = new EntityMetaData(JSON.parse(val.result));
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
           return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);

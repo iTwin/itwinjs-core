@@ -51,7 +51,6 @@ internal;function;getFormatProps
 beta;interface;HasMixins
 beta;class;InvertedUnit
 beta;interface;InvertedUnitProps
-beta;interface;ISchemaItemLocater
 beta;interface;ISchemaLocater
 beta;interface;ISchemaPartVisitor
 beta;function;isSupportedSchemaItemType
@@ -102,6 +101,7 @@ beta;function;primitiveTypeToString
 beta;class;Property
 beta;class;PropertyCategory
 beta;interface;PropertyCategoryProps
+beta;type;PropertyHandler
 beta;interface;PropertyProps
 beta;enum;PropertyType
 beta;function;propertyTypeToString
