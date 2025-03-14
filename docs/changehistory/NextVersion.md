@@ -11,6 +11,7 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
+    - [Text Block Margins](#text-Block-margins)
   - [Display](#graphics)
     - [Read Image To Canvas](#read-image-to-canvas)
   - [Back-end image conversion](#back-end-image-conversion)
@@ -54,7 +55,7 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
-    - [Attach/detach db](#attachdetach-db)
+  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -89,6 +90,16 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 - [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
+
+### Text Block Margins
+
+A new enhancement has been made to the [TextBlock]($core-common) class to add support for margins. These margins are in meters, and are specified by using the [TextBlockMargin]($core-common) interface.
+
+The margin range is calculated in [TextAnnotationLayout.layoutTextBlock]($core-backend) and saved to the [TextBlockLayout.range]($core-backend) property. The range of just the text itself is stored in a property called [TextBlockLayout.textRange]($core-backend). In general, use of `range` is preferred over `textRange`.
+
+The [TextBlockLayout.range]($core-backend) property will be passed into the [TextAnnotation.computeTransform]($core-common) method when producing the geometry. This will position the anchor point of the text relative to the [TextBlockLayout.range]($core-backend) property.
+
+When `debugAnchorPointAndRange` is true in [TextAnnotationGeometry.produceTextAnnotationGeometry]($core-backend), both ranges (margin and text) will be drawn in the geometry along with the anchor point.
 
 ## Display
 
