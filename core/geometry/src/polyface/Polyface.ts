@@ -534,7 +534,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     if (this.data.edgeMateIndex) {
       if (this.data.edgeMateIndex.length !== numPointIndices)
         messages.push("edgeMateIndex count must equal pointIndex count");
-      else if (!this.data.edgeMateIndex.every((edgeMate: number | undefined) => this.data.isValidEdgeIndex(edgeMate)))
+      else if (!this.data.edgeMateIndex.every((i: number | undefined) => i === undefined || this.data.isValidEdgeIndex(i)))
         messages.push("invalid edgeMate encountered");
       }
     return 0 === messages.length;
