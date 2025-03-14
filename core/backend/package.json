@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.0.0-dev.83",
+  "version": "5.0.0-dev.84",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -102,7 +102,7 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.0.79",
+    "@bentley/imodeljs-native": "5.0.80",
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/object-storage-azure": "^2.3.0",
     "@itwin/object-storage-core": "^2.3.0",
