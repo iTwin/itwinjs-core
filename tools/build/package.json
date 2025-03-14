@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "5.0.0-dev.81",
+  "version": "5.0.0-dev.84",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf ../../modules .rush/temp/package-deps*.json",
+    "clean": "rimraf -g ../../modules .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "",
@@ -31,13 +31,13 @@
   "dependencies": {
     "@microsoft/api-extractor": "~7.49.1",
     "chalk": "^3.0.0",
-    "cpx2": "^3.0.0",
+    "cpx2": "^8.0.0",
     "cross-spawn": "^7.0.5",
     "fs-extra": "^8.1.0",
     "glob": "^10.3.12",
-    "mocha": "^10.2.0",
+    "mocha": "^11.1.0",
     "mocha-junit-reporter": "^2.0.2",
-    "rimraf": "^3.0.2",
+    "rimraf": "^6.0.1",
     "tree-kill": "^1.2.2",
     "typedoc": "^0.26.11",
     "typedoc-plugin-merge-modules": "^6.0.3",
