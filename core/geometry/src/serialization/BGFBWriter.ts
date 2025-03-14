@@ -588,7 +588,13 @@ export class BGFBWriter {
       const expectedClosure = mesh.expectedClosure;
 
       if (mesh.data.edgeMateIndex) {
-        this.fillZeroBasedIndexArray(mesh, mesh.data.edgeMateIndex, SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate, indexArray);
+        indexArray.length = 0;
+        if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(mesh.data.edgeMateIndex,
+          (i: number) => mesh.facetIndex0(i), SerializationHelpers.EdgeMateIndex.BlockSeparator,
+          SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => indexArray.push(i),
+        )){
+          assert(false, "unable to serialize edgeMateIndex array to flatbuffer");
+        }
         edgeMateIndexOffset = BGFBAccessors.Polyface.createEdgeMateIndexVector(this.builder, indexArray);
       }
 
@@ -621,33 +627,6 @@ export class BGFBWriter {
         if (visible !== undefined && !visible[k])
           q = -q;
         destIndex.push(q);
-      }
-      if (facetTerminator !== undefined)
-        destIndex.push(facetTerminator);
-    }
-  }
-
-  /**
-   * @param sourceIndex a map that takes zeroBasedEdgeIndex -> zeroBasedEdgeIndex | undefined, packed into unterminated face loops delineated by `mesh.facetIndex0/1`
-   * @param destIndex a map that takes zeroBasedEdgeIndex -> zeroBasedEdgeIndex, packed into optionally terminated face loops, with undefined values replaced by `valueForUndefined`
-   */
-  private fillZeroBasedIndexArray(mesh: IndexedPolyface, sourceIndex: Array<number | undefined>, facetTerminator: number | undefined, valueForUndefined: number, destIndex: number[]) {
-    assert(() => facetTerminator === undefined || (facetTerminator < 0 && facetTerminator !== valueForUndefined));
-    assert(() => valueForUndefined < 0);
-    destIndex.length = 0;
-    const numFacet = mesh.facetCount;
-    for (let facetIndex = 0; facetIndex < numFacet; facetIndex++) {
-      const k0 = mesh.facetIndex0(facetIndex);
-      const k1 = mesh.facetIndex1(facetIndex);
-      for (let k = k0; k < k1; k++) {
-        const edgeIndex = sourceIndex[k];
-        let newEdgeIndex = valueForUndefined;
-        if (edgeIndex !== undefined) {
-          newEdgeIndex = edgeIndex;
-          if (facetTerminator !== undefined)
-            newEdgeIndex += facetIndex; // add terminators for the preceding face loops
-        }
-        destIndex.push(newEdgeIndex);
       }
       if (facetTerminator !== undefined)
         destIndex.push(facetTerminator);

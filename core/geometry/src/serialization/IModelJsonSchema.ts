@@ -1767,10 +1767,10 @@ export namespace IModelJson {
       const visitor = pf.createVisitor(0);
       let indexCounter = 0;
 
-      const normalIndex = [];
-      const paramIndex = [];
-      const colorIndex = [];
-      const edgeMateIndex = [];
+      const normalIndex: number[] = [];
+      const paramIndex: number[] = [];
+      const colorIndex: number[] = [];
+      const edgeMateIndex: number[] = [];
 
       let n;
       while (visitor.moveToNextFacet()) {
@@ -1796,17 +1796,22 @@ export namespace IModelJson {
           for (let i = 0; i < n; i++) colorIndex.push(1 + visitor.clientColorIndex(i));
           colorIndex.push(0);
         }
-        if (visitor.edgeMateIndex) {
-          for (const edgeMate of visitor.edgeMateIndex)
-            edgeMateIndex.push(undefined === edgeMate ? SerializationHelpers.EdgeMateIndex.NoEdgeMate : edgeMate);
-          edgeMateIndex.push(SerializationHelpers.EdgeMateIndex.BlockSeparator);
-        }
       }
 
       let taggedNumericData;
       if (pf.data.taggedNumericData) {
         taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
       }
+
+      if (pf.data.edgeMateIndex) {
+        if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex,
+          (i: number) => pf.facetIndex0(i), SerializationHelpers.EdgeMateIndex.BlockSeparator,
+          SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => edgeMateIndex.push(i),
+        )){
+          assert(false, "unable to serialize edgeMateIndex array to json");
+        }
+      }
+
       const contents: { [k: string]: any } = {};
 
       if (pf.expectedClosure !== 0)

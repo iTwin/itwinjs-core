@@ -378,8 +378,10 @@ export namespace SerializationHelpers {
 
   /**
    * Build two index arrays into a source array:
-   * * sourceBlockStarts[i] is the first index of the i_th block in `sourceIndices`.
-   * * compressedBlockStarts[i] is the first index of the i_th block in a compressed clone of `sourceIndices` with all pads/terminators removed.
+   * * `sourceStarts[k]` is the first index of the k_th block in `sourceIndices`.
+   * * `compressedStarts[k]` is the first index of the k_th block in a compressed clone `C` of `sourceIndices`
+   * with all pads/terminators removed.
+   * * The last entry of `sourceStarts`/`compressedStarts` is the length of `sourceIndices`/`C`.
    * @returns `undefined` if invalid inputs, or the two computed arrays of block start indices.
   */
   function buildBlockStartIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number): { sourceStarts: number[], compressedStarts: number[] } | undefined {
@@ -413,12 +415,12 @@ export namespace SerializationHelpers {
   }
 
   /**
-   * Compress a 0-based blocked index array by removing block separators and remapping each index.
+   * Compress a 0-based blocked index array by removing block separators/pads and remapping each index.
    * * The entries of `sourceIndices` are reflexive indices, i.e., they index `sourceIndices`.
-   * * The remapped index j must refer to the same block location in the compressed array to which the
-   * original index i refers in `sourceIndices`; therefore `j` is obtained from `i` by subtracting the
-   * number of block separators preceding `i` in `sourceIndices`.
-   * @param sourceIndices array of reflexive indices to process. Each entry is a 0-based index, sourceNullValue, or sourceBlockSeparator.
+   * * The remapped index `j` must refer to the same block location in the compressed array to which the
+   * original index `i >= 0` refers in `sourceIndices`; therefore `j` is obtained from `i` by subtracting the
+   * number of block separators/pads preceding `sourceIndices[i]`.
+   * @param sourceIndices array of blocked indices to process. Each entry is a 0-based reflexive index, `nullValue`, or `blockSeparator`.
    * @param numPerBlock index blocking for sourceIndices: padded block size > 2 or variable-sized terminated blocks.
    * @param blockSeparator negative value that terminates/pads blocks in sourceIndices, e.g. -1. This value is not announced.
    * @param nullValue negative value that represents "no index" in sourceIndices, e.g., -2. This value is announced as "undefined".
@@ -430,9 +432,9 @@ export namespace SerializationHelpers {
     numPerBlock: number,
     blockSeparator: number,
     nullValue: number,
-    announceRemappedIndex: (i0: number | undefined) => any,
+    announceRemappedIndex: (i: number | undefined) => any,
   ): boolean {
-    if (!sourceIndices.length || blockSeparator >= 0 || nullValue >= 0)
+    if (!sourceIndices.length || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
       return false;
     // remapped index = source index - # preceding terminators/pads in sourceIndices
     // Instead of counting terminators/pads, we use a pair of block start index arrays
@@ -448,6 +450,45 @@ export namespace SerializationHelpers {
           return false;
         const blockOffset = index - blocking.sourceStarts[iBlock];
         announceRemappedIndex(blocking.compressedStarts[iBlock] + blockOffset);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Uncompress a 0-based index array by inserting block separators and remapping each index.
+   * * Defined entries of `sourceIndices` are reflexive indices, i.e., they index `sourceIndices`.
+   * * The remapped index `j` must refer to the same block location in the uncompressed array to which the
+   * original defined index `i` refers in `sourceIndices`; therefore `j` is obtained from `i` by adding the
+   * number of full blocks preceding `sourceIndices[i]`.
+   * @param sourceIndices array of compressed indices to process. Each entry is a 0-based reflexive index, or `undefined`.
+   * @param sourceStarts sourceStarts[k] is the first index of the k_th block in `sourceIndices`; the last entry is the
+   * length of `sourceIndices`. Alternatively a callback equivalent to `(k) => sourceStarts[k]` can be provided.
+   * @param blockSeparator negative value that represents an announced block terminator, e.g. -1.
+   * @param nullValue negative value to announce for an undefined source index, e.g., -2.
+   * @param announceRemappedIndex callback to receive a remapped index.
+   * @returns true if and only if the mapping was successful.
+   */
+  export function announceUncompressedZeroBasedReflexiveIndices(
+    sourceIndices: Array<number | undefined>,
+    sourceStarts: number[] | ((i: number) => number),
+    blockSeparator: number,
+    nullValue: number,
+    announceRemappedIndex: (i: number) => any,
+  ): boolean {
+    if (!sourceIndices.length || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
+      return false;
+    if (Array.isArray(sourceStarts) && !sourceStarts.length)
+      return false;
+    // remapped index = source index + # preceding blocks in sourceIndices
+    for (const index of sourceIndices) {
+      if (index === undefined)
+        announceRemappedIndex(nullValue);
+      else if (index >= 0) {
+        const iBlock = NumberArray.searchStrictlyIncreasingNumbers(sourceStarts, index);
+        if (iBlock === undefined)
+          return false;
+        announceRemappedIndex(index + iBlock);
       }
     }
     return true;

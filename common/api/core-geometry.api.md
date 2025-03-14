@@ -3828,7 +3828,7 @@ export class NumberArray {
     static maxAbsTwo(a1: number, a2: number): number;
     static pack(source: number[] | number[][] | number[][][]): Float64Array;
     static preciseSum(data: number[]): number;
-    static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined;
+    static searchStrictlyIncreasingNumbers(data: number[] | ((i: number) => number), value: number): number | undefined;
     static sum(data: number[] | Float64Array): number;
     static unpack2d(source: Float64Array, numPerBlock: number): number[][] | undefined;
     static unpack3d(source: Float64Array, numPerRow: number, numPerBlock: number): number[][][] | undefined;
@@ -5535,7 +5535,8 @@ export class Segment1d {
 
 // @public
 export namespace SerializationHelpers {
-    export function announceCompressedZeroBasedReflexiveIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number, nullValue: number, announceRemappedIndex: (i0: number | undefined) => any): boolean;
+    export function announceCompressedZeroBasedReflexiveIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number, nullValue: number, announceRemappedIndex: (i: number | undefined) => any): boolean;
+    export function announceUncompressedZeroBasedReflexiveIndices(sourceIndices: Array<number | undefined>, sourceStarts: number[] | ((i: number) => number), blockSeparator: number, nullValue: number, announceRemappedIndex: (i: number) => any): boolean;
     export function announceZeroBasedIndicesFromSignedOneBasedIndices(sourceIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number, flag?: boolean) => any, terminateBlock?: () => any): void;
     export function announceZeroBasedIndicesWithExternalBlocking(sourceIndices: Int32Array, blockingIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number) => any, terminateBlock?: () => any): void;
     export interface BSplineCurveData {
