@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  setup:
+  audit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -24,19 +24,73 @@ jobs:
       - name: Rush install
         run: node common/scripts/install-run-rush.js install
 
-  audit:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
       - name: Rush audit
         run: node common/scripts/install-run-rush.js audit
 
   lint:
     runs-on: ubuntu-latest
-    needs: setup
     steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Rush install
+        run: node common/scripts/install-run-rush.js install
+
       - name: Rush build
-        run: node common/scripts/install-run-rush.js build
+        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
 
       - name: Rush lint
         run: node common/scripts/install-run-rush.js lint
+
+  extract-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Rush install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Rush build
+        run: node common/scripts/install-run-rush.js build -v -p max --to-version-policy prerelease-monorepo-lockStep
+
+      - name: Rush extract-api
+        run: node common/scripts/install-run-rush.js extract-api
+
+      - name: Assert no uncommitted changes (for extension api)
+        shell: bash
+        run: |
+          if [ $(git status --porcelain | wc -l) -ne "0" ]; then
+            echo "The following file(s) contain uncommitted changes:"
+            git status --porcelain -u
+            echo -e 'Please do the following:\n1. run `rush extract-api` in the monorepo \n2. commit the modified generated extension api files (found in the core/frontend and core/extension dirs) \n3. run rush change and commit the change files for core-frontend and core-extension'
+            echo -e 'There is a common issue where the generated api files on local machines do not match what the server generates.\nIf `rush extract-api` has already been run locally, and all changes have been pushed,\nhere is the diff:'
+            git diff
+            exit 1
+          fi
+
+      - name: Publish extracted api
+        uses: actions/upload-artifact@v4
+        with:
+          name: extracted-api
+          path: common/api
