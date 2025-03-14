@@ -56,18 +56,28 @@ describe("BriefcaseManager", async () => {
     const iModel1 = await HubWrappers.openCheckpointUsingRpc(args);
     assert.equal(BriefcaseIdValue.Unassigned, iModel1.getBriefcaseId(), "checkpoint should be 0");
 
+    try {
+      const iModelFailure = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelFailure);
+      assert.fail("iModelFailure should fail due to iModel1 already being open as a SnapshotDb");
+    } catch (err: any) {
+      assert.isTrue(err.message.includes("iModel is already open as a SnapshotDb"), "iModelFailure failure must be due to db being open as a SnapshotDb");
+    }
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
     const iModel2 = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
-    assert.equal(BriefcaseIdValue.Unassigned, iModel2.getBriefcaseId(), "pullOnly should be 0");
+    assert.equal(BriefcaseIdValue.Unassigned, iModel2.briefcaseId, "pullOnly should be 0");
+
+    const iModel2Dup = await HubWrappers.openBriefcaseUsingRpc({ ...args, briefcaseId: 0 });
 
     const iModel3 = await HubWrappers.openBriefcaseUsingRpc(args);
     assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid, "valid briefcaseId");
 
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel1);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
     try {
-      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2);
-      assert.fail("iModel2 failure should fail due to already being closed when iModel1 closed");
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel2Dup);
+      assert.fail("iModel2Dup failure should fail due to already being closed when iModel2 closed");
     } catch (err: any) {
-      assert.isTrue(err.message.includes("db is not open"), "iModel2 failure must be due to db not being open");
+      assert.isTrue(err.message.includes("db is not open"), "iModel2Dup failure must be due to db not being open");
     }
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel3);
   });
