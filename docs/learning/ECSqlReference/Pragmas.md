@@ -29,7 +29,7 @@ PRAGMA checksum('ecdb_map')
 
 - **ecdb_schema** - Includes only the ec definition tables but not the mapping tables
   > `ec_Schema`, `ec_SchemaReference`, `ec_Class`, `ec_ClassHasBaseClasses`, `ec_Enumeration`, `ec_KindOfQuantity`, `ec_UnitSystem`, `ec_Phenomenon`, `ec_Unit`, `ec_Format`, `ec_FormatCompositeUnit`, `ec_PropertyCategory`, `ec_Property`, `ec_RelationshipConstraint`, `ec_RelationshipConstraintClass`, `ec_CustomAttribute`
-- **ecdb_map** - Includes only hte ec mapping tables but not the ec definition tables
+- **ecdb_map** - Includes only the ec mapping tables but not the ec definition tables
   > `ec_PropertyPath`, `ec_ClassMap`, `ec_Table`, `ec_Column`, `ec_Index`, `ec_IndexColumn`, `ec_PropertyMap`
 - **sqlite_schema** - Includes information in the `sqlite_master` table
 
