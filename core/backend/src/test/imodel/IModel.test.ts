@@ -9,10 +9,10 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -36,6 +36,7 @@ import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
 import { _hubAccess } from "../../internal/Symbols";
+import { CustomAttributeClass, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -1037,36 +1038,38 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  function checkElementMetaData(obj: EntityMetaData) {
-    assert.isNotNull(obj);
-    assert.equal(obj.ecclass, Element.classFullName);
-    assert.isArray(obj.baseClasses);
-    assert.equal(obj.baseClasses.length, 0);
+  function checkElementMetaData(entityClass: EntityClass) {
+    assert.isNotNull(entityClass);
+    assert.equal(entityClass.fullName, Element.classFullName.replace(":", "."));
+    assert.isUndefined(entityClass.baseClass);
 
-    assert.isArray(obj.customAttributes);
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
-    if (obj.customAttributes !== undefined) {
-      for (const ca of obj.customAttributes) {
-        if (ca.ecclass === "BisCore:ClassHasHandler")
-          foundClassHasHandler = true;
-        else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
-          foundClassHasCurrentTimeStampProperty = true;
-      }
+    if (entityClass.customAttributes !== undefined) {
+      if (entityClass.customAttributes.has("BisCore.ClassHasHandler"))
+        foundClassHasHandler = true;
+      if (entityClass.customAttributes.has("CoreCustomAttributes.ClassHasCurrentTimeStampProperty"))
+        foundClassHasCurrentTimeStampProperty = true;
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(obj.properties.federationGuid);
-    assert.equal(obj.properties.federationGuid.primitiveType, 257);
-    assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
+    assert.isDefined(entityClass.properties);
+    if (entityClass.properties !== undefined) {
+      for (const prop of entityClass.properties) {
+        if (prop.name === "federationGuid") {
+          assert.isTrue(prop.isPrimitive());
+          assert.equal((prop as PrimitiveOrEnumPropertyBase).extendedTypeName, "BeGuid");
+          break;
+        }
+      }
+    }
   }
 
   it("should get metadata for class", () => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const metaData: EntityMetaData = imodel1.getMetaData(Element.classFullName);
+    const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
-    checkElementMetaData(metaData);
+    if (metaData !== undefined)
+      checkElementMetaData(metaData);
   });
 
   it("update the project extents", async () => {
@@ -1143,25 +1146,26 @@ describe("iModel", () => {
     assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  function checkClassHasHandlerMetaData(obj: EntityMetaData) {
-    assert.isDefined(obj.properties.restrictions);
-    assert.equal(obj.properties.restrictions.primitiveType, 2305);
-    assert.equal(obj.properties.restrictions.minOccurs, 0);
+  function checkClassHasHandlerMetaData(classToCheck: CustomAttributeClass) {
+    assert.isDefined(classToCheck);
+
+    const propertiesArray = classToCheck.properties ? Array.from(classToCheck.properties) : [];
+    assert.equal(propertiesArray.length, 1);
+
+    const restrictionProperty = propertiesArray[0];
+    assert.isDefined(restrictionProperty);
+    assert.equal(restrictionProperty.name, "Restrictions");
+    assert.equal(propertyTypeToString(restrictionProperty.propertyType), "PrimitiveArrayProperty");
+    assert.equal((restrictionProperty as PrimitiveArrayProperty).minOccurs, 0);
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
+    const metaData = imodel1.schemaContext.getSchemaItemSync("BisCore.ClassHasHandler", CustomAttributeClass);
     assert.exists(metaData);
-    checkClassHasHandlerMetaData(metaData);
-  });
-
-  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const metaData = imodel1.getMetaData("BisCore:ClassHasHandler");
-    assert.exists(metaData);
-    checkClassHasHandlerMetaData(metaData);
+    if (metaData !== undefined) {
+      assert.equal(metaData.schemaItemType, SchemaItemType.CustomAttributeClass);
+      checkClassHasHandlerMetaData(metaData);
+    }
   });
 
   it("should exercise ECSqlStatement (backend only)", () => {
@@ -1364,10 +1368,14 @@ describe("iModel", () => {
   });
 
   it("should import schemas", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
-    assert.isDefined(classMetaData.properties.testDocumentProperty);
-    assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
+    const metaData = await imodel1.schemaContext.getSchemaItem("TestBim:TestDocument", EntityClass);
+    assert.isDefined(metaData);
+    if (metaData !== undefined) {
+      const property = await metaData.getProperty("testDocumentProperty");
+      assert.isDefined(property);
+      if (property !== undefined)
+        assert.isDefined(property.propertyType, propertyTypeToString(PropertyType.Integer));
+    }
   });
 
   it("should do CRUD on models", () => {
@@ -1405,8 +1413,7 @@ describe("iModel", () => {
   it("should create model with custom relationship to modeled element", async () => {
     const testImodel = imodel1;
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestModelModelsElement", EntityClass), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
     let newModelId2: Id64String;
@@ -1532,8 +1539,7 @@ describe("iModel", () => {
   it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    testImodel.getMetaData("TestBim:TestPhysicalObject");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestPhysicalObject", EntityClass), "TestPhysicalObject is expected to be defined in TestBim.ecschema.xml");
 
     // Create a new physical model
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);

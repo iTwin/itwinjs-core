@@ -9,7 +9,10 @@ import { SchemaCache, SchemaContext } from "../../Context";
 import { SchemaMatchType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { Schema } from "../../Metadata/Schema";
-import { SchemaKey } from "../../SchemaKey";
+import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
+import { EntityClass } from "../../Metadata/EntityClass";
+import { SchemaItem } from "../../Metadata/SchemaItem";
+import { CustomAttributeClass, Format, KindOfQuantity, Mixin, Phenomenon, RelationshipClass, StructClass, Unit, UnitSystem } from "../../ecschema-metadata";
 
 const assert = chai.assert;
 const expect = chai.expect;
@@ -140,5 +143,164 @@ describe("Schema Context", () => {
     expect(schemas.length).to.equal(2);
     expect(schemas[0].schemaKey.matches(schema1.schemaKey)).to.be.true;
     expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;
+  });
+
+  describe("getSchemaItem (sync and async)", () => {
+    const context = new SchemaContext();
+    type TestCase<T extends typeof SchemaItem> = [number, string, T, boolean];
+
+    const testCases: TestCase<typeof SchemaItem>[] = [
+      [1, "TestEntityClass", EntityClass, true],
+      [2, "TestMixin", Mixin, true],
+      [3, "TestCustomAttributeClass", CustomAttributeClass, true],
+      [4, "TestStructClass", StructClass, true],
+      [5, "TestRelationshipClass", RelationshipClass, true],
+      [6, "TestUnitSystem", UnitSystem, true],
+      [7, "TestPhenomenon", Phenomenon, true],
+      [8, "TestUnit", Unit, true],
+      [9, "TestKoQ", KindOfQuantity, true],
+      [10,"TestFormat", Format, true],
+
+      [11, "TestEntityClass", Mixin, false],
+      [12, "TestMixin", EntityClass, false],
+      [13, "TestCustomAttributeClass", StructClass, false],
+      [14, "TestStructClass", EntityClass, false],
+      [15, "TestRelationshipClass", EntityClass, false],
+      [16, "TestUnitSystem", Unit, false],
+      [17, "TestPhenomenon", UnitSystem, false],
+      [18, "TestUnit", Phenomenon, false],
+      [19, "TestKoQ", Unit, false],
+      [20, "TestFormat", KindOfQuantity, false],
+    ];
+
+    before(async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        items: {
+          testEntityClass: { schemaItemType: "EntityClass", label: "TestEntityClass", description: "An example entity class.", },
+          testMixin: { schemaItemType: "Mixin", appliesTo: "TestSchema.TestEntityClass", },
+          testCustomAttributeClass: { schemaItemType: "CustomAttributeClass", label: "TestCustomAttributeClass", appliesTo: "Any", },
+          testStructClass: { schemaItemType: "StructClass", name: "TestStructClass", modifier: "sealed", },
+          testRelationshipClass: {
+            schemaItemType: "RelationshipClass",
+            modifier: "None",
+            strength: "Referencing",
+            strengthDirection: "Forward",
+            source: { multiplicity: "(0..*)", roleLabel: "refers to", polymorphic: true, constraintClasses: ["TestSchema.TestEntityClass",], },
+            target: { multiplicity: "(0..*)", roleLabel: "is referenced by", polymorphic: true, constraintClasses: ["TestSchema.TestEntityClass",],},
+          },
+
+          testUnitSystem: { schemaItemType: "UnitSystem", },
+          testPhenomenon: { schemaItemType: "Phenomenon", definition: "TestPhenomenon", },
+          testUnit: { schemaItemType: "Unit", unitSystem: "TestSchema.TestUnitSystem", phenomenon: "TestSchema.TestPhenomenon", definition: "TestUnit",},
+          testKoQ: { schemaItemType: "KindOfQuantity", description: "Description of koq", persistenceUnit: "TestSchema.TestUnit", relativeError: 1.23, },
+
+          testFormat: {
+            schemaItemType: "Format",
+            type: "Fractional",
+            precision: 8,
+            formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel",],
+            decimalSeparator: ",",
+            thousandSeparator: ".",
+            uomSeparator: "",
+            composite: { spacer: "", units: [{ name: "TestSchema.TestUnit", label: "'",},],},
+          },
+        },
+      };
+      const schema = await Schema.fromJson(schemaJson, context);
+      assert.isDefined(schema);
+    })
+
+    it("getSchemaItem with different schema item constructors", async () => {
+      for (const [testCaseNumber, schemaItemName, schemaItemType, shouldSucceed] of testCases) {
+        const schemaItem = await context.getSchemaItem(`TestSchema.${schemaItemName}`, schemaItemType);
+
+        if (shouldSucceed) {
+          assert.isDefined(schemaItem, `Failed to get schema item ${schemaItemName} for test case number ${testCaseNumber}`);
+          assert.isTrue(schemaItem instanceof schemaItemType, `Expected schema item to be of type ${schemaItemType.name} for test case number ${testCaseNumber}`);
+        } else {
+          assert.isUndefined(schemaItem, `Unexpectedly found schema item ${schemaItemName} for test case number ${testCaseNumber}. Should have returned undefined`);
+        }
+      }
+    });
+
+    function testSchemaItem(testCaseNumber: number, schemaItem: SchemaItem | undefined, expectedSchemaItemType: typeof SchemaItem) {
+      assert.isDefined(schemaItem, `Failed to get schema item for test case number ${testCaseNumber}`);
+      assert.isTrue(schemaItem instanceof expectedSchemaItemType, `Expected schema item to be of type ${expectedSchemaItemType.name} for test case number ${testCaseNumber}`);
+    }
+
+    it("getSchemaItem with different function arguments", async () => {
+      for (const [testCaseNumber, schemaItemName, schemaItemType, shouldSucceed] of testCases) {
+        if (!shouldSucceed)
+          continue;
+
+        const getSchemaItemArgs = [
+          new SchemaItemKey(schemaItemName, new SchemaKey("TestSchema")),
+          ["TestSchema", schemaItemName],
+          `TestSchema.${schemaItemName}`,
+          `TestSchema:${schemaItemName}`,
+        ];
+
+        for (const argument of getSchemaItemArgs) {
+          let schemaItem: any
+          if (Array.isArray(argument)) {
+            schemaItem = await context.getSchemaItem(argument[0], argument[1]);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+            schemaItem = await context.getSchemaItem(argument[0], argument[1], schemaItemType);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+          } else {
+            schemaItem = await context.getSchemaItem(argument);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+            schemaItem = await context.getSchemaItem(argument, schemaItemType);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+          }
+        }
+      }
+    });
+
+    it("getSchemaItemSync with different schema item constructors", () => {
+      for (const [testCaseNumber, schemaItemName, schemaItemType, shouldSucceed] of testCases) {
+        const schemaItem = context.getSchemaItemSync(`TestSchema.${schemaItemName}`, schemaItemType);
+
+        if (shouldSucceed) {
+          assert.isDefined(schemaItem, `Failed to get schema item ${schemaItemName} for test case number ${testCaseNumber}`);
+          assert.isTrue(schemaItem instanceof schemaItemType, `Expected schema item to be of type ${schemaItemType.name} for test case number ${testCaseNumber}`);
+        } else {
+          assert.isUndefined(schemaItem, `Unexpectedly found schema item ${schemaItemName} for test case number ${testCaseNumber}. Should have returned undefined`);
+        }
+      }
+    });
+
+    it("getSchemaItemSync with different function arguments", () => {
+      for (const [testCaseNumber, schemaItemName, schemaItemType, shouldSucceed] of testCases) {
+        if (!shouldSucceed)
+          continue;
+
+        const getSchemaItemArgs = [
+          new SchemaItemKey(schemaItemName, new SchemaKey("TestSchema")),
+          ["TestSchema", schemaItemName],
+          `TestSchema.${schemaItemName}`,
+          `TestSchema:${schemaItemName}`,
+        ];
+
+        for (const argument of getSchemaItemArgs) {
+          let schemaItem: any
+          if (Array.isArray(argument)) {
+            schemaItem = context.getSchemaItemSync(argument[0], argument[1]);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+            schemaItem = context.getSchemaItemSync(argument[0], argument[1], schemaItemType);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+          } else {
+            schemaItem = context.getSchemaItemSync(argument);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+            schemaItem = context.getSchemaItemSync(argument, schemaItemType);
+            testSchemaItem(testCaseNumber, schemaItem, schemaItemType);
+          }
+        }
+      }
+    });
   });
 });

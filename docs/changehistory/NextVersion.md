@@ -189,6 +189,36 @@ Can also be attached as a map-layer:
   - [IModelDb.forEachMetaData()]($backend)
   - [MetaDataRegistry]($backend)
 
+#### Deprecated metadata retrieval methods
+
+The `IModelDb.getMetaData(classFullName: string)` method has been deprecated in version 5.0. This method was used to get metadata for a class and would load the metadata from the iModel into the cache, if necessary.
+
+**Replacement:**
+
+Use the async `schemaContext.getSchemaItem` method from the `ecschema-metadata` package instead. This method provides a more comprehensive and type-safe way to retrieve schema items.
+
+**Example Replacement:**
+
+```typescript
+// Deprecated method
+iModelDb.getMetaData("SchemaName:ClassName");
+
+// Replacement using schemaContext with a schema key/schemaName-itemName combination/schema item full name
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName", "ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName.ClassName");
+```
+
+Similarly, other functions to retrieve metadata also have replacements
+
+| **Removed**            | **Replacement function from `@itwin/ecschema-metadata`** | Usage |
+| -----------------------| ----------------------------------------------------------------------| - |
+| `tryGetMetaData`       | Use `tryGetSchemaItem` from `@itwin/ecschema-metadata` instead. | schemaContext.tryGetSchemaItem("BisCore:Element", EntityClass) |
+| `forEachMetaData`      | Use async `forEachProperty` from `@itwin/ecschema-metadata` instead.  | await schemaContext.forEachProperty("BisCore:Element", true, callback, true, EntityClass) |
+| `forEachProperty`      | Use async `executeForEachProperty` from `@itwin/core-backend` instead.  | await entity.executeForEachProperty(callback) |
+
+
 ### @itwin/core-frontend
 
 - Deprecated [SelectionSet]($core-frontend)-related APIs:
