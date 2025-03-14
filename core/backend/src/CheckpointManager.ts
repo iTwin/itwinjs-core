@@ -274,51 +274,6 @@ export class V2CheckpointManager {
   }
 }
 
-// /** Utility class to deal with downloading V1 checkpoints from iModelHub.
-//  * @internal
-//  */
-// export class V1CheckpointManager {
-//   public static getFolder(iModelId: GuidString): LocalDirName {
-//     return path.join(BriefcaseManager.getIModelPath(iModelId), "checkpoints");
-//   }
-
-//   public static getFileName(checkpoint: CheckpointProps): LocalFileName {
-//     const changesetId = checkpoint.changeset.id || "first";
-//     return path.join(this.getFolder(checkpoint.iModelId), `${changesetId}.bim`);
-//   }
-
-//   public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
-//     const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
-//     return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
-//   }
-
-//   /** Download a V1 checkpoint */
-//   public static async downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId> {
-//     return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
-//   }
-
-//   public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
-//     const snapshot = SnapshotDb.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
-//     (snapshot as any)._iTwinId = checkpoint.iTwinId;
-//     return snapshot;
-//   }
-
-//   private static async downloadAndOpen(job: DownloadJob) {
-//     const db = CheckpointManager.tryOpenLocalFile(job.request);
-//     if (db)
-//       return db;
-//     await this.performDownload(job);
-//     await CheckpointManager.updateToRequestedVersion(job.request);
-//     return this.openCheckpointV1(job.request.localFile, job.request.checkpoint);
-//   }
-
-//   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
-//     CheckpointManager.onDownloadV1.raiseEvent(job);
-//     // eslint-disable-next-line @typescript-eslint/no-deprecated
-//     return (await IModelHost[_hubAccess].downloadV1Checkpoint(job.request)).id;
-//   }
-// }
-
 /** @internal  */
 export class CheckpointManager {
   public static readonly onDownloadV2 = new BeEvent<(job: DownloadJob) => void>();
