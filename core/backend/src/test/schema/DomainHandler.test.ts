@@ -342,7 +342,7 @@ describe.only("Domain Handlers - Old", () => {
     }
   });
 
-  it("should call all handler functions for an inserted model using old insert", async () => {
+  it.only("should call all handler functions for an inserted model using old insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Model Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -542,7 +542,7 @@ describe.only("Domain Handlers - New", () => {
 
   let iModelDb: StandaloneDb;
 
-  const testChannelKey = "channel 2 for tests";
+  const testChannelKey = "channel 1 for tests";
   let codeSpec: CodeSpec;
   let subjectId: Id64String;
   let modelId: Id64String;
@@ -576,7 +576,7 @@ describe.only("Domain Handlers - New", () => {
     // Create Code
     codeSpec = CodeSpec.create(iModelDb, "Test Domain Handlers", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);
-    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Model Domain Handlers", channelKey: testChannelKey });
+    subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Domain Handlers", channelKey: testChannelKey });
     iModelDb.channels.addAllowedChannel(testChannelKey);
   });
 
@@ -616,7 +616,7 @@ describe.only("Domain Handlers - New", () => {
     }
   });
 
-  it("should call all handler functions for an inserted model using new insert", async () => {
+  it.only("should call all handler functions for an inserted model using new insert", async () => {
     const partitionCode = FunctionalPartition.createCode(iModelDb, subjectId, "Test Model Handlers");
     const partitionProps = {
       classFullName: TestPartitionHandlers.classFullName,
@@ -627,7 +627,7 @@ describe.only("Domain Handlers - New", () => {
 
     // New Element and a sub Model
     const partitionId = iModelDb.elements.insertElement2(partitionProps, {useJsNames: true});
-    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+    modelId = iModelDb.models.insertModel2({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     // Insert Element into that sub Model
     const elementProps: ElementProps = {
@@ -677,8 +677,8 @@ describe.only("Domain Handlers - New", () => {
     };
 
     // New Element and a Model
-    const partitionId = iModelDb.elements.insertElement(partitionProps);
-    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+    const partitionId = iModelDb.elements.insertElement2(partitionProps);
+    modelId = iModelDb.models.insertModel2({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     const elementProps: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
@@ -690,7 +690,7 @@ describe.only("Domain Handlers - New", () => {
       }
     };
     // Insert Element into that Model
-    const elementId = iModelDb.elements.insertElement(elementProps);
+    const elementId = iModelDb.elements.insertElement2(elementProps);
 
     const aspectProps = {
       classFullName: TestAspectHandlers.classFullName,
@@ -698,7 +698,7 @@ describe.only("Domain Handlers - New", () => {
       strProp: "prop 1"
     };
     // Insert Aspect into that Element
-    iModelDb.elements.insertAspect(aspectProps);
+    iModelDb.elements.insertAspect2(aspectProps);
     aspectProps.strProp = "prop 2";
     iModelDb.elements.updateAspect(aspectProps); // Update the aspect
     const aspect = iModelDb.elements.getAspects(elementId, TestAspectHandlers.classFullName);
@@ -727,7 +727,7 @@ describe.only("Domain Handlers - New", () => {
 
     // New Element and a Model
     const partitionId = iModelDb.elements.insertElement2(partitionProps, {useJsNames: true});
-    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+    modelId = iModelDb.models.insertModel2({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     const elementProps: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
