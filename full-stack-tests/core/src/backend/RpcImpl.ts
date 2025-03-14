@@ -50,10 +50,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return JSON.parse(IModelDb.findByKey(tokenProps.key)[_nativeDb].executeTest(testName, JSON.stringify(params)));
   }
 
-  // public async purgeCheckpoints(iModelId: string): Promise<void> {
-  //   IModelJsFs.removeSync(V1CheckpointManager.getFolder(iModelId));
-  // }
-
   public async purgeStorageCache(): Promise<void> {
     return IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
   }
