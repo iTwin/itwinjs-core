@@ -107,6 +107,13 @@ export interface InsertInstanceOptions {
   useJsNames?: true;
 }
 
+/** Options supposed to [[IModelDb.Elements.insertElement2]].
+ * @public
+ */
+export interface UpdateInstanceOptions {
+  useJsNames?: true;
+}
+
 /** Options supplied to [[IModelDb.computeProjectExtents]].
  * @public
  */
@@ -2091,6 +2098,27 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
+      try {
+        this._iModel[_nativeDb].updateElement(elProps);
+      } catch (err: any) {
+        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
+        err.metadata = { elProps };
+        throw err;
+      }
+    }
+
+    /**
+     * Update some properties of an existing element.
+     * All parts of `elProps` are optional *other than* `id`. If id is missing, an exception is thrown.
+     *
+     * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
+     * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
+     * @param elProps the properties of the element to update.
+     * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
+     * overwriting their values to the correct values.
+     * @throws [[IModelError]] if unable to update the element.
+     */
+    public updateElement2<T extends ElementProps>(elProps: Partial<T>): void {
       try {
         this._iModel[_nativeDb].updateElement(elProps);
       } catch (err: any) {
