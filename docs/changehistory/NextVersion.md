@@ -55,7 +55,7 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
-  - [Attach/detach db](#attachdetach-db)
+    - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
