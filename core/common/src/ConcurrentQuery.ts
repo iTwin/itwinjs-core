@@ -75,7 +75,7 @@ export type MetadataWithOptionalLegacyFields = Omit<QueryPropertyMetaData, 'json
 export type MinimalDbQueryResponse = Omit<DbQueryResponse, 'meta'> & { meta: MetadataWithOptionalLegacyFields[] }
 
 export class QueryPropertyMetaDataHelpers {
-  public static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
+  public static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]) {
     const jsonNameDict: {[jsonName: string] : number } = {}
     meta.forEach((value, index) => {
       value.generated = this.isGeneratedProperty(value);
@@ -83,7 +83,6 @@ export class QueryPropertyMetaDataHelpers {
       value.jsonName = value.jsonName ?? this.createJsonName(value, jsonNameDict);
       value.extendType = value.extendType ?? value.extendedType ?? "";
     });
-    return meta as QueryPropertyMetaData[]
   }
 
   private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: {[jsonName: string] : number }): string {
