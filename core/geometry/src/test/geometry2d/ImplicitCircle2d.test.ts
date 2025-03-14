@@ -8,14 +8,17 @@ import { describe, expect, it } from "vitest";
 import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
-import { ConstrainedConstruction, ImplicitGeometryMarkup, UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
+import { ConstrainedConstruction, UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
 import { Arc3d } from "../../curve/Arc3d";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../core-geometry";
+import { CurvePrimitive, LineString3d } from "../../core-geometry";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
+import { ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
+import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointToCurveTangentHandler";
 
 function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z: number = 0.0 ):Arc3d | LineString3d|undefined{
   if (circle.radius !== 0.0)
@@ -218,7 +221,7 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
     const allCirclePairs = [
       [circleA, circleB]
     ];
-    const allLines = [axisX];  // , axisX4, axisY, line3, line4];
+    const allLines = [axisX, axisX4, axisY, line3, line4];
 
 
     let x0 = 0;
@@ -287,6 +290,69 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
     GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCC");
     expect(ck.getNumErrors()).toBe(0);
   });
-}
-);
+});
 
+it("LineTangentPointCircle", () => {
+  const _ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const circleA = Arc3d.createUnitCircle ();
+  const arcB = Arc3d.createXYZXYZXYZ (1,2,0, 3,1,0, 0.5,4,0);
+  const pointP1 = Point3d.create (4,0);
+  const pointP2 = Point3d.create (4,4);
+  const pointP3 = Point3d.create (8,0);
+  let x0 = 0;
+  let y0 = 0;
+  const handler = (spacePoint: Point3d, g: CurvePrimitive, f: number)=>{
+    GeometryCoreTestIO.captureCloneGeometry (allGeometry, g,x0, y0);
+    GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 4, spacePoint, 0.25, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry (allGeometry, [spacePoint, g.fractionToPoint (f)], x0, y0);
+  };
+
+  for (const g of [circleA, arcB]){
+    y0 = 0;
+    for (const point of [pointP1, pointP2, pointP3]){
+      const collector = new PointToCurveTangentHandler (point, handler, true);
+      g.dispatchToGeometryHandler (collector);
+      y0 += 10;
+    }
+    x0 += 20;
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "LineTangentPointCircle");
+});
+
+it("LineTangentPointArc", () => {
+  const _ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const sweep1 = AngleSweep.createStartEndDegrees (-40,90);
+  const sweep2 = AngleSweep.createStartEndDegrees (125, 210);
+  const sweep3 = AngleSweep.createStartEndDegrees (215, 400);
+  const sweep4 = AngleSweep.createStartEndDegrees (185,20);
+
+  const arc0 = Arc3d.createXYZXYZXYZ (1,2,0, 3,1,0, 0.5,4,0);
+  const arcs = [];
+  for (const sweep of  [sweep1, sweep2, sweep3, sweep4]){
+    const arc = arc0.clone();
+    arc.sweep = sweep;
+    arcs.push (arc);
+  }
+  let x0 = 0;
+
+  const handler = (spacePoint: Point3d, g: CurvePrimitive, f: number)=>{
+    GeometryCoreTestIO.captureCloneGeometry (allGeometry, [spacePoint, g.fractionToPoint (f)], x0, y0);
+  };
+
+
+  const y0 = 0;
+  const arc1 = Arc3d.createXYZXYZXYZ (0,0,0, 15,0,0, 0,8,0);
+  const collector = new PointToCurveTangentHandler (Point3d.create (0,0,0), handler, false);
+  for (const g of arcs){
+    GeometryCoreTestIO.captureCloneGeometry (allGeometry, g,x0, y0);
+      for (let fraction = 0; fraction < 1; fraction += 0.067){
+        collector.spacePoint = arc1.fractionToPoint (fraction);
+        GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 4, collector.spacePoint, 0.05, x0, y0);
+        g.dispatchToGeometryHandler (collector);
+      }
+    x0 += 40;
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "LineTangentPointArc");
+});

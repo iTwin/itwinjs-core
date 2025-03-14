@@ -1354,5 +1354,3 @@ export class Geometry {
   }
 }
 
-
-

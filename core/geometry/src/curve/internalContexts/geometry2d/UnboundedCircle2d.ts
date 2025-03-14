@@ -10,7 +10,7 @@
 import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
-import { ImplicitCurve2d } from "./implicitCurve2d";
+import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./implicitCurve2d";
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
 import { Matrix3d } from "../../../geometry3d/Matrix3d";
 import { Vector3d } from "../../../geometry3d/Point3dVector3d";
@@ -113,60 +113,7 @@ this.data = data !== undefined ? data : [];
 
   }
 }
-export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
-  public curve: GeometryType;
-  public data: Point2dImplicitCurve2d[];
-  /**
-   * Construct a new carrier.  The data array is created empty.
-   * @param curve curve to CAPTURE
-   */
-  public constructor(curve: GeometryType) {
-    this.curve = curve;
-    this.data = [];
 
-  }
-  public static createCapture<GeometryTypeA extends ImplicitCurve2d> (circle: GeometryTypeA): ImplicitGeometryMarkup<GeometryTypeA> {
-    return new ImplicitGeometryMarkup<GeometryTypeA>(circle);
-  }
-/**
- * * Use the curve's emitPerpendiculars method to examine all perpendiculars from spacePoint to the curve.
- * * For each such point, compute distane from bias point.
- * * Choose the one whose distance is closest to biasDistance.
- * * push the chosen point on the data array.
- * @param spacePoint
- * @param curve
- * @param biasPoint
- * @param biasDistance
- * @returns
- */
-  public appendClosePoint (spacePoint: Point2d,
-    curve:ImplicitCurve2d,
-    biasPoint: Point2d,
-    biasDistance: number,
-  ):boolean{
-    let dMin : undefined | number;
-    let closestPoint;
-    curve.emitPerpendiculars (spacePoint,
-       (curvePoint: Point2d) =>{
-        const d = Math.abs(curvePoint.distance (biasPoint) - biasDistance);
-          if (dMin === undefined || d < dMin){
-            dMin = d;
-            closestPoint = curvePoint.clone();
-            }
-      });
-      if (closestPoint !== undefined)
-        this.data.push (new Point2dImplicitCurve2d (closestPoint, curve));
-    return true;
-  }
-  public closePointsOfGeometry (
-      center: Point2d, biasPoint: Point2d, biasRadius: number,
-      curves: ImplicitCurve2d[]){
-        for (const c of curves){
-        this.appendClosePoint (center, c, biasPoint, biasRadius);
-        }
-      }
-
-}
 
 export class ConstrainedConstruction {
   /**
