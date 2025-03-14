@@ -263,6 +263,19 @@ export interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
         SCALE?: GltfId;
       };
     };
+    /** The [EXT_instance_features](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_instance_features/README.md)
+     * extension permits assigning identifiers to individual instances of a mesh, which can be used to look up per-instance data in a property table.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_instance_features?: {
+      featureIds: {
+        attribute?: number;
+        featureCount: number;
+        label?: string;
+        nullFeatureId?: number;
+        propertyTable: number;
+      }[];
+    };
   };
 }
 
@@ -465,7 +478,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
      * indicates that the material should be displayed without lighting. The extension adds no additional properties; it is effectively a boolean flag.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_materials_unlit?: { };
+    KHR_materials_unlit?: object;
     /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
      * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
      * Here, it is only used to extract uniform values.
@@ -618,7 +631,9 @@ export namespace GltfStructuralMetadata {
     name?: string;
     description?: string;
     version?: string;
-    classes?: Class[];
+    classes?: {
+      [classId: string]: Class | undefined;
+    };
     enums?: Enum[];
   }
 

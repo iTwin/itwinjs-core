@@ -26,6 +26,7 @@ import {
   CodeSpec,
   DefinitionElementProps,
   ECSqlReader,
+  IModel,
   QueryBinder,
   QueryRowFormat,
   QueryRowProxy,
@@ -120,7 +121,7 @@ describe("RulesetEmbedder", () => {
     codeSpecsMock.setup((x) => x.getByName(BisCodeSpec.subject)).returns(() => subjectCodeSpec);
     codeSpecsMock.setup((x) => x.getByName(BisCodeSpec.informationPartitionElement)).returns(() => informationPartitionCodeSpec);
 
-    elementsMock.setup((x) => x.getRootSubject()).returns(() => rootSubjectMock.object);
+    elementsMock.setup((x) => x.getElement(IModel.rootSubjectId)).returns(() => rootSubjectMock.object);
 
     rootSubjectMock.setup((x) => x.id).returns(() => rootSubjectId);
     rootSubjectMock.setup((x) => x.model).returns(() => modelId);
@@ -267,8 +268,8 @@ describe("RulesetEmbedder", () => {
 
       await embedder.insertRuleset(ruleset, { onEntityInsert });
 
-      expect(onEntityInsert.onBeforeInsert.callCount).to.be.eq(4);
-      expect(onEntityInsert.onAfterInsert.callCount).to.be.eq(4);
+      expect(onEntityInsert.onBeforeInsert.callCount).to.eq(4);
+      expect(onEntityInsert.onAfterInsert.callCount).to.eq(4);
     });
 
     it("inserts a single ruleset", async () => {
@@ -283,6 +284,55 @@ describe("RulesetEmbedder", () => {
       expect(insertId).to.eq(rulesetElementId);
       expect(onEntityInsert.onBeforeInsert).to.have.been.calledOnce;
       expect(onEntityInsert.onAfterInsert).to.have.been.calledOnce;
+    });
+
+    it("inserts into model under specified parent subject id", async () => {
+      const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
+      const parentSubjectId = "0x123";
+      const rulesetElementId = "0x456";
+
+      elementsMock.setup((x) => x.getElement(parentSubjectId)).returns(() => rootSubjectMock.object);
+      setupMocksForGettingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", []);
+      setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
+
+      embedder = new RulesetEmbedder({ imodel: imodelMock.object, parentSubjectId });
+      const insertId = await embedder.insertRuleset(ruleset, { onEntityInsert });
+      expect(insertId).to.eq(rulesetElementId);
+      expect(onEntityInsert.onBeforeInsert).to.be.calledOnce;
+      expect(onEntityInsert.onAfterInsert).to.be.calledOnce;
+    });
+
+    it("creates missing subject, partition and model under specified parent subject id", async () => {
+      const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
+      const parentSubjectId = "0x123";
+      const rulesetElementId = "0x456";
+
+      elementsMock.setup((x) => x.getElement(parentSubjectId)).returns(() => rootSubjectMock.object);
+      setupMocksForCreatingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", []);
+      setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
+
+      embedder = new RulesetEmbedder({ imodel: imodelMock.object, parentSubjectId });
+      const insertId = await embedder.insertRuleset(ruleset, { onEntityInsert });
+      expect(insertId).to.eq(rulesetElementId);
+      expect(onEntityInsert.onBeforeInsert).to.have.callCount(4);
+      expect(onEntityInsert.onAfterInsert).to.have.callCount(4);
+    });
+
+    it("throws error if specified parent subject id is not found", async () => {
+      const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
+      const parentSubjectId = "0x123";
+      const rulesetElementId = "0x456";
+
+      setupMocksForGettingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", []);
+      setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
+
+      embedder = new RulesetEmbedder({ imodel: imodelMock.object, parentSubjectId });
+      await expect(embedder.insertRuleset(ruleset, { onEntityInsert })).to.be.rejected;
+      expect(onEntityInsert.onBeforeInsert).not.to.be.called;
+      expect(onEntityInsert.onAfterInsert).not.to.be.called;
     });
 
     it("skips inserting ruleset with same id", async () => {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -59,7 +59,7 @@ describe("Bezier", () => {
       ck.testCoordinate(b0B.evaluate(f), 0.0);
     }
     ck.checkpoint("Bezier.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Products", () => {
@@ -91,7 +91,7 @@ describe("Bezier", () => {
     }
 
     ck.checkpoint("CurveLocationDetail.Products");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 describe("BezierRoots", () => {
@@ -158,7 +158,7 @@ describe("BezierRoots", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("VerifyRoots", () => {
@@ -192,7 +192,7 @@ describe("BezierRoots", () => {
       }
       // GeometryCoreTestIO.consoleLog("deflation roots", deflationRoots);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DistributedRoots", () => {
@@ -229,7 +229,7 @@ describe("BezierRoots", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DeflateRight", () => {
@@ -255,7 +255,7 @@ describe("BezierRoots", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DeflateRight", () => {
@@ -282,7 +282,7 @@ describe("BezierRoots", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -303,7 +303,7 @@ describe("PascalCoefficients", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BasisFuncs", () => {
     const ck = new Checker();
@@ -336,7 +336,7 @@ describe("PascalCoefficients", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("BasisFuncPlots", () => {
     let basisA = new Float64Array(2); // This will get reallocated as order grows . . .
@@ -413,7 +413,7 @@ describe("PascalCoefficients", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allData, "Bezier", "TightRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Constructors", () => {
     const ck = new Checker();
@@ -421,7 +421,7 @@ describe("PascalCoefficients", () => {
     const bezierA = UnivariateBezier.createCoffs(coffs);
     const bezierB = UnivariateBezier.createCoffs(new Float64Array(coffs));
     ck.testExactNumber(bezierA.order, bezierB.order);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Filter01", () => {
@@ -434,7 +434,7 @@ describe("PascalCoefficients", () => {
     ck.testLT(dataC.length, dataA.length);
 
     ck.testUndefined(filterObject.filter01([3, 4], true));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SumBasisValues", () => {
@@ -467,7 +467,7 @@ describe("PascalCoefficients", () => {
         ck.testCoordinate(blockA1[0], - blockA1[1]);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DeflateRoot", () => {
@@ -496,7 +496,7 @@ describe("PascalCoefficients", () => {
     bezier1.allocateOrder(5);
     ck.testExactNumber(5, bezier1.order);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

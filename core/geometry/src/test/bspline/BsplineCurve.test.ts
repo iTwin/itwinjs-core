@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
@@ -146,6 +146,117 @@ function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: L
   return ok;
 }
 describe("BsplineCurve", () => {
+  it("CreateBspline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    const dy = 3;
+
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    let knotArray1 = [0, 1 / 5, 2 / 5, 3 / 5, 4 / 5, 1];
+    let knotArray2 = [0, 0, 0, 1, 1, 1];
+    let bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    let bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    knotArray1 = [0, 0, 2 / 5, 3 / 5, 1, 1];
+    knotArray2 = [0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    poleArray.push(Point3d.create(5, 2));
+    knotArray1 = [0, 1 / 6, 2 / 6, 3 / 6, 4 / 6, 5 / 6, 1];
+    knotArray2 = [0, 0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    knotArray1 = [0, 0, 2 / 6, 3 / 6, 4 / 6, 1, 1];
+    knotArray2 = [0, 0, 0, 0.9, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(poleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(poleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    dx += 6;
+    const closedPoleArray = [
+      Point3d.create(0, 0),
+      Point3d.create(1, 2),
+      Point3d.create(3, 2),
+      Point3d.create(4, 0),
+      Point3d.create(0, 0),
+    ];
+    knotArray1 = [0, 0, 0, 1, 1, 1, 1];
+    knotArray2 = [0, 0, 0, 0.5, 1, 1, 1];
+    bspline1 = BSplineCurve3d.create(closedPoleArray, knotArray1, degree + 1);
+    bspline2 = BSplineCurve3d.create(closedPoleArray, knotArray2, degree + 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedPoleArray, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedPoleArray, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline2, dx, dy);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "CreateBspline");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("evaluatePointInSpan1", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const degree = 3;
+    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    const knotArray = [0, 0, 0, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
+
+    const p0 = bspline.evaluatePointInSpan(0, 0);
+    const p1 = bspline.evaluatePointInSpan(0, 0.5);
+    const p2 = bspline.evaluatePointInSpan(0, 1);
+    ck.testPoint3d(p0, Point3d.create(0, 0, 0));
+    ck.testPoint3d(p1, Point3d.create(2, 1.5, 0));
+    ck.testPoint3d(p2, Point3d.create(4, 0, 0));
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "evaluatePointInSpan1");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("evaluatePointInSpan2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const degree = 3;
+    const poleArray = [
+      Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0), Point3d.create(5, 2),
+    ];
+    const knotArray = [0, 0, 0, 0.5, 1, 1, 1];
+    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, poleArray);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline);
+
+    const p0 = bspline.evaluatePointInSpan(0, 1);
+    const p1 = bspline.evaluatePointInSpan(1, 0);
+    ck.testPoint3d(p0, p1, "both adjacent spans yield the same Point3d at spanFraction equal to a knot");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "evaluatePointInSpan2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -203,7 +314,7 @@ describe("BsplineCurve", () => {
       }
     }
     ck.checkpoint("End BsplineCurve.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("strokes", () => {
@@ -238,7 +349,7 @@ describe("BsplineCurve", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "strokes");
 
     ck.checkpoint("End BsplineCurve.strokes");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("KnotVector", () => {
@@ -258,7 +369,7 @@ describe("BsplineCurve", () => {
       ck.testCoordinate(leftKnotFromArray, leftKnotFromSpan, "left of span reproduces knots");
       ck.testCoordinate(knots.spanIndexToSpanLength(spanIndex), rightKnotFromSpan - leftKnotFromSpan, "span length");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DoubleKnots", () => {
@@ -282,7 +393,7 @@ describe("BsplineCurve", () => {
     curveRange.expandInPlace(0.00001);
     ck.testTrue(curveRange.containsRange(strokeRange));
     ck.testFalse(strokeRange.containsXYZ(0, 0, 0));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Circles", () => {
@@ -301,7 +412,7 @@ describe("BsplineCurve", () => {
       dx += 5.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "BCurveCircularArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BSplineCircleConversion", () => {
@@ -332,7 +443,7 @@ describe("BsplineCurve", () => {
     const g1 = IModelJson.Reader.parse(microstationStyleArc);
 
     GeometryCoreTestIO.saveGeometry([g1], "BsplineCurve", "CircleIMJson");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SaturateBspline", () => {
@@ -380,7 +491,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BezierCurve3d", "BsplineSaturation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("IntersectPlane", () => {
     const ck = new Checker();
@@ -413,7 +524,7 @@ describe("BsplineCurve", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "IntersectPlane");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BsplineCurve3dHCoverage", () => {
@@ -457,7 +568,7 @@ describe("BsplineCurve", () => {
         ck.testTrue(myPoleH.isAlmostEqualXYZW(myPole.x * w, myPole.y * w, myPole.z * w, w));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BsplineCurve3dCoverage", () => {
@@ -495,7 +606,7 @@ describe("BsplineCurve", () => {
     if (
       ck.testType(bcurveC, BSplineCurve3d, "createPeriodicUniformKnots with Float64Array input returns valid curve") &&
       ck.testType(bcurveD, BSplineCurve3d, "createPeriodicUniformKnots with GrowableXYZArray input returns valid curve")
-      ) {
+    ) {
       ck.testTrue(bcurveC.isAlmostEqual(bcurveD), "createPeriodicUniformKnots returns same output on different input type");
     }
     ck.testUndefined(BSplineCurve3d.createPeriodicUniformKnots(poleBuffer, 10), "createPeriodicUniformKnots with invalid numPoles returns undefined");
@@ -513,7 +624,7 @@ describe("BsplineCurve", () => {
         ck.testTrue(myPoleH.isAlmostEqualXYZW(myPole.x * w, myPole.y * w, myPole.z * w, w));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("WeightedCurveMatch", () => {
@@ -542,7 +653,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("WrappedCurves", () => {
@@ -601,7 +712,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("StrokeWithKnotsA", () => {
@@ -616,7 +727,7 @@ describe("BsplineCurve", () => {
     options.chordTol = 0.01;
     const strokes = path.getPackedStrokes(options);
     GeometryCoreTestIO.consoleLog(prettyPrint(strokes!.getPoint3dArray()));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("StrokeWithKnotsB", () => {
     const ck = new Checker();
@@ -705,7 +816,7 @@ describe("BsplineCurve", () => {
       x0Out += 200;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "StrokeParabola");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   function roundTripBSplineCurve(ck: Checker, curve: BSplineCurve3dBase) {
@@ -727,8 +838,8 @@ describe("BsplineCurve", () => {
   it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    for (const filename of ["./src/test/testInputs/curve/openAndClosedCurves.imjs",
-      "./src/test/testInputs/curve/openAndClosedCurves2.imjs"]) {
+    for (const filename of ["./src/test/data/curve/openAndClosedCurves.imjs",
+      "./src/test/data/curve/openAndClosedCurves2.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json));
       if (ck.testDefined(inputs)) {
@@ -752,7 +863,7 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "LegacyClosureRoundTrip");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("KnotVectorCoverage", () => {
@@ -800,6 +911,6 @@ describe("BsplineCurve", () => {
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 0, 1), "unpack3d on invalid numPerRow");
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 1, 0), "unpack3d on invalid numPerBlock");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

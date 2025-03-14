@@ -33,10 +33,10 @@ import { StrokeCountMap } from "./Query/StrokeCountMap";
 import { StrokeOptions } from "./StrokeOptions";
 
 /**
- * Starting with baseIndex and moving index by stepDirection:
- * If the vector from baseIndex to baseIndex +1 crossed with vectorA can be normalized, accumulate it (scaled) to normal.
- * Return when successful.
- * (Do nothing if everything is parallel through limits of the array)
+ * Starting with the segment at (baseIndex, baseIndex + 1):
+ * * If the segment vector and vectorA determine a normal, accumulate it (scaled) to normal, and return.
+ * * Otherwise move to next/previous segment if stepDirection is positive/negative and repeat.
+ * * Do nothing if everything is parallel through the end of the array.
  */
 function accumulateGoodUnitPerpendicular(
   points: GrowableXYZArray,
@@ -54,6 +54,8 @@ function accumulateGoodUnitPerpendicular(
       vectorA.crossProduct(workVector, workVector);
       if (workVector.normalizeInPlace()) {
         normal.addScaledInPlace(workVector, weight);
+        if (normal.isAlmostEqualXYZ(0, 0, 0, Geometry.smallFraction))
+          workVector.scale(-weight, normal); // Concavity changed! Revert to previous
         return true;
       }
     }
@@ -65,6 +67,8 @@ function accumulateGoodUnitPerpendicular(
       workVector.crossProduct(vectorA, workVector);
       if (workVector.normalizeInPlace()) {
         normal.addScaledInPlace(workVector, weight);
+        if (normal.isAlmostEqualXYZ(0, 0, 0, Geometry.smallFraction))
+          workVector.scale(-weight, normal); // Concavity changed! Revert to previous
         return true;
       }
     }
@@ -117,34 +121,34 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Return array of fraction parameters.
-   * * These Are only present during certain constructions such as faceting.
+   * * These are only present during certain constructions such as faceting.
    * * When present, these fractions are fractions of some other curve being stroked, and are NOT related to the
    * linestring fraction parameters.
    */
   public get fractions(): GrowableFloat64Array | undefined {
     return this._fractions;
   }
-  /** Return the (optional) array of derivatives. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of derivatives. These are only present during certain constructions such as faceting. */
   public get packedDerivatives(): GrowableXYZArray | undefined {
     return this._derivatives;
   }
-  /** Return the (optional) array of uv params. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of uv parameters. These are only present during certain constructions such as faceting. */
   public get packedUVParams(): GrowableXYArray | undefined {
     return this._uvParams;
   }
-  /** Return the (optional) array of surface normals. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of surface normals. These are only present during certain constructions such as faceting. */
   public get packedSurfaceNormals(): GrowableXYZArray | undefined {
     return this._surfaceNormals;
   }
-  /** Return the (optional) array of normal indices. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of normal indices. These are only present during certain constructions such as faceting. */
   public get normalIndices(): GrowableFloat64Array | undefined {
     return this._normalIndices;
   }
-  /** Return the (optional) array of param indices. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of uv parameter indices. These are only present during certain constructions such as faceting. */
   public get paramIndices(): GrowableFloat64Array | undefined {
     return this._uvIndices;
   }
-  /** Return the (optional) array of point indices. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of point indices. These are only present during certain constructions such as faceting. */
   public get pointIndices(): GrowableFloat64Array | undefined {
     return this._pointIndices;
   }
@@ -592,16 +596,18 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Convert a segment index and local fraction to a global linestring fraction.
    * @param index index of segment being evaluated
-   * @param localFraction local fraction in [0,1] within the segment
-   * @return global fraction f in [0,1] such that the segment is parameterized by index/N <= f <= (index+1)/N.
+   * @param localFraction local fraction relative to the segment, typically in [0,1]. Fraction may be negative (or greater than 1) to represent extension of the first (or last) segment.
+   * @return global fraction f such that the segment is parameterized by index/N <= f <= (index+1)/N.
    */
   public segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number {
     return LineString3d.mapLocalToGlobalFraction(index, localFraction, this._points.length - 1);
   }
   /**
-   * Convert a global fraction to a segment index and local fraction.
-   * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment
-   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
+   * Convert a global linestring fraction to a segment index and local fraction.
+   * @param globalFraction a fraction f in the linestring parameterization, where the i_th segment
+   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N. If `globalFraction` is negative (or greater than 1),
+   * so is the returned local fraction, which corresponds to the first (last) segment.
+   * @param numSegment number N of segments in the linestring
    * @returns segment index and local fraction
    */
   public static mapGlobalToLocalFraction(globalFraction: number, numSegment: number): { index: number, fraction: number } {
@@ -609,19 +615,19 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return { index: 0, fraction: 0.0 };
     const scaledGlobalFraction = globalFraction * numSegment;
     let segmentIndex: number;
-    if (globalFraction < 0)
+    if (globalFraction <= 0)
       segmentIndex = 0;
-    else if (globalFraction > 1)
+    else if (globalFraction >= 1)
       segmentIndex = numSegment - 1;
-    else  // globalFraction in [0,1]
+    else  // globalFraction in (0,1)
       segmentIndex = Math.floor(scaledGlobalFraction);
     return { index: segmentIndex, fraction: scaledGlobalFraction - segmentIndex };
   }
   /**
    * Convert a global linestring fraction to a segment index and local fraction.
-   * @param globalFraction a fraction f in [0,1] in the linestring parameterization, where the i_th segment
-   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N.
-   * @param numSegment number N of segments in the linestring
+   * @param globalFraction a fraction f in the linestring parameterization, where the i_th segment
+   * (0 <= i < N) is parameterized by i/N <= f <= (i+1)/N. If `globalFraction` is negative (or greater than 1),
+   * so is the returned local fraction, which corresponds to the first (last) segment.
    * @returns segment index and local fraction
    */
   public globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): { index: number, fraction: number } {
@@ -718,11 +724,32 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public reverseInPlace(): void {
     if (this._points.length >= 2) {
       this._points.reverseInPlace();
+      if (this._fractions) {
+        this._fractions.reverseInPlace();
+        for (let i = 0; i < this._fractions.length; ++i)
+          this._fractions.reassign(i, 1.0 - this._fractions.atUncheckedIndex(i));
+      }
       if (this._uvParams)
         this._uvParams.reverseInPlace();
+      if (this._derivatives) {
+        this._derivatives.reverseInPlace();
+        this._derivatives.scaleInPlace(-1.0);
+      }
+      if (this._surfaceNormals)
+        this._surfaceNormals.reverseInPlace();
+      if (this._pointIndices)
+        this._pointIndices.reverseInPlace();
+      if (this._uvIndices)
+        this._uvIndices.reverseInPlace();
+      if (this._normalIndices)
+        this._normalIndices.reverseInPlace();
     }
   }
-  /** Apply `transform` to each point of this linestring. */
+  /**
+   * Apply `transform` to each point of this linestring.
+   * * Note that this method always returns true. If transforming the surface normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
+  */
   public tryTransformInPlace(transform: Transform): boolean {
     this._points.multiplyTransformInPlace(transform);
     if (this._derivatives)
@@ -847,11 +874,13 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public quickLength(): number { return this.curveLength(); }
   /**
    * Compute and normalize cross product among 3 points on the linestring.
-   * * "any" 3 points are acceptable -- no test for positive overall sense.
-   * * This is appropriate for polygon known to be convex.
-   * * use points spread at index step n/3, hopefully avoiding colinear points.
-   * * If that fails, try points 012
-   * @param result computed normal.
+   * * Essentially 3 random points are used to form the cross product.
+   * * This is appropriate for a polygon known to be convex.
+   * * No test for convexity or collinearity is performed.
+   * * If the polygon is not convex, the returned normal may be reversed.
+   * * If the random points used in the cross product are collinear, undefined is returned.
+   * @param result pre-allocated object to populate and return
+   * @returns unit normal, or undefined if normalization failed
    */
   public quickUnitNormal(result?: Vector3d): Vector3d | undefined {
     let step = Math.floor(this._points.length / 3);

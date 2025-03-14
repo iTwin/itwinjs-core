@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, it } from "vitest";
 import * as fs from "fs";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -65,7 +65,7 @@ it("DrapeLinestringAsPanels", async () => {
     _dy += 20.0;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringAsPanels");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("DrapeLinestringAsLines", async () => {
@@ -130,7 +130,7 @@ it("DrapeLinestringAsLines", async () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringAsLines");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("DrapeLinestringLargeMesh", async () => {
@@ -220,14 +220,14 @@ it("DrapeLinestringLargeMesh", async () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringLargeMesh");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("sweepLinestringToFacetsXYZingers", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
 
-  const data = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/sweepLinestringToFacetsXY/inputs.imjs", "utf8")));
+  const data = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/polyface/sweepLinestringToFacetsXY/inputs.imjs", "utf8")));
   let x0 = 0;
   const y0 = 0;
   const z0 = 0;
@@ -269,7 +269,7 @@ it("sweepLinestringToFacetsXYZingers", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "DrapeLinestringZingers5506");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("sweepLinestringToFacetsXYZVerticalMesh", () => {
@@ -332,13 +332,13 @@ it("sweepLinestringToFacetsXYZVerticalMesh", () => {
   }
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "sweepLinestringToFacetsXYZVerticalMesh");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("drapeLineStringAsLines2", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/sweepLinestringToFacetsXY/drape-linestring-to-meshes.imjs", "utf8")));
+  const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/polyface/sweepLinestringToFacetsXY/drape-linestring-to-meshes.imjs", "utf8")));
   if (Array.isArray(inputs) && 2 === inputs.length && inputs[0] instanceof LineString3d && inputs[1] instanceof IndexedPolyface) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
     const lineString = inputs[0];
@@ -361,5 +361,5 @@ it("drapeLineStringAsLines2", () => {
     ck.announceError("invalid inputs");
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "drapeLineStringAsLines2");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

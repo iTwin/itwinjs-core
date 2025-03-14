@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { BentleyError, LoggingMetaData } from "../BentleyError";
-import { using } from "../Disposable";
 import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { BeDuration } from "../Time";
 
@@ -13,13 +12,13 @@ let outwarn: any[];
 let outinfo: any[];
 let outtrace: any[];
 
-/* eslint-disable no-template-curly-in-string, @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 function callLoggerConfigLevels(cfg: any, expectRejection: boolean) {
   try {
     Logger.configureLevels(cfg);
     assert.isFalse(expectRejection, "should have rejected config as invalid");
-  } catch (err) {
+  } catch {
     assert.isTrue(expectRejection, "should not have rejected config as invalid");
   }
 }
@@ -413,16 +412,18 @@ describe("Logger", () => {
         }
       }, undefined);
 
-    await using(new PerfLogger("mytestroutine"), async (_r) => {
+    {
+      using _r = new PerfLogger("mytestroutine");
       await BeDuration.wait(10);
-    });
+    }
     assert.isEmpty(perfMessages);
 
     Logger.setLevel("Performance", LogLevel.Info);
 
-    await using(new PerfLogger("mytestroutine2"), async (_r) => {
+    {
+      using _r = new PerfLogger("mytestroutine2");
       await BeDuration.wait(10);
-    });
+    }
 
     assert.equal(perfMessages.length, 2);
     assert.equal(perfMessages[0], "mytestroutine2,START");
@@ -432,18 +433,20 @@ describe("Logger", () => {
     perfMessages.pop();
     perfMessages.pop();
 
-    const outerPerf = new PerfLogger("outer call");
-    const innerPerf = new PerfLogger("inner call");
-    for (let i = 0; i < 1000; i++) {
-      if (i % 2 === 0)
-        continue;
+    {
+      using _outerPerf = new PerfLogger("outer call");
+      {
+        using _innerPerf = new PerfLogger("inner call");
+        for (let i = 0; i < 1000; i++) {
+          if (i % 2 === 0)
+            continue;
+        }
+      }
+      for (let i = 0; i < 1000; i++) {
+        if (i % 2 === 0)
+          continue;
+      }
     }
-    innerPerf.dispose();
-    for (let i = 0; i < 1000; i++) {
-      if (i % 2 === 0)
-        continue;
-    }
-    outerPerf.dispose();
     assert.equal(perfMessages.length, 4);
     assert.equal(perfMessages[0], "outer call,START");
     assert.equal(perfMessages[1], "inner call,START");
@@ -466,6 +469,14 @@ describe("Logger", () => {
       Logger.logException("testcat", err);
     }
     checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
+
+    clearOutlets();
+    expect(() => Logger.logException("testcat", undefined)).to.not.throw("undefined exception");
+    checkOutlets(["testcat", "Error: err is undefined.", { ExceptionType: "Error" }], [], [], []);
+
+    clearOutlets();
+    expect(() => Logger.logException("testcat", null)).to.not.throw("null exception");
+    checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
 
   });
 

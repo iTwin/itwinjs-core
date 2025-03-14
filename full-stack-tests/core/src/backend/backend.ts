@@ -6,21 +6,21 @@ import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
-import * as fs from "fs";
-import * as path from "path";
 import {
   BriefcaseDb, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, CodeProps, constructDetailedError, constructITwinError, ElementProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
+import * as fs from "fs";
+import * as path from "path";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -33,8 +33,8 @@ function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error)
     throw envResult.error;
@@ -75,6 +75,16 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);
+  }
+
+  public async throwDetailedError<T extends ITwinError>(details: Omit<T, keyof ITwinError>, namespace: string, errorKey: string, message?: string, metaData?: LoggingMetaData): Promise<void> {
+    const error = constructDetailedError<T>(namespace, errorKey, details, message, metaData);
+    throw error;
+  }
+
+  public async throwITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void> {
+    const error = constructITwinError(namespace, errorKey, message, metadata);
+    throw error;
   }
 }
 
@@ -126,13 +136,13 @@ async function init() {
 
   ECSchemaRpcImpl.register();
 
-  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
+  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver(); // eslint-disable-line @typescript-eslint/no-deprecated
   Logger.initializeToConsole();
   return shutdown;
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
-class BackendTestAssetResolver extends FileNameResolver {
+class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line @typescript-eslint/no-deprecated
   /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {

@@ -6,10 +6,10 @@
  * @module SQLite
  */
 
-import { assert, BentleyError, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import { assert, BentleyError, DbResult, GuidString, Id64String, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 
 // spell:ignore julianday
 
@@ -56,7 +56,7 @@ function checkBind(stat: DbResult) {
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  * @public
  */
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
+export class SqliteStatement implements IterableIterator<any>, Disposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
   private _db: IModelJsNative.AnyDb | undefined;
 
@@ -78,7 +78,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
     this._db = db;
-    this._stmt = new IModelHost.platform.SqliteStatement();
+    this._stmt = new IModelNative.platform.SqliteStatement();
     this._stmt.prepare(db, this._sql, logErrors);
   }
 
@@ -96,12 +96,17 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement. */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._stmt) {
       this._stmt.dispose(); // free native statement
       this._stmt = undefined;
       this._db = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /**

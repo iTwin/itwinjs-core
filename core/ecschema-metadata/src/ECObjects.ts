@@ -25,7 +25,10 @@ export enum ECClassModifier {
 
 /**
  * An enumeration that has all the schema item type names as values
- * @beta */
+ *
+ * @enum {string}
+ * @beta
+ */
 export enum SchemaItemType {
   EntityClass = "EntityClass",
   Mixin = "Mixin",
@@ -42,6 +45,21 @@ export enum SchemaItemType {
   UnitSystem = "UnitSystem",
   Format = "Format",
 }
+
+/**
+ * Additional Schema Item Types which define classes of item types
+ * @beta
+ */
+export enum AbstractSchemaItemType {
+  Class = "Class",
+  SchemaItem = "SchemaItem"
+}
+
+/**
+ * Defines types of items that may be provided to identify supported items
+ * @beta
+ */
+export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
 
 /**
  * Primitive data types for ECProperties.
@@ -89,15 +107,18 @@ export enum CustomAttributeContainerType {
  * @beta
  */
 export enum SchemaMatchType {
-  // Find exact VersionRead, VersionWrite, VersionMinor match as well as Data
+  /*
+  * Find exact VersionRead, VersionWrite, VersionMinor match as well as Data. NOTE data is not yet matched
+  * @deprecated in 4.10 Use Exact instead.
+  */
   Identical,
-  // Find exact VersionRead, VersionWrite, VersionMinor match.
+  /* Find exact VersionRead, VersionWrite, VersionMinor match. */
   Exact,
-  // Find latest version with matching VersionRead and VersionWrite
+  /* Find latest version with matching VersionRead and VersionWrite */
   LatestWriteCompatible,
-  // Find latest version.
+  /* Find latest version. */
   Latest,
-  // Find latest version with matching VersionRead
+  /* Find latest version with matching VersionRead */
   LatestReadCompatible,
 }
 
@@ -449,4 +470,27 @@ export function strengthDirectionToString(direction: StrengthDirection): string 
     case StrengthDirection.Backward: return "Backward";
     default: throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
   }
+}
+
+/** Compares a SchemaItemType against supported type.
+ * @beta
+ */
+export function isSupportedSchemaItemType(value: SchemaItemType, supported: SupportedSchemaItemType): boolean {
+  if(value === supported)
+    return true;
+
+  if(supported === AbstractSchemaItemType.Class && (
+    value === SchemaItemType.EntityClass ||
+    value === SchemaItemType.Mixin ||
+    value === SchemaItemType.StructClass ||
+    value === SchemaItemType.CustomAttributeClass ||
+    value === SchemaItemType.RelationshipClass)) {
+      return true;;
+  }
+
+  if(supported === AbstractSchemaItemType.SchemaItem) {
+    return true;
+  }
+
+  return false;
 }

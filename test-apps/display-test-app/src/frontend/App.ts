@@ -11,11 +11,11 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -29,9 +29,9 @@ import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransfor
 import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
-import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
-import { DynamicClassifierTool } from "./DynamicClassifierTool";
+import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
+import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
@@ -58,13 +58,15 @@ import { MacroTool } from "./MacroTools";
 import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
+import { ToggleSecondaryIModelTool } from "./TiledGraphics";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
+import { AddSeequentRealityModel } from "./RealityDataModel";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -79,11 +81,19 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 }
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
+  private _shortcuts?: DisplayTestAppShortcutsUI;
+
   /** Process shortcut key events */
   public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
-    if (wentDown && AccuDrawHintBuilder.isEnabled)
-      return AccuDrawShortcuts.processShortcutKey(keyEvent);
-    return false;
+    if (!wentDown || !AccuDrawHintBuilder.isEnabled)
+      return false;
+
+    if (undefined === this._shortcuts) {
+      this._shortcuts = new DisplayTestAppShortcutsUI();
+      this._shortcuts.populateDefaultShortcuts();
+    }
+
+    return this._shortcuts.processShortcutKey(keyEvent);
   }
 }
 
@@ -240,6 +250,7 @@ export class DisplayTestApp {
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
+        accuDraw: new AccuDrawViewportUI(),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
@@ -251,7 +262,6 @@ export class DisplayTestApp {
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
@@ -260,6 +270,9 @@ export class DisplayTestApp {
             : undefined,
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
+            : undefined,
+          GoogleMaps: configuration.googleMapsKey
+            ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
@@ -298,8 +311,8 @@ export class DisplayTestApp {
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line deprecation/deprecation
-        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
+      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line @typescript-eslint/no-deprecated
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
       await LocalhostIpcApp.startup(opts);
     }
 
@@ -338,14 +351,17 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
+      MoveElementTool,
       OpenIModelTool,
       OpenRealityModelSettingsTool,
       OutputShadersTool,
       PlaceLineStringTool,
       DynamicClassifierTool,
+      DynamicClipMaskTool,
       PullChangesTool,
       PushChangesTool,
       PurgeTileTreesTool,
+      AddSeequentRealityModel,
       RecordFpsTool,
       RecordTileSizesTool,
       RefreshTilesTool,
@@ -362,6 +378,7 @@ export class DisplayTestApp {
       TerrainDrapeTool,
       TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,
+      ToggleSecondaryIModelTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       ViewClipByElementGeometryTool,

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -16,19 +16,19 @@ describe("Visible feature query", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport | undefined;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection("visible-features");
   });
 
   afterEach(() => {
     if (viewport) {
-      viewport.dispose();
+      viewport[Symbol.dispose]();
       viewport = undefined;
     }
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await IModelApp.shutdown();
   });
@@ -45,9 +45,9 @@ describe("Visible feature query", () => {
     if (view.viewFlags.acsTriad || view.viewFlags.grid)
       view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 
-    const vp = ScreenViewport.create(div, view);
+    using vp = ScreenViewport.create(div, view);
     IModelApp.viewManager.addViewport(vp);
-    expect(vp.target.debugControl).not.to.be.undefined;
+    expect(vp.target.debugControl).toBeDefined();
     vp.target.debugControl!.devicePixelRatioOverride = devicePixelRatio ?? 1;
 
     vp.renderFrame();
@@ -55,7 +55,6 @@ describe("Visible feature query", () => {
     try {
       callback(vp);
     } finally {
-      vp.dispose();
       document.body.removeChild(div);
     }
   }
@@ -67,10 +66,10 @@ describe("Visible feature query", () => {
         let features;
         vp.queryVisibleFeatures(options, (f) => {
           features = f;
-          expect(isDisposed(features)).to.be.false;
+          expect(isDisposed(features)).toBe(false);
         });
 
-        expect(isDisposed(features)).to.be.true;
+        expect(isDisposed(features)).toBe(true);
       }
 
       test({ source: "tiles" });

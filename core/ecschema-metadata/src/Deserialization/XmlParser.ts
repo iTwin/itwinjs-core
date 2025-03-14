@@ -19,17 +19,13 @@ import {
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
+import { ECSpecVersion, SchemaReadHelper } from "./Helper";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
 
 type PrimitiveArray = PrimitiveValue[];
 type PrimitiveValue = string | number | boolean | Date;
-
-interface ECXmlVersion {
-  readVersion: number;
-  writeVersion: number;
-}
 
 /** @internal */
 export class XmlParser extends AbstractParser<Element> {
@@ -39,7 +35,6 @@ export class XmlParser extends AbstractParser<Element> {
   private _schemaAlias: string;
   private _schemaVersion?: string;
   private _xmlNamespace?: string;
-  private _ecXmlVersion?: ECXmlVersion;
   private _currentItemFullName?: string;
   private _schemaItems: Map<string, [string, Element]>;
   private _mapIsPopulated: boolean;
@@ -68,12 +63,14 @@ export class XmlParser extends AbstractParser<Element> {
     const xmlNamespace = schemaInfo.getAttribute("xmlns");
     if (xmlNamespace) {
       this._xmlNamespace = xmlNamespace;
-      this._ecXmlVersion = this.parseXmlNamespace(this._xmlNamespace);
+      this._ecSpecVersion = XmlParser.parseXmlNamespace(this._xmlNamespace);
     }
 
     this._schemaItems = new Map<string, [string, Element]>();
     this._mapIsPopulated = false;
   }
+
+  public get getECSpecVersion(): ECSpecVersion | undefined { return this._ecSpecVersion; }
 
   public parseSchema(): SchemaProps {
     const schemaMetadata = this._rawSchema.documentElement;
@@ -93,7 +90,7 @@ export class XmlParser extends AbstractParser<Element> {
     if (this._xmlNamespace === undefined)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} is missing a required 'xmlns' attribute`);
 
-    if (this._ecXmlVersion === undefined)
+    if (this._ecSpecVersion === undefined)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} has an invalid 'xmlns' attribute`);
 
     const alias = this.getRequiredAttribute(schemaMetadata, "alias",
@@ -108,6 +105,8 @@ export class XmlParser extends AbstractParser<Element> {
       alias,
       label: displayLabel,
       description,
+      ecSpecMajorVersion: this._ecSpecVersion.readVersion,
+      ecSpecMinorVersion: this._ecSpecVersion.writeVersion,
     };
 
     return schemaProps;
@@ -138,8 +137,11 @@ export class XmlParser extends AbstractParser<Element> {
         }
 
         const itemType = this.getSchemaItemType(rawItemType);
-        if (itemType === undefined)
+        if (itemType === undefined) {
+          if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
+            continue;
           throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `A SchemaItem in ${this._schemaName} has an invalid type. '${rawItemType}' is not a valid SchemaItem type.`);
+        }
 
         const itemName = this.getRequiredAttribute(item, "typeName", `A SchemaItem in ${this._schemaName} is missing the required 'typeName' attribute.`);
 
@@ -305,12 +307,16 @@ export class XmlParser extends AbstractParser<Element> {
     // TODO: This shouldn't be verified here.  It's for the deserialize method to handle.  The only reason it's currently done here so that the xml
     // value can be put in the correct type, number or string.
     let tempBackingType: PrimitiveType;
-    if (/int/i.test(enumType))
+    if (/int/i.test(enumType)) {
       tempBackingType = PrimitiveType.Integer;
-    else if (/string/i.test(enumType))
+    } else if (/string/i.test(enumType)) {
       tempBackingType = PrimitiveType.String;
-    else
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    } else {
+      if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
+        tempBackingType = PrimitiveType.String;
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    }
 
     let isStrictString: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
     if (isStrictString === undefined)
@@ -353,6 +359,8 @@ export class XmlParser extends AbstractParser<Element> {
       type: enumType,
       isStrict,
       enumerators,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
     };
   }
 
@@ -820,6 +828,8 @@ export class XmlParser extends AbstractParser<Element> {
       ...itemProps,
       modifier,
       baseClass,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
     };
   }
 
@@ -997,7 +1007,7 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private getCustomAttributeProvider(xmlCustomAttribute: Element): CAProviderTuple {
-    assert(this._ecXmlVersion !== undefined);
+    assert(this._ecSpecVersion !== undefined);
 
     let ns = xmlCustomAttribute.getAttribute("xmlns");
     if (!ns) {
@@ -1006,7 +1016,7 @@ export class XmlParser extends AbstractParser<Element> {
       ns = `${this._schemaName}.${this._schemaVersion}`;
     }
 
-    if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecXmlVersion))
+    if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecSpecVersion))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.`);
 
     const schemaNameParts = ns.split(".");
@@ -1045,7 +1055,7 @@ export class XmlParser extends AbstractParser<Element> {
     let enumeration: Enumeration | undefined;
     if (propertyClass.isPrimitive()) {
       if (propertyClass.isEnumeration() && propertyClass.enumeration) {
-        enumeration = propertyClass.schema.lookupItemSync(propertyClass.enumeration.fullName);
+        enumeration = propertyClass.schema.lookupItemSync(propertyClass.enumeration.fullName, Enumeration);
         if (!enumeration)
           throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The Enumeration class '${propertyClass.enumeration.fullName}' could not be found.`);
       }
@@ -1104,7 +1114,10 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private readPrimitivePropertyValue(propElement: Element, primitiveType: PrimitiveType): PrimitiveValue {
-    if (!propElement.textContent)
+    if (undefined === propElement.textContent || null === propElement.textContent)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
+
+    if (propElement.textContent === "" && primitiveType !== PrimitiveType.String)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
 
     // TODO: Mapping all primitive types to string, number and boolean
@@ -1199,10 +1212,10 @@ export class XmlParser extends AbstractParser<Element> {
     return { x, y, z };
   }
 
-  private isSchemaFullNameValidForVersion(schemaFullName: string, ecXmlVersion: ECXmlVersion) {
+  private isSchemaFullNameValidForVersion(schemaFullName: string, ecSpecVersion: ECSpecVersion) {
     const schemaNameParts = schemaFullName.split(".");
 
-    if ((ecXmlVersion.readVersion >= 3 && ecXmlVersion.writeVersion >= 2) || ecXmlVersion.readVersion > 3) {
+    if ((ecSpecVersion.readVersion >= 3 && ecSpecVersion.writeVersion >= 2) || ecSpecVersion.readVersion > 3) {
       if (schemaNameParts.length < 4)
         return false;
     } else {
@@ -1212,7 +1225,7 @@ export class XmlParser extends AbstractParser<Element> {
     return true;
   }
 
-  private parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
+  public static parseXmlNamespace(xmlNamespace: string): ECSpecVersion | undefined {
     const regEx = new RegExp(`^${ECXML_URI}\\.([0-9]+)\\.([0-9]+)$`);
     const match = xmlNamespace.match(regEx);
     if (!match)

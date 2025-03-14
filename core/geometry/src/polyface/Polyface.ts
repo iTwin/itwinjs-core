@@ -7,7 +7,6 @@
  * @module Polyface
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 // cspell:word internaldocs
 
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -18,7 +17,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
-import { Range3d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { FacetFaceData } from "./FacetFaceData";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
@@ -140,6 +139,52 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     else
       this._facetToFaceData = [];
   }
+
+  /**
+   * Given an array of strictly increasing numbers, find the index of the largest number that is less than or equal
+   * to `value`.
+   * * Get an initial estimate by proportions of `value` and the first and last entries.
+   * * Linear search from there for final value.
+   * * For regularly spaced numbers (e.g., `data` is the `_facetStart` indices for a triangulated mesh or a quad mesh),
+   * the proportional estimate will be immediately correct.
+   */
+  public static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined {
+    const lastQ = data.length - 1;
+    if (lastQ <= 0 || value < 0 || value >= data[lastQ])
+      return undefined;
+    let q = Math.floor((value * lastQ) / data[lastQ]);
+    while (data[q] > value)
+      q--;
+    while (data[q + 1] <= value)
+      q++;
+    return q;
+  }
+  /** Given an edgeIndex (index into `data.pointIndex`), return the index of the facet containing the edge. */
+  public edgeIndexToFacetIndex(k: number | undefined): number | undefined {
+    if (k === undefined)
+      return undefined;
+    return IndexedPolyface.searchStrictlyIncreasingNumbers(this._facetStart, k);
+  }
+  /**
+   * Given an edgeIndex (index into `data.pointIndex`), return the range of the edgeIndices of the containing facet.
+   * * A "face loop" is a contiguous block of edgeIndices in the polyface index arrays representing a facet.
+   * * If an edge with edgeIndex `k` is found in the facet with facetIndex `f`, then the returned range `r` satisfies
+   * `r.low = this.facetIndex0(f) <= k < this.facetIndex1(f) = r.high` and can be used to iterate the facet's face
+   * loop, e.g.:
+   * ````
+   * for (let k1 = r.low; k1 < r.high; k1++) {
+   *   const edgeIndex = myPolyface.data.pointIndex[k1];
+   *   // process this edge
+   * }
+   * ````
+   */
+  public edgeIndexToFaceLoop(k: number | undefined): Range1d | undefined {
+    const q = this.edgeIndexToFacetIndex(k);
+    if (q !== undefined)
+      return Range1d.createXX(this.facetIndex0(q), this.facetIndex1(q));
+    return undefined;
+  }
+
   /** Test if other is an instance of `IndexedPolyface` */
   public isSameGeometryClass(other: any): boolean {
     return other instanceof IndexedPolyface;
@@ -159,20 +204,14 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Transform the mesh.
-   * * Apply the transform to points.
-   * * Apply the (inverse transpose of the) matrix part to normals.
-   * * If determinant of the transform matrix is negative, also
-   *   * negate normals
-   *   * reverse index order around each facet.
+   * * If `transform` is a mirror, also reverse the index order around each facet.
+   * * Note that this method always returns true. If transforming the normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
    */
-  public tryTransformInPlace(transform: Transform) {
-    if (!this.data.tryTransformInPlace(transform))
-      return false;
-    const determinant = transform.matrix.determinant();
-    if (determinant < 0) {
+  public tryTransformInPlace(transform: Transform): boolean {
+    this.data.tryTransformInPlace(transform);
+    if (transform.matrix.determinant() < 0)
       this.reverseIndices();
-      this.reverseNormals();
-    }
     return true;
   }
   /** Reverse indices for a single facet. */
@@ -181,14 +220,13 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /** Return a deep clone. */
   public clone(): IndexedPolyface {
-    const result = new IndexedPolyface(this.data.clone(), this._facetStart.slice(), this._facetToFaceData.slice());
-    return result;
+    return new IndexedPolyface(this.data.clone(), this._facetStart.slice(), this._facetToFaceData.slice());
   }
   /**
    * Return a deep clone with transformed points and normals.
    * @see [[IndexedPolyface.tryTransformInPlace]] for details of how transform is done.
    */
-  public cloneTransformed(transform: Transform): IndexedPolyface {
+  public cloneTransformed(transform: Transform): IndexedPolyface { // we know tryTransformInPlace succeeds.
     const result = this.clone();
     result.tryTransformInPlace(transform);
     return result;
@@ -205,7 +243,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * Return face data using a facet index.
    * * Returns `undefined` if none found.
    * * This is the REFERENCE to the FacetFaceData not a copy.
-   */
+  */
   public tryGetFaceData(i: number): FacetFaceData | undefined {
     if (i < 0 || i >= this._facetToFaceData.length)
       return undefined;
@@ -485,48 +523,54 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public cleanupOpenFacet(): void {
     this.data.trimAllIndexArrays(this.data.pointIndex.length);
   }
+
+  /**
+   * Validate (the tail of) the active index arrays: point, normal, param, color.
+   * @param index0 optional offset into the index arrays at which to start validating indices. Default 0.
+   * @param errors optional array appended with error message(s) if invalid indices are encountered
+   * @return whether the indices are valid
+   */
+  public validateAllIndices(index0: number = 0, errors?: string[]): boolean {
+    const numPointIndices = this.data.pointIndex.length;
+    const messages = errors ?? [];
+    if (this.data.normalIndex && this.data.normalIndex.length !== numPointIndices)
+      messages.push("normalIndex count must match pointIndex count");
+    if (this.data.paramIndex && this.data.paramIndex.length !== numPointIndices)
+      messages.push("paramIndex count must equal pointIndex count");
+    if (this.data.colorIndex && this.data.colorIndex.length !== numPointIndices)
+      messages.push("colorIndex count must equal pointIndex count");
+    if (this.data.edgeVisible.length !== numPointIndices)
+      messages.push("visibleIndex count must equal pointIndex count");
+    if (!Polyface.areIndicesValid(this.data.pointIndex, index0, numPointIndices, this.data.point, this.data.point ? this.data.point.length : 0))
+      messages.push("invalid point indices in the last facet");
+    if (!Polyface.areIndicesValid(this.data.normalIndex, index0, numPointIndices, this.data.normal, this.data.normal ? this.data.normal.length : 0))
+      messages.push("invalid normal indices in the last facet");
+    if (!Polyface.areIndicesValid(this.data.paramIndex, index0, numPointIndices, this.data.param, this.data.param ? this.data.param.length : 0))
+      messages.push("invalid param indices in the last facet");
+    if (!Polyface.areIndicesValid(this.data.colorIndex, index0, numPointIndices, this.data.color, this.data.color ? this.data.color.length : 0))
+      messages.push("invalid color indices in the last facet");
+    return 0 === messages.length;
+  }
+
   /**
    * Announce the end of construction of a facet.
    * * Optionally check for:
    *   * Same number of indices among all active index arrays -- point, normal, param, color
-   *   * All indices are within bounds of the respective data arrays.
+   *   * All indices for the latest facet are within bounds of the respective data arrays.
    * * In error cases, all index arrays are trimmed back to the size when previous facet was terminated.
    * * A return value of `undefined` is normal. Otherwise, a string array of error messages is returned.
    */
-  public terminateFacet(validateAllIndices: boolean = true): String[] | undefined {
+  public terminateFacet(validateAllIndices: boolean = true): string[] | undefined {
     const numFacets = this._facetStart.length - 1;
     // number of indices in accepted facets
     const lengthA = this._facetStart[numFacets];
     // number of indices in all facets (accepted facet plus the last facet to be accepted)
     const lengthB = this.data.pointIndex.length;
     if (validateAllIndices) {
-      const messages: String[] = [];
+      const messages: string[] = [];
       if (lengthB < lengthA + 2)
         messages.push("Less than 3 indices in the last facet");
-      if (this.data.normalIndex && this.data.normalIndex.length !== lengthB)
-        messages.push("normalIndex count must match pointIndex count");
-      if (this.data.paramIndex && this.data.paramIndex.length !== lengthB)
-        messages.push("paramIndex count must equal pointIndex count");
-      if (this.data.colorIndex && this.data.colorIndex.length !== lengthB)
-        messages.push("colorIndex count must equal pointIndex count");
-      if (this.data.edgeVisible.length !== lengthB)
-        messages.push("visibleIndex count must equal pointIndex count");
-      if (!Polyface.areIndicesValid(
-        this.data.pointIndex, lengthA, lengthB, this.data.point, this.data.point ? this.data.point.length : 0,
-      ))
-        messages.push("invalid point indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.normalIndex, lengthA, lengthB, this.data.normal, this.data.normal ? this.data.normal.length : 0,
-      ))
-        messages.push("invalid normal indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.paramIndex, lengthA, lengthB, this.data.param, this.data.param ? this.data.param.length : 0,
-      ))
-        messages.push("invalid param indices in the last facet");
-      if (!Polyface.areIndicesValid(
-        this.data.colorIndex, lengthA, lengthB, this.data.color, this.data.color ? this.data.color.length : 0,
-      ))
-        messages.push("invalid color indices in the last facet");
+      this.validateAllIndices(lengthA, messages);
       if (messages.length > 0) {
         this.data.trimAllIndexArrays(lengthA);
         return messages;
@@ -560,8 +604,8 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return this.data.normalCount;
   }
   /** Test if `index` is a valid facet index. */
-  public isValidFacetIndex(index: number): boolean {
-    return index >= 0 && index < this.facetCount;
+  public isValidFacetIndex(facetIndex: number): boolean {
+    return facetIndex >= 0 && facetIndex < this.facetCount;
   }
   /** Return the number of edges in a particular facet. */
   public numEdgeInFacet(facetIndex: number): number {
@@ -569,15 +613,15 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       return this._facetStart[facetIndex + 1] - this._facetStart[facetIndex];
     return 0;
   }
-  /** ASSUME valid facet index. Return start index of facet in pointIndex arrays. */
-  public facetIndex0(index: number): number {
-    return this._facetStart[index];
+  /** Given a valid facet index, return the index at which its face loop starts in the index arrays. */
+  public facetIndex0(facetIndex: number): number {
+    return this._facetStart[facetIndex];
   }
-  /** ASSUME valid facet index. Return one past end index of facet in pointIndex arrays. */
-  public facetIndex1(index: number): number {
-    return this._facetStart[index + 1];
+  /** Given a valid facet index, return one past the index at which its face loop ends in the index arrays. */
+  public facetIndex1(facetIndex: number): number {
+    return this._facetStart[facetIndex + 1];
   }
-  /** Create a visitor for this polyface */
+  /** create a visitor for this polyface */
   public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor {
     return IndexedPolyfaceVisitor.create(this, numWrap);
   }
@@ -637,8 +681,8 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
  * A PolyfaceVisitor manages data while walking through facets.
  * * The polyface visitor holds data for one facet at a time.
  * * The caller can request the position in the addressed polyfaceData as a "readIndex".
- * * The readIndex values (as numbers) are not promised to be sequential (i.e., it might be a simple facet count
- * or might have "gaps" at the whim of the particular PolyfaceVisitor implementation).
+ * * The readIndex values (as numbers) are not assumed to be sequential (i.e., they might be contiguous facet indices
+ * or the indexing scheme might have gaps at the whim of the particular PolyfaceVisitor implementation).
  * @public
  */
 export interface PolyfaceVisitor extends PolyfaceData {
@@ -668,7 +712,8 @@ export interface PolyfaceVisitor extends PolyfaceData {
    * * Example: suppose `[6,7,8]` is the pointIndex array representing a triangle. First edge would be `6,7`. Second
    * edge is `7,8`. Third edge is `8,6`. To access `6` for the third edge, we have to go back to the start of array.
    * Therefore, it is useful to store `6` at the end of pointIndex array, i.e., `[6,7,8,6]` meaning `numWrap = 1`.
-   * * `numWrap = 2` is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
+   * * Continuing this example, `numWrap = 2` (i.e., `[6,7,8,6,7]`) is useful when each vertex visit requires
+   * the next two points, e.g., to form two adjacent vectors for a cross product.
    */
   setNumWrap(numWrap: number): void;
   /** Clear the contents of all arrays. Use this along with `pushDataFrom` to build up new facets. */
@@ -680,4 +725,9 @@ export interface PolyfaceVisitor extends PolyfaceData {
    * * All data values are interpolated at `fraction` between `other` values at `index0` and `index1`.
    */
   pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
+  /**
+   * Return the number of facets this visitor is able to visit.
+   * * Allows implementers to improve the efficiency of e.g., [[PolyfaceQuery.visitorClientFacetCount]].
+   */
+  getVisitableFacetCount?(): number;
 }

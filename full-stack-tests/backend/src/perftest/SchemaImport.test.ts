@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
-import { IModelJsFs } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestDataMgr } from "./PerfTestUtils";
 
@@ -36,7 +36,7 @@ describe("SchemaDesignPerf Schema Import", () => {
     return schemaPath;
   }
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     enumCounts = configData.import.enumCounts;
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
@@ -47,6 +47,15 @@ describe("SchemaDesignPerf Schema Import", () => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
   });
+
+  beforeEach(async () => {
+    await IModelHost.startup();
+  });
+
+  afterEach(async () => {
+    await IModelHost.shutdown();
+  });
+
   it("ENum Import", async () => {
     for (const eCount of enumCounts) {
       const st = createSchema(eCount);

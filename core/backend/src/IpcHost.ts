@@ -7,15 +7,17 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, GetMetaDataFunction, IModelStatus, Logger, LoggingMetaData, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
-  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getITwinErrorMetaData, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, isITwinError, iTwinChannel,
+  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb } from "./internal/Symbols";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
@@ -158,23 +160,52 @@ export abstract class IpcHandler {
    */
   public static register(): RemoveFunction {
     const impl = new (this as any)() as IpcHandler; // create an instance of subclass. "as any" is necessary because base class is abstract
+    const prohibitedFunctions = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+
     return IpcHost.handle(impl.channelName, async (_evt: Event, funcName: string, ...args: any[]): Promise<IpcInvokeReturn> => {
       try {
+        if (prohibitedFunctions.includes(funcName))
+          throw new Error(`Method "${funcName}" not available for channel: ${impl.channelName}`);
+
         const func = (impl as any)[funcName];
         if (typeof func !== "function")
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
-        const ret: IpcInvokeReturn = {
-          error: {
-            name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-            message: err.message ?? BentleyError.getErrorMessage(err),
-            errorNumber: err.errorNumber ?? 0,
-          },
-        };
-        if (!IpcHost.noStack)
-          ret.error.stack = BentleyError.getErrorStack(err);
+        let ret: IpcInvokeReturn;
+        let metadata: Exclude<LoggingMetaData, GetMetaDataFunction>;
+        if (isITwinError(err)) {
+          const { namespace, errorKey, message, stack, ...rest } = err;
+          if(rest.metadata)
+            metadata = getITwinErrorMetaData(err);
+          ret = {
+            iTwinError:
+            {
+              namespace,
+              errorKey,
+              message,
+              ...(metadata && { metadata }), // Include metadata only when defined
+              ...rest
+            },
+          };
+          if (!IpcHost.noStack)
+            ret.iTwinError.stack = stack;
+        } else {
+          metadata = BentleyError.getErrorMetadata(err);
+
+          ret = {
+            error:
+            {
+              name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
+              message: err.message ?? BentleyError.getErrorMessage(err),
+              errorNumber: err.errorNumber ?? 0,
+              ...(metadata && { metadata }), // Include metadata only when defined.
+            },
+          };
+          if (!IpcHost.noStack)
+            ret.error.stack = BentleyError.getErrorStack(err);
+        }
         return ret;
       }
     });
@@ -210,7 +241,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
   public async cancelElementGraphicsRequests(key: string, requestIds: string[]): Promise<void> {
-    return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
+    return IModelDb.findByKey(key)[_nativeDb].cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
     const db = await BriefcaseDb.open(args);
@@ -222,27 +253,39 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
     return StandaloneDb.openFile(filePath, openMode, opts).getConnectionProps();
   }
+  public async openSnapshot(filePath: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
+    let resolvedFileName: string | undefined = filePath;
+    if (IModelHost.snapshotFileNameResolver) { // eslint-disable-line @typescript-eslint/no-deprecated
+      resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath); // eslint-disable-line @typescript-eslint/no-deprecated
+      if (!resolvedFileName)
+        throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
+    }
+    return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
+  }
   public async closeIModel(key: string): Promise<void> {
     IModelDb.findByKey(key).close();
   }
   public async saveChanges(key: string, description?: string): Promise<void> {
     IModelDb.findByKey(key).saveChanges(description);
   }
+  public async abandonChanges(key: string): Promise<void> {
+    IModelDb.findByKey(key).abandonChanges();
+  }
   public async hasPendingTxns(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.hasPendingTxns();
+    return IModelDb.findByKey(key)[_nativeDb].hasPendingTxns();
   }
 
   public async isUndoPossible(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.isUndoPossible();
+    return IModelDb.findByKey(key)[_nativeDb].isUndoPossible();
   }
   public async isRedoPossible(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.isRedoPossible();
+    return IModelDb.findByKey(key)[_nativeDb].isRedoPossible();
   }
   public async getUndoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key).nativeDb.getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
-    return IModelDb.findByKey(key).nativeDb.getUndoString();
+    return IModelDb.findByKey(key)[_nativeDb].getRedoString();
   }
 
   public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {
@@ -281,31 +324,31 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
-    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
+    const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key)[_nativeDb].setGeometricModelTrackingEnabled(startSession);
     if (val.error)
       throw new IModelError(val.error.status, "Failed to toggle graphical editing scope");
     assert(undefined !== val.result);
     return val.result;
   }
   public async isGraphicalEditingSupported(key: string): Promise<boolean> {
-    return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
+    return IModelDb.findByKey(key)[_nativeDb].isGeometricModelTrackingSupported();
   }
 
   public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations);
+    return IModelDb.findByKey(key)[_nativeDb].reverseTxns(numOperations);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseAll();
+    return IModelDb.findByKey(key)[_nativeDb].reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reinstateTxn();
+    return IModelDb.findByKey(key)[_nativeDb].reinstateTxn();
   }
   public async restartTxnSession(key: string): Promise<void> {
-    return IModelDb.findByKey(key).nativeDb.restartTxnSession();
+    return IModelDb.findByKey(key)[_nativeDb].restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
-    return IModelHost.platform.queryConcurrency(pool);
+    return IModelNative.platform.queryConcurrency(pool);
   }
 }
 

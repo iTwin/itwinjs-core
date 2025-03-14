@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -31,11 +31,11 @@ describe("ParityRegionSweep", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const regionC = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/curve/parityRegionSweep/ParityRegionC.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionC.imjs", "utf8")));
     const regionA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/curve/parityRegionSweep/ParityRegionA.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionA.imjs", "utf8")));
     let regionB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/testInputs/curve/parityRegionSweep/ParityRegionB.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionB.imjs", "utf8")));
     if (Array.isArray(regionB)) {
       const regionB1 = ParityRegion.create();
       for (const loop of regionB) {
@@ -91,7 +91,7 @@ describe("ParityRegionSweep", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "ParityRegionSweep");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TriangulationWithEdgeIncidence2", () => {
     const ck = new Checker();
@@ -154,7 +154,7 @@ describe("ParityRegionSweep", () => {
       x0A += 40 * a;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "TriangulationWithEdgeIncidence2");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("bowTieTriangulate", () => {
@@ -162,7 +162,7 @@ describe("ParityRegionSweep", () => {
     const points = [Point3d.create(0, 0), Point3d.create(5, 0), Point3d.create(5, 5), Point3d.create(1, -1)];
     const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
     ck.testUndefined(graph, "bow tie graph should fail triangulation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("simpleHoleTriangulate", () => {
@@ -183,7 +183,7 @@ describe("ParityRegionSweep", () => {
     GraphChecker.captureAnnotatedGraph(allGeometry, holeGraph, x0, y0 + a);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "simpleHoleTriangulate");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // cspell:word Karolis
@@ -194,7 +194,7 @@ describe("ParityRegionSweep", () => {
     const dy = 50;
     let shiftX = 0;
     let shiftY = 0;
-    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8"))) as GeometryQuery[];
+    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8"))) as GeometryQuery[];
     ck.testDefined(inputs, "linearSweep imported");
 
     const boundaryEdges: SortableEdgeCluster[] = [];
@@ -233,7 +233,7 @@ describe("ParityRegionSweep", () => {
     ck.testExactNumber(otherClusteredEdgeCount, expectedOtherClusteredEdgeCount, "linearSweeps have expected other clustered edge count");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "KarolisRegion");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

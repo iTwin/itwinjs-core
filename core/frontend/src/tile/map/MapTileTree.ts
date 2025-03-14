@@ -20,8 +20,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
-import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
-import { SceneContext } from "../../ViewContext";
+import { RenderPlanarClassifier } from "../../internal/render/RenderPlanarClassifier";
+import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
@@ -830,7 +830,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public override get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
-  public override get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
+  public override get planarClipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     if (!this._settings.applyTerrain || this._isDrape)
@@ -1104,8 +1104,9 @@ export class MapTileTreeReference extends TileTreeReference {
       const isBaseLayer = (this._baseImageryLayerIncluded && tree.layerIndex === 0);
       return {
         isBaseLayer,
-        index: isBaseLayer ? undefined : {isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex -1 : tree.layerIndex},
-        settings: tree.layerSettings, provider: tree.imageryProvider};
+        index: isBaseLayer ? undefined : { isOverlay: this.isOverlay, index: this._baseImageryLayerIncluded ? tree.layerIndex - 1 : tree.layerIndex },
+        settings: tree.layerSettings, provider: tree.imageryProvider,
+      };
     });
   }
 
@@ -1176,7 +1177,7 @@ export class MapTileTreeReference extends TileTreeReference {
     const strings: string[] = [];
 
     const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic, imageryTree: ImageryMapTileTree) => {
-      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.ImageryLayer")}: ${imageryTreeRef.layerSettings.name}`);
       carto = cartoGraphic;
       await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);
     };
@@ -1187,11 +1188,11 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     if (carto) {
-      strings.push(`Latitude: ${carto.latitudeDegrees.toFixed(4)}`);
-      strings.push(`Longitude: ${carto.longitudeDegrees.toFixed(4)}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Latitude")}: ${carto.latitudeDegrees.toFixed(4)}`);
+      strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Longitude")}: ${carto.longitudeDegrees.toFixed(4)}`);
       if (this.settings.applyTerrain && tree.terrainExaggeration !== 0.0) {
         const geodeticHeight = (carto.height - tree.bimElevationBias) / tree.terrainExaggeration;
-        strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
+        strings.push(`${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Height")}: ${geodeticHeight.toFixed(1)} ${IModelApp.localization.getLocalizedString("iModelJs:MapLayers.SeaLevel")}: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
       }
     }
 
@@ -1226,18 +1227,45 @@ export class MapTileTreeReference extends TileTreeReference {
     return info;
   }
 
-  /** Add logo cards to logo div. */
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (tree) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       tree.mapLoader.terrainProvider.addLogoCards(cards, vp);
       for (const imageryTreeRef of this._layerTrees) {
         if (imageryTreeRef?.layerSettings.visible) {
           const imageryTree = imageryTreeRef.treeOwner.tileTree;
           if (imageryTree instanceof ImageryMapTileTree)
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             imageryTree.addLogoCards(cards, vp);
         }
       }
+    }
+  }
+
+    /** Add logo cards to logo div. */
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+
+    if (tree) {
+      const promises = [tree.mapLoader.terrainProvider.addAttributions(cards, vp)];
+
+      for (const imageryTreeRef of this._layerTrees) {
+        if (imageryTreeRef?.layerSettings.visible) {
+          const imageryTree = imageryTreeRef.treeOwner.tileTree;
+          if (imageryTree instanceof ImageryMapTileTree)
+            promises.push(imageryTree.addAttributions(cards, vp));
+        }
+      }
+      await Promise.all(promises);
+    }
+  }
+
+  public override decorate(context: DecorateContext): void {
+    for (const layerTree of this._layerTrees) {
+      if (layerTree)
+        layerTree.decorate(context);
     }
   }
 }

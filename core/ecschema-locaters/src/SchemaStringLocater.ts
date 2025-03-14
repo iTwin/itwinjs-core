@@ -69,7 +69,7 @@ export abstract class SchemaStringLocater {
    * @param desiredKey The SchemaKey to match.
    * @param matchType The SchemaMatchType.
    */
-  protected findEligibleSchemaKeys(desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType): StringSchemaKey[] {
+  protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType): StringSchemaKey[] {
     const foundStrings = new Array<StringSchemaKey>();
 
     for (const schemaString of this.schemaStrings) {
@@ -84,7 +84,7 @@ export abstract class SchemaStringLocater {
     return foundStrings;
   }
 
-  public abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+  public abstract getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
 
   /**
    * Compares two Schema versions.  If the left-hand version is greater, 1 is returned. If the

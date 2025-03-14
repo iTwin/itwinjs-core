@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -70,7 +70,7 @@ describe("BandedSystem", () => {
       if (Checker.noisy.bandedMatrix)
         GeometryCoreTestIO.consoleLog("rhs0", rhs0);
       const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, bandedMatrix, numRHS, rhs0);
-      if (ck.testDefined(solution1) && solution1) {
+      if (ck.testDefined(solution1)) {
         const diff = maxDiff(solution0, solution1);
         ck.testLE(diff, 1.0e-10, " solution diff");
         if (Checker.noisy.bandedMatrix)
@@ -78,7 +78,7 @@ describe("BandedSystem", () => {
       }
       a0 = a1;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("LargeSystem", () => {
     const ck = new Checker();
@@ -92,13 +92,13 @@ describe("BandedSystem", () => {
         ck.testExactNumber(solution0.length, numRHS * numRow);
         const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, matrix, numRHS, solution0);
         const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, matrix, numRHS, rhs0);
-        if (ck.testDefined(solution1) && solution1) {
+        if (ck.testDefined(solution1)) {
           const diff = maxDiff(solution0, solution1);
           ck.testLE(diff, 1.0e-10, " solution diff");
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("LargeSystem", () => {
@@ -113,13 +113,13 @@ describe("BandedSystem", () => {
         ck.testExactNumber(solution0.length, numRHS * numRow);
         const rhs0 = BandedSystem.multiplyBandedTimesFull(numRow, bw, matrix, numRHS, solution0);
         const solution1 = BandedSystem.solveBandedSystemMultipleRHS(numRow, bw, matrix, numRHS, rhs0);
-        if (ck.testDefined(solution1) && solution1) {
+        if (ck.testDefined(solution1)) {
           const diff = maxDiff(solution0, solution1);
           ck.testLE(diff, 1.0e-10, " solution diff");
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("GrevilleBspline", () => {
     const ck = new Checker();
@@ -155,7 +155,7 @@ describe("BandedSystem", () => {
       x0 += 3.0 * range.xLength();
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BandedSystem", "GrevilleBspline");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

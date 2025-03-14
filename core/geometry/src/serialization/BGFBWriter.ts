@@ -150,8 +150,7 @@ export class BGFBWriter {
     const fitPointsOffset = this.writeDoubleArray(curve.copyFitPointsFloat64Array());
     const knotOffset = props.knots ? this.writeDoubleArray(props.knots) : 0;
 
-      // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
-  BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
+    BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
     BGFBAccessors.InterpolationCurve.addFitPoints(this.builder, fitPointsOffset);
     if (props.order)
       BGFBAccessors.InterpolationCurve.addOrder(this.builder, props.order);
@@ -165,21 +164,22 @@ export class BGFBWriter {
       BGFBAccessors.InterpolationCurve.addIsChordLenKnots(this.builder, props.isChordLenKnots);
     if (props.isNaturalTangents)
       BGFBAccessors.InterpolationCurve.addIsNaturalTangents(this.builder, props.isNaturalTangents);
+    // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
     if (props.startTangent !== undefined) {
       const startTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-          XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent));
-          BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
+        XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent));
+        BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
     }
     if (props.endTangent !== undefined) {
-      const endTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-          XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent));
-          BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
-          }
+      const endTangentOffset = BGFBAccessors.DVector3d.createDVector3d(this.builder,
+        XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent));
+        BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
+    }
     if (knotOffset !== 0)
       BGFBAccessors.InterpolationCurve.addKnots(this.builder, knotOffset);
     const headerOffset = BGFBAccessors.InterpolationCurve.endInterpolationCurve(this.builder);
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve, headerOffset, 0);
-    }
+  }
 
   public writeAkimaCurve3dAsFBVariantGeometry(curve: AkimaCurve3d): number | undefined {
     const fitPointsOffset = this.writeDoubleArray(curve.copyFitPointsFloat64Array());
@@ -187,7 +187,7 @@ export class BGFBWriter {
     BGFBAccessors.AkimaCurve.addPoints(this.builder, fitPointsOffset);
     const headerOffset = BGFBAccessors.AkimaCurve.endAkimaCurve(this.builder);
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagAkimaCurve, headerOffset, 0);
-    }
+  }
 
   public writeBsplineCurve3dAsFBVariantGeometry(bcurve: BSplineCurve3d): number | undefined {
     const data = SerializationHelpers.createBSplineCurveData(bcurve.polesRef, bcurve.poleDimension, bcurve.knotsRef, bcurve.numPoles, bcurve.order);
@@ -500,18 +500,18 @@ export class BGFBWriter {
     return undefined;
   }
 
-  public writePolyfaceAuxDataAsFBVariantGeometry(data: PolyfaceAuxData): number | undefined {
+  public writePolyfaceAuxDataAsFBVariantGeometry(mesh: IndexedPolyface, data: PolyfaceAuxData): number | undefined {
     if (data instanceof PolyfaceAuxData) {
       const channelOffsets: number[] = [];
-      for (const channel of data.channels) {
+      for (const channel of data.channels)
         channelOffsets.push(this.writePolyfaceAuxChannelAsFBVariantGeometry(channel)!);
-      }
       const channelOffsetsOffset = BGFBAccessors.PolyfaceAuxChannel.createDataVector(this.builder, channelOffsets);
-      const indicesOffset = BGFBAccessors.PolyfaceAuxData.createIndicesVector(this.builder, data.indices);
-      return BGFBAccessors.PolyfaceAuxData.createPolyfaceAuxData(this.builder,
-        indicesOffset,
-        channelOffsetsOffset,
-      );
+
+      const indexArray: number[] = [];
+      this.fillOneBasedIndexArray(mesh, data.indices, undefined, 0, indexArray);
+      const indicesOffset = BGFBAccessors.PolyfaceAuxData.createIndicesVector(this.builder, indexArray);
+
+      return BGFBAccessors.PolyfaceAuxData.createPolyfaceAuxData(this.builder, indicesOffset, channelOffsetsOffset);
     }
     return undefined;
   }
@@ -541,8 +541,8 @@ export class BGFBWriter {
       let paramOffset = 0;
       let auxDataOffset = 0;
       let taggedNumericDataOffset = 0;
-      const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS (and specifically, variable size with with 0 terminators)
-      const numPerFace = 0;
+      const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS
+      const numPerFace = 0; // specifically, variable size with 0 terminators
       this.fillOneBasedIndexArray(mesh, mesh.data.pointIndex, mesh.data.edgeVisible, 0, indexArray);
 
       const twoSided = mesh.twoSided;
@@ -566,12 +566,6 @@ export class BGFBWriter {
         intColorOffset = BGFBAccessors.Polyface.createIntColorVector(this.builder, mesh.data.color);
       }
 
-      /*
-            if (mesh.data.face !== undefined && mesh.data.face.length > 0) {
-              this.writeOneBasedIndexArray(mesh, mesh.data.face, undefined, 0, indexArray);
-              BGFBAccessors.Polyface.createFaceDataVector(this.builder, indexArray);
-            }
-        */
       if (mesh.data.normal) {
         copyToPackedNumberArray(numberArray, mesh.data.normal.float64Data(), mesh.data.normal.float64Length);
         normalOffset = BGFBAccessors.Polyface.createNormalVector(this.builder, numberArray);
@@ -582,17 +576,22 @@ export class BGFBWriter {
         paramOffset = BGFBAccessors.Polyface.createPointVector(this.builder, numberArray);
       }
 
-      if (mesh.data.auxData) {
-        auxDataOffset = this.writePolyfaceAuxDataAsFBVariantGeometry(mesh.data.auxData)!;
-      }
+      if (mesh.data.auxData)
+        auxDataOffset = this.writePolyfaceAuxDataAsFBVariantGeometry(mesh, mesh.data.auxData)!;
 
       if (mesh.data.taggedNumericData)
         taggedNumericDataOffset = this.writeTaggedNumericDataArray(mesh.data.taggedNumericData);
+
       const expectedClosure = mesh.expectedClosure;
-      const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset,
-        pointIndexOffset, paramIndexOffset, normalIndexOffset, colorIndexOffset, 0,
-        0, 0, meshStyle, twoSided,
-        numPerFace, 0, auxDataOffset, expectedClosure, taggedNumericDataOffset);
+
+      // NOTE: mesh.data.face is not persistent
+
+      const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(
+        this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset, pointIndexOffset, paramIndexOffset,
+        normalIndexOffset, colorIndexOffset, 0, 0, 0, meshStyle, twoSided, numPerFace, 0, auxDataOffset,
+        expectedClosure, taggedNumericDataOffset,
+      );
+
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
 
     }

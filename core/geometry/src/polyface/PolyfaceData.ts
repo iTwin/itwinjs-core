@@ -43,20 +43,20 @@ export class PolyfaceData {
   /** Indices of points at facet vertices. */
   public pointIndex: number[];
   /** Coordinates of normal vectors (packed as numbers in a contiguous array). */
-  public normal: GrowableXYZArray | undefined;
+  public normal?: GrowableXYZArray;
   /** Indices of normals at facet vertices. */
-  public normalIndex: number[] | undefined;
+  public normalIndex?: number[];
   /** Coordinates of uv parameters (packed as numbers in a contiguous array). */
   public param?: GrowableXYArray;
   /** Indices of params at facet vertices. */
-  public paramIndex: number[] | undefined;
+  public paramIndex?: number[];
   /**
    * Color values. These are carried around as simple numbers, but are probably required (by display systems) to map
    * exactly to 32-bit integers.
    */
-  public color: number[] | undefined;
+  public color?: number[];
   /** Indices of colors at facet vertices. */
-  public colorIndex: number[] | undefined;
+  public colorIndex?: number[];
   /**
    * Map from facet index to face data.
    * * A "face" is a logical grouping of connected facets in the mesh, e.g., the facets that resulted from faceting
@@ -65,9 +65,9 @@ export class PolyfaceData {
    */
   public face: FacetFaceData[];
   /** Auxiliary data. */
-  public auxData: PolyfaceAuxData | undefined;
+  public auxData?: PolyfaceAuxData;
   /** Tagged geometry data. */
-  public taggedNumericData: TaggedNumericData | undefined;
+  public taggedNumericData?: TaggedNumericData;
   /**
    * Booleans indicating visibility of corresponding edges.
    * * The `edgeVisible` array is parallel to the `pointIndex` array.
@@ -84,6 +84,44 @@ export class PolyfaceData {
    * * Closed solid is a mesh with no boundary edge. Open sheet is a mesh that has boundary edge(s).
    */
   private _expectedClosure: number;
+
+  /**
+   * Optional index array for moving "across an edge" to an adjacent facet.
+   * * This array:
+   *   * completes the topology of the polyface.
+   *   * has the same length as the other PolyfaceData index arrays.
+   *   * is populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
+   *   * is used by [[IndexedPolyfaceWalker]] to traverse the polyface.
+   *   * is invalid if the polyface topology is subsequently changed.
+   * * Let k1 = edgeMateIndex[k] be defined. Then:
+   *   * k1 is an index (an "edge index") into the PolyfaceData index arrays. (The same for k.)
+   *   * k and k1 refer to the two oppositely oriented sides of an interior edge in the polyface.
+   *   * pointIndex[k1] is the point at the opposite end of the edge that starts at pointIndex[k].
+   *   * edgeMateIndex[k1] === k.
+   * * If k1 is undefined, then there is no adjacent facet across the edge that starts at pointIndex[k],
+   * i.e. k refers to a boundary edge.
+   */
+  public edgeMateIndex?: Array<number | undefined>;
+  /**
+   * Dereference the edgeMateIndex array.
+   * * This method returns undefined if:
+   *   * k is undefined
+   *   * `this.edgeMateIndex` is undefined
+   *   * k is out of bounds for `this.edgeMateIndex`
+   *   * `this.edgeMateIndex[k]` is undefined
+   */
+  public edgeIndexToEdgeMateIndex(k: number | undefined): number | undefined {
+    if (k !== undefined
+      && this.edgeMateIndex !== undefined
+      && k >= 0 && k < this.edgeMateIndex.length)
+      return this.edgeMateIndex[k];
+    return undefined;
+  }
+  /** Test if `value` is a valid index into the `pointIndex` array. */
+  public isValidEdgeIndex(value: number | undefined): boolean {
+    return value !== undefined && value >= 0 && value < this.pointIndex.length;
+  }
+
   /**
    * Constructor for facets.
    * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
@@ -494,22 +532,40 @@ export class PolyfaceData {
     return result;
   }
   /**
-   * Apply `transform` to point and normal arrays and to auxData.
-   * * IMPORTANT This base class is just a data carrier. It does not know if the index order and normal directions
-   * have special meaning, i.e., caller must separately reverse index order and normal direction if needed.
+   * Apply a transform to the mesh data.
+   * * Transform the data as follows:
+   *   * apply `transform` to points.
+   *   * apply inverse transpose of `transform` to normals and renormalize. This preserves normals perpendicular
+   * to transformed facets, and keeps them pointing outward, e.g, if the mesh is closed. If the transform is not
+   * invertible or a normal has zero length, the normal(s) are left unchanged, and this error is silently ignored.
+   *   * apply `transform` to auxData.
+   *   * scale faceData distances by the cube root of the absolute value of the determinant of `transform.matrix`.
+   * * Note that if the transform is a mirror, this method does NOT reverse index order. This is the caller's
+   * responsibility. This base class is just a data carrier: PolyfaceData does not know if the index order has
+   * special meaning.
+  * * Note that this method always returns true. If transforming normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     this.point.multiplyTransformInPlace(transform);
     if (this.normal && !transform.matrix.isIdentity)
       this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
-    return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
+    if (this.face.length > 0) {
+      const distScale = Math.cbrt(Math.abs(transform.matrix.determinant()));
+      for (const faceData of this.face)
+        faceData.scaleDistances(distScale);
+    }
+    if (this.auxData)
+      this.auxData.tryTransformInPlace(transform);
+    return true;
   }
   /**
    * Compress the instance by equating duplicate data.
-   * * Search for duplicates within points, normals, params, and colors.
+   * * Search for duplicates within vertices, normals, params, and colors.
    * * Compress each data array.
    * * Revise all indexing for the relocated data.
-   * @param tolerance (optional) tolerance for clustering mesh vertices. Default is [[Geometry.smallMetricDistance]].
+   * * [[PolyfaceAuxData]] is compressed if and only if exactly one [[AuxChannelData]] is present.
+   * @param tolerance (optional) tolerance for clustering mesh vertices only. Default value, and the tolerance used to cluster all other data, is [[Geometry.smallMetricDistance]].
    */
   public compress(tolerance: number = Geometry.smallMetricDistance): void {
     // more info can be found at geometry/internaldocs/Polyface.md
@@ -531,6 +587,19 @@ export class PolyfaceData {
       const packedColors = ClusterableArray.clusterNumberArray(this.color);
       this.color = packedColors.packedNumbers;
       packedColors.updateIndices(this.colorIndex);
+    }
+    if (this.auxData && this.auxData.channels.length === 1 && this.auxData.channels[0].data.length === 1) {
+      const dataSize = this.auxData.channels[0].entriesPerValue;
+      if (1 === dataSize) {
+        const packedData = ClusterableArray.clusterNumberArray(this.auxData.channels[0].data[0].values);
+        this.auxData.channels[0].data[0].values = packedData.packedNumbers;
+        packedData.updateIndices(this.auxData.indices);
+      } else if (3 === dataSize) {
+        const blockedData = GrowableXYZArray.create(this.auxData.channels[0].data[0].values);
+        const packedData = ClusterableArray.clusterGrowablePoint3dArray(blockedData);
+        this.auxData.channels[0].data[0].values = NumberArray.create(packedData.growablePackedPoints!.float64Data());
+        packedData.updateIndices(this.auxData.indices);
+      }
     }
   }
   /**

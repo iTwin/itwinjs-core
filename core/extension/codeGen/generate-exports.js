@@ -6,7 +6,7 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import pkgJson from "../package.json" assert { type: "json" };
+import pkgJson from "../package.json" with { type: "json" };
 
 const declarationFilePath = "index.d.ts";
 const jsFilePath = "index.js";

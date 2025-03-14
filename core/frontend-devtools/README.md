@@ -74,6 +74,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt drawing graphics` - When enabled, 2d graphics in any drawing view will not be displayed. Useful for inspecting 3d graphics of attached section view, if any.
 * `fdt sectiondrawing spatial view` - When enabled, 3d graphics for a section drawing will be displayed in the drawing view, even if they otherwise wouldn't be.
 * `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
+* `fdt toggle maskfrustum` - Toggles display of frustum that is used for planar masks.
 * `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
 * `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.

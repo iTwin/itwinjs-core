@@ -7,7 +7,7 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { CustomAttribute, ECObjectsError, ECObjectsStatus, isSupportedSchemaItemType, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
@@ -24,34 +24,8 @@ import { RelationshipClasses } from "./RelationshipClasses";
 import { Structs } from "./Structs";
 import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
-import { SchemaItems } from "./SchemaItems";
-
-// We can either add validation in Editor, or in the protected methods of Schema.
-// TODO: Add an error code so we can do something programmatic with the error.
-/**
- * @alpha
- */
-export interface SchemaEditResults {
-  schemaKey?: SchemaKey;
-  errorMessage?: string;
-}
-
-/**
- * @alpha
- */
-export interface SchemaItemEditResults {
-  itemKey?: SchemaItemKey;
-  errorMessage?: string;
-}
-
-/**
- * @alpha
- */
-export interface PropertyEditResults {
-  itemKey?: SchemaItemKey;
-  propertyName?: string;
-  errorMessage?: string;
-}
+import { CustomAttributeId, ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
+import { AnyDiagnostic } from "../Validation/Diagnostic";
 
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
@@ -74,9 +48,6 @@ export class SchemaContextEditor {
   public readonly propertyCategories = new PropertyCategories(this);
   public readonly invertedUnits = new InvertedUnits(this);
 
-  /** @internal */
-  public readonly schemaItems = new SchemaItems(this);
-
   /**
    * Creates a new SchemaContextEditor instance.
    * @param schemaContext The SchemaContext the Editor will use to edit in.
@@ -87,7 +58,9 @@ export class SchemaContextEditor {
   }
 
   /** Allows you to get schema classes and items through regular SchemaContext methods. */
-  public get schemaContext(): SchemaContext { return this._schemaContext; }
+  public get schemaContext(): SchemaContext {
+    return this._schemaContext;
+  }
 
   public async finish(): Promise<SchemaContext> {
     return this._schemaContext;
@@ -96,14 +69,16 @@ export class SchemaContextEditor {
   /**
    * Helper method for retrieving a schema, previously added, from the SchemaContext.
    * @param schemaKey The SchemaKey identifying the schema.
+   * @internal
   */
-  public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema | undefined> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
+  public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
+    const schema = await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest);
     if (schema === undefined)
-      return undefined;
+      throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
 
-    return schema;
+    return schema as MutableSchema;
   }
+
   /**
    * Creates a Schema with the given properties and adds it to the current schema context.
    * @param name The name given to the new schema.
@@ -111,12 +86,12 @@ export class SchemaContextEditor {
    * @param readVersion The read version number of the schema.
    * @param writeVersion The write version number of the schema.
    * @param minorVersion The minor version number of the schema.
-   * @returns Resolves to a SchemaEditResults object.
+   * @returns Resolves to the SchemaKey of created schema.
    */
-  public async createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaEditResults> {
+  public async createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaKey> {
     const newSchema = new Schema(this._schemaContext, name, alias, readVersion, writeVersion, minorVersion);
     await this._schemaContext.addSchema(newSchema);
-    return { schemaKey: newSchema.schemaKey };
+    return newSchema.schemaKey;
   }
 
   /**
@@ -124,29 +99,27 @@ export class SchemaContextEditor {
    * @param schemaKey The SchemaKey identifying the schema.
    * @param refSchema The referenced schema to add.
    */
-  public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<void> {
+    try {
+      const schema = await this.lookupSchema(schemaKey, SchemaMatchType.Exact);
+      await schema.addReference(refSchema);
 
-    await schema.addReference(refSchema);
-    const diagnostics = Rules.validateSchemaReferences(schema);
+      const diagnostics: AnyDiagnostic[] = [];
+      for await (const diagnostic of Rules.validateSchemaReferences(schema)) {
+        diagnostics.push(diagnostic);
+      }
 
-    const result: SchemaEditResults = { errorMessage: "" };
-    for await (const diagnostic of diagnostics) {
-      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+      if (diagnostics.length > 0) {
+        this.removeReference(schema, refSchema);
+        throw new SchemaEditingError(ECEditingStatus.RuleViolation, new SchemaId(schemaKey), undefined, diagnostics);
+      }
+
+      if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
+        await this.schemaContext.addSchema(refSchema);
+      }
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.AddSchemaReference, new SchemaId(schemaKey), e);
     }
-
-    if (result.errorMessage) {
-      this.removeReference(schema, refSchema);
-      return result;
-    }
-
-    if (!await this.schemaContext.getCachedSchema(refSchema.schemaKey)) {
-      await this.schemaContext.addSchema(refSchema);
-    }
-
-    return {};
   }
 
   /**
@@ -154,26 +127,23 @@ export class SchemaContextEditor {
    * @param schemaKey The SchemaKey identifying the schema.
    * @param customAttribute The CustomAttribute instance to add.
    */
-  public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<void> {
+    try {
+      const schema = await this.lookupSchema(schemaKey);
+      schema.addCustomAttribute(customAttribute);
 
-    schema.addCustomAttribute(customAttribute);
+      const diagnostics: AnyDiagnostic[] = [];
+      for await (const diagnostic of Rules.validateCustomAttributeInstance(schema, customAttribute)) {
+        diagnostics.push(diagnostic);
+      }
 
-    const diagnostics = Rules.validateCustomAttributeInstance(schema, customAttribute);
-
-    const result: SchemaEditResults = { errorMessage: "" };
-    for await (const diagnostic of diagnostics) {
-      result.errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+      if (diagnostics.length > 0) {
+        this.removeCustomAttribute(schema, customAttribute);
+        throw new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, schema), undefined, diagnostics);
+      }
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToClass, new SchemaId(schemaKey), e);
     }
-
-    if (result.errorMessage) {
-      this.removeCustomAttribute(schema, customAttribute);
-      return result;
-    }
-
-    return {};
   }
 
   /**
@@ -182,27 +152,68 @@ export class SchemaContextEditor {
    * @param readVersion The read version of the schema. If not specified, the existing read version will be maintained.
    * @param writeVersion The write version of the schema. If not specified, the existing write version will be maintained.
    * @param minorVersion The minor version of the schema. If not specified, the existing minor version will be maintained.
+   * @returns Resolves to the new SchemaKey containing version updates.
    */
-  public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaKey> {
+    try {
+      const schema = await this.lookupSchema(schemaKey);
+      schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
 
-    schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
-    return {};
+      return schema.schemaKey;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.SetSchemaVersion, new SchemaId(schemaKey), e);
+    }
   }
 
   /**
    * Increments the minor version of a schema.
    * @param schemaKey The SchemaKey identifying the schema.
+   * @returns Resolves to the new SchemaKey containing version updates.
    */
-  public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaKey> {
+    try {
+      const schema = await this.lookupSchema(schemaKey);
+      schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
 
-    schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
-    return {};
+      return schema.schemaKey;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.IncrementSchemaMinorVersion, new SchemaId(schemaKey), e);
+    }
+  }
+
+  /** @internal */
+  public async lookupSchemaItem(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<SchemaItem> {
+    if(Schema.isSchema(schemaOrKey)) {
+      schemaOrKey = schemaOrKey.schemaKey;
+    }
+
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
+    if (schemaItem === undefined)
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    if (schemaItemType !== schemaItem.schemaItemType)
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    return schemaItem;
+  }
+
+  /** @internal */
+  public async getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T>> {
+    const schemaItem = await this.schemaContext.getSchemaItem(schemaItemKey);
+    const schemaItemType = itemConstructor.schemaItemType;
+    if(!isSchemaItemType(schemaItemType)) {
+      // This block should never be hit, as the editor components always pass in the itemConstructor with a valid schemaItemType.
+      throw new Error(`Invalid schema item lookup for: ${schemaItemType}`);
+    }
+
+    if (!schemaItem) {
+      throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(schemaItemType, schemaItemKey));
+    }
+
+    if (!isSupportedSchemaItemType(schemaItem.schemaItemType, itemConstructor.schemaItemType))
+      throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new SchemaItemId(schemaItemType, schemaItemKey));
+
+    return schemaItem as InstanceType<T>;
   }
 
   private removeReference(schema: Schema, refSchema: Schema) {
@@ -217,5 +228,72 @@ export class SchemaContextEditor {
     const map = schema.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);
   }
+
+  private async lookupSchema(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<MutableSchema> {
+    const schema = await this.schemaContext.getCachedSchema(schemaKey, matchType);
+    if (schema === undefined)
+      throw new SchemaEditingError(ECEditingStatus.SchemaNotFound, new SchemaId(schemaKey));
+
+    return schema as MutableSchema;
+  }
+
+  /**
+   * Sets the Schemas description.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param description The new description to set.
+   */
+  public async setDescription(schemaKey: SchemaKey, description: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetDescription, new SchemaId(schemaKey), e);
+      });
+    schema.setDescription(description);
+  }
+
+  /**
+   * Sets the Schemas display label.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param label The new label to set.
+   */
+  public async setDisplayLabel(schemaKey: SchemaKey, label: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetLabel, new SchemaId(schemaKey), e);
+      });
+    schema.setDisplayLabel(label);
+  }
+
+  /**
+   * Sets the Schemas alias.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param alias The new alias to set.
+   */
+  public async setAlias(schemaKey: SchemaKey, alias: string) {
+    const schema = await this.lookupSchema(schemaKey)
+      .catch((e: any) => {
+        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey), e);
+      });
+
+    try {
+      for (const currentSchema of this.schemaContext.getKnownSchemas()) {
+        if (currentSchema.schemaKey.matches(schemaKey))
+          continue;
+
+        if (currentSchema.alias.toLowerCase() === alias.toLowerCase())
+          throw new SchemaEditingError(ECEditingStatus.SchemaAliasAlreadyExists, new SchemaId(schemaKey), undefined, undefined, `Schema ${currentSchema.name} already uses the alias '${alias}'.`);
+      }
+      schema.setAlias(alias);
+    } catch(e: any) {
+      if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
+        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey),
+          new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)));
+      }
+
+      throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias,  new SchemaId(schemaKey), e);
+    }
+  }
 }
 
+function isSchemaItemType(type: SupportedSchemaItemType): type is SchemaItemType {
+  return Object.values(SchemaItemType).includes(type as SchemaItemType);
+}

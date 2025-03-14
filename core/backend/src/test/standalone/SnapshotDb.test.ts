@@ -11,6 +11,7 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../HubMock";
+import { _hubAccess, _nativeDb } from "../../internal/Symbols";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -50,15 +51,15 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     const clock = sinon.useFakeTimers();
     clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
     const defaultTxnSpy = sinon.spy(SnapshotDb.prototype, "restartDefaultTxn");
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: cloudContainer } as any;
     });
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
@@ -98,20 +99,20 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     const clock = sinon.useFakeTimers();
     clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
 
-    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    sinon.stub(IModelHost, _hubAccess).get(() => HubMock);
     sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
       return { dbName: "fakeDb", container: cloudContainer } as any;
     });
-    const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
+    const queryStub = sinon.stub(IModelHost[_hubAccess], "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken: userAccessToken, iTwinId, iModelId, changeset, reattachSafetySeconds: 60 });
-    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
+    expect(checkpoint[_nativeDb].cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
@@ -167,7 +168,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
     const snapshot = V1CheckpointManager.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");

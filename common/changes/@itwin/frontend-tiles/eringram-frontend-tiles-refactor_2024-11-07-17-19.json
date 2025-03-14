@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-tiles",
+      "comment": "Allow passing number of exports to createGraphicRepresentationsQueryUrl",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-tiles"
+}

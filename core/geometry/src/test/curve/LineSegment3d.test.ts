@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
@@ -91,16 +91,16 @@ describe("LineSegment3d", () => {
     ck.testTrue(segmentF.isAlmostEqual(segmentA));
 
     const fraction = 0.27;
-    const worldToLocal = Transform.createRigidFromOriginAndColumns(segmentA.point0Ref, Vector3d.createStartEnd(segmentA.point0Ref, segmentA.point1Ref), Vector3d.createFrom([0,1,0]), AxisOrder.XYZ);
+    const worldToLocal = Transform.createRigidFromOriginAndColumns(segmentA.point0Ref, Vector3d.createStartEnd(segmentA.point0Ref, segmentA.point1Ref), Vector3d.createFrom([0, 1, 0]), AxisOrder.XYZ);
     const localRangeFirstHalf = segmentA.rangeBetweenFractions(0, fraction, worldToLocal?.inverse());
     ck.testRange3d(localRangeFirstHalf, Range3d.createXYZXYZ(0, 0, 0, fraction * segmentA.curveLength(), 0, 0), "rangeBetweenFractions with Transform");
 
-    const xRange = segmentA.projectedParameterRange(Vector3d.create(1,0,0));
+    const xRange = segmentA.projectedParameterRange(Vector3d.create(1, 0, 0));
     if (ck.testType(xRange, Range1d, "projectedParameterRange returns a range"))
       ck.testRange1d(xRange, Range1d.createXX(1, 6), "projectedParameterRange returns the expected range");
 
     ck.checkpoint("LineSegment3d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PointsAlongLine", () => {
@@ -118,7 +118,6 @@ describe("LineSegment3d", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "PointsAlongLine");
   });
-
   it("ClosestApproachParallelSegments", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -160,7 +159,7 @@ describe("LineSegment3d", () => {
       for (const s of segments) {
         const sRange = s.range();
         const approachAB = LineSegment3d.closestApproach(xSegment, false, s, false);
-        if (ck.testDefined(approachAB) && approachAB) {
+        if (ck.testDefined(approachAB)) {
           const fA = approachAB.detailA.fraction;
           const fB = approachAB.detailB.fraction;
           if (ck.testType(approachAB.detailA.curve, CurvePrimitive, "closestApproach set detail.curveA"))
@@ -177,7 +176,7 @@ describe("LineSegment3d", () => {
           }
           // test with call in reverse order.
           const approachBA = LineSegment3d.closestApproach(s, false, xSegment, false);
-          if (ck.testDefined(approachBA) && approachBA) {
+          if (ck.testDefined(approachBA)) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approachBA.detailA.point, approachBA.detailB.point], x0, 4, z0);
             // Skip these tests - the reversal flips some cases around because of order inspected.
             // ck.testPoint3d(approachAB.detailA.point, approachBA.detailB.point);
@@ -199,7 +198,7 @@ describe("LineSegment3d", () => {
       ck.testPoint3d(approach.detailB.point, Point3d.create(1, 1), "closestApproach returns expected point on extended seg1");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "ClosestApproachParallelSegments");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClosestApproach", () => {
@@ -233,7 +232,7 @@ describe("LineSegment3d", () => {
         verifyAVectorsAtA(ck, approach.detailA, approach.detailB);
         verifyAVectorsAtA(ck, approach.detailB, approach.detailA);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, [approach.detailA.point, approach.detailB.point], x0, y0);
-        if (ck.testDefined(reversedApproach) && reversedApproach !== undefined) {
+        if (ck.testDefined(reversedApproach)) {
           ck.testPoint3d(approach.detailA.point, reversedApproach.detailB.point);
           ck.testPoint3d(approach.detailB.point, reversedApproach.detailA.point);
         }
@@ -263,7 +262,7 @@ describe("LineSegment3d", () => {
     }
     ck.show({ numSimple, numNonParallel });
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "ClosestApproach");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -273,8 +272,7 @@ function verifyAVectorsAtA(ck: Checker, detailA: CurveLocationDetail, detailB: C
   const vectorAB = Vector3d.createStartEnd(detailA.point, detailB.point);
   const curveA = detailA.curve;
   const curveB = detailB.curve;
-  if (ck.testDefined(curveA, "Expect curve in detailA") && curveA !== undefined
-    && ck.testDefined(curveB, "Expect curve in detailB") && curveB !== undefined) {
+  if (ck.testDefined(curveA, "Expect curve in detailA") && ck.testDefined(curveB, "Expect curve in detailB")) {
     const rayA = curveA.fractionToPointAndDerivative(0.0);
     const dot = vectorAB.dotProduct(rayA?.direction);
     if (detailA.fraction <= 0.0)

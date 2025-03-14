@@ -9,8 +9,8 @@ import {
   Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
-  ChannelControl,
-  IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
+  _nativeDb,
+  ChannelControl, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -32,12 +32,12 @@ describe("Model geometry changes", () => {
     modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     imodel.saveChanges("set up");
-    imodel.nativeDb.deleteAllTxns();
+    imodel[_nativeDb].deleteAllTxns();
     imodel.txns.onGeometryChanged.addListener((props) => lastChanges = props);
   });
 
   after(async () => {
-    imodel.nativeDb.setGeometricModelTrackingEnabled(false);
+    imodel[_nativeDb].setGeometricModelTrackingEnabled(false);
     imodel.close();
   });
 
@@ -80,8 +80,8 @@ describe("Model geometry changes", () => {
   }
 
   it("emits events", async () => {
-    expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
+    expect(imodel[_nativeDb].isGeometricModelTrackingSupported()).to.be.true;
+    expect(imodel[_nativeDb].setGeometricModelTrackingEnabled(true).result).to.be.true;
 
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));
@@ -128,8 +128,8 @@ describe("Model geometry changes", () => {
     expectChanges({ modelId, deleted: [elemId0] });
 
     // Stop tracking geometry changes
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
-    expect(imodel.nativeDb.isGeometricModelTrackingSupported()).to.be.true;
+    expect(imodel[_nativeDb].setGeometricModelTrackingEnabled(false).result).to.be.false;
+    expect(imodel[_nativeDb].isGeometricModelTrackingSupported()).to.be.true;
 
     // Modify element's geometry.
     props.id = elemId1;
@@ -139,7 +139,7 @@ describe("Model geometry changes", () => {
     expectNoChanges();
 
     // Restart tracking and undo everything.
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(true).result).to.be.true;
+    expect(imodel[_nativeDb].setGeometricModelTrackingEnabled(true).result).to.be.true;
     expect(imodel.txns.reverseSingleTxn()).to.equal(IModelStatus.Success);
     expectChanges({ modelId, updated: [elemId1] });
 
@@ -177,6 +177,6 @@ describe("Model geometry changes", () => {
     expect(imodel.txns.reinstateTxn()).to.equal(IModelStatus.Success);
     expectChanges({ modelId, updated: [elemId1] });
 
-    expect(imodel.nativeDb.setGeometricModelTrackingEnabled(false).result).to.be.false;
+    expect(imodel[_nativeDb].setGeometricModelTrackingEnabled(false).result).to.be.false;
   });
 });

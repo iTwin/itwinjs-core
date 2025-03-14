@@ -6,11 +6,11 @@
  * @module Hierarchies
  */
 
-import { Node, NodeJSON } from "./Node";
+import { Node } from "./Node";
 
 /**
  * Defines a hierarchy level that consists of an array of nodes and possibly other information.
- * @beta
+ * @public
  */
 export interface HierarchyLevel {
   /** A list of nodes in a hierarchy level. */
@@ -20,34 +20,4 @@ export interface HierarchyLevel {
    * a hierarchy level with [[HierarchyRequestOptions.instanceFilter]] will throw an error with [[PresentationStatus.InvalidArgument]] status.
    */
   supportsFiltering?: boolean;
-}
-
-/**
- * JSON representation of [[HierarchyLevel]].
- * @beta
- * @deprecated in 3.x. Use [[HierarchyLevel]]
- */
-export interface HierarchyLevelJSON {
-  // eslint-disable-next-line deprecation/deprecation
-  nodes: NodeJSON[];
-  supportsFiltering?: boolean;
-}
-
-/**
- * Contains helper functions for working with objects of [[HierarchyLevel]] type.
- * @beta
- */
-export namespace HierarchyLevel {
-  /**
-   * Deserialize [[HierarchyLevel]] from JSON
-   * @deprecated in 3.x. Use [[HierarchyLevel]].
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  export function fromJSON(json: HierarchyLevelJSON): HierarchyLevel {
-    return {
-      ...json,
-      // eslint-disable-next-line deprecation/deprecation
-      nodes: json.nodes.map(Node.fromJSON),
-    };
-  }
 }

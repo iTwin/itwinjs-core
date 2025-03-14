@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
 import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, createITwinErrorTypeAsserter, IModel, InUseLocksError, iTwinErrorKeys, iTwinjsCoreNamespace } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb, Subject } from "@itwin/core-backend";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
+import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -37,6 +37,32 @@ describe("Example Code", () => {
     newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);
     // __PUBLISH_EXTRACT_END__
+  });
+
+  it("should check for an InUseLocksError", async () => {
+    if (iModel.isBriefcase) {
+      const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
+      const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
+      assert.isTrue(elementId !== undefined);
+      // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
+      try {
+        await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
+      } catch (err) {
+        const isInUseError = createITwinErrorTypeAsserter<InUseLocksError>(iTwinjsCoreNamespace, iTwinErrorKeys.inUseLocks);
+        if (isInUseError(err)) {
+          const inUseLocks = err.inUseLocks;
+          for (const inUseLock of inUseLocks) {
+            const _briefcaseIds = inUseLock.briefcaseIds;
+            const _state = inUseLock.state;
+            const _objectId = inUseLock.objectId;
+            // Create a user friendly error message
+          }
+        } else {
+          throw err;
+        }
+        // __PUBLISH_EXTRACT_END__
+      }
+    }
   });
 
   it("should extract working example code", async () => {
@@ -83,7 +109,7 @@ describe("Example Code", () => {
       const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
       testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
       assert.fail();
-    } catch (err) {
+    } catch {
       // We expect this to fail.
     }
 
@@ -96,114 +122,9 @@ describe("Example Code", () => {
 
   });
 
-  it("Settings", async () => {
-    // __PUBLISH_EXTRACT_START__ Settings.addDictionaryDefine
-    interface TemplateRsc {
-      container: string;
-      template: {
-        name: string;
-        loadByDefault?: boolean;
-      };
-    }
-
-    const templates: TemplateRsc[] = [
-      {
-        container: "default-app1",
-        template: {
-          name: "vertical 1",
-          loadByDefault: false,
-        },
-      },
-      {
-        container: "default-app1",
-        template: {
-          name: "horizontal 4",
-        },
-      },
-    ];
-
-    const defaultsDict: SettingDictionary = {
-      "core/default-tool": "select",
-      "samples/start/leftPane": true,
-      "myApp/tree/label": "distribution of work",
-      "myApp/tree/indent": 4,
-      "myApp/categories": ["category1", "lowest", "upper"],
-      "myApp/list/clickMode": "doubleClick",
-      "myApp/templateResources": templates,
-    };
-    // __PUBLISH_EXTRACT_END__
-
-    // __PUBLISH_EXTRACT_START__ Settings.addDictionary
-    let workspace = IModelHost.appWorkspace;
-    let settings = workspace.settings;
-    settings.addDictionary("initial values", SettingsPriority.defaults, defaultsDict);
-    let defaultTool = settings.getString("core/default-tool"); // returns "select"
-    const leftPane = settings.getBoolean("samples/start/leftPane"); // returns true
-    const categories = settings.getArray<string>("myApp/categories"); // returns ["category1", "lowest", "upper"]
-    const t1 = settings.getArray<TemplateRsc>("myApp/templateResources"); // returns copy of `templates`
-    // __PUBLISH_EXTRACT_END__
-
-    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
-    expect(leftPane).eq(defaultsDict["samples/start/leftPane"]);
-    expect(categories).deep.equal(defaultsDict["myApp/categories"]);
-    expect(t1).deep.equal(templates);
-
-    // __PUBLISH_EXTRACT_START__ Settings.addITwinDictionary
-    const iTwin555: SettingDictionary = {
-      "core/default-tool": "measure",
-      "app5/markerName": "arrows",
-      "app5/markerIcon": "arrows.ico",
-    };
-    workspace = iModel.workspace;
-    settings = workspace.settings;
-    settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
-    defaultTool = settings.getString("core/default-tool"); // returns "measure"
-    // __PUBLISH_EXTRACT_END__
-    expect(defaultTool).eq(iTwin555["core/default-tool"]);
-
-    // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
-    workspace = iModel.workspace;
-    settings = workspace.settings;
-    settings.dropDictionary("for iTwin 555");
-    defaultTool = settings.getString("core/default-tool"); // returns "select" again
-    // __PUBLISH_EXTRACT_END__
-    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
-
-    // __PUBLISH_EXTRACT_START__ Settings.containerAlias
-    const iTwinDict: SettingDictionary = {
-      "cloud/containers": [
-        { name: "default-fonts", containerId: "fonts-01", accountName: "" },
-        { name: "gcs-data", containerId: "gcsdata-01", accountName: "" },
-      ],
-    };
-    const iModelDict: SettingDictionary = {
-      "cloud/containers": [
-        { name: "default-icons", containerId: "icons-01", accountName: "" },
-        { name: "default-lang", containerId: "lang-05", accountName: "" },
-        { name: "default-fonts", containerId: "fonts-02", accountName: "" },
-        { name: "default-key", containerId: "key-05", accountName: "" },
-      ],
-    };
-
-    workspace = iModel.workspace;
-    settings = workspace.settings;
-    const fontContainerName = "default-fonts";
-    settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
-    settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
-
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-02"); // iModel has higher priority than iTwin
-
-    settings.dropDictionary("iModel"); // drop iModel dict
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-01"); // now resolves to iTwin value
-
-    settings.dropDictionary("iTwin"); // drop iTwin dict
-    expect(() => workspace.resolveContainer(fontContainerName)).to.throw("no setting");
-    // __PUBLISH_EXTRACT_END__
-  });
-
   it("CodeService", async () => {
 
-    if (false) { // this will compile but it will not run, because the root elementhas no federationGuid -- waiting for a fix
+    if (false) { // this will compile but it will not run, because the root element has no federationGuid -- waiting for a fix
 
       // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
       const code = Subject.createCode(iModel, IModel.rootSubjectId, "main transfer pump"); // an example a code that an app might use

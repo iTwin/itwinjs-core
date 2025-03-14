@@ -6,8 +6,8 @@
 import { assert, expect } from "chai";
 import { join } from "path";
 import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
-import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
-import { LockProps, LockState } from "../../BackendHubAccess";
+import { ChangesetFileProps, ChangesetType, LockState } from "@itwin/core-common";
+import { LockProps } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -16,6 +16,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
 import { ProgressFunction, ProgressStatus } from "../../CheckpointManager";
+import { _hubAccess } from "../../internal/Symbols";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -31,7 +32,7 @@ describe("HubMock", () => {
   });
 
   it("should be able to create HubMock", async () => {
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
+    const iModelId = await IModelHost[_hubAccess].createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const localHub = HubMock.findLocalHub(iModelId);
     let checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 1);
@@ -282,11 +283,11 @@ describe("HubMock", () => {
     assert.equal(lockStat.lastCsIndex, undefined);
     assert.equal(lockStat.state, 0);
 
-    await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
+    await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId });
   });
 
   it("HubMock report progress of changesets 'downloads'", async () => {
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
+    const iModelId = await IModelHost[_hubAccess].createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const localHub = HubMock.findLocalHub(iModelId);
     const briefcaseId = await HubMock.acquireNewBriefcaseId({ iModelId });
 
@@ -356,7 +357,7 @@ describe("HubMock", () => {
         targetDir: tmpDir,
         progressCallback,
       });
-    } catch (error: unknown) {
+    } catch {
       errorThrown = true;
     }
     assert.isTrue(errorThrown);
@@ -372,7 +373,7 @@ describe("HubMock", () => {
         targetDir: tmpDir,
         progressCallback,
       });
-    } catch (error: unknown) {
+    } catch {
       errorThrown = true;
     }
     assert.isTrue(errorThrown);
@@ -381,12 +382,12 @@ describe("HubMock", () => {
   });
 
   it("use HubMock with BriefcaseManager", async () => {
-    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
+    const iModelId = await IModelHost[_hubAccess].createNewIModel({ iTwinId, iModelName: "test imodel", version0 });
     const briefcase = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");
     assert.equal(briefcase.iModelId, iModelId);
     assert.equal(briefcase.iTwinId, iTwinId);
-    await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
+    await IModelHost[_hubAccess].deleteIModel({ iTwinId, iModelId });
   });
 });

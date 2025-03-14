@@ -16,7 +16,6 @@ import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
 export interface RulesetManager {
   /**
    * An event invoked one a ruleset is modified using [[modify]] function.
-   * @beta
    */
   onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
 
@@ -32,7 +31,6 @@ export interface RulesetManager {
 
   /**
    * Modify the given pre-registered ruleset
-   * @beta
    */
   modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
 

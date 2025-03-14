@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
-import { assert, BeEvent, IDisposable } from "@itwin/core-bentley";
+import { _nativeDb, IModelDb, IModelJsNative, IModelNative } from "@itwin/core-backend";
+import { assert, BeEvent } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs,
@@ -72,7 +72,7 @@ export interface NativePlatformResponse<TResult> {
 }
 
 /** @internal */
-export interface NativePlatformDefinition extends IDisposable {
+export interface NativePlatformDefinition extends Disposable {
   getImodelAddon(imodel: IModelDb): any;
 
   setupRulesetDirectories(directories: string[]): NativePlatformResponse<void>;
@@ -136,7 +136,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public constructor() {
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
+      this._nativeAddon = new IModelNative.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });
     }
     private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
@@ -177,7 +177,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       }
       return this.createSuccessResponse(response);
     }
-    public dispose() {
+    public [Symbol.dispose]() {
       this._nativeAddon.dispose();
     }
     public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {
@@ -197,7 +197,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       if (!imodel.isOpen) {
         throw new PresentationError(PresentationStatus.InvalidArgument, "imodel");
       }
-      return imodel.nativeDb;
+      return imodel[_nativeDb];
     }
     public registerSupplementalRuleset(serializedRulesetJson: string) {
       return this.handleResult<string>(this._nativeAddon.registerSupplementalRuleset(serializedRulesetJson));

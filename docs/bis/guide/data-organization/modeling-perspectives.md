@@ -6,8 +6,8 @@ As discussed in [Modeling with BIS](../intro/modeling-with-bis.md), objects in t
 
 * As a physical 3D reality with form, material and mass (the *physical* perspective).
 * As a system for hydrological conveyance (an *analytical* perspective)
-* As a set of components that require scheduled and emergency maintenance (a *maintenance* perspective)
-* As a load on a wastewater treatment facility that needs to have adequate capacity (a *functional* perspective)
+* As a set of components that together provide an adequate wastewater treatment capacity (a *functional* perspective)
+* As a set of 2D graphics as part of Sheets & Drawings (a *document* perspective)
 
 ## Keeping Modeling Perspectives Segregated
 
@@ -26,22 +26,17 @@ Modeling perspectives are represented directly in the BIS class hierarchies as:
 
 For every modeling perspective there is a corresponding `InformationPartitionElement` subclass and a `Model` subclass.
 
-Modeling perspectives are also manifested in `Element` subclasses. Often there is an `Element` subclass that directly corresponds to a modeling perspective. `Element`s placed in a `Model` need to have a modeling perspective that is compatible with the `Model`.
-
-<!-- The above paragraph is intentionally vague. I am hoping we can approve it for now and improve it when we figure out our mixin (or whatever strategy)-->
+Modeling perspectives are also manifested in `Element` subclasses. There is an `Element` subclass that directly corresponds to a modeling perspective. `Element`s placed in a `Model` need to have a modeling perspective that is compatible with the `Model`.
 
 [Top of the World](./top-of-the-world.md) discusses `InformationPartitionElement`s and [Model Fundamentals](../fundamentals/model-fundamentals.md) discusses `Model`s.
 
-<!-- Temporarily left this out:>
-
-Some `Model` subclasses do not correspond to modeling perspectives. `RepositoryModel` is one case.
--->
+Note that the only `Model` subclass that does not correspond to any particular modeling perspective is the `RepositoryModel`.
 
 ### Modeling Perspective Consistency of Partitions, Models and Elements
 
 As is described in [Top of the World](./top-of-the-world), for every Subject, there may be zero or more `InformationPartitionElement` child `Element`s. Each of those `InformationPartitionElement`s is effectively a declaration of a modeling perspective and starts a `Model` hierarchy that is of that the declared modeling perspective.
 
-Each `InformationPartitionElement` has a sub-`Model` that is of the same modeling perspective. That sub-`Model` contains only `Element`s of the same modeling perspective. Some of those `Element`s will have sub-`Model`s of their own, which must be of the same modeling perspective as the `Element` they sub-model.
+Each `InformationPartitionElement` has a sub-`Model` that is of the same modeling perspective. That sub-`Model` contains only `Element`s of the same modeling perspective. Some of those `Element`s may have sub-`Model`s of their own, which must be of the same modeling perspective as the `Element` they sub-model.
 
 These modeling perspective rules enforce a minimum level of logical data consistency. For example, they prevent the placement of a physical fire hydrant `Element` into a section drawing `Model`.
 
@@ -59,21 +54,28 @@ Modeling Perspectives can be considered to be abstract, concrete, or sealed to c
 
 It is not possible to predict all of the modeling perspectives that may eventually be needed in BIS. BIS does, however, provide a core set of modeling perspectives from which other modeling perspectives must derive.
 
-The following table shows the core modeling perspectives, which subclass the abstract `InformationPartitionElement` class, as well as the expected kind of `Model` subclass that implement them for each case.
+The following table shows the most common core modeling perspectives, which subclass the abstract `InformationPartitionElement` class, as well as the expected kind of `Model` subclass that implement them for each case.
 
-| `InformationPartitionElement` subclass | `Model` subclass implementer |
-| --- | --- |
-| AnalyticalPartition (abstract) | appropriate subclass of AnalyticalModel |
-| DefinitionPartition (sealed) | DefinitionModel |
-  DocumentPartition (sealed) | DocumentListModel |
-  FunctionalPartition (concrete but considered abstract) | appropriate subclass of FunctionalModel |
-  GraphicalPartition3d (sealed) | appropriate subclass of GraphicalModel3d |
-  GroupInformationPartition (sealed) | appropriate subclass of GroupInformationModel |
-  InformationRecordPartition (sealed) | InformationRecordModel |
-  LinkPartition (sealed) | LinkModel |
-  PhysicalPartition (sealed) | PhysicalModel |
-  PhysicalSystemPartition (sealed) | PhysicalSystemModel |
-  SpatialLocationPartition (sealed) | SpatialLocationModel |
+| Major Modeling Perspective | Sample Use-cases | `InformationPartitionElement` subclass | `Model` subclass implementer |
+| --- | --- | --- | --- |
+| Physical | Clash-detection, Quantity takeoffs | PhysicalPartition (sealed) | PhysicalModel |
+| Functional | Eletrical or Plant Functional Model | FunctionalPartition (concrete but considered abstract) | appropriate subclass of FunctionalModel |
+| Analytical | Structural or Hydraulic Analysis | AnalyticalPartition (abstract) | appropriate subclass of AnalyticalModel |
+| Shared and/or Support data | Components Catalog, Material Library | DefinitionPartition (sealed) | DefinitionModel |
+| Documents | Drawings & Sheets | DocumentPartition (sealed) | DocumentListModel |
+
+The following table shows additional core modeling perspectives that are typically considered as specialized.
+
+| Modeling Perspective | Sample Use-cases | `InformationPartitionElement` subclass | `Model` subclass implementer |
+| --- | --- | --- | --- |
+| Graphics-only (3D) | Pure graphics positioned in true world coordinates | GraphicalPartition3d (sealed) | appropriate subclass of GraphicalModel3d |
+| Grouping Information-only | _Named Groups_ | GroupInformationPartition (sealed) | appropriate subclass of GroupInformationModel |
+| Information records-only | Non-graphical data records | InformationRecordPartition (sealed) | InformationRecordModel |
+| Linked data | Links to Reality Data | LinkPartition (sealed) | LinkModel |
+| Physical Systems | Cold & Hot water, Air Conditioning or Electrical Systems | PhysicalSystemPartition (sealed) | PhysicalSystemModel |
+| Spatial Location-only | A Building's Grid, Roads' Alignments or Parcel boundaries. Subset of Physical. | SpatialLocationPartition (sealed) | SpatialLocationModel |
+
+Note that most `InformationPartitionElement` subclasses are *sealed* with the exception of FunctionalPartition and AnalyticalPartition. Each concrete implementation of those modeling perspectives, due to them being specialized according to the type of functional system or analysis being captured, always require subclassing of the appropriate Partition and Model classes. For more information, see [Functional Modeling Perspectives](#functional-modeling-perspectives) and [Analytical Modeling Perspectives](#analytical-modeling-perspectives) further below.
 
 If the need for a new core modeling perspective is discovered (none of the existing core modeling perspectives is appropriate as a parent perspective), new ones can be added.
 
@@ -105,24 +107,11 @@ The analytical modeling perspective views reality as objects in 3D space that pa
 
 An example of an analytical modeling perspective is thermal analysis of a building, where the components of the building have thermal properties and may be heat sources or sinks.
 
-There are similarities between the Functional and Analytical perspectives. The primary difference between the two is that for the Analytical perspective, 3D locations are critical to the behavior.
+Any analysis involves one or more numerical solvers capable of predicting the behavior of a system (output) based on a set of initial conditions (input). While some analyses can be performed directly on the Physical Perspective data, there are many kinds of analyses that require a parallel representation of reality based on a custom perspective. In the latter case, input data of an analysis is captured in the corresponding analytical model perspective of the applicable `Subject` in a BIS repository.
 
-Note that some analyses can be performed directly on the Physical Perspective data; these analyses do not require conceptually reality from a custom perspective.
+Note that a BIS repository is not appropriate to store results or output data from an analysis. Analytical resultsets are usually transient and large in size, created frequently or in-bulk as a specialized modeler tries out several sets of initial conditions.
 
 See [Analytical Models and Elements](../other-perspectives/analysis-models-and-elements.md) for details of analytical modeling.
-
-<!-- Allan believes the following partitions/models have much value, but are a force-fit as a modeling perspective:
-- Definition
-- Repository
--->
-
-<!-- Allan questions the value of following partitions/models but is willing to accept that the decision is water under the bridge....but do we want to consider them as modeling perspectives:
-- Link
-- Dictionary
-- DocumentList
--->
-
-<!-- Allan is not sure about the many of the others -->
 
 ### Definition Partitions
 
@@ -155,7 +144,9 @@ Hydraulic Analysis, on the other hand, does require a custom modeling perspectiv
 
 ## Codes for InformationPartition instances
 
-As implementers of the `ISubModeledElement` mix-in, each `InformationPartitionElement` carries the _name_ of its submodel in its Code.
+As explained in [Top of the World](./top-of-the-world.md#informationpartitionelements), since `InformationPartitionElement` instances are aimed at software to understand rather than being human-comprehensible, their *Codes* are typically not meaningful in the context of a business or an infrastructure asset. It is the *Code* of its parent `Subject` what is usually considered to be the "_Name_" of the Partition's submodel.
+
+Having said that, as implementers of the `ISubModeledElement` mix-in, each `InformationPartitionElement` shall have a Code assigned. The following guidelines aim at achieving consistency in their Codes.
 
 Generally, the different parts of the Code of `InformationPartitionElement` instances shall be setup as follows:
 

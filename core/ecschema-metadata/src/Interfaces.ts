@@ -29,7 +29,7 @@ import { UnitSystem } from "./Metadata/UnitSystem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /** @beta */
-export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;
+export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;
 
 /** @beta */
 export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
@@ -78,11 +78,19 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
  * @beta
  */
 export interface SchemaInfo {
-  schemaKey: Readonly<SchemaKey>;
+  schemaKey: SchemaKey;
   references: WithSchemaKey[];
 }
 
 /** @beta */
 export interface WithSchemaKey {
-  schemaKey: Readonly<SchemaKey>;
+  schemaKey: SchemaKey;
+}
+
+/** This is needed to break a circular dependency between Class and EntityClass.
+ * @beta
+ */
+export interface HasMixins {
+  mixins: LazyLoadedMixin[];
+  getMixinsSync(): Iterable<Mixin>;
 }

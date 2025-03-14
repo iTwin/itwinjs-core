@@ -1,6 +1,251 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 16 Apr 2024 14:47:36 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Mar 2025 15:27:53 GMT and should not be manually modified.
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+### Updates
+
+- Resolves CVE-2025-27152
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+_Version update only_
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+### Updates
+
+- Update ECSql reader api to support no stat and error code.
+
+## 4.10.6
+Fri, 24 Jan 2025 08:02:40 GMT
+
+_Version update only_
+
+## 4.10.5
+Tue, 21 Jan 2025 21:56:45 GMT
+
+_Version update only_
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+_Version update only_
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+_Version update only_
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Added props for Sheet Index elements
+- fix regression related to classid
+- improve doc for Placement3d.multiplyTransform
+- Deprecate `WipRpcInterface`
+- Add ITwinError interface and namespace
+- Permit FeatureAppearance to independently override line color and transparency.
+- Allow context reality model visibility to be toggled on/off
+- Add ContourDisplay API.
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+_Version update only_
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:45 GMT
+
+_Version update only_
+
+## 4.9.5
+Tue, 22 Oct 2024 20:01:40 GMT
+
+_Version update only_
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+### Updates
+
+- fix regression related to classid
+
+## 4.9.3
+Thu, 03 Oct 2024 19:15:45 GMT
+
+_Version update only_
+
+## 4.9.2
+Wed, 02 Oct 2024 15:14:43 GMT
+
+_Version update only_
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+_Version update only_
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- spelling
+- Fixed bad clipping of edges in some cut plane graphics.
+- Fix GeometryStreamBuilder.appendTextBlock producing incorrect geometry for black text.
+- Added `roundingError` to numeric `GenericInstanceFilterRuleValue`
+
+## 4.8.7
+Fri, 13 Sep 2024 15:11:17 GMT
+
+_Version update only_
+
+## 4.8.6
+Fri, 06 Sep 2024 05:06:49 GMT
+
+_Version update only_
+
+## 4.8.5
+Wed, 28 Aug 2024 17:27:23 GMT
+
+_Version update only_
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:06 GMT
+
+_Version update only_
+
+## 4.8.3
+Fri, 16 Aug 2024 18:18:14 GMT
+
+_Version update only_
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+### Updates
+
+- Fix GeometryStreamBuilder.appendTextBlock producing incorrect geometry for black text.
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:37 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+- Added new LayoutResult classes, containing information about the result of laying out the lines of a TextBlock.
+- Add RPC method queryAllUsedSpatialSubCategories() to fetch all subcategories of used spatial categories and 3D elements.
+- Remove ThirdPartyNotices.md
+- add ConflictingLocksError
+- TextAnnotation.computeTransform aligns the anchor point with the origin.
+- Add IModel.onChangesetChanged event.
+- Begin deprecating @internal APis.
+- Fix bugs with TextAnnotation wrapping and justification.
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+_Version update only_
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+_Version update only_
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+_Version update only_
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:23 GMT
+
+### Updates
+
+- Add IModel.onChangesetChanged event.
+
+## 4.7.3
+Thu, 27 Jun 2024 21:09:02 GMT
+
+_Version update only_
+
+## 4.7.2
+Sat, 22 Jun 2024 01:09:54 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+
+## 4.7.1
+Thu, 13 Jun 2024 22:47:31 GMT
+
+_Version update only_
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Add SchemaSync as new changeset type.
+- Fix failed HTTP RPC request not being rejected if `X-Protocol-Version` is not available.
+- Added TextAnnotation.offset.
+- Promote QPoint2dBufferBuilderOptions and QPoint3dBufferBuilderOptions from beta to public
+
+## 4.6.2
+Sat, 08 Jun 2024 00:50:25 GMT
+
+### Updates
+
+- udpate mysql2
+
+## 4.6.1
+Wed, 29 May 2024 14:35:17 GMT
+
+_Version update only_
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+### Updates
+
+- Added an optional property called accessString to the QueryPropertyMetaData interface.
+- Added note to `GenericInstanceFilterRuleOperator` that `like` operator should be handled as a contains operator.
+- Add class Id to EntityMetadata.
+- Remove unused TextAnnotation.origin.
+- Add TextAnnotation APIs.
+- Promote QPoint2dBufferBuilderOptions and QPoint3dBufferBuilderOptions from beta to public
 
 ## 4.5.2
 Tue, 16 Apr 2024 14:46:21 GMT

@@ -58,7 +58,6 @@ export class SubCategoriesCache {
 
       return !request.wasCanceled;
     });
-
     return {
       missingCategoryIds: missing,
       promise,
@@ -66,6 +65,18 @@ export class SubCategoriesCache {
     };
   }
 
+  /** Load all subcategories that come from used spatial categories of the iModel into the cache. */
+  public async loadAllUsedSpatialSubCategories(): Promise<void> {
+    try {
+      const results = await this._imodel.queryAllUsedSpatialSubCategories();
+      if (undefined !== results) {
+        this.processResults(results, new Set<string>(), false);
+      }
+    } catch {
+      // In case of a truncated response, gracefully handle the error and exit.
+    }
+
+  }
   /** Given categoryIds, return which of these are not cached. */
   private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
     let missing: Id64Set | undefined;
@@ -98,9 +109,10 @@ export class SubCategoriesCache {
     return new SubCategoryAppearance(props);
   }
 
-  private processResults(result: SubCategoriesCache.Result, missing: Id64Set): void {
-    for (const row of result)
-      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance));
+  private processResults(result: SubCategoriesCache.Result, missing: Id64Set, override: boolean = true): void {
+    for (const row of result) {
+      this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), override);
+    }
 
     // Ensure that any category Ids which returned no results (e.g., non-existent category, invalid Id, etc) are still recorded so they are not repeatedly re-requested
     for (const id of missing)
@@ -111,13 +123,14 @@ export class SubCategoriesCache {
   /** Exposed strictly for tests.
    * @internal
    */
-  public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+  public add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean) {
     let set = this._byCategoryId.get(categoryId);
     if (undefined === set)
       this._byCategoryId.set(categoryId, set = new Set<string>());
 
     set.add(subCategoryId);
-    this._appearances.set(subCategoryId, appearance);
+    if (override || !this._appearances.has(subCategoryId))
+      this._appearances.set(subCategoryId, appearance);
   }
 
   public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
@@ -165,7 +178,7 @@ export class SubCategoriesCache {
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
-export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
+export namespace SubCategoriesCache {
   export type Result = SubCategoryResultRow[];
 
   export class Request {
@@ -177,7 +190,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
     public get wasCanceled() { return this._canceled || this._imodel.isClosed; }
 
-    public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 200) {
+    public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 2500) {
       this._imodel = imodel;
 
       const catIds = [...categoryIds];
@@ -258,7 +271,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
     }
 
     /** Cancel all requests and empty the queue. */
-    public dispose(): void {
+    public [Symbol.dispose](): void {
       if (undefined !== this._request) {
         assert(undefined !== this._current);
         this._request.cancel();

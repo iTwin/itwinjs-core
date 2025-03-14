@@ -3,19 +3,20 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { printRuleset } from "./Utils";
 import { collect } from "../Utils";
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
   });
 
   after(async () => {
@@ -37,8 +38,7 @@ describe("Learning Snippets", () => {
             specifications: [
               {
                 specType: "InstanceNodesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["Model"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
               },
             ],
           },
@@ -48,8 +48,7 @@ describe("Learning Snippets", () => {
             specifications: [
               {
                 specType: "InstanceNodesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["Element"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
               },
             ],
           },
@@ -166,8 +165,7 @@ describe("Learning Snippets", () => {
             specifications: [
               {
                 specType: "InstanceNodesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["Element"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
                 instanceFilter: `NOT HasVariable("ELEMENT_IDS") OR GetVariableIntValues("ELEMENT_IDS").AnyMatch(id => id = this.ECInstanceId)`,
               },
             ],
@@ -330,10 +328,10 @@ describe("Learning Snippets", () => {
 
     it("uses ruleset variable in customization rule value expression", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InCustomizationRuleValueExpression.Ruleset
-      // The ruleset has a root node rule which loads all bis.SpatialViewDefinition instances. There's
-      // also a label customization rule which optionally prefixes node labels with a ruleset variable value and
-      // an instance label override rule to clear default BIS label override rules. The prefix is
-      // controlled through the `PREFIX` ruleset variable.
+      // The ruleset has a root node rule which loads all `bis.SpatialViewDefinition` instances. There's
+      // also an extended data customization rule which assigns the ruleset variable value to nodes. The value
+      // is available on each node and requestor can use it to, for example, display a prefix in front of the label.
+      // The prefix is controlled through the `PREFIX` ruleset variable.
       const ruleset: Ruleset = {
         id: "test",
         rules: [
@@ -342,21 +340,19 @@ describe("Learning Snippets", () => {
             specifications: [
               {
                 specType: "InstanceNodesOfSpecificClasses",
-                classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"], arePolymorphic: true },
                 groupByClass: false,
                 groupByLabel: false,
               },
             ],
-          },
-          {
-            ruleType: "LabelOverride",
-            label: `IIF(HasVariable("PREFIX"), GetVariableStringValue("PREFIX") & " " & this.CodeValue, this.CodeValue)`,
-          },
-          {
-            ruleType: "InstanceLabelOverride",
-            class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
-            values: [],
+            customizationRules: [
+              {
+                ruleType: "ExtendedData",
+                items: {
+                  labelPrefix: `IIF(HasVariable("PREFIX"), GetVariableStringValue("PREFIX"), "")`,
+                },
+              },
+            ],
           },
         ],
       };
@@ -367,36 +363,36 @@ describe("Learning Snippets", () => {
       let nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
-          label: { displayValue: "Default - View 1" },
+          extendedData: { labelPrefix: "" },
         },
         {
-          label: { displayValue: "Default - View 2" },
+          extendedData: { labelPrefix: "" },
         },
         {
-          label: { displayValue: "Default - View 3" },
+          extendedData: { labelPrefix: "" },
         },
         {
-          label: { displayValue: "Default - View 4" },
+          extendedData: { labelPrefix: "" },
         },
       ]);
 
-      // Set the prefix to some value and confirm node labels get prefixed
+      // Set the prefix to some value and confirm the prefix is set
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InCustomizationRuleValueExpression.SetValue
       await Presentation.presentation.vars(ruleset.id).setString("PREFIX", "test");
       // __PUBLISH_EXTRACT_END__
       nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
       expect(nodes).to.containSubset([
         {
-          label: { displayValue: "test Default - View 1" },
+          extendedData: { labelPrefix: "test" },
         },
         {
-          label: { displayValue: "test Default - View 2" },
+          extendedData: { labelPrefix: "test" },
         },
         {
-          label: { displayValue: "test Default - View 3" },
+          extendedData: { labelPrefix: "test" },
         },
         {
-          label: { displayValue: "test Default - View 4" },
+          extendedData: { labelPrefix: "test" },
         },
       ]);
     });

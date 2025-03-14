@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
-import { MockRender } from "../../render/MockRender";
+import { MockRender } from "../../internal/render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderTarget } from "../../render/RenderTarget";
 import { ViewRect } from "../../common/ViewRect";
@@ -18,17 +18,17 @@ class MySystem extends MockRender.System {
 }
 
 describe("MockRender", () => {
-  before(async () => {
+  beforeAll(async () => {
     MockRender.App.systemFactory = () => new MySystem();
     await MockRender.App.startup();
   });
 
-  after(async () => MockRender.App.shutdown());
+  afterAll(async () => MockRender.App.shutdown());
 
   it("Should override mock render system", () => {
-    expect(IModelApp.hasRenderSystem).to.be.true;
-    expect(IModelApp.renderSystem).instanceof(MySystem);
-    expect(IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 10, 20))).instanceof(MyTarget);
-    expect(IModelApp.renderSystem.createGraphicList([])).instanceof(MyList);
+    expect(IModelApp.hasRenderSystem).toBe(true);
+    expect(IModelApp.renderSystem).toBeInstanceOf(MySystem);
+    expect(IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 10, 20))).toBeInstanceOf(MyTarget);
+    expect(IModelApp.renderSystem.createGraphicList([])).toBeInstanceOf(MyList);
   });
 });

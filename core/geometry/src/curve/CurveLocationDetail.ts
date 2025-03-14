@@ -8,6 +8,7 @@
 import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
 import { CurvePrimitive } from "./CurvePrimitive";
 
 /**
@@ -87,8 +88,8 @@ export class CurveLocationDetail {
   public fraction1?: number;
   /** (Optional) second point, e.g. end of interval of coincident curves */
   public point1?: Point3d;
-  /** A context-specific additional point */
-  public pointQ: Point3d;  // extra point for use in computations
+  /** A context-specific temporary point, e.g. for intermediate calculations. */
+  public pointQ: Point3d;
   /** Constructor */
   public constructor() {
     this.pointQ = Point3d.createZero();
@@ -395,6 +396,36 @@ export class CurveLocationDetail {
   public isSameCurveAndFraction(other: CurveLocationDetail | {curve: CurvePrimitive, fraction: number}): boolean {
     return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction);
   }
+  /**
+   * Transform the detail in place.
+   * * All numerical properties are transformed directly, except:
+   *   * when `curve` is defined, `point` and `point1` are reset by evaluating the transformed curve at `fraction` and `fraction1`
+   *   * these properties are untouched: `a`, `fraction`, `fraction1`, `pointQ`
+   * @param transform the transform to apply
+   * @return true if and only if the transformation was successful. If false, the instance is in an indeterminate
+   * state and should not be used.
+   */
+  public tryTransformInPlace(transform: Transform): boolean {
+    if (this.curve && !this.curve.tryTransformInPlace(transform))
+      return false;
+    if (this.ray)
+      this.ray.transformInPlace(transform);
+    if (this.curve)
+      this.curve.fractionToPoint(this.fraction, this.point);
+    else
+      transform.multiplyXYAndZInPlace(this.point);
+    if (this.vectorInCurveLocationDetail)
+      transform.multiplyVectorInPlace(this.vectorInCurveLocationDetail);
+    if (this.childDetail && this.childDetail !== this && !this.childDetail.tryTransformInPlace(transform))
+      return false;
+    if (this.point1) {
+      if (this.curve && this.fraction1)
+        this.curve.fractionToPoint(this.fraction1, this.point1);
+      else
+        transform.multiplyXYAndZInPlace(this.point1);
+    }
+    return true;
+  }
 }
 
 /**
@@ -497,6 +528,15 @@ export class CurveLocationDetailPair {
         return [pair];  // preserve the i_th pair
       },
     );
+  }
+  /**
+   * Transform the details in place.
+   * @param transform the transform to apply
+   * @return true if and only if the transformation was successful on both details.
+   * If false, the instance is in an indeterminate state and should not be used.
+   */
+  public tryTransformInPlace(transform: Transform): boolean {
+    return this.detailA.tryTransformInPlace(transform) && this.detailB.tryTransformInPlace(transform);
   }
 }
 

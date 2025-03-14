@@ -28,7 +28,7 @@ export class SchemaGraph {
 
   private constructor() { }
 
-  private find(schemaKey: Readonly<SchemaKey>) {
+  private find(schemaKey: SchemaKey) {
     return this._schemas.find((info: SchemaInfo) => info.schemaKey.matches(schemaKey, SchemaMatchType.Latest));
   }
 

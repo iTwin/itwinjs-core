@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { SchemaMerger } from "../../ecschema-editing";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 
 describe("Class items merging order tests", () => {
@@ -15,10 +16,16 @@ describe("Class items merging order tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
 
   beforeEach(async () => {
-    context = new SchemaContext();
+    context = await BisTestHelper.getNewContext();
   });
 
   it("should merge the missing entity class with base class before the base class item", async () => {
@@ -27,7 +34,7 @@ describe("Class items merging order tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -67,7 +74,7 @@ describe("Class items merging order tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -101,9 +108,9 @@ describe("Class items merging order tests", () => {
       ],
     });
 
-    const mergedItem = await mergedSchema.getItem<EntityClass>("testClass");
+    const mergedItem = await mergedSchema.getItem("testClass", EntityClass);
     const classMixins = mergedItem?.mixins;
-    if(classMixins){
+    if (classMixins) {
       expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
       expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");
     }
@@ -116,7 +123,7 @@ describe("Class items merging order tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.Mixin,
@@ -148,7 +155,7 @@ describe("Class items merging order tests", () => {
       conflicts: undefined,
     });
 
-    const mergedItem = await mergedSchema.getItem<Mixin>("mixinA");
+    const mergedItem = await mergedSchema.getItem("mixinA", Mixin);
     expect(mergedItem?.appliesTo?.fullName).to.deep.equal("TargetSchema.testClass");
     expect(mergedItem?.baseClass?.fullName).to.deep.equal("TargetSchema.testBaseMixinClass");
   });
@@ -159,7 +166,7 @@ describe("Class items merging order tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
@@ -257,7 +264,7 @@ describe("Class items merging order tests", () => {
     });
   });
 
-  it("it should merge missing struct properties of existing entity class before the struct class item",async () => {
+  it("it should merge missing struct properties of existing entity class before the struct class item", async () => {
     await Schema.fromJson({
       ...targetJson,
       items: {
@@ -299,7 +306,7 @@ describe("Class items merging order tests", () => {
     const mergedSchema = await merger.merge({
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
-      changes: [
+      differences: [
         {
           changeType: "add",
           schemaType: SchemaOtherTypes.Property,

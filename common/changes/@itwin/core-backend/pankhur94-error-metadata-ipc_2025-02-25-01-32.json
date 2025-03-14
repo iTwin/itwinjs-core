@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added error metadata to be sent to ipc frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

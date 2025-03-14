@@ -6,20 +6,23 @@
  * @module Core
  */
 
-import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
+  buildElementProperties,
   ClientDiagnosticsAttribute,
   Content,
   ContentDescriptorRequestOptions,
+  ContentFlags,
   ContentFormatter,
   ContentInstanceKeysRequestOptions,
   ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentUpdateInfo,
+  DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
   DisplayLabelRequestOptions,
@@ -59,12 +62,12 @@ import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
- * @alpha
+ * @public
  */
 export interface IModelHierarchyChangeEventArgs {
   /** Id of ruleset that was used to create hierarchy. */
@@ -77,7 +80,7 @@ export interface IModelHierarchyChangeEventArgs {
 
 /**
  * Data structure that describes iModel content change event arguments.
- * @alpha
+ * @public
  */
 export interface IModelContentChangeEventArgs {
   /** Id of ruleset that was used to create content. */
@@ -168,7 +171,6 @@ export interface PresentationManagerProps {
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
-   * @alpha
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
@@ -177,7 +179,6 @@ export interface PresentationManagerProps {
    * in requested unit system.
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
-   * @alpha
    */
   defaultFormats?: FormatsMap;
 
@@ -194,7 +195,7 @@ export interface PresentationManagerProps {
  *
  * @public
  */
-export class PresentationManager implements IDisposable {
+export class PresentationManager implements Disposable {
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _localizationHelper: FrontendLocalizationHelper;
@@ -207,13 +208,11 @@ export class PresentationManager implements IDisposable {
 
   /**
    * An event raised when hierarchies created using specific ruleset change
-   * @alpha
    */
   public onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
 
   /**
    * An event raised when content created using specific ruleset changes
-   * @alpha
    */
   public onIModelContentChanged = new BeEvent<(args: IModelContentChangeEventArgs) => void>();
 
@@ -233,7 +232,7 @@ export class PresentationManager implements IDisposable {
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._explicitActiveUnitSystem = props.activeUnitSystem;
     }
 
@@ -260,14 +259,19 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper.locale = locale;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (this._clearEventListener) {
       this._clearEventListener();
       this._clearEventListener = undefined;
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  // istanbul ignore next
+  public dispose() {
+    this[Symbol.dispose]();
+  }
+
   private onUpdate = (_evt: Event, report: UpdateInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(report);
@@ -359,7 +363,7 @@ export class PresentationManager implements IDisposable {
     if (this.activeLocale) {
       defaultOptions.locale = this.activeLocale;
     }
-    defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line deprecation/deprecation
+    defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line @typescript-eslint/no-deprecated
 
     const { imodel, rulesetVariables, ...rpcRequestOptions } = requestOptions;
     return {
@@ -413,8 +417,7 @@ export class PresentationManager implements IDisposable {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
           total: result.total,
-          // eslint-disable-next-line deprecation/deprecation
-          items: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+          items: this._localizationHelper.getLocalizedNodes(result.items),
         };
       },
     });
@@ -453,7 +456,7 @@ export class PresentationManager implements IDisposable {
 
   /**
    * Retrieves hierarchy level descriptor.
-   * @beta
+   * @public
    */
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
@@ -478,8 +481,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
-    // eslint-disable-next-line deprecation/deprecation
-    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /** Retrieves paths from root nodes to nodes containing filter text in their label. */
@@ -489,8 +491,7 @@ export class PresentationManager implements IDisposable {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
-    // eslint-disable-next-line deprecation/deprecation
-    return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
+    return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
   /**
@@ -582,7 +583,7 @@ export class PresentationManager implements IDisposable {
 
       let items = contentSet.items.map((x) => Item.fromJSON(x)).filter((x): x is Item => x !== undefined);
       if (contentFormatter) {
-        items = await contentFormatter.formatContentItems(items, descriptor!);
+        items = await contentFormatter.formatContentItems(items, descriptor);
       }
 
       items = this._localizationHelper.getLocalizedContentItems(items);
@@ -622,7 +623,7 @@ export class PresentationManager implements IDisposable {
    * @deprecated in 4.5. Use [[getContentIterator]] instead.
    */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
@@ -664,8 +665,7 @@ export class PresentationManager implements IDisposable {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
           total: response.total,
-          // eslint-disable-next-line deprecation/deprecation
-          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(DisplayValueGroup.fromJSON(x))),
+          items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(x)),
         };
       },
     });
@@ -691,16 +691,26 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @public
    */
-  public async getElementProperties(
-    requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined> {
+  public async getElementProperties<TParsedContent = ElementProperties>(
+    requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute,
+  ): Promise<TParsedContent | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
-    const results = await this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
-    // istanbul ignore if
-    if (!results) {
+    type TParser = Required<typeof requestOptions>["contentParser"];
+    const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
+    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const iter = await this.getContentIterator({
+      ...optionsNoElementId,
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        contentFlags: ContentFlags.ShowLabels,
+      },
+      rulesetOrId: "ElementProperties",
+      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+    });
+    if (!iter || iter.total === 0) {
       return undefined;
     }
-    return this._localizationHelper.getLocalizedElementProperties(results);
+    return parser(iter.descriptor, (await iter.items.next()).value);
   }
 
   /**
