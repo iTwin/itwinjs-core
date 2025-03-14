@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb, InsertInstanceOptions } from "./IModelDb";
+import { IModelDb, InsertInstanceOptions, UpdateInstanceOptions } from "./IModelDb";
 import { Element } from "./Element";
 import { ElementAspectProps, ElementProps, ModelProps, RelatedElementProps } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 import { _nativeDb } from "./internal/Symbols";
 import { Model } from "./Model";
-import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect } from "./ElementAspect";
 
 type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties" | "isInstanceOfEntity"> & {
@@ -173,4 +172,55 @@ export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
   iModel.models.getModel(element.model).update();
 
   return aspectProps.id;
+}
+
+type ElementPropsWithId = Partial<ElementProps> & Required<Pick<ElementProps, "id">>;
+
+/**
+ * Function updates an element in an iModel and calls the pre-update and post-update domain handlers.
+ * @param iModel The iModel that containers the element to update.
+ * @param elProps The properties of the element to update.
+ * @param options Update options.
+ * @internal
+ */
+export function updateElementWithHandlers(iModel: IModelDb, elProps: ElementPropsWithId, options?: UpdateInstanceOptions): void {
+  // Default update options
+  const updateOptions = options ?? { useJsNames: true };
+
+  // TODO: Check if the element args are valid?
+
+  // Get the Element Class Definition and check if its valid
+  const element = iModel.elements.getElementProps(elProps.id); // Will Throw is Element Doesn't Exist
+  const classDef = iModel.getJsClass<typeof Element>(element.classFullName);
+  const model = iModel.models.tryGetModelProps(element.model);
+  const modelClassDef = model ? iModel.getJsClass<typeof Model>(model.classFullName) : undefined;
+  const parent = element.parent?.id ? iModel.elements.tryGetElementProps(element.parent.id) : undefined;
+  const parentClassDef = parent ? iModel.getJsClass<typeof Element>(parent.classFullName) : undefined;
+
+  // Call pre-insert Domain Handlers
+  classDef.onUpdate({ iModel, props: element });
+  if (modelClassDef !== undefined && model?.id) {
+    modelClassDef.onUpdateElement({ iModel, elementProps: element, id: model.id });
+  }
+  if (parentClassDef !== undefined && parent?.id) {
+    parentClassDef.onChildUpdate({ iModel, childProps: element, parentId: parent.id });
+  }
+
+  // Perform Insert
+  // TODO: change to elProps and don't cast insertOptions
+  const updateSuccess = iModel[_nativeDb].updateInstance(elProps, updateOptions);
+  if (!updateSuccess) {
+    throw new Error(`Failed to update element with id: ${elProps.id}`);
+  }
+
+  // Call post-insert Domain Handlers
+  if (element.federationGuid !== undefined) {
+    classDef.onUpdated({ iModel, id: elProps.id, federationGuid: element.federationGuid, model: element.model });
+  }
+  if (modelClassDef !== undefined && model?.id) {
+    modelClassDef.onUpdatedElement({ iModel, elementId: elProps.id, id: model?.id });
+  }
+  if (parentClassDef !== undefined && parent?.id) {
+    parentClassDef.onChildUpdated({ iModel, childId: elProps.id, parentId: parent?.id });
+  }
 }
