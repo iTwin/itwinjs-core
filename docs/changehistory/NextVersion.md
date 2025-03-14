@@ -93,13 +93,7 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 ### Text Block Margins
 
-A new enhancement has been made to the [TextBlock]($core-common) class to add support for margins. These margins are in meters, and are specified by using the [TextBlockMargin]($core-common) interface.
-
-The margin range is calculated in [TextAnnotationLayout.layoutTextBlock]($core-backend) and saved to the [TextBlockLayout.range]($core-backend) property. The range of just the text itself is stored in a property called [TextBlockLayout.textRange]($core-backend). In general, use of `range` is preferred over `textRange`.
-
-The [TextBlockLayout.range]($core-backend) property will be passed into the [TextAnnotation.computeTransform]($core-common) method when producing the geometry. This will position the anchor point of the text relative to the [TextBlockLayout.range]($core-backend) property.
-
-When `debugAnchorPointAndRange` is true in [TextAnnotationGeometry.produceTextAnnotationGeometry]($core-backend), both ranges (margin and text) will be drawn in the geometry along with the anchor point.
+You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
 ## Display
 
