@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef,  FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -704,6 +704,48 @@ describe("layoutTextBlock", () => {
     }
   });
 
+  it("adds margins", function () {
+    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: Partial<TextBlockMargins>) => {
+      expect(marginRange.low.x).to.equal(layoutRange.low.x - (margins.left ?? 0));
+      expect(marginRange.high.x).to.equal(layoutRange.high.x + (margins.right ?? 0));
+      expect(marginRange.low.y).to.equal(layoutRange.low.y - (margins.bottom ?? 0));
+      expect(marginRange.high.y).to.equal(layoutRange.high.y + (margins.top ?? 0));
+    }
+
+    const makeTextBlock = (margins: Partial<TextBlockMargins>) => {
+      const textblock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 }, margins });
+      textblock.appendRun(makeTextRun("abc"));
+      textblock.appendRun(makeTextRun("defg"));
+      return textblock;
+    }
+
+    let block = makeTextBlock({});
+    let layout = doLayout(block);
+
+    // Margins should be 0 by default
+    expect(layout.range.isAlmostEqual(layout.textRange)).to.be.true;
+    expectMargins(layout.textRange, layout.range, {});
+
+    // All margins should be applied to the range
+    block = makeTextBlock({ left: 1, right: 2, top: 3, bottom: 4 })
+    layout = doLayout(block);
+
+    expectMargins(layout.textRange, layout.range, { left: 1, right: 2, top: 3, bottom: 4 });
+
+    // Just horisontal margins should be applied
+    block = makeTextBlock({ left: 1, right: 2 });
+    layout = doLayout(block);
+
+    expectMargins(layout.textRange, layout.range, { left: 1, right: 2 });
+
+    // Just vertical margins should be applied
+    block = makeTextBlock({ top: 1, bottom: 2 });
+    layout = doLayout(block);
+
+    expectMargins(layout.textRange, layout.range, { top: 1, bottom: 2 });
+
+  });
+
   describe("grapheme offsets", () => {
     it("should return an empty array if source type is not text", function () {
       const textBlock = TextBlock.create({ styleName: "" });
@@ -1066,6 +1108,68 @@ describe("produceTextAnnotationGeometry", () => {
       "text",
     ]);
   });
+
+  it("offsets geometry entries by margins", () => {
+    function makeGeometryWithMargins(anchor: TextAnnotationAnchor, margins: TextBlockMargins): TextStringProps | undefined {
+      const runs = [makeText()];
+      const block = makeTextBlock(runs);
+      block.margins = margins;
+
+      const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
+      annotation.anchor = anchor;
+
+      const geom = produceTextAnnotationGeometry({ iModel: mockIModel(), annotation }).entries;
+      return geom[1].text;
+    }
+
+    function testMargins(margins: TextBlockMargins, height: number, width: number) {
+      // We want to disregard negative margins. Note, I'm not changing the margins object itself. It gets passed into makeGeometryWithMargins as it is.
+      const left = margins.left >= 0 ? margins.left : 0;
+      const right = margins.right >= 0 ? margins.right : 0;
+      const top = margins.top >= 0 ? margins.top : 0;
+      const bottom = margins.bottom >= 0 ? margins.bottom : 0;
+
+      // Test case: bottom, left
+      let props = makeGeometryWithMargins({ horizontal: "left", vertical: "bottom" }, margins);
+      expect(props).not.to.be.undefined;
+      expect(props?.origin, "Expected geometry to be offset by left and bottom margins").to.deep.equal({ x: left, y: bottom, z: 0 });
+
+      // Test case: top, right
+      props = makeGeometryWithMargins({ vertical: "top", horizontal: "right" }, margins);
+
+      let x = (right + width) * -1;
+      let y = (top + height) * -1;
+      expect(props).not.to.be.undefined;
+      expect(props?.origin, "Expected geometry to be offset by top and right margins").to.deep.equal({ x, y, z: 0 });
+
+      // Test case: middle, center
+      props = makeGeometryWithMargins({ vertical: "middle", horizontal: "center" }, margins);
+
+      x = (left - right - width) / 2;
+      y = (bottom - top - height) / 2;
+      expect(props).not.to.be.undefined;
+      expect(props?.origin, "Expected geometry to be centered in the margins").to.deep.equal({ x, y, z: 0 });
+    }
+
+    // Getting the range from the same mock the native code uses to compute the range of a text block.
+    const textRange = mockIModel().computeRangesForText({
+      chars: "text",
+      bold: false,
+      italic: false,
+      fontId: 1,
+      widthFactor: 1,
+      lineHeight: 1,
+      baselineShift: "none",
+    });
+
+    const xLength = textRange.layout.xLength(); // Will be 1 because of the mock implementation.
+    const yLength = textRange.layout.yLength(); // Will be 1 because of the mock implementation.
+
+    testMargins({ top: 0, right: 0, bottom: 0, left: 0 }, yLength, xLength);
+    testMargins({ top: 1, right: 2, bottom: 3, left: 4 }, yLength, xLength);
+    testMargins({ top: -1, right: -2, bottom: -3, left: -4 }, yLength, xLength);
+  });
+
 });
 
 describe("TextAnnotation element", () => {
