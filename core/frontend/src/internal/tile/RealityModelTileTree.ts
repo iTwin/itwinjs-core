@@ -29,7 +29,7 @@ import { SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, LayerTileTree, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  getGcsConverterAvailable, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, MapLayerTreeSetting, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
@@ -525,15 +525,26 @@ class RealityModelTileLoader extends RealityTileLoader {
 export type RealityModelSource = ViewState | DisplayStyleState;
 
 /** @internal */
-export class RealityModelTileTree extends LayerTileTree {
+export class RealityModelTileTree extends RealityTileTree {
   private readonly _isContentUnbounded: boolean;
+  private readonly _layerHandler: LayerTileTreeHandler;
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+
+  public override get layerHandler() { return this._layerHandler; }
 
   public constructor(params: RealityTileTreeParams) {
     super(params);
 
+    this._layerHandler = new LayerTileTreeHandler(this);
+
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
   }
   public override get isContentUnbounded() { return this._isContentUnbounded; }
+
+  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    super.collectClassifierGraphics(args, selectedTiles);
+    this._layerHandler.collectClassifierGraphics(args, selectedTiles);
+  }
 }
 
 export namespace RealityModelTileTree {
@@ -571,8 +582,8 @@ export namespace RealityModelTileTree {
     private _layerRefHandler: LayerTileTreeReferenceHandler;
     public readonly iModel: IModelConnection;
 
-    public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+    public abstract get modelId(): Id64String;
 
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }

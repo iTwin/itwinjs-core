@@ -8,7 +8,7 @@
 
 import { BaseLayerSettings, ColorDef, MapLayerSettings } from "@itwin/core-common";
 import { SceneContext } from "../ViewContext";
-import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, IModelTileTree, LayerTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal";
+import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal";
 import { IModelConnection } from "../IModelConnection";
 
 /** @internal */
@@ -69,17 +69,12 @@ export class LayerTileTreeReferenceHandler {
 
     let hasLoadedTileTree = false;
 
-    // TODO
-    const tree = this._ref.treeOwner.load() as any;
-    // End TODO
-
-    tree.layerImageryTrees.length = 0;
-
-    if (undefined === tree) {
-      return hasLoadedTileTree;     // Not loaded yet.
+    const layerHandler = this._ref.treeOwner.load()?.layerHandler;
+    if (undefined === layerHandler) {
+      return hasLoadedTileTree;     // Not loaded yet - or no layerHandler on tree.
     }
 
-    tree.layerImageryTrees.length = 0;
+    layerHandler.layerImageryTrees.length = 0;
     if (0 === this._layerTrees.length) {
       return !this.isOverlay;
     }
@@ -121,9 +116,9 @@ export class LayerTileTreeReferenceHandler {
         // Add loaded TileTree
         const baseImageryLayer = this._baseImageryLayerIncluded && (treeIndex === 0);
         if (layerTree instanceof ImageryMapTileTree) {
-          tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
+          layerHandler.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
         } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
-          tree.addModelLayer(layerTreeRef, context);
+          layerHandler.addModelLayer(layerTreeRef, context);
       }
     }
 
@@ -157,9 +152,9 @@ export class LayerTileTreeReferenceHandler {
   }
 
   public clearLayers() {
-    const tree = this._ref.treeOwner.tileTree;
-    if (tree instanceof LayerTileTree || tree instanceof IModelTileTree) {
-      tree.clearLayers();
+    const layerHandler = this._ref.treeOwner.tileTree?.layerHandler;
+    if (undefined !== layerHandler) {
+      layerHandler.clearLayers();
     }
   }
 

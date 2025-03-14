@@ -24,9 +24,9 @@ import { DecorateContext, SceneContext } from "../../ViewContext";
 import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTree, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapTile,
+  ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapLayerTreeSetting, MapTile,
   MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId,
-  RealityTile, RealityTileDrawArgs, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
+  RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint = Point3d.create();
@@ -78,7 +78,7 @@ export interface MapLayerInfoFromTileTree {
  * @public
  */
 
-export class MapTileTree extends LayerTileTree {
+export class MapTileTree extends RealityTileTree {
   /** @internal */
   public ecefToDb: Transform;
   /** @internal */
@@ -115,6 +115,13 @@ export class MapTileTree extends LayerTileTree {
   public mapTransparent: boolean;
   /** @internal */
   public produceGeometry?: boolean;
+  /** @internal */
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+
+  private readonly _layerHandler: LayerTileTreeHandler;
+
+  /** @internal */
+  public override get layerHandler() { return this._layerHandler; }
 
   /** @internal */
   constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number,
@@ -163,6 +170,8 @@ export class MapTileTree extends LayerTileTree {
     }
 
     this._rootTile = this.createGlobeChild({ contentId: quadId.contentId, maximumSize: 0, range }, quadId, range.corners(), globalRectangle, rootPatch, undefined);
+
+    this._layerHandler = new LayerTileTreeHandler(this);
   }
 
   /** @internal */
@@ -176,7 +185,7 @@ export class MapTileTree extends LayerTileTree {
    * @internal
    */
   public getImageryTreeState(imageryTreeId: string) {
-    return this._imageryTreeState.get(imageryTreeId);
+    return this._layerHandler.imageryTreeState.get(imageryTreeId);
   }
 
   /** Return a cloned dictionary of the imagery tile tree states
@@ -184,7 +193,7 @@ export class MapTileTree extends LayerTileTree {
    */
   public cloneImageryTreeState() {
     const clone = new Map<Id64String, ImageryTileTreeState>();
-    for (const [treeId, state] of this._imageryTreeState) {
+    for (const [treeId, state] of this._layerHandler.imageryTreeState) {
       clone.set(treeId, state.clone());
     }
     return clone;
@@ -195,12 +204,17 @@ export class MapTileTree extends LayerTileTree {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
   }
 
+  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    super.collectClassifierGraphics(args, selectedTiles);
+    this._layerHandler.collectClassifierGraphics(args, selectedTiles);
+  }
+
   /** @internal */
   public clearImageryTreesAndClassifiers() {
-    this.layerImageryTrees.length = 0;
-    this._layerSettings.clear();
-    this._modelIdToIndex.clear();
-    this.layerClassifiers.clear();
+    this._layerHandler.layerImageryTrees.length = 0;
+    this._layerHandler.layerSettings.clear();
+    this._layerHandler.modelIdToIndex.clear();
+    this._layerHandler.layerClassifiers.clear();
   }
 
   /** @internal */
@@ -211,6 +225,7 @@ export class MapTileTree extends LayerTileTree {
   /** @internal */
   public override get maxDepth() {
     let maxDepth = this.loader.maxDepth;
+    /** NB: need to use local layerImageTrees because of the order super() is called (before layerHandler exists on this class)! */
     this.layerImageryTrees?.forEach((layerImageryTree) => maxDepth = Math.max(maxDepth, layerImageryTree.tree.maxDepth));
 
     return maxDepth;
@@ -536,13 +551,13 @@ export class MapTileTree extends LayerTileTree {
 
   /** @internal */
   public getLayerIndex(imageryTreeId: Id64String) {
-    const index = this._modelIdToIndex.get(imageryTreeId);
+    const index = this._layerHandler.modelIdToIndex.get(imageryTreeId);
     return index === undefined ? -1 : index;
   }
 
   /** @internal */
   public getLayerTransparency(imageryTreeId: Id64String): number {
-    const layerSettings = this._layerSettings.get(imageryTreeId);
+    const layerSettings = this._layerHandler.layerSettings.get(imageryTreeId);
     assert(undefined !== layerSettings);
     return undefined === layerSettings || !layerSettings.transparency ? 0.0 : layerSettings.transparency;
   }
@@ -742,8 +757,6 @@ export class MapTileTreeReference extends TileTreeReference {
 
     this.iModel = iModel;
 
-    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, isOverlay, baseLayerSettings, layerSettings);
-
     this._tileUserId = tileUserId;
     this._settings = settings;
 
@@ -752,6 +765,8 @@ export class MapTileTreeReference extends TileTreeReference {
 
     if (this._overrideTerrainDisplay && this._overrideTerrainDisplay()?.produceGeometry)
       this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
+
+    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, isOverlay, baseLayerSettings, layerSettings);
   }
 
   public forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void {
@@ -903,7 +918,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const tree = this.treeOwner.load() as MapTileTree;
-    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes, undefined, tree?.layerClassifiers);
+    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes, undefined, tree?.layerHandler.layerClassifiers);
   }
 
   protected override getViewFlagOverrides(_tree: TileTree) {
