@@ -41,7 +41,6 @@ with tmp(x) as (SELECT e.array_bin FROM aps.TestElement e LIMIT 1) select * from
 - dataset: AllProperties.bim
 - abbreviateBlobs: true
 - mode: ConcurrentQuery
-- skip: abbreviate blobs does not seem to be thread safe, this affects other tests that run in parallel
 
 ```sql
 with tmp(x) as (SELECT e.bin FROM aps.TestElement e LIMIT 1) select * from tmp
