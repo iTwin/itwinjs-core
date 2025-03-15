@@ -11,7 +11,9 @@ import {
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  BackgroundMapSettings,
+  BaseLayerSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, MapImagerySettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -27,7 +29,7 @@ import { SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
-  getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
+  getGcsConverterAvailable, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, MapLayerTreeSetting, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
@@ -522,14 +524,27 @@ class RealityModelTileLoader extends RealityTileLoader {
 
 export type RealityModelSource = ViewState | DisplayStyleState;
 
+/** @internal */
 export class RealityModelTileTree extends RealityTileTree {
   private readonly _isContentUnbounded: boolean;
+  private readonly _layerHandler: LayerTileTreeHandler;
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+
+  public override get layerHandler() { return this._layerHandler; }
+
   public constructor(params: RealityTileTreeParams) {
     super(params);
+
+    this._layerHandler = new LayerTileTreeHandler(this);
 
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
   }
   public override get isContentUnbounded() { return this._isContentUnbounded; }
+
+  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    super.collectClassifierGraphics(args, selectedTiles);
+    this._layerHandler.collectClassifierGraphics(args, selectedTiles);
+  }
 }
 
 export namespace RealityModelTileTree {
@@ -543,6 +558,9 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
+    mapSettings?: BackgroundMapSettings;
+    backgroundBase?: BaseLayerSettings;
+    backgroundLayers?: MapLayerSettings[];
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {
@@ -554,16 +572,18 @@ export namespace RealityModelTileTree {
   export abstract class Reference extends TileTreeReference {
     protected readonly _name: string;
     protected _transform?: Transform;
-    protected _iModel: IModelConnection;
     private _isGlobal?: boolean;
     protected readonly _source: RealityModelSource;
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
+    private readonly _detachFromDisplayStyle: VoidFunction[] = [];
+    private _layerRefHandler: LayerTileTreeReferenceHandler;
+    public readonly iModel: IModelConnection;
 
-    public abstract get modelId(): Id64String;
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+    public abstract get modelId(): Id64String;
 
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
@@ -579,8 +599,20 @@ export namespace RealityModelTileTree {
       return this._planarClipMask?.settings.compressedModelIds;
     }
 
+    public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
+      const mapLayerSettings = layerTreeRef?.layerSettings;
+      if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+        return ModelMapLayerDrapeTarget.RealityData === mapLayerSettings.drapeTarget;
+      return false;
+    }
+
     public constructor(props: RealityModelTileTree.ReferenceBaseProps) {
       super();
+
+      this.iModel = props.iModel;
+
+      this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, props.backgroundBase, props.backgroundLayers);
+
       this._name = undefined !== props.name ? props.name : "";
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
@@ -591,7 +623,6 @@ export namespace RealityModelTileTree {
         this._transform = transform;
       }
 
-      this._iModel = props.iModel;
       this._source = props.source;
       this._getDisplaySettings = () => props.getDisplaySettings();
 
@@ -619,7 +650,22 @@ export namespace RealityModelTileTree {
       return this._isGlobal === undefined ? false : this._isGlobal;
     }
 
+    public preInitializeLayers(context: SceneContext): void {
+      const removals = this._detachFromDisplayStyle;
+      if (0 === removals.length) {
+        removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
+          this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
+          this._layerRefHandler.setLayerSettings(imagery.backgroundLayers);
+          this._layerRefHandler.clearLayers();
+        }));
+      }
+    }
+
     public override addToScene(context: SceneContext): void {
+      const tree = this.treeOwner.load() as RealityModelTileTree;
+      if (undefined === tree || !this._layerRefHandler.initializeLayers(context))
+        return;     // Not loaded yet.
+
       // NB: The classifier must be added first, so we can find it when adding our own tiles.
       if (this._classifier && this._classifier.activeClassifier)
         this._classifier.addToScene(context);
@@ -800,12 +846,12 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this._iModel);
+    return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this.iModel);
   }
 
   protected override _createGeometryTreeReference(): GeometryTileTreeReference {
     const ref = new RealityTreeReference({
-      iModel: this._iModel,
+      iModel: this.iModel,
       modelId: this.modelId,
       source: this._source,
       rdSourceKey: this._rdSourceKey,
@@ -839,7 +885,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const drawArgs = super.createDrawArgs(context);
-    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded) {
+    if (drawArgs !== undefined && this.iModel.isGeoLocated && tree.isContentUnbounded) {
       const elevationBias = context.viewport.view.displayStyle.backgroundMapElevationBias;
 
       if (undefined !== elevationBias)

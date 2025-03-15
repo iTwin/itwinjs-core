@@ -14,7 +14,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
-import { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
+import { LayerTileTreeHandler, Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].
@@ -111,6 +111,9 @@ export abstract class TileTree {
    * Default: true.
    */
   public get parentsAndChildrenExclusive(): boolean { return true; }
+
+  /** @internal */
+  public get layerHandler(): LayerTileTreeHandler | undefined { return undefined; }
 
   /** Constructor */
   protected constructor(params: TileTreeParams) {
