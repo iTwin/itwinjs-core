@@ -462,8 +462,8 @@ export namespace SerializationHelpers {
    * original defined index `i` refers in `sourceIndices`; therefore `j` is obtained from `i` by adding the
    * number of full blocks preceding `sourceIndices[i]`.
    * @param sourceIndices array of compressed indices to process. Each entry is a 0-based reflexive index, or `undefined`.
-   * @param sourceStarts sourceStarts[k] is the first index of the k_th block in `sourceIndices`; the last entry is the
-   * length of `sourceIndices`. Alternatively a callback equivalent to `(k) => sourceStarts[k]` can be provided.
+   * @param sourceStarts sourceStarts[k] is the first index of the k_th block in `sourceIndices`; its last entry is the
+   * length of `sourceIndices`.
    * @param blockSeparator negative value that represents an announced block terminator, e.g. -1.
    * @param nullValue negative value to announce for an undefined source index, e.g., -2.
    * @param announceRemappedIndex callback to receive a remapped index.
@@ -471,25 +471,27 @@ export namespace SerializationHelpers {
    */
   export function announceUncompressedZeroBasedReflexiveIndices(
     sourceIndices: Array<number | undefined>,
-    sourceStarts: number[] | ((i: number) => number),
+    sourceStarts: ReadonlyArray<number>,
     blockSeparator: number,
     nullValue: number,
     announceRemappedIndex: (i: number) => any,
   ): boolean {
-    if (!sourceIndices.length || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
-      return false;
-    if (Array.isArray(sourceStarts) && !sourceStarts.length)
+    if (!sourceIndices.length || sourceStarts.length < 2 || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
       return false;
     // remapped index = source index + # preceding blocks in sourceIndices
-    for (const index of sourceIndices) {
-      if (index === undefined)
-        announceRemappedIndex(nullValue);
-      else if (index >= 0) {
-        const iBlock = NumberArray.searchStrictlyIncreasingNumbers(sourceStarts, index);
-        if (iBlock === undefined)
-          return false;
-        announceRemappedIndex(index + iBlock);
+    for (let i = 0; i < sourceStarts.length - 1; i++) {
+      for (let j = sourceStarts[i]; j < sourceStarts[i + 1]; j++) {
+        const index = sourceIndices[j];
+        if (index === undefined)
+          announceRemappedIndex(nullValue);
+        else if (index >= 0) {
+          const iBlock = NumberArray.searchStrictlyIncreasingNumbers(sourceStarts, index);
+          if (iBlock === undefined)
+            return false;
+          announceRemappedIndex(index + iBlock);
+        }
       }
+      announceRemappedIndex(blockSeparator);
     }
     return true;
   }

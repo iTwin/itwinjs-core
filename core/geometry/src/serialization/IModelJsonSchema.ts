@@ -1805,7 +1805,7 @@ export namespace IModelJson {
 
       if (pf.data.edgeMateIndex) {
         if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex,
-          (i: number) => pf.facetIndex0(i), SerializationHelpers.EdgeMateIndex.BlockSeparator,
+          pf.facetStart, SerializationHelpers.EdgeMateIndex.BlockSeparator,
           SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => edgeMateIndex.push(i),
         )){
           assert(false, "unable to serialize edgeMateIndex array to json");

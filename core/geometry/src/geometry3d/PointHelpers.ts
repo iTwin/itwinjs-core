@@ -315,16 +315,17 @@ export class NumberArray {
    * * Linear search from there for final value.
    * * For regularly spaced numbers (e.g., `data` is the `_facetStart` indices for a triangulated [[IndexedPolyface]]),
    * the proportional estimate will be immediately correct.
+   * @param data the array of strictly increasing numbers
+   * @param value the value to search for
    */
-  public static searchStrictlyIncreasingNumbers(data: number[] | ((i: number) => number), value: number): number | undefined {
+  public static searchStrictlyIncreasingNumbers(data: ReadonlyArray<number>, value: number): number | undefined {
     const lastQ = data.length - 1;
-    const remap = (typeof data === "function") ? data : (i: number) => data[i];
-    if (lastQ <= 0 || value < 0 || value >= remap(lastQ))
+    if (lastQ <= 0 || value < 0 || value >= data[lastQ])
       return undefined;
-    let q = Math.floor((value * lastQ) / remap(lastQ));
-    while (remap(q) > value)
+    let q = Math.floor((value * lastQ) / data[lastQ]);
+    while (data[q] > value)
       q--;
-    while (remap(q + 1) <= value)
+    while (data[q + 1] <= value)
       q++;
     return q;
   }

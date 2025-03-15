@@ -625,6 +625,10 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public facetIndex1(facetIndex: number): number {
     return this._facetStart[facetIndex + 1];
   }
+  /** Return a readonly reference to the facetStart array accessed by [[facetIndex0]] and [[facetIndex1]]. */
+  public get facetStart(): ReadonlyArray<number> {
+    return this._facetStart;
+  }
   /** create a visitor for this polyface */
   public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor {
     return IndexedPolyfaceVisitor.create(this, numWrap);

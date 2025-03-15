@@ -590,7 +590,7 @@ export class BGFBWriter {
       if (mesh.data.edgeMateIndex) {
         indexArray.length = 0;
         if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(mesh.data.edgeMateIndex,
-          (i: number) => mesh.facetIndex0(i), SerializationHelpers.EdgeMateIndex.BlockSeparator,
+          mesh.facetStart, SerializationHelpers.EdgeMateIndex.BlockSeparator,
           SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => indexArray.push(i),
         )){
           assert(false, "unable to serialize edgeMateIndex array to flatbuffer");
