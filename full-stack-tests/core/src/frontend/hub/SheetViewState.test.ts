@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, SheetViewState, ViewState } from "@itwin/core-frontend";
+import { XYProps } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
@@ -167,5 +168,30 @@ describe("Sheet views (#integration)", () => {
     delete (view.viewAttachmentProps[0] as any).attachedView;
     delete (clone.viewAttachmentProps[0] as any).attachedView;
     expect(clone.viewAttachmentProps).to.deep.equal(view.viewAttachmentProps);
+  });
+
+  describe("areAllTileTreesLoaded", () => {
+    it("should return true when attachments are outside of the view", async () => {
+      const vp = IModelApp.viewManager.selectedView!;
+      if (!vp)
+        return;
+      const sheetView = await imodel.views.load(sheetViewId) as SheetViewState;
+      const viewAttachmentProps = sheetView.viewAttachmentProps;
+      const newOrigin: XYProps = { x: 10_000, y: 0 };
+      const newAttachmentProps = {...viewAttachmentProps[0], origin: newOrigin, id: "outOfView"};
+
+      const viewProps = sheetView.toProps();
+      viewProps.sheetAttachments = [newAttachmentProps.id];
+
+      const newSheetView = SheetViewState.createFromProps(viewProps, imodel);
+      await newSheetView.load();
+
+      expect(newSheetView.attachments).to.not.be.undefined;
+      if (!newSheetView.attachments)
+        return;
+      expect(newSheetView.attachments.length).to.equal(1);
+      expect(newSheetView.viewAttachmentProps[0].placement?.origin).to.deep.equal(newOrigin);
+      expect(newSheetView.areAllTileTreesLoaded).to.be.true;
+    });
   });
 });
