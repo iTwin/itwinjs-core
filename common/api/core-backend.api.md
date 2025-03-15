@@ -358,8 +358,6 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @internal @deprecated
-    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -833,11 +831,11 @@ export type CheckpointArg = DownloadRequest;
 
 // @internal (undocumented)
 export class CheckpointManager {
+    // (undocumented)
+    static [_openCheckpoint](fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     // (undocumented)
     static getKey(checkpoint: CheckpointProps): string;
-    // (undocumented)
-    static readonly onDownloadV1: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
@@ -3125,7 +3123,7 @@ export class HubMock {
     // (undocumented)
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     // (undocumented)
-    static queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
     // (undocumented)
     static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
     static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
@@ -6081,19 +6079,6 @@ export class UrlLink extends LinkElement {
     url?: string;
 }
 
-// @internal
-export class V1CheckpointManager {
-    static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
-    // (undocumented)
-    static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
-    // (undocumented)
-    static getFileName(checkpoint: CheckpointProps): LocalFileName;
-    // (undocumented)
-    static getFolder(iModelId: GuidString): LocalDirName;
-    // (undocumented)
-    static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
-}
-
 // @public
 export interface V2CheckpointAccessProps {
     readonly accountName: string;
@@ -6105,6 +6090,8 @@ export interface V2CheckpointAccessProps {
 
 // @internal
 export class V2CheckpointManager {
+    // (undocumented)
+    static [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb>;
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;

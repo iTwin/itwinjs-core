@@ -455,7 +455,6 @@ public;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
-internal;class;V1CheckpointManager
 public;interface;V2CheckpointAccessProps
 internal;class;V2CheckpointManager
 public;interface;ValidationError
