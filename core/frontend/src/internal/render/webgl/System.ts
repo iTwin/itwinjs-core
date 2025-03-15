@@ -21,7 +21,7 @@ import { TextureCacheKey } from "../../../common/render/TextureParams";
 import { ViewRect } from "../../../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../../render/GraphicBuilder";
-import { InstancedGraphicParams, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
+import { InstancedGraphicParams, InstancedGraphicProps, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
@@ -68,10 +68,10 @@ import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../../common/render/RenderInstancesParams";
-import { _batch, _branch, _featureTable, _nodes } from "../../../common/internal/Symbols";
+import { _batch, _branch, _featureIds, _featureTable, _implementationProhibited, _nodes, _range, _symbologyOverrides, _transformCenter, _transforms } from "../../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
-import { RenderSkyBoxParams } from "../RenderSkyBoxParams";
 import { RenderAreaPattern } from "../RenderAreaPattern";
+import { RenderSkyBoxParams } from "../RenderSkyBoxParams";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -503,9 +503,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic {
     const template = args.template;
-    const instances = args.instances as RenderInstancesImpl | undefined;
+    let instances = args.instances as RenderInstancesImpl | undefined;
     if (instances && !template.isInstanceable) {
       throw new Error("GraphicTemplate is not instanceable");
+    }
+
+    if (instances && args.template.isGltf) {
+      instances = this.rotateTransformsAndRecreateInstances(instances);
     }
 
     const graphics: RenderGraphic[] = [];
@@ -965,5 +969,45 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public setMaxAnisotropy(max: number | undefined): void {
     this._capabilities.setMaxAnisotropy(max, this.context);
+  }
+
+  public rotateTransformsAndRecreateInstances(instances: RenderInstancesImpl): RenderInstancesImpl | undefined {
+    const transforms = instances[_transforms];
+    const center = instances[_transformCenter];
+    const count = transforms.length/12;
+
+    // rotate transforms to z-up
+    for (let i = 0; i < count; i++) {
+      const instanceIdx = i * 12;
+      const instanceY = transforms[instanceIdx + 7];
+      const instanceZ = transforms[instanceIdx + 11];
+      transforms[instanceIdx + 7] = instanceZ;
+      transforms[instanceIdx + 11] = -instanceY;
+    }
+
+    // recreate instances
+    const instanceProps: InstancedGraphicProps = {
+      transforms,
+      count,
+      transformCenter: new Point3d(center.x, center.z, -center.y),
+      featureIds: instances[_featureIds],
+      range: instances[_range],
+      symbologyOverrides: instances[_symbologyOverrides],
+    };
+
+    const params: RenderInstancesParamsImpl = {
+      [_implementationProhibited]: "renderInstancesParams",
+      instances: instanceProps,
+    }
+
+    const featureTable = instances[_featureTable];
+    if (featureTable) {
+      params.features = {
+        data: featureTable.data,
+        modelId: featureTable.batchModelId,
+        count: featureTable.numFeatures,
+      };
+    }
+    return RenderInstancesImpl.create(params);
   }
 }
