@@ -194,7 +194,7 @@ describe("CrossPlatform", () => {
     const testCases: TestCase[] = [];
     testCases.push({ fileNames: [
       [[`${nativeRoot}indexedMeshTopo-fixed-old.fb`, `${nativeRoot}indexedMeshTopo-variable-old.fb` /* , `${nativeRoot}indexedMeshTopo-fixed-new.fb`, `${nativeRoot}indexedMeshTopo-variable-new.fb` */], [`${nativeRoot}indexedMeshTopo-fixed-old.imjs`, `${nativeRoot}indexedMeshTopo-variable-old.imjs` /* , `${nativeRoot}indexedMeshTopo-fixed-new.imjs`, `${nativeRoot}indexedMeshTopo-variable-new.imjs` */]],
-      [[/* `${typeScriptRoot}indexedMeshTopo-old.fb`, */ `${typeScriptRoot}indexedMeshTopo-new.fb`], [/* `${typeScriptRoot}indexedMeshTopo-old.imjs`, */ `${typeScriptRoot}indexedMeshTopo-new.imjs`]],
+      [[`${typeScriptRoot}indexedMeshTopo-old.fb`, `${typeScriptRoot}indexedMeshTopo-new.fb`], [`${typeScriptRoot}indexedMeshTopo-old.imjs`, `${typeScriptRoot}indexedMeshTopo-new.imjs`]],
     ] });
 
     // temp code to generate files
@@ -209,7 +209,6 @@ describe("CrossPlatform", () => {
     }
 
     for (let iTestCase = 0; iTestCase < testCases.length; ++iTestCase) {
-      // first get the comparison geometries
       let refGeom: GeometryQuery | undefined;
       let refGeomWithTopo: GeometryQuery | undefined;
       for (const platform of [Platform.Native, Platform.TypeScript]) if (!refGeom || !refGeomWithTopo)
@@ -224,14 +223,13 @@ describe("CrossPlatform", () => {
                 }
               }
 
-      // for now, native doesn't encode topo, so compare only new TypeScript to refGeomWithTopo
       if (ck.testDefined(refGeom, "found ref geom") && ck.testDefined(refGeomWithTopo, "found ref geom with topo"))
         for (const platform of [Platform.Native, Platform.TypeScript])
             for (const fileType of [FileType.FlatBuffer, FileType.JSON])
                 for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
                   const geom = deserializeFirstGeom(fileName, fileType);
-                  if (geom && geom instanceof IndexedPolyface) {
-                    if (platform === Platform.TypeScript && fileName.includes("-new."))
+                  if (ck.testDefined(geom, "deserialized geom") && geom instanceof IndexedPolyface) {
+                    if (fileName.includes("-new."))
                       ck.testTrue(refGeomWithTopo.isAlmostEqual(geom), `testCase[${iTestCase}]: ${fileName} encodes expected geom + topo`);
                     else
                       ck.testTrue(refGeom.isAlmostEqual(geom), `testCase[${iTestCase}]: ${fileName} encodes expected geom`);
