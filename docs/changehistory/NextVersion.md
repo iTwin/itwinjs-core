@@ -185,14 +185,14 @@ Can also be attached as a map-layer:
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
 - Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
-- metadata related methods now exposed through ecschema-metadata
+- Metadata related methods now exposed through `@itwin/ecschema-metadata` package:
   - [Element.getClassMetaData()]($backend),
   - [Entity.forEachProperty()]($backend),
   - [IModelDb.classMetaDataRegistry]($backend),
   - [IModelDb.getMetaData]($backend),
   - [IModelDb.tryGetMetaData]($backend),
-  - [IModelDb.forEachMetaData()]($backend)
-  - [MetaDataRegistry]($backend)
+  - [IModelDb.forEachMetaData()]($backend),
+  - [MetaDataRegistry]($backend).
 
 #### Deprecated metadata retrieval methods
 
