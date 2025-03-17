@@ -174,7 +174,7 @@ Can also be attached as a map-layer:
 ### @itwin/core-common
 
 - [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
-- Some types which are now more comprehensively exposed by backend's new ecschema-metadata integration were made deprecated:
+- Some types which are now more comprehensively exposed by backend's new `@itwin/ecschema-metadata` integration were made deprecated:
   - [EntityClassMetadata]($common)
   - [EntityClassMetadataProps]($common)
   - [CustomAttribute]($common)
