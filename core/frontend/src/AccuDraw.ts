@@ -6,10 +6,10 @@
 /** @packageDocumentation
  * @module AccuDraw
  */
-import { BentleyStatus } from "@itwin/core-bentley";
+import { BentleyStatus, Id64String } from "@itwin/core-bentley";
 import {
-  Arc3d, AxisOrder, CurveCurve, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
-  PointString3d, Ray3d, Transform, Vector3d,
+  Arc3d, AxisOrder, CurveCurve, CurveCurveApproachType, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
+  PointString3d, Ray3d, Transform, Vector2d, Vector3d,
 } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@itwin/core-common";
 import { TentativeOrAccuSnap } from "./AccuSnap";
@@ -310,6 +310,7 @@ export class AccuDraw {
   private _tolerance = 0; // computed view based indexing tolerance
   private _percentChanged = 0; // Compass animation state
   private _threshold = 0; // Threshold for automatic x/y field focus change.
+  private _lastSnapDetail?: { point: Point3d, matrix: Matrix3d, sourceId: Id64String, isTentative: boolean, deselect?: boolean, indexed?: true };
   /** @internal */
   public readonly planePt = new Point3d(); // same as origin unless non-zero locked z value
   private readonly _rawDelta = new Point2d(); // used by rect fix point
@@ -371,6 +372,10 @@ export class AccuDraw {
   public autoFocusFields = true;
   /** When true fully specifying a point by entering both distance and angle in polar mode or XY[Z] in rectangular mode, the point is automatically accepted */
   public autoPointPlacement = false;
+  /** When true and axisIndexing is allowed the current point is adjusted to the tangent or binormal vector from the last snap when within a close tolerance
+   * @beta
+   */
+  public snapIndexing = true;
 
   /** Get distance round off settings */
   public get distanceRoundOff(): RoundOff { return this._distanceRoundOff; }
@@ -565,6 +570,41 @@ export class AccuDraw {
     return false;
   }
 
+  private updateLastSnapDetail(vp: ScreenViewport, fromSnap: boolean): void {
+    if (!this.snapIndexing || !this.axisIndexing || this.flags.indexLocked || LockedStates.NONE_LOCKED !== this.locked) {
+      this._lastSnapDetail = undefined;
+      return;
+    }
+
+    if (!fromSnap) {
+      if (this._lastSnapDetail?.deselect)
+        this._lastSnapDetail = undefined;
+      else if (this._lastSnapDetail)
+        this._lastSnapDetail.deselect = false; // Allow moving cursor back to previous snap to clear it...
+      return;
+    }
+
+    const snap = TentativeOrAccuSnap.getCurrentSnap();
+    if (undefined === snap || this.origin.isAlmostEqual(snap.getPoint()))
+      return;
+
+    if (this._lastSnapDetail && this._lastSnapDetail.sourceId === snap.sourceId && this._lastSnapDetail.point.isAlmostEqual(snap.getPoint())) {
+      if (false === this._lastSnapDetail.deselect)
+        this._lastSnapDetail.deselect = true; // Stop indexing to previous snap...
+      return; // Don't compute rotation if location hasn't changed...
+    }
+
+    const isTentative = IModelApp.tentativePoint.isSnapped;
+    if (this._lastSnapDetail?.isTentative && !isTentative)
+      return; // Don't update snap from tentative unless it's another tentative to support holding a snap location in a dense drawing...
+
+    const rotation = AccuDraw.getSnapRotation(snap, vp);
+    if (undefined === rotation)
+      return;
+
+    this._lastSnapDetail = { point: snap.getPoint().clone(), matrix: rotation, sourceId: snap.sourceId, isTentative };
+  }
+
   /** @internal */
   public adjustPoint(pointActive: Point3d, vp: ScreenViewport, fromSnap: boolean): boolean {
     if (!this.isEnabled)
@@ -582,14 +622,16 @@ export class AccuDraw {
     if (this.isInactive) {
       this.point.setFrom(pointActive);
       this.currentView = vp;
-
       this.fixPoint(pointActive, vp);
 
       if (!fromSnap && IModelApp.accuSnap.currHit)
         this.flags.redrawCompass = true;
     } else if (this.isActive) {
+      this.updateLastSnapDetail(vp, fromSnap);
+
       const lastPt = this.point.clone();
       this.fixPoint(pointActive, vp);
+
       pointChanged = !lastPt.isExactEqual(this.point);
       this.processHints();
       handled = true;
@@ -1959,6 +2001,7 @@ export class AccuDraw {
 
   /** @internal */
   public onPrimitiveToolInstall(): boolean {
+    this._lastSnapDetail = undefined;
     if (!this.isEnabled)
       return false;
 
@@ -2241,6 +2284,16 @@ export class AccuDraw {
             break;
         }
       }
+    }
+
+    if (undefined !== this._lastSnapDetail && undefined === snap) {
+      if (this._lastSnapDetail.indexed) {
+        graphic.setSymbology(colorIndex, colorIndex, 2, LinePixels.Code5);
+        graphic.addLineString([this.point, this._lastSnapDetail.point]);
+      }
+
+      graphic.setSymbology(colorIndex, colorIndex, 8, LinePixels.Solid);
+      graphic.addPointString([this._lastSnapDetail.point]);
     }
   }
 
@@ -2968,6 +3021,74 @@ export class AccuDraw {
     }
   }
 
+  private fixPointLastSnapDetail(vp: ScreenViewport): void {
+    if (undefined === this._lastSnapDetail)
+      return;
+
+    this._lastSnapDetail.indexed = undefined;
+    if (!this.axisIndexing || this.flags.indexLocked || LockedStates.NONE_LOCKED !== this.locked || this.indexed & LockedStates.DIST_BM || TentativeOrAccuSnap.isHot)
+      return; // Don't adjust point if already adjusted or indexing is disabled...
+
+    const minMag = AccuDraw.getMinPolarMag(this.point);
+    const tmpVec = Vector3d.createStartEnd(this.planePt, this.point);
+    if (tmpVec.magnitude() < minMag)
+      return; // Current point is at compass origin...
+
+    if (!this.hardConstructionPlane(this._rawPointOnPlane, this._lastSnapDetail.point, this.point, this.axes.z, vp, true))
+      return;
+
+    const snapDelta = this._rawPointOnPlane.vectorTo(this.point);
+    if (snapDelta.magnitude() < minMag)
+      return; // Haven't moved far enough away from snap point...
+
+    const snapRayX = Ray3d.createCapture(this._rawPointOnPlane, this._lastSnapDetail.matrix.rowX());
+    const snapRayY = Ray3d.createCapture(this._rawPointOnPlane, this._lastSnapDetail.matrix.rowY());
+    const snapDeltaX = snapDelta.dotProduct(snapRayX.direction);
+    const snapDeltaY = snapDelta.dotProduct(snapRayY.direction);
+
+    let rayS;
+    if (snapDeltaX < this._tolerance && snapDeltaX > -this._tolerance)
+      rayS = snapRayY;
+    else if (snapDeltaY < this._tolerance && snapDeltaY > -this._tolerance)
+      rayS = snapRayX;
+    else
+      return;
+
+    const rayA = Ray3d.createCapture(this.planePt, tmpVec);
+    const detail = Ray3d.closestApproachRay3dRay3d(rayA, rayS);
+    if (CurveCurveApproachType.Intersection !== detail.approachType)
+      return;
+
+    this.planePt.vectorTo(detail.detailA.point, tmpVec);
+    Point2d.create(tmpVec.dotProduct(this.axes.x), tmpVec.dotProduct(this.axes.y), this._rawDelta);
+    const xyCorrection = new Vector2d();
+
+    if (this.indexed & LockedStates.X_BM) {
+      xyCorrection.x -= this._rawDelta.x;
+      this._rawDelta.x = 0.0;
+    } else if (this.indexed & LockedStates.Y_BM) {
+      xyCorrection.y -= this._rawDelta.y;
+      this._rawDelta.y = 0.0;
+    }
+
+    if (this._rawDelta.magnitude() < minMag)
+      return; // Don't accept adjustment back to compass origin...
+
+    detail.detailA.point.plus2Scaled(this.axes.x, xyCorrection.x, this.axes.y, xyCorrection.y, this._rawPointOnPlane);
+    if (this.point.distance(this._rawPointOnPlane) > (1.5 * this._tolerance))
+      return; // Don't accept adjustment if distance is too great such as from nearly parallel vectors...
+
+    if (CompassMode.Polar === this.compassMode) {
+      this._distance = this.origin.distance(this._rawPointOnPlane);
+    } else {
+      this.delta.x = this._rawDelta.x;
+      this.delta.y = this._rawDelta.y;
+    }
+
+    this.point.setFrom(this._rawPointOnPlane);
+    this._lastSnapDetail.indexed = true;
+  }
+
   private fixPoint(pointActive: Point3d, vp: ScreenViewport): void {
     if (this.isActive && ((vp !== this.currentView) || this.flags.rotationNeedsUpdate)) {
       this.currentView = vp;
@@ -3004,6 +3125,8 @@ export class AccuDraw {
         this.fixPointPolar(vp);
       else
         this.fixPointRectangular(vp);
+
+      this.fixPointLastSnapDetail(vp);
 
       pointActive.setFrom(this.point);
     } else if (CompassMode.Rectangular === this.compassMode) {
@@ -3161,8 +3284,10 @@ export class AccuDraw {
 
   /** @internal */
   public onPostButtonEvent(ev: BeButtonEvent): boolean {
-    if (BeButton.Data !== ev.button || !ev.isDown || !this.isEnabled)
+    if (BeButton.Data !== ev.button || !ev.isDown || !this.isEnabled) {
+      this._lastSnapDetail = undefined;
       return false;
+    }
 
     this.onEventCommon();
 

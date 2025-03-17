@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Adding support for margins to `TextBlock`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -11,6 +11,7 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
+    - [Text Block Margins](#text-Block-margins)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
   - [Back-end image conversion](#back-end-image-conversion)
@@ -89,6 +90,10 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 - [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
+
+### Text Block Margins
+
+You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
 ## Display
 
