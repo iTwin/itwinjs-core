@@ -1125,6 +1125,9 @@ export abstract class IModelDb extends IModel {
     return this._classMetaDataRegistry;
   }
 
+  /**
+   * Allows registering js classes mapped to ECClasses
+   */
   public get jsClassMap(): EntityJsClassMap {
     if (this._jsClassMap === undefined)
       this._jsClassMap = new EntityJsClassMap();
@@ -1132,6 +1135,9 @@ export abstract class IModelDb extends IModel {
     return this._jsClassMap;
   }
 
+  /**
+   * Allows locally registering a schema for this imodel, in constrast to [Schemas.registerSchema] which is a global operation
+   */
   public get schemaMap(): SchemaMap {
     if (this._schemaMap === undefined)
       this._schemaMap = new SchemaMap();
@@ -1249,7 +1255,7 @@ export abstract class IModelDb extends IModel {
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    * @deprecated in 5.0. Use [[forEachProperty]] instead.
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
@@ -1286,7 +1292,7 @@ export abstract class IModelDb extends IModel {
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
    * @deprecated in 5.0. Use [forEachProperty] from SchemaContext class instead.
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const meta = this.getMetaData(classFullName); // will load if necessary

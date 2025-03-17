@@ -149,6 +149,7 @@ public;class;EmbeddedFileLink
 beta;interface;EmbedFontFileArgs
 public;class;Entity
 public;type;EntityClassType
+public;class;EntityJsClassMap
 alpha;namespace;EntityReferences
 internal;function;isValid
 internal;function;makeInvalid
@@ -360,6 +361,7 @@ public;class;RpcTrace
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
+public;class;SchemaMap
 internal;type;SchemaMatchType
 public;class;Schemas
 internal;namespace;SchemaSync

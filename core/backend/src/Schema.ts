@@ -60,7 +60,7 @@ export class Schema {
 
 /**
  * Holds a map of registered schemas.
- * @internal
+ * @public
  */
 export class SchemaMap {
   private readonly _schemas = new Map<string, typeof Schema>();
@@ -82,7 +82,7 @@ export class SchemaMap {
 
   /** Register a schema prior to using it.
    * @throws [[IModelError]] if a schema of the same name is already registered.
-   * @internal
+   * @public
    */
   public registerSchema(schema: typeof Schema) {
     const key = schema.schemaName.toLowerCase();

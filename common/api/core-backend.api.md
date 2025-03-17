@@ -2385,6 +2385,23 @@ export type EntityClassType<T> = Function & {
     prototype: T;
 };
 
+// @public
+export class EntityJsClassMap {
+    // @internal (undocumented)
+    [Symbol.iterator](): IterableIterator<[string, typeof Entity]>;
+    // @internal (undocumented)
+    clear(): void;
+    // @internal (undocumented)
+    delete(classFullName: string): boolean;
+    // @internal (undocumented)
+    get(classFullName: string): typeof Entity | undefined;
+    // @internal (undocumented)
+    has(classFullName: string): boolean;
+    register(entityClass: typeof Entity, schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(classFullName: string, entityClass: typeof Entity): void;
+}
+
 // @alpha
 export namespace EntityReferences {
     export function from(entity: ConcreteEntity): EntityReference;
@@ -3264,6 +3281,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     get isStandalone(): boolean;
     isStandaloneDb(): this is StandaloneDb;
+    get jsClassMap(): EntityJsClassMap;
     // @internal (undocumented)
     protected loadWorkspaceSettings(): Promise<void>;
     get locks(): LockControl;
@@ -3323,6 +3341,7 @@ export abstract class IModelDb extends IModel {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @beta
     get schemaContext(): SchemaContext;
+    get schemaMap(): SchemaMap;
     // @beta
     simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
@@ -4916,6 +4935,17 @@ export interface SchemaImportOptions {
 
 // @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
+
+// @public
+export class SchemaMap {
+    // @internal (undocumented)
+    delete(schemaName: string): boolean;
+    // @internal (undocumented)
+    get(schemaName: string): typeof Schema | undefined;
+    registerSchema(schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(schemaName: string, schema: typeof Schema): void;
+}
 
 // @internal (undocumented)
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
