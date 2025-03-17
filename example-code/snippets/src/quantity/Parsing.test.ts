@@ -1,12 +1,14 @@
-import { IModelApp } from "@itwin/core-frontend";
+import { QuantityFormatter } from "@itwin/core-frontend";
 import { Format, ParsedQuantity, Parser, ParserSpec } from "@itwin/core-quantity";
 import { assert } from "chai";
 
 
 describe("Parsing examples", () => {
+
   it("Simple Parsing", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Simple_Parsing
-    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+    const quantityFormatter = new QuantityFormatter();
+    const unitsProvider = quantityFormatter.unitsProvider;
     // define output/persistence unit and also used to determine the unit family used during parsing
     const outUnit = await unitsProvider.findUnitByName("Units.M");
 
@@ -31,15 +33,16 @@ describe("Parsing examples", () => {
     // create the parserSpec spec which will hold all unit conversions from possible units to the output unit
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     const parseResult = parserSpec.parseToQuantityValue(inString);
-    assert.equal((parseResult as ParsedQuantity).value, 0.762);
     //  parseResult.value 0.762  (value in meters)
-
     // __PUBLISH_EXTRACT_END__
+
+    assert.equal((parseResult as ParsedQuantity).value, 0.762);
   });
 
   it("Basic math operations parsing", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Basic_Math_Operations_Parsing
-    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+    const quantityFormatter = new QuantityFormatter();
+    const unitsProvider = quantityFormatter.unitsProvider;
     const formatData = {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 8,
@@ -55,10 +58,10 @@ describe("Parsing examples", () => {
 
     // Asynchronous implementation
     const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
-    assert.equal(quantityProps.magnitude, 7.5);
     // quantityProps.magnitude 7.5 (value in feet)
-
     // __PUBLISH_EXTRACT_END__
+
+    assert.equal(quantityProps.magnitude, 7.5);
   });
 
   it("Math Operations Whitespace", async () => {
@@ -84,17 +87,19 @@ describe("Parsing examples", () => {
         ],
       },
     };
-    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+
+    const quantityFormatter = new QuantityFormatter();
+    const unitsProvider = quantityFormatter.unitsProvider;
     const format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
     const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     // The spacer property from formatProps is ignored, so the two results below are the same.
     const result = parserSpec.parseToQuantityValue("-2FT-6IN + 6IN"); // -0.6096 in meters
     const result2 = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
+    // __PUBLISH_EXTRACT_END__
+
     assert.equal((result as ParsedQuantity).value, -0.6096);
     assert.equal((result as ParsedQuantity).value,(result2 as ParsedQuantity).value);
-
-    // __PUBLISH_EXTRACT_END__
   });
 
   it("Math Operations Composite", async () => {
@@ -121,16 +126,18 @@ describe("Parsing examples", () => {
         ],
       },
     };
-    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+
+    const quantityFormatter = new QuantityFormatter();
+    const unitsProvider = quantityFormatter.unitsProvider;
     const format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
     const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     // The spacer property from formatProps is ignored, so the two results below are the same.
     const result = parserSpec.parseToQuantityValue("-2FT 6IN-0.5"); // -2.5 FT and 0.5 FT -> -0.6096 in meters
     const result2 = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
+    // __PUBLISH_EXTRACT_END__
+
     assert.equal((result as ParsedQuantity).value, -0.6096);
     assert.equal((result as ParsedQuantity).value,(result2 as ParsedQuantity).value);
-
-    // __PUBLISH_EXTRACT_END__
   });
 });

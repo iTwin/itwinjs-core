@@ -1,4 +1,4 @@
-import { IModelApp } from "@itwin/core-frontend";
+import { QuantityFormatter } from "@itwin/core-frontend";
 import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
 import { assert } from "chai";
 
@@ -6,7 +6,8 @@ import { assert } from "chai";
 describe('Formatting examples', () => {
   it("Numeric Formatting", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Numeric
-    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+    const quantityFormatter = new QuantityFormatter();
+    const unitsProvider = quantityFormatter.unitsProvider;
     const formatData = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
       precision: 4,
@@ -35,17 +36,16 @@ describe('Formatting examples', () => {
 
     // apply the formatting held in FormatterSpec
     const formattedValue = spec.applyFormatting(magnitude);
-
-    assert.equal(formattedValue, "-12.5417 ft");
     // result in formattedValue of "-12.5417 ft"
-
     // __PUBLISH_EXTRACT_END__
 
+    assert.equal(formattedValue, "-12.5417 ft");
   });
 
   it("Composite Formatting", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Composite
-    const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+    const quantityFormatter = new QuantityFormatter();
+    const unitsProvider = quantityFormatter.unitsProvider;
     const formatData = {
       composite: {
         includeZero: true,
@@ -86,10 +86,10 @@ describe('Formatting examples', () => {
 
     // apply the formatting held in FormatterSpec
     const formattedValue = spec.applyFormatting(magnitude);
-    assert.equal(formattedValue, "3'-3 3/8\"");
     // result in formattedValue of 3'-3 3/8"
-
     // __PUBLISH_EXTRACT_END__
+
+    assert.equal(formattedValue, "3'-3 3/8\"");
   });
 });
 
