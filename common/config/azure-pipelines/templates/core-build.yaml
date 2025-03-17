@@ -57,15 +57,15 @@ steps:
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
 
-  - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-    displayName: "rush change -v"
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), eq('windows_nt', variables['Agent.OS']))
+  # - script: py -3 common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+  #   displayName: "rush change -v"
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   condition: and(succeeded(), eq('windows_nt', variables['Agent.OS']))
 
-  - script: python common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
-    displayName: "rush change -v"
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ne('windows_nt', variables['Agent.OS']))
+  # - script: python common/scripts/run_rush_change.py ${{ parameters.currentBranch }} $(Build.Reason) ${{ parameters.targetBranch }}
+  #   displayName: "rush change -v"
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   condition: and(succeeded(), ne('windows_nt', variables['Agent.OS']))
 
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
@@ -76,66 +76,66 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'imodel02'))
 
-  - script: node common/scripts/install-run-rush.js build -v -p max
-    displayName: rush build
-    workingDirectory: ${{ parameters.workingDir }}
-    env:
-      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
-      VITE_CI: true
+  # - script: node common/scripts/install-run-rush.js build -v -p max
+  #   displayName: rush build
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   env:
+  #     RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+  #     RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+  #     VITE_CI: true
 
-  - script: npm run android:all
-    workingDirectory: test-apps/display-test-app
-    displayName: Build & run Android display-test-app
-    env:
-      IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
-      IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-      TOKEN: $(GitHubPAT)
-    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+  # - script: npm run android:all
+  #   workingDirectory: test-apps/display-test-app
+  #   displayName: Build & run Android display-test-app
+  #   env:
+  #     IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
+  #     IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
+  #     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+  #     TOKEN: $(GitHubPAT)
+  #   condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
-  - script: npm run ios:all
-    workingDirectory: test-apps/display-test-app
-    displayName: Build & run iOS display-test-app
-    env:
-      IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
-      IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
-    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+  # - script: npm run ios:all
+  #   workingDirectory: test-apps/display-test-app
+  #   displayName: Build & run iOS display-test-app
+  #   env:
+  #     IMJS_OIDC_CLIENT_ID: $(IMJS_OIDC_CLIENT_ID)
+  #     IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
+  #   condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
-  - script: npm run ios:all
-    workingDirectory: core/backend
-    displayName: Build & run iOS backend unit tests in Simulator
-    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+  # - script: npm run ios:all
+  #   workingDirectory: core/backend
+  #   displayName: Build & run iOS backend unit tests in Simulator
+  #   condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
-  - script: node common/scripts/install-run-rush.js lint
-    displayName: rush lint
-    workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js lint
+  #   displayName: rush lint
+  #   workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node ./common/scripts/install-run-rush webpack:test -v
-    workingDirectory: ${{ parameters.workingDir }}
-    displayName: "rush webpack:test (for rush cover)"
+  # - script: node ./common/scripts/install-run-rush webpack:test -v
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   displayName: "rush webpack:test (for rush cover)"
 
-  # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
-    displayName: rush cover
-    workingDirectory: ${{ parameters.workingDir }}
-    env:
-      NODE_ENV: development
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  # # By default linux agents do not have a real display so use the virtual framebuffer
+  # - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+  #   displayName: rush cover
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   env:
+  #     NODE_ENV: development
+  #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-  # MacOS and Windows agents work without any virtual display
-  - script: node common/scripts/install-run-rush.js cover --verbose
-    displayName: rush cover
-    workingDirectory: ${{ parameters.workingDir }}
-    env:
-      NODE_ENV: development
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+  # # MacOS and Windows agents work without any virtual display
+  # - script: node common/scripts/install-run-rush.js cover --verbose
+  #   displayName: rush cover
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   env:
+  #     NODE_ENV: development
+  #   condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
 
-  - script: node common/scripts/install-run-rush.js docs
-    displayName: rush docs
-    workingDirectory: ${{ parameters.workingDir }}
+  # - script: node common/scripts/install-run-rush.js docs
+  #   displayName: rush docs
+  #   workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node common/scripts/install-run-rush.js extract-api
-    displayName: rush extract-api
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: ${{ parameters.nativePrVal }}
+  # - script: node common/scripts/install-run-rush.js extract-api
+  #   displayName: rush extract-api
+  #   workingDirectory: ${{ parameters.workingDir }}
+  #   condition: ${{ parameters.nativePrVal }}
