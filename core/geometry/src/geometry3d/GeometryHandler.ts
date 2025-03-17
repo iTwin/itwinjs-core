@@ -363,7 +363,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
  * CurvePrimitives emitStrokes() methods emit calls to a handler object with these methods.
  * The various CurvePrimitive types are free to announce either single points (announcePoint), linear fragments,
  * or fractional intervals of the parent curve.
- * * handler.startCurvePrimitive(cp) -- announce the curve primitive whose strokes will follow.
+ * * startCurvePrimitive(cp) -- announce the curve primitive whose strokes will follow.
  * * announcePointTangent(xyz, fraction, tangent) -- announce a single point on the curve.
  * * announceIntervalForUniformStepStrokes(cp, numStrokes, fraction0, fraction1) -- announce a fraction
  * interval in which the curve can be evaluated (e.g., the handler can call cp->fractionToPointAndDerivative())
@@ -372,7 +372,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
  *   * A LineSegment would make a single call to this.
  *   * A LineString would make one call to this for each of its segments, with fractions indicating position
  * within the linestring.
- * * handler.endCurvePrimitive(cp) -- announce the end of the curve primitive.
+ * * endCurvePrimitive(cp) -- announce the end of the curve primitive.
  * @public
  */
 export interface IStrokeHandler {
