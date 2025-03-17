@@ -18,7 +18,7 @@ import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
+  ElementLoadProps, ElementMeshRequestProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
@@ -1377,6 +1377,21 @@ export abstract class IModelDb extends IModel {
    */
   public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return generateElementGraphics(request, this);
+  }
+
+  /** Produce encoded [Polyface]($core-geometry)s from the geometry stream of a [GeometricElement]($backend).
+   * A polyface is produced for each geometric entry in the element's geometry stream, excluding geometry like open curves that can't be converted into polyfaces.
+   * The polyfaces can be decoded using [readElementMeshes]($common).
+   * Symbology, UV parameters, and normal vectors are not included in the result.
+   * @param requestProps A description of how to produce the polyfaces and from which element to obtain them.
+   * @returns an encoded list of polyfaces that can be decoded by [readElementMeshes]($common).
+   * @throws Error if [ElementMeshRequestProps.source]($common) does not refer to a [GeometricElement]($backend).
+   * @note This function is intended to support limited analysis of an element's geometry as a mesh. It is not intended for producing graphics.
+   * @see [TileAdmin.requestElementGraphics]($frontend) to obtain meshes appropriate for display.
+   * @alpha
+   */
+  public async generateElementMeshes(request: ElementMeshRequestProps): Promise<Uint8Array> {
+    return this[_nativeDb].generateElementMeshes(request);
   }
 
   private static _settingPropNamespace = "settings";

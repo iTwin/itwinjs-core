@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, BentleyStatus, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
@@ -459,7 +459,14 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array> {
-    return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
+    let meshes: Uint8Array;
+    try {
+     meshes = await this._iModelReadApi.getElementMeshes(requestProps.source, requestProps);
+    } catch (error: unknown) {
+      throw new IModelError(BentleyStatus.ERROR, error instanceof Error ? error.message : "Unknown error occurred");
+    }
+
+    return meshes;
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
@@ -729,6 +736,7 @@ export class BlankConnection extends IModelConnection {
     const mockIModelReadApi: IModelReadAPI = {
       getConnectionProps: async () => props,
       getTooltipMessage: async () => ({ lines: [] }),
+      getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
       async *runQuery () {},
     }
 
