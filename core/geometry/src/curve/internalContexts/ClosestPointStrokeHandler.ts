@@ -140,19 +140,35 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     if (this._curve)
       this.announceCandidate(this._curve, fraction, this._curve.fractionToPoint(fraction));
   }
+  /**
+   * Evaluate the univariate real-valued function for which we are finding roots.
+   * * For finding the closest point to curve X from point Q, this function is `f(t) := Q-X(t) dot X'(t)`.
+   * * Either `pointAndDerivative` must be defined, or both `fraction` and `curve`.
+   * @param pointAndDerivative pre-evaluated curve
+   * @param fraction fraction at which to evaluate `curve`
+   * @param curve curve to evaluate at `fraction`
+  */
+  private evaluateFunction(pointAndDerivative?: Ray3d, fraction?: number, curve?: CurvePrimitive): number | undefined {
+    if (pointAndDerivative)
+      this._workRay.setFrom(pointAndDerivative);
+    else if (fraction !== undefined && curve)
+      this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
+    else
+      return undefined;
+    return this._workRay.dotProductToPoint(this._spacePoint);
+  }
   public evaluate(fraction: number): boolean {
     let curve = this._curve;
     if (this._parentCurvePrimitive)
       curve = this._parentCurvePrimitive;
-    if (curve) {
-      this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
-      this.currentF = this._workRay.dotProductToPoint(this._spacePoint);
-      return true;
-    }
-    return false;
+    const value = this.evaluateFunction(undefined, fraction, curve);
+    if (value === undefined)
+      return false;
+    this.currentF = value;
+    return true;
   }
   private announceRay(fraction: number, data: Ray3d): void {
-    this._functionB = data.dotProductToPoint(this._spacePoint);
+    this._functionB = this.evaluateFunction(data)!;
     this._fractionB = fraction;
     if (this._numThisCurve++ > 0) // after the first stroke point, a stroke segment is defined, so we have an interval
       this.searchInterval();
