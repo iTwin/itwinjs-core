@@ -316,7 +316,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 [PresentationFormatSet]($quantity) defines properties necessary to support persistence of a set of formats.
 
-Formats defined in a PFS needs to be mapped to the a valid ECName for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the format associated to a KoQ within a PFS would take precedence and be used over the default presentation formats of that KoQ.
+Formats defined in a PFS needs to be mapped to the a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the format associated to a KoQ within a PFS would take precedence and be used over the default presentation formats of that KoQ.
 
 > The naming convention for a valid PFS format <full-schema-name>:<koq-name>
 .
