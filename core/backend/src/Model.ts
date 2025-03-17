@@ -120,7 +120,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model to be updated
    * @beta
    */
-  protected static onUpdate(arg: OnModelPropsArg): void {
+  public static onUpdate(arg: OnModelPropsArg): void {
     const id = arg.props.id!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     arg.iModel.channels[_verifyChannel](id);
     arg.iModel.locks.checkExclusiveLock(id, "model", "update");
@@ -131,7 +131,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(_arg: OnModelIdArg): void {
+  public static onUpdated(_arg: OnModelIdArg): void {
   }
 
   /** Called before a Model is deleted.
