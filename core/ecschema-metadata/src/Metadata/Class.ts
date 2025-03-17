@@ -623,6 +623,13 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
+   * Quick way to check whether this class has any local properties without having to use the iterable
+   */
+  public get hasLocalProperties(): boolean {
+    return this._properties !== undefined && this._properties.size > 0;
+  }
+
+  /**
    * Returns the properties on this class and its base classes.
    * Since this is an expensive operation, results will be cached after first call.
    * @param excludeInherited If true, only properties defined directly on this class will be returned.
