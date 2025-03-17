@@ -538,6 +538,8 @@ export class AccuDraw {
     setRotationMode(mode: RotationMode): void;
     setValueByIndex(index: ItemField, value: number): void;
     smartKeyin: boolean;
+    // @beta
+    snapIndexing: boolean;
     // @internal (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
     stickyZLock: boolean;
