@@ -530,7 +530,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * succeed.
    * @param spacePoint point in space.
    * @param extend (optional) compute the closest point to the curve extended according to variant type:
-   * * false: do not extend the curve
+   * * false: do not extend the curve (default)
    * * true: extend the curve at both start and end
    * * CurveExtendOptions: extend the curve in the specified manner at both start and end
    * * CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored
@@ -538,20 +538,22 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @returns details of the closest point.
    */
   public closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend, result);
     this.emitStrokableParts(strokeHandler);
     return strokeHandler.claimResult();
   }
   /**
-   * Search for points on the curve where lines from the spacePoint to those points are tangent to the curve.
+   * Search for all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve.
+   * * Strictly speaking this line is in the plane through `P` whose normal is the cross product of the curve tangent at
+   * P and `normal`. This is equivalent to tangency as seen in a view plane perpendicular to `normal`.
    * * If the space point is inside a closed curve or is exactly on the curve, no tangent is returned.
    * @param spacePoint point in space.
    * @param hintPoint (optional) a point to be used to find the closest tangent to that point.
-   * @param normal (optional) view plane normal. The tangent is found from the view provided by the normal.
+   * @param normal (optional) view plane normal.
    * @param extend (optional) compute the tangents to the curve extended according to variant type:
-   * * false: do not extend the curve
+   * * false: do not extend the curve (default)
    * * true: extend the curve at both start and end
    * * CurveExtendOptions: extend the curve in the specified manner at both start and end
    * * CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored

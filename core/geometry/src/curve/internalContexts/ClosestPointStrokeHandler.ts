@@ -25,10 +25,10 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _closestPoint: CurveLocationDetail | undefined;
   private _spacePoint: Point3d;
   private _extend: VariantCurveExtendParameter;
-  // fractions near the closest point
+  // fraction and function value on one side of an interval that may bracket a root
   private _fractionA: number = 0;
   private _functionA: number = 0;
-  // dot product of fractions near the closest point
+  // fraction and function value on the other side of an interval that may bracket a root
   private _functionB: number = 0;
   private _fractionB: number = 0;
   private _numThisCurve: number = 0;
@@ -37,13 +37,13 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail) {
+  public constructor(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail) {
     super();
     this._spacePoint = spacePoint;
     this._workPoint = Point3d.create();
     this._workRay = Ray3d.createZero();
     this._closestPoint = result;
-    this._extend = extend;
+    this._extend = extend ?? false;
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
@@ -111,14 +111,22 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     const globalFraction = Geometry.interpolate(fraction0, localFraction, fraction1);
     this.announceCandidate(cp, globalFraction, this._workPoint);
   }
+  /**
+   * Given a function `f` and (unordered) fractions `a` and `b`, search for and announce a root of `f` in this
+   * fractional interval.
+   * * This method searches for a root of `f` if and only if the stroke segment defined by `(a, f(a))` and
+   * `(b, f(b))` has a root. This is a HEURISTIC; given continuous `f` between `a` and `b`, a root of the stroke
+   * segment implies a root of `f`, but not vice-versa. Therefore, if the strokes are not sufficiently dense,
+   * this method can miss a root of `f`.
+   */
   private searchInterval() {
-    if (this._functionA * this._functionB > 0) // no solution between fractionA and fractionB
-      return;
-    if (this._functionA === 0) // solution at fractionA
+    if (this._functionA * this._functionB > 0)
+      return; // stroke segment has no root; ASSUME the function has no root either
+    if (this._functionA === 0)
       this.announceSolutionFraction(this._fractionA);
-    if (this._functionB === 0) // solution at fractionB
+    if (this._functionB === 0)
       this.announceSolutionFraction(this._fractionB);
-    // solution between fractionA and fractionB; use Newton to find fraction where function (dot product) is zero
+    // By the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
     if (this._functionA * this._functionB < 0) {
       const fraction = Geometry.inverseInterpolate(this._fractionA, this._functionA, this._fractionB, this._functionB);
       if (fraction) {
@@ -146,7 +154,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private announceRay(fraction: number, data: Ray3d): void {
     this._functionB = data.dotProductToPoint(this._spacePoint);
     this._fractionB = fraction;
-    if (this._numThisCurve++ > 0)
+    if (this._numThisCurve++ > 0) // after the first stroke point, a stroke segment is defined, so we have an interval
       this.searchInterval();
     this._functionA = this._functionB;
     this._fractionA = this._fractionB;
