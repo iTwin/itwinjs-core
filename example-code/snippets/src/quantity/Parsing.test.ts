@@ -77,11 +77,11 @@ describe("Parsing examples", () => {
         spacer: "-", // When omitted, the spacer defaults to " "
         units: [
           {
-            label: "'",
+            label: "FT",
             name: "Units.FT",
           },
           {
-            label: `"`,
+            label: `IN`,
             name: "Units.IN",
           },
         ],
@@ -91,7 +91,7 @@ describe("Parsing examples", () => {
     const quantityFormatter = new QuantityFormatter();
     const unitsProvider = quantityFormatter.unitsProvider;
     const format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
-    const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
+    const outUnit = await unitsProvider.findUnit("m", "Units");
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     // The spacer property from formatProps is ignored, so the two results below are the same.
     const result = parserSpec.parseToQuantityValue("-2FT-6IN + 6IN"); // -0.6096 in meters
@@ -116,11 +116,11 @@ describe("Parsing examples", () => {
         spacer: "-", // When omitted, the spacer defaults to " "
         units: [
           {
-            label: "'",
+            label: "FT",
             name: "Units.FT",
           },
           {
-            label: `"`,
+            label: `IN`,
             name: "Units.IN",
           },
         ],
@@ -130,14 +130,14 @@ describe("Parsing examples", () => {
     const quantityFormatter = new QuantityFormatter();
     const unitsProvider = quantityFormatter.unitsProvider;
     const format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
-    const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
+    const outUnit = await unitsProvider.findUnit("m", "Units");
     const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
     // The spacer property from formatProps is ignored, so the two results below are the same.
-    const result = parserSpec.parseToQuantityValue("-2FT 6IN-0.5"); // -2.5 FT and 0.5 FT -> -0.6096 in meters
-    const result2 = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
+    const result = parserSpec.parseToQuantityValue("2FT 6IN-0.5"); // 2.5 FT and 0.5 FT -> 0.9144 in meters
+    const result2 = parserSpec.parseToQuantityValue("2FT 6IN + 6IN"); // 0.9144 in meters
     // __PUBLISH_EXTRACT_END__
 
-    assert.equal((result as ParsedQuantity).value, -0.6096);
+    assert.equal((result as ParsedQuantity).value, 0.9144);
     assert.equal((result as ParsedQuantity).value,(result2 as ParsedQuantity).value);
   });
 });
