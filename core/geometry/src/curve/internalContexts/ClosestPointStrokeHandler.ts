@@ -115,7 +115,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
    * Given a function `f` and (unordered) fractions `a` and `b`, search for and announce a root of `f` in this
    * fractional interval.
    * * This method searches for a root of `f` if and only if the stroke segment defined by `(a, f(a))` and
-   * `(b, f(b))` has a root. This is a HEURISTIC; given continuous `f` between `a` and `b`, a root of the stroke
+   * `(b, f(b))` has a root. This is a HEURISTIC: given continuous `f` between `a` and `b`, a root of the stroke
    * segment implies a root of `f`, but not vice-versa. Therefore, if the strokes are not sufficiently dense,
    * this method can miss a root of `f`.
    */
@@ -147,7 +147,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
    * @param pointAndDerivative pre-evaluated curve
    * @param fraction fraction at which to evaluate `curve`
    * @param curve curve to evaluate at `fraction`
-  */
+   */
   private evaluateFunction(pointAndDerivative?: Ray3d, fraction?: number, curve?: CurvePrimitive): number | undefined {
     if (pointAndDerivative)
       this._workRay.setFrom(pointAndDerivative);

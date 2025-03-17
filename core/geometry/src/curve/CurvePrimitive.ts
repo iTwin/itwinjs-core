@@ -551,7 +551,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * If the space point is inside a closed curve or is exactly on the curve, no tangent is returned.
    * @param spacePoint point in space.
    * @param hintPoint (optional) a point to be used to find the closest tangent to that point.
-   * @param normal (optional) view plane normal.
+   * @param normal (optional) view plane normal. Default is (0,0,1).
    * @param extend (optional) compute the tangents to the curve extended according to variant type:
    * * false: do not extend the curve (default)
    * * true: extend the curve at both start and end
