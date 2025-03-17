@@ -395,6 +395,7 @@ describe("LineString3d", () => {
     };
 
     const lineSeg = LineSegment3d.create(Point3d.create(), Point3d.create(5, 0));
+    let ls = LineString3d.create(lineSeg.startPoint(), lineSeg.endPoint());
     let spacePoint = Point3d.create(2, 2);
     let { tangents, closestIndex } = lineSeg.closestTangent(spacePoint);
     ck.testCoordinate(0, tangents.length, "no tangent found");
@@ -409,7 +410,7 @@ describe("LineString3d", () => {
 
     dy = 0;
     dx += 10;
-    let ls = LineString3d.create(Point3d.create(), Point3d.create(5, 0), Point3d.create(5, 5));
+    ls = LineString3d.create(Point3d.create(), Point3d.create(5, 0), Point3d.create(5, 5));
     spacePoint = Point3d.create(2, 2);
     ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
     ck.testCoordinate(0, tangents.length, "no tangent found");
