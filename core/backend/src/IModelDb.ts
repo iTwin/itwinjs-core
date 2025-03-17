@@ -1114,7 +1114,16 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0. Use [[schemaContext]] instead.
+   * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * const classMetaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
+   *
+   * // Replacement:
+   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get classMetaDataRegistry(): MetaDataRegistry {
@@ -1216,7 +1225,16 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Use [[getSchemaItem]] from SchemaContext class instead.
+   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   *
+   * @example
+   *  * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData = imodel.getMetaData("SchemaName:ClassName");
+   *
+   * // Replacement:
+   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", EntityClass);
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getMetaData(classFullName: string): EntityMetaData {
@@ -1234,7 +1252,16 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Use [[tryGetSchemaItem]] from SchemaContext class instead.
+   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   *
+   * @example
+   *  * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData | undefined = imodel.tryGetMetaData("SchemaName:ClassName");
+   *
+   * // Replacement:
+   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
@@ -1253,9 +1280,22 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [[forEachProperty]] instead.
+   * @deprecated in 5.0. Please use `forEachProperty` instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * IModelDb.forEachMetaData(imodel, "BisCore:Element", true, (name: string, propMetaData: PropertyMetaData) => {
+   *   console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+   * }, false);
+   *
+   * // Replacement:
+   * await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, property: Property) => {
+   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
+   * }, false);
+   * ```
    */
-
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
@@ -1272,16 +1312,15 @@ export abstract class IModelDb extends IModel {
    *
    * @example
    * ```typescript
-   * const callback: PropertyHandler = (name, property) => {
-   *   console.log(`Property Name: ${name}`);
-   *   console.log(`Property Class:`, property.class);
+   * const callback: PropertyHandler = (name: string, property: Property) => {
+   *  console.log(`Property name: ${name}, Property type: ${propMetaData.propertyType}`);
    * };
    *
    * IModelDb.forEachProperty(imodel, "BisCore:Element", true, callback);
    * ```
    */
-  public static async forEachProperty(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean = true): Promise<void> {
-    await iModel.schemaContext.forEachProperty(classFullName, wantSuper, func, EntityClass, includeCustom);
+  public static forEachProperty(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean = true) {
+    iModel.schemaContext.forEachProperty(classFullName, wantSuper, func, EntityClass, includeCustom);
   }
 
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.
@@ -1290,9 +1329,22 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [forEachProperty] from SchemaContext class instead.
+   * @deprecated in 5.0. Use `forEachProperty` from `SchemaContext` class instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * iModel.forEachMetaData("BisCore:Element", true, (name: string, propMetaData: PropertyMetaData) => {
+   *   console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+   * });
+   *
+   * // Replacement:
+   * imodel.schemaContext.forEachProperty("BisCore:Element", true, (propName: string, property: Property) => {
+   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
+   * });
+   * ```
    */
-
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const meta = this.getMetaData(classFullName); // will load if necessary
@@ -1309,7 +1361,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * @internal
-   * @deprecated in 5.0. Use [schemaContext] instead.
+   * @deprecated in 5.0. Please use `schemaContext` from `iModel` instead to get metadata.
    */
   private loadMetaData(classFullName: string) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated

@@ -53,19 +53,25 @@ export class EntityJsClassMap {
     return this._classMap[Symbol.iterator]();
   }
 
-  /** Register a single `entityClass` defined in the specified `schema`.
-   * @see [[registerModule]] to register multiple classes.
+  /**
+   * Registers a single `entityClass` defined in the specified `schema`.
    * This method registers the class globally. To register a class for a specific iModel, use [[IModelDb.jsClassMap]].
+   *
+   * @param entityClass - The JavaScript class that implements the BIS [ECClass](@itwin/core-common) to be registered.
+   * @param schema - The schema that contains the `entityClass`.
+   *
+   * @throws Error if the class is already registered.
+   *
    * @public
    */
   public register(entityClass: typeof Entity, schema: typeof Schema): void {
-    entityClass.schema = schema;
     const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
     if (this.has(key)) {
       const errMsg = `Class ${key} is already registered. Make sure static className member is correct on JavaScript class ${entityClass.name}`;
       Logger.logError("core-frontend.classRegistry", errMsg);
       throw new Error(errMsg);
     }
+    entityClass.schema = schema;
     this.set(key, entityClass);
   }
 }
@@ -244,7 +250,6 @@ export class ClassRegistry {
     }
 
     iModel.jsClassMap.register(generatedClass, schema); // register it before returning
-    //this.register(generatedClass, schema); // register it before returning
     return generatedClass;
   }
 
@@ -322,7 +327,20 @@ export class ClassRegistry {
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
- * @deprecated in 5.0. Use schemaContext on the imodel instead
+ * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead.
+ *
+ * @example
+ * @
+ * Current Usage:
+ * ```ts
+ * const metaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
+ * ```
+ *
+ * Replacement:
+ * ```ts
+ * const entityMetaData: EntityClass | undefined = iModel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+ * const relationshipMetaData: RelationshipClass | undefined = iModel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", RelationshipClass);
+ * ```
  */
 export class MetaDataRegistry {
   // eslint-disable-next-line @typescript-eslint/no-deprecated

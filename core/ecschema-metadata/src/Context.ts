@@ -528,27 +528,24 @@ export class SchemaContext {
   }
 
   /**
-   * Attempt to get metadata for a schema item. This method will load the metadata from the schema context if necessary.
-   * If the metadata cannot be found or loaded, it returns `undefined` instead of throwing an error.
+   * Iterates over each property of a specified class and executes a provided callback function on each property.
    *
-   * @param classFullName The full name of the class in the format "SchemaName:SchemaItemName".
-   * @param itemConstructor The constructor of the schema item to return.
-   * @returns The requested schema item metadata, or `undefined` if the metadata cannot be found or loaded.
+   * @param classFullName - The full name of the class.
+   * @param wantSuper - If true, includes properties from the base classes.
+   * @param func - The callback to execute on each property.
+   * @param itemConstructor - The constructor of the schema item to return.
+   * @param includeCustom - If true, includes custom handled properties. Defaults to true.
+   *
+   * @returns A promise that resolves when the iteration is complete.
    *
    * @example
    * ```typescript
-   * const entityClass = schemaContext.tryGetSchemaItem("BisCore:Element", EntityClass);
+   * schemaContext.forEachProperty("BisCore.Element", true, (name, property) => {
+   *   console.log(`Property name: ${name}, Property class: ${property.class}`);
+   * }, EntityClass);
    * ```
    */
-  public tryGetSchemaItem<T extends typeof SchemaItem>(classFullName: string, itemConstructor: T): InstanceType<T> | undefined {
-    try {
-      return this.getSchemaItemSync(classFullName, itemConstructor);
-    } catch {
-      return undefined;
-    }
-  }
-
-  public async forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true): Promise<void> {
+  public forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true) {
     const metaData = this.getSchemaItemSync(classFullName, itemConstructor) as EntityClass | Mixin;
     for (const property of metaData.getPropertiesSync(!wantSuper)) {
       if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))

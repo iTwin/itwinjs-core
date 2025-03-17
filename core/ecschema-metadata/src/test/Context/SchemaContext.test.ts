@@ -12,7 +12,7 @@ import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { SchemaItem } from "../../Metadata/SchemaItem";
-import { CustomAttributeClass, Format, KindOfQuantity, Mixin, Phenomenon, RelationshipClass, StructClass, Unit, UnitSystem } from "../../ecschema-metadata";
+import { CustomAttributeClass, Enumeration, Format, KindOfQuantity, Mixin, Phenomenon, RelationshipClass, StructClass, Unit, UnitSystem } from "../../ecschema-metadata";
 
 const assert = chai.assert;
 const expect = chai.expect;
@@ -160,17 +160,19 @@ describe("Schema Context", () => {
       [8, "TestUnit", Unit, true],
       [9, "TestKoQ", KindOfQuantity, true],
       [10,"TestFormat", Format, true],
+      [11,"TestEnum", Enumeration, true],
 
-      [11, "TestEntityClass", Mixin, false],
-      [12, "TestMixin", EntityClass, false],
-      [13, "TestCustomAttributeClass", StructClass, false],
-      [14, "TestStructClass", EntityClass, false],
-      [15, "TestRelationshipClass", EntityClass, false],
-      [16, "TestUnitSystem", Unit, false],
-      [17, "TestPhenomenon", UnitSystem, false],
-      [18, "TestUnit", Phenomenon, false],
-      [19, "TestKoQ", Unit, false],
-      [20, "TestFormat", KindOfQuantity, false],
+      [12, "TestEntityClass", Mixin, false],
+      [13, "TestMixin", EntityClass, false],
+      [14, "TestCustomAttributeClass", StructClass, false],
+      [15, "TestStructClass", EntityClass, false],
+      [16, "TestRelationshipClass", EntityClass, false],
+      [17, "TestUnitSystem", Unit, false],
+      [18, "TestPhenomenon", UnitSystem, false],
+      [19, "TestUnit", Phenomenon, false],
+      [20, "TestKoQ", Unit, false],
+      [21, "TestFormat", KindOfQuantity, false],
+      [22, "TestEnum", EntityClass, false],
     ];
 
     before(async () => {
@@ -207,6 +209,11 @@ describe("Schema Context", () => {
             thousandSeparator: ".",
             uomSeparator: "",
             composite: { spacer: "", units: [{ name: "TestSchema.TestUnit", label: "'",},],},
+          },
+          testEnum: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            enumerators: [ { name: "ZeroValue", value: 0, label: "None", }, { name: "OneValue", value: 1, label: "One", },],
           },
         },
       };
