@@ -486,17 +486,13 @@ export interface PotentialParseUnit {
 // @beta
 export interface PresentationFormatSet {
     // (undocumented)
-    formats: (FormatProps & {
-        id: string;
-        description?: string;
-        label?: string;
-    })[];
+    formats: {
+        [kindOfQuantityId: string]: FormatProps;
+    };
     // (undocumented)
     id: string;
     // (undocumented)
-    name: string;
-    // (undocumented)
-    unitSystem: UnitSystemKey;
+    label: string;
 }
 
 // @beta
