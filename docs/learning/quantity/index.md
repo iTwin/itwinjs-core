@@ -316,48 +316,42 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 [PresentationFormatSet]($quantity) defines properties necessary to support persistence of a set of formats.
 
-Formats defined in a PFS require a `id` field.
+Formats defined in a PFS needs to be mapped to the a valid ECName for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the format associated to a KoQ within a PFS would take precedence and be used over the default presentation formats of that KoQ.
 
-When a format's `id` matches a [schema Format's](../../bis/ec/ec-format.md#format) `typeName`, the PFS's format should override that schema format temporarily, avoiding making changes on a schema level.
-
+> The naming convention for a valid PFS format <full-schema-name>:<koq-name>
+.
 <details>
-<summary>Example of a Presentation Format Set in TypeScript</summary>
+<summary>Example of a Presentation Format Set as JSON:</summary>
 
-```Typescript
+```json
 {
-  id: "metric",
-  name: "Metric",
-  // TODO: Should the unit system be included? Then, the id and name above doesn't have to conform to a unit system.
-  unitSystem: "metric",
-  formats: [ //  TODO: Array, or <key,FormatProps> to preserve uniqueness?
-    {
-      id: "Length", // Should there be more meaning/rules to the Id? If Koq, then should be <Schema>.<Name>
-      label: "Length",
-      description: "Used for generic lengths, displays decimals in meters",
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [{ label: "m", name: "Units.M" }],
+  "id": "metric",
+  "label": "Metric",
+  "formats": {
+    "AecUnits.LENGTH": {
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "m", "name": "Units.M" }]
       },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 4,
-      type: "Decimal",
-      decimalSeparator: "."
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 4,
+      "type": "Decimal",
+      "decimalSeparator": "."
     },
-    {
-      id: "Angle",
-      description: "degrees (labeled) 2 decimal places",
-      format: {
-        composite: {
-          includeZero: true,
-          spacer: "",
-          units: [{ label: "°", name: "Units.ARC_DEG" }],
-        },
-        formatTraits: ["keepSingleZero", "showUnitLabel"],
-        precision: 2,
-        type: "Decimal",
-        uomSeparator: "",
+    "AecUnits.Angle": {
+      "id": "Angle",
+      "description": "degrees (labeled) 2 decimal places",
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "°", "name": "Units.ARC_DEG" }]
       },
-    },
-  ],
-};
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 2,
+      "type": "Decimal",
+      "uomSeparator": ""
+    }
+  }
+}
+```
