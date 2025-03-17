@@ -10,7 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { EntityClass, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -95,11 +95,36 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [[getMetaData]] to get the metadata and iterate over the properties
+   * @deprecated in 5.0. Use [[executeForEachProperty]] to get the metadata and iterate over the properties
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.iModel.forEachMetaData(this.classFullName, true, func, includeCustom);
+  }
+
+  /**
+   * Invoke a callback on each property of the specified class, optionally including superclass properties.
+   *
+   * This method iterates over the properties of the class, including those inherited from base classes and mixins,
+   * and applies the provided callback function to each property. The callback function can be used to perform
+   * operations on each property, such as logging or processing property metadata.
+   *
+   * @param func The callback to be invoked on each property. The callback receives the property name and the property metadata as arguments.
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   *
+   * @example
+   * ```typescript
+   * const callback: PropertyHandler = (name, property) => {
+   *   console.log(`Property Name: ${name}`);
+   *   console.log(`Property Class:`, property.class);
+   * };
+   *
+   * await entity.executeForEachProperty(callback);
+   * ```
+   */
+  public async executeForEachProperty(func: PropertyHandler, includeCustom: boolean = true) {
+    await this.iModel.schemaContext.forEachProperty(this.classFullName, true, func, EntityClass, includeCustom);
   }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */

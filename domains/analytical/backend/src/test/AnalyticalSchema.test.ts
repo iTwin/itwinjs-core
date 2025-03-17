@@ -123,9 +123,8 @@ describe("AnalyticalSchema", () => {
     const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
     // test forEachProperty and PropertyMetaData.isNavigation
     const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
-    const metadata = await element.getMetaData();
-    (await metadata.getProperties()).forEach((property) => {
-      switch (property.name) {
+    await element.executeForEachProperty((propName, property) => {
+      switch (propName) {
         case "model":
         case "category":
         case "typeDefinition":
@@ -134,9 +133,9 @@ describe("AnalyticalSchema", () => {
         case "codeValue":
         case "userLabel":
           assert.isFalse(property.isNavigation());
-          break;
       }
-    });
+    }, true);
+
     // test typeDefinition update scenarios
     assert.isTrue(Id64.isValidId64(elementId));
     assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
