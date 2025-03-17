@@ -11,8 +11,7 @@ import {
   OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import {
-  BaseLayerSettings,
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapImagerySettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
@@ -27,7 +26,7 @@ import { SpatialViewState } from "../../SpatialViewState";
 import { SceneContext } from "../../ViewContext";
 import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
 import {
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, SpatialClassifierTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "../../tile/internal";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
@@ -141,24 +140,9 @@ class PrimaryTreeReference extends TileTreeReference {
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   protected readonly _animationTransformNodeId?: number;
-  private readonly _detachFromDisplayStyle: VoidFunction[] = [];
-  protected _classifier?: SpatialClassifierTileTreeReference;
-  private _layerRefHandler: LayerTileTreeReferenceHandler;
-  public readonly iModel: IModelConnection;
 
-  public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
-    const mapLayerSettings = layerTreeRef?.layerSettings;
-    if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
-      return ModelMapLayerDrapeTarget.RealityData === mapLayerSettings.drapeTarget;
-    return false;
-  }
-
-  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId: number | undefined, sectionClip?: StringifiedClipVector, backgroundBase?: BaseLayerSettings, backgroundLayers?: MapLayerSettings[]) {
+  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId: number | undefined, sectionClip?: StringifiedClipVector) {
     super();
-
-    this.iModel = model.iModel;
-
-    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, backgroundBase, backgroundLayers);
     this.view = view;
     this.model = model;
     this._animationTransformNodeId = transformNodeId;
@@ -284,34 +268,6 @@ class PrimaryTreeReference extends TileTreeReference {
 
     return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
   }
-
-  public preInitializeLayers(context: SceneContext): void {
-    const removals = this._detachFromDisplayStyle;
-    if (0 === removals.length) {
-      removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-        this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
-        this._layerRefHandler.setLayerSettings(imagery.backgroundLayers);
-        this._layerRefHandler.clearLayers();
-      }));
-      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-        if(context.viewport.compareMapLayer(previousViewState, vp.view)){
-          this._layerRefHandler.clearLayers();
-        }
-      }));
-    }
-  }
-
-  public override addToScene(context: SceneContext): void {
-    const tree = this.treeOwner.load() as IModelTileTree;
-    if (undefined === tree || !this._layerRefHandler.initializeLayers(context))
-      return;     // Not loaded yet.
-
-    // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (this._classifier && this._classifier.activeClassifier)
-      this._classifier.addToScene(context);
-
-    super.addToScene(context);
-  }
 }
 
 export class AnimatedTreeReference extends PrimaryTreeReference {
@@ -356,8 +312,8 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this.view as ViewState3d; }
   private readonly _baseTransform = Transform.createIdentity();
 
-  public constructor(view: ViewState3d, model: GeometricModelState, sectionCut?: StringifiedClipVector, backgroundBase?: BaseLayerSettings, backgroundLayers?: MapLayerSettings[]) {
-    super(view, model, true, undefined, sectionCut, backgroundBase, backgroundLayers);
+  public constructor(view: ViewState3d, model: GeometricModelState, sectionCut?: StringifiedClipVector) {
+    super(view, model, true, undefined, sectionCut);
     this._viewFlagOverrides.forceSurfaceDiscard = true;
   }
 
@@ -436,15 +392,15 @@ function isPlanProjection(view: ViewState, model: GeometricModelState): boolean 
   return undefined !== model3d && model3d.isPlanProjection;
 }
 
-function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined, backgroundBase?: BaseLayerSettings, backgroundLayers?: MapLayerSettings[]): PrimaryTreeReference {
+function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined): PrimaryTreeReference {
   if (false !== IModelApp.renderSystem.options.planProjections && isPlanProjection(view, model))
-    return new PlanProjectionTreeReference(view as ViewState3d, model, sectionCut, backgroundBase, backgroundLayers);
+    return new PlanProjectionTreeReference(view as ViewState3d, model, sectionCut);
 
-  return new PrimaryTreeReference(view, model, false, undefined, sectionCut, backgroundBase, backgroundLayers);
+  return new PrimaryTreeReference(view, model, false, undefined, sectionCut);
 }
 
-export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState, backgroundBase?: BaseLayerSettings, backgroundLayers?: MapLayerSettings[]): PrimaryTreeReference {
-  return createTreeRef(view, model, undefined, backgroundBase, backgroundLayers);
+export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference {
+  return createTreeRef(view, model, undefined);
 }
 
 class MaskTreeReference extends TileTreeReference {

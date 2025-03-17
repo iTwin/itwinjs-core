@@ -298,7 +298,6 @@ function createPrimitiveGeometry(primitive: Imdl.Primitive, options: GraphicsOpt
           textureMapping,
           indices: new VertexIndices(primitive.params.surface.indices),
         },
-        tile: options.tile,
       }, viOrigin);
     }
   }
