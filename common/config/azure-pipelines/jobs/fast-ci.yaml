@@ -24,7 +24,7 @@ pr:
   drafts: false
   branches:
     include:
-      - rob/deprecate-metadata
+      - master
       - release/*
   paths:
     exclude:
