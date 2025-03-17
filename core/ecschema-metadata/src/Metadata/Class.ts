@@ -628,7 +628,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param excludeInherited If true, only properties defined directly on this class will be returned.
    * @returns An array of properties, empty array if none exist.
    */
-  public async getProperties(excludeInherited?: boolean): Promise<ReadonlyArray<Property>> {
+  public async getProperties(excludeInherited?: boolean): Promise<Iterable<Property>> {
     // At the moment we do not lazy load properties, so this is the same as getPropertiesSync
     return this.getPropertiesSync(excludeInherited);
   }

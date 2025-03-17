@@ -549,27 +549,10 @@ export class SchemaContext {
   }
 
   public async forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true): Promise<void> {
-    const { EntityClass: entityClass } = await import("./Metadata/EntityClass");
-    const { Mixin: mixin } = await import("./Metadata/Mixin");
-
-    const promises: Promise<void>[] = [];
-
     const metaData = this.getSchemaItemSync(classFullName, itemConstructor) as EntityClass | Mixin;
-    if (metaData.properties !== undefined) {
-      for (const property of metaData.properties) {
-        if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
-          func(property.name, property);
-      }
+    for (const property of metaData.getPropertiesSync(!wantSuper)) {
+      if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+        func(property.name, property);
     }
-
-    if (wantSuper && metaData.baseClass !== undefined)
-      promises.push(this.forEachProperty(metaData.baseClass.fullName, wantSuper, func, entityClass, includeCustom));
-
-    if (metaData instanceof entityClass && metaData.mixins !== undefined) {
-      for (const mixinClass of metaData.mixins)
-        promises.push(this.forEachProperty(mixinClass.fullName, wantSuper, func, mixin, includeCustom));
-    }
-
-    await Promise.all(promises);
   }
 }

@@ -637,15 +637,8 @@ export class Schema implements CustomAttributeContainerProps {
    * Returns all of the loaded items in this schema.
    */
   public getItems(): Iterable<SchemaItem>;
-  public getItems<T extends typeof SchemaItem>(itemConstructor: T): ReadonlyArray<InstanceType<T>>;
-  public getItems<T extends typeof SchemaItem>(itemConstructor?: T): ReadonlyArray<InstanceType<T> | SchemaItem> {
-    if (!this._items)
-      return [];
-
-    return this.getItemsInternal(itemConstructor);
-  }
-
-  private * getItemsInternal<T extends typeof SchemaItem>(itemConstructor?: T): Iterable<InstanceType<T> | SchemaItem> {
+  public getItems<T extends typeof SchemaItem>(itemConstructor: T): Iterable<InstanceType<T>>;
+  public * getItems<T extends typeof SchemaItem>(itemConstructor?: T): Iterable<InstanceType<T> | SchemaItem> {
     if (!this._items)
       return;
 
@@ -654,7 +647,6 @@ export class Schema implements CustomAttributeContainerProps {
         yield item;
     }
   }
-
 
   /**
    * Gets a referenced schema by name

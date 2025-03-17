@@ -103,7 +103,7 @@ export namespace XmlSerializationUtils {
   export async function writeStructProperty(propertyClass: StructProperty, propertyValue: any, structElement: Element, schemaDoc: Document): Promise<void> {
     const structClass = propertyClass.structClass;
     //TODO: should we be checking for any properties now instead of just local ones?
-    if ((await structClass.getProperties(true)).length === 0)
+    if ((await structClass.getProperties(true))[Symbol.iterator]().next().done)
       return;
 
     for (const propertyMetadata of structClass.getPropertiesSync(true))

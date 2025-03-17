@@ -118,9 +118,6 @@ export class EntityClass extends ECClass implements HasMixins {
     }
 
     const localProps = await this.getProperties(true);
-    if (localProps.length === 0)
-      return;
-
     ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
@@ -139,9 +136,6 @@ export class EntityClass extends ECClass implements HasMixins {
     }
 
     const localProps = this.getPropertiesSync(true);
-    if (localProps.length === 0)
-      return;
-
     ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
