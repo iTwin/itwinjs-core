@@ -168,7 +168,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = await testClass.getProperties(true);
+      testClass.cleanCache();
+      props = await testClass.getProperties();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
@@ -179,7 +180,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
-      props = await testClass.getProperties(true);
+      testClass.cleanCache();
+      props = await testClass.getProperties();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
@@ -199,7 +201,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = testClass.getPropertiesSync(true);
+      testClass.cleanCache();
+      props = testClass.getPropertiesSync();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
@@ -210,7 +213,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
-      props = testClass.getPropertiesSync(true);
+      testClass.cleanCache();
+      props = testClass.getPropertiesSync();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
@@ -255,7 +259,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = await testClass.getProperties(true);
+      testClass.cleanCache();
+      props = await testClass.getProperties();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
@@ -266,7 +271,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
-      props = await testClass.getProperties(true);
+      testClass.cleanCache();
+      props = await testClass.getProperties();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
@@ -286,7 +292,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = testClass.getPropertiesSync(true);
+      testClass.cleanCache();
+      props = testClass.getPropertiesSync();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
@@ -297,7 +304,8 @@ describe("Property Inheritance", () => {
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
-      props = testClass.getPropertiesSync(true);
+      testClass.cleanCache();
+      props = testClass.getPropertiesSync();
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
