@@ -51,7 +51,6 @@ describe("Class Registry", () => {
       assert.equal(metaData.baseClass?.fullName, UrlLink.classFullName.replace(":", "."));
       assert.isTrue(metaData.customAttributes?.has("BisCore.ClassHasHandler"));
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.isDefined(metaData.properties);
       const repositoryGuidProperty = await metaData.getProperty("repositoryGuid") as PrimitiveProperty;
       assert.isDefined(repositoryGuidProperty);
       assert.equal(repositoryGuidProperty.extendedTypeName, "BeGuid");
@@ -68,7 +67,6 @@ describe("Class Registry", () => {
       assert.equal(metaData.fullName, SpatialViewDefinition.classFullName.replace(":", "."));
       assert.isDefined(metaData.baseClass);
       assert.equal(metaData.baseClass?.fullName, ViewDefinition3d.classFullName.replace(":", "."));
-      assert.isDefined(metaData.properties);
       const modelSelectorProperty = await metaData.getProperty("modelSelector") as NavigationProperty;
       assert.isDefined(modelSelectorProperty);
       assert.equal(modelSelectorProperty.relationshipClass.fullName, "BisCore.SpatialViewDefinitionUsesModelSelector");

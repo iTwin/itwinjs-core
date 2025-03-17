@@ -1053,14 +1053,11 @@ describe("iModel", () => {
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(entityClass.properties);
-    if (entityClass.properties !== undefined) {
-      for (const prop of entityClass.properties) {
-        if (prop.name === "federationGuid") {
-          assert.isTrue(prop.isPrimitive());
-          assert.equal((prop as PrimitiveOrEnumPropertyBase).extendedTypeName, "BeGuid");
-          break;
-        }
+    for (const prop of entityClass.getPropertiesSync(true)) {
+      if (prop.name === "federationGuid") {
+        assert.isTrue(prop.isPrimitive());
+        assert.equal((prop as PrimitiveOrEnumPropertyBase).extendedTypeName, "BeGuid");
+        break;
       }
     }
   }
@@ -1149,7 +1146,7 @@ describe("iModel", () => {
   function checkClassHasHandlerMetaData(classToCheck: CustomAttributeClass) {
     assert.isDefined(classToCheck);
 
-    const propertiesArray = classToCheck.properties ? Array.from(classToCheck.properties) : [];
+    const propertiesArray = Array.from(classToCheck.getPropertiesSync(true));
     assert.equal(propertiesArray.length, 1);
 
     const restrictionProperty = propertiesArray[0];

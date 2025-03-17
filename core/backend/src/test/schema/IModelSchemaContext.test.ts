@@ -52,7 +52,6 @@ describe("IModel Schema Context", () => {
       assert.exists(ecClass.customAttributes);
       assert.isTrue(ecClass.customAttributes?.has("BisCore.ClassHasHandler"));
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.exists(ecClass.properties);
       const property = await ecClass.getProperty("repositoryGuid");
       assert.exists(property);
       if (undefined === property)
@@ -81,7 +80,6 @@ describe("IModel Schema Context", () => {
         return;
 
       assert.equal(baseClass.fullName, ViewDefinition3d.schemaItemKey.fullName);
-      assert.exists(metaData.properties);
       const prop = metaData.getPropertySync("modelSelector");
       assert.isDefined(prop);
       if(!prop?.isNavigation())
@@ -106,7 +104,8 @@ describe("IModel Schema Context", () => {
 
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
-    const testData = (await testDomainClass!.getProperties()).map(property => property.name);
+    const properties = Array.from(await testDomainClass!.getProperties());
+    const testData = properties.map(property => property.name);
     const expectedString = testData.find((testString: string) => {
       return testString === "TestMixinProperty";
     });
