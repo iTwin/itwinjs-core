@@ -95,22 +95,22 @@ describe("ECClass", () => {
     });
 
     it("should do nothing when deleting property name that is not in class", async () => {
-      expect(entityClass.getPropertiesSync(true)).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
 
-      expect(entityClass.getPropertiesSync(true)).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
     });
 
     it("should do nothing when deleting property name that is not in class, synchronous", async () => {
-      expect(entityClass.getPropertiesSync(true)).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
 
-      expect(entityClass.getPropertiesSync(true)).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
     });
 

@@ -174,13 +174,6 @@ describe("Property Inheritance", () => {
       assert.deepEqual(names, expectedResult2);
 
       await testClass.createPrimitiveProperty("P3", PrimitiveType.String);
-
-      // this should use the cache and return old results
-      props = Array.from(await testClass.getProperties());
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      testClass.cleanCache();
       props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
@@ -208,12 +201,6 @@ describe("Property Inheritance", () => {
 
       testClass.createPrimitivePropertySync("P3", PrimitiveType.String);
 
-      // this should use the cache and return old results
-      props = Array.from(testClass.getPropertiesSync());
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      testClass.cleanCache();
       props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
@@ -266,12 +253,6 @@ describe("Property Inheritance", () => {
 
       await testClass.createPrimitiveProperty("P3", PrimitiveType.String);
 
-      // this should use the cache and return old results
-      props = Array.from(await testClass.getProperties());
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      testClass.cleanCache();
       props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
@@ -299,12 +280,6 @@ describe("Property Inheritance", () => {
 
       testClass.createPrimitivePropertySync("P3", PrimitiveType.String);
 
-      // this should use the cache and return old results
-      props = Array.from(testClass.getPropertiesSync());
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      testClass.cleanCache();
       props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
