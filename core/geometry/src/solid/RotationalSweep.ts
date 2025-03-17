@@ -22,12 +22,12 @@ import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 
 /**
- * A LinearSweep is
- * * A planar contour (any Loop, Path, or parityRegion)
- * * An axis vector.
- *   * The planar contour is expected to be in the plane of the axis vector
- *   * The contour may have points and/or lines that are on the axis, but otherwise is entirely on one side of the axis.
- * * A sweep angle.
+ * A RotationalSweep is:
+ * - A planar contour (any Loop, Path, or parityRegion)
+ * - An axis vector.
+ *   - The planar contour is expected to be in the plane of the axis vector
+ *   - The contour may have points and/or lines that are on the axis, but otherwise is entirely on one side of the axis.
+ * - A sweep angle.
  * @public
  */
 export class RotationalSweep extends SolidPrimitive {

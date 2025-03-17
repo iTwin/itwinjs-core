@@ -23,10 +23,9 @@ import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 
 /**
- * A LinearSweep is a `SolidPrimitive` defined by
- * * A set of curves (any Loop, Path, or parityRegion)
- * * A sweep vector
- * If the object is "capped", the curves must be planar.
+ * A LinearSweep is a `SolidPrimitive` defined by:
+ * - A set of curves (any Loop, Path, or parityRegion). If the object is "capped", the curves must be planar.
+ * - A sweep vector
  * @public
  */
 export class LinearSweep extends SolidPrimitive {
