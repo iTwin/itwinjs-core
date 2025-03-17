@@ -89,11 +89,12 @@ export class QueryPropertyMetaDataHelpers {
     let jsName;
     if (this.isGeneratedProperty(meta)) {
       jsName = this.lowerFirstChar(meta.name);
-    } else if (this.isSystem(this.getExtendedType(meta.extendedType))) {
-      const propertyPath = meta.accessString ? meta.accessString.split(".") : []
-      if (propertyPath.length > 1) {
-        jsName = propertyPath.slice(0, propertyPath.length - 1).join(".");
-        const leafEntry = propertyPath[propertyPath.length - 1]
+    } else if (this.isSystem(this.getExtendedTypeId(meta.extendedType))) {
+      const path = meta.accessString ? meta.accessString.replace(/\[\d*\]/g, "") : "";
+      const lastPropertyIndex = path.lastIndexOf(".") + 1;
+      if (lastPropertyIndex > 0) {
+        jsName = path.slice(0, lastPropertyIndex);
+        const leafEntry = path.slice(lastPropertyIndex);
         if (leafEntry === "RelECClassId") {
           jsName += "relClassName"
         } else if (leafEntry === "Id" || leafEntry === "X" || leafEntry === "Y" || leafEntry === "Z") {
@@ -104,7 +105,7 @@ export class QueryPropertyMetaDataHelpers {
         jsName = this.lowerFirstChar(jsName);
       } else {
         jsName = meta.name
-        const extendedTypeId = this.getExtendedType(meta.extendedType)
+        const extendedTypeId = this.getExtendedTypeId(meta.extendedType)
         if (extendedTypeId === 1 && jsName === "ECInstanceId") {
           jsName = "id"
         } else if (extendedTypeId === 2 && jsName === "ECClassId") {
@@ -146,7 +147,7 @@ export class QueryPropertyMetaDataHelpers {
     return extendedTypeId === 0
   }
 
-  private static getExtendedType(extendedType?: string): number {
+  private static getExtendedTypeId(extendedType?: string): number {
     switch (extendedType) {
       case "Id":
         return 1
