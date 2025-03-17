@@ -122,7 +122,7 @@ describe("PropertyRule tests", () => {
       const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = Array.from(testClass.getPropertiesSync(true));
+      const properties = Array.from(entityClass.getPropertiesSync(true));
       const results = Rules.incompatibleValueTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
@@ -189,7 +189,7 @@ describe("PropertyRule tests", () => {
       const entityClass = new EntityClass(new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3), "TestEntity");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.Integer);
 
-      const properties = Array.from(testClass.getPropertiesSync(true));
+      const properties = Array.from(entityClass.getPropertiesSync(true));
       const results = Rules.incompatibleTypePropertyOverride(properties[0] as PrimitiveProperty);
       for await (const _diagnostic of results)
         expect(false, "Rule should have passed").true;
