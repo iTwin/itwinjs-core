@@ -309,7 +309,8 @@ export class ClassRegistry {
    * @return true if the class was unregistered
    * @internal
    */
-  public static unregisterCLass(classFullName: string) { return this._globalClassMap.delete(classFullName.toLowerCase()); }
+  public static unregisterClass(classFullName: string) { return this._globalClassMap.delete(classFullName.toLowerCase()); }
+
   /** Unregister all classes from a schema.
    * This function is not normally needed, but is useful for cases where a generated *proxy* schema needs to be replaced by the *real* schema.
    * @param schema Name of the schema to unregister
@@ -318,7 +319,7 @@ export class ClassRegistry {
   public static unregisterClassesFrom(schema: typeof Schema) {
     for (const entry of Array.from(this._globalClassMap)) {
       if (entry[1].schema === schema)
-        this.unregisterCLass(entry[0]);
+        this.unregisterClass(entry[0]);
     }
   }
 }

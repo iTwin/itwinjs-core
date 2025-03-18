@@ -501,6 +501,7 @@ describe("Class Registry - generated classes", () => {
         return [MyTestElementWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6];
       }
     }
+    imodel.jsClassMap.clear();
     MyTestGeneratedClasses.registerSchema();
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -600,6 +601,7 @@ describe("Class Registry - generated classes", () => {
         return [MyDerived2, MyDerived4];
       }
     }
+    imodel.jsClassMap.clear();
     MyTestGeneratedClasses.registerSchema();
 
     /* eslint-disable @typescript-eslint/naming-convention */
