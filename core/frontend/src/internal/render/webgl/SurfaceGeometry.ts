@@ -53,10 +53,14 @@ export class SurfaceGeometry extends MeshGeometry {
 
     const layerClassifiers = tile?.tree?.layerHandler?.layerClassifiers;
 
-    if (!layerClassifiers?.size || !tile || undefined === layerClassifiers) return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    if (!layerClassifiers?.size || !tile || undefined === layerClassifiers) {
+      return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    }
 
     const transformECEF = tile.tree.iModel.getEcefTransform();
-    if (!transformECEF || !tile.range) return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    if (!transformECEF || !tile.range) {
+      return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    }
 
     const tileEcefRange = transformECEF.multiplyRange(tile.range);
     const cartographicRange = new CartographicRange(tileEcefRange, transformECEF);
