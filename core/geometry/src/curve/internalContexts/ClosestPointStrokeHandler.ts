@@ -29,8 +29,8 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _fractionA: number = 0;
   private _functionA: number = 0;
   // fraction and function value on the other side of an interval that may bracket a root
-  private _functionB: number = 0;
   private _fractionB: number = 0;
+  private _functionB: number = 0;
   private _numThisCurve: number = 0;
   // scratch vars to use within methods
   private _workPoint: Point3d;
@@ -126,7 +126,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
       this.announceSolutionFraction(this._fractionA);
     if (this._functionB === 0)
       this.announceSolutionFraction(this._fractionB);
-    // By the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
+    // by the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
     if (this._functionA * this._functionB < 0) {
       const fraction = Geometry.inverseInterpolate(this._fractionA, this._functionA, this._fractionB, this._functionB);
       if (fraction) {
