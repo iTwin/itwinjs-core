@@ -487,7 +487,9 @@ export interface PotentialParseUnit {
 export interface PresentationFormatSet {
     // (undocumented)
     formats: {
-        [kindOfQuantityId: string]: FormatProps;
+        [kindOfQuantityId: string]: FormatProps & {
+            id: string;
+        };
     };
     // (undocumented)
     id: string;

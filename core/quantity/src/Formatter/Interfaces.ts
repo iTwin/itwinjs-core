@@ -102,5 +102,5 @@ export interface CloneOptions {
 export interface PresentationFormatSet {
   id: string;
   label: string;
-  formats: { [kindOfQuantityId: string]: FormatProps }
+  formats: { [kindOfQuantityId: string]: FormatProps & { id: string } }
 }
