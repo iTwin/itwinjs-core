@@ -166,7 +166,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     if (!params) return undefined;
 
     const { texture: meshTexture, featureID } = realityMesh;
-    const tile = realityMesh.tile as RealityTile;
+    const tile = realityMesh.tile;
     const layerClassifiers = tile?.tree?.layerHandler?.layerClassifiers;
     const texture = meshTexture ? new TerrainTexture(meshTexture, featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
