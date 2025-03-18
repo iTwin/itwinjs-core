@@ -44,17 +44,61 @@ An ECSchema is the root container of all other ECObject items and provides the n
 
 [PropertyCategory](./property-category.md) _(0..*)_
 
-# ECSchemaReference
+## ECSchemaReference
 
 Contains all the information to identify a referenced schema.
 
 Circular references are not supported and will result in a failure to load the schemas with cyclic references.
 
-## Attributes
+### Schema Reference Attributes
 
 **name** the name of the ECSchema being referenced. Must match the Schema Name of the referenced schema.
 
 **version** The version of the ECSchema being referenced.
-- Referenced schemas are located using a 'Latest compatible match' where the read and write versions must match and the minor version of the located schema must be equal to or greater than the version listed in the schema reference
+
+> Referenced schemas are located using a 'Latest compatible match' where the read and write versions must match and the minor version of the located schema must be equal to or greater than the version listed in the schema reference
 
 **alias** The alias to use when referring to an item from the referenced schema. This alias generally matches the alias defined in the referenced schema, but may be different. If different, it is only valid within the context of the schema which contains the ECSchemaReference.
+
+## Example
+
+```xml
+<ECSchema schemaName="BisCore" alias="bis" version="01.00.18" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2" displayLabel="BIS Core" description="The BIS core schema contains classes that all other domain schemas extend.">
+    <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+        <ECCustomAttributes>
+        <ProductionStatus xmlns="CoreCustomAttributes.01.00.03">
+            <SupportedUse>NotForProduction</SupportedUse>
+        </ProductionStatus>
+    </ECCustomAttributes>
+
+    ....
+
+</ECSchema>
+```
+
+```json
+{
+  "$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  "name": "BisCore",
+  "version": "01.00.18",
+  "alias": "bis",
+  "label": "BIS Core",
+  "description": "The BIS core schema contains classes that all other domain schemas extend.",
+  "references": [
+    {
+      "name": "CoreCustomAttributes",
+      "version": "01.00.04"
+    }
+  ],
+  "customAttributes": [
+    {
+      "className": "CoreCustomAttributes.ProductionStatus",
+      "SupportedUse": "Production"
+    }
+  ],
+  "items": {
+    ...
+  }
+}
+```

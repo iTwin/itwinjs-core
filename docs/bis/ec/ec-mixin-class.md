@@ -15,3 +15,47 @@ An entity class incorporates a mixin by declaring the mixin class as a base clas
 4. An entity class must put its entity base class first followed by mixins.
 
 Mixins can be used as relationship endpoints.
+
+## Example
+
+Mixin class definition
+
+```xml
+<ECEntityClass typeName="ISubModeledElement" modifier="Abstract" displayLabel="Sub-Modeled Element">
+    <ECCustomAttributes>
+        <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+            <AppliesToEntityClass>Element</AppliesToEntityClass>
+        </IsMixin>
+    </ECCustomAttributes>
+</ECEntityClass>
+```
+
+```json
+"ISubModeledElement": {
+  "schemaItemType": "Mixin",
+  "label": "Sub-Modeled Element",
+  "appliesTo": "BisCore.Element"
+},
+```
+
+Mixin applied to a class definition
+
+```xml
+<ECEntityClass typeName="Drawing" description="A bis:Drawing is a bis:Document of a 2D drawing.">
+    <BaseClass>Document</BaseClass>
+    <BaseClass>ISubModeledElement</BaseClass>
+</ECEntityClass>
+```
+
+> NOTE: In xml mixins must come after the single entity base class if it exists.
+
+```json
+"Drawing": {
+  "schemaItemType": "EntityClass",
+  "description": "A bis:Drawing is a bis:Document of a 2D drawing.",
+  "baseClass": "BisCore.Document",
+  "mixins": [
+    "BisCore.ISubModeledElement"
+  ]
+},
+```
