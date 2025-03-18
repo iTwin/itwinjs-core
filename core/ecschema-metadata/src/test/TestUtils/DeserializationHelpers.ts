@@ -17,6 +17,7 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TestSchema",
     version: "1.2.3",
+    alias: "ts",
     items: {
       ...itemsJson,
     },

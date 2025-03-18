@@ -78,19 +78,20 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
  * @beta
  */
 export interface SchemaInfo {
-  schemaKey: SchemaKey;
-  references: WithSchemaKey[];
+  readonly schemaKey: SchemaKey;
+  readonly references: WithSchemaKey[];
+  readonly alias: string;
 }
 
 /** @beta */
 export interface WithSchemaKey {
-  schemaKey: SchemaKey;
+  readonly schemaKey: SchemaKey;
 }
 
 /** This is needed to break a circular dependency between Class and EntityClass.
  * @beta
  */
 export interface HasMixins {
-  mixins: LazyLoadedMixin[];
+  readonly mixins: LazyLoadedMixin[];
   getMixinsSync(): Iterable<Mixin>;
 }

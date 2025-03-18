@@ -94,6 +94,7 @@ describe("Inverted Unit tests", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -132,6 +133,7 @@ describe("Inverted Unit tests", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -171,6 +173,7 @@ describe("Inverted Unit tests", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -201,6 +204,7 @@ describe("Inverted Unit tests", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -394,6 +398,7 @@ describe("Inverted Unit tests", () => {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       version: "1.0.0",
       name: "TestSchema",
+      alias: "ts",
       items: {
         HORIZONTAL_PER_VERTICAL: {
           schemaItemType: "InvertedUnit",
@@ -471,6 +476,7 @@ describe("Inverted Unit tests", () => {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       version: "1.0.0",
       name: "TestSchema",
+      alias: "ts",
       items: {
         HORIZONTAL_PER_VERTICAL: {
           schemaItemType: "InvertedUnit",

@@ -29,6 +29,7 @@ describe("UnitSystem tests", () => {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         testUnitSystem: {
           schemaItemType: "UnitSystem",
