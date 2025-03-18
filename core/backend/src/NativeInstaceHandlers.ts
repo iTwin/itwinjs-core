@@ -11,38 +11,6 @@ import { _nativeDb } from "./internal/Symbols";
 import { Model } from "./Model";
 import { ElementAspect } from "./ElementAspect";
 
-type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties" | "isInstanceOfEntity"> & {
-  model: RelatedElementProps;
-  className: string;
-  codeValue?: string;
-  codeSpec: RelatedElementProps;
-  codeScope: RelatedElementProps;
-  jsonProperties?: string;
-  lastMod?: string;
-};
-
-/** Function to map ElementProps native Bis.Element properties.
-* @param iModel The iModel to map the element properties to.
-* @param elProps The properties of the element to map.
-* @returns NativeElementProps
-* @internal
-*/
-function mapNativeElementProps(iModel: IModelDb, elProps: ElementProps): NativeElementProps {
-  const element: NativeElementProps = {
-    className: elProps.classFullName,
-    codeSpec: { id: elProps.code.spec },
-    codeScope: { id: elProps.code.scope },
-    codeValue: elProps.code.value,
-    parent: elProps.parent ?? undefined,
-    // lastMod: iModel.models.queryLastModifiedTime(elProps.model),
-    model: {
-      id: elProps.model,
-      relClassName: iModel.models.getModel(elProps.model).classFullName ?? undefined,
-    },
-  };
-  return element;
-}
-
 /**
  * Function inserts an element into an iModel and calls the pre-insert and post-insert domain handlers.
  * @param iModel The iModel to insert the element into.
@@ -52,9 +20,6 @@ function mapNativeElementProps(iModel: IModelDb, elProps: ElementProps): NativeE
  * @internal
  */
 export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
-  // Convert the ElementProps to NativeElementProps
-  const nativeElementProps = mapNativeElementProps(iModel, elProps);
-
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
 
@@ -62,33 +27,22 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
 
   // Get the Element Class Definition and check if its valid
   const classDef = iModel.getJsClass<typeof Element>(elProps.classFullName);
-  let modelClassDef: typeof Model | undefined;
-  let parentClassDef: typeof Element | undefined;
-  try {
-    modelClassDef = iModel.getJsClass<typeof Model>(iModel.models.tryGetModel(nativeElementProps.model.id).classFullName);
-  } catch (error) {
-    // TODO: Handle no model element found
-    modelClassDef = undefined;
-  }
-  try {
-    parentClassDef = nativeElementProps.parent ? iModel.getJsClass<typeof Element>(iModel.elements.getElement(nativeElementProps.parent.id).classFullName) : undefined;
-  } catch (error) {
-    // TODO: Handle no parent element found
-    parentClassDef = undefined;
-  }
+  const model = iModel.models.tryGetModelProps(elProps.model);
+  const modelClassDef = model ? iModel.getJsClass<typeof Model>(model.classFullName) : undefined;
+  const parentElement = elProps.parent ? iModel.elements.getElement(elProps.parent.id) : undefined;
+  const parentClassDef = parentElement ? iModel.getJsClass<typeof Element>(parentElement.classFullName) : undefined;
 
   // Call pre-insert Domain Handlers
   classDef.onInsert({ iModel, props: elProps });
   if (modelClassDef !== undefined) {
     modelClassDef.onInsertElement({ iModel, elementProps: elProps, id: elProps.model });
   }
-  if (parentClassDef !== undefined && nativeElementProps.parent?.id) {
-    parentClassDef.onChildInsert({ iModel, childProps: elProps, parentId: nativeElementProps.parent?.id });
+  if (parentClassDef !== undefined && elProps.parent) {
+    parentClassDef.onChildInsert({ iModel, childProps: elProps, parentId: elProps.parent.id });
   }
 
   // Perform Insert
-  // TODO: change to elProps and don't cast insertOptions
-  elProps.id = iModel[_nativeDb].insertInstance(nativeElementProps, insertOptions);
+  elProps.id = iModel[_nativeDb].insertInstance(elProps, insertOptions);
 
   // Call post-insert Domain Handlers
   if (elProps.federationGuid !== undefined) {
@@ -97,25 +51,22 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
   if (modelClassDef !== undefined) {
     modelClassDef.onInsertedElement({ iModel, elementId: elProps.id, id: elProps.model });
   }
-  if (parentClassDef !== undefined && nativeElementProps.parent?.id) {
-    parentClassDef.onChildInserted({ iModel, childId: elProps.id, parentId: nativeElementProps.parent?.id });
+  if (parentClassDef !== undefined && elProps.parent) {
+    parentClassDef.onChildInserted({ iModel, childId: elProps.id, parentId: elProps.parent.id });
   }
 
   return elProps.id;
 }
 
 /**
- * Function inserts an element into an iModel and calls the pre-insert and post-insert domain handlers.
- * @param iModel The iModel to insert the element into.
- * @param elProps The properties of the element to insert.
+ * Function inserts a Model into an iModel and calls the pre-insert and post-insert domain handlers.
+ * @param iModel The iModel to insert the model into.
+ * @param modelProps The properties of the model to insert.
  * @param options Insert options.
- * @returns The Id of the inserted element.
+ * @returns The Id of the inserted model.
  * @internal
  */
 export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps, options?: InsertInstanceOptions): Id64String {
-  // Convert the ElementProps to NativeElementProps
-  // const nativeElementProps = mapNativeElementProps(iModel, elProps);
-
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
 
@@ -141,13 +92,13 @@ export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps
  * @param iModel The iModel to insert the elementAspect into.
  * @param aspectProps The properties of the elementAspect to insert.
  * @param options Insert options.
- * @returns The Id of the inserted element.
+ * @returns The Id of the inserted aspect.
  * @internal
  */
 export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps, options?: InsertInstanceOptions): Id64String {
   // Get Relevant Element
   // TODO: Cache the Element, so that if multiple aspects are being inserted, we don't have to fetch the model each time.
-  const element = iModel.elements.getElement(aspectProps.element.id);
+  const element = iModel.elements.getElement(aspectProps.element.id); // Will throw if not found
 
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
