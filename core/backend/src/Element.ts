@@ -399,7 +399,16 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element.
-   * @deprecated in 5.0. Use [[Entity.getMetaData]] instead.
+   * @deprecated in 5.0. Please use `getMetaData` provided by the parent class `Entity` instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData | undefined = element.getClassMetaData();
+   *
+   * // Replacement:
+   * const metaData: EntityClass = await element.getMetaData();
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }

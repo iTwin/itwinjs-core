@@ -95,7 +95,20 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use [[executeForEachProperty]] to get the metadata and iterate over the properties
+   * @deprecated in 5.0. Please use `executeForEachProperty` to get the metadata and iterate over the properties instead.
+   *
+   * @example
+   * ```typescript
+   * // Deprecated method
+   * entity.forEachProperty((name, propMetaData) => {
+   *   console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+   * });
+   *
+   * // New method
+   * entity.executeForEachProperty((name, property) => {
+   *   console.log(`Property name: ${name}, Property class: ${property.class}`);
+   * });
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
@@ -120,11 +133,11 @@ export class Entity {
    *   console.log(`Property Class:`, property.class);
    * };
    *
-   * await entity.executeForEachProperty(callback);
+   * entity.executeForEachProperty(callback);
    * ```
    */
-  public async executeForEachProperty(func: PropertyHandler, includeCustom: boolean = true) {
-    await this.iModel.schemaContext.forEachProperty(this.classFullName, true, func, EntityClass, includeCustom);
+  public executeForEachProperty(func: PropertyHandler, includeCustom: boolean = true) {
+    this.iModel.schemaContext.forEachProperty(this.classFullName, true, func, EntityClass, includeCustom);
   }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */

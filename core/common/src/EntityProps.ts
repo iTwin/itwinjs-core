@@ -89,12 +89,25 @@ export enum PrimitiveTypeCode {
 /** A callback function to process properties of an Entity
  * @beta
  * @deprecated in 5.0. Use `PropertyHandler` from `ecschema-metadata` instead.
+ *
+ * @example
+ * ```typescript
+ * // Current usage:
+ * const callback: PropertyCallback = (name: string, propMetaData: PropertyMetaData) => {
+ *  console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+ * };
+ *
+ * // Replacement:
+ * const callback: PropertyHandler = (propName: string, property: Property) => {
+ *  console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
+ * };
+ * ```
  */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 /** A custom attribute instance
  * @beta
- * @deprecated in 5.0. Use ecschema-metadata instead
+ * @deprecated in 5.0. Use `CustomAttribute` interface from `@itwin/ecschema-metadata` instead.
  */
 export interface CustomAttribute {
   /** The class of the CustomAttribute */
@@ -107,7 +120,7 @@ type FactoryFunc = (jsonObj: any) => any;
 
 /**
  * @beta
- * @deprecated in 5.0. Use ecschema-metadata instead
+ * @deprecated in 5.0. Use `@itwin/ecschema-metadata` instead.
  */
 export interface PropertyMetaDataProps {
   primitiveType?: number;
@@ -133,7 +146,7 @@ export interface PropertyMetaDataProps {
 
 /** Metadata for a property.
  * @beta
- * @deprecated in 5.0. Use ecschema-metadata instead
+ * @deprecated in 5.0. Use the `Property` class from @itwin/ecschema-metadata` instead.
  */
 export class PropertyMetaData implements PropertyMetaDataProps {
   public primitiveType?: PrimitiveTypeCode;
@@ -228,7 +241,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
 
 /**
  * @beta
- * @deprecated in 5.0. Use ecschema-metadata instead
+ * @deprecated in 5.0. Use `@itwin/ecschema-metadata` instead.
  */
 export interface EntityMetaDataProps {
   classId: Id64String;
@@ -248,7 +261,7 @@ export interface EntityMetaDataProps {
 
 /** Metadata for an Entity.
  * @beta
- * @deprecated in 5.0. Use ecschema-metadata instead
+ * @deprecated in 5.0. Use `EntityClass` class from `@itwin/ecschema-metadata` instead.
  */
 export class EntityMetaData implements EntityMetaDataProps {
   /** The Id of the class in the [[IModelDb]] from which the metadata was obtained. */
