@@ -933,9 +933,9 @@ describe("BsplineCurve", () => {
     };
 
     const degree = 3;
-    const poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
-    const knotArray = [0, 0, 0, 1, 1, 1];
-    const bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    let poleArray = [Point3d.create(0, 0), Point3d.create(1, 2), Point3d.create(3, 2), Point3d.create(4, 0)];
+    let knotArray = [0, 0, 0, 1, 1, 1];
+    let bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
     let spacePoint = Point3d.create(4, 1.5);
     let { tangents, closestIndex } = bspline.closestTangent(spacePoint);
     ck.testCoordinate(1, tangents.length, "1 tangent found");
@@ -959,6 +959,21 @@ describe("BsplineCurve", () => {
     ck.testCoordinate(0.0792257, tangents[0].fraction, "first tangent fraction");
     ck.testCoordinate(1 - .0792257, tangents[1].fraction, "second tangent fraction");
     ck.testCoordinate(1, closestIndex, "closestIndex is 1");
+    captureGeometry();
+
+    // space point inside non-convex closed curve; 2 tangents
+    dx += 7;
+    dy = 0;
+    poleArray = [
+      Point3d.create(0, 0), Point3d.create(-2, 2), Point3d.create(7, 3),
+      Point3d.create(0, 1), Point3d.create(7, 0), Point3d.create(0, 0),
+    ];
+    knotArray = [0, 0, 0, 0.33, 0.66, 1, 1, 1];
+    bspline = BSplineCurve3d.create(poleArray, knotArray, degree + 1)!;
+    spacePoint = Point3d.create(2, 2);
+    ({ tangents, closestIndex } = bspline.closestTangent(spacePoint));
+    ck.testCoordinate(2, tangents.length, "2 tangents found");
+    hintPoint = undefined;
     captureGeometry();
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "ClosestTangent");

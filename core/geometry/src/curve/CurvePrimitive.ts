@@ -547,8 +547,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
   /**
    * Search for all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve.
    * * Strictly speaking this line is in the plane through `P` whose normal is the cross product of the curve tangent at
-   * P and `normal`. This is equivalent to tangency as seen in a view plane perpendicular to `normal`.
-   * * If the space point is inside a closed curve or is exactly on the curve, no tangent is returned.
+   * P and the given`normal`. This is equivalent to tangency as seen in a view plane perpendicular to the given `normal`.
+   * * If the space point is inside a closed convex curve or is exactly on the curve, no tangent is returned.
    * @param spacePoint point in space.
    * @param hintPoint (optional) a point to be used to find the closest tangent to that point.
    * @param normal (optional) view plane normal. Default is (0,0,1).

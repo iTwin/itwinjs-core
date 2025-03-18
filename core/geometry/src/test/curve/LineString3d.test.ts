@@ -405,7 +405,7 @@ describe("LineString3d", () => {
     spacePoint = Point3d.create(7, 0);
     ({ tangents, closestIndex } = lineSeg.closestTangent(spacePoint));
     ck.testCoordinate(1, tangents.length, "1 tangent found");
-    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
     captureGeometry();
 
     dy = 0;
@@ -420,17 +420,18 @@ describe("LineString3d", () => {
     spacePoint = Point3d.create(7, 0);
     ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
     ck.testCoordinate(1, tangents.length, "1 tangent found");
-    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
     captureGeometry();
     dy += 10;
     spacePoint = Point3d.create(5, 6);
-    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    hintPoint = Point3d.create(2, 2);
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint, hintPoint));
     ck.testCoordinate(1, tangents.length, "1 tangent found");
     ck.testCoordinate(0, closestIndex, "closestIndex is 0");
     captureGeometry();
     dy += 10;
     spacePoint = Point3d.create(5, -1);
-    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint, hintPoint));
     ck.testCoordinate(1, tangents.length, "1 tangent found");
     ck.testCoordinate(0, closestIndex, "closestIndex is 0");
     captureGeometry();
@@ -443,13 +444,13 @@ describe("LineString3d", () => {
     );
     spacePoint = Point3d.create(7, 0);
     hintPoint = Point3d.create(5, -1);
-    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint, hintPoint));
     ck.testCoordinate(2, tangents.length, "2 tangents found");
     ck.testCoordinate(0, closestIndex, "closestIndex is 0");
     captureGeometry();
     dy += 10;
     hintPoint = Point3d.create(10, -2);
-    ({ tangents, closestIndex } = ls.closestTangent(spacePoint));
+    ({ tangents, closestIndex } = ls.closestTangent(spacePoint, hintPoint));
     ck.testCoordinate(2, tangents.length, "2 tangents found");
     ck.testCoordinate(1, closestIndex, "closestIndex is 1");
     captureGeometry();
