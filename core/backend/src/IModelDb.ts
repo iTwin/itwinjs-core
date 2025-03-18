@@ -22,7 +22,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RelatedElementProps, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreRpc,
@@ -98,13 +98,6 @@ export interface InsertElementOptions {
    * @beta
    */
   forceUseId?: boolean;
-}
-
-/** Options supposed to [[IModelDb.Elements.insertElement2]].
- * @public
- */
-export interface InsertInstanceOptions {
-  useJsNames?: true;
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
@@ -1755,22 +1748,11 @@ export namespace IModelDb {
      */
     public insertModel(props: ModelProps): Id64String {
       try {
+        if (IModelHost.configuration?.useNativeInstance) {
+          return props.id = insertModelWithHandlers(this._iModel, props);
+        }
         return props.id = this._iModel[_nativeDb].insertModel(props);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
-      }
-    }
-
-    /** Insert a new model.
-     * @param props The data for the new model.
-     * @returns The newly inserted model's Id.
-     * @throws [[IModelError]] if unable to insert the model.
-     */
-    public insertModel2(props: ModelProps): Id64String {
-      try {
-        return props.id = insertModelWithHandlers(this._iModel, props);
-      } catch (err: any) {
-        err.metadata = props;
         throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
     }
@@ -1786,6 +1768,7 @@ export namespace IModelDb {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
     }
+
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
@@ -2022,44 +2005,6 @@ export namespace IModelDb {
      */
     public createElement<T extends Element>(elProps: ElementProps): T { return this._iModel.constructEntity<T>(elProps); }
 
-    // /**
-    //  * Generic insert that inserts an instance of an Element, Model, or Aspect into the iModel.
-    //  * @param instance Instance to be inserted.
-    //  * @returns The Id of the instance that was inserted.
-    //  * @throws [[IModelError]] if unable to insert the element.
-    //  */
-    // public insertInstance(classFullName: string): Id64String {
-    //   try {
-    //     const classDef = ClassRegistry.getClass(classFullName, this._iModel);
-    //     classDef.onInsert({});
-    //     const id = this._iModel[_nativeDb].insertInstance();
-    //     classDef.onInserted({});
-    //     return id;
-    //   } catch (err: any) {
-    //     err.message = `Error inserting instance [${err.message}]`;
-    //     throw err;
-    //   }
-    // }
-
-    /** Insert a new element into the iModel.
-     * @param elProps The properties of the new element.
-     * @returns The newly inserted element's Id.
-     * @throws [[IModelError]] if unable to insert the element.
-     * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
-     * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
-     * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
-     * if you intend to continue working with it. That will ensure its values reflect the persistent state.
-     */
-    public insertElement2(elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
-      try {
-        return insertElementWithHandlers(this._iModel, elProps, options);
-      } catch (err: any) {
-        err.message = `Error inserting element [${err.message}]`;
-        err.metadata = { elProps };
-        throw err;
-      }
-    }
-
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
@@ -2071,6 +2016,9 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
+        if (IModelHost.configuration?.useNativeInstance) {
+          return elProps.id = insertElementWithHandlers(this._iModel, elProps);
+        }
         return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
@@ -2393,24 +2341,11 @@ export namespace IModelDb {
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
       try {
+        if (IModelHost.configuration?.useNativeInstance) {
+          return insertAspectWithHandlers(this._iModel, aspectProps);
+        }
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
-      }
-    }
-
-    /** Insert a new ElementAspect into the iModel.
-     * @param aspectProps The properties of the new ElementAspect.
-     * @throws [[IModelError]] if unable to insert the ElementAspect.
-     * @returns the id of the newly inserted aspect.
-     * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
-     *       use [EntityReference]($common) for that instead.
-     */
-    public insertAspect2(aspectProps: ElementAspectProps, options?: InsertInstanceOptions): Id64String {
-      try {
-        return insertAspectWithHandlers(this._iModel, aspectProps, options);
-      } catch (err: any) {
-        err.metadata = { aspectProps };
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }
     }
