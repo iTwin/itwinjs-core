@@ -18,7 +18,7 @@ import { GraphicalEditingScope } from "../../GraphicalEditingScope";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import {
-  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, MapLayerTreeSetting, Tile,
+  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile,
   TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
 

@@ -27,7 +27,7 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { TerrainTexture } from "../RenderTerrain";
-import { MapCartoRectangle, PlanarProjection, PlanarTilePatch, RealityModelTileTree, RealityTile } from "../../../tile/internal";
+import { MapCartoRectangle, PlanarProjection, PlanarTilePatch, RealityTile } from "../../../tile/internal";
 import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams";
 
 const scratchOverlapRange = Range2d.createNull();
