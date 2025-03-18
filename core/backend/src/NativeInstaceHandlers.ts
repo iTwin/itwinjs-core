@@ -61,17 +61,14 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
 
 
 /**
- * Function inserts an element into an iModel and calls the pre-insert and post-insert domain handlers.
- * @param iModel The iModel to insert the element into.
- * @param elProps The properties of the element to insert.
+ * Function inserts a Model into an iModel and calls the pre-insert and post-insert domain handlers.
+ * @param iModel The iModel to insert the model into.
+ * @param modelProps The properties of the model to insert.
  * @param options Insert options.
- * @returns The Id of the inserted element.
+ * @returns The Id of the inserted model.
  * @internal
  */
 export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps, options?: InsertInstanceOptions): Id64String {
-  // Convert the ElementProps to NativeElementProps
-  // const nativeElementProps = mapNativeElementProps(iModel, elProps);
-
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
 
@@ -97,13 +94,13 @@ export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps
  * @param iModel The iModel to insert the elementAspect into.
  * @param aspectProps The properties of the elementAspect to insert.
  * @param options Insert options.
- * @returns The Id of the inserted element.
+ * @returns The Id of the inserted aspect.
  * @internal
  */
 export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps, options?: InsertInstanceOptions): Id64String {
   // Get Relevant Element
   // TODO: Cache the Element, so that if multiple aspects are being inserted, we don't have to fetch the model each time.
-  const element = iModel.elements.getElement(aspectProps.element.id);
+  const element = iModel.elements.getElement(aspectProps.element.id); // Will throw if not found
 
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
