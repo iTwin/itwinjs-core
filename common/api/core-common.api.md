@@ -6041,7 +6041,7 @@ export interface ModelLoadProps {
 
 // @beta
 export enum ModelMapLayerDrapeTarget {
-    BackgroundMap = 0,
+    Globe = 0,
     RealityData = 1
 }
 

@@ -354,7 +354,6 @@ export class IModelTileTree extends TileTree {
    * used by draw().
    */
   private _numStaticTilesSelected = 0;
-  public layerImageryTrees: MapLayerTreeSetting[] = [];
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);

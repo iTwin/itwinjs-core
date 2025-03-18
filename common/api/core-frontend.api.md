@@ -6068,7 +6068,7 @@ export abstract class MapTileProjection {
 }
 
 // @public
-export class MapTileTree extends LayerTileTree {
+export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
     // @internal (undocumented)
@@ -6081,6 +6081,8 @@ export class MapTileTree extends LayerTileTree {
     clearImageryTreesAndClassifiers(): void;
     // @internal
     cloneImageryTreeState(): Map<string, ImageryTileTreeState>;
+    // (undocumented)
+    protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     // @internal (undocumented)
     createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile;
     // @internal (undocumented)
@@ -6122,6 +6124,10 @@ export class MapTileTree extends LayerTileTree {
     isOverlay: boolean;
     // @internal (undocumented)
     get isTransparent(): boolean;
+    // @internal (undocumented)
+    get layerHandler(): LayerTileTreeHandler;
+    // @internal (undocumented)
+    layerImageryTrees: MapLayerTreeSetting[];
     // @internal
     loadReprojectionCache(tile: MapTile): Promise<void>;
     // @internal (undocumented)
@@ -6159,7 +6165,7 @@ export class MapTileTree extends LayerTileTree {
 }
 
 // @internal
-export class MapTileTreeReference extends LayerTileTreeReference {
+export class MapTileTreeReference extends TileTreeReference {
     constructor(settings: BackgroundMapSettings, baseLayerSettings: BaseLayerSettings | undefined, layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
     addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     // @deprecated (undocumented)
@@ -6195,11 +6201,15 @@ export class MapTileTreeReference extends LayerTileTreeReference {
     // (undocumented)
     imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference[];
     // (undocumented)
+    readonly iModel: IModelConnection;
+    // (undocumented)
     get isGlobal(): boolean;
     // (undocumented)
     protected get _isLoadingComplete(): boolean;
     // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[];
+    // (undocumented)
+    get layerRefHandler(): LayerTileTreeReferenceHandler;
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
@@ -6207,6 +6217,8 @@ export class MapTileTreeReference extends LayerTileTreeReference {
     // (undocumented)
     get settings(): BackgroundMapSettings;
     set settings(settings: BackgroundMapSettings);
+    // (undocumented)
+    shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean;
     // (undocumented)
     get treeOwner(): TileTreeOwner;
     unionFitRange(_range: Range3d): void;
@@ -6241,7 +6253,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -7945,8 +7957,6 @@ export class RealityTile extends Tile {
     protected get _anyChildNotFound(): boolean;
     // @internal (undocumented)
     get channel(): TileRequestChannel;
-    // @internal (undocumented)
-    clearLayers(): void;
     // @internal (undocumented)
     collectTileGeometry(collector: TileGeometryCollector): void;
     // @internal (undocumented)
@@ -10263,6 +10273,8 @@ export abstract class Tile {
     abstract get channel(): TileRequestChannel;
     get children(): Tile[] | undefined;
     protected _childrenLoadStatus: TileTreeLoadStatus;
+    // @internal (undocumented)
+    clearLayers(): void;
     // @internal
     collectStatistics(stats: RenderMemory.Statistics, includeChildren?: boolean): void;
     // @internal
@@ -10991,6 +11003,8 @@ export abstract class TileTree {
     // @internal (undocumented)
     protected _lastSelected: BeTimePoint;
     get lastSelectedTime(): BeTimePoint;
+    // @internal (undocumented)
+    get layerHandler(): LayerTileTreeHandler | undefined;
     // @internal (undocumented)
     get loadPriority(): TileLoadPriority;
     abstract get maxDepth(): number | undefined;
@@ -12673,6 +12687,8 @@ export abstract class Viewport implements Disposable, TileUser {
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // @internal
+    compareMapLayer(prevView: ViewState, newView: ViewState): boolean;
     computeViewRange(): Range3d;
     get continuousRendering(): boolean;
     set continuousRendering(contRend: boolean);
