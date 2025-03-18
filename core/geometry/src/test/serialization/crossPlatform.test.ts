@@ -33,20 +33,31 @@ describe("CrossPlatform", () => {
   const nativeRoot = `${root}native/`;
   const typeScriptRoot = `${root}typescript/`;
 
+  // this fixup is not needed in the imodel-native crossPlatform test because only TypeScript API checks the twoSided flag during isAlmostEqual
+  const resetTwoSided = (geom: GeometryQuery | undefined): void => {
+    if (geom && geom instanceof IndexedPolyface)
+      geom.twoSided = true; // set to default; iTwin pre-v5 set the default false
+  }
+
   // A file may contain multiple geometries. Deserialize only the first.
-  const deserializeFirstGeom = (fileName: string, fileType: FileType): GeometryQuery | undefined => {
-    let geom: GeometryQuery | GeometryQuery[] | undefined;
+  const deserializeFirstGeom = (fileName: string, fileType: FileType, adjustGeom: boolean = false): GeometryQuery | undefined => {
+    let geometry: GeometryQuery | GeometryQuery[] | undefined;
     if (FileType.FlatBuffer === fileType)
-      geom = GeometryCoreTestIO.flatBufferFileToGeometry(fileName);
+      geometry = GeometryCoreTestIO.flatBufferFileToGeometry(fileName);
     else if (FileType.JSON === fileType)
-      geom = GeometryCoreTestIO.jsonFileToGeometry(fileName);
-    if (!geom)
+      geometry = GeometryCoreTestIO.jsonFileToGeometry(fileName);
+    if (!geometry)
       return undefined;
-    if (!Array.isArray(geom))
-      return geom;
-    if (geom.length >= 1)
-      return geom[0];
-    return undefined;
+    let geom: GeometryQuery | undefined;
+    if (Array.isArray(geometry)) {
+      if (geometry.length >= 1)
+        geom = geometry[0];
+    } else {
+      geom = geometry;
+    }
+    if (adjustGeom)
+      resetTwoSided(geom);
+    return geom;
   };
 
   const serialize = (ck: Checker, geom: GeometryQuery | undefined, fileName: string) => {
@@ -97,7 +108,7 @@ describe("CrossPlatform", () => {
       for (const platform of [Platform.Native, Platform.TypeScript]) {
         for (const fileType of [FileType.FlatBuffer, FileType.JSON]) {
           for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
-            const geom = deserializeFirstGeom(fileName, fileType);
+            const geom = deserializeFirstGeom(fileName, fileType, true);
             if (ck.testDefined(geom, `deserialized at least one geometry from ${fileName}`))
               geometry.push(geom);
           }
@@ -227,8 +238,10 @@ describe("CrossPlatform", () => {
         for (const platform of [Platform.Native, Platform.TypeScript])
             for (const fileType of [FileType.FlatBuffer, FileType.JSON])
                 for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
-                  const geom = deserializeFirstGeom(fileName, fileType);
-                  if (ck.testDefined(geom, "deserialized geom") && geom instanceof IndexedPolyface) {
+                  // TypeScript flatbuffer used to set twoSided to false by default; reset it for comparison
+                  const adjustGeom = platform === Platform.TypeScript && fileType === FileType.FlatBuffer && fileName.includes("-old.");
+                  const geom = deserializeFirstGeom(fileName, fileType, adjustGeom);
+                  if (ck.testDefined(geom, "deserialized geom")) {
                     if (fileName.includes("-new."))
                       ck.testTrue(refGeomWithTopo.isAlmostEqual(geom), `testCase[${iTestCase}]: ${fileName} encodes expected geom + topo`);
                     else
