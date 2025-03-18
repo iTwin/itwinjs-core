@@ -44,7 +44,7 @@ ElementAspects can also be used to separate groups of properties according to th
 
 ![ElementAspect hierarchy example](../media/elementaspect-shapeaspect-hierarchy.png)
 
-In this case, the `ShapeAspect` base-class should be used as the *key-class* to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy at any given time. Furthermore, if the `Shape` attribution modeled by this class-hierarchy is considered essential (or [`First-class`](./attribution-fundamentals.md#first-class-attributes)) to the Entity whose Element-class representation owns the `Element-Aspect`, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively) in order to advertise that it is not optional.
+In this case, the `ShapeAspect` base-class should be used as the *key-class* to uniquely identify instances of the concrete aspects of this class-hierarchy. That is needed in this case in order to ensure an object only owns one aspect of any of the three concrete classes in the `ShapeAspect` hierarchy at any given time. Furthermore, if the `Shape` attribution modeled by this class-hierarchy is considered essential (or [`First-class`](./attribution-guidelines.md#first-class-attributes)) to the Entity whose Element-class representation owns the `Element-Aspect`, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively) in order to advertise that it is not optional.
 
 ## ElementAspects and Relationships
 
