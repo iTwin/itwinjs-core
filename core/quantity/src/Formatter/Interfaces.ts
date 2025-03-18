@@ -94,3 +94,12 @@ export interface CloneOptions {
   /** allows primary unit and label to be specified */
   primaryUnit?: CloneUnit;
 }
+
+/** This interface is implemented by a class that would provide formats for use in formatting quantities.
+ * @beta
+ */
+export interface FormatsProvider {
+
+  getFormat(id: string): FormatProps | undefined; // Should we add synchronous version of this method?
+  getFormats(ids?: string[]): FormatProps[];
+}
