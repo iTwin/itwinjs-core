@@ -875,7 +875,7 @@ export class ClassRegistry {
     static register(entityClass: typeof Entity, schema: typeof Schema): void;
     static registerModule(moduleObj: any, schema: typeof Schema): void;
     // @internal
-    static unregisterCLass(classFullName: string): boolean;
+    static unregisterClass(classFullName: string): boolean;
     // @internal
     static unregisterClassesFrom(schema: typeof Schema): void;
 }
