@@ -147,9 +147,10 @@ export class TextAnnotation {
    * The anchor point is computed as specified by this annotation's [[anchor]] setting. For example, if the text block is anchored
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
    * The text block will be rotated around the fixed anchor point according to [[orientation]], then translated by [[offset]].
-   * The anchor point will coincide with (0, 0, 0).
-   * @param boundingBox A box fully containing the [[textBlock]].
+   * The anchor point will coincide with (0, 0, 0) unless an [[offset]] is present.
+   * @param boundingBox A box fully containing the [[textBlock]]. This range should include the margins.
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
+   * @see [computeLayoutTextBlockResult]($backend) to lay out a `TextBlock`.
    */
   public computeTransform(boundingBox: Range2d): Transform {
     const anchorPt = this.computeAnchorPoint(boundingBox);
@@ -157,6 +158,7 @@ export class TextAnnotation {
 
     const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
     const translation = Transform.createTranslation(this.offset.minus(anchorPt));
+
     return translation.multiplyTransformTransform(rotation, rotation);
   }
 
