@@ -28,33 +28,22 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
 
   // Get the Element Class Definition and check if its valid
   const classDef = iModel.getJsClass<typeof Element>(elProps.classFullName);
-  let modelClassDef: typeof Model | undefined;
-  let parentClassDef: typeof Element | undefined;
-  try {
-    modelClassDef = iModel.getJsClass<typeof Model>(iModel.models.getModel(nativeElementProps.model.id).classFullName);
-  } catch (error) {
-    // TODO: Handle no model element found
-    modelClassDef = undefined;
-  }
-  try {
-    parentClassDef = nativeElementProps.parent ? iModel.getJsClass<typeof Element>(iModel.elements.getElement(nativeElementProps.parent.id).classFullName) : undefined;
-  } catch (error) {
-    // TODO: Handle no parent element found
-    parentClassDef = undefined;
-  }
+  const model = iModel.models.tryGetModelProps(elProps.model);
+  const modelClassDef = model ? iModel.getJsClass<typeof Model>(model.classFullName) : undefined;
+  const parentElement = elProps.parent ? iModel.elements.getElement(elProps.parent.id) : undefined;
+  const parentClassDef = parentElement ? iModel.getJsClass<typeof Element>(parentElement.classFullName) : undefined;
 
   // Call pre-insert Domain Handlers
   classDef.onInsert({ iModel, props: elProps });
   if (modelClassDef !== undefined) {
     modelClassDef.onInsertElement({ iModel, elementProps: elProps, id: elProps.model });
   }
-  if (parentClassDef !== undefined && nativeElementProps.parent?.id) {
-    parentClassDef.onChildInsert({ iModel, childProps: elProps, parentId: nativeElementProps.parent?.id });
+  if (parentClassDef !== undefined && elProps.parent) {
+    parentClassDef.onChildInsert({ iModel, childProps: elProps, parentId: elProps.parent.id });
   }
 
   // Perform Insert
-  // TODO: change to elProps and don't cast insertOptions
-  elProps.id = iModel[_nativeDb].insertInstance(nativeElementProps, insertOptions);
+  elProps.id = iModel[_nativeDb].insertInstance(elProps, insertOptions);
 
   // Call post-insert Domain Handlers
   if (elProps.federationGuid !== undefined) {
@@ -63,8 +52,8 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
   if (modelClassDef !== undefined) {
     modelClassDef.onInsertedElement({ iModel, elementId: elProps.id, id: elProps.model });
   }
-  if (parentClassDef !== undefined && nativeElementProps.parent?.id) {
-    parentClassDef.onChildInserted({ iModel, childId: elProps.id, parentId: nativeElementProps.parent?.id });
+  if (parentClassDef !== undefined && elProps.parent) {
+    parentClassDef.onChildInserted({ iModel, childId: elProps.id, parentId: elProps.parent.id });
   }
 
   return elProps.id;
