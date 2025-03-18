@@ -12,38 +12,6 @@ import { Model } from "./Model";
 import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect } from "./ElementAspect";
 
-type NativeElementProps = Omit<ElementProps, "model" | "code" | "classFullName" | "jsonProperties" | "isInstanceOfEntity"> & {
-  model: RelatedElementProps;
-  className: string;
-  codeValue?: string;
-  codeSpec: RelatedElementProps;
-  codeScope: RelatedElementProps;
-  jsonProperties?: string;
-  lastMod?: string;
-};
-
-/** Function to map ElementProps native Bis.Element properties.
-* @param iModel The iModel to map the element properties to.
-* @param elProps The properties of the element to map.
-* @returns NativeElementProps
-* @internal
-*/
-function mapNativeElementProps(iModel: IModelDb, elProps: ElementProps): NativeElementProps {
-  const element: NativeElementProps = {
-    className: elProps.classFullName,
-    codeSpec: { id: elProps.code.spec },
-    codeScope: { id: elProps.code.scope },
-    codeValue: elProps.code.value,
-    parent: elProps.parent ?? undefined,
-    // lastMod: iModel.models.queryLastModifiedTime(elProps.model),
-    model: {
-      id: elProps.model,
-      relClassName: iModel.models.getModel(elProps.model).classFullName ?? undefined,
-    },
-  };
-  return element;
-}
-
 /**
  * Function inserts an element into an iModel and calls the pre-insert and post-insert domain handlers.
  * @param iModel The iModel to insert the element into.
@@ -53,9 +21,6 @@ function mapNativeElementProps(iModel: IModelDb, elProps: ElementProps): NativeE
  * @internal
  */
 export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
-  // Convert the ElementProps to NativeElementProps
-  const nativeElementProps = mapNativeElementProps(iModel, elProps);
-
   // Default insert options
   const insertOptions = options ?? { useJsNames: true };
 
