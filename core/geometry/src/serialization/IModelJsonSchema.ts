@@ -582,7 +582,12 @@ export namespace IModelJson {
     numPerFace?: number;
     /** Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2). */
     expectedClosure?: number;
-    /** Optional flag indicating if mesh display must assume both sides are visible. */
+    /**
+     * Boolean flag indicating if the facets are viewable from the back.
+     * * Default value is true.
+     * * Set to false only if the mesh is known to be a closed volume with outward normals,
+     * indicating it is amenable to backface culling for improved display performance.
+     */
     twoSided?: boolean;
     /** Optional analytical data at the vertices of the mesh */
     auxData?: AuxDataProps;
@@ -959,12 +964,10 @@ export namespace IModelJson {
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
         const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
-        if (data.hasOwnProperty("twoSided")) {
-          const q = data.twoSided;
-          if (q === true || q === false) {
-            polyface.twoSided = q;
-          }
-        }
+
+        // default value is true!!
+        polyface.twoSided = this.parseBooleanProperty(data, "twoSided", true) ?? true;
+
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
           if (Number.isFinite(q)) {
@@ -1816,8 +1819,9 @@ export namespace IModelJson {
 
       if (pf.expectedClosure !== 0)
         contents.expectedClosure = pf.expectedClosure;
-      if (pf.twoSided)
-        contents.twoSided = true;
+
+      contents.twoSided = pf.twoSided;
+
       if (pf.data.auxData)
         contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 

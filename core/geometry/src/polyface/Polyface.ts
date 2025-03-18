@@ -43,7 +43,12 @@ export abstract class Polyface extends GeometryQuery {
    * @param numWrap the number of vertices to replicate in visitor arrays.
    */
   public abstract createVisitor(numWrap: number): PolyfaceVisitor;
-  /** Flag indicating if the mesh display must assume both sides are visible. */
+  /**
+   * Boolean flag indicating if the facets are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the mesh is known to be a closed volume with outward normals,
+   * indicating it is amenable to backface culling for improved display performance.
+   */
   public get twoSided() {
     return this.data.twoSided;
   }
@@ -350,13 +355,13 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
    * @param needParams `true` to allocate empty uv parameter data and index arrays; `false` (default) to leave undefined.
    * @param needColors `true` to allocate empty color data and index arrays; `false` (default) to leave undefined.
-   * @param twoSided `true` if the facets are to be considered viewable from the back; `false` (default) if not.
+   * @param twoSided `true` (default) if the facets are to be considered viewable from the back; `false` if they are amenable to backface culling.
    */
   public static create(
     needNormals: boolean = false,
     needParams: boolean = false,
     needColors: boolean = false,
-    twoSided: boolean = false,
+    twoSided: boolean = true,
   ): IndexedPolyface {
     return new IndexedPolyface(new PolyfaceData(needNormals, needParams, needColors, twoSided));
   }

@@ -76,7 +76,12 @@ export class PolyfaceData {
    * shared edge is hidden, then the mesh has `edgeVisible = [true,true,false, false,true,true]`.
    */
   public edgeVisible: boolean[];
-  /** Boolean tag indicating if the facets are viewable from the back. */
+  /**
+   * Boolean flag indicating if the facets are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the mesh is known to be a closed volume with outward normals,
+   * indicating it is amenable to backface culling for improved display performance.
+   * */
   private _twoSided: boolean;
   /**
    * Flag indicating if the mesh closure is unknown (0), open sheet (1), closed solid (2).
@@ -127,10 +132,10 @@ export class PolyfaceData {
    * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
    * @param needParams `true` to allocate empty uv parameter data and index arrays; `false` (default) to leave undefined.
    * @param needColors `true` to allocate empty color data and index arrays; `false` (default) to leave undefined.
-   * @param twoSided `true` if the facets are to be considered viewable from the back; `false` (default) if not.
+   * @param twoSided `true` (default) if the facets are to be considered viewable from the back; `false` if they are amenable to backface culling.
    */
   public constructor(
-    needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false,
+    needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = true,
   ) {
     this.point = new GrowableXYZArray();
     this.pointIndex = [];
@@ -272,7 +277,12 @@ export class PolyfaceData {
   public getEdgeVisible(i: number): boolean {
     return this.edgeVisible[i];
   }
-  /** Get boolean tag indicating if the facets are to be considered viewable from the back. */
+  /**
+   * Boolean flag indicating if the facets are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the mesh is known to be a closed volume with outward normals,
+   * indicating it is amenable to backface culling for improved display performance.
+   */
   public get twoSided(): boolean {
     return this._twoSided;
   }
