@@ -748,7 +748,7 @@ export class MapTileTreeReference extends TileTreeReference {
   public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
     const mapLayerSettings = layerTreeRef?.layerSettings;
     if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
-      return ModelMapLayerDrapeTarget.BackgroundMap === mapLayerSettings.drapeTarget;
+      return ModelMapLayerDrapeTarget.Globe === mapLayerSettings.drapeTarget;
     return true; // catch-all for other cases (skip reality models, though).
   }
 

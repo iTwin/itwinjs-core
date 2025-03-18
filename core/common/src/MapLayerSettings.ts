@@ -194,8 +194,8 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
  * @beta
  */
 export enum ModelMapLayerDrapeTarget {
-  /** Drape only onto the background map. */
-  BackgroundMap = 0,
+  /** Drape only onto the globe. */
+  Globe = 0,
   /** Drape only onto all attached reality data. Supported reality data formats include glTF or b3dm. */
   RealityData = 1,
 }
@@ -207,7 +207,7 @@ export enum ModelMapLayerDrapeTarget {
 export interface ModelMapLayerProps extends CommonMapLayerProps {
   /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
   modelId: Id64String;
-  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.BackgroundMap]($common).
+  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.Globe]($common).
    * @beta
    */
   drapeTarget?: ModelMapLayerDrapeTarget;
@@ -535,7 +535,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  * @public
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
-  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.BackgroundMap]($common).
+  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.Globe]($common).
    * @beta
    */
   public readonly drapeTarget: ModelMapLayerDrapeTarget;
@@ -544,7 +544,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.BackgroundMap) {
+    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.Globe) {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
     this.drapeTarget = drapeTarget;
@@ -560,7 +560,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   public override toJSON(): ModelMapLayerProps {
     const props = super._toJSON() as ModelMapLayerProps;
     props.modelId = this.modelId;
-    if (this.drapeTarget !== ModelMapLayerDrapeTarget.BackgroundMap)
+    if (this.drapeTarget !== ModelMapLayerDrapeTarget.Globe)
       props.drapeTarget = this.drapeTarget;
     return props;
   }
