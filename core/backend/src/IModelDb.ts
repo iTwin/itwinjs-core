@@ -71,7 +71,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
-import { insertAspectWithHandlers, insertElementWithHandlers, insertModelWithHandlers } from "./NativeInstaceHandlers";
+import { insertAspectWithHandlers, insertElementWithHandlers, insertModelWithHandlers, updateAspectWithHandlers, updateElementWithHandlers, updateModelWithHandlers } from "./NativeInstaceHandlers";
 
 // spell:ignore fontid fontmap
 
@@ -100,14 +100,16 @@ export interface InsertElementOptions {
   forceUseId?: boolean;
 }
 
-/** Options supposed to [[IModelDb.Elements.insertElement2]].
+/** Options to use along side insertInstance functions: [[iModelDb.Elements.insertElement2]], [[iModelDb.Models.insertModel2]],
+ * [[iModelDb.Aspect.insertAspect2]].
  * @public
  */
 export interface InsertInstanceOptions {
   useJsNames?: true;
 }
 
-/** Options supposed to [[IModelDb.Elements.insertElement2]].
+/** Options to use along side updateInstance functions: [[iModelDb.Elements.updateElement2]], [[iModelDb.Models.updateModel2]],
+ * [[iModelDb.Aspect.updateAspect2]].
  * @public
  */
 export interface UpdateInstanceOptions {
@@ -1793,6 +1795,19 @@ export namespace IModelDb {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
     }
+
+    /** Update an existing model.
+     * @param props the properties of the model to change
+     * @throws [[IModelError]] if unable to update the model.
+     */
+    public updateModel2(props: UpdateModelOptions, options?: UpdateInstanceOptions): void {
+      try {
+        updateModelWithHandlers(this._iModel, props, options);
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
+      }
+    }
+
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
      * Typically the GeometryGuid changes automatically when [[GeometricElement]]s within the model are modified, but
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
@@ -2118,9 +2133,9 @@ export namespace IModelDb {
      * overwriting their values to the correct values.
      * @throws [[IModelError]] if unable to update the element.
      */
-    public updateElement2<T extends ElementProps>(elProps: Partial<T>): void {
+    public updateElement2<T extends ElementProps>(elProps: Partial<T>, options?: UpdateInstanceOptions): void {
       try {
-        this._iModel[_nativeDb].updateElement(elProps);
+        updateElementWithHandlers(this._iModel, elProps, options);
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
         err.metadata = { elProps };
@@ -2450,6 +2465,18 @@ export namespace IModelDb {
     public updateAspect(aspectProps: ElementAspectProps): void {
       try {
         this._iModel[_nativeDb].updateElementAspect(aspectProps);
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
+      }
+    }
+
+    /** Update an exist ElementAspect within the iModel.
+     * @param aspectProps The properties to use to update the ElementAspect.
+     * @throws [[IModelError]] if unable to update the ElementAspect.
+     */
+    public updateAspect2(aspectProps: ElementAspectProps): void {
+      try {
+       updateAspectWithHandlers(this._iModel, aspectProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
       }
