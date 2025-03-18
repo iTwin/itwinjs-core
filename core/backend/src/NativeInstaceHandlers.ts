@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb, InsertInstanceOptions } from "./IModelDb";
+import { IModelDb } from "./IModelDb";
 import { Element } from "./Element";
-import { ElementAspectProps, ElementProps, ModelProps, RelatedElementProps } from "@itwin/core-common";
+import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 import { _nativeDb } from "./internal/Symbols";
 import { Model } from "./Model";
-import { ClassRegistry } from "./ClassRegistry";
 import { ElementAspect } from "./ElementAspect";
 
 /**
@@ -20,9 +19,9 @@ import { ElementAspect } from "./ElementAspect";
  * @returns The Id of the inserted element.
  * @internal
  */
-export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
+export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProps): Id64String {
   // Default insert options
-  const insertOptions = options ?? { useJsNames: true };
+  const insertOptions = { useJsNames: true };
 
   // TODO: Check if the element args are valid?
 
@@ -68,9 +67,9 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
  * @returns The Id of the inserted model.
  * @internal
  */
-export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps, options?: InsertInstanceOptions): Id64String {
+export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps): Id64String {
   // Default insert options
-  const insertOptions = options ?? { useJsNames: true };
+  const insertOptions = { useJsNames: true };
 
   // TODO: Check if the element args are valid?
 
@@ -97,13 +96,13 @@ export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps
  * @returns The Id of the inserted aspect.
  * @internal
  */
-export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps, options?: InsertInstanceOptions): Id64String {
+export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps): Id64String {
+    // Default insert options
+    const insertOptions = { useJsNames: true };
+
   // Get Relevant Element
   // TODO: Cache the Element, so that if multiple aspects are being inserted, we don't have to fetch the model each time.
   const element = iModel.elements.getElement(aspectProps.element.id); // Will throw if not found
-
-  // Default insert options
-  const insertOptions = options ?? { useJsNames: true };
 
   // TODO: Check if the element args are valid? Do this on Native?
 
