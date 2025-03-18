@@ -641,10 +641,10 @@ describe.only("Domain Handlers - New", () => {
     };
     const elementId = iModelDb.elements.insertElement2(elementProps, {useJsNames: true});
     const model = iModelDb.models.getModel(modelId);
-    model.update(); // Update the model as a whole
+    iModelDb.models.updateModel2(model.toJSON()); // Update the model as a whole
     const element = iModelDb.elements.getElement(elementId);
-    element.update(); // Update the element
-    model.delete(); // delete the model
+    iModelDb.elements.updateElement2(element.toJSON()); // Update the element
+    iModelDb.models.deleteModel(modelId); // delete the model
 
     // Check that all model handler functions were called
     assert.isTrue(spies.model.onInsert.called);
@@ -700,7 +700,7 @@ describe.only("Domain Handlers - New", () => {
     // Insert Aspect into that Element
     iModelDb.elements.insertAspect2(aspectProps);
     aspectProps.strProp = "prop 2";
-    iModelDb.elements.updateAspect(aspectProps); // Update the aspect
+    iModelDb.elements.updateAspect2(aspectProps); // Update the aspect
     const aspect = iModelDb.elements.getAspects(elementId, TestAspectHandlers.classFullName);
     iModelDb.elements.deleteAspect(aspect[0].id); // delete the aspect
 
@@ -712,8 +712,7 @@ describe.only("Domain Handlers - New", () => {
     assert.isTrue(spies.aspect.onDelete.called);
     assert.isTrue(spies.aspect.onDeleted.called);
 
-    const model = iModelDb.models.getModel(modelId); // cleanup Model
-    model.delete();
+    iModelDb.models.deleteModel(modelId); // cleanup Model
   });
 
   it("should call all handler functions for an inserted element using new insert", async () => {
@@ -761,7 +760,7 @@ describe.only("Domain Handlers - New", () => {
 
     const componentId = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
     const component1 = iModelDb.elements.getElement(componentId);
-    component1.update();
+    iModelDb.elements.updateElement2(component1.toJSON());
 
     componentProps.code.value = "comp2";
     const componentId2 = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
@@ -784,9 +783,9 @@ describe.only("Domain Handlers - New", () => {
     const component3Props = iModelDb.elements.getElementProps(componentId3);
     component3Props.parent!.id = elementId2;
 
-    iModelDb.elements.updateElement(component3Props);
-    element.update(); // Update the element (the above updates and deletes don't count since they aren't the same element type that we are spying on)
-    element.delete(); // delete the element
+    iModelDb.elements.updateElement2(component3Props);
+    iModelDb.elements.updateElement2(element.toJSON()); // Update the element (the above updates and deletes don't count since they aren't the same element type that we are spying on)
+    iModelDb.elements.deleteElement(element.id); // delete the element
 
     // Check that all aspect handler functions were called
     assert.isTrue(spies.element.onInsert.called);
