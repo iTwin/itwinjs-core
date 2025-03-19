@@ -70,10 +70,13 @@ export class AttachModelMapLayerTool extends Tool {
   public static override toolId = "AttachModelMapLayerTool";
   constructor(protected _formatId: string) { super(); }
 
-  public override async run(toRealityData: boolean, nameIn?: string): Promise<boolean> {
+  public override async run(nameIn?: string, drapeTarget?: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
+
+    if ("0" === nameIn)
+      nameIn = undefined;
 
     const iModel = vp.iModel;
     const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
@@ -86,14 +89,14 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: true === toRealityData ? ModelMapLayerDrapeTarget.RealityData : undefined });
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: "reality" === drapeTarget ? ModelMapLayerDrapeTarget.RealityData : undefined });
       vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } });
     }
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run("reality" === args[0], args[1]);
+    return this.run(args[0], args[1]);
   }
   public async onRestartTool() {
   }
