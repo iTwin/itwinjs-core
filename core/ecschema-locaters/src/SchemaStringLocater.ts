@@ -69,7 +69,7 @@ export abstract class SchemaStringLocater {
    * @param desiredKey The SchemaKey to match.
    * @param matchType The SchemaMatchType.
    */
-  protected findEligibleSchemaKeys(desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType): StringSchemaKey[] {
+  protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType): StringSchemaKey[] {
     const foundStrings = new Array<StringSchemaKey>();
 
     for (const schemaString of this.schemaStrings) {

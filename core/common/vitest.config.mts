@@ -1,4 +1,10 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import * as packageJson from "./package.json";
+
+const includePackages: string[] = Object.entries(packageJson.peerDependencies)
+  .filter(([_, version]) => version === "workspace:*")
+  .map(([pkgName]) => pkgName);
+
 export default defineConfig({
   esbuild: {
     target: "es2022",
@@ -25,5 +31,9 @@ export default defineConfig({
     },
     minWorkers: 1,
     maxWorkers: 3,
+  },
+  optimizeDeps: {
+    include: includePackages,
+    force: true,
   }
 })

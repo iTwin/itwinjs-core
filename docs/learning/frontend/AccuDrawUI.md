@@ -20,7 +20,9 @@ Applications can choose between a vertical or horizontal layout as well as wheth
     - [Expression Support](#expression-support)
     - [Accepting New Value](#accepting-new-value)
     - [Choosing a Previous Value](#choosing-a-previous-value)
-    - [Nearest Snap Behavior](#nearest-snap-behavior)
+    - [Interaction with Snapping](#interaction-with-snapping)
+      - [Nearest Snap](#nearest-snap)
+      - [Snap Indexing/Alignment](#snap-indexingalignment)
   - [Application Support](#application-support)
     - [Initial Setup](#initial-setup)
     - [Configuration Options](#configuration-options)
@@ -172,7 +174,9 @@ In the example below, segments have been drawn with lengths 1m, 2m, and 3m.
    - Repeatedly using Page Up will set the current value to 3m, 2m, 1m, and repeat.
    - Repeatedly using Page Down will set the current current value to 3m, 1m, 2m, and repeat.
 
-### Nearest Snap Behavior
+### Interaction with Snapping
+
+#### Nearest Snap
 
 You can combine AccuDraw's distance and axis locks with [SnapMode.Nearest]($frontend) to adjust the current point to the intersection with the snapped geometry.
 
@@ -185,6 +189,21 @@ You can combine AccuDraw's distance and axis locks with [SnapMode.Nearest]($fron
 
 1. Keypoint snap sets the current point at the locked distance along the vector from the compass origin to closest keypoint.
 2. Nearest snap finds the intersection between the circle defined by the locked distance and the snapped geometry.
+
+#### Snap Indexing/Alignment
+
+Similar to how the current point can be adjusted to AccuDraw's X or Y axes when within a close tolerance, after identifying a snap location, the current point can also be adjusted to axes derived from the snapped geometry. For curves this will be the tangent and binormal directions.
+
+This location is automatically cleared on every data button, but it can also be explicitly cleared by snapping again to that same location or using the *Lock Index* shortcut.
+
+> [AccuDraw.snapIndexing]($frontend) can be changed to disable this feature.
+
+![accudraw snap indexing](./accudraw-snap-indexing.png "Example showing point adjusted by both AccuDraw axis and snap")
+
+1. Identifying a location to index off of using AccuSnap at start point.
+2. Showing current point adjusted to both the compass axis and snap w/o using *Smart Lock* to lock an axis.
+
+> Tentative snap can be used to hold a location for indexing. This can be useful in a busy drawing to prevent inadvertent changes to the index location by AccuSnap. Use reset to clear the Tentative and start indexing to that location.
 
 ## Application Support
 

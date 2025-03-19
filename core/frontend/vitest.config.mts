@@ -1,5 +1,15 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import * as packageJson from "./package.json";
+
+const includePackages: string[] = [
+  ...Object.entries(packageJson.peerDependencies)
+    .filter(([_, version]) => version === "workspace:*")
+    .map(([pkgName]) => pkgName),
+  ...Object.entries(packageJson.dependencies)
+    .filter(([_, version]) => version === "workspace:*")
+    .map(([pkgName]) => pkgName)
+];
 
 export default defineConfig({
   esbuild: {
@@ -8,11 +18,12 @@ export default defineConfig({
   test: {
     dir: "src",
     setupFiles: "./src/test/setupTests.ts",
+    // include: ["**/<insert-file-name-here>.test.ts"],
     browser: {
       provider: "playwright",
       enabled: true,
-      instances : [
-        { browser: "chromium"}
+      instances: [
+        { browser: "chromium" }
       ],
       headless: true,
       screenshotFailures: false
@@ -62,6 +73,7 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ["@itwin/core-common", "@itwin/core-bentley", "@itwin/core-geometry", "@itwin/core-quantity", "@itwin/appui-abstract", "@itwin/core-orbitgt"],
+    include: includePackages,
+    force: true,
   },
 })
