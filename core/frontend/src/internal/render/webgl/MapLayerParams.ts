@@ -12,10 +12,11 @@ import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TerrainTexture } from "../RenderTerrain";
 import { Matrix4 } from "./Matrix";
-import { RenderTexture } from "@itwin/core-common";
+import { ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
 import { assert, dispose, disposeArray } from "@itwin/core-bentley";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { System } from "./System";
+import { ViewState } from "../../../ViewState";
 
 export class ProjectedTexture {
   public classifier: PlanarClassifier;
@@ -164,4 +165,46 @@ export interface LayerTileData {
   ecefTransform: Transform;
   range: Range3d;
   layerClassifiers?: Map<number, RenderPlanarClassifier> | undefined;
+}
+
+/**
+ * Compares the map layers of two view states, ensuring both the number of layers
+ * and their order remain unchanged.
+ * Returns true if the map layers differ in count, order, or model IDs; otherwise, returns false.
+ *
+ * @param prevView The previous view state.
+ * @param newView The new view state.
+ * @returns {boolean} True if there is any difference in the model layer configuration; false otherwise.
+ * @internal
+ */
+export function compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
+const prevLayers = prevView.displayStyle.getMapLayers(false);
+const newLayers = newView.displayStyle.getMapLayers(false);
+
+const prevModelIds: string[] = [];
+const newModelIds: string[] = [];
+
+for (const layer of prevLayers) {
+    if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
+        prevModelIds.push(layer.modelId);
+    }
+}
+
+for (const layer of newLayers) {
+    if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
+        newModelIds.push(layer.modelId);
+    }
+}
+
+if (prevModelIds.length !== newModelIds.length) {
+    return true;
+}
+
+for (let i = 0; i < prevModelIds.length; i++) {
+    if (prevModelIds[i] !== newModelIds[i]) {
+        return true;
+    }
+}
+
+return false;
 }

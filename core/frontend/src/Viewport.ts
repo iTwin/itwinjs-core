@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
-  Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, Npc, NpcCenter, Placement,
+  Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
   Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -68,6 +68,7 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { Target } from "./internal/render/webgl/Target";
+import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -939,51 +940,6 @@ export abstract class Viewport implements Disposable, TileUser {
     }
   }
 
-  /**
-   * Compares the map layers of two view states, ensuring both the number of layers
-   * and their order remain unchanged.
-   * Returns true if the map layers differ in count, order, or model IDs; otherwise, returns false.
-   *
-   * @param prevView The previous view state.
-   * @param newView The new view state.
-   * @returns {boolean} True if there is any difference in the model layer configuration; false otherwise.
-   * @internal
-   */
-  public compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
-    const prevLayers = prevView.displayStyle.getMapLayers(false);
-    const newLayers = newView.displayStyle.getMapLayers(false);
-
-    const prevModelIds: string[] = [];
-    const newModelIds: string[] = [];
-
-    // Extract model IDs from the previous layers in reality tile using a for loop
-    for (const layer of prevLayers) {
-        if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
-            prevModelIds.push(layer.modelId);
-        }
-    }
-
-    // Extract model IDs from the new layers in reality tile using a for loop
-    for (const layer of newLayers) {
-        if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
-            newModelIds.push(layer.modelId);
-        }
-    }
-
-    if (prevModelIds.length !== newModelIds.length) {
-        return true;
-    }
-
-    // Check if all model IDs in newModelIds exist in prevModelIds
-   for (let i = 0; i < prevModelIds.length; i++) {
-        if (prevModelIds[i] !== newModelIds[i]) {
-            return true;
-        }
-    }
-
-    return false;
-  }
-
   /** Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
    * @beta
    */
@@ -1847,7 +1803,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.doSetupFromView(view);
     this.invalidateController();
 
-    const isMapLayerChanged = undefined !== prevView && this.compareMapLayer(prevView, view);
+    const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
     if (this.target.reset.length > 0) {
       (this.target as Target).reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
     } else {
