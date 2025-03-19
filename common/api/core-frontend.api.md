@@ -3828,7 +3828,7 @@ export interface GltfMeshPrimitive extends GltfProperty {
 // @internal
 export abstract class GltfReader {
     protected constructor(args: GltfReaderArgs & {
-        tile?: RealityTile;
+        tileData?: LayerTileData;
     });
     // (undocumented)
     protected get _accessors(): GltfDictionary<GltfAccessor>;
@@ -7887,7 +7887,7 @@ export interface RealityMeshParams {
     // @alpha
     texture?: RenderTexture;
     // @internal (undocumented)
-    tile?: RealityTile;
+    tileData?: LayerTileData;
     uvs: QPoint2dBuffer;
 }
 
@@ -8501,7 +8501,7 @@ export abstract class RenderSystem implements Disposable {
     createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
-    createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tile?: RealityTile): RenderGeometry | undefined;
+    createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tileData?: LayerTileData): RenderGeometry | undefined;
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
