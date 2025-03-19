@@ -196,7 +196,7 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 export enum ModelMapLayerDrapeTarget {
   /** Drape only onto the globe. */
   Globe = 0,
-  /** Drape only onto all attached reality data. Supported reality data formats include glTF or b3dm. */
+  /** Drape only onto all attached reality data. */
   RealityData = 1,
 }
 
