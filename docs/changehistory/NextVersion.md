@@ -217,7 +217,7 @@ Similarly, other functions to retrieve metadata also have replacements:
 iModelDb.getMetaData("SchemaName:ClassName");
 
 // Replacement using schemaContext with a schema key/schemaName-itemName combination/schema item full name
-await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem(schemaItemKey);
 await iModelDb.schemaContext.getSchemaItem("SchemaName", "ClassName");
 await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
 await iModelDb.schemaContext.getSchemaItem("SchemaName.ClassName");

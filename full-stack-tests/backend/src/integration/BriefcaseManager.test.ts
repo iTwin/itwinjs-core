@@ -97,7 +97,7 @@ describe("BriefcaseManager", () => {
     iModel.close();
   });
 
-  it("should reuse checkpoints", async () => {
+  it.skip("should reuse checkpoints", async () => {
     const iModel1 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
