@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 11 Mar 2025 15:25:11 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Mar 2025 15:30:39 GMT and should not be manually modified.
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+### Updates
+
+- Fixed problem causing bg map masking of large models to crash.
 
 ## 4.10.10
 Tue, 11 Mar 2025 15:25:11 GMT

@@ -1,6 +1,11 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Tue, 11 Mar 2025 15:25:11 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Mar 2025 15:30:39 GMT and should not be manually modified.
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+_Version update only_
 
 ## 4.10.10
 Tue, 11 Mar 2025 15:25:11 GMT
