@@ -94,8 +94,15 @@ export class IpcApp {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
 
     if (retVal.error !== undefined) {
-      // Note: for backwards compatibility only, if the exception has a numeric member "errorNumber", throw an exception of type `BackendError`.
-      throw Object.assign(typeof retVal.error.errorNumber === "number" ? new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message) : Error(retVal.error.message), retVal.error);
+      const err = retVal.error;
+      // Note: for backwards compatibility only, if the exception has a numeric member "errorNumber" and no member "scope", throw an exception of type `BackendError`.
+      if (typeof err.errorNumber === "number" && undefined === err.scope) {
+        const backendErr = new BackendError(err.errorNumber, err.name, err.message, err.metadata);
+        backendErr.stack = err.stack;
+        throw backendErr;
+      }
+      else
+        throw Object.assign(new Error(err.message), err);
     }
 
     return retVal.result;

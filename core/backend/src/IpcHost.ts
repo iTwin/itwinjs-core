@@ -7,7 +7,7 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
@@ -178,8 +178,13 @@ export abstract class IpcHandler {
         ret.error.name = err.name;
         if (!IpcHost.noStack)
           ret.error.stack = err.stack;
-        if (typeof ret.error.metaData === "function")
-          ret.error.metaData = ret.error.metaData();
+
+        if (err instanceof BentleyError) {
+          if (err.hasMetaData)
+            ret.error.metadata = err.getMetaData();
+          delete ret.error._metaData;
+        } else if (typeof ret.error.metadata === "function")
+          ret.error.metadata = ret.error.metadata();
         return ret;
       }
     });

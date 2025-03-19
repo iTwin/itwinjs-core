@@ -11,7 +11,7 @@ import {
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, ChannelError, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, ChannelError, CodeProps, ElementProps, IModel, IModelError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -80,7 +80,14 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async throwChannelError(errorKey: ChannelError.Key, message: string, channelKey: string, metadata?: LoggingMetaData) {
     ChannelError.throwError(errorKey, message, channelKey, metadata);
   }
+  public async throwLegacyError(errorNumber: number, message: string, metaData: LoggingMetaData) {
+    throw new IModelError(errorNumber, message, metaData);
+  }
 
+
+  public async throwleg(errorKey: ChannelError.Key, message: string, channelKey: string, metadata?: LoggingMetaData) {
+    ChannelError.throwError(errorKey, message, channelKey, metadata);
+  }
 }
 
 async function init() {

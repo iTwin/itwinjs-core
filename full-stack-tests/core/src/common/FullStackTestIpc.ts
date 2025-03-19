@@ -11,5 +11,6 @@ export interface FullStackTestIpc {
   createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String>;
   createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
   closeAndReopenDb(key: string): Promise<void>;
+  throwLegacyError(errorNumber: number, message: string, metaData: LoggingMetaData): Promise<void>;
   throwChannelError(errorKey: ChannelError.Key, message: string, channelKey: string, metadata?: LoggingMetaData): Promise<void>;
 }
