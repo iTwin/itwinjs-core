@@ -1807,19 +1807,11 @@ export namespace IModelDb {
      */
     public updateModel(props: UpdateModelOptions): void {
       try {
-        this._iModel[_nativeDb].updateModel(props);
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
-      }
-    }
-
-    /** Update an existing model.
-     * @param props the properties of the model to change
-     * @throws [[IModelError]] if unable to update the model.
-     */
-    public updateModel2(props: UpdateModelOptions, options?: UpdateInstanceOptions): void {
-      try {
-        updateModelWithHandlers(this._iModel, props, options);
+        if (IModelHost.configuration?.useNativeInstance) {
+          updateModelWithHandlers(this._iModel, props);
+        } else {
+          this._iModel[_nativeDb].updateModel(props);
+        }
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
@@ -2096,28 +2088,11 @@ export namespace IModelDb {
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
-        this._iModel[_nativeDb].updateElement(elProps);
-      } catch (err: any) {
-        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
-        err.metadata = { elProps };
-        throw err;
-      }
-    }
-
-    /**
-     * Update some properties of an existing element.
-     * All parts of `elProps` are optional *other than* `id`. If id is missing, an exception is thrown.
-     *
-     * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
-     * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
-     * @param elProps the properties of the element to update.
-     * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
-     * overwriting their values to the correct values.
-     * @throws [[IModelError]] if unable to update the element.
-     */
-    public updateElement2<T extends ElementProps>(elProps: Partial<T>, options?: UpdateInstanceOptions): void {
-      try {
-        updateElementWithHandlers(this._iModel, elProps, options);
+        if (IModelHost.configuration?.useNativeInstance) {
+          updateElementWithHandlers(this._iModel, elProps);
+        } else {
+          this._iModel[_nativeDb].updateElement(elProps);
+        }
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
         err.metadata = { elProps };
@@ -2433,19 +2408,11 @@ export namespace IModelDb {
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
       try {
-        this._iModel[_nativeDb].updateElementAspect(aspectProps);
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
-      }
-    }
-
-    /** Update an exist ElementAspect within the iModel.
-     * @param aspectProps The properties to use to update the ElementAspect.
-     * @throws [[IModelError]] if unable to update the ElementAspect.
-     */
-    public updateAspect2(aspectProps: ElementAspectProps): void {
-      try {
-       updateAspectWithHandlers(this._iModel, aspectProps);
+        if (IModelHost.configuration?.useNativeInstance) {
+          updateAspectWithHandlers(this._iModel, aspectProps);
+        } else {
+          this._iModel[_nativeDb].updateElementAspect(aspectProps);
+        }
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
       }
