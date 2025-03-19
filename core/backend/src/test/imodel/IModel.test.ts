@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ECJsNames, ElementProps, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
