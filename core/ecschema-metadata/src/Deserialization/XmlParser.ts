@@ -1032,10 +1032,6 @@ export class XmlParser extends AbstractParser<Element> {
 
   private addCAPropertyValues(caClass: CustomAttributeClass, propertyElements: Element[]): CustomAttribute {
     const instance = { className: caClass.fullName } as CustomAttribute;
-    // TODO: is this a bug? Shouldn't we be checking for all properties on the class?
-    if (caClass.getPropertiesSync(true)[Symbol.iterator]().next().done)
-      return instance;
-
     for (const propertyElement of propertyElements) {
       const value = this.readPropertyValue(propertyElement, caClass);
       if (value !== undefined)
