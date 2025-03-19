@@ -94,7 +94,7 @@ Circular references are not supported and will result in a failure to load the s
   "customAttributes": [
     {
       "className": "CoreCustomAttributes.ProductionStatus",
-      "SupportedUse": "Production"
+      "SupportedUse": "NotForProduction"
     }
   ],
   "items": {

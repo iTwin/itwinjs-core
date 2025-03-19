@@ -18,7 +18,7 @@ ECEntity classes inherit custom attributes from their base class and any mixins 
 <ECEntityClass typeName="Door">
     <BaseClass>bis:PhysicalElement</BaseClass>
     <ECProperty propertyName="OverallHeight" typeName="double" kindOfQuantity="AECU:LENGTH_SHORT"/>
-    <ECProperty propertyName="OverallWidth"typeName= "double" kindOfQuantity="AECU:LENGTH_SHORT"/>
+    <ECProperty propertyName="OverallWidth" typeName= "double" kindOfQuantity="AECU:LENGTH_SHORT"/>
     <ECProperty propertyName="Description" typeName="string"/>
 </ECEntityClass>
 ```
