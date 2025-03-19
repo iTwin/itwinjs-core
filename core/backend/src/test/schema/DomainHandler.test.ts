@@ -551,6 +551,8 @@ describe.only("Domain Handlers - New", () => {
   let modelId: Id64String;
 
   before(async () => {
+    IModelHost.configuration!.useNativeInstance = false;
+
     // Create iModel
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DomainHandlers", "DomainHandlers2.bim"), {
       rootSubject: { name: "HandlerTest2", description: "Test of New Domain Handlers." },
@@ -581,6 +583,8 @@ describe.only("Domain Handlers - New", () => {
     iModelDb.codeSpecs.insert(codeSpec);
     subjectId = iModelDb.channels.insertChannelSubject({ subjectName: "Test Domain Handlers", channelKey: testChannelKey });
     iModelDb.channels.addAllowedChannel(testChannelKey);
+
+    IModelHost.configuration!.useNativeInstance = true;
   });
 
   after(async () => {
