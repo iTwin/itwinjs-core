@@ -134,9 +134,9 @@ export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
  * @param options Update options.
  * @internal
  */
-export function updateElementWithHandlers<T extends ElementProps>(iModel: IModelDb, elProps: Partial<T>, options?: UpdateInstanceOptions): void {
-  // Default update options
-  const updateOptions = options ?? { useJsNames: true };
+export function updateElementWithHandlers<T extends ElementProps>(iModel: IModelDb, elProps: Partial<T>): void {
+  // Update options
+  const updateOptions = { useJsNames: true };
 
   // TODO: Check if the element args are valid?
   if (elProps.id === undefined) {
@@ -151,7 +151,7 @@ export function updateElementWithHandlers<T extends ElementProps>(iModel: IModel
   const parent = element.parent?.id ? iModel.elements.tryGetElementProps(element.parent.id) : undefined;
   const parentClassDef = parent ? iModel.getJsClass<typeof Element>(parent.classFullName) : undefined;
 
-  // Call pre-insert Domain Handlers
+  // Call pre-update Domain Handlers
   classDef.onUpdate({ iModel, props: element });
   if (modelClassDef !== undefined && model?.id) {
     modelClassDef.onUpdateElement({ iModel, elementProps: element, id: model.id });
@@ -160,14 +160,13 @@ export function updateElementWithHandlers<T extends ElementProps>(iModel: IModel
     parentClassDef.onChildUpdate({ iModel, childProps: element, parentId: parent.id });
   }
 
-  // Perform Insert
-  // TODO: change to elProps and don't cast insertOptions
-  const updateSuccess = iModel[_nativeDb].updateInstance(elProps, updateOptions);
-  if (!updateSuccess) {
+  // Perform update
+  const updateResult = iModel[_nativeDb].updateInstance(elProps, updateOptions);
+  if (!updateResult) {
     throw new Error(`Failed to update element with id: ${elProps.id}`);
   }
 
-  // Call post-insert Domain Handlers
+  // Call post-update Domain Handlers
   if (element.federationGuid !== undefined) {
     classDef.onUpdated({ iModel, id: elProps.id, federationGuid: element.federationGuid, model: element.model });
   }
@@ -183,12 +182,11 @@ export function updateElementWithHandlers<T extends ElementProps>(iModel: IModel
  * Function updates a model in an iModel and calls the pre-update and post-update domain handlers.
  * @param iModel The iModel containing the model to update.
  * @param modelProps The properties of the model to update.
- * @param options Update options.
  * @internal
  */
-export function updateModelWithHandlers(iModel: IModelDb, modelProps: UpdateModelOptions, options?: UpdateInstanceOptions): void {
-  // Default update options
-  const updateOptions = options ?? { useJsNames: true };
+export function updateModelWithHandlers(iModel: IModelDb, modelProps: UpdateModelOptions): void {
+  // Update options
+  const updateOptions = { useJsNames: true };
 
   // TODO: Check if the element args are valid?
   if (modelProps.id === undefined) {
@@ -198,13 +196,16 @@ export function updateModelWithHandlers(iModel: IModelDb, modelProps: UpdateMode
   // Get the Model Class Definition and check if its valid
   const classDef = iModel.getJsClass<typeof Model>(modelProps.classFullName);
 
-  // Call pre-insert Domain Handlers
+  // Call pre-update Domain Handlers
   classDef.onUpdate({ iModel, props: modelProps });
 
-  // Perform Insert
-  iModel[_nativeDb].insertInstance(modelProps, updateOptions);
+  // Perform update
+  const updateResult = iModel[_nativeDb].updateInstance(modelProps, updateOptions);
+  if (!updateResult) {
+    throw new Error(`Failed to update model with id: ${modelProps.id}`);
+  }
 
-  // Call post-insert Domain Handlers
+  // Call post-update Domain Handlers
   classDef.onUpdated({ iModel, id: modelProps.id });
 }
 
@@ -212,12 +213,11 @@ export function updateModelWithHandlers(iModel: IModelDb, modelProps: UpdateMode
  * Function updates an aspect in an iModel and calls the pre-update and post-update domain handlers.
  * @param iModel The iModel containing the aspect to update.
  * @param aspectProps The properties of the aspect to update.
- * @param options Update options.
  * @internal
  */
-export function updateAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps, options?: UpdateInstanceOptions): void {
-  // Default update options
-  const updateOptions = options ?? { useJsNames: true };
+export function updateAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps): void {
+  // Update options
+  const updateOptions = { useJsNames: true };
 
   // TODO: Check if the element args are valid?
 
@@ -225,12 +225,15 @@ export function updateAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
   const element = iModel.elements.getElementProps(aspectProps.element); // Will Throw is Element Doesn't Exist
   const classDef = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName);
 
-  // Call pre-insert Domain Handlers
+  // Call pre-update Domain Handlers
   classDef.onUpdate({ iModel, props: aspectProps, model: element.model});
 
-  // Perform Insert
-  iModel[_nativeDb].insertInstance(aspectProps, updateOptions);
+  // Perform update
+  const updateResult = iModel[_nativeDb].updateInstance(aspectProps, updateOptions);
+  if (!updateResult) {
+    throw new Error(`Failed to update aspect with id: ${aspectProps.id}`);
+  }
 
-  // Call post-insert Domain Handlers
+  // Call post-update Domain Handlers
   classDef.onUpdated({ iModel, props: aspectProps, model: element.model});
 }
