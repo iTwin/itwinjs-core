@@ -648,9 +648,9 @@ describe.only("Domain Handlers - New", () => {
     };
     const elementId = iModelDb.elements.insertElement(elementProps);
     const model = iModelDb.models.getModel(modelId);
-    iModelDb.models.updateModel2(model.toJSON()); // Update the model as a whole
+    iModelDb.models.updateModel(model.toJSON()); // Update the model as a whole
     const element = iModelDb.elements.getElement(elementId);
-    iModelDb.elements.updateElement2(element.toJSON()); // Update the element
+    iModelDb.elements.updateElement(element.toJSON()); // Update the element
     iModelDb.models.deleteModel(modelId); // delete the model
 
     // Check that all model handler functions were called
@@ -707,7 +707,7 @@ describe.only("Domain Handlers - New", () => {
     // Insert Aspect into that Element
     iModelDb.elements.insertAspect(aspectProps);
     aspectProps.strProp = "prop 2";
-    iModelDb.elements.updateAspect2(aspectProps); // Update the aspect
+    iModelDb.elements.updateAspect(aspectProps); // Update the aspect
     const aspect = iModelDb.elements.getAspects(elementId, TestAspectHandlers.classFullName);
     iModelDb.elements.deleteAspect(aspect[0].id); // delete the aspect
 
@@ -767,7 +767,7 @@ describe.only("Domain Handlers - New", () => {
 
     const componentId = iModelDb.elements.insertElement(componentProps);
     const component1 = iModelDb.elements.getElement(componentId);
-    iModelDb.elements.updateElement2(component1.toJSON());
+    iModelDb.elements.updateElement(component1.toJSON());
 
     componentProps.code.value = "comp2";
     const componentId2 = iModelDb.elements.insertElement(componentProps);
@@ -790,8 +790,8 @@ describe.only("Domain Handlers - New", () => {
     const component3Props = iModelDb.elements.getElementProps(componentId3);
     component3Props.parent!.id = elementId2;
 
-    iModelDb.elements.updateElement2(component3Props);
-    iModelDb.elements.updateElement2(element.toJSON()); // Update the element (the above updates and deletes don't count since they aren't the same element type that we are spying on)
+    iModelDb.elements.updateElement(component3Props);
+    iModelDb.elements.updateElement(element.toJSON()); // Update the element (the above updates and deletes don't count since they aren't the same element type that we are spying on)
     iModelDb.elements.deleteElement(element.id); // delete the element
 
     // Check that all aspect handler functions were called
