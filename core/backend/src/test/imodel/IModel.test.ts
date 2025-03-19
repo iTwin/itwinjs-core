@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ECJsNames, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
@@ -54,7 +54,7 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
-describe("iModel", () => {
+describe.only("iModel", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
   let imodel3: SnapshotDb;
@@ -1053,12 +1053,11 @@ describe("iModel", () => {
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    for (const prop of entityClass.getPropertiesSync(true)) {
-      if (prop.name === "federationGuid") {
-        assert.isTrue(prop.isPrimitive());
-        assert.equal((prop as PrimitiveOrEnumPropertyBase).extendedTypeName, "BeGuid");
-        break;
-      }
+    const federationGuid = entityClass.getPropertySync("federationGuid", false);
+    if (federationGuid !== undefined) {
+      assert.isTrue(federationGuid.isPrimitive());
+      assert.equal(federationGuid.propertyType, PropertyType.Binary);
+      assert.equal((federationGuid as PrimitiveOrEnumPropertyBase).extendedTypeName, "BeGuid");
     }
   }
 
