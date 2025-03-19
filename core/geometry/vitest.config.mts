@@ -36,5 +36,6 @@ export default defineConfig({
         },
       },
     },
+    fileParallelism: false
   }
 })
