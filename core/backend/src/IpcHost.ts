@@ -7,10 +7,10 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, GetMetaDataFunction, IModelStatus, Logger, LoggingMetaData, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getITwinErrorMetaData, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
-  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, isITwinError, iTwinChannel,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
+  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
@@ -173,39 +173,13 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
-        let ret: IpcInvokeReturn;
-        let metadata: Exclude<LoggingMetaData, GetMetaDataFunction>;
-        if (isITwinError(err)) {
-          const { namespace, errorKey, message, stack, ...rest } = err;
-          if(rest.metadata)
-            metadata = getITwinErrorMetaData(err);
-          ret = {
-            iTwinError:
-            {
-              namespace,
-              errorKey,
-              message,
-              ...(metadata && { metadata }), // Include metadata only when defined
-              ...rest
-            },
-          };
-          if (!IpcHost.noStack)
-            ret.iTwinError.stack = stack;
-        } else {
-          metadata = BentleyError.getErrorMetadata(err);
-
-          ret = {
-            error:
-            {
-              name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-              message: err.message ?? BentleyError.getErrorMessage(err),
-              errorNumber: err.errorNumber ?? 0,
-              ...(metadata && { metadata }), // Include metadata only when defined.
-            },
-          };
-          if (!IpcHost.noStack)
-            ret.error.stack = BentleyError.getErrorStack(err);
-        }
+        const ret = { error: { ...err } };
+        ret.error.message = err.message; // NB: .message, .name, and .stack members of Error are NOT enumerable, so spread operator above does not copy them.
+        ret.error.name = err.name;
+        if (!IpcHost.noStack)
+          ret.error.stack = err.stack;
+        if (typeof ret.error.metaData === "function")
+          ret.error.metaData = ret.error.metaData();
         return ret;
       }
     });

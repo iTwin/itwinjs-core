@@ -86,25 +86,18 @@ export class IpcApp {
    * @param methodName  the name of a method implemented by the backend handler.
    * @param args arguments to `methodName`
    * @return a Promise with the return value from `methodName`
-   * @note If the backend implementation throws an exception, this method will throw a [[BackendError]] exception
-   * with the `errorNumber` and `message` from the backend.
+   * @note If the backend implementation throws an exception, this method will throw an exception with its contents
    * @note Ipc is only supported if [[isValid]] is true.
    * @internal Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
 
-    if (undefined !== retVal.iTwinError) {
-      const error = new Error();
-      if (retVal.iTwinError.stack === undefined)
-        delete retVal.iTwinError.stack;
-      Object.assign(error, retVal.iTwinError);
-      throw error;
-    } else if (undefined !== retVal.error) {
-      const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
-      err.stack = retVal.error.stack;
-      throw err;
+    if (retVal.error !== undefined) {
+      // Note: for backwards compatibility only, if the exception has a numeric member "errorNumber", throw an exception of type `BackendError`.
+      throw Object.assign(typeof retVal.error.errorNumber === "number" ? new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message) : Error(retVal.error.message), retVal.error);
     }
+
     return retVal.result;
   }
 

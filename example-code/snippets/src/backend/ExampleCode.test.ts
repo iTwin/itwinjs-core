@@ -5,7 +5,7 @@
 
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
 import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, createITwinErrorTypeAsserter, IModel, InUseLocksError, iTwinErrorKeys, iTwinjsCoreNamespace } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel, InUseLocksError, isITwinCoreError, iTwinCoreErrors } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -48,11 +48,9 @@ describe("Example Code", () => {
       try {
         await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
       } catch (err) {
-        const isInUseError = createITwinErrorTypeAsserter<InUseLocksError>(iTwinjsCoreNamespace, iTwinErrorKeys.inUseLocks);
-        if (isInUseError(err)) {
-          const inUseLocks = err.inUseLocks;
-          for (const inUseLock of inUseLocks) {
-            const _briefcaseIds = inUseLock.briefcaseIds;
+        if (isITwinCoreError<InUseLocksError>(err, iTwinCoreErrors.lockInUse)) {
+          for (const inUseLock of err.inUseLocks) {
+            const _briefcaseId = inUseLock.briefcaseId;
             const _state = inUseLock.state;
             const _objectId = inUseLock.objectId;
             // Create a user friendly error message
