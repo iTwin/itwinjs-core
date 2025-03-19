@@ -49,15 +49,15 @@ export class SurfaceGeometry extends MeshGeometry {
     const indices = params.surface.indices;
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
 
-    const tile = params.tile;
+    const tile = params.tileData;
 
-    const layerClassifiers = tile?.tree?.layerHandler?.layerClassifiers;
+    const layerClassifiers = tile?.layerClassifiers;
 
     if (!layerClassifiers?.size || !tile || undefined === layerClassifiers) {
       return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
     }
 
-    const transformECEF = tile.tree.iModel.getEcefTransform();
+    const transformECEF = tile.ecefTransform;
     if (!transformECEF || !tile.range) {
       return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
     }

@@ -14,8 +14,9 @@ import { Mesh } from "../../common/internal/render/MeshPrimitives";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GltfDataType, GltfMeshPrimitive } from "../../common/gltf/GltfSchema";
 import {
-  BatchedTileIdMap, GltfBufferData, GltfReader, GltfReaderProps, GltfReaderResult, RealityTile, ShouldAbortReadGltf,
+  BatchedTileIdMap, GltfBufferData, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
 } from "../../tile/internal";
+import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 
 /**
@@ -28,7 +29,7 @@ export class B3dmReader extends GltfReader {
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
     system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform,
-    isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false, tile?: RealityTile): B3dmReader | undefined {
+    isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false, tileData?: LayerTileData): B3dmReader | undefined {
     const header = new B3dmHeader(stream);
     if (!header.isValid)
       return undefined;
@@ -55,15 +56,15 @@ export class B3dmReader extends GltfReader {
     const batchTableLength = header.featureTableJson ? JsonUtils.asInt(header.featureTableJson.BATCH_LENGTH, 0) : 0;
 
     return undefined !== props ? new B3dmReader(props, iModel, modelId, is3d, system, range, isLeaf, batchTableLength,
-      transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias, deduplicateVertices, tile) : undefined;
+      transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias, deduplicateVertices, tileData) : undefined;
   }
 
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any
-    , shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false, tile?: RealityTile) {
+    , shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false, tileData?: LayerTileData) {
     super({
       props, iModel, system, shouldAbort, deduplicateVertices,
-      is2d: !is3d, idMap: _idMap, tile
+      is2d: !is3d, idMap: _idMap, tileData
     });
     this._modelId = modelId;
   }

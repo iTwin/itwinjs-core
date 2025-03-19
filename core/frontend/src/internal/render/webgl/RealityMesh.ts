@@ -166,13 +166,13 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     if (!params) return undefined;
 
     const { texture: meshTexture, featureID } = realityMesh;
-    const tile = realityMesh.tile;
-    const layerClassifiers = tile?.tree?.layerHandler?.layerClassifiers;
+    const tile = realityMesh.tileData;
+    const layerClassifiers = tile?.layerClassifiers;
     const texture = meshTexture ? new TerrainTexture(meshTexture, featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
     if (!layerClassifiers?.size || !tile) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? LayerTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
 
-    const transformECEF = tile.tree.iModel.getEcefTransform();
+    const transformECEF = tile.ecefTransform
     if (!transformECEF || !tile.range) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? LayerTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
 
     const tileEcefRange = transformECEF.multiplyRange(tile.range);

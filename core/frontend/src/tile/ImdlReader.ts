@@ -111,7 +111,6 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     iModel: args.iModel,
     document,
     isCanceled: args.isCanceled,
-    tile: args.tile,
   });
 
   if (isCanceled())

@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { Matrix4d, Range2d } from "@itwin/core-geometry";
+import { Matrix4d, Range2d, Range3d, Transform } from "@itwin/core-geometry";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TerrainTexture } from "../RenderTerrain";
@@ -158,4 +158,10 @@ export class LayerTextureParams implements Disposable {
   public [Symbol.dispose](): void {
     disposeArray(this.params);
   }
+}
+
+export interface LayerTileData {
+  ecefTransform: Transform;
+  range: Range3d;
+  layerClassifiers?: Map<number, RenderPlanarClassifier> | undefined;
 }

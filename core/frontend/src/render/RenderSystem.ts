@@ -15,7 +15,7 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAn
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, RealityTile, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
@@ -55,6 +55,7 @@ import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
 import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
+import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
@@ -266,12 +267,11 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** @internal */
-  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tile?: RealityTile): RenderGeometry | undefined {
+  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tileData?: LayerTileData): RenderGeometry | undefined {
     const meshArgs = mesh.toMeshArgs();
     if (meshArgs) {
       const meshParams = createMeshParams(meshArgs, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
-      meshParams.tile = tile;
-      meshParams.texture = mesh.displayParams.textureMapping?.texture;
+      meshParams.tileData = tileData;
       return this.createMeshGeometry(meshParams, viOrigin);
     }
 
