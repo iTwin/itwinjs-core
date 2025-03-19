@@ -1,5 +1,5 @@
 import { _nativeDb, ClassRegistry, ElementOwnsChildElements, ElementOwnsUniqueAspect, ElementUniqueAspect, FunctionalBreakdownElement, FunctionalComponentElement,
-  FunctionalModel, FunctionalPartition, FunctionalSchema, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg,
+  FunctionalModel, FunctionalPartition, FunctionalSchema, IModelHost, InformationPartitionElement, OnAspectIdArg, OnAspectPropsArg, OnChildElementIdArg, OnChildElementPropsArg,
   OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas,
   StandaloneDb, SubjectOwnsPartitionElements } from "../../core-backend";
 import { Guid, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
@@ -274,6 +274,8 @@ describe.only("Domain Handlers - Old", () => {
   let modelId: Id64String;
 
   before(async () => {
+    IModelHost.configuration!.useNativeInstance = false;
+
     // Create iModel
     iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DomainHandlers", "DomainHandlers.bim"), {
       rootSubject: { name: "HandlerTest", description: "Test of Domain Handlers." },
@@ -307,6 +309,7 @@ describe.only("Domain Handlers - Old", () => {
   });
 
   after(async () => {
+    IModelHost.configuration!.useNativeInstance = true;
     iModelDb.close();
     Schemas.unregisterSchema(TestSchema.schemaName);
   });
@@ -626,8 +629,8 @@ describe.only("Domain Handlers - New", () => {
     };
 
     // New Element and a sub Model
-    const partitionId = iModelDb.elements.insertElement2(partitionProps, {useJsNames: true});
-    modelId = iModelDb.models.insertModel2({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     // Insert Element into that sub Model
     const elementProps: ElementProps = {
@@ -639,7 +642,7 @@ describe.only("Domain Handlers - New", () => {
         value: "Breakdown1"
       }
     };
-    const elementId = iModelDb.elements.insertElement2(elementProps, {useJsNames: true});
+    const elementId = iModelDb.elements.insertElement(elementProps);
     const model = iModelDb.models.getModel(modelId);
     model.update(); // Update the model as a whole
     const element = iModelDb.elements.getElement(elementId);
@@ -677,8 +680,8 @@ describe.only("Domain Handlers - New", () => {
     };
 
     // New Element and a Model
-    const partitionId = iModelDb.elements.insertElement2(partitionProps);
-    modelId = iModelDb.models.insertModel2({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     const elementProps: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
@@ -690,7 +693,7 @@ describe.only("Domain Handlers - New", () => {
       }
     };
     // Insert Element into that Model
-    const elementId = iModelDb.elements.insertElement2(elementProps);
+    const elementId = iModelDb.elements.insertElement(elementProps);
 
     const aspectProps = {
       classFullName: TestAspectHandlers.classFullName,
@@ -698,7 +701,7 @@ describe.only("Domain Handlers - New", () => {
       strProp: "prop 1"
     };
     // Insert Aspect into that Element
-    iModelDb.elements.insertAspect2(aspectProps);
+    iModelDb.elements.insertAspect(aspectProps);
     aspectProps.strProp = "prop 2";
     iModelDb.elements.updateAspect(aspectProps); // Update the aspect
     const aspect = iModelDb.elements.getAspects(elementId, TestAspectHandlers.classFullName);
@@ -726,8 +729,8 @@ describe.only("Domain Handlers - New", () => {
     };
 
     // New Element and a Model
-    const partitionId = iModelDb.elements.insertElement2(partitionProps, {useJsNames: true});
-    modelId = iModelDb.models.insertModel2({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    modelId = iModelDb.models.insertModel({ classFullName: TestModelHandlers.classFullName, modeledElement: { id: partitionId } });
 
     const elementProps: ElementProps = {
       classFullName: TestElementHandlers.classFullName,
@@ -738,7 +741,7 @@ describe.only("Domain Handlers - New", () => {
         value: "Breakdown3"
       }
     };
-    const elementId = iModelDb.elements.insertElement2(elementProps, {useJsNames: true});
+    const elementId = iModelDb.elements.insertElement(elementProps);
     const element = iModelDb.elements.getElement(elementId);
 
     const elementProps2: ElementProps = {
@@ -750,7 +753,7 @@ describe.only("Domain Handlers - New", () => {
         value: "Breakdown4"
       }
     };
-    const elementId2 = iModelDb.elements.insertElement2(elementProps2, {useJsNames: true});
+    const elementId2 = iModelDb.elements.insertElement(elementProps2);
 
     const componentProps = {
       classFullName: Component.classFullName,
@@ -759,12 +762,12 @@ describe.only("Domain Handlers - New", () => {
       code: { spec: codeSpec.id, scope: modelId, value: "Component1" },
     };
 
-    const componentId = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
+    const componentId = iModelDb.elements.insertElement(componentProps);
     const component1 = iModelDb.elements.getElement(componentId);
     component1.update();
 
     componentProps.code.value = "comp2";
-    const componentId2 = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
+    const componentId2 = iModelDb.elements.insertElement(componentProps);
     const component2 = iModelDb.elements.getElement(componentId2);
 
     spies.model.onDeleteElement.resetHistory();
@@ -780,7 +783,7 @@ describe.only("Domain Handlers - New", () => {
     component2.delete();
 
     componentProps.parent.id = elementId;
-    const componentId3 = iModelDb.elements.insertElement2(componentProps, {useJsNames: true});
+    const componentId3 = iModelDb.elements.insertElement(componentProps);
     const component3Props = iModelDb.elements.getElementProps(componentId3);
     component3Props.parent!.id = elementId2;
 
