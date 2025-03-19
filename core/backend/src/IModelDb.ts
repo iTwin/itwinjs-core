@@ -1281,6 +1281,14 @@ export abstract class IModelDb extends IModel {
     return classNameParts.length === 2 && this[_nativeDb].getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
   }
 
+  /**
+   * Query if a class definition is a subclass of another class definition.
+   * @param childClassFullName The fullName of the class to query if it is a subclass of parentClassFullName
+   * @param parentClassFullName The parent class fullName
+   * @returns true if the childClassFullName is a subclass of parentClassFullName, false otherwise.
+   */
+  public isSubClassOf(childClassFullName: string, parentClassFullName: string): boolean { return this[_nativeDb].isSubClassof(childClassFullName, parentClassFullName); }
+
   /** Query for a schema of the specified name in this iModel.
    * @returns The schema version as a semver-compatible string or `undefined` if the schema has not been imported.
    */
