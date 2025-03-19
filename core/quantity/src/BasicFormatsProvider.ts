@@ -2,11 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BeUiEvent } from "@itwin/core-bentley";
 import { FormatProps, FormatsProvider } from "./Formatter/Interfaces";
 
+type ExtendedFormatProps = FormatProps & {
+  label?: string;
+}
+
 export class BasicFormatsProvider implements FormatsProvider {
+
   constructor() {
   }
+
+  public onFormatsUpdated = new BeUiEvent<string[]>();
   public getFormat(id: string): FormatProps | undefined {
     return DEFAULT_FORMATS[id] as FormatProps | undefined;
   }
@@ -16,10 +24,17 @@ export class BasicFormatsProvider implements FormatsProvider {
       return ids.map((id) => this.getFormat(id)).filter((format) => format !== undefined);
     return Object.keys(DEFAULT_FORMATS).map((key) => this.getFormat(key)!); // Get all default formats otherwise.
   }
+
+  public addFormat(id: string, format: ExtendedFormatProps): void {
+    if (this.getFormat(id))
+      throw new Error(`Format with id ${id} already exists.`);
+    DEFAULT_FORMATS[id] = format;
+    this.onFormatsUpdated.emit([id]);
+  }
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const DEFAULT_FORMATS: { [typeName: string]: object } = {
+const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } } = {
   AmerFI: {
     label: "FeetInches",
     type: "Fractional",

@@ -6,6 +6,7 @@
  * @module Quantity
  */
 
+import { BeUiEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
@@ -102,4 +103,6 @@ export interface FormatsProvider {
 
   getFormat(id: string): FormatProps | undefined; // Should we add synchronous version of this method?
   getFormats(ids?: string[]): FormatProps[];
+
+  onFormatsUpdated: BeUiEvent<string[]>;
 }
