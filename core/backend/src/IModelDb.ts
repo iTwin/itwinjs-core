@@ -22,7 +22,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RelatedElementProps, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreRpc,
@@ -98,22 +98,6 @@ export interface InsertElementOptions {
    * @beta
    */
   forceUseId?: boolean;
-}
-
-/** Options to use along side insertInstance functions: [[iModelDb.Elements.insertElement2]], [[iModelDb.Models.insertModel2]],
- * [[iModelDb.Aspect.insertAspect2]].
- * @public
- */
-export interface InsertInstanceOptions {
-  useJsNames?: true;
-}
-
-/** Options to use along side updateInstance functions: [[iModelDb.Elements.updateElement2]], [[iModelDb.Models.updateModel2]],
- * [[iModelDb.Aspect.updateAspect2]].
- * @public
- */
-export interface UpdateInstanceOptions {
-  useJsNames?: true;
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
@@ -382,7 +366,40 @@ export abstract class IModelDb extends IModel {
       });
     }
   }
-
+  /**
+   * Attach an iModel file to this connection and load and register its schemas.
+   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param fileName IModel file name
+   * @param alias identifier for the attached file. This identifer is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
+   *
+   * *Example:*
+   * ``` ts
+   *  [[include:IModelDb_attachDb.code]]
+   * ```
+   */
+  public attachDb(fileName: string, alias: string): void {
+    if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
+    }
+    this[_nativeDb].attachDb(fileName, alias);
+  }
+  /**
+   * Detach the attached file from this connection. The attached file is closed and its schemas are unregistered.
+   * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+   * @param alias identifer that was used in the call to [[attachDb]]
+   *
+   * *Example:*
+   * ``` ts
+   *  [[include:IModelDb_attachDb.code]]
+   * ```
+   */
+  public detachDb(alias: string): void {
+    if (alias.toLowerCase() === "main" || alias.toLowerCase() === "schema_sync_db" || alias.toLowerCase() === "ecchange" || alias.toLowerCase() === "temp") {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Reserved tablespace name cannot be used");
+    }
+    this.clearCaches();
+    this[_nativeDb].detachDb(alias);
+  }
   /** Close this IModel, if it is currently open, and save changes if it was opened in ReadWrite mode. */
   public close(): void {
     if (!this.isOpen)
@@ -820,9 +837,11 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].updateIModelProps(this.toJSON());
   }
 
-  /** Commit pending changes to this iModel.
+  /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
+   * @note This will not push changes to the iModelHub.
+   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
   public saveChanges(description?: string): void {
     if (this.openMode === OpenMode.Readonly)
@@ -833,7 +852,9 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
-  /** Abandon pending changes in this iModel. */
+  /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
+   * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
+  */
   public abandonChanges(): void {
     this[_nativeDb].abandonChanges();
   }
@@ -1101,8 +1122,7 @@ export abstract class IModelDb extends IModel {
    * @beta
    */
   public get schemaContext(): SchemaContext {
-    if (this._schemaContext === undefined)
-    {
+    if (this._schemaContext === undefined) {
       const context = new SchemaContext();
       // TODO: We probably need a more optimized locater for here
       const locater = new SchemaJsonLocater((name) => this.getSchemaProps(name));
@@ -1260,6 +1280,14 @@ export abstract class IModelDb extends IModel {
     const classNameParts = classFullName.replace(".", ":").split(":");
     return classNameParts.length === 2 && this[_nativeDb].getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
   }
+
+  /**
+   * Query if a class definition is a subclass of another class definition.
+   * @param childClassFullName The fullName of the class to query if it is a subclass of parentClassFullName
+   * @param parentClassFullName The parent class fullName
+   * @returns true if the childClassFullName is a subclass of parentClassFullName, false otherwise.
+   */
+  public isSubClassOf(childClassFullName: string, parentClassFullName: string): boolean { return this[_nativeDb].isSubClassof(childClassFullName, parentClassFullName); }
 
   /** Query for a schema of the specified name in this iModel.
    * @returns The schema version as a semver-compatible string or `undefined` if the schema has not been imported.
@@ -1764,22 +1792,11 @@ export namespace IModelDb {
      */
     public insertModel(props: ModelProps): Id64String {
       try {
+        if (IModelHost.configuration?.useNativeInstance) {
+          return props.id = insertModelWithHandlers(this._iModel, props);
+        }
         return props.id = this._iModel[_nativeDb].insertModel(props);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
-      }
-    }
-
-    /** Insert a new model.
-     * @param props The data for the new model.
-     * @returns The newly inserted model's Id.
-     * @throws [[IModelError]] if unable to insert the model.
-     */
-    public insertModel2(props: ModelProps): Id64String {
-      try {
-        return props.id = insertModelWithHandlers(this._iModel, props);
-      } catch (err: any) {
-        err.metadata = props;
         throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
     }
@@ -2044,44 +2061,6 @@ export namespace IModelDb {
      */
     public createElement<T extends Element>(elProps: ElementProps): T { return this._iModel.constructEntity<T>(elProps); }
 
-    // /**
-    //  * Generic insert that inserts an instance of an Element, Model, or Aspect into the iModel.
-    //  * @param instance Instance to be inserted.
-    //  * @returns The Id of the instance that was inserted.
-    //  * @throws [[IModelError]] if unable to insert the element.
-    //  */
-    // public insertInstance(classFullName: string): Id64String {
-    //   try {
-    //     const classDef = ClassRegistry.getClass(classFullName, this._iModel);
-    //     classDef.onInsert({});
-    //     const id = this._iModel[_nativeDb].insertInstance();
-    //     classDef.onInserted({});
-    //     return id;
-    //   } catch (err: any) {
-    //     err.message = `Error inserting instance [${err.message}]`;
-    //     throw err;
-    //   }
-    // }
-
-    /** Insert a new element into the iModel.
-     * @param elProps The properties of the new element.
-     * @returns The newly inserted element's Id.
-     * @throws [[IModelError]] if unable to insert the element.
-     * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
-     * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
-     * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
-     * if you intend to continue working with it. That will ensure its values reflect the persistent state.
-     */
-    public insertElement2(elProps: ElementProps, options?: InsertInstanceOptions): Id64String {
-      try {
-        return insertElementWithHandlers(this._iModel, elProps, options);
-      } catch (err: any) {
-        err.message = `Error inserting element [${err.message}]`;
-        err.metadata = { elProps };
-        throw err;
-      }
-    }
-
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
@@ -2093,6 +2072,9 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
+        if (IModelHost.configuration?.useNativeInstance) {
+          return elProps.id = insertElementWithHandlers(this._iModel, elProps);
+        }
         return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
@@ -2436,24 +2418,11 @@ export namespace IModelDb {
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
       try {
+        if (IModelHost.configuration?.useNativeInstance) {
+          return insertAspectWithHandlers(this._iModel, aspectProps);
+        }
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
-      }
-    }
-
-    /** Insert a new ElementAspect into the iModel.
-     * @param aspectProps The properties of the new ElementAspect.
-     * @throws [[IModelError]] if unable to insert the ElementAspect.
-     * @returns the id of the newly inserted aspect.
-     * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
-     *       use [EntityReference]($common) for that instead.
-     */
-    public insertAspect2(aspectProps: ElementAspectProps, options?: InsertInstanceOptions): Id64String {
-      try {
-        return insertAspectWithHandlers(this._iModel, aspectProps, options);
-      } catch (err: any) {
-        err.metadata = { aspectProps };
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }
     }

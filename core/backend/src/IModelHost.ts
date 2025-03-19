@@ -196,6 +196,10 @@ export interface IModelHostOptions {
    */
   allowSharedChannel?: boolean;
 
+  /**
+   * Use native instance functions for element, model, and aspect CRUD operations.
+   */
+  useNativeInstance?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -231,6 +235,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
+  /** @beta */
+  public useNativeInstance = true;
 }
 
 /**
