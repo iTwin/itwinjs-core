@@ -7053,7 +7053,7 @@ export class NullTarget extends RenderTarget {
     // (undocumented)
     get renderSystem(): any;
     // (undocumented)
-    reset(): void;
+    reset(_realityMapLayerChanged?: boolean): void;
     // (undocumented)
     get screenSpaceEffects(): Iterable<string>;
     set screenSpaceEffects(_effects: Iterable<string>);
@@ -8712,7 +8712,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
     // @internal (undocumented)
-    reset(): void;
+    reset(_realityMapLayerChanged?: boolean): void;
     // @internal (undocumented)
     abstract get screenSpaceEffects(): Iterable<string>;
     abstract set screenSpaceEffects(_effectNames: Iterable<string>);
@@ -10063,7 +10063,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly renderRect: ViewRect;
     // (undocumented)
     get renderSystem(): System;
-    reset(realityMapLayerChanged?: boolean): void;
+    reset(_realityMapLayerChanged?: boolean): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;
     // (undocumented)
@@ -12687,8 +12687,6 @@ export abstract class Viewport implements Disposable, TileUser {
     get clipStyle(): ClipStyle;
     set clipStyle(style: ClipStyle);
     collectStatistics(stats: RenderMemory.Statistics): void;
-    // @internal
-    compareMapLayer(prevView: ViewState, newView: ViewState): boolean;
     computeViewRange(): Range3d;
     get continuousRendering(): boolean;
     set continuousRendering(contRend: boolean);
