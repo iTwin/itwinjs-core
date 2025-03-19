@@ -291,6 +291,13 @@ export abstract class GeometricModel3d extends GeometricModel {
 
     return val;
   }
+
+  public static override onInsertElement(_arg: OnElementInModelPropsArg): void {
+    super.onInsertElement(_arg);
+    if ( !_arg.iModel.isSubClassOf(_arg.elementProps.classFullName, "BisCore:GeometricElement3d")) {
+      throw new Error("Only GeometricElement3d instances can be inserted into a GeometricModel3d");
+    }
+   }
 }
 
 /** A container for persisting 2d geometric elements.
@@ -313,6 +320,13 @@ export abstract class GeometricModel2d extends GeometricModel {
 
     return val;
   }
+
+  public static override onInsertElement(_arg: OnElementInModelPropsArg): void {
+    super.onInsertElement(_arg);
+    if ( !_arg.iModel.isSubClassOf(_arg.elementProps.classFullName, "BisCore:GeometricElement2d")) {
+      throw new Error("Only GeometricElement2d instances can be inserted into a GeometricModel2d");
+    }
+   }
 }
 
 /** A container for persisting 2d graphical elements.
