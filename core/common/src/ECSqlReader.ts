@@ -378,12 +378,19 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       this._stats.prepareTime += rs.stats.prepareTime;
       this._stats.backendRowsReturned += (rs.data === undefined) ? 0 : rs.data.length;
     };
+    const isValidDbQueryResponse = (rs: MinimalDbQueryResponse): rs is DbQueryResponse => {
+      return QueryPropertyMetaDataHelpers.isCompleteMetadata(rs.meta);
+    }
     const execQuery = async (req: DbQueryRequest) => {
       const startTime = Date.now();
       const rs = await this._executor.execute(req);
-      const meta = QueryPropertyMetaDataHelpers.populateDeprecatedMetadataProps(rs.meta);
+      QueryPropertyMetaDataHelpers.populateDeprecatedMetadataProps(rs.meta);
       this.stats.totalTime += (Date.now() - startTime);
-      return {...rs, meta};
+      if (isValidDbQueryResponse(rs)) {
+        return rs;
+      } else {
+        throw new Error("Not all metadata properties are present")
+      }
     };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);

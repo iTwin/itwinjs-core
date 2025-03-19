@@ -75,7 +75,7 @@ export type MetadataWithOptionalLegacyFields = Omit<QueryPropertyMetaData, 'json
 export type MinimalDbQueryResponse = Omit<DbQueryResponse, 'meta'> & { meta: MetadataWithOptionalLegacyFields[] }
 
 export class QueryPropertyMetaDataHelpers {
-  public static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
+  public static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]) {
     const jsonNameDict: {[jsonName: string] : number } = {}
     meta.forEach((value, index) => {
       value.generated = this.isGeneratedProperty(value);
@@ -83,18 +83,15 @@ export class QueryPropertyMetaDataHelpers {
       value.jsonName = value.jsonName ?? this.createJsonName(value, jsonNameDict);
       value.extendType = value.extendType ?? value.extendedType ?? "";
     });
-
-    if (!meta.every(metaObject => this.isCompleteMetadata(metaObject))) {
-      throw new Error("Not all metadata properties are present")
-    }
-    return meta;
   }
 
-  private static isCompleteMetadata(metaObject: MetadataWithOptionalLegacyFields): metaObject is QueryPropertyMetaData {
-    return metaObject.generated !== undefined &&
-      metaObject.index !== undefined &&
-      metaObject.jsonName !== undefined &&
-      metaObject.extendType !== undefined;
+  public static isCompleteMetadata(meta: MetadataWithOptionalLegacyFields[]): meta is QueryPropertyMetaData[] {
+    return meta.every(metaObj => {
+      return metaObj.generated !== undefined &&
+      metaObj.index !== undefined &&
+      metaObj.jsonName !== undefined &&
+      metaObj.extendType !== undefined;
+    })
   }
 
   private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: {[jsonName: string] : number }): string {
