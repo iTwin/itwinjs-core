@@ -118,7 +118,6 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
       closestTangent.curve = this._parentCurvePrimitive;
     this._closestTangents?.push(closestTangent);
   }
-  // needs update; current code returns closest point rather than closest tangent for line segment and line string
   public announceSegmentInterval(
     cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
   ): void {
@@ -159,7 +158,8 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
   }
   /**
    * Evaluate the univariate real-valued function for which we are finding roots.
-   * * For finding the closest point to curve X from point Q, this function is `f(t) := Q-X(t) dot X'(t)`.
+   * * For finding the tangents to curve X from point Q as seen in a view plane perpendicular to _normal, this
+   * function is `f(t) := (Q - X(t)) dot (X'(t) cross _normal)`.
    * * Either `pointAndDerivative` must be defined, or both `fraction` and `curve`.
    * @param pointAndDerivative pre-evaluated curve
    * @param fraction fraction at which to evaluate `curve`
