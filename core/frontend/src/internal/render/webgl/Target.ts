@@ -558,14 +558,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
    */
-  public override reset(realityMapLayerChanged?: boolean): void {
+  public override reset(_realityMapLayerChanged?: boolean): void {
     this.graphics[Symbol.dispose]();
     this._worldDecorations = dispose(this._worldDecorations);
     dispose(this.uniforms.thematic);
 
     // Ensure that only necessary classifiers are removed. If the reality map layer has not changed,
     // removing all classifiers would result in the loss of draping effects without triggering a refresh.
-    if (realityMapLayerChanged) {
+    if (_realityMapLayerChanged) {
       this.changePlanarClassifiers(undefined);
     } else if (this._planarClassifiers) {
         const filteredClassifiers = new Map(

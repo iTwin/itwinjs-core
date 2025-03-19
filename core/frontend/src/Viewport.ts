@@ -67,7 +67,6 @@ import { queryVisibleFeatures } from "./internal/render/QueryVisibileFeatures";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
-import { Target } from "./internal/render/webgl/Target";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
@@ -1804,11 +1803,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.invalidateController();
 
     const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
-    if (this.target.reset.length > 0) {
-      (this.target as Target).reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
-    } else {
-      this.target.reset();
-    }
+    this.target.reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
