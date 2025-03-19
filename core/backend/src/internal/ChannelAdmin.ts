@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { ChannelRootAspectProps, IModel, IModelError, iTwinCoreErrors, throwITwinCoreError } from "@itwin/core-common";
+import { ChannelRootAspectProps, ChannelError, IModel, IModelError } from "@itwin/core-common";
 import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
@@ -73,7 +73,7 @@ class ChannelAdmin implements ChannelControl {
 
     const deniedChannel = this._deniedModels.get(modelId);
     if (undefined !== deniedChannel)
-      throwITwinCoreError({ errorKey: iTwinCoreErrors.channelNotAllowed, message: `Channel ${deniedChannel} is not allowed` });
+      ChannelError.throwError("not-allowed", `Channel ${deniedChannel} is not allowed`, deniedChannel);
 
     const channel = this.getChannelKey(modelId);
     if (this._allowedChannels.has(channel)) {
@@ -88,10 +88,10 @@ class ChannelAdmin implements ChannelControl {
   public makeChannelRoot(args: { elementId: Id64String, channelKey: ChannelKey }) {
     const channelKey = this.getChannelKey(args.elementId);
     if (ChannelControl.sharedChannelName !== channelKey)
-      throwITwinCoreError({ errorKey: iTwinCoreErrors.channelMayNotNest, message: `Channel ${channelKey} may not nest` });
+      ChannelError.throwError("may-not-nest", `Channel ${channelKey} may not nest`, channelKey);
 
     if (this.queryChannelRoot(args.channelKey) !== undefined)
-      throwITwinCoreError({ errorKey: iTwinCoreErrors.channelRootExists, message: `Channel ${args.channelKey} root already exist` });
+      ChannelError.throwError("root-exists", `Channel ${args.channelKey} root already exist`, channelKey);
 
     const props: ChannelRootAspectProps = { classFullName: ChannelAdmin.channelClassName, element: { id: args.elementId }, owner: args.channelKey };
     this._iModel.elements.insertAspect(props);
@@ -102,7 +102,7 @@ class ChannelAdmin implements ChannelControl {
     // makeChannelRoot will check that again, but at that point the new Subject is already inserted.
     // Prefer to check twice instead of deleting the Subject in the latter option.
     if (this.queryChannelRoot(args.channelKey) !== undefined)
-      throwITwinCoreError({ errorKey: iTwinCoreErrors.channelRootExists, message: `Channel ${args.channelKey} root already exist` });
+      ChannelError.throwError("root-exists", `Channel ${args.channelKey} root already exist`, args.channelKey);
 
     const elementId = Subject.insert(this._iModel, args.parentSubjectId ?? IModel.rootSubjectId, args.subjectName, args.description);
     this.makeChannelRoot({ elementId, channelKey: args.channelKey });

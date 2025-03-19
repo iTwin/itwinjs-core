@@ -5,7 +5,7 @@
 
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
 import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel, InUseLocksError, isITwinCoreError, iTwinCoreErrors } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -37,30 +37,6 @@ describe("Example Code", () => {
     newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);
     // __PUBLISH_EXTRACT_END__
-  });
-
-  it("should check for an InUseLocksError", async () => {
-    if (iModel.isBriefcase) {
-      const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
-      const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
-      assert.isTrue(elementId !== undefined);
-      // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
-      try {
-        await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
-      } catch (err) {
-        if (isITwinCoreError<InUseLocksError>(err, iTwinCoreErrors.lockInUse)) {
-          for (const inUseLock of err.inUseLocks) {
-            const _briefcaseId = inUseLock.briefcaseId;
-            const _state = inUseLock.state;
-            const _objectId = inUseLock.objectId;
-            // Create a user friendly error message
-          }
-        } else {
-          throw err;
-        }
-        // __PUBLISH_EXTRACT_END__
-      }
-    }
   });
 
   it("should extract working example code", async () => {

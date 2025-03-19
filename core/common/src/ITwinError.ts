@@ -14,9 +14,9 @@ import { LoggingMetaData } from "@itwin/core-bentley";
  * @beta
  */
 export interface ITwinError {
-  /** namespace of the error. This is a qualifier for the errorKey that should be specific enough to be unique across all ITwinErrors (e.g. the package name). */
-  namespace: string;
-  /** unique key for error, within namespace. */
+  /** a "namespace" the error. This is a qualifier for the errorKey that should be specific enough to be unique across all ITwinErrors (e.g. the package name followed by error type). */
+  scope: string;
+  /** unique key for error, within scope. */
   errorKey: string;
   /** explanation of what went wrong. Intended to be read by a developer (i.e. it is *not* localized). */
   message: string;
@@ -26,12 +26,8 @@ export interface ITwinError {
   metadata?: LoggingMetaData;
 }
 
-export function constructITwinError(args: ITwinError) {
-  return Object.assign(Error(args.message), args);
-}
-
-export function throwITwinError(args: ITwinError): never {
-  throw constructITwinError(args);
+export function throwITwinError<T extends ITwinError>(args: T): never {
+  throw Object.assign(Error(args.message), args);
 }
 
 /**
@@ -43,12 +39,12 @@ export function getITwinErrorMetaData(error: ITwinError): object | undefined {
 }
 
 /**
- * type guard function to ensure an error has a specific namespace and errorKey
+ * type guard function to ensure an error has a specific scope and errorKey
  * @param error The error to ve verified.
- * @param namespace value for `error.namespace`
+ * @param scope value for `error.scope`
  * @param errorKey  value for `error.errorKey`
  * @beta
 */
-export function isITwinError<T extends ITwinError>(error: any, namespace: string, errorKey: string): error is T {
-  return typeof error === "object" && error.namespace === namespace && error.errorKey === errorKey;
+export function isITwinError<T extends ITwinError>(error: any, scope: string, errorKey: string): error is T {
+  return typeof error === "object" && error.scope === scope && error.errorKey === errorKey;
 }
