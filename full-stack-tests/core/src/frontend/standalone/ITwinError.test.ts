@@ -6,7 +6,7 @@ import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) {
 
-  describe.only("ITwinError exceptions from backend", async () => {
+  describe("ITwinError exceptions from backend", async () => {
 
     beforeEach(async () => {
       await TestUtility.startFrontend();
@@ -22,17 +22,30 @@ if (ProcessDetector.isElectronAppFrontend) {
       const errorNumber = IModelStatus.AlreadyLoaded;
       let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwLegacyError(errorNumber, testMsg, metadata);
+        await coreFullStackTestIpc.throwLegacyError(errorNumber, testMsg, metadata, false);
       } catch (err: any) {
         caughtError = true;
         expect(err instanceof BackendError).true;
-        expect(err.stack?.includes("core") && err.stack?.includes("backend")).to.be.true;
-        expect(err.message).to.equal(testMsg);
+        expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
+        expect(err.message).equal(testMsg);
         expect(err.errorNumber).equal(IModelStatus.AlreadyLoaded);
         expect(err.name).equal("Already Loaded");
-        expect(err.getMetaData()).to.deep.equal(metadata);
+        expect(err.getMetaData()).deep.equal(metadata);
       }
-      expect(caughtError).to.be.true;
+      expect(caughtError).true;
+      caughtError = false;
+      try {
+        await coreFullStackTestIpc.throwLegacyError(errorNumber, testMsg, metadata, true);
+      } catch (err: any) {
+        caughtError = true;
+        expect(err instanceof BackendError).true;
+        expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
+        expect(err.message).equal(testMsg);
+        expect(err.errorNumber).equal(IModelStatus.AlreadyLoaded);
+        expect(err.name).equal("Already Loaded");
+        expect(err.getMetaData()).deep.equal(metadata);
+      }
+      expect(caughtError).true;
     });
 
     it("should receive ChannelError on the frontend", async () => {
@@ -44,17 +57,30 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwChannelError("may-not-nest", sentErr.message, sentErr.channelKey, sentErr.metadata);
+        await coreFullStackTestIpc.throwChannelError("may-not-nest", sentErr.message, sentErr.channelKey, sentErr.metadata, false);
       } catch (err: any) {
         caughtError = true;
-        expect(ChannelError.isError(err, "may-not-nest")).to.be.true;
+        expect(ChannelError.isError(err, "may-not-nest")).true;
         // Even though we're on the frontend we should make sure our stack trace includes backend code.
-        expect(err.stack?.includes("core") && err.stack?.includes("backend")).to.be.true;
-        expect(err.message).to.equal(sentErr.message);
+        expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
+        expect(err.message).equal(sentErr.message);
         expect(err.channelKey).equal(sentErr.channelKey);
-        expect(getITwinErrorMetaData(err)).to.deep.equal(sentErr.metadata);
+        expect(getITwinErrorMetaData(err)).deep.equal(sentErr.metadata);
       }
-      expect(caughtError).to.be.true;
+      expect(caughtError).true;
+      caughtError = false;
+      try {
+        await coreFullStackTestIpc.throwChannelError("may-not-nest", sentErr.message, sentErr.channelKey, sentErr.metadata, true);
+      } catch (err: any) {
+        caughtError = true;
+        expect(ChannelError.isError(err, "may-not-nest")).true;
+        // Even though we're on the frontend we should make sure our stack trace includes backend code.
+        expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
+        expect(err.message).equal(sentErr.message);
+        expect(err.channelKey).equal(sentErr.channelKey);
+        expect(getITwinErrorMetaData(err)).deep.equal(sentErr.metadata);
+      }
+      expect(caughtError).true;
     });
 
   });
