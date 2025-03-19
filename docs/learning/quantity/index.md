@@ -64,40 +64,7 @@ Unit conversion is performed through a [UnitConversionSpec]($quantity). These ob
 <summary>Example Code</summary>
 
 ```ts
-    import { BasicUnitsProvider } from "@itwin/core-frontend";
-    import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
-
-    const unitsProvider = new BasicUnitsProvider();
-    const formatData = {
-      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
-      precision: 4,
-      type: "Decimal",
-      uomSeparator: " ",
-      thousandSeparator: ",",
-      decimalSeparator: ".",
-    };
-
-    // generate a Format from FormatProps to display 4 decimal place value
-    const format = new Format("4d");
-    // load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
-    await format.fromJSON(unitsProvider, formatData);
-
-    // define input/output unit
-    const unitName = "Units.FT";
-    const unitLabel = "ft";
-    const unitFamily = "Units.LENGTH";
-    const inUnit = new BasicUnit(unitName, unitLabel, unitFamily);
-
-    const magnitude = -12.5416666666667;
-
-    // create the formatter spec - the name is not used by the formatter it is only
-    // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
-
-    // apply the formatting held in FormatterSpec
-    const formattedValue = spec.applyFormatting(magnitude);
-
-    // result in formattedValue of "-12.5417 ft"
+[[include:Quantity_Formatting.Numeric]]
 ```
 
 </details>
@@ -110,50 +77,7 @@ For the composite format below, we provide a unit in meters and produce a format
 <summary>Example Code</summary>
 
 ```ts
-    import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
-
-    const formatData = {
-      composite: {
-        includeZero: true,
-        spacer: "-",
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: "\"",
-            name: "Units.IN",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-
-    // generate a Format from FormatProps to display feet and inches
-    const format = new Format("fi8");
-    // load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
-    await format.fromJSON(unitsProvider, formatData);
-
-    // define input unit
-    const unitName = "Units.M";
-    const unitLabel = "m";
-    const unitFamily = "Units.LENGTH";
-    const inUnit = new BasicUnit(unitName, unitLabel, unitFamily);
-
-    const magnitude = 1.0;
-
-    // create the formatter spec - the name is not used by the formatter it is only
-    // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
-
-    // apply the formatting held in FormatterSpec
-    const formattedValue = spec.applyFormatting(magnitude);
-
-    // result in formattedValue of 3'-3 3/8"
+[[include:Quantity_Formatting.Composite]]
 ```
 
 </details>
@@ -164,33 +88,7 @@ For the composite format below, we provide a unit in meters and produce a format
   <summary>Example Code:</summary>
 
 ```ts
-  import { Format, ParserSpec } from "@itwin/core-quantity";
-
-  // define output unit and also used to determine the unit family used during parsing
-  const outUnit = await unitsProvider.findUnitByName("Units.M");
-
-  const formatData = {
-    composite: {
-      includeZero: true,
-      spacer: "-",
-      units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
-    },
-    formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision: 8,
-    type: "Fractional",
-    uomSeparator: "",
-  };
-
-  // generate a Format from FormatProps used to determine possible labels
-  const format = new Format("test");
-  await format.fromJSON(unitsProvider, formatData);
-
-  const inString = "2FT 6IN";
-
-  // create the parserSpec spec which will hold all unit conversions from possible units to the output unit
-  const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
-  const parseResult = parserSpec.parseToQuantityValue(inString);
-  //  parseResult.value 0.762  (value in meters)
+[[include:Quantity_Formatting.Simple_Parsing]]
 ```
 
 </details>
@@ -203,35 +101,13 @@ The quantity formatter supports parsing mathematical operations. The operation i
 <summary>Example Code</summary>
 
 ```Typescript
-  import { BasicUnitsProvider } from "@itwin/core-frontend";
-  import { Format, Parser } from "@itwin/core-quantity";
-
-  const unitsProvider = new BasicUnitsProvider(); // If @itwin/core-frontend is available, can use IModelApp.quantityFormatter.unitsProvider
-  const formatData = {
-    formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision: 8,
-    type: "Fractional",
-    uomSeparator: "",
-    allowMathematicOperations: true,
-  };
-
-  const format = new Format("exampleFormat");
-  await format.fromJSON(unitsProvider, formatData);
-  // Operation containing many units (feet, inches, yards).
-  const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
-
-  // Asynchronous implementation
-  const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
-  // quantityProps.magnitude 7.5 (value in feet)
-
-  // Synchronous implementation
-  const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
-  // parseResult.value 7.5 (value in feet)
+[[include:Quantity_Formatting.Basic_Math_Operations_Parsing]]
 ```
 
 </details>
 
 #### Limitations
+
 Only plus(`+`) and minus(`-`) signs are supported for now.
 Other operators will end up returning a parsing error or an invalid input result.
 If a Format uses a spacer that conflicts with one of the operators above, additional restrictions will apply:
@@ -242,31 +118,7 @@ If a Format uses a spacer that conflicts with one of the operators above, additi
 <summary>Example:</summary>
 
 ```Typescript
-    let formatProps = {
-      ...
-      composite: {
-        includeZero: true,
-        spacer: "-", // When omitted, the spacer defaults to " "
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: `"`,
-            name: "Units.IN",
-          },
-        ],
-      },
-      allowMathematicOperations: true, // We turn on the spacer
-    };
-    let format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
-    const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
-    const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
-    // The spacer property from formatProps is ignored, so the two results below are the same.
-    let result = parserSpec.parseToQuantityValue("-2FT-6IN + 6IN"); // -0.6096 in meters
-    result = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
-
+[[include:Quantity_Formatting.Math_Whitespace_Limitation]]
 ```
 
 </details>
@@ -277,31 +129,7 @@ If a Format uses a spacer that conflicts with one of the operators above, additi
 <summary>Example:</summary>
 
 ```Typescript
-    let formatProps = {
-      ...
-      composite: {
-        includeZero: true,
-        spacer: "-", // When omitted, the spacer defaults to " "
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: `"`,
-            name: "Units.IN",
-          },
-        ],
-      },
-      allowMathematicOperations: true, // We turn on the spacer
-    };
-    let format = await Format.createFromJSON("mathAllowedFormat", unitsProvider, formatProps);
-    const outUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
-    const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
-    // The spacer property from formatProps is ignored, so the two results below are the same.
-    let result = parserSpec.parseToQuantityValue("-2FT 6IN-0.5"); // -2.5 FT and 0.5 FT -> -0.6096 in meters
-    result = parserSpec.parseToQuantityValue("-2FT 6IN + 6IN"); // -0.6096 in meters
-
+[[include:Quantity_Formatting.Math_Composite_Limitation]]
 ```
 
 </details>
