@@ -229,11 +229,11 @@ The replacement method `schemaContext.getSchemaItem` on the iModel can fetch the
 **Examples:**
 
 ```typescript
-const metaData: RelationshipClass | undefined = await imodelDb.getSchemaItem("BisCore.ElementRefersToElements", RelationshipClass);
-const metaData: Enumeration | undefined = await imodelDb.getSchemaItem("BisCore.AutoHandledPropertyStatementType", Enumeration);
-const metaData: UnitSystem | undefined = await imodelDb.getSchemaItem("Units.SI", UnitSystem);
-const metaData: Format | undefined = await imodelDb.getSchemaItem("Formats.DefaultReal", Format);
-const metaData: KindOfQuantity | undefined = await imodelDb.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
+const metaData: RelationshipClass | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.ElementRefersToElements", RelationshipClass);
+const metaData: Enumeration | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.AutoHandledPropertyStatementType", Enumeration);
+const metaData: UnitSystem | undefined = await imodelDb.schemaContext.getSchemaItem("Units.SI", UnitSystem);
+const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem("Formats.DefaultReal", Format);
+const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
 ```
 
 
