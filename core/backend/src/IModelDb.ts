@@ -70,7 +70,7 @@ import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
-import { EntityClass, PropertyHandler, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 
 // spell:ignore fontid fontmap
@@ -1299,28 +1299,6 @@ export abstract class IModelDb extends IModel {
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
-  }
-
-  /**
-   * Invoke a callback on each property of the specified class, optionally including superclass properties.
-   *
-   * @param iModel The IModelDb instance that contains the schema.
-   * @param classFullName The full class name to load the metadata, if necessary.
-   * @param wantSuper If true, superclass properties will also be processed.
-   * @param func The callback to be invoked on each property.
-   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
-   *
-   * @example
-   * ```typescript
-   * const callback: PropertyHandler = (name: string, property: Property) => {
-   *  console.log(`Property name: ${name}, Property type: ${propMetaData.propertyType}`);
-   * };
-   *
-   * IModelDb.forEachProperty(imodel, "BisCore:Element", true, callback);
-   * ```
-   */
-  public static forEachProperty(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyHandler, includeCustom: boolean = true) {
-    iModel.schemaContext.forEachProperty(classFullName, wantSuper, func, EntityClass, includeCustom);
   }
 
   /** Invoke a callback on each property of the specified class, optionally including superclass properties.

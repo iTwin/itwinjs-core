@@ -95,7 +95,7 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Please use `executeForEachProperty` to get the metadata and iterate over the properties instead.
+   * @deprecated in 5.0. Please use `forEach` to get the metadata and iterate over the properties instead.
    *
    * @example
    * ```typescript
@@ -105,8 +105,8 @@ export class Entity {
    * });
    *
    * // New method
-   * entity.executeForEachProperty((name, property) => {
-   *   console.log(`Property name: ${name}, Property class: ${property.class}`);
+   * await entity.forEach((name, property) => {
+   *   console.log(`Property name: ${name}, Property type: ${property.propertyType}`);
    * });
    * ```
    */
@@ -117,27 +117,28 @@ export class Entity {
   }
 
   /**
-   * Invoke a callback on each property of the specified class, optionally including superclass properties.
-   *
-   * This method iterates over the properties of the class, including those inherited from base classes and mixins,
-   * and applies the provided callback function to each property. The callback function can be used to perform
-   * operations on each property, such as logging or processing property metadata.
-   *
-   * @param func The callback to be invoked on each property. The callback receives the property name and the property metadata as arguments.
+   * Call a function for each property of this Entity.
+   * @param func The callback to be invoked on each property.
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @throws Error if metadata for the class cannot be retrieved.
    *
    * @example
    * ```typescript
-   * const callback: PropertyHandler = (name, property) => {
-   *   console.log(`Property Name: ${name}`);
-   *   console.log(`Property Class:`, property.class);
-   * };
-   *
-   * entity.executeForEachProperty(callback);
+   * entity.forEach((name, property) => {
+   *   console.log(`Property name: ${name}, Property type: ${property.propertyType}`);
+   * });
    * ```
    */
-  public executeForEachProperty(func: PropertyHandler, includeCustom: boolean = true) {
-    this.iModel.schemaContext.forEachProperty(this.classFullName, true, func, EntityClass, includeCustom);
+  public forEach(func: PropertyHandler, includeCustom: boolean = true) {
+    const metaData = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, EntityClass);
+    if (!metaData)
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+
+    for (const property of metaData.getPropertiesSync()) {
+      if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+        func(property.name, property);
+    }
   }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */

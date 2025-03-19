@@ -123,7 +123,7 @@ describe("AnalyticalSchema", () => {
     const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
     // test forEachProperty and PropertyMetaData.isNavigation
     const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
-    element.executeForEachProperty((propName, property) => {
+    element.forEach((propName, property) => {
       switch (propName) {
         case "model":
         case "category":

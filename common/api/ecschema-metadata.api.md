@@ -1833,7 +1833,6 @@ export class SchemaContext {
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>): Promise<void>;
     addSchemaSync(schema: Schema): void;
-    forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom?: boolean): void;
     // @internal
     getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal

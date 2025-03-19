@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import * as path from "path";
 import {
   BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
+  PropertyMetaData,
   RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
 import {
@@ -19,7 +20,7 @@ import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { OpenMode } from "@itwin/core-bentley";
-import { EntityClass, NavigationProperty, PrimitiveProperty, Property } from "@itwin/ecschema-metadata";
+import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -91,7 +92,8 @@ describe("Class Registry", () => {
     // is picking up all expected properties.
     const testData: string[] = [];
 
-    IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, _property: Property) => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName: string, _property: PropertyMetaData) => {
       testData.push(ECJsNames.toJsName(propName));
     }, false);
 

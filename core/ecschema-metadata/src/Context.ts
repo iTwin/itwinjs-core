@@ -5,9 +5,6 @@
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaInfo } from "./Interfaces";
-import type { EntityClass } from "./Metadata/EntityClass";
-import type { Mixin } from "./Metadata/Mixin";
-import { PropertyHandler } from "./Metadata/Property";
 import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
@@ -525,31 +522,5 @@ export class SchemaContext {
    */
   public getKnownSchemas(): Iterable<Schema> {
     return this._knownSchemas.getAllSchemas();
-  }
-
-  /**
-   * Iterates over each property of a specified class and executes a provided callback function on each property.
-   *
-   * @param classFullName - The full name of the class.
-   * @param wantSuper - If true, includes properties from the base classes.
-   * @param func - The callback to execute on each property.
-   * @param itemConstructor - The constructor of the schema item to return.
-   * @param includeCustom - If true, includes custom handled properties. Defaults to true.
-   *
-   * @returns A promise that resolves when the iteration is complete.
-   *
-   * @example
-   * ```typescript
-   * schemaContext.forEachProperty("BisCore.Element", true, (name, property) => {
-   *   console.log(`Property name: ${name}, Property class: ${property.class}`);
-   * }, EntityClass);
-   * ```
-   */
-  public forEachProperty<T extends typeof SchemaItem>(classFullName: string, wantSuper: boolean, func: PropertyHandler, itemConstructor: T, includeCustom: boolean = true) {
-    const metaData = this.getSchemaItemSync(classFullName, itemConstructor) as EntityClass | Mixin;
-    for (const property of metaData.getPropertiesSync(!wantSuper)) {
-      if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
-        func(property.name, property);
-    }
   }
 }
