@@ -381,9 +381,9 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     const execQuery = async (req: DbQueryRequest) => {
       const startTime = Date.now();
       const rs = await this._executor.execute(req);
-      QueryPropertyMetaDataHelpers.populateDeprecatedMetadataProps(rs.meta);
+      const meta = QueryPropertyMetaDataHelpers.populateDeprecatedMetadataProps(rs.meta);
       this.stats.totalTime += (Date.now() - startTime);
-      return rs as DbQueryResponse;
+      return {...rs, meta};
     };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);

@@ -11,20 +11,17 @@ export type IpcAdapted<T> = {
 };
 
 /**
- * Wraps two IPC functions into an async iterable
- * @param initFn Function that initializes the iterable and returns an identifier
+ * Creates an async iterable from an IPC function that returns next iterable based on identifier
+ * @param queryId Identifier of the query from which to return the next value
  * @param nextFn Function that returns the next value in the iterable based on the identifier
  * @beta
  */
 export function getIpcIterable<T>(
-  initFn: () => Promise<string>,
+  queryId: string,
   nextFn: (queryId: string) => Promise<IteratorResult<T, void>>,
-): AsyncIterable<T> & { queryId: Promise<string> } {
-  const queryId = initFn();
-
-  const next = async () => nextFn(await queryId);
+): AsyncIterable<T> {
+  const next = async () => nextFn(queryId);
   return {
-    [Symbol.asyncIterator]: () => ({ next }),
-    queryId
+    [Symbol.asyncIterator]: () => ({ next })
   };
 }
