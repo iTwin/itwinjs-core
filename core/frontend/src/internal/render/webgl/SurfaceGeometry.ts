@@ -58,9 +58,6 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     const transformECEF = tile.ecefTransform;
-    if (!transformECEF || !tile.range) {
-      return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
-    }
 
     const tileEcefRange = transformECEF.multiplyRange(tile.range);
     const cartographicRange = new CartographicRange(tileEcefRange, transformECEF);

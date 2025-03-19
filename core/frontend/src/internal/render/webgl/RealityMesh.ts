@@ -173,7 +173,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     if (!layerClassifiers?.size || !tile) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? LayerTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
 
     const transformECEF = tile.ecefTransform
-    if (!transformECEF || !tile.range) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? LayerTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
 
     const tileEcefRange = transformECEF.multiplyRange(tile.range);
     const cartographicRange = new  CartographicRange(tileEcefRange, transformECEF);
