@@ -677,52 +677,46 @@ export class BGFBReader {
       case BGFBAccessors.VariantGeometryUnion.tagBsplineCurve:
       case BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral:
       case BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve:
-      case BGFBAccessors.VariantGeometryUnion.tagAkimaCurve:
-        {
-          return this.readCurvePrimitiveFromVariant(variant);
-        }
-      case BGFBAccessors.VariantGeometryUnion.tagCurveVector:
-        {
-          return this.readCurveCollectionFromVariantGeometry(variant);
-        }
-      case BGFBAccessors.VariantGeometryUnion.tagPolyface:
-        {
-          return this.readPolyfaceFromVariant(variant);
-        }
+      case BGFBAccessors.VariantGeometryUnion.tagAkimaCurve: {
+        return this.readCurvePrimitiveFromVariant(variant);
+      }
+      case BGFBAccessors.VariantGeometryUnion.tagCurveVector: {
+        return this.readCurveCollectionFromVariantGeometry(variant);
+      }
+      case BGFBAccessors.VariantGeometryUnion.tagPolyface: {
+        return this.readPolyfaceFromVariant(variant);
+      }
       case BGFBAccessors.VariantGeometryUnion.tagDgnBox:
       case BGFBAccessors.VariantGeometryUnion.tagDgnCone:
       case BGFBAccessors.VariantGeometryUnion.tagDgnTorusPipe:
       case BGFBAccessors.VariantGeometryUnion.tagDgnSphere:
       case BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion:
       case BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep:
-      case BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep:
-        {
-          return this.readSolidPrimitiveFromVariant(variant);
-        }
-      case BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry:
-        {
-          const geometry: GeometryQuery[] = [];
-          const offsetToVectorOfVariantGeometry = variant.geometry(new BGFBAccessors.VectorOfVariantGeometry());
-          for (let i = 0; i < offsetToVectorOfVariantGeometry!.membersLength(); i++) {
-            const child = offsetToVectorOfVariantGeometry!.members(i);
-            if (child !== null) {
-              const childGeometry = this.readGeometryQueryFromVariant(child);
-              if (childGeometry instanceof GeometryQuery) {
-                geometry.push(childGeometry);
-              } else if (Array.isArray(childGeometry)) {
-                geometry.push(...childGeometry);
-              }
+      case BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep: {
+        return this.readSolidPrimitiveFromVariant(variant);
+      }
+      case BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry: {
+        const geometry: GeometryQuery[] = [];
+        const offsetToVectorOfVariantGeometry = variant.geometry(new BGFBAccessors.VectorOfVariantGeometry());
+        for (let i = 0; i < offsetToVectorOfVariantGeometry!.membersLength(); i++) {
+          const child = offsetToVectorOfVariantGeometry!.members(i);
+          if (child !== null) {
+            const childGeometry = this.readGeometryQueryFromVariant(child);
+            if (childGeometry instanceof GeometryQuery) {
+              geometry.push(childGeometry);
+            } else if (Array.isArray(childGeometry)) {
+              geometry.push(...childGeometry);
             }
           }
-          return geometry;
         }
+        return geometry;
+      }
       case BGFBAccessors.VariantGeometryUnion.tagBsplineSurface: {
         return this.readBSplineSurfaceFromVariant(variant);
       }
-      case BGFBAccessors.VariantGeometryUnion.tagPointString:
-        {
-          return this.readPointStringFromVariant(variant);
-        }
+      case BGFBAccessors.VariantGeometryUnion.tagPointString: {
+        return this.readPointStringFromVariant(variant);
+      }
     }
     return undefined;
   }
