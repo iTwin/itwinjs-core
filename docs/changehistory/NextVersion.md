@@ -703,8 +703,6 @@ class MyElement extends Element {
 
 #### Tips for adjusting existing code:
 
-We did adjust all code in the monorepo, but external consumers may need manual adjusting.
-
 Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted either into
 `context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
 A regex can be used to do bulk renaming:
