@@ -53,5 +53,10 @@ describe("BasicFormatsProvider", () => {
       formatsProvider.addFormat("AmerI", format);
     }).toThrowError("Format with id AmerI already exists.");
   });
-  // expect formatUpdated event to be raised when a format is updated
+
+  it("should return a format when associated with a KindOfQuantity", () => {
+    const format = formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH");
+    expect(format).toBeDefined();
+    expect(format!.precision).toEqual(6);
+  });
 });

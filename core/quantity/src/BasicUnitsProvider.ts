@@ -164,8 +164,6 @@ const UNIT_DATA: UnitDefinition[] = [
   { name: "Units.YRD", phenomenon: "Units.LENGTH", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.9144, offset: 0.0 }, displayLabel: "yd", altDisplayLabels: ["YRD", "yrd"] },
   { name: "Units.MILE", phenomenon: "Units.LENGTH", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 1609.344, offset: 0.0 }, displayLabel: "mi", altDisplayLabels: ["mile", "Miles", "Mile"] },
 
-  { name: "Units.BOGUS.IN", phenomenon: "Units.LENGTH", system: "Units.BOBUS", conversion: { numerator: 1.0, denominator: 0.0254, offset: 0.025 }, displayLabel: "bi", altDisplayLabels: [] },
-
   { name: "Units.US_SURVEY_FT", phenomenon: "Units.LENGTH", system: "Units.USSURVEY", conversion: { numerator: 3937.0, denominator: 1200.0, offset: 0.0 }, displayLabel: "ft (US Survey)", altDisplayLabels: ["ft", "SF", "USF", "ft (US Survey)"] },
   { name: "Units.US_SURVEY_YRD", phenomenon: "Units.LENGTH", system: "Units.USSURVEY", conversion: { numerator: 3937.0, denominator: 3.0 * 1200.0, offset: 0.0 }, displayLabel: "yrd (US Survey)", altDisplayLabels: ["USY", "yards (US Survey)"] },
   { name: "Units.US_SURVEY_IN", phenomenon: "Units.LENGTH", system: "Units.USSURVEY", conversion: { numerator: 3937.0, denominator: 100.0, offset: 0.0 }, displayLabel: "in (US Survey)", altDisplayLabels: ["USI", "inches (US Survey)"] },

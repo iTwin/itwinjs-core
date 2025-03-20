@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeUiEvent } from "@itwin/core-bentley";
 import { FormatProps, FormatsProvider } from "./Formatter/Interfaces";
+import { AEC_UNITS_KOQ } from "./Defaults";
 
 type ExtendedFormatProps = FormatProps & {
   label?: string;
@@ -31,11 +32,26 @@ export class BasicFormatsProvider implements FormatsProvider {
     DEFAULT_FORMATS[id] = format;
     this.onFormatsUpdated.emit([id]);
   }
+
+  public getFormatByKindOfQuantity(kindOfQuantityId: string): FormatProps | undefined {
+    const koqProps = AEC_UNITS_KOQ[kindOfQuantityId];
+    if (!koqProps)
+      return undefined;
+    const formatId = parseFormatId(koqProps.presentationUnit);
+    return this.getFormat(formatId);
+  }
+}
+
+function parseFormatId(presentationUnit: string): string {
+  // Strip out the schema name, and exclude everything after the first parenthesis.
+  const regex = /\.(.*?)(\(|$)/;
+  const match = presentationUnit.match(regex);
+  return match ? match[1] : presentationUnit;
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } } = {
-  AmerFI: {
+  "AmerFI": {
     label: "FeetInches",
     type: "Fractional",
     precision: 8,
@@ -60,7 +76,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
       ]
     }
   },
-  AmerI: {
+  "AmerI": {
     label: "Inches",
     type: "Fractional",
     precision: 8,
@@ -80,7 +96,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
       ]
     }
   },
-  AngleDMS: {
+  "AngleDMS": {
     label: "DegreesMinutesSeconds",
     type: "Decimal",
     precision: 4,
@@ -109,7 +125,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
       ]
     }
   },
-  DefaultReal: {
+  "DefaultReal": {
     label: "real",
     type: "Decimal",
     precision: 6,
@@ -118,7 +134,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
       "keepDecimalPoint"
     ]
   },
-  DefaultRealU: {
+  "DefaultRealU": {
     type: "Decimal",
     precision: 6,
     formatTraits: [
@@ -127,7 +143,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
       "showUnitLabel"
     ]
   },
-  DefaultRealUNS: {
+  "DefaultRealUNS": {
     type: "Decimal",
     precision: 6,
     formatTraits: [
@@ -137,7 +153,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
     ],
     uomSeparator: ""
   },
-  Fractional: {
+  "Fractional": {
     type: "Fractional",
     precision: 64,
     formatTraits: [
@@ -145,7 +161,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
       "keepDecimalPoint"
     ]
   },
-  HMS: {
+  "HMS": {
     label: "HoursMinutesSeconds",
     type: "Decimal",
     precision: 2,
@@ -172,7 +188,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
       ]
     }
   },
-  StationZ_1000_3: {
+  "StationZ_1000_3": {
     type: "Station",
     stationOffsetSize: 3,
     precision: 2,
@@ -183,7 +199,7 @@ const DEFAULT_FORMATS: { [typeName: string]: FormatProps & { label? : string } }
     ],
     minWidth: 3
   },
-  StationZ_100_2: {
+  "StationZ_100_2": {
     type: "Station",
     stationOffsetSize: 2,
     precision: 2,
