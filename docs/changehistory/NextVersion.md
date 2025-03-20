@@ -704,10 +704,10 @@ class MyElement extends Element {
 #### Tips for adjusting existing code:
 
 Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have to be adjusted either into
-`context.getSchemaItem("schema", "myName", EntityClass)` or more verbose
+`context.getSchemaItem("schema", "myName", EntityClass)` or more verbose as a general item followed by a type-guard:
 
 ```ts
-const item = await iModel.schemaContext.getSchemaItem("BisCore", "Element")
+const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element")
 if (item && EntityClass.isEntityClass(item )) {
 }
 ```
