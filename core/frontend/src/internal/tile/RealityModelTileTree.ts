@@ -11,7 +11,6 @@ import {
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
-  BackgroundMapSettings,
   BaseLayerSettings,
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, MapImagerySettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
@@ -558,9 +557,8 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
     getDisplaySettings(): RealityModelDisplaySettings;
-    mapSettings?: BackgroundMapSettings;
-    backgroundBase?: BaseLayerSettings;
-    backgroundLayers?: MapLayerSettings[];
+    getBackgroundBase?(): BaseLayerSettings;
+    getBackgroundLayers?(): MapLayerSettings[];
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {
@@ -611,7 +609,7 @@ export namespace RealityModelTileTree {
 
       this.iModel = props.iModel;
 
-      this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, props.backgroundBase, props.backgroundLayers);
+      this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, props.getBackgroundBase?.(), props.getBackgroundLayers?.());
 
       this._name = undefined !== props.name ? props.name : "";
       let transform;

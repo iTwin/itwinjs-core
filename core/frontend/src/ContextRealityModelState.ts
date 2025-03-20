@@ -41,8 +41,6 @@ export class ContextRealityModelState extends ContextRealityModel {
       this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }
     const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC;
-    const mapSettings = displayStyle.backgroundMapSettings;
-    const mapImagery = displayStyle.settings.mapImagery;
     this._treeRef = (!useOrbitGtTileTreeReference) ?
       createRealityTileTreeReference({
         iModel,
@@ -53,9 +51,8 @@ export class ContextRealityModelState extends ContextRealityModel {
         classifiers: this.classifiers,
         planarClipMask: this.planarClipMaskSettings,
         getDisplaySettings: () => this.displaySettings,
-        mapSettings,
-        backgroundBase: mapImagery.backgroundBase,
-        backgroundLayers: mapImagery.backgroundLayers
+        getBackgroundBase: () => displayStyle.settings.mapImagery.backgroundBase,
+        getBackgroundLayers: () => displayStyle.settings.mapImagery.backgroundLayers,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
