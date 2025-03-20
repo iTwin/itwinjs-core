@@ -105,7 +105,7 @@ export class Entity {
    * });
    *
    * // New method
-   * await entity.forEach((name, property) => {
+   * entity.forEach((name, property) => {
    *   console.log(`Property name: ${name}, Property type: ${property.propertyType}`);
    * });
    * ```

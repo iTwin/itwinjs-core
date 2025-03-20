@@ -88,7 +88,7 @@ export enum PrimitiveTypeCode {
 
 /** A callback function to process properties of an Entity
  * @beta
- * @deprecated in 5.0. Use `PropertyHandler` from `ecschema-metadata` instead.
+ * @deprecated in 5.0. Use `PropertyHandler` from `@itwin/ecschema-metadata` instead.
  *
  * @example
  * ```typescript
