@@ -701,7 +701,7 @@ class MyElement extends Element {
 - Reworked caching for merged properties on ECClass. Previously there was a boolean flag `ECClass.getProperties(resetCache: boolean)`.
   This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
 
-#### Tipps for adjusting existing code:
+#### Tips for adjusting existing code:
 
 We did adjust all code in the monorepo, but external consumers may need manual adjusting.
 
