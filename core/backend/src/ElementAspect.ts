@@ -80,7 +80,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onUpdate(arg: OnAspectPropsArg): void {
+  public static onUpdate(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
     iModel.channels[_verifyChannel](arg.model);
     iModel.locks.checkExclusiveLock(props.element.id, "element", "update aspect");
@@ -90,7 +90,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onUpdated(_arg: OnAspectPropsArg): void { }
+  public static onUpdated(_arg: OnAspectPropsArg): void { }
 
   /** Called before an ElementAspect is deleted.
    * @note throw an exception to disallow the delete

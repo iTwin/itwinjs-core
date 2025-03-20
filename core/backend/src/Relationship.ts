@@ -12,6 +12,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { _nativeDb } from "./internal/Symbols";
+import { IModelHost } from "./IModelHost";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
@@ -448,6 +449,8 @@ export class Relationships {
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
+    if (IModelHost.configuration?.useNativeInstance)
+      return props.id = this._iModel[_nativeDb].insertInstance(props, { useJsNames: true });
     return props.id = this._iModel[_nativeDb].insertLinkTableRelationship(props);
   }
 
@@ -455,7 +458,10 @@ export class Relationships {
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    */
   public updateInstance(props: RelationshipProps): void {
-    this._iModel[_nativeDb].updateLinkTableRelationship(props);
+    if (IModelHost.configuration?.useNativeInstance)
+      this._iModel[_nativeDb].updateInstance(props, { useJsNames: true });
+    else
+      this._iModel[_nativeDb].updateLinkTableRelationship(props);
   }
 
   /** Delete an Relationship instance from this iModel. */

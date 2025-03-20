@@ -648,10 +648,10 @@ describe.only("Domain Handlers - New", () => {
     };
     const elementId = iModelDb.elements.insertElement(elementProps);
     const model = iModelDb.models.getModel(modelId);
-    model.update(); // Update the model as a whole
+    iModelDb.models.updateModel(model.toJSON()); // Update the model as a whole
     const element = iModelDb.elements.getElement(elementId);
-    element.update(); // Update the element
-    model.delete(); // delete the model
+    iModelDb.elements.updateElement(element.toJSON()); // Update the element
+    iModelDb.models.deleteModel(modelId); // delete the model
 
     // Check that all model handler functions were called
     assert.isTrue(spies.model.onInsert.called);
@@ -719,8 +719,7 @@ describe.only("Domain Handlers - New", () => {
     assert.isTrue(spies.aspect.onDelete.called);
     assert.isTrue(spies.aspect.onDeleted.called);
 
-    const model = iModelDb.models.getModel(modelId); // cleanup Model
-    model.delete();
+    iModelDb.models.deleteModel(modelId); // cleanup Model
   });
 
   it("should call all handler functions for an inserted element using new insert", async () => {
@@ -768,7 +767,7 @@ describe.only("Domain Handlers - New", () => {
 
     const componentId = iModelDb.elements.insertElement(componentProps);
     const component1 = iModelDb.elements.getElement(componentId);
-    component1.update();
+    iModelDb.elements.updateElement(component1.toJSON());
 
     componentProps.code.value = "comp2";
     const componentId2 = iModelDb.elements.insertElement(componentProps);
@@ -792,8 +791,8 @@ describe.only("Domain Handlers - New", () => {
     component3Props.parent!.id = elementId2;
 
     iModelDb.elements.updateElement(component3Props);
-    element.update(); // Update the element (the above updates and deletes don't count since they aren't the same element type that we are spying on)
-    element.delete(); // delete the element
+    iModelDb.elements.updateElement(element.toJSON()); // Update the element (the above updates and deletes don't count since they aren't the same element type that we are spying on)
+    iModelDb.elements.deleteElement(element.id); // delete the element
 
     // Check that all aspect handler functions were called
     assert.isTrue(spies.element.onInsert.called);
