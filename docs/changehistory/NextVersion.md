@@ -707,7 +707,7 @@ Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be ad
 `context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
-This applies to SchemaContext.getSchemaItem/Sync, Schema.getItem/Sync and Schema.lookupItem/Sync
+This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.
 
 ## Attach/detach db
 
