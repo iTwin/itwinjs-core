@@ -7,8 +7,8 @@
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, MetadataWithOptionalLegacyFields, MinimalDbQueryResponse, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryPropertyMetaDataHelpers, QueryRowFormat
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, MetadataWithOptionalLegacyFields,
+  MinimalDbQueryResponse, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryPropertyMetaDataHelpers, QueryRowFormat,
 } from "./ConcurrentQuery";
 
 /** @public */
@@ -378,19 +378,21 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       this._stats.prepareTime += rs.stats.prepareTime;
       this._stats.backendRowsReturned += (rs.data === undefined) ? 0 : rs.data.length;
     };
-    const isValidDbQueryResponse = (rs: MinimalDbQueryResponse): rs is DbQueryResponse => {
-      return QueryPropertyMetaDataHelpers.isCompleteMetadata(rs.meta);
-    }
     const execQuery = async (req: DbQueryRequest) => {
       const startTime = Date.now();
       const rs = await this._executor.execute(req);
-      QueryPropertyMetaDataHelpers.populateDeprecatedMetadataProps(rs.meta);
+      rs.meta = QueryPropertyMetaDataHelpers.populateDeprecatedMetadataProps(rs.meta);
       this.stats.totalTime += (Date.now() - startTime);
-      if (isValidDbQueryResponse(rs)) {
-        return rs;
-      } else {
-        throw new Error("Not all metadata properties are present")
+      const result: DbQueryResponse = {
+        meta: [],
+        data: [],
+        rowCount: 0,
+        stats: { cpuTime: 0, totalTime: 0, timeLimit: 0, memLimit: 0, memUsed: 0, prepareTime: 0 },
+        status: DbResponseStatus.Done,
+        kind: DbResponseKind.BlobIO
       }
+      Object.assign(result, rs);
+      return result;
     };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);
