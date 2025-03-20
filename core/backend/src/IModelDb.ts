@@ -1114,7 +1114,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead instead.
+   * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead.
    *
    * @example
    * ```typescript
