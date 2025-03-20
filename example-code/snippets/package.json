@@ -26,6 +26,7 @@
     "@itwin/core-extension": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-editing": "workspace:*",
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
