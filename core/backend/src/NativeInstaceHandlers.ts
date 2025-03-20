@@ -138,7 +138,7 @@ export function updateElementWithHandlers<T extends ElementProps>(iModel: IModel
   // Update options
   const updateOptions = { useJsNames: true };
 
-  // TODO: Check if the element args are valid?
+  // Check if the element args are valid and fail early
   if (elProps.id === undefined) {
     throw new Error("Element Id is required to update a Element");
   }
@@ -188,7 +188,7 @@ export function updateModelWithHandlers(iModel: IModelDb, modelProps: UpdateMode
   // Update options
   const updateOptions = { useJsNames: true };
 
-  // TODO: Check if the element args are valid?
+  // Check if the element args are valid and fail early
   if (modelProps.id === undefined) {
     throw new Error("Model Id is required to update a model");
   }
@@ -219,7 +219,10 @@ export function updateAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
   // Update options
   const updateOptions = { useJsNames: true };
 
-  // TODO: Check if the element args are valid?
+  // Check if the element args are valid and fail early
+  if (aspectProps.element === undefined) {
+    throw new Error("Element Id is required to update a aspect");
+  }
 
   // Get the Model Class Definition and check if its valid
   const element = iModel.elements.getElementProps(aspectProps.element); // Will Throw is Element Doesn't Exist
