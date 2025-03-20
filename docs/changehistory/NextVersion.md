@@ -692,7 +692,7 @@ class MyElement extends Element {
   The original suggested it was type-safe but didn't really verify returned types.
   The new safe overload takes a constructor of a schema item subclass to only return items of that type.
 - Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. `EntityClass.isEntityClass()`)
-- We now consistently returns Iterable<T> results. Previously some returned arrays and others IterableIterator. Modified methods: `getSchemaItems()`, `getItems()` and `getProperties()`
+- We now consistently return `Iterable<T>` results. Previously some returned arrays and others `IterableIterator`. Modified methods: `getSchemaItems()`, `getItems()` and `getProperties()`
   - `SchemaContext.getSchemaItems()` changed from `IterableIterator<SchemaItem>` to `Iterable<SchemaItem>`
   - `ECClass.getProperties/Sync()` changed from `Property[]` to `Iterable<Property>`
   - `ECClass.properties` previously `IterableIterator<Property>` has been integrated into `getProperties(excludeInherited: boolean)`
