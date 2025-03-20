@@ -3,9 +3,33 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { BentleyError, BentleyStatus } from "../BentleyError";
+import { BentleyError, BentleyStatus, createITwinError, isITwinError, ITwinError } from "../BentleyError";
 
 describe("BentleyError.getErrorMessage", () => {
+  it("test iTwinError", () => {
+    expect(isITwinError(null, "a", "b")).false;
+    expect(isITwinError(undefined, "a", "b")).false;
+    expect(isITwinError(1, "a", "b")).false;
+    expect(isITwinError("test", "a", "b")).false;
+    expect(isITwinError({ a: 34 }, "a", "b")).false;
+    expect(isITwinError({ iTwinErrorId: 34 }, "a", "b")).false;
+    expect(isITwinError({ iTwinErrorId: null }, "a", "b")).false;
+    expect(isITwinError({ iTwinErrorId: undefined }, "a", "b")).false;
+    expect(isITwinError({ iTwinErrorId: {} }, "a", "b")).false;
+    expect(isITwinError({ iTwinErrorId: { a: null } }, "a", "b")).false;
+
+    const err: ITwinError = {
+      iTwinErrorId: {
+        key: "key1",
+        scope: "scope1",
+      },
+      message: "test message",
+    };
+    expect(isITwinError(err, "a", "b")).false;
+    expect(isITwinError(err, "scope1", "b")).false;
+    expect(isITwinError(err, "scope1", "key1")).true;
+    expect(isITwinError(createITwinError(err), "scope1", "key1")).true;
+  });
   it("returns string values", () => {
     expect(BentleyError.getErrorMessage("foo")).to.equal("foo");
     expect(BentleyError.getErrorMessage("")).to.equal("");

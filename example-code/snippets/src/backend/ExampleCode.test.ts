@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
-import { AccessToken, BentleyError, Guid, Id64, Id64String, IModelHubStatus } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocks, IModel } from "@itwin/core-common";
+import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, IModel } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -48,7 +48,7 @@ describe("Example Code", () => {
       try {
         await iModel.locks.acquireLocks({ exclusive: elementId });
       } catch (err) {
-        if (BentleyError.isError<ConflictingLocks>(err, IModelHubStatus.LockOwnedByAnotherBriefcase)) {
+        if (ConflictingLocksError.isError(err)) {
           if (err.conflictingLocks) {
             for (const inUseLock of err.conflictingLocks) {
               const _briefcaseId = inUseLock.briefcaseIds[0];

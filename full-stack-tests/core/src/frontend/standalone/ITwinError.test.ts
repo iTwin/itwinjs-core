@@ -1,5 +1,5 @@
-import { IModelStatus, ProcessDetector } from "@itwin/core-bentley";
-import { BackendError, ChannelError } from "@itwin/core-common";
+import { BentleyError, IModelHubStatus, isITwinError, ProcessDetector } from "@itwin/core-bentley";
+import { BackendError, ChannelError, ConflictingLock, ConflictingLocksError, LockState } from "@itwin/core-common";
 import { expect } from "chai";
 import { coreFullStackTestIpc } from "../Editing";
 import { TestUtility } from "../TestUtility";
@@ -16,23 +16,29 @@ if (ProcessDetector.isElectronAppFrontend) {
       await TestUtility.shutdownFrontend();
     });
 
-    it("should receive legacy BackendError", async () => {
+    it("should receive ConflictingLocks error", async () => {
+      const inUseLocks: ConflictingLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
       const metadata = { category: "test", severity: "error" };
       const testMsg = "test message";
-      const errorNumber = IModelStatus.AlreadyLoaded;
+      const errorNumber = IModelHubStatus.LockOwnedByAnotherBriefcase;
       const verify = async (logFn: boolean) => {
         let caughtError = false;
 
         try {
-          await coreFullStackTestIpc.throwLegacyError(errorNumber, testMsg, metadata, logFn);
+          await coreFullStackTestIpc.throwLockError(inUseLocks, testMsg, metadata, logFn);
         } catch (err: any) {
           caughtError = true;
           expect(err instanceof BackendError).true;
-          expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
-          expect(err.message).equal(testMsg);
-          expect(err.errorNumber).equal(IModelStatus.AlreadyLoaded);
-          expect(err.name).equal("Already Loaded");
-          expect(err.getMetaData()).deep.equal(metadata);
+          expect(ConflictingLocksError.isError(err)).true;
+          if (ConflictingLocksError.isError(err)) {
+            expect(err.stack?.includes("backend.ts")).true;
+            expect(err.message).equal(testMsg);
+            expect(err.errorNumber).equal(errorNumber);
+            expect(err.iTwinErrorId.key).equal("Lock is owned by another briefcase");
+            expect(err.loggingMetadata).deep.equal(metadata);
+            expect(err.conflictingLocks).deep.equal(inUseLocks);
+            expect(isITwinError(err, BentleyError.iTwinErrorScope, BentleyError.getErrorKey(errorNumber))).true;
+          }
         }
         expect(caughtError).true;
       }

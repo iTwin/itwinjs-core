@@ -16,30 +16,36 @@ import { RepositoryStatus } from "./internal/RepositoryStatus";
  */
 export interface ITwinError {
   readonly iTwinErrorId: {
-    /** a "namespace" the error. This is a qualifier for the errorKey that should be specific enough to be unique across all ITwinErrors (e.g. the package name followed by error type). */
-    scope: string;
+    /** a "namespace" for the error. This is a qualifier for the key that should be specific enough to be unique across all ITwinErrors for all applications (e.g. a package name). */
+    readonly scope: string;
     /** unique key for error, within scope. */
-    key: string;
+    readonly key: string;
   }
-  /** explanation of what went wrong. Intended to be read by a developer (i.e. it is *not* localized). */
+  /** explanation of what went wrong. Intended to be read by a programmer (i.e. it is *not* localized). */
   readonly message: string;
   /** stack trace of the error. */
   readonly stack?: string;
 }
 
+/** @beta */
+export function createITwinError<T extends ITwinError>(args: T): Error & T {
+  return Object.assign(Error(args.message), args);
+}
+
+/** @beta */
 export function throwITwinError<T extends ITwinError>(args: T): never {
-  throw Object.assign(Error(args.message), args);
+  throw createITwinError(args);
 }
 
 /**
  * type guard function to ensure an error has a specific scope and errorKey
  * @param error The error to ve verified.
- * @param scope value for `error.scope`
- * @param errorKey  value for `error.errorKey`
+ * @param scope value for `error.iTwinErrorId.scope`
+ * @param key value for `error.iTwinErrorId.key`
  * @beta
 */
-export function isITwinError<T extends ITwinError>(error: any, scope: string, errorKey: string): error is T {
-  return typeof error === "object" && typeof error.iTwinErrorId === "object" && error.iTwinErrorId.scope === scope && error.iTwinErrorId.key === errorKey;
+export function isITwinError<T extends ITwinError>(error: any, scope: string, key: string): error is T {
+  return error !== null && typeof error === "object" && error.iTwinErrorId !== null && typeof error.iTwinErrorId === "object" && error.iTwinErrorId.scope === scope && error.iTwinErrorId.key === key;
 }
 
 /** Standard status code.
@@ -358,12 +364,15 @@ interface ErrorProps {
   metadata?: object;
 }
 
+/** @beta */
 export interface BentleyITwinError extends ITwinError {
   readonly errorNumber: number;
   loggingMetadata?: object;
 }
 
-/** Base exception class for iTwin.js exceptions.
+/**
+ * Base exception class for iTwin.js exceptions.
+ * For backwards compatibility only. Do not create new subclasses of IModelError. Instead create an interface that extends [[ITwinError]] and use [[throwITwinError]].
  * @public
  */
 export class BentleyError extends Error implements BentleyITwinError {
@@ -407,7 +416,12 @@ export class BentleyError extends Error implements BentleyITwinError {
 
   /** This function returns the name of each error status. Override this method to handle more error status codes. */
   protected _initName(): string {
-    switch (this.errorNumber) {
+    return BentleyError.getErrorKey(this.errorNumber);
+  }
+
+  /** This function returns the name of each error status. */
+  public static getErrorKey(errorNumber: number) {
+    switch (errorNumber) {
       case IModelStatus.AlreadyLoaded: return "Already Loaded";
       case IModelStatus.AlreadyOpen: return "Already Open";
       case IModelStatus.BadArg: return "Bad Arg";
@@ -684,7 +698,7 @@ export class BentleyError extends Error implements BentleyITwinError {
         return "Success";
 
       default:
-        return `Error (${this.errorNumber})`;
+        return `Error (${errorNumber})`;
     }
   }
 

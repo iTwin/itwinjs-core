@@ -72,10 +72,11 @@ export class BeEventList<T extends Listener> {
 }
 
 // @public
-export class BentleyError extends Error {
+export class BentleyError extends Error implements BentleyITwinError {
     constructor(errorNumber: number, message?: string, metaData?: LoggingMetaData);
     // (undocumented)
     errorNumber: number;
+    static getErrorKey(errorNumber: number): string;
     static getErrorMessage(error: unknown): string;
     static getErrorMetadata(error: unknown): object | undefined;
     static getErrorProps(error: unknown): ErrorProps;
@@ -84,6 +85,25 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
+    // (undocumented)
+    static isError<T extends BentleyITwinError>(error: any, errorNumber?: number): error is T;
+    // (undocumented)
+    get iTwinErrorId(): {
+        scope: string;
+        key: string;
+    };
+    // (undocumented)
+    static readonly iTwinErrorScope = "bentley-error";
+    // (undocumented)
+    get loggingMetadata(): object | undefined;
+}
+
+// @public (undocumented)
+export interface BentleyITwinError extends ITwinError {
+    // (undocumented)
+    readonly errorNumber: number;
+    // (undocumented)
+    loggingMetadata?: object;
 }
 
 // @public
@@ -1008,11 +1028,25 @@ export function isIDisposable(obj: unknown): obj is IDisposable;
 // @public
 export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
 
+// @beta
+export function isITwinError<T extends ITwinError>(error: any, scope: string, errorKey: string): error is T;
+
 // @public
 export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
 
 // @public
 export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
+
+// @beta
+export interface ITwinError {
+    // (undocumented)
+    readonly iTwinErrorId: {
+        scope: string;
+        key: string;
+    };
+    readonly message: string;
+    readonly stack?: string;
+}
 
 // @public (undocumented)
 export interface JSONSchema {
@@ -1633,6 +1667,9 @@ export abstract class SuccessCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
+
+// @public (undocumented)
+export function throwITwinError<T extends ITwinError>(args: T): never;
 
 // @public @deprecated
 export class Tracing {

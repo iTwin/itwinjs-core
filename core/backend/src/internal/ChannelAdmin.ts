@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { ChannelRootAspectProps, ChannelError, IModel, IModelError } from "@itwin/core-common";
+import { ChannelError, ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
 import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";

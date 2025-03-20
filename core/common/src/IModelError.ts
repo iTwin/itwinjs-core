@@ -7,7 +7,7 @@
  */
 
 import {
-  BentleyError, BentleyITwinError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, ITwinError, LoggingMetaData,
+  BentleyError, BentleyITwinError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, IModelHubStatus, IModelStatus, LoggingMetaData,
 } from "@itwin/core-bentley";
 
 /** Numeric values for common errors produced by iTwin.js APIs, typically provided by [[IModelError]].
@@ -17,7 +17,6 @@ import {
 export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 /** The error type thrown by this module.
- * Creating subclasses of IModelError should be avoided. Instead use [[ITwinError]].
  * @see [[ITwinError]]
  * @see [[IModelErrorNumber]] for commonly-used error codes.
  * @public
@@ -58,9 +57,11 @@ export interface ConflictingLock {
   briefcaseIds: number[];
 }
 
+/** @beta */
 export interface ConflictingLocks extends BentleyITwinError {
   conflictingLocks?: ConflictingLock[];
 }
+
 /**
  * An error raised when there is a lock conflict detected.
  * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
@@ -68,6 +69,10 @@ export interface ConflictingLocks extends BentleyITwinError {
 */
 export class ConflictingLocksError extends IModelError implements ConflictingLocks {
   public conflictingLocks?: ConflictingLock[];
+
+  public static override isError<T extends ConflictingLocks>(error: any): error is T {
+    return BentleyError.isError(error, IModelHubStatus.LockOwnedByAnotherBriefcase)
+  }
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, message, getMetaData);
     this.conflictingLocks = conflictingLocks;

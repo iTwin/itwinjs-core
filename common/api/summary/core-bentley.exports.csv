@@ -12,6 +12,7 @@ public;class;BeDuration
 public;class;BeEvent
 public;class;BeEventList
 public;class;BentleyError
+public;interface;BentleyITwinError
 public;enum;BentleyLoggerCategory
 public;enum;BentleyStatus
 public;class;BeTimePoint
@@ -74,8 +75,10 @@ public;function;isDisposable
 public;function;isIDisposable
 deprecated;function;isIDisposable
 public;function;isInstanceOf
+beta;function;isITwinError
 public;function;isProperSubclassOf
 public;function;isSubclassOf
+beta;interface;ITwinError
 public;interface;JSONSchema
 public;interface;JSONSchemaMap
 public;interface;JSONSchemaSnippet
@@ -136,6 +139,7 @@ alpha;class;StatusCategory
 alpha;type;StatusCategoryHandler
 public;class;StopWatch
 alpha;class;SuccessCategory
+public;function;throwITwinError
 public;class;Tracing
 deprecated;class;Tracing
 public;class;TransientIdSequence
