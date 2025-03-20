@@ -4,10 +4,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
-import { LocalFileName } from "@itwin/core-common";
 import { expect } from "chai";
+import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
+import { SnapshotDb } from "@itwin/core-backend";
+import { LocalFileName } from "@itwin/core-common";
 
 
 describe("Attach/Detach Db", async () => {
