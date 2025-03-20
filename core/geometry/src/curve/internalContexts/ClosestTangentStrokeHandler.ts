@@ -50,25 +50,6 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
   public claimResult(): CurveLocationDetail[] {
-    // second run of Newton here is wrong and you should just "return this._closestTangents" in this method.
-    // for Arc3d and B-spline, with and without second Newton run, the tests still pass and same tangents are returned.
-    // for line segments and line strings, the second run drops the tangents that were already found.
-
-    // if (this._closestTangents.length > 0) {
-    //   const closestTangents = this._closestTangents;
-    //   this._closestTangents = [];
-    //   for (const closestTangent of closestTangents) {
-    //     if (closestTangent) {
-    //       this._newtonSolver.setX(closestTangent.fraction);
-    //       this._curve = closestTangent.curve;
-    //       if (this._newtonSolver.runIterations()) {
-    //         let fraction = this._newtonSolver.getX();
-    //         fraction = CurveExtendOptions.correctFraction(this._extend, fraction);
-    //         this.announceSolutionFraction(fraction);
-    //       }
-    //     }
-    //   }
-    // }
     return this._closestTangents;
   }
   public findClosestTangentIndex(hintPoint: Point3d): number {
@@ -121,11 +102,20 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
   public announceSegmentInterval(
     cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
   ): void {
-    // TODO: apply this._extend
-    const fraction = 0.5 * (fraction0 + fraction1); // pick mid-fraction of each segment
-    const value = this.evaluateFunction(undefined, fraction, cp);
+    let fraction: number;
+    let point: Point3d;
+    const distance0 = this._spacePoint.distance(point0);
+    const distance1 = this._spacePoint.distance(point1);
+    if (distance0 < distance1) {
+      fraction = fraction0;
+      point = point0;
+    } else {
+      fraction = fraction1;
+      point = point1;
+    }
+    const value = this.evaluateFunction(undefined, (fraction0 + fraction1) / 2, cp);
     if (!value)
-      this.announceCandidate(cp, fraction, point0.interpolate(0.5, point1));
+      this.announceCandidate(cp, fraction, point);
   }
   /**
    * Given a function `f` and (unordered) fractions `a` and `b`, search for and announce a root of `f` in this
@@ -136,11 +126,9 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
    * this method can miss a root of `f`.
    */
   private searchInterval() {
-    if (this._functionA * this._functionB > 0)
-      return; // stroke segment has no root; ASSUME the function has no root either
-    if (this._functionA === 0)
+    if (Math.abs(this._functionA) < Geometry.smallMetricDistanceSquared)
       this.announceSolutionFraction(this._fractionA);
-    if (this._functionB === 0)
+    if (Math.abs(this._functionB) < Geometry.smallMetricDistanceSquared)
       this.announceSolutionFraction(this._fractionB);
     // by the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
     if (this._functionA * this._functionB < 0) {
@@ -158,8 +146,8 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
   }
   /**
    * Evaluate the univariate real-valued function for which we are finding roots.
-   * * For finding the tangents to curve X from point Q as seen in a view plane perpendicular to _normal, this
-   * function is `f(t) := (Q - X(t)) dot (X'(t) cross _normal)`.
+   * * For finding the tangents to curve X from point Q as seen in a view plane perpendicular to normal, this
+   * function is `f(t) := (Q - X(t)) dot (X'(t) cross normal)`.
    * * Either `pointAndDerivative` must be defined, or both `fraction` and `curve`.
    * @param pointAndDerivative pre-evaluated curve
    * @param fraction fraction at which to evaluate `curve`
