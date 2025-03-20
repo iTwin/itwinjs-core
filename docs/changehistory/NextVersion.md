@@ -688,7 +688,7 @@ class MyElement extends Element {
 
 - Removed generic type parameter from SchemaLocater/Context's `getSchema()` methods as it was only used by internal editing API
 - Removed `ISchemaItemLocater` interface, it was only ever used by our own `SchemaContext`.
-- Reworked the SchemaContext and Schema `getItem()` APIs so they provide a type-safe retrieval method.
+- Reworked the `SchemaContext` and `Schema` `getItem()` APIs so they provide a type-safe retrieval method.
   The original suggested it was type-safe but didn't really verify returned types.
   The new safe overload takes a constructor of a schema item subclass to only return items of that type.
 - Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. EntityClass.isEntityClass())
