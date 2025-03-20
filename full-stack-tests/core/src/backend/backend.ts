@@ -77,8 +77,8 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return iModel.executeWritable(async () => undefined);
   }
 
-  public async throwChannelError(errorKey: ChannelError.Key, message: string, channelKey: string, metaData: LoggingMetaData, logFn: boolean) {
-    ChannelError.throwError(errorKey, message, channelKey, logFn ? () => metaData : metaData);
+  public async throwChannelError(errorKey: ChannelError.Key, message: string, channelKey: string) {
+    ChannelError.throwError(errorKey, message, channelKey);
   }
   public async throwLegacyError(errorNumber: number, message: string, metaData: LoggingMetaData, logFn: boolean) {
     throw new IModelError(errorNumber, message, logFn ? () => metaData : metaData);

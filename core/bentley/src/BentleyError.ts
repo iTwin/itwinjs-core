@@ -9,6 +9,39 @@
 import { DbResult } from "./BeSQLite";
 import { RepositoryStatus } from "./internal/RepositoryStatus";
 
+/**
+ * An interface used to describe an exception.
+ * This error interface should be extended to throw errors with extra properties defined on them.
+ * @beta
+ */
+export interface ITwinError {
+  readonly iTwinErrorId: {
+    /** a "namespace" the error. This is a qualifier for the errorKey that should be specific enough to be unique across all ITwinErrors (e.g. the package name followed by error type). */
+    scope: string;
+    /** unique key for error, within scope. */
+    key: string;
+  }
+  /** explanation of what went wrong. Intended to be read by a developer (i.e. it is *not* localized). */
+  readonly message: string;
+  /** stack trace of the error. */
+  readonly stack?: string;
+}
+
+export function throwITwinError<T extends ITwinError>(args: T): never {
+  throw Object.assign(Error(args.message), args);
+}
+
+/**
+ * type guard function to ensure an error has a specific scope and errorKey
+ * @param error The error to ve verified.
+ * @param scope value for `error.scope`
+ * @param errorKey  value for `error.errorKey`
+ * @beta
+*/
+export function isITwinError<T extends ITwinError>(error: any, scope: string, errorKey: string): error is T {
+  return typeof error === "object" && typeof error.iTwinErrorId === "object" && error.iTwinErrorId.scope === scope && error.iTwinErrorId.key === errorKey;
+}
+
 /** Standard status code.
  * This status code should be rarely used.
  * Prefer to throw an exception to indicate an error, rather than returning a special status code.
@@ -325,10 +358,16 @@ interface ErrorProps {
   metadata?: object;
 }
 
+export interface BentleyITwinError extends ITwinError {
+  readonly errorNumber: number;
+  loggingMetadata?: object;
+}
+
 /** Base exception class for iTwin.js exceptions.
  * @public
  */
-export class BentleyError extends Error {
+export class BentleyError extends Error implements BentleyITwinError {
+  public static readonly iTwinErrorScope = "bentley-error";
   private readonly _metaData: LoggingMetaData;
 
   /**
@@ -341,6 +380,16 @@ export class BentleyError extends Error {
     this.errorNumber = errorNumber;
     this._metaData = metaData;
     this.name = this._initName();
+  }
+
+  public get iTwinErrorId() {
+    return { scope: BentleyError.iTwinErrorScope, key: this.name };
+  }
+  public get loggingMetadata() { return this.getMetaData(); }
+
+  public static isError<T extends BentleyITwinError>(error: any, errorNumber?: number): error is T {
+    return typeof error === "object" && typeof error.iTwinErrorId === "object" && error.iTwinErrorId.scope === BentleyError.iTwinErrorScope &&
+      typeof error.errorNumber === "number" && (errorNumber === undefined || error.errorNumber === errorNumber);
   }
 
   /** Returns true if this BentleyError includes (optional) metadata. */

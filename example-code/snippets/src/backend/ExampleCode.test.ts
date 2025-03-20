@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
-import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
+import { AccessToken, BentleyError, Guid, Id64, Id64String, IModelHubStatus } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocks, IModel } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -37,6 +37,33 @@ describe("Example Code", () => {
     newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);
     // __PUBLISH_EXTRACT_END__
+  });
+
+
+  it("should check for an InUseLocksError", async () => {
+    if (iModel.isBriefcase) {
+      const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
+      const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
+      assert.isTrue(elementId !== undefined);
+      // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
+      try {
+        await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
+      } catch (err) {
+        if (BentleyError.isError<ConflictingLocks>(err, IModelHubStatus.LockOwnedByAnotherBriefcase)) {
+          if (err.conflictingLocks) {
+            for (const inUseLock of err.conflictingLocks) {
+              const _briefcaseId = inUseLock.briefcaseIds[0];
+              const _state = inUseLock.state;
+              const _objectId = inUseLock.objectId;
+              // Create a user friendly error message
+            }
+          }
+        } else {
+          throw err;
+        }
+        // __PUBLISH_EXTRACT_END__
+      }
+    }
   });
 
   it("should extract working example code", async () => {

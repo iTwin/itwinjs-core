@@ -73,7 +73,6 @@ export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
 export * from "./ITwinCoreErrors";
-export * from "./ITwinError";
 export * from "./ipc/IpcSocket";
 export * from "./ipc/IpcWebSocket";
 export * from "./ipc/IpcWebSocketTransport";

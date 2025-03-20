@@ -1,5 +1,5 @@
 import { IModelStatus, ProcessDetector } from "@itwin/core-bentley";
-import { BackendError, ChannelError, getITwinErrorMetaData } from "@itwin/core-common";
+import { BackendError, ChannelError } from "@itwin/core-common";
 import { expect } from "chai";
 import { coreFullStackTestIpc } from "../Editing";
 import { TestUtility } from "../TestUtility";
@@ -44,27 +44,19 @@ if (ProcessDetector.isElectronAppFrontend) {
       const sentErr = {
         message: "test message",
         channelKey: "123",
-        metadata: { category: "test", severity: "error" },
       }
-
-      const verify = async (logFn: boolean) => {
-        let caughtError = false;
-
-        try {
-          await coreFullStackTestIpc.throwChannelError("may-not-nest", sentErr.message, sentErr.channelKey, sentErr.metadata, logFn);
-        } catch (err: any) {
-          caughtError = true;
-          expect(ChannelError.isError(err, "may-not-nest")).true;
-          // Even though we're on the frontend we should make sure our stack trace includes backend code.
-          expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
-          expect(err.message).equal(sentErr.message);
-          expect(err.channelKey).equal(sentErr.channelKey);
-          expect(getITwinErrorMetaData(err)).deep.equal(sentErr.metadata);
-        }
-        expect(caughtError).true;
+      let caughtError = false;
+      try {
+        await coreFullStackTestIpc.throwChannelError("may-not-nest", sentErr.message, sentErr.channelKey);
+      } catch (err: any) {
+        caughtError = true;
+        expect(ChannelError.isError(err, "may-not-nest")).true;
+        // Even though we're on the frontend we should make sure our stack trace includes backend code.
+        expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
+        expect(err.message).equal(sentErr.message);
+        expect(err.channelKey).equal(sentErr.channelKey);
       }
-      await verify(false);
-      await verify(true);
+      expect(caughtError).true;
     });
 
   });

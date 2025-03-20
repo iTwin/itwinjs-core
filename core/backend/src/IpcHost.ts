@@ -174,17 +174,16 @@ export abstract class IpcHandler {
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
         const ret = { error: { ...err } };
-        ret.error.message = err.message; // NB: .message, .name, and .stack members of Error are NOT enumerable, so spread operator above does not copy them.
-        ret.error.name = err.name;
+        ret.error.message = err.message; // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
         if (!IpcHost.noStack)
           ret.error.stack = err.stack;
 
         if (err instanceof BentleyError) {
+          ret.error.iTwinErrorId = err.iTwinErrorId;
           if (err.hasMetaData)
-            ret.error.metadata = err.getMetaData();
+            ret.error.loggingMetadata = err.loggingMetadata;
           delete ret.error._metaData;
-        } else if (typeof ret.error.metadata === "function")
-          ret.error.metadata = ret.error.metadata();
+        }
         return ret;
       }
     });

@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
+import { BentleyError, BentleyITwinError, IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";
@@ -95,9 +95,9 @@ export class IpcApp {
 
     if (retVal.error !== undefined) {
       const err = retVal.error;
-      // Note: for backwards compatibility only, if the exception has a numeric member "errorNumber" and no member "scope", throw an exception of type `BackendError`.
-      if (typeof err.errorNumber === "number" && undefined === err.scope) {
-        const backendErr = new BackendError(err.errorNumber, err.name, err.message, err.metadata);
+      // Note: for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
+      if (BentleyError.isError(err)) {
+        const backendErr = new BackendError(err.errorNumber, err.iTwinErrorId.key, err.message, err.loggingMetadata);
         backendErr.stack = err.stack;
         throw backendErr;
       }
