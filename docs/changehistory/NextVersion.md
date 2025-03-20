@@ -55,7 +55,7 @@ Table of contents:
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
-      - [Tipps for adjusting existing code:](#tipps-for-adjusting-existing-code)
+      - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
   - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
@@ -199,15 +199,15 @@ The `IModelDb.getMetaData(classFullName: string)` method has been deprecated in 
 
 Similarly, other functions to retrieve metadata also have replacements:
 
-| **Deprecated from `@itwin/core-backend`** | **Replacement function**                                                  | Usage                                                                               |
-| ----------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `Element.getClassMetaData`                | Use `Element.getMetaData` from `@itwin/core-backend` instead.             | await entity.getMetaData()                                                          |
-| `Entity.forEachProperty`                  | Use `Entity.forEach` from `@itwin/core-backend` instead.                  | entity.forEach(callback)                                                            |
-| `IModelDb.classMetaDataRegistry` getter   | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead.          | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);        |
-| `IModelDb.getMetaData`                    | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead.          | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);        |
-| `IModelDb.tryGetMetaData`                 | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead.          | schemaContext.getSchemaItemSync("BisCore.Element", EntityClass)                     |
-| `IModelDb.forEachMetaData`                | Use `Entity.forEach` from `@itwin/core-backend` instead.                  | entity.forEach(callback)                                                            |
-| `MetaDataRegistry` class                  | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead.          | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);        |
+| **Deprecated from `@itwin/core-backend`** | **Replacement function**                                         | Usage                                                                        |
+| ----------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `Element.getClassMetaData`                | Use `Element.getMetaData` from `@itwin/core-backend` instead.    | await entity.getMetaData()                                                   |
+| `Entity.forEachProperty`                  | Use `Entity.forEach` from `@itwin/core-backend` instead.         | entity.forEach(callback)                                                     |
+| `IModelDb.classMetaDataRegistry` getter   | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass); |
+| `IModelDb.getMetaData`                    | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass); |
+| `IModelDb.tryGetMetaData`                 | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | schemaContext.getSchemaItemSync("BisCore.Element", EntityClass)              |
+| `IModelDb.forEachMetaData`                | Use `Entity.forEach` from `@itwin/core-backend` instead.         | entity.forEach(callback)                                                     |
+| `MetaDataRegistry` class                  | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass); |
 
 **Example function templates:**
 
@@ -703,8 +703,15 @@ class MyElement extends Element {
 
 #### Tips for adjusting existing code:
 
-Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted either into
-`context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
+Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have to be adjusted either into
+`context.getSchemaItem("schema", "myName", EntityClass)` or more verbose
+
+```ts
+const item = await iModel.schemaContext.getSchemaItem("BisCore", "Element")
+if (item && EntityClass.isEntityClass(item )) {
+}
+```
+
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
 This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.
