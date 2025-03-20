@@ -91,7 +91,7 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
     if (this._closestTangents.length > 0) { // avoid adding duplicate tangents
       const lastFraction = this._closestTangents[this._closestTangents.length - 1].fraction;
-      if (Math.abs(fraction - lastFraction) < Geometry.smallFraction)
+      if (fraction === lastFraction)
         return;
     }
     const closestTangent = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point);
