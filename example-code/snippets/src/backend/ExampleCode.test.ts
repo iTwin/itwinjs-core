@@ -42,12 +42,11 @@ describe("Example Code", () => {
 
   it("should check for an InUseLocksError", async () => {
     if (iModel.isBriefcase) {
-      const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
       const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
       assert.isTrue(elementId !== undefined);
       // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
       try {
-        await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
+        await iModel.locks.acquireLocks({ exclusive: elementId });
       } catch (err) {
         if (BentleyError.isError<ConflictingLocks>(err, IModelHubStatus.LockOwnedByAnotherBriefcase)) {
           if (err.conflictingLocks) {
