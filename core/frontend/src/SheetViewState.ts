@@ -619,7 +619,7 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 }
 
 /** Draws the contents of a view attachment into a sheet view. */
-interface Attachment extends Disposable {
+export interface Attachment extends Disposable {
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
   discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
