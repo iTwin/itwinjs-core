@@ -65,11 +65,11 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     }));
 
     removals.push(displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-      this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
-      this.backgroundMap.setLayerSettings(imagery.backgroundLayers);
-      this.backgroundDrapeMap.setBaseLayerSettings(mapImagery.backgroundBase);
-      this.backgroundDrapeMap.setLayerSettings(mapImagery.backgroundLayers);
-      this.overlayMap.setLayerSettings(imagery.overlayLayers);
+      this.backgroundMap.layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
+      this.backgroundMap.layerRefHandler.setLayerSettings(imagery.backgroundLayers);
+      this.backgroundDrapeMap.layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
+      this.backgroundDrapeMap.layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
+      this.overlayMap.layerRefHandler.setLayerSettings(imagery.overlayLayers);
     }));
 
     // We need to clear imagery tiles assigned to map tiles every time a new ImageryTileTree is loaded,
@@ -78,7 +78,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       const trees = new DisclosedTileTreeSet();
       mapTileTreeToClear.discloseTileTrees(trees);
       if (trees.has(loadedTileTree)) {
-        mapTileTreeToClear.clearLayers();
+        mapTileTreeToClear.layerRefHandler.clearLayers();
       }
     };
     removals.push(IModelApp.tileAdmin.onTileTreeLoad.addListener((tileTree: TileTreeOwner) => {
@@ -106,11 +106,11 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings)
       || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)
       || (mapImagery.backgroundBase instanceof BaseMapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
-      this.backgroundMap.clearLayers();
-      this.backgroundDrapeMap.clearLayers();
+      this.backgroundMap.layerRefHandler.clearLayers();
+      this.backgroundDrapeMap.layerRefHandler.clearLayers();
     }
     if (!layersMatch(mapImagery.overlayLayers, this.overlayMap.layerSettings))
-      this.overlayMap.clearLayers();
+      this.overlayMap.layerRefHandler.clearLayers();
   }
 
   public detachFromDisplayStyle(): void {

@@ -51,6 +51,8 @@ export class ContextRealityModelState extends ContextRealityModel {
         classifiers: this.classifiers,
         planarClipMask: this.planarClipMaskSettings,
         getDisplaySettings: () => this.displaySettings,
+        getBackgroundBase: () => displayStyle.settings.mapImagery.backgroundBase,
+        getBackgroundLayers: () => displayStyle.settings.mapImagery.backgroundLayers,
       }) :
       createOrbitGtTileTreeReference({
         iModel,

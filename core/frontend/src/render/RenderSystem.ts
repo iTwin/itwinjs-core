@@ -28,7 +28,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../common/render/InstancedGraphicParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { RealityMeshGraphicParams } from "../internal/render/RealityMeshGraphicParams";
+import { MeshMapLayerGraphicParams } from "../internal/render/MeshMapLayerGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "./RenderClipVolume";
@@ -55,6 +55,7 @@ import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
 import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
+import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
@@ -266,10 +267,11 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** @internal */
-  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined {
+  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tileData?: LayerTileData): RenderGeometry | undefined {
     const meshArgs = mesh.toMeshArgs();
     if (meshArgs) {
       const meshParams = createMeshParams(meshArgs, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
+      meshParams.tileData = tileData;
       return this.createMeshGeometry(meshParams, viOrigin);
     }
 
@@ -369,7 +371,7 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** @internal */
-  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_params: MeshMapLayerGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
     const geom = this.createRealityMeshGeometry(realityMesh, disableTextureDisposal);

@@ -18,6 +18,7 @@ import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
   RealityTile, RealityTileContent, RealityTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "../../tile/internal";
+import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 
@@ -97,6 +98,11 @@ export abstract class RealityTileLoader {
 
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     let reader: GltfReader | ImdlReader | undefined;
+    const tileData: LayerTileData = {
+      ecefTransform: tile.tree.iModel.getEcefTransform(),
+      range: tile.range,
+      layerClassifiers: tile.tree.layerHandler?.layerClassifiers,
+  };
     switch (format) {
       case TileFormat.IModel:
         reader = ImdlReader.create({
@@ -130,7 +136,7 @@ export abstract class RealityTileLoader {
 
         return { graphic };
       case TileFormat.B3dm:
-        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices);
+        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap(), this.wantDeduplicatedVertices, tileData);
         if (reader) {
           // glTF spec defaults wrap mode to "repeat" but many reality tiles omit the wrap mode and should not repeat.
           // The render system also currently only produces mip-maps for repeating textures, and we don't want mip-maps for reality tile textures.
@@ -140,7 +146,7 @@ export abstract class RealityTileLoader {
 
         break;
       case TileFormat.I3dm:
-        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
+        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices, tileData);
         break;
       case TileFormat.Gltf:
         const tree = tile.tree as RealityTileTree;
@@ -155,6 +161,7 @@ export abstract class RealityTileLoader {
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
             idMap: this.getBatchIdMap(),
+            tileData
           });
         }
         break;
