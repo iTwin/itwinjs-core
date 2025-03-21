@@ -19,6 +19,7 @@ Table of contents:
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
+  - [Attach/detach db](#attachdetach-db)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -29,11 +30,14 @@ Table of contents:
     - [@itwin/presentation-backend](#itwinpresentation-backend)
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Breaking Changes](#breaking-changes)
-    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Updated minimum requirements](#updated-minimum-requirements)
       - [Node.js](#nodejs)
       - [Electron](#electron)
       - [ECMAScript](#ecmascript)
+      - [TypeScript](#typescript)
+        - [`target`](#target)
+        - [`useDefineForClassFields`](#usedefineforclassfields)
+    - [Preventing Doppelgangers](#preventing-doppelgangers)
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
@@ -49,13 +53,10 @@ Table of contents:
       - [@itwin/core-common](#itwincore-common-2)
       - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
     - [Packages dropped](#packages-dropped)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
-    - [TypeScript configuration changes](#typescript-configuration-changes)
-      - [`target`](#target)
-      - [`useDefineForClassFields`](#usedefineforclassfields)
-  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -142,6 +143,16 @@ Can also be attached as a map-layer:
 ## Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
+
+## Attach/detach db
+
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
+
+```ts
+[[include:IModelDb_attachDb.code]]
+```
+
+> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
 ## API deprecations
 
@@ -251,10 +262,6 @@ Added type guards and type assertions for every schema item class (they are on t
 
 ## Breaking Changes
 
-### Opening connection to local snapshot requires IPC
-
-[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
-
 ### Updated minimum requirements
 
 A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
@@ -270,6 +277,71 @@ iTwin.js now supports only the latest Electron release ([Electron 35](https://ww
 #### ECMAScript
 
 `@itwin/build-tools` has bumped the [TypeScript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2021](https://262.ecma-international.org/12.0/) to [ES2023](https://262.ecma-international.org/14.0/). This means that JavaScript files provided by core packages should be run in [environments supporting ES2023 features](https://compat-table.github.io/compat-table/es2016plus/).
+
+#### TypeScript
+
+There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
+
+##### `target`
+
+[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
+
+##### `useDefineForClassFields`
+
+Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
+
+This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
+
+```ts
+interface MyElementProps extends ElementProps {
+  property: string;
+}
+
+class MyElement extends Element {
+  public property!: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+  }
+}
+
+const myElement = new MyElement({ property: "value" });
+console.log(myElement.property); // undefined
+```
+
+To fix this, you can either initialize your properties in your class constructor:
+
+```ts
+class MyElement extends Element {
+  public property: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+    property = props.property;
+  }
+}
+```
+
+or just define your properties using `declare` keyword:
+
+```ts
+class MyElement extends Element {
+  declare public property: string;
+  ...
+}
+```
+
+### Preventing Doppelgangers
+
+Previously, it was possible for an app to (mis)configure their dependencies such that they end up with multiple versions of single core package, known as doppelgangers, which can lead to a number of issues, including:
+
+- _Non-single singletons_
+
+- _Duplicate types_
+
+- _Semantically different doppelgangers_
+
+Read here for more details on the [consequences of doppelgangers](https://github.com/microsoft/rushstack-websites/blob/main/websites/rushjs.io/docs/pages/advanced/npm_doppelgangers.md#consequences-of-doppelgangers). To prevent this we have introduced [Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)s to core packages so if you try to load the same package twice, you will get a different instance of the package, which will throw a runtime error when you try to use it.
 
 ### Deprecated API removals
 
@@ -578,6 +650,10 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client.        |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                             |
 
+### Opening connection to local snapshot requires IPC
+
+[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
+
 ### Change to pullMerge
 
 Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
@@ -606,66 +682,3 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
-
-### TypeScript configuration changes
-
-There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
-
-#### `target`
-
-[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
-
-#### `useDefineForClassFields`
-
-Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
-
-This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
-
-```ts
-interface MyElementProps extends ElementProps {
-  property: string;
-}
-
-class MyElement extends Element {
-  public property!: string;
-
-  constructor(props: MyElementProps) {
-    super(props);
-  }
-}
-
-const myElement = new MyElement({ property: "value" });
-console.log(myElement.property); // undefined
-```
-
-To fix this, you can either initialize your properties in your class constructor:
-
-```ts
-class MyElement extends Element {
-  public property: string;
-
-  constructor(props: MyElementProps) {
-    super(props);
-    property = props.property;
-  }
-}
-```
-
-or just define your properties using `declare` keyword:
-
-```ts
-class MyElement extends Element {
-  declare public property: string;
-  ...
-}
-```
-
-## Attach/detach db
-
-Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
-
-```ts
-[[include:IModelDb_attachDb.code]]
-```
-
-> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'

@@ -179,6 +179,10 @@ export * from "./RealityDataSource";
 
 export * from "./internal/cross-package";
 
+const globalSymbol = Symbol.for("itwin.core.frontend.globals");
+if ((globalThis as any)[globalSymbol])
+  throw new Error("Multiple @itwin/core-frontend imports detected!");
+
 // TODO/FIX: "./extension/ExtensionRuntime" import has to be last to avoid circular dependency errors.
 import "./extension/ExtensionRuntime";
 

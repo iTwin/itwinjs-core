@@ -12,10 +12,6 @@
 
 import { ExtensionHost } from "./ExtensionHost";
 
-const globalSymbol = Symbol.for("itwin.core.frontend.globals");
-if ((globalThis as any)[globalSymbol])
-  throw new Error("Multiple @itwin/core-frontend imports detected!");
-
 // BEGIN GENERATED CODE
 import {
   // @public enum(s) from @itwin/core-frontend
