@@ -8,7 +8,7 @@ import { XYProps } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { HydrateViewStateResponseProps } from "@itwin/core-common";
+import { HydrateViewStateResponseProps, Placement2d, ViewAttachmentProps } from "@itwin/core-common";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -183,12 +183,19 @@ describe("Sheet views (#integration)", () => {
 
         // Create a new attachment
         const newOrigin: XYProps = { x:100, y: 0 };
-        const newAttachmentProps = {...viewAttachmentProps[0], origin: newOrigin, id: "outOfView"};
+        const newAttachmentProps: ViewAttachmentProps = {
+          ...viewAttachmentProps[0],
+          placement : {
+            origin: newOrigin,
+            angle: 0,
+          },
+          id: "outOfView"
+        };
 
         // Create a new sheet view with the new attachment
         const viewProps = sheetView.toProps();
         viewProps.viewDefinitionProps.id = "newSheetView";
-        viewProps.sheetAttachments = [newAttachmentProps.id];
+        viewProps.sheetAttachments = [newAttachmentProps.id!];
         const newSheetView = SheetViewState.createFromProps(viewProps, imodel);
 
         // Load the new sheet view
