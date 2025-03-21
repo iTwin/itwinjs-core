@@ -201,7 +201,7 @@ Similarly, other functions to retrieve metadata also have replacements:
 
 | **Deprecated from `@itwin/core-backend`** | **Replacement function**                                         | Usage                                                                        |
 | ----------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `Element.getClassMetaData`                | Use `Element.getMetaData` from `@itwin/core-backend` instead.    | await entity.getMetaData()                                                   |
+| `Element.getClassMetaData`                | Use `Element.getMetaData` from `@itwin/core-backend` instead.    | `await entity.getMetaData()`                                                   |
 | `Entity.forEachProperty`                  | Use `Entity.forEach` from `@itwin/core-backend` instead.         | entity.forEach(callback)                                                     |
 | `IModelDb.classMetaDataRegistry` getter   | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass); |
 | `IModelDb.getMetaData`                    | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass); |
