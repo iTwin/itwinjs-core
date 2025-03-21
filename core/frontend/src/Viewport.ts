@@ -50,7 +50,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, RealityModelTileTree, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -929,16 +929,6 @@ export abstract class Viewport implements Disposable, TileUser {
     return true;
   }
 
-  /** Refresh the Reality Tile Tree to reflect changes in the map layer. */
-  private refreshLayerTiles(): void {
-    const { tiles } = this.iModel;
-    for (const { supplier, id, owner } of tiles) {
-      if (owner.tileTree instanceof RealityModelTileTree) {
-        tiles.resetTileTreeOwner(id, supplier);
-      }
-    }
-  }
-
   /** Fully reset a map-layer tile tree; by calling this, the map-layer will to go through initialize process again, and all previously fetched tile will be lost.
    * @beta
    */
@@ -1325,7 +1315,6 @@ export abstract class Viewport implements Disposable, TileUser {
     const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-      this.refreshLayerTiles();
     };
 
     removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
@@ -1808,10 +1797,6 @@ export abstract class Viewport implements Disposable, TileUser {
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
       this._changeFlags.setViewState();
-
-      if (isMapLayerChanged) {
-        this.refreshLayerTiles();
-      }
     }
   }
 
