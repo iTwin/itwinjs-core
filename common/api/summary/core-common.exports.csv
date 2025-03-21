@@ -141,7 +141,7 @@ alpha;enum;ConcreteEntityTypes
 alpha;namespace;ConcreteEntityTypes
 internal;function;toBisCoreRootClassFullName
 public;interface;ConflictingLock
-public;interface;ConflictingLocks
+beta;interface;ConflictingLocks
 public;class;ConflictingLocksError
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider

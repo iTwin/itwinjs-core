@@ -10,41 +10,60 @@ import { DbResult } from "./BeSQLite";
 import { RepositoryStatus } from "./internal/RepositoryStatus";
 import { Optional } from "./UtilityTypes";
 
+type BaseError = Error;
+
 /**
- * An interface used to describe an exception.
- * This error interface should be extended to throw errors with extra properties defined on them.
+ * Namespace for handling all exceptions thrown by iTwin.js
  * @beta
  */
-export interface ITwinError extends Error {
-  readonly iTwinErrorId: {
-    /** a "namespace" for the error. This is a qualifier for the key that should be specific enough to be unique across all ITwinErrors for all applications (e.g. a package name). */
-    readonly scope: string;
-    /** unique key for error, within scope. */
-    readonly key: string;
+export namespace ITwinError {
+  /**
+   * All Exceptions thrown by iTwin.js libraries and applications should implement this interface.
+   *
+   * iTwin.js Error objects must have an `iTwinErrorId` member that includes string `scope` and `key` members that uniquely identify it.
+   * This allows programmers to identify errors where they're caught and does not rely on any specific Error class - which is
+   * problematic when exceptions are marshalled across process boundaries.
+   * @note This interface may be extended to throw errors with additional properties on them.
+   */
+  export interface Error extends BaseError {
+    readonly iTwinErrorId: {
+      /** a namespace for the error. This is a qualifier for the key that should be specific enough to be unique across all applications (e.g. a package name). */
+      readonly scope: string;
+      /** key for the error, unique within scope. */
+      readonly key: string;
+    }
   }
-}
 
-/** @beta */
-export function createITwinError<T extends ITwinError>(args: Optional<T, "name">): T {
-  const err = Object.assign(Error(args.message), args);
-  err.name = args.iTwinErrorId.key;
-  return err as T;
-}
+  /**
+   * Create a new instance of an `ITwinError.Error`
+   * @note generally programmers will use [[throwError]] instead of this method, but it may be useful for tests.
+   */
+  export function createError<T extends Error>(args: Optional<T, "name">): T {
+    const err = new Error(args.message);
+    Object.assign(err, args);
+    err.name = args.iTwinErrorId.key; // helpful because this is used by `toString` for Error class
+    return err as T;
+  }
 
-/** @beta */
-export function throwITwinError<T extends ITwinError>(args: Optional<T, "name">): never {
-  throw createITwinError(args);
-}
+  /**
+   * Throw an `ITwinError.Error` exception.
+   * @note this function never returns
+   */
+  export function throwError<T extends Error>(args: Optional<T, "name">): never {
+    throw createError(args);
+  }
 
-/**
- * type guard function to ensure an error has a specific scope and errorKey
- * @param error The error to ve verified.
- * @param scope value for `error.iTwinErrorId.scope`
- * @param key value for `error.iTwinErrorId.key`
- * @beta
-*/
-export function isITwinError<T extends ITwinError>(error: any, scope: string, key: string): error is T {
-  return error !== null && typeof error === "object" && error.iTwinErrorId !== null && typeof error.iTwinErrorId === "object" && error.iTwinErrorId.scope === scope && error.iTwinErrorId.key === key;
+  /**
+   * Determine whether an error object was thrown by iTwin.js and has a specific scope and key.
+   *
+   * If the test succeeds, the type of `error` is coerced to `T`
+   * @param error The error to ve verified.
+   * @param scope value for `error.iTwinErrorId.scope`
+   * @param key value for `error.iTwinErrorId.key`
+  */
+  export function isError<T extends Error>(error: unknown, scope: string, key: string): error is T {
+    return isObject(error) && isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === scope && error.iTwinErrorId.key === key;
+  }
 }
 
 /** Standard status code.
@@ -363,18 +382,29 @@ interface ErrorProps {
   metadata?: object;
 }
 
-/** @beta */
-export interface BentleyITwinError extends ITwinError {
+/**
+ * An `ITwinError.Error` instance that also supplies an `errorNumber`.
+ * @note this interface exists *only* for legacy errors derived from `BentleyError`. The concept of "error number" is
+ * problematic since it is impossible to enforce across the iTwin.js library, let alone across applications. New code should
+ * use `ITwinError` and identify errors with strings instead.
+ * @beta */
+export interface LegacyITwinErrorWithNumber extends ITwinError.Error {
+  /** a number to identify the error. */
   readonly errorNumber: number;
+
+  /** Logging metadata
+   * @note exceptions should *not* include logging data. Logging should be done where exceptions are caught. This member exists
+   * only for backwards compatibility.
+   */
   loggingMetadata?: object;
 }
 
 /**
- * Base exception class for iTwin.js exceptions.
- * For backwards compatibility only. Do not create new subclasses of IModelError. Instead create an interface that extends [[ITwinError]] and use [[throwITwinError]].
+ * Base exception class for legacy iTwin.js errors.
+ * For backwards compatibility only. Do not create new subclasses of BentleyError. Instead use [[ITwinError]].
  * @public
  */
-export class BentleyError extends Error implements BentleyITwinError {
+export class BentleyError extends Error { // note: this class implements LegacyITwinErrorWithNumber but can't be declared as such because that interface is @beta.
   public static readonly iTwinErrorScope = "bentley-error";
   private readonly _metaData: LoggingMetaData;
 
@@ -390,13 +420,21 @@ export class BentleyError extends Error implements BentleyITwinError {
     this.name = this._initName();
   }
 
+  /** supply the value for iTwinErrorId  */
   public get iTwinErrorId() {
     return { scope: BentleyError.iTwinErrorScope, key: this.name };
   }
+  /** value for logging metadata */
   public get loggingMetadata() { return this.getMetaData(); }
 
-  public static isError<T extends BentleyITwinError>(error: any, errorNumber?: number): error is T {
-    return typeof error === "object" && typeof error.iTwinErrorId === "object" && error.iTwinErrorId.scope === BentleyError.iTwinErrorScope &&
+  /**
+   * Determine if an error object implements the `LegacyITwinErrorWithNumber` interface.
+   *
+   * If the test succeeds, the type of `error` is coerced to `T`
+   * @note this method does *not* test that the object is an `instanceOf BentleyError`.
+   */
+  public static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T {
+    return isObject(error) && isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === BentleyError.iTwinErrorScope &&
       typeof error.errorNumber === "number" && (errorNumber === undefined || error.errorNumber === errorNumber);
   }
 

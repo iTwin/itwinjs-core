@@ -6,14 +6,14 @@
  * @module iModels
  */
 
-import { isITwinError, ITwinError, throwITwinError } from "@itwin/core-bentley";
+import { ITwinError } from "@itwin/core-bentley";
 
 /**
  * @beta
  */
 export namespace ChannelError {
 
-  export interface Error extends ITwinError {
+  export interface Error extends ITwinError.Error {
     channelKey: string;
   }
 
@@ -22,10 +22,10 @@ export namespace ChannelError {
   export type Key = "may-not-nest" | "not-allowed" | "root-exists";
 
   export function throwError(key: Key, message: string, channelKey: string): never {
-    throwITwinError<ChannelError.Error>({ iTwinErrorId: { scope, key }, message, channelKey });
+    ITwinError.throwError<Error>({ iTwinErrorId: { scope, key }, message, channelKey });
   }
-  export function isError(error: any, key: Key): error is ChannelError.Error {
-    return isITwinError<Error>(error, scope, key) && typeof error.channelKey === "string";
+  export function isError(error: unknown, key: Key): error is ChannelError.Error {
+    return ITwinError.isError<Error>(error, scope, key) && typeof error.channelKey === "string";
   }
 }
 

@@ -10,7 +10,6 @@ import { AngleProps } from '@itwin/core-geometry';
 import { AnyGeometryQuery } from '@itwin/core-geometry';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
-import { BentleyITwinError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BriefcaseStatus } from '@itwin/core-bentley';
 import type { Buffer as Buffer_2 } from 'buffer';
@@ -38,6 +37,7 @@ import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
 import { ITwinError } from '@itwin/core-bentley';
+import { LegacyITwinErrorWithNumber } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -1169,14 +1169,14 @@ export enum ChangesetType {
 // @beta (undocumented)
 export namespace ChannelError {
     // (undocumented)
-    export interface Error extends ITwinError {
+    export interface Error extends ITwinError.Error {
         // (undocumented)
         channelKey: string;
     }
     const // (undocumented)
     scope = "itwin-channel-errors";
     // (undocumented)
-    export function isError(error: any, key: Key): error is ChannelError.Error;
+    export function isError(error: unknown, key: Key): error is ChannelError.Error;
     // (undocumented)
     export type Key = "may-not-nest" | "not-allowed" | "root-exists";
     // (undocumented)
@@ -1655,18 +1655,18 @@ export interface ConflictingLock {
     state: LockState;
 }
 
-// @public (undocumented)
-export interface ConflictingLocks extends BentleyITwinError {
+// @beta
+export interface ConflictingLocks extends LegacyITwinErrorWithNumber {
     // (undocumented)
     conflictingLocks?: ConflictingLock[];
 }
 
 // @public
-export class ConflictingLocksError extends IModelError implements ConflictingLocks {
+export class ConflictingLocksError extends IModelError {
     constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
     // (undocumented)
     conflictingLocks?: ConflictingLock[];
-    // (undocumented)
+    // @beta (undocumented)
     static isError<T extends ConflictingLocks>(error: any): error is T;
 }
 
@@ -5312,7 +5312,7 @@ export type IpcInvokeReturn = {
     error?: never;
 } | {
     result?: never;
-    error: ITwinError;
+    error: ITwinError.Error;
 };
 
 // @public

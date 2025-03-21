@@ -1,4 +1,4 @@
-import { BentleyError, IModelHubStatus, isITwinError, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyError, IModelHubStatus, ProcessDetector } from "@itwin/core-bentley";
 import { BackendError, ChannelError, ConflictingLock, ConflictingLocksError, LockState } from "@itwin/core-common";
 import { expect } from "chai";
 import { coreFullStackTestIpc } from "../Editing";
@@ -26,18 +26,18 @@ if (ProcessDetector.isElectronAppFrontend) {
 
         try {
           await coreFullStackTestIpc.throwLockError(inUseLocks, testMsg, metadata, logFn);
-        } catch (err: any) {
+        } catch (err: unknown) {
           caughtError = true;
           expect(err instanceof BackendError).true;
           expect(ConflictingLocksError.isError(err)).true;
           if (ConflictingLocksError.isError(err)) {
-            expect(err.stack?.includes("backend.ts")).true;
+            expect(BentleyError.isError(err, errorNumber)).true;
+            expect(err.stack?.includes("backend.ts")).true; // this is where we threw from the backend
             expect(err.message).equal(testMsg);
             expect(err.errorNumber).equal(errorNumber);
             expect(err.iTwinErrorId.key).equal("Lock is owned by another briefcase");
             expect(err.loggingMetadata).deep.equal(metadata);
             expect(err.conflictingLocks).deep.equal(inUseLocks);
-            expect(isITwinError(err, BentleyError.iTwinErrorScope, BentleyError.getErrorKey(errorNumber))).true;
           }
         }
         expect(caughtError).true;
@@ -52,15 +52,18 @@ if (ProcessDetector.isElectronAppFrontend) {
         channelKey: "123",
       }
       let caughtError = false;
+      const errKey = "may-not-nest";
       try {
-        await coreFullStackTestIpc.throwChannelError("may-not-nest", sentErr.message, sentErr.channelKey);
-      } catch (err: any) {
+        await coreFullStackTestIpc.throwChannelError(errKey, sentErr.message, sentErr.channelKey);
+      } catch (err: unknown) {
         caughtError = true;
-        expect(ChannelError.isError(err, "may-not-nest")).true;
-        // Even though we're on the frontend we should make sure our stack trace includes backend code.
-        expect(err.stack?.includes("core") && err.stack?.includes("backend")).true;
-        expect(err.message).equal(sentErr.message);
-        expect(err.channelKey).equal(sentErr.channelKey);
+        expect(ChannelError.isError(err, errKey)).true;
+        if (ChannelError.isError(err, errKey)) {
+          expect(err.stack?.includes("backend.ts")).true; // this is where we threw from the backend
+          expect(err.message).equal(sentErr.message);
+          expect(err.name).equal(errKey);
+          expect(err.channelKey).equal(sentErr.channelKey);
+        }
       }
       expect(caughtError).true;
     });
