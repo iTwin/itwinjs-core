@@ -13,6 +13,7 @@ beta;interface;CustomFormatProps
 beta;enum;DecimalPrecision
 beta;class;Format
 beta;interface;FormatProps
+beta;interface;FormatsProvider
 internal;const;formatStringRgx
 beta;class;Formatter
 beta;class;FormatterSpec

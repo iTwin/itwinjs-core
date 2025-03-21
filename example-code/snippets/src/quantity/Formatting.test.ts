@@ -1,5 +1,5 @@
 import { QuantityFormatter } from "@itwin/core-frontend";
-import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
+import { BasicFormatsProvider, BasicUnit, BasicUnitsProvider, Format, FormatterSpec } from "@itwin/core-quantity";
 import { assert } from "chai";
 
 
@@ -90,6 +90,23 @@ describe('Formatting examples', () => {
     // __PUBLISH_EXTRACT_END__
 
     assert.equal(formattedValue, "3'-3 3/8\"");
+  });
+
+  it("BasicFormatsProvider Formatting", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Basic_Formats_Provider_Simple_Formatting
+    const formatsProvider = new BasicFormatsProvider();
+    const unitsProvider = new BasicUnitsProvider();
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
+
+    const formatProps = formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH_LONG");
+    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
+    const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(50); // The persistence unit is meters, so this input value is 50 m.
+    // result in formatted value of 0.05 km
+    // __PUBLISH_EXTRACT_END__
+
+    assert.equal(result, "0.05 km");
   });
 });
 

@@ -11,14 +11,16 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-    - [Text Block Margins](#text-Block-margins)
-  - [Display](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
+    - [Text Block Margins](#text-block-margins)
+  - [Display](#display)
+    - [Read image to canvas](#read-image-to-canvas)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
+  - [Quantity](#quantity)
+    - [BasicUnitsProvider and BasicFormatsProvider](#basicunitsprovider-and-basicformatsprovider)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -55,7 +57,7 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
-    - [Attach/detach db](#attachdetach-db)
+  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -142,6 +144,11 @@ Can also be attached as a map-layer:
 ## Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
+
+## Quantity
+
+### BasicUnitsProvider and BasicFormatsProvider
+A BasicUnitsProvider and BasicFormatsProvider has been added, each containing a set of default units and formats. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting. Further information and examples can be found in the [learning documentation](../learning/quantity/index.md) for Quantity.
 
 ## API deprecations
 

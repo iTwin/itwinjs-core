@@ -5,6 +5,7 @@
 ```ts
 
 import { BentleyError } from '@itwin/core-bentley';
+import { BeUiEvent } from '@itwin/core-bentley';
 
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
@@ -279,6 +280,16 @@ export interface FormatProps {
     readonly type: string;
     // (undocumented)
     readonly uomSeparator?: string;
+}
+
+// @beta
+export interface FormatsProvider {
+    // (undocumented)
+    getFormat(id: string): FormatProps | undefined;
+    // (undocumented)
+    getFormats(ids?: string[]): FormatProps[];
+    // (undocumented)
+    onFormatsUpdated: BeUiEvent<string[]>;
 }
 
 // @internal
