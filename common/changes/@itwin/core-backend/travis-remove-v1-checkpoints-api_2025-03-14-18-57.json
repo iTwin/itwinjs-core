@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Remove V1 Checkpoints API.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
