@@ -5,12 +5,14 @@
     - [Common Terms](#common-terms)
     - [FormatProps](#formatprops)
     - [Concepts](#concepts)
+      - [Formats Provider](#formats-provider)
       - [Units Provider](#units-provider)
       - [Unit Conversion](#unit-conversion)
     - [Examples of Usage](#examples-of-usage)
       - [Numeric Format](#numeric-format)
       - [Composite Format](#composite-format)
       - [Parsing Values](#parsing-values)
+      - [Using a FormatsProvider](#using-a-formatsprovider)
     - [Mathematical Operation Parsing](#mathematical-operation-parsing)
       - [Limitations](#limitations)
 
@@ -41,11 +43,17 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 ### Concepts
 
+#### Formats Provider
+
+A formats provider helps provide all the necessary formats for displaying formatted quantity values, while also enabling users to add formats of their own.
+
+The [BasicFormatsProvider]($quantity) holds many common formats used in engineering and construction, while also exposing a way to get formats associated with a [KindOfQuantity]($docs/bis/ec/kindofquantity/).
+
 #### Units Provider
 
 To appropriately parse and output formatted values, a units provider is used to define all available units and provides conversion factors between units. There are several implementations of the UnitsProvider across iTwin.js:
 
-The [BasicUnitsProvider]($frontend) holds many common units and their conversions between each other.
+The [BasicUnitsProvider]($quantity) holds many common units and their conversions between each other.
 
 The [SchemaUnitProvider]($ecschema-metadata) is used to load unit definitions of schemas from an iModel. This holds more extensive units through the Units schema, while also allowing users to define their own units.
 
@@ -93,6 +101,27 @@ For the composite format below, we provide a unit in meters and produce a format
 
 </details>
 
+#### Using a FormatsProvider
+
+The example below uses the BasicFormatsProvider available in `core-quantity` to parse and format values associated with the length of an object.
+
+<details>
+  <summary>Example of Formatting</summary>
+
+```ts
+[[include:Quantity_Formatting.Basic_Formats_Provider_Simple_Formatting]]
+```
+
+</details>
+
+<details>
+  <summary>Example of Parsing</summary>
+
+```ts
+[[include:Quantity_Formatting.Basic_Formats_Provider_Simple_Parsing]]
+```
+
+</details>
 ### Mathematical Operation Parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting each value present, according to the specified format. This makes it possible to process several different units at once.
