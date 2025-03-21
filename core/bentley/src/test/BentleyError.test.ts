@@ -23,6 +23,7 @@ describe("BentleyError.getErrorMessage", () => {
         key: "key1",
         scope: "scope1",
       },
+      name: "testErr",
       message: "test message",
     };
     expect(isITwinError(err, "a", "b")).false;

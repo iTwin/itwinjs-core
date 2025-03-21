@@ -25,7 +25,7 @@ export namespace ChannelError {
     throwITwinError<ChannelError.Error>({ iTwinErrorId: { scope, key }, message, channelKey });
   }
   export function isError(error: any, key: Key): error is ChannelError.Error {
-    return isITwinError(error, scope, key);
+    return isITwinError<Error>(error, scope, key) && typeof error.channelKey === "string";
   }
 }
 

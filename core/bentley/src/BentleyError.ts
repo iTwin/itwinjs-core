@@ -8,32 +8,31 @@
 
 import { DbResult } from "./BeSQLite";
 import { RepositoryStatus } from "./internal/RepositoryStatus";
+import { Optional } from "./UtilityTypes";
 
 /**
  * An interface used to describe an exception.
  * This error interface should be extended to throw errors with extra properties defined on them.
  * @beta
  */
-export interface ITwinError {
+export interface ITwinError extends Error {
   readonly iTwinErrorId: {
     /** a "namespace" for the error. This is a qualifier for the key that should be specific enough to be unique across all ITwinErrors for all applications (e.g. a package name). */
     readonly scope: string;
     /** unique key for error, within scope. */
     readonly key: string;
   }
-  /** explanation of what went wrong. Intended to be read by a programmer (i.e. it is *not* localized). */
-  readonly message: string;
-  /** stack trace of the error. */
-  readonly stack?: string;
 }
 
 /** @beta */
-export function createITwinError<T extends ITwinError>(args: T): Error & T {
-  return Object.assign(Error(args.message), args);
+export function createITwinError<T extends ITwinError>(args: Optional<T, "name">): T {
+  const err = Object.assign(Error(args.message), args);
+  err.name = args.iTwinErrorId.key;
+  return err as T;
 }
 
 /** @beta */
-export function throwITwinError<T extends ITwinError>(args: T): never {
+export function throwITwinError<T extends ITwinError>(args: Optional<T, "name">): never {
   throw createITwinError(args);
 }
 
