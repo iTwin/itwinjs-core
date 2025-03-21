@@ -64,6 +64,10 @@ export namespace ITwinError {
   export function isError<T extends Error>(error: unknown, scope: string, key: string): error is T {
     return isObject(error) && isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === scope && error.iTwinErrorId.key === key;
   }
+
+  export function isObject(obj: unknown): obj is { [key: string]: unknown } {
+    return typeof obj === "object" && obj !== null;
+  }
 }
 
 /** Standard status code.
@@ -372,9 +376,6 @@ export type GetMetaDataFunction = () => object | undefined;
  */
 export type LoggingMetaData = GetMetaDataFunction | object | undefined;
 
-function isObject(obj: unknown): obj is { [key: string]: unknown } {
-  return typeof obj === "object" && obj !== null;
-}
 
 interface ErrorProps {
   message: string;
@@ -434,7 +435,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
    * @note this method does *not* test that the object is an `instanceOf BentleyError`.
    */
   public static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T {
-    return isObject(error) && isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === BentleyError.iTwinErrorScope &&
+    return ITwinError.isObject(error) && ITwinError.isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === BentleyError.iTwinErrorScope &&
       typeof error.errorNumber === "number" && (errorNumber === undefined || error.errorNumber === errorNumber);
   }
 
@@ -750,7 +751,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
     if (error instanceof Error)
       return error.toString();
 
-    if (isObject(error)) {
+    if (ITwinError.isObject(error)) {
       if (typeof error.message === "string")
         return error.message;
 
@@ -770,7 +771,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
    * @public
    */
   public static getErrorStack(error: unknown): string | undefined {
-    if (isObject(error) && typeof error.stack === "string")
+    if (ITwinError.isObject(error) && typeof error.stack === "string")
       return error.stack;
 
     return undefined;
@@ -782,7 +783,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
    * @public
    */
   public static getErrorMetadata(error: unknown): object | undefined {
-    if (isObject(error) && typeof error.getMetaData === "function") {
+    if (ITwinError.isObject(error) && typeof error.getMetaData === "function") {
       const metadata = error.getMetaData();
       if (typeof metadata === "object" && metadata !== null)
         return metadata;
