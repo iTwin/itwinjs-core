@@ -39,6 +39,8 @@ beta;interface;ChannelControl
 beta;namespace;ChannelControl
 beta;type;ChannelKey
 public;class;ChannelRootAspect
+internal;type;CheckpointArg
+deprecated;type;CheckpointArg
 internal;class;CheckpointManager
 public;interface;CheckpointProps
 public;class;ClassRegistry
@@ -235,6 +237,10 @@ public;function;imageBufferFromImageSource
 public;interface;ImageBufferFromImageSourceArgs
 public;function;imageSourceFromImageBuffer
 public;interface;ImageSourceFromImageBufferArgs
+beta;const;IModelCloneContext
+deprecated;const;IModelCloneContext
+beta;type;IModelCloneContext
+deprecated;type;IModelCloneContext
 public;class;IModelDb
 public;namespace;IModelDb
 internal;enum;TileContentState

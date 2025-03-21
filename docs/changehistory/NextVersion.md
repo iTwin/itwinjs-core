@@ -404,19 +404,6 @@ The following APIs have been removed in `@itwin/appui-abstract`.
 | `ECDb.nativeDb`                      | N/A                                                                                                            |
 | `SQLiteDb.nativeDb`                  | N/A                                                                                                            |
 | `IModelHost.platform`                | N/A                                                                                                            |
-| `CheckpointArg`                      | `DownloadRequest`                                                                                              |
-| `ECDB.query`                         | Use `createQueryReader` instead (same parameter).                                                              |
-| `ECDB.queryRowCount`                 | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
-| `ECDB.restartQuery`                  | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
-| `Element.collectPredecessorIds`      | `Element.collectReferenceIds`                                                                                  |
-| `Element.getPredecessorIds`          | `Element.getReferenceIds`                                                                                      |
-| `ElementAspect.findBySource`         | `ElementAspect.findAllBySource`                                                                                |
-| `Entity.getReferenceConcreteIds`     | `Entity.getReferenceIds`                                                                                       |
-| `Entity.collectReferenceConcreteIds` | `Entity.collectReferenceIds`                                                                                   |
-| `IModelDb.query`                     | Use `createQueryReader` instead (same parameter).                                                              |
-| `IModelDb.queryRowCount`             | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
-| `IModelDb.restartQuery`              | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
-| `IModelDb.getViewStateData`          | `IModelDb.getViewStateProps`                                                                                   |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
