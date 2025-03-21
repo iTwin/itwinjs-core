@@ -70,7 +70,8 @@ export class IncrementalSchemaLocater implements ISchemaLocater {
    * @param context     The schema context for loading schema references,
    */
   public getSchemaSync(_schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined {
-    throw new Error("Incremental Schema loading does not support synchronous loading.");
+    // Incremental Schema loading does not support synchronous loading, return undefined.
+    return undefined;
   }
 }
 

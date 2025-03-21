@@ -94,6 +94,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
       ]
     }]);
 
+    const spy = sinon.spy(schemaLoader, "loadSchema");
+
     const schema = await context.getSchema(schemaKeyA, SchemaMatchType.Exact);
     expect(schema).to.not.be.undefined;
     expect(schema).has.nested.property("schemaKey.name", "SchemaA");
@@ -103,6 +105,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
       expect(refs).satisfies(() => refs.some((ref) => Schema.isSchema(ref) && ref.schemaKey.name === "SchemaC"));
       return true;
     });
+
+    expect(spy.callCount).to.be.equal(1, "SchemaLoaders loadSchema should only be called once.");
   });
 
   it("getSchema called multiple times for same schema", async () => {
@@ -206,8 +210,17 @@ describe("IncrementalSchemaLocater tests: ", () => {
   });
 
   it("getSchema synchronously, fails", () => {
-    const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
-    expect(() => context.getSchemaSync(schemaKey)).throws("Incremental Schema loading does not support synchronous loading.");
+    const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
+    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+      $schema,
+      name: schemaKey.name,
+      version: schemaKey.version.toString(),
+      alias: "SchemaA"
+    }]);
+
+    const schema = context.getSchemaSync(schemaKey);
+    expect(schema).to.be.undefined;
   });
 
   it("getSchema which does not exist, returns undefined", async () => {
