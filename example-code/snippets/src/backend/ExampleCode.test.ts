@@ -39,7 +39,6 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-
   it("should check for an InUseLocksError", async () => {
     if (iModel.isBriefcase) {
       const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
@@ -47,7 +46,7 @@ describe("Example Code", () => {
       // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
       try {
         await iModel.locks.acquireLocks({ exclusive: elementId });
-      } catch (err) {
+      } catch (err: unknown) {
         if (ConflictingLocksError.isError(err)) {
           if (err.conflictingLocks) {
             for (const inUseLock of err.conflictingLocks) {

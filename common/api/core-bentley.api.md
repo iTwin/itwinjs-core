@@ -85,6 +85,7 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
+    // @beta
     static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T;
     get iTwinErrorId(): {
         scope: string;
@@ -1034,6 +1035,10 @@ export namespace ITwinError {
         };
     }
     export function isError<T extends Error>(error: unknown, scope: string, key: string): error is T;
+    // (undocumented)
+    export function isObject(obj: unknown): obj is {
+        [key: string]: unknown;
+    };
     export function throwError<T extends Error>(args: Optional<T, "name">): never;
 }
 

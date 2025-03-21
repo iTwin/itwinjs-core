@@ -433,6 +433,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
    *
    * If the test succeeds, the type of `error` is coerced to `T`
    * @note this method does *not* test that the object is an `instanceOf BentleyError`.
+   * @beta
    */
   public static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T {
     return ITwinError.isObject(error) && ITwinError.isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === BentleyError.iTwinErrorScope &&

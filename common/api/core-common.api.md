@@ -1166,20 +1166,22 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
-// @beta (undocumented)
+// @beta
 export namespace ChannelError {
     // (undocumented)
     export interface Error extends ITwinError.Error {
-        // (undocumented)
         channelKey: string;
     }
     const // (undocumented)
     scope = "itwin-channel-errors";
-    // (undocumented)
     export function isError(error: unknown, key: Key): error is ChannelError.Error;
-    // (undocumented)
-    export type Key = "may-not-nest" | "not-allowed" | "root-exists";
-    // (undocumented)
+    export type Key =
+    /** an attempt to create a channel within an existing channel */
+    "may-not-nest" |
+    /** an attempt to use a channel that was not "allowed" */
+    "not-allowed" |
+    /** the root channel already exists */
+    "root-exists";
     export function throwError(key: Key, message: string, channelKey: string): never;
 }
 
@@ -5312,7 +5314,7 @@ export type IpcInvokeReturn = {
     error?: never;
 } | {
     result?: never;
-    error: ITwinError.Error;
+    error: unknown;
 };
 
 // @public
