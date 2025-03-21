@@ -6,7 +6,7 @@
 import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
+import { AnyClass, SchemaInfo } from "../Interfaces";
 import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -126,6 +126,10 @@ export class SchemaReadHelper<T = unknown> {
 
   protected async getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined> {
     return this._context.getSchemaItem(schemaItemKey);
+  }
+
+  protected skipSchemaItem(schemaItem: SchemaItem | undefined): boolean {
+    return schemaItem !== undefined;
   }
 
   /* Finish loading the rest of the schema */
@@ -287,67 +291,70 @@ export class SchemaReadHelper<T = unknown> {
    * @param schemaItemObject The Object to populate the SchemaItem with.
    */
   protected async loadSchemaItem(schema: Schema, name: string, itemType: string, schemaItemObject?: Readonly<unknown>): Promise<SchemaItem | undefined> {
-    let schemaItem: AnySchemaItem | undefined;
+    let schemaItem = schema.getItemSync(name);
+    if(this.skipSchemaItem(schemaItem)) {
+      return schemaItem;
+    }
 
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
-        schemaItem = await (schema as MutableSchema).createEntityClass(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createEntityClass(name);
         schemaItemObject && await this.loadEntityClass(schemaItem as EntityClass, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
-        schemaItem = await (schema as MutableSchema).createStructClass(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createStructClass(name);
         const structProps = schemaItemObject && this._parser.parseStructClass(schemaItemObject);
         structProps && await this.loadClass(schemaItem as StructClass, structProps, schemaItemObject);
         break;
       case SchemaItemType.Mixin:
-        schemaItem = await (schema as MutableSchema).createMixinClass(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createMixinClass(name);
         schemaItemObject && await this.loadMixin(schemaItem as Mixin, schemaItemObject);
         break;
       case SchemaItemType.CustomAttributeClass:
-        schemaItem = await (schema as MutableSchema).createCustomAttributeClass(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createCustomAttributeClass(name);
         const caClassProps = schemaItemObject && this._parser.parseCustomAttributeClass(schemaItemObject);
         caClassProps && await this.loadClass(schemaItem as CustomAttributeClass, caClassProps, schemaItemObject);
         break;
       case SchemaItemType.RelationshipClass:
-        schemaItem = await (schema as MutableSchema).createRelationshipClass(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createRelationshipClass(name);
         schemaItemObject && await this.loadRelationshipClass(schemaItem as RelationshipClass, schemaItemObject);
         break;
       case SchemaItemType.KindOfQuantity:
-        schemaItem = await (schema as MutableSchema).createKindOfQuantity(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createKindOfQuantity(name);
         schemaItemObject && await this.loadKindOfQuantity(schemaItem as KindOfQuantity, schemaItemObject);
         break;
       case SchemaItemType.Unit:
-        schemaItem = await (schema as MutableSchema).createUnit(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createUnit(name);
         schemaItemObject && await this.loadUnit(schemaItem as Unit, schemaItemObject);
         break;
       case SchemaItemType.Constant:
-        schemaItem = await (schema as MutableSchema).createConstant(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createConstant(name);
         schemaItemObject && await this.loadConstant(schemaItem as Constant, schemaItemObject);
         break;
       case SchemaItemType.InvertedUnit:
-        schemaItem = await (schema as MutableSchema).createInvertedUnit(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createInvertedUnit(name);
         schemaItemObject && await this.loadInvertedUnit(schemaItem as InvertedUnit, schemaItemObject);
         break;
       case SchemaItemType.Format:
-        schemaItem = await (schema as MutableSchema).createFormat(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createFormat(name);
         schemaItemObject && await this.loadFormat(schemaItem as Format, schemaItemObject);
         break;
       case SchemaItemType.Phenomenon:
-        schemaItem = await (schema as MutableSchema).createPhenomenon(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createPhenomenon(name);
         const phenomenonProps = schemaItemObject && this._parser.parsePhenomenon(schemaItemObject);
         phenomenonProps && await schemaItem.fromJSON(phenomenonProps);
         break;
       case SchemaItemType.UnitSystem:
-        schemaItem = await (schema as MutableSchema).createUnitSystem(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createUnitSystem(name);
         schemaItemObject && await schemaItem.fromJSON(this._parser.parseUnitSystem(schemaItemObject));
         break;
       case SchemaItemType.PropertyCategory:
-        schemaItem = await (schema as MutableSchema).createPropertyCategory(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createPropertyCategory(name);
         const propertyCategoryProps = schemaItemObject && this._parser.parsePropertyCategory(schemaItemObject);
         propertyCategoryProps && schemaItemObject && await schemaItem.fromJSON(propertyCategoryProps);
         break;
       case SchemaItemType.Enumeration:
-        schemaItem = await (schema as MutableSchema).createEnumeration(name);
+        schemaItem = schemaItem || await (schema as MutableSchema).createEnumeration(name);
         const enumerationProps = schemaItemObject &&this._parser.parseEnumeration(schemaItemObject);
         enumerationProps && await schemaItem.fromJSON(enumerationProps);
         break;
@@ -365,67 +372,70 @@ export class SchemaReadHelper<T = unknown> {
    * @param schemaItemObject The Object to populate the SchemaItem with.
    */
   private loadSchemaItemSync(schema: Schema, name: string, itemType: string, schemaItemObject: Readonly<unknown>): SchemaItem | undefined {
-    let schemaItem: AnySchemaItem | undefined;
+    let schemaItem = schema.getItemSync(name);
+    if(this.skipSchemaItem(schemaItem)) {
+      return schemaItem;
+    }
 
     switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
-        schemaItem = (schema as MutableSchema).createEntityClassSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createEntityClassSync(name);
         this.loadEntityClassSync(schemaItem as EntityClass, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
-        schemaItem = (schema as MutableSchema).createStructClassSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createStructClassSync(name);
         const structProps = this._parser.parseStructClass(schemaItemObject);
         this.loadClassSync(schemaItem as StructClass, structProps, schemaItemObject);
         break;
       case SchemaItemType.Mixin:
-        schemaItem = (schema as MutableSchema).createMixinClassSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createMixinClassSync(name);
         this.loadMixinSync(schemaItem as Mixin, schemaItemObject);
         break;
       case SchemaItemType.CustomAttributeClass:
-        schemaItem = (schema as MutableSchema).createCustomAttributeClassSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createCustomAttributeClassSync(name);
         const caClassProps = this._parser.parseCustomAttributeClass(schemaItemObject);
         this.loadClassSync(schemaItem as CustomAttributeClass, caClassProps, schemaItemObject);
         break;
       case SchemaItemType.RelationshipClass:
-        schemaItem = (schema as MutableSchema).createRelationshipClassSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createRelationshipClassSync(name);
         this.loadRelationshipClassSync(schemaItem as RelationshipClass, schemaItemObject);
         break;
       case SchemaItemType.KindOfQuantity:
-        schemaItem = (schema as MutableSchema).createKindOfQuantitySync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createKindOfQuantitySync(name);
         this.loadKindOfQuantitySync(schemaItem as KindOfQuantity, schemaItemObject);
         break;
       case SchemaItemType.Unit:
-        schemaItem = (schema as MutableSchema).createUnitSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createUnitSync(name);
         this.loadUnitSync(schemaItem as Unit, schemaItemObject);
         break;
       case SchemaItemType.Constant:
-        schemaItem = (schema as MutableSchema).createConstantSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createConstantSync(name);
         this.loadConstantSync(schemaItem as Constant, schemaItemObject);
         break;
       case SchemaItemType.InvertedUnit:
-        schemaItem = (schema as MutableSchema).createInvertedUnitSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createInvertedUnitSync(name);
         this.loadInvertedUnitSync(schemaItem as InvertedUnit, schemaItemObject);
         break;
       case SchemaItemType.Format:
-        schemaItem = (schema as MutableSchema).createFormatSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createFormatSync(name);
         this.loadFormatSync(schemaItem as Format, schemaItemObject);
         break;
       case SchemaItemType.Phenomenon:
-        schemaItem = (schema as MutableSchema).createPhenomenonSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createPhenomenonSync(name);
         const phenomenonProps = this._parser.parsePhenomenon(schemaItemObject);
         schemaItem.fromJSONSync(phenomenonProps);
         break;
       case SchemaItemType.UnitSystem:
-        schemaItem = (schema as MutableSchema).createUnitSystemSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createUnitSystemSync(name);
         schemaItem.fromJSONSync(this._parser.parseUnitSystem(schemaItemObject));
         break;
       case SchemaItemType.PropertyCategory:
-        schemaItem = (schema as MutableSchema).createPropertyCategorySync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createPropertyCategorySync(name);
         const propertyCategoryProps = this._parser.parsePropertyCategory(schemaItemObject);
         schemaItem.fromJSONSync(propertyCategoryProps);
         break;
       case SchemaItemType.Enumeration:
-        schemaItem = (schema as MutableSchema).createEnumerationSync(name);
+        schemaItem = schemaItem || (schema as MutableSchema).createEnumerationSync(name);
         const enumerationProps = this._parser.parseEnumeration(schemaItemObject);
         schemaItem.fromJSONSync(enumerationProps);
         break;

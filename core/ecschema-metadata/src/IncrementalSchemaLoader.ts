@@ -267,4 +267,8 @@ class IncrementalSchemaReader extends SchemaReadHelper {
 
     return schemaItem;
   }
+
+  protected override skipSchemaItem(schemaItem: SchemaItem | undefined): boolean {
+    return !this._incremental && schemaItem !== undefined;
+  }
 }
