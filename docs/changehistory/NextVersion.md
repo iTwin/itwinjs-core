@@ -37,7 +37,6 @@ Table of contents:
       - [TypeScript](#typescript)
         - [`target`](#target)
         - [`useDefineForClassFields`](#usedefineforclassfields)
-    - [Preventing Doppelgangers](#preventing-doppelgangers)
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
@@ -330,18 +329,6 @@ class MyElement extends Element {
   ...
 }
 ```
-
-### Preventing Doppelgangers
-
-Previously, it was possible for an app to (mis)configure their dependencies such that they end up with multiple versions of single core package, known as doppelgangers, which can lead to a number of issues, including:
-
-- _Non-single singletons_
-
-- _Duplicate types_
-
-- _Semantically different doppelgangers_
-
-Read here for more details on the [consequences of doppelgangers](https://github.com/microsoft/rushstack-websites/blob/main/websites/rushjs.io/docs/pages/advanced/npm_doppelgangers.md#consequences-of-doppelgangers). To prevent this we have introduced [Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)s to core packages so if you try to load the same package twice, you will get a different instance of the package, which will throw a runtime error when you try to use it.
 
 ### Deprecated API removals
 
