@@ -36,6 +36,8 @@ import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
+import { ITwinError } from '@itwin/core-bentley';
+import { LegacyITwinErrorWithNumber } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -1164,6 +1166,25 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
+// @beta
+export namespace ChannelError {
+    // (undocumented)
+    export interface Error extends ITwinError.Error {
+        channelKey: string;
+    }
+    const // (undocumented)
+    scope = "itwin-channel-errors";
+    export function isError(error: unknown, key: Key): error is ChannelError.Error;
+    export type Key =
+    /** an attempt to create a channel within an existing channel */
+    "may-not-nest" |
+    /** an attempt to use a channel that was not "allowed" */
+    "not-allowed" |
+    /** the root channel already exists */
+    "root-exists";
+    export function throwError(key: Key, message: string, channelKey: string): never;
+}
+
 // @public
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;
@@ -1629,25 +1650,27 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
-// @public @deprecated
+// @public
 export interface ConflictingLock {
     briefcaseIds: number[];
     objectId: string;
     state: LockState;
 }
 
-// @public @deprecated
-export class ConflictingLocksError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+// @beta
+export interface ConflictingLocks extends LegacyITwinErrorWithNumber {
     // (undocumented)
     conflictingLocks?: ConflictingLock[];
 }
 
-// @beta
-export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
-
-// @beta
-export function constructITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
+// @public
+export class ConflictingLocksError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+    // (undocumented)
+    conflictingLocks?: ConflictingLock[];
+    // @beta (undocumented)
+    static isError<T extends ConflictingLocks>(error: any): error is T;
+}
 
 // @alpha
 export enum ContentFlags {
@@ -1907,9 +1930,6 @@ export interface CreateIModelProps extends IModelProps {
     // @alpha
     readonly thumbnail?: ThumbnailProps;
 }
-
-// @beta
-export function createITwinErrorTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
 
 // @public
 export interface CreateSnapshotIModelProps {
@@ -4134,9 +4154,6 @@ export enum GeometrySummaryVerbosity {
     Full = 30
 }
 
-// @beta
-export function getITwinErrorMetaData(error: ITwinError): object | undefined;
-
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
@@ -5242,19 +5259,6 @@ export const Interpolation: {
 // @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
-// @beta
-export interface InUseLock {
-    briefcaseIds: BriefcaseId[];
-    objectId: string;
-    state: LockState;
-}
-
-// @beta
-export interface InUseLocksError extends ITwinError {
-    // (undocumented)
-    inUseLocks: InUseLock[];
-}
-
 // @internal (undocumented)
 export const ipcAppChannels: {
     readonly functions: "itwinjs-core/ipc-app";
@@ -5308,28 +5312,9 @@ export interface IpcAppNotifications {
 export type IpcInvokeReturn = {
     result: any;
     error?: never;
-    iTwinError?: never;
 } | {
     result?: never;
-    iTwinError?: never;
-    error: {
-        name: string;
-        message: string;
-        errorNumber: number;
-        stack?: string;
-        metadata?: LoggingMetaData;
-    };
-} | {
-    result?: never;
-    error?: never;
-    iTwinError: {
-        namespace: string;
-        errorKey: string;
-        message: string;
-        stack?: string;
-        metadata?: LoggingMetaData;
-        [key: string]: any;
-    };
+    error: unknown;
 };
 
 // @public
@@ -5460,9 +5445,6 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @beta
-export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError;
-
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5480,29 +5462,6 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
-
-// @beta
-export interface ITwinError extends Error {
-    errorKey: string;
-    message: string;
-    metadata?: LoggingMetaData;
-    namespace: string;
-    stack?: string;
-}
-
-// @beta
-export const iTwinErrorKeys: {
-    readonly inUseLocks: "in-use-locks";
-    readonly channelNest: "channel-may-not-nest";
-    readonly channelNotAllowed: "channel-not-allowed";
-    readonly channelRootExists: "channel-root-exists";
-};
-
-// @beta
-export const iTwinErrorMessages: Record<keyof typeof iTwinErrorKeys, (...args: any[]) => string>;
-
-// @beta
-export const iTwinjsCoreNamespace = "itwinjs-core";
 
 // @public
 export interface JsonGeometryStream {

@@ -76,6 +76,7 @@ export class BentleyError extends Error {
     constructor(errorNumber: number, message?: string, metaData?: LoggingMetaData);
     // (undocumented)
     errorNumber: number;
+    static getErrorKey(errorNumber: number): string;
     static getErrorMessage(error: unknown): string;
     static getErrorMetadata(error: unknown): object | undefined;
     static getErrorProps(error: unknown): ErrorProps;
@@ -84,6 +85,15 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
+    // @beta
+    static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T;
+    get iTwinErrorId(): {
+        scope: string;
+        key: string;
+    };
+    // (undocumented)
+    static readonly iTwinErrorScope = "bentley-error";
+    get loggingMetadata(): object | undefined;
 }
 
 // @public
@@ -1014,6 +1024,24 @@ export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, 
 // @public
 export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
 
+// @beta
+export namespace ITwinError {
+    export function createError<T extends Error>(args: Optional<T, "name">): T;
+    export interface Error extends BaseError {
+        // (undocumented)
+        readonly iTwinErrorId: {
+            readonly scope: string;
+            readonly key: string;
+        };
+    }
+    export function isError<T extends Error>(error: unknown, scope: string, key: string): error is T;
+    // (undocumented)
+    export function isObject(obj: unknown): obj is {
+        [key: string]: unknown;
+    };
+    export function throwError<T extends Error>(args: Optional<T, "name">): never;
+}
+
 // @public (undocumented)
 export interface JSONSchema {
     // (undocumented)
@@ -1166,6 +1194,12 @@ export namespace JsonUtils {
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
+}
+
+// @beta
+export interface LegacyITwinErrorWithNumber extends ITwinError.Error {
+    readonly errorNumber: number;
+    loggingMetadata?: object;
 }
 
 // @public

@@ -110,6 +110,7 @@ public;type;ChangesetIndexOrId
 public;interface;ChangesetProps
 public;interface;ChangesetRange
 public;enum;ChangesetType
+beta;namespace;ChannelError
 public;interface;ChannelRootAspectProps
 internal;interface;ClassifierTileTreeId
 public;class;ClipIntersectionStyle
@@ -140,11 +141,8 @@ alpha;enum;ConcreteEntityTypes
 alpha;namespace;ConcreteEntityTypes
 internal;function;toBisCoreRootClassFullName
 public;interface;ConflictingLock
-deprecated;interface;ConflictingLock
+beta;interface;ConflictingLocks
 public;class;ConflictingLocksError
-deprecated;class;ConflictingLocksError
-beta;function;constructDetailedError
-beta;function;constructITwinError
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -168,7 +166,6 @@ public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 internal;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
-beta;function;createITwinErrorTypeAsserter
 public;interface;CreateSnapshotIModelProps
 internal;interface;CreateStandaloneIModelProps
 internal;const;CURRENT_INVOCATION
@@ -365,7 +362,6 @@ public;type;GeometryStreamProps
 public;interface;GeometrySummaryOptions
 public;interface;GeometrySummaryRequestProps
 public;enum;GeometrySummaryVerbosity
-beta;function;getITwinErrorMetaData
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
 internal;function;getTileObjectReference
@@ -449,8 +445,6 @@ internal;interface;InterceptedRpcRequest
 beta;enum;InternetConnectivityStatus
 public;const;Interpolation
 public;type;InterpolationFunction
-beta;interface;InUseLock
-beta;interface;InUseLocksError
 internal;const;ipcAppChannels
 internal;interface;IpcAppFunctions
 internal;interface;IpcAppNotifications
@@ -468,17 +462,12 @@ internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
-beta;function;isITwinError
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 public;function;isPlacement3dProps
 public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
-beta;interface;ITwinError
-beta;const;iTwinErrorKeys
-beta;const;iTwinErrorMessages
-beta;const;iTwinjsCoreNamespace
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps
