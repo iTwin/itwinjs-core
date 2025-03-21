@@ -11,9 +11,9 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-    - [Text Block Margins](#text-Block-margins)
-  - [Display](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
+    - [Text Block Margins](#text-block-margins)
+  - [Display](#display)
+    - [Read image to canvas](#read-image-to-canvas)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -55,7 +55,7 @@ Table of contents:
     - [TypeScript configuration changes](#typescript-configuration-changes)
       - [`target`](#target)
       - [`useDefineForClassFields`](#usedefineforclassfields)
-    - [Attach/detach db](#attachdetach-db)
+  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -121,7 +121,7 @@ The `@itwin/map-layers-formats` package now includes an API for consuming Google
 
 To enable it as a base map, it's simple as:
 
- ```typescript
+```typescript
 import { GoogleMaps } from "@itwin/map-layers-formats";
 const ds = IModelApp.viewManager.selectedView.displayStyle;
 ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
@@ -133,7 +133,7 @@ Can also be attached as a map-layer:
 [[include:GoogleMaps_AttachMapLayerSimple]]
 ```
 
-  > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+> **_IMPORTANT_**: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
 
 ```ts
 [[include:GoogleMaps_SetGoogleMapsApiKey]]
@@ -169,7 +169,7 @@ Can also be attached as a map-layer:
   }
   ```
 
-  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement *both* `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - *either* with [IDisposable.dispose]($core-bentley) *or* `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
 
 ### @itwin/core-common
 
@@ -190,6 +190,7 @@ Can also be attached as a map-layer:
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
 - Deprecated synchronous [addLogoCards]($core-frontend)-related APIs in favor of new asynchronous ones:
+
   - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
   - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
@@ -325,12 +326,25 @@ The following APIs have been removed in `@itwin/appui-abstract`.
 
 #### @itwin/core-backend
 
-| Removed               | Replacement |
-| --------------------- | ----------- |
-| `IModelDb.nativeDb`   | N/A         |
-| `ECDb.nativeDb`       | N/A         |
-| `SQLiteDb.nativeDb`   | N/A         |
-| `IModelHost.platform` | N/A         |
+| Removed                              | Replacement                                                                                                    |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `IModelDb.nativeDb`                  | N/A                                                                                                            |
+| `ECDb.nativeDb`                      | N/A                                                                                                            |
+| `SQLiteDb.nativeDb`                  | N/A                                                                                                            |
+| `IModelHost.platform`                | N/A                                                                                                            |
+| `CheckpointArg`                      | `DownloadRequest`                                                                                              |
+| `ECDB.query`                         | Use `createQueryReader` instead (same parameter).                                                              |
+| `ECDB.queryRowCount`                 | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `ECDB.restartQuery`                  | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
+| `Element.collectPredecessorIds`      | `Element.collectReferenceIds`                                                                                  |
+| `Element.getPredecessorIds`          | `Element.getReferenceIds`                                                                                      |
+| `ElementAspect.findBySource`         | `ElementAspect.findAllBySource`                                                                                |
+| `Entity.getReferenceConcreteIds`     | `Entity.getReferenceIds`                                                                                       |
+| `Entity.collectReferenceConcreteIds` | `Entity.collectReferenceIds`                                                                                   |
+| `IModelDb.query`                     | Use `createQueryReader` instead (same parameter).                                                              |
+| `IModelDb.queryRowCount`             | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `IModelDb.restartQuery`              | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
+| `IModelDb.getViewStateData`          | `IModelDb.getViewStateProps`                                                                                   |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
@@ -576,7 +590,7 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the *fast-forward* method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
