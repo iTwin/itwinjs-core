@@ -163,6 +163,13 @@ export class Entity {
     return referenceIds;
   }
 
+  /** kept rename for older transformer versions
+   * @deprecated in 3.x . Use [[getReferenceIds]] instead
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  public getReferenceConcreteIds = this.getReferenceIds;
+
   /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
    * A *reference* is any entity referenced by this entity's EC Data, including json fields.
    * This is important for cloning operations but can be useful in other situations as well.
@@ -174,6 +181,13 @@ export class Entity {
   protected collectReferenceIds(_referenceIds: EntityReferenceSet): void {
     return; // no references by default
   }
+
+  /** kept rename for older transformer versions
+   * @deprecated in 3.x . Use [[collectReferenceIds]] instead
+   * @internal
+   */
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  protected collectReferenceConcreteIds = this.collectReferenceIds;
 }
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
