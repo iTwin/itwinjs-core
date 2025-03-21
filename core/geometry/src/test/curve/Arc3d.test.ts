@@ -6,7 +6,7 @@
 import { assert, describe, expect, it } from "vitest";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
 import { Constant } from "../../Constant";
-import { CurveFactory } from "../../core-geometry";
+import { CurveFactory, CurveLocationDetail } from "../../core-geometry";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -1461,13 +1461,20 @@ describe("ApproximateArc3d", () => {
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
+    let tangents: CurveLocationDetail[] | undefined;
+    let tangent: CurveLocationDetail | undefined;
 
     const captureGeometry = () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx, dy);
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.1, dx, dy);
       if (hintPoint)
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
-      for (const tangent of tangents) {
+      if (tangents)
+        for (const tng of tangents) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx, dy);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx, dy);
+        }
+      if (tangent) {
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tangent.point, 0.1, dx, dy);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tangent.point), dx, dy);
       }
@@ -1477,22 +1484,19 @@ describe("ApproximateArc3d", () => {
     let arc = Arc3d.createXYEllipse(Point3d.create(0, 0), 3, 2);
     let spacePoint = Point3d.create(3, 2);
     let hintPoint = Point3d.create(4, 0);
-    let { tangents, closestIndex } = arc.closestTangent(spacePoint, hintPoint);
-    ck.testCoordinate(3, tangents.length, "3 tangents found");
-    ck.testCoordinate(0, tangents[0].fraction, "first tangent fraction");
-    ck.testCoordinate(0.25, tangents[1].fraction, "second tangent fraction");
-    ck.testCoordinate(1, tangents[2].fraction, "third tangent fraction");
-    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    tangents = arc.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(3, tangents!.length, "3 tangents found");
+    ck.testCoordinate(0, tangents![0].fraction, "first tangent fraction");
+    ck.testCoordinate(0.25, tangents![1].fraction, "second tangent fraction");
+    ck.testCoordinate(1, tangents![2].fraction, "third tangent fraction");
     captureGeometry();
     dy += 7;
     spacePoint = Point3d.create(3, 2, 1);
     hintPoint = Point3d.create(0, 3);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint, hintPoint));
-    ck.testCoordinate(3, tangents.length, "3 tangents found");
-    ck.testCoordinate(0, tangents[0].fraction, "first tangent fraction");
-    ck.testCoordinate(0.25, tangents[1].fraction, "second tangent fraction");
-    ck.testCoordinate(1, tangents[2].fraction, "third tangent fraction");
-    ck.testCoordinate(1, closestIndex, "closestIndex is 1");
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.25, tangent!.fraction, "closest tangent fraction is 0.25");
     captureGeometry();
 
     // 2 symmetrical tangents
@@ -1500,48 +1504,47 @@ describe("ApproximateArc3d", () => {
     dy = 0;
     spacePoint = Point3d.create(4, 0);
     hintPoint = Point3d.create(4, 2, 1);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint, hintPoint));
-    ck.testCoordinate(2, tangents.length, "2 tangents found");
-    ck.testCoordinate(0.11502672, tangents[0].fraction, "first tangent fraction");
-    ck.testCoordinate(1 - 0.11502672, tangents[1].fraction, "second tangent fraction");
-    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    tangents = arc.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(0.11502672, tangents![0].fraction, "first tangent fraction");
+    ck.testCoordinate(1 - 0.11502672, tangents![1].fraction, "second tangent fraction");
     captureGeometry();
     dy += 7;
     spacePoint = Point3d.create(4, 0, 1);
     hintPoint = Point3d.create(4, -2, 1);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint, hintPoint));
-    ck.testCoordinate(2, tangents.length, "2 tangents found");
-    ck.testCoordinate(0.11502672, tangents[0].fraction, "first tangent fraction");
-    ck.testCoordinate(1 - 0.11502672, tangents[1].fraction, "second tangent fraction");
-    ck.testCoordinate(1, closestIndex, "closestIndex is 1");
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(1 - 0.1150267, tangent!.fraction, "closest tangent fraction is 1 - 0.1150267");
     captureGeometry();
 
     // space point on ellipse; 1 tangent
     dx += 10;
     dy = 0;
     spacePoint = Point3d.create(0, 2);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint));
-    ck.testCoordinate(1, tangents.length, "1 tangent found");
+    tangents = arc.allTangents(spacePoint);
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(1, tangents!.length, "1 tangents found");
+    ck.testCoordinate(0.25, tangents![0].fraction, "tangent fraction");
     captureGeometry();
     dy += 7;
     spacePoint = Point3d.create(0, 2, 1);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint));
-    ck.testCoordinate(1, tangents.length, "1 tangent found");
+    tangent = arc.closestTangent(spacePoint, { hintPoint });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.25, tangent!.fraction, "closest tangent fraction is 0.25");
     captureGeometry();
 
     // space point inside ellipse; no tangent
     dx += 10;
     dy = 0;
     spacePoint = Point3d.create(1, 1);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint));
-    ck.testCoordinate(0, tangents.length, "no tangent found");
-    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
+    tangents = arc.allTangents(spacePoint);
+    ck.testUndefined(tangents, "tangents is undefined");
     captureGeometry();
     dy += 7;
     spacePoint = Point3d.create(1, 1, 2);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint));
-    ck.testCoordinate(0, tangents.length, "no tangent found");
-    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
+    tangent = arc.closestTangent(spacePoint);
+    ck.testUndefined(tangent, "tangent is undefined");
     captureGeometry();
 
     // tangents parallel to ellipse axes in 3d
@@ -1550,38 +1553,32 @@ describe("ApproximateArc3d", () => {
     arc = Arc3d.create(Point3d.create(0, 0), Vector3d.create(4, 0, 0), Vector3d.create(0, 0, 2));
     spacePoint = Point3d.create(4, 0, 2);
     hintPoint = Point3d.create(5, 0, 1);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint, hintPoint, Vector3d.create(0, 1, 0)));
-    ck.testCoordinate(3, tangents.length, "3 tangents found");
-    ck.testCoordinate(0, tangents[0].fraction, "first tangent fraction");
-    ck.testCoordinate(0.25, tangents[1].fraction, "second tangent fraction");
-    ck.testCoordinate(1, tangents[2].fraction, "third tangent fraction");
-    ck.testCoordinate(0, closestIndex, "closestIndex is 0");
+    tangent = arc.closestTangent(spacePoint, { hintPoint, viewNormal: Vector3d.create(0, 1, 0) });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0, tangent!.fraction, "closest tangent fraction is 0");
     captureGeometry();
     dy += 7;
     spacePoint = Point3d.create(4, 1, 2);
     hintPoint = Point3d.create(0, 1, 1);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint, hintPoint, Vector3d.create(0, 1, 0)));
-    ck.testCoordinate(3, tangents.length, "3 tangents found");
-    ck.testCoordinate(0, tangents[0].fraction, "first tangent fraction");
-    ck.testCoordinate(0.25, tangents[1].fraction, "second tangent fraction");
-    ck.testCoordinate(1, tangents[2].fraction, "third tangent fraction");
-    ck.testCoordinate(1, closestIndex, "closestIndex is 1");
+    tangent = arc.closestTangent(spacePoint, { hintPoint, viewNormal: Vector3d.create(0, 1, 0) });
+    ck.testDefined(tangent, "tangent is defined");
+    ck.testCoordinate(0.25, tangent!.fraction, "closest tangent fraction is 0.25");
     captureGeometry();
 
     // space point inside ellipse in 3d; no tangent
     dx += 10;
     dy = 0;
     spacePoint = Point3d.create(2, 0, 0);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint, undefined, Vector3d.create(0, 1, 0)));
-    ck.testCoordinate(0, tangents.length, "no tangent found");
-    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
+    tangents = arc.allTangents(spacePoint, { viewNormal: Vector3d.create(0, 1, 0) });
+    ck.testUndefined(tangents, "tangents is undefined");
     captureGeometry();
     dy += 7;
     spacePoint = Point3d.create(2, 1, 0);
-    ({ tangents, closestIndex } = arc.closestTangent(spacePoint, undefined, Vector3d.create(0, 1, 0)));
-    ck.testCoordinate(0, tangents.length, "no tangent found");
-    ck.testCoordinate(-1, closestIndex, "closestIndex is -1");
+    tangent = arc.closestTangent(spacePoint, { viewNormal: Vector3d.create(0, 1, 0) });
+    ck.testUndefined(tangent, "tangent is undefined");
     captureGeometry();
+
+    // TODO: add tests with extend === true
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "ClosestTangent");
     expect(ck.getNumErrors()).toBe(0);
