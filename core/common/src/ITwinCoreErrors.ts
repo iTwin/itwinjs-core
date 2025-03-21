@@ -36,7 +36,7 @@ export namespace ChannelError {
     ITwinError.throwError<Error>({ iTwinErrorId: { scope, key }, message, channelKey });
   }
   /** Determine whether an error object is a ChannelError */
-  export function isError(error: unknown, key: Key): error is ChannelError.Error {
+  export function isError(error: unknown, key?: Key): error is ChannelError.Error {
     return ITwinError.isError<Error>(error, scope, key) && typeof error.channelKey === "string";
   }
 }

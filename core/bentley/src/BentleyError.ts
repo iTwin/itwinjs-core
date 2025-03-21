@@ -61,8 +61,10 @@ export namespace ITwinError {
    * @param scope value for `error.iTwinErrorId.scope`
    * @param key value for `error.iTwinErrorId.key`
   */
-  export function isError<T extends Error>(error: unknown, scope: string, key: string): error is T {
-    return isObject(error) && isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === scope && error.iTwinErrorId.key === key;
+  export function isError<T extends Error>(error: unknown, scope?: string, key?: string): error is T {
+    return isObject(error) && isObject(error.iTwinErrorId) &&
+      (scope === undefined || error.iTwinErrorId.scope === scope) &&
+      (key === undefined || error.iTwinErrorId.key === key);
   }
 
   export function isObject(obj: unknown): obj is { [key: string]: unknown } {
@@ -436,7 +438,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
    * @beta
    */
   public static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T {
-    return ITwinError.isObject(error) && ITwinError.isObject(error.iTwinErrorId) && error.iTwinErrorId.scope === BentleyError.iTwinErrorScope &&
+    return ITwinError.isError<LegacyITwinErrorWithNumber>(error, BentleyError.iTwinErrorScope) &&
       typeof error.errorNumber === "number" && (errorNumber === undefined || error.errorNumber === errorNumber);
   }
 
