@@ -475,7 +475,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+  public override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
     promises.push(super.postload(hydrateResponse));
     promises.push(this._attachmentsInfo.postload(hydrateResponse, this.iModel));
