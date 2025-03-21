@@ -146,10 +146,10 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 Formats defined in a PFS needs to be mapped to the a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the format associated to a KoQ within a PFS would take precedence and be used over the default presentation formats of that KoQ.
 
-> The naming convention for a valid PFS format <full-schema-name>:<koq-name>
+> The naming convention for a valid format within a PFS is <full-schema-name>:<koq-name>
 .
 <details>
-<summary>Example of a Presentation Format Set as JSON:</summary>
+<summary>Example of a metric-based Presentation Format Set as JSON:</summary>
 
 ```json
 {
@@ -168,7 +168,6 @@ Formats defined in a PFS needs to be mapped to the a valid [ECName](../../bis/ec
       "decimalSeparator": "."
     },
     "AecUnits.Angle": {
-      "id": "Angle",
       "description": "degrees (labeled) 2 decimal places",
       "composite": {
         "includeZero": true,
@@ -183,3 +182,40 @@ Formats defined in a PFS needs to be mapped to the a valid [ECName](../../bis/ec
   }
 }
 ```
+
+</details>
+
+<details>
+<summary>Example of a imperial-based Presentation Format Set as JSON:</summary>
+
+```json
+{
+  "id": "imperial",
+  "label": "Imperial",
+  "formats": {
+    "AecUnits.LENGTH": {
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "'", "name": "Units.FT" }, { "label": "\"", "name": "Units.IN" }],},
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 4,
+      "type": "Decimal",
+    },
+    "AecUnits.Angle": {
+      "description": "degrees minutes seconds (labeled) 0 decimal places",
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "°", "name": "Units.ARC_DEG" }, { "label": "'", "name": "Units.ARC_MINUTE" }, { "label": "\"", "name": "Units.ARC_SECOND" }],
+      },
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 2,
+      "type": "Decimal",
+      "uomSeparator": ""
+    }
+  }
+}
+```
+
+</details>
