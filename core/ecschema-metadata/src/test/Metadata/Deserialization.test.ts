@@ -811,7 +811,7 @@ describe("Full Schema Deserialization", () => {
           if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
-            const prop = [...c.properties!][0] as NavigationProperty;
+            const prop = [...c.getPropertiesSync(true)][0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
         }) as any,
@@ -884,7 +884,7 @@ describe("Full Schema Deserialization", () => {
           if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
-            const prop = [...c.properties!][0] as NavigationProperty;
+            const prop = [...c.getPropertiesSync(true)][0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
         }) as any,
@@ -1121,7 +1121,7 @@ describe("Full Schema Deserialization", () => {
     it("async - single property CustomAttribute", async () => {
       const testSchema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1131,7 +1131,7 @@ describe("Full Schema Deserialization", () => {
     it("sync - single property CustomAttribute", () => {
       const testSchema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1152,7 +1152,7 @@ describe("Full Schema Deserialization", () => {
     it("async - multiple property CustomAttributes", async () => {
       const testSchema = await Schema.fromJson(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1162,7 +1162,7 @@ describe("Full Schema Deserialization", () => {
     it("sync - multiple property CustomAttributes", () => {
       const testSchema = Schema.fromJsonSync(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1189,7 +1189,7 @@ describe("Full Schema Deserialization", () => {
 
       const testSchema = Schema.fromJsonSync(getSchemaJson(propertyJson), new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
 
       assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses, 1.2);

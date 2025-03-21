@@ -327,22 +327,6 @@ export class ECClasses extends SchemaItems{
     const map = container.customAttributes as Map<string, CustomAttribute>;
     map.delete(customAttribute.className);
   }
-
-  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
-    const derivedClasses: Array<MutableClass> = [];
-    const schemaItems = this.schemaEditor.schemaContext.getSchemaItems();
-    let { value, done } = schemaItems.next();
-    while (!done) {
-      if (await value.is(mutableClass)) {
-        if (!mutableClass.key.matches(value.key)) {
-          derivedClasses.push(value);
-        }
-      }
-      ({ value, done } = schemaItems.next());
-    }
-
-    return derivedClasses;
-  }
 }
 
 function isMutableClass(schemaItem: SchemaItem): schemaItem is MutableClass {

@@ -634,11 +634,11 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
-   * Returns an iterator over all of the items in this schema.
+   * Returns all of the loaded items in this schema.
    */
-  public getItems(): IterableIterator<SchemaItem>;
-  public getItems<T extends typeof SchemaItem>(itemConstructor: T): IterableIterator<InstanceType<T>>;
-  public * getItems<T extends typeof SchemaItem>(itemConstructor?: T): IterableIterator<InstanceType<T> | SchemaItem> {
+  public getItems(): Iterable<SchemaItem>;
+  public getItems<T extends typeof SchemaItem>(itemConstructor: T): Iterable<InstanceType<T>>;
+  public * getItems<T extends typeof SchemaItem>(itemConstructor?: T): Iterable<InstanceType<T> | SchemaItem> {
     if (!this._items)
       return;
 

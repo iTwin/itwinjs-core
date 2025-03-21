@@ -102,43 +102,41 @@ export class EntityClass extends ECClass implements HasMixins {
     return undefined;
   }
 
-  protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
+  protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
     if (!existingValues) {
       existingValues = new Map<string, number>();
     }
 
-    if (this.baseClass) {
-      ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
+    const baseClass = await this.baseClass;
+    if(baseClass) {
+      ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
     }
 
     for (const mixin of this.mixins) {
-      ECClass.mergeProperties(result, existingValues, await (await mixin).getProperties(resetBaseCaches), false);
+      const resolvedMixin = await mixin;
+      ECClass.mergeProperties(result, existingValues, await resolvedMixin.getProperties(), false);
     }
 
-    if (!this.properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    const localProps = await this.getProperties(true);
+    ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
-  protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
+  protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
     if (!existingValues) {
       existingValues = new Map<string, number>();
     }
 
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
+      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(), false);
     }
 
     for (const mixin of this.getMixinsSync()) {
-      ECClass.mergeProperties(result, existingValues, mixin.getPropertiesSync(resetBaseCaches), false);
+      ECClass.mergeProperties(result, existingValues, mixin.getPropertiesSync(), false);
     }
 
-    if (!this.properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    const localProps = this.getPropertiesSync(true);
+    ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
   /**

@@ -184,6 +184,7 @@ import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
+import { PropertyHandler } from '@itwin/ecschema-metadata';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
@@ -874,7 +875,7 @@ export class ClassRegistry {
     static register(entityClass: typeof Entity, schema: typeof Schema): void;
     static registerModule(moduleObj: any, schema: typeof Schema): void;
     // @internal
-    static unregisterCLass(classFullName: string): boolean;
+    static unregisterClass(classFullName: string): boolean;
     // @internal
     static unregisterClassesFrom(schema: typeof Schema): void;
 }
@@ -2050,6 +2051,7 @@ class Element_2 extends Entity {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     federationGuid?: GuidString;
+    // @deprecated
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
@@ -2350,6 +2352,8 @@ export class Entity {
     protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
+    forEach(func: PropertyHandler, includeCustom?: boolean): void;
+    // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     // @beta
     getMetaData(): Promise<EntityClass>;
@@ -2380,6 +2384,23 @@ export class Entity {
 export type EntityClassType<T> = Function & {
     prototype: T;
 };
+
+// @public
+export class EntityJsClassMap {
+    // @internal (undocumented)
+    [Symbol.iterator](): IterableIterator<[string, typeof Entity]>;
+    // @internal (undocumented)
+    clear(): void;
+    // @internal (undocumented)
+    delete(classFullName: string): boolean;
+    // @internal (undocumented)
+    get(classFullName: string): typeof Entity | undefined;
+    // @internal (undocumented)
+    has(classFullName: string): boolean;
+    register(entityClass: typeof Entity, schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(classFullName: string, entityClass: typeof Entity): void;
+}
 
 // @alpha
 export namespace EntityReferences {
@@ -3178,7 +3199,7 @@ export abstract class IModelDb extends IModel {
     cancelSnap(sessionId: string): void;
     // @beta (undocumented)
     readonly channels: ChannelControl;
-    // @internal
+    // @internal @deprecated
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
     // @internal (undocumented)
@@ -3225,7 +3246,9 @@ export abstract class IModelDb extends IModel {
     protected _fontMap?: FontMap;
     // @beta
     get fonts(): IModelDbFonts;
+    // @deprecated
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    // @deprecated
     forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
@@ -3235,6 +3258,7 @@ export abstract class IModelDb extends IModel {
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getLastError(): string;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @deprecated
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
@@ -3256,6 +3280,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     get isStandalone(): boolean;
     isStandaloneDb(): this is StandaloneDb;
+    get jsClassMap(): EntityJsClassMap;
     // @internal (undocumented)
     protected loadWorkspaceSettings(): Promise<void>;
     get locks(): LockControl;
@@ -3315,11 +3340,13 @@ export abstract class IModelDb extends IModel {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @beta
     get schemaContext(): SchemaContext;
+    get schemaMap(): SchemaMap;
     // @beta
     simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
+    // @deprecated
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
@@ -4227,7 +4254,7 @@ export interface LockStatusShared {
     state: LockState_2.Shared;
 }
 
-// @internal
+// @internal @deprecated
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
@@ -4907,6 +4934,17 @@ export interface SchemaImportOptions {
 
 // @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
+
+// @public
+export class SchemaMap {
+    // @internal (undocumented)
+    delete(schemaName: string): boolean;
+    // @internal (undocumented)
+    get(schemaName: string): typeof Schema | undefined;
+    registerSchema(schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(schemaName: string, schema: typeof Schema): void;
+}
 
 // @internal (undocumented)
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
