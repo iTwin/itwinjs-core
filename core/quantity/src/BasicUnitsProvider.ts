@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
 import { UnitConversionInvert, UnitConversionProps, UnitProps, UnitsProvider } from "./Interfaces";
 import { BadUnit, BasicUnit } from "./Unit";
-
-
 
 // cSpell:ignore ussurvey USCUSTOM
 

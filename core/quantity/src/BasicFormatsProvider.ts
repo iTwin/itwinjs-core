@@ -2,9 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
 import { BeUiEvent } from "@itwin/core-bentley";
 import { FormatProps, FormatsProvider } from "./Formatter/Interfaces";
 import { AEC_UNITS_KOQ } from "./Defaults";
+import { formatStringRgx } from "./Formatter/FormatEnums";
 
 type ExtendedFormatProps = FormatProps & {
   label?: string;
@@ -37,16 +41,96 @@ export class BasicFormatsProvider implements FormatsProvider {
     const koqProps = AEC_UNITS_KOQ[kindOfQuantityId];
     if (!koqProps)
       return undefined;
-    const formatId = parseFormatId(koqProps.presentationUnit);
-    return this.getFormat(formatId);
+    const extraProps = parseFormatString(koqProps.presentationUnit);
+
+    const formatId = extraProps.name.split(".")[1]; // Omit the schema name for now.
+    const format = this.getFormat(formatId);
+
+    if (!format) {
+      return undefined;
+    }
+
+    return {
+      ...format,
+      precision: extraProps.precision ?? format.precision,
+      composite: extraProps.unitAndLabels ? {
+        ...format.composite,
+        units: extraProps.unitAndLabels.map(([unitName, unitLabel]) => ({
+          name: unitName,
+          label: unitLabel ?? undefined,
+        })),
+      } : format.composite,
+    };
   }
 }
 
-function parseFormatId(presentationUnit: string): string {
-  // Strip out the schema name, and exclude everything after the first parenthesis.
-  const regex = /\.(.*?)(\(|$)/;
-  const match = presentationUnit.match(regex);
-  return match ? match[1] : presentationUnit;
+// TODO: Replace with ecschema-metadata OverrideFormatProps once packages are combined.
+interface OverrideFormatProps {
+  name: string;
+  precision?: number;
+  unitAndLabels?: Array<[string, string | undefined]>; // Tuple of [unit name | unit label]
+}
+
+// TODO: Replace with ecschema-metadata OverrideFormat.parseFormatString() once packages are combined.
+function parseFormatString(formatString: string): OverrideFormatProps{
+  const match = formatString.split(formatStringRgx);
+
+  if (undefined === match[1])
+    throw new Error(`The format string, ${formatString}, on KindOfQuantity is missing a format.`);
+
+  const returnValue: OverrideFormatProps = { name: match[1] };
+
+  if (undefined !== match[2] && undefined !== match[3]) {
+    const overrideString = match[2];
+    const tokens: string[] = [];
+    let prevPos = 1; // Initial position is the character directly after the opening '(' in the override string.
+    let currPos;
+
+    // TODO need to include `,` as a valid search argument.
+    while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) {
+      tokens.push(overrideString.substring(prevPos, currPos));
+      prevPos = currPos + 1;
+    }
+
+    if (overrideString.length > 0 && undefined === tokens.find((token) => {
+      return "" !== token; // there is at least one token that is not empty.
+    })) {
+      throw new Error(`Invalid format string`);
+    }
+
+    // The first override parameter overrides the default precision of the format
+    const precisionIndx: number = 0;
+
+    if (tokens.length >= precisionIndx + 1) {
+      if (tokens[precisionIndx].length > 0) {
+        const precision = Number.parseInt(tokens[precisionIndx], 10);
+        if (Number.isNaN(precision))
+          throw new Error(`The format string '${formatString}' on KindOfQuantity has a precision override '${tokens[precisionIndx]}' that is not number.`);
+        returnValue.precision = precision;
+      }
+    }
+  }
+
+  let i = 4;
+  while (i < match.length - 1) {  // The regex match ends with an empty last value, which causes problems when exactly 4 unit overrides as specified, so ignore this last empty value
+    if (undefined === match[i])
+      break;
+    // Unit override required
+    if (undefined === match[i + 1])
+      throw new Error(`Invalid format string`);
+
+    if (undefined === returnValue.unitAndLabels)
+      returnValue.unitAndLabels = [];
+
+    if (undefined !== match[i + 2]) // matches '|'
+      returnValue.unitAndLabels.push([match[i + 1], match[i + 3] ?? ""]); // add unit name and label override (if '|' matches and next value is undefined, save it as an empty string)
+    else
+      returnValue.unitAndLabels.push([match[i + 1], undefined]); // add unit name
+
+    i += 4;
+  }
+
+  return returnValue;
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */

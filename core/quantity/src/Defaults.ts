@@ -11,6 +11,7 @@ interface KindOfQuantityProps {
 
 /**
  * @internal
+ * Merge with PFS concept to handle multiple unit systems.
  */
 export const AEC_UNITS_KOQ: { [key: string]: KindOfQuantityProps } = {
   "AecUnits.ACCELERATION": {

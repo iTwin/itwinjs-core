@@ -1,5 +1,8 @@
+import { FormatterSpec } from './../Formatter/FormatterSpec';
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BasicFormatsProvider } from "../BasicFormatsProvider";
+import { BasicUnitsProvider } from '../BasicUnitsProvider';
+import { Format } from '../core-quantity';
 
 describe("BasicFormatsProvider", () => {
   // ZOMBIES
@@ -57,6 +60,32 @@ describe("BasicFormatsProvider", () => {
   it("should return a format when associated with a KindOfQuantity", () => {
     const format = formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH");
     expect(format).toBeDefined();
-    expect(format!.precision).toEqual(6);
+    expect(format!.precision).toEqual(4);
+  });
+
+  it("should format a length quantity to meters given a KoQ and unit provider", async () => {
+    const formatProps = formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH");
+    expect(formatProps).toBeDefined();
+    const unitsProvider = new BasicUnitsProvider();
+    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
+    const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(50);
+    expect(result).toEqual("50.0 m");
+
+  });
+
+  it("should format a length quantity to kilometers given a KoQ and unit provider", async () => {
+    const formatProps = formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH_LONG");
+    expect(formatProps).toBeDefined();
+    const unitsProvider = new BasicUnitsProvider();
+    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
+    const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(50);
+    expect(result).toEqual("0.05 km");
+
   });
 });
