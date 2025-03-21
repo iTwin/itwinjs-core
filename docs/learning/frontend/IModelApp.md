@@ -17,8 +17,6 @@ To support the various use cases and platforms for iTwin.js frontends, there are
 * **[IModelApp]($frontend)**: must always be initialized. For RPC, connects to previously-initialized `IModelHost`(s) through routing.
   * **[IpcApp]($frontend)**: for frontends with a dedicated [IpcHost]($backend) backend. [IpcApp.startup]($frontend) calls [IModelApp.startup]($frontend). `IpcApp` is abstract and should not be used directly.
     * **`ElectronApp`**: for the frontend of desktop apps running on Windows, Mac, or Linux connected to an `ElectronHost` backend. `ElectronApp.startup` calls [IpcApp.startup]($frontend).
-    * **`MobileApp`**: for the frontend of mobile apps. `MobileApp.startup` calls [IpcApp.startup]($frontend). `MobileApp` is abstract and should not be used directly.
-      * **`IOSApp`**: for the frontend of iOS apps. `IOSApp.startup` calls `MobileApp.startup`.
-      * **`AndroidApp`**: for the frontend of Android apps. `AndroidApp.startup` calls `MobileApp.startup`.
+    * **`MobileApp`**: for the frontend of mobile iOS and Android apps. `MobileApp.startup` calls [IpcApp.startup]($frontend).
 
 Applications may customize the behavior of the IModelApp services by providing [IModelAppOptions]($frontend).
