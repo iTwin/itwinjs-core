@@ -37,3 +37,8 @@ export * from "./presentation-frontend/selection/SelectionScopesManager";
 export * from "./presentation-frontend/selection/SelectionHandler";
 export * from "./presentation-frontend/selection/HiliteSetProvider";
 export * from "./presentation-frontend/selection/SelectionHelper";
+
+const globalSymbol = Symbol.for("itwin.presentation.frontend.globals");
+if ((globalThis as any)[globalSymbol]) {
+  throw new Error("Multiple @itwin/presentation-frontend imports detected!");
+}

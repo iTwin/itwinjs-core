@@ -22,3 +22,8 @@ export * from "./presentation-backend/Utils";
  * Types related to logging in this package.
  */
 export * from "./presentation-backend/BackendLoggerCategory";
+
+const globalSymbol = Symbol.for("itwin.presentation.backend.globals");
+if ((globalThis as any)[globalSymbol]) {
+  throw new Error("Multiple @itwin/presentation-backend imports detected!");
+}

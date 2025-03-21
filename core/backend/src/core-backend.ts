@@ -86,6 +86,10 @@ export * from "./ChangesetECAdaptor";
 
 export * from "./internal/cross-package";
 
+const globalSymbol = Symbol.for("itwin.core.backend.globals");
+if ((globalThis as any)[globalSymbol])
+  throw new Error("Multiple @itwin/core-backend imports detected!");
+
 /** @docs-package-description
  * The core-backend package always runs on the computer with a local Briefcase.
  *
