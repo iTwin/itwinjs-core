@@ -183,6 +183,7 @@ describe("RelationshipClass", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           TestRelationship: {
             schemaItemType: "RelationshipClass",
@@ -454,6 +455,7 @@ describe("RelationshipClass", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           TestRelationship: {
             schemaItemType: "RelationshipClass",
@@ -689,6 +691,7 @@ describe("RelationshipClass", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           ...customAttributeJson,
           TestRelationship: {

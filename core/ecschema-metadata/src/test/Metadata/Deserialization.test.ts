@@ -28,6 +28,7 @@ describe("Full Schema Deserialization", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       });
@@ -45,6 +46,7 @@ describe("Full Schema Deserialization", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       });
@@ -63,6 +65,7 @@ describe("Full Schema Deserialization", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       };
@@ -111,7 +114,7 @@ describe("Full Schema Deserialization", () => {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TestSchema",
       version: "1.2.3",
-
+      alias: "ts",
     };
     const validSchemaJson = {
       ...baseJson,
@@ -481,6 +484,7 @@ describe("Full Schema Deserialization", () => {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
     };
 
     it("should throw for invalid items attribute", async () => {
@@ -572,6 +576,7 @@ describe("Full Schema Deserialization", () => {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
     };
     type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
     let mockVisitor: Mock<ISchemaPartVisitor>;
