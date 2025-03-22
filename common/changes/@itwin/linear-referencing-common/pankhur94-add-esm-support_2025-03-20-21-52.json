@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-common",
+      "comment": "Added ESM support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-common"
+}
