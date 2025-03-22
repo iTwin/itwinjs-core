@@ -72,3 +72,41 @@ A relationship constraint may have [Custom Attributes](./ec-custom-attributes.md
 [Class](./ec-class.md) _(1..*)_
 
 - the ECClass on this end of the relationship
+
+## Example
+
+```xml
+    <ECRelationshipClass typeName="ElementOwnsChildElements" strength="embedding" modifier="None" >
+        <Source multiplicity="(0..1)" roleLabel="owns child" polymorphic="true">
+            <Class class="Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is owned by parent" polymorphic="true">
+            <Class class="Element"/>
+        </Target>
+    </ECRelationshipClass>
+```
+
+```json
+"ElementOwnsChildElements": {
+  "schemaItemType": "RelationshipClass",
+  "modifier": "None",
+  "strength": "Embedding",
+  "strengthDirection": "Forward",
+  "source": {
+    "multiplicity": "(0..1)",
+    "roleLabel": "owns child",
+    "polymorphic": true,
+    "constraintClasses": [
+      "BisCore.Element"
+    ]
+  },
+  "target": {
+    "multiplicity": "(0..*)",
+    "roleLabel": "is owned by parent",
+    "polymorphic": true,
+    "constraintClasses": [
+      "BisCore.Element"
+    ]
+  }
+},
+```
