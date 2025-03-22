@@ -76,12 +76,14 @@ deprecated;function;isIDisposable
 public;function;isInstanceOf
 public;function;isProperSubclassOf
 public;function;isSubclassOf
+beta;namespace;ITwinError
 public;interface;JSONSchema
 public;interface;JSONSchemaMap
 public;interface;JSONSchemaSnippet
 public;type;JSONSchemaType
 public;type;JSONSchemaTypeName
 public;namespace;JsonUtils
+beta;interface;LegacyITwinErrorWithNumber
 public;type;Listener
 public;type;ListenerType
 public;type;LogFunction
