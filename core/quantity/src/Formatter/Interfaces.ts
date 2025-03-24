@@ -94,13 +94,3 @@ export interface CloneOptions {
   /** allows primary unit and label to be specified */
   primaryUnit?: CloneUnit;
 }
-
-/**
- * This interface defines properties necessary to support persistence of a set of formats.
- * @beta
- */
-export interface PresentationFormatSet {
-  id: string;
-  label: string;
-  formats: { [kindOfQuantityId: string]: FormatProps & { id: string } }
-}
