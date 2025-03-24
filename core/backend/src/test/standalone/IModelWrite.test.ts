@@ -138,8 +138,8 @@ describe("IModelWriteTest", () => {
 
     bc.close();
     // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
-    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for that
-    // HubMock.startup() put in place.
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+    // CloudSqlite that HubMock.startup() put in place.
     watchStubResult.restore();
   });
 
@@ -213,8 +213,8 @@ describe("IModelWriteTest", () => {
 
     bc.close();
     // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
-    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for that
-    // HubMock.startup() put in place.
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+    // CloudSqlite that HubMock.startup() put in place.
     watchStubResult.restore();
   });
 
@@ -285,8 +285,8 @@ describe("IModelWriteTest", () => {
 
     bc.close();
     // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
-    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for that
-    // HubMock.startup() put in place.
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+    // CloudSqlite that HubMock.startup() put in place.
     watchStubResult.restore();
   });
 
