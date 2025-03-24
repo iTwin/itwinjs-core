@@ -69,16 +69,16 @@ In this case, *outliers* are assumed to be a mistake and [IModelImporter]($trans
 
 Either of the non-false autoExtendProjectExtents options are useful for consolidation cases or filtering cases where the target iModel will have different optimal projectExtents than the source iModel(s).
 
-## IModelCloneContext
+## IModelElementCloneContext
 
-The [IModelCloneContext]($backend) class provides the core *cloning* capability required for iModel transformation.
+The [IModelElementCloneContext]($backend) class provides the core *cloning* capability required for iModel transformation.
 It also maintains the **sourceId --> targetId** mapping which is required to successfully *clone* [Entity]($backend) instances from the source iModel into the target iModel.
 iModel entities are highly related to each other. Therefore, *cloning* an entity means copying a *graph* of objects and remapping their source references (Ids) to other target entities.
 
 ## IModelTransformer
 
 The [IModelTransformer]($transformer) base class is used when the **source** and **target** in an ETL workflow are both/different iModels and some sort of data transformation is needed in the middle.
-An instance of `IModelTransformer` holds instances of `IModelExporter`, `IModelImporter`, and `IModelCloneContext`.
+An instance of `IModelTransformer` holds instances of `IModelExporter`, `IModelImporter`, and `IModelElementCloneContext`.
 This means that customization is possible at the export stage, the transformation stage, and the import stage of the overall ETL process.
 
 Potential transformations include:

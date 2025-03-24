@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
@@ -32,7 +31,7 @@ import {
   SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
-import { createRandomECInstanceKey, createRandomECInstancesNodeKey } from "./_helpers/random";
+import { createTestECInstanceKey, createTestECInstancesNodeKey } from "./_helpers";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {
@@ -49,7 +48,7 @@ describe("PresentationRpcInterface", () => {
 
   it("finds imodel tokens in RPC requests", () => {
     const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
-    const parameters = [token, { rulesetOrId: faker.random.word() }];
+    const parameters = [token, { rulesetOrId: "test-ruleset" }];
     RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
     const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
     const operation = RpcOperation.lookup(PresentationRpcInterface, "getNodesCount");
@@ -84,7 +83,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getNodesCount call for root nodes", async () => {
       const options: HierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
       };
       await rpcInterface.getNodesCount(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
@@ -92,8 +91,8 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getNodesCount call for child nodes", async () => {
       const options: HierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
-        parentKey: createRandomECInstancesNodeKey(),
+        rulesetOrId: "test-ruleset",
+        parentKey: createTestECInstancesNodeKey(),
       };
       await rpcInterface.getNodesCount(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
@@ -101,8 +100,8 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getPagedNodes call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
-        parentKey: createRandomECInstancesNodeKey(),
+        rulesetOrId: "test-ruleset",
+        parentKey: createTestECInstancesNodeKey(),
       };
       await rpcInterface.getPagedNodes(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
@@ -111,7 +110,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodesDescriptor call", async () => {
       const options: HierarchyLevelDescriptorRpcRequestOptions = {
         rulesetOrId: "test-ruleset",
-        parentKey: createRandomECInstancesNodeKey(),
+        parentKey: createTestECInstancesNodeKey(),
       };
       await rpcInterface.getNodesDescriptor(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
@@ -119,7 +118,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getFilteredNodePaths call", async () => {
       const options: FilterByTextHierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         filterText: "filter",
       };
       await rpcInterface.getFilteredNodePaths(token, options);
@@ -127,9 +126,9 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getNodePaths call", async () => {
-      const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+      const keys = [[createTestECInstanceKey(), createTestECInstanceKey()]];
       const options: FilterByInstancePathsHierarchyRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         instancePaths: keys,
         markedIndex: 1,
       };
@@ -173,7 +172,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getContentSetSize call", async () => {
       const options: ContentRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
       };
@@ -183,7 +182,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getPagedContent call", async () => {
       const options: Paged<ContentRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
       };
@@ -193,7 +192,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getPagedContentSet call", async () => {
       const options: Paged<ContentRpcRequestOptions> = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
       };
@@ -203,7 +202,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getPagedDistinctValues call", async () => {
       const options: DistinctValuesRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         fieldDescriptor: {
           type: FieldDescriptorType.Name,
@@ -235,7 +234,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getDisplayLabelDefinition call", async () => {
       const options: DisplayLabelRpcRequestOptions = {
-        key: createRandomECInstanceKey(),
+        key: createTestECInstanceKey(),
       };
       await rpcInterface.getDisplayLabelDefinition(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
@@ -243,7 +242,7 @@ describe("PresentationRpcInterface", () => {
 
     it("forwards getPagedDisplayLabelDefinitions call", async () => {
       const options: DisplayLabelsRpcRequestOptions = {
-        keys: [createRandomECInstanceKey(), createRandomECInstanceKey()],
+        keys: [createTestECInstanceKey(), createTestECInstanceKey()],
       };
       await rpcInterface.getPagedDisplayLabelDefinitions(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
@@ -258,7 +257,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards computeSelection call", async () => {
       const options: ComputeSelectionRpcRequestOptions = {
         elementIds: new Array<Id64String>(),
-        scope: { id: faker.random.uuid() },
+        scope: { id: "test-scope" },
       };
       await rpcInterface.computeSelection(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));

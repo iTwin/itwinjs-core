@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import {
   ArrayTypeDescription,
@@ -21,7 +20,6 @@ import {
 } from "../presentation-common";
 import { createTestPropertyInfo } from "./_helpers";
 import { createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField } from "./_helpers/Content";
-import { createRandomId } from "./_helpers/random";
 
 describe("RulesetsFactory", () => {
   let factory: RulesetsFactory;
@@ -73,7 +71,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for string record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -115,7 +113,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for boolean `true` record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -157,7 +155,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for boolean `false` record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -199,7 +197,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for int record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -241,7 +239,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for double record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -283,7 +281,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for datetime record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -325,7 +323,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for point2d record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -367,7 +365,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for point2d record with (0,0) coordinates", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -409,7 +407,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for point3d record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -451,7 +449,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for point3d record when z value is 0", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -493,7 +491,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for null record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -535,7 +533,7 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for navigation property record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -577,12 +575,12 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for one-step forward related nested content record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:PrimaryClass",
         label: "Primary Class",
       };
       const propertyClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:RelatedClass",
         label: "Related Class",
       };
@@ -591,7 +589,7 @@ describe("RulesetsFactory", () => {
           sourceClassInfo: propertyClass,
           targetClassInfo: recordClass,
           relationshipInfo: {
-            id: createRandomId(),
+            id: "0x123",
             name: "MySchema:MyRelationship",
             label: "My Relationship",
           },
@@ -670,12 +668,12 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for one-step backward related nested content record", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:PrimaryClass",
         label: "Primary Class",
       };
       const propertyClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:RelatedClass",
         label: "Related Class",
       };
@@ -684,7 +682,7 @@ describe("RulesetsFactory", () => {
           sourceClassInfo: propertyClass,
           targetClassInfo: recordClass,
           relationshipInfo: {
-            id: createRandomId(),
+            id: "0x123",
             name: "MySchema:MyRelationship",
             label: "My Relationship",
           },
@@ -764,17 +762,17 @@ describe("RulesetsFactory", () => {
 
     it("creates a valid ruleset for multi-step related nested content record", async () => {
       const selectClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:SelectClass",
         label: "Select Class",
       };
       const intermediateClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:SomeClass",
         label: "Some Class",
       };
       const propertyClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:PropertyClass",
         label: "Property Class",
       };
@@ -783,7 +781,7 @@ describe("RulesetsFactory", () => {
           sourceClassInfo: propertyClass,
           targetClassInfo: intermediateClass,
           relationshipInfo: {
-            id: createRandomId(),
+            id: "0x123",
             name: "MySchema:MyRelationship1",
             label: "My Relationship 1",
           },
@@ -795,7 +793,7 @@ describe("RulesetsFactory", () => {
           sourceClassInfo: intermediateClass,
           targetClassInfo: selectClass,
           relationshipInfo: {
-            id: createRandomId(),
+            id: "0x123",
             name: "MySchema:MyRelationship2",
             label: "My Relationship 2",
           },
@@ -880,7 +878,7 @@ describe("RulesetsFactory", () => {
 
     it("uses supplied `computeDisplayValue` callback to calculate display value for description", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -911,7 +909,7 @@ describe("RulesetsFactory", () => {
 
     it("uses record display value as display value for description if `computeDisplayValue` callback is not supplied", async () => {
       const recordClass: ClassInfo = {
-        id: createRandomId(),
+        id: "0x123",
         name: "MySchema:MyClass",
         label: "My Class",
       };
@@ -942,7 +940,7 @@ describe("RulesetsFactory", () => {
       for (const invalidValue of [[], {}]) {
         it(`throws when record value is '${JSON.stringify(invalidValue)}'`, async () => {
           const recordClass: ClassInfo = {
-            id: createRandomId(),
+            id: "0x123",
             name: "MySchema:MyClass",
             label: "My Class",
           };
@@ -973,7 +971,7 @@ describe("RulesetsFactory", () => {
 
       it("throws when properties field contains no properties", async () => {
         const recordClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:MyClass",
           label: "My Class",
         };
@@ -993,12 +991,12 @@ describe("RulesetsFactory", () => {
 
       it("throws when nested content record contains invalid value", async () => {
         const recordClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:PrimaryClass",
           label: "Primary Class",
         };
         const propertyClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:RelatedClass",
           label: "Related Class",
         };
@@ -1007,7 +1005,7 @@ describe("RulesetsFactory", () => {
             sourceClassInfo: propertyClass,
             targetClassInfo: recordClass,
             relationshipInfo: {
-              id: createRandomId(),
+              id: "0x123",
               name: "MySchema:MyRelationship",
               label: "My Relationship",
             },
@@ -1046,7 +1044,7 @@ describe("RulesetsFactory", () => {
 
       it("throws when point2d record has invalid value", async () => {
         const recordClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:MyClass",
           label: "My Class",
         };
@@ -1095,7 +1093,7 @@ describe("RulesetsFactory", () => {
           label: "My Property",
           type: {
             valueFormat: PropertyValueFormat.Array,
-            typeName: faker.random.word(),
+            typeName: "string[]",
             memberType: createStringTypeDescription(),
           } satisfies ArrayTypeDescription,
           properties: [
@@ -1116,11 +1114,11 @@ describe("RulesetsFactory", () => {
       it("throws when properties field is of struct type", async () => {
         const typeDescription: StructTypeDescription = {
           valueFormat: PropertyValueFormat.Struct,
-          typeName: faker.random.word(),
+          typeName: "MyStruct",
           members: [
             {
-              name: faker.random.word(),
-              label: faker.random.words(),
+              name: "StructMemberX",
+              label: "X",
               type: createStringTypeDescription(),
             },
           ],
@@ -1204,12 +1202,12 @@ describe("RulesetsFactory", () => {
 
       it("throws when nested content record contains more than one nested record", async () => {
         const recordClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:PrimaryClass",
           label: "Primary Class",
         };
         const propertyClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:RelatedClass",
           label: "Related Class",
         };
@@ -1218,7 +1216,7 @@ describe("RulesetsFactory", () => {
             sourceClassInfo: propertyClass,
             targetClassInfo: recordClass,
             relationshipInfo: {
-              id: createRandomId(),
+              id: "0x123",
               name: "MySchema:MyRelationship",
               label: "My Relationship",
             },
@@ -1278,12 +1276,12 @@ describe("RulesetsFactory", () => {
 
       it("throws when nested content record is merged", async () => {
         const recordClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:PrimaryClass",
           label: "Primary Class",
         };
         const propertyClass: ClassInfo = {
-          id: createRandomId(),
+          id: "0x123",
           name: "MySchema:RelatedClass",
           label: "Related Class",
         };
@@ -1292,7 +1290,7 @@ describe("RulesetsFactory", () => {
             sourceClassInfo: propertyClass,
             targetClassInfo: recordClass,
             relationshipInfo: {
-              id: createRandomId(),
+              id: "0x123",
               name: "MySchema:MyRelationship",
               label: "My Relationship",
             },
