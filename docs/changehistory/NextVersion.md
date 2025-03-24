@@ -55,9 +55,6 @@ Table of contents:
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
-    - [TypeScript configuration changes](#typescript-configuration-changes)
-      - [`target`](#target)
-      - [`useDefineForClassFields`](#usedefineforclassfields)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
       - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
 
