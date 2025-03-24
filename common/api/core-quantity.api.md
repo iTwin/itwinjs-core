@@ -484,20 +484,6 @@ export interface PotentialParseUnit {
 }
 
 // @beta
-export interface PresentationFormatSet {
-    // (undocumented)
-    formats: {
-        [kindOfQuantityId: string]: FormatProps & {
-            id: string;
-        };
-    };
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    label: string;
-}
-
-// @beta
 export class Quantity implements QuantityProps {
     constructor(unit?: UnitProps, magnitude?: number);
     convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined;
