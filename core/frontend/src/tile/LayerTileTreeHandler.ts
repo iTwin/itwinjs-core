@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ImageryMapTileTree, ImageryTileTreeState, ModelMapLayerTileTreeReference, RealityTile, RealityTileTree, TileDrawArgs } from "./internal";
+import { ImageryMapTileTree, ImageryTileTreeState, ModelMapLayerTileTreeReference, Tile, TileDrawArgs } from "./internal";
 import { MapLayerSettings } from "@itwin/core-common";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { SceneContext } from "../ViewContext";
@@ -15,25 +15,42 @@ import { SceneContext } from "../ViewContext";
 /** Utility interface that ties an imagery tile tree to its corresponding map-layer settings object.
  * @internal
  */
-interface MapLayerTreeSetting {
+export interface MapLayerTreeSetting {
   tree: ImageryMapTileTree;
   settings: MapLayerSettings;
   baseImageryLayer: boolean;
 }
 
-export class LayerTileTree extends RealityTileTree {
-  public layerImageryTrees: MapLayerTreeSetting[] = [];
+/** @internal */
+export interface LayerTileTree {
+  modelId: Id64String;
+  rootTile: Tile;
+  isPointCloud: boolean;
+  layerImageryTrees: MapLayerTreeSetting[];
+}
+
+/** @internal */
+export class LayerTileTreeHandler {
   protected _layerSettings = new Map<Id64String, MapLayerSettings>();
   protected _imageryTreeState = new Map<Id64String, ImageryTileTreeState>();
   protected _modelIdToIndex = new Map<Id64String, number>();
-  /** @internal */
   public layerClassifiers = new Map<number, RenderPlanarClassifier>();
+  private _ref: LayerTileTree;
+
+  public get imageryTreeState() { return this._imageryTreeState; }
+  public get layerSettings() { return this._layerSettings; }
+  public get modelIdToIndex() { return this._modelIdToIndex; }
+  public get layerImageryTrees() { return this._ref.layerImageryTrees; }
+
+  constructor(ref: LayerTileTree) {
+    this._ref = ref;
+  }
 
   /** Add a new imagery tile tree / map-layer settings pair and initialize the imagery tile tree state.
    * @internal
    */
   public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean) {
-    this.layerImageryTrees.push({ tree, settings, baseImageryLayer });
+    this._ref.layerImageryTrees.push({ tree, settings, baseImageryLayer });
     this._layerSettings.set(tree.modelId, settings);
     if (!this._imageryTreeState.has(tree.modelId))
       this._imageryTreeState.set(tree.modelId, new ImageryTileTreeState());
@@ -42,24 +59,20 @@ export class LayerTileTree extends RealityTileTree {
 
   /** @internal */
   public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
-    const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
+    const classifier = context.addPlanarClassifier(`MapLayer ${this._ref.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
     if (classifier)
       this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
   }
 
   /** @internal */
   public clearLayers() {
-    this._rootTile.clearLayers();
+    this._ref.rootTile.clearLayers();
   }
 
   /** @internal */
-  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
-    super.collectClassifierGraphics(args, selectedTiles);
-
+  public collectClassifierGraphics(args: TileDrawArgs, selectedTiles: Tile[]) {
     this.layerClassifiers.forEach((layerClassifier: RenderPlanarClassifier) => {
-      // if (!(args instanceof GraphicsCollectorDrawArgs))
-      layerClassifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
-
+      layerClassifier.collectGraphics(args.context, { modelId: this._ref.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this._ref.isPointCloud });
     });
   }
 }

@@ -23,7 +23,7 @@ import { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
 import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams";
 import { MeshParams } from "../../../common/internal/render/MeshParams";
-import { MapCartoRectangle, PlanarProjection, PlanarTilePatch, RealityModelTileTree } from "../../../tile/internal";
+import { MapCartoRectangle, PlanarProjection, PlanarTilePatch } from "../../../tile/internal";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { Vector3d } from "@itwin/core-geometry";
 
@@ -49,13 +49,15 @@ export class SurfaceGeometry extends MeshGeometry {
     const indices = params.surface.indices;
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
 
-    const tile = params.tile;
-    const layerClassifiers = (tile?.tree as RealityModelTileTree)?.layerClassifiers;
+    const tile = params.tileData;
 
-    if (!layerClassifiers?.size || !tile) return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    const layerClassifiers = tile?.layerClassifiers;
 
-    const transformECEF = tile.tree.iModel.getEcefTransform();
-    if (!transformECEF || !tile.range) return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    if (!layerClassifiers?.size || !tile || undefined === layerClassifiers) {
+      return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    }
+
+    const transformECEF = tile.ecefTransform;
 
     const tileEcefRange = transformECEF.multiplyRange(tile.range);
     const cartographicRange = new CartographicRange(tileEcefRange, transformECEF);

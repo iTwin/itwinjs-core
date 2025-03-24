@@ -532,7 +532,7 @@ public;namespace;ModelGeometryChanges
 public;interface;ModelGeometryChangesProps
 public;interface;ModelIdAndGeometryGuid
 public;interface;ModelLoadProps
-public;enum;ModelMapLayerDrapeTarget
+beta;enum;ModelMapLayerDrapeTarget
 public;interface;ModelMapLayerProps
 public;class;ModelMapLayerSettings
 public;interface;ModelPlanarClipMaskArgs

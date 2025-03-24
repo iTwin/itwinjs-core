@@ -522,11 +522,12 @@ export class MapTile extends RealityTile {
       return undefined;
 
     const textures = this.getDrapeTextures();
-    const { baseColor, baseTransparent, layerClassifiers } = this.mapTree;
+    const { baseColor, baseTransparent } = this.mapTree;
+    const layerClassifiers = this.mapTree.layerHandler.layerClassifiers;
     const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers, disableClipStyle: true }, true);
 
     // If there are no layer classifiers then we can save this graphic for re-use.  If layer classifiers exist they are regenerated based on view and we must collate them with the imagery.
-    if (this.imageryIsReady && 0 === this.mapTree.layerClassifiers.size)
+    if (this.imageryIsReady && 0 === this.mapTree.layerHandler.layerClassifiers.size)
       this._graphic = graphic;
 
     return graphic;
@@ -595,20 +596,20 @@ export class MapTile extends RealityTile {
 
   /** @internal */
   public get baseImageryIsReady(): boolean {
-    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.layerImageryTrees.length)
+    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.layerHandler.layerImageryTrees.length)
       return true;
 
     if (undefined === this._imageryTiles)
       return false;
 
-    const baseTreeId = this.mapTree.layerImageryTrees[0].tree.modelId;
+    const baseTreeId = this.mapTree.layerHandler.layerImageryTrees[0].tree.modelId;
     return this._imageryTiles.every((imageryTile) => imageryTile.imageryTree.modelId !== baseTreeId || imageryTile.isReady);
   }
 
   /** @internal */
   public get imageryIsReady(): boolean {
     if (undefined === this._imageryTiles)
-      return 0 === this.mapTree.layerImageryTrees.length;
+      return 0 === this.mapTree.layerHandler.layerImageryTrees.length;
 
     return this._imageryTiles.every((tile) => tile.isReady);
   }
@@ -617,14 +618,14 @@ export class MapTile extends RealityTile {
    * @internal
    */
   public override selectSecondaryTiles(args: TileDrawArgs, context: TraversalSelectionContext) {
-    if (0 === this.mapTree.layerImageryTrees.length || this.imageryIsReady)
+    if (0 === this.mapTree.layerHandler.layerImageryTrees.length || this.imageryIsReady)
       return;
 
     this.clearImageryTiles();
     this._imageryTiles = new Array<ImageryMapTile>();
     this._hiddenTiles = new Array<ImageryMapTile>();
     this._highResolutionReplacementTiles = new Array<ImageryMapTile>();
-    for (const layerImageryTree of this.mapTree.layerImageryTrees) {
+    for (const layerImageryTree of this.mapTree.layerHandler.layerImageryTrees) {
       let tmpTiles = new Array<ImageryMapTile>();
       const tmpLeafTiles = new Array<ImageryMapTile>();
       if (TileTreeLoadStatus.Loaded !== layerImageryTree.tree.selectCartoDrapeTiles(tmpTiles, tmpLeafTiles, this, args)) {

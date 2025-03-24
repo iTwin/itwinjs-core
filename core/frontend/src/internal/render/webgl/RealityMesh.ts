@@ -27,7 +27,7 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { TerrainTexture } from "../RenderTerrain";
-import { MapCartoRectangle, PlanarProjection, PlanarTilePatch, RealityModelTileTree, RealityTile } from "../../../tile/internal";
+import { MapCartoRectangle, PlanarProjection, PlanarTilePatch } from "../../../tile/internal";
 import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams";
 
 const scratchOverlapRange = Range2d.createNull();
@@ -166,14 +166,13 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     if (!params) return undefined;
 
     const { texture: meshTexture, featureID } = realityMesh;
-    const tile = realityMesh.tile as RealityTile;
-    const layerClassifiers = (tile?.tree as RealityModelTileTree)?.layerClassifiers;
+    const tile = realityMesh.tileData;
+    const layerClassifiers = tile?.layerClassifiers;
     const texture = meshTexture ? new TerrainTexture(meshTexture, featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
     if (!layerClassifiers?.size || !tile) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? LayerTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
 
-    const transformECEF = tile.tree.iModel.getEcefTransform();
-    if (!transformECEF || !tile.range) return new RealityMeshGeometry({ realityMeshParams: params, textureParams: texture ? LayerTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal });
+    const transformECEF = tile.ecefTransform
 
     const tileEcefRange = transformECEF.multiplyRange(tile.range);
     const cartographicRange = new  CartographicRange(tileEcefRange, transformECEF);

@@ -905,8 +905,8 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply planar classifier.
   // vec4 applyPlanarClassification(vec4)
   ApplyPlanarClassifier,
-  // (Optional) Apply planar classifier.
-  // vec4 applyPlanarClassification(vec4)
+  // (Optional) Apply Draping.
+  // vec4 ApplyDraping(vec4)
   ApplyDraping,
   // (Optional) Apply solar shadow map.
   // vec4 applySolarShadowMap(vec4)

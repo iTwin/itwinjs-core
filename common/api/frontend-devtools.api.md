@@ -178,7 +178,7 @@ export class AttachModelMapLayerTool extends Tool {
     // (undocumented)
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(toRealityData: boolean, nameIn?: string): Promise<boolean>;
+    run(nameIn?: string, drapeTarget?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
