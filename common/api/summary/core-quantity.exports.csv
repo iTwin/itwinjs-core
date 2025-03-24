@@ -6,7 +6,9 @@ beta;interface;AlternateUnitLabelsProvider
 internal;function;applyConversion
 beta;class;BadUnit
 beta;class;BaseFormat
+public;class;BasicFormatsProvider
 beta;class;BasicUnit
+beta;class;BasicUnitsProvider
 beta;interface;CloneOptions
 beta;interface;CloneUnit
 beta;interface;CustomFormatProps
@@ -26,6 +28,7 @@ beta;enum;FractionalPrecision
 internal;function;getItemNamesFromFormatString
 beta;function;getTraitString
 beta;const;isCustomFormatProps
+internal;interface;KindOfQuantityProps
 beta;function;parseDecimalPrecision
 beta;interface;ParsedQuantity
 beta;enum;ParseError

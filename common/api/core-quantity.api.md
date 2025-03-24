@@ -151,6 +151,21 @@ export class BaseFormat {
     protected _uomSeparator: string;
 }
 
+// @public (undocumented)
+export class BasicFormatsProvider implements FormatsProvider {
+    constructor();
+    // (undocumented)
+    addFormat(id: string, format: ExtendedFormatProps): void;
+    // (undocumented)
+    getFormat(id: string): FormatProps | undefined;
+    // (undocumented)
+    getFormatByKindOfQuantity(kindOfQuantityId: string): FormatProps | undefined;
+    // (undocumented)
+    getFormats(ids?: string[]): FormatProps[];
+    // (undocumented)
+    onFormatsUpdated: BeUiEvent<string[]>;
+}
+
 // @beta
 export class BasicUnit implements UnitProps {
     constructor(name: string, label: string, phenomenon: string, system?: string);
@@ -164,6 +179,16 @@ export class BasicUnit implements UnitProps {
     phenomenon: string;
     // (undocumented)
     system: string;
+}
+
+// @beta
+export class BasicUnitsProvider implements UnitsProvider {
+    findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+    findUnitByName(unitName: string): Promise<UnitProps>;
+    // (undocumented)
+    protected findUnitDefinition(name: string): UnitDefinition | undefined;
+    getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+    getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
 }
 
 // @beta
@@ -394,6 +419,20 @@ export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingle
 
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
+
+// @internal
+export interface KindOfQuantityProps {
+    // (undocumented)
+    label?: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    readonly persistenceUnit: string;
+    // (undocumented)
+    readonly presentationUnits?: string | string[];
+    // (undocumented)
+    readonly relativeError: number;
+}
 
 // @beta (undocumented)
 export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision;
