@@ -60,7 +60,6 @@ Table of contents:
       - [`useDefineForClassFields`](#usedefineforclassfields)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
       - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
-  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -796,13 +795,3 @@ if (item && EntityClass.isEntityClass(item )) {
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
 This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.
-
-## Attach/detach db
-
-Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
-
-```ts
-[[include:IModelDb_attachDb.code]]
-```
-
-> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
