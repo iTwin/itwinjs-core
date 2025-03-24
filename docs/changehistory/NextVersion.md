@@ -11,14 +11,16 @@ Table of contents:
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-  - [Display](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
-    - [Draping Models Onto Reality Data](#draping-models-onto-reality-data)
+    - [Text Block Margins](#text-block-margins)
+  - [Display](#display)
+    - [Read image to canvas](#read-image-to-canvas)
+    - [Draping models onto reality data](#draping-models-onto-reality-data)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
+  - [Attach/detach db](#attachdetach-db)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -29,11 +31,13 @@ Table of contents:
     - [@itwin/presentation-backend](#itwinpresentation-backend)
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Breaking Changes](#breaking-changes)
-    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Updated minimum requirements](#updated-minimum-requirements)
       - [Node.js](#nodejs)
       - [Electron](#electron)
       - [ECMAScript](#ecmascript)
+      - [TypeScript](#typescript)
+        - [`target`](#target)
+        - [`useDefineForClassFields`](#usedefineforclassfields)
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
@@ -49,13 +53,10 @@ Table of contents:
       - [@itwin/core-common](#itwincore-common-2)
       - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
     - [Packages dropped](#packages-dropped)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
-    - [TypeScript configuration changes](#typescript-configuration-changes)
-      - [`target`](#target)
-      - [`useDefineForClassFields`](#usedefineforclassfields)
-    - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -91,6 +92,10 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
 
+### Text Block Margins
+
+You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
+
 ## Display
 
 ### Read image to canvas
@@ -99,9 +104,9 @@ Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a singl
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
 
-### Draping Models Onto Reality Data
+### Draping models onto reality data
 
-A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. Supported reality data formats include glTF or b3dm. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.BackgroundMap]($common), which will only drape the model map layer onto the background map.
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
 
 Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
 
@@ -125,7 +130,7 @@ The `@itwin/map-layers-formats` package now includes an API for consuming Google
 
 To enable it as a base map, it's simple as:
 
- ```typescript
+```typescript
 import { GoogleMaps } from "@itwin/map-layers-formats";
 const ds = IModelApp.viewManager.selectedView.displayStyle;
 ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
@@ -137,7 +142,7 @@ Can also be attached as a map-layer:
 [[include:GoogleMaps_AttachMapLayerSimple]]
 ```
 
-  > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+> **_IMPORTANT_**: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
 
 ```ts
 [[include:GoogleMaps_SetGoogleMapsApiKey]]
@@ -146,6 +151,16 @@ Can also be attached as a map-layer:
 ## Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
+
+## Attach/detach db
+
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
+
+```ts
+[[include:IModelDb_attachDb.code]]
+```
+
+> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
 ## API deprecations
 
@@ -173,7 +188,7 @@ Can also be attached as a map-layer:
   }
   ```
 
-  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement *both* `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - *either* with [IDisposable.dispose]($core-bentley) *or* `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
 
 ### @itwin/core-common
 
@@ -194,6 +209,7 @@ Can also be attached as a map-layer:
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
 - Deprecated synchronous [addLogoCards]($core-frontend)-related APIs in favor of new asynchronous ones:
+
   - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
   - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
@@ -254,10 +270,6 @@ Added type guards and type assertions for every schema item class (they are on t
 
 ## Breaking Changes
 
-### Opening connection to local snapshot requires IPC
-
-[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
-
 ### Updated minimum requirements
 
 A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
@@ -273,6 +285,59 @@ iTwin.js now supports only the latest Electron release ([Electron 35](https://ww
 #### ECMAScript
 
 `@itwin/build-tools` has bumped the [TypeScript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2021](https://262.ecma-international.org/12.0/) to [ES2023](https://262.ecma-international.org/14.0/). This means that JavaScript files provided by core packages should be run in [environments supporting ES2023 features](https://compat-table.github.io/compat-table/es2016plus/).
+
+#### TypeScript
+
+There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
+
+##### `target`
+
+[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
+
+##### `useDefineForClassFields`
+
+Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
+
+This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
+
+```ts
+interface MyElementProps extends ElementProps {
+  property: string;
+}
+
+class MyElement extends Element {
+  public property!: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+  }
+}
+
+const myElement = new MyElement({ property: "value" });
+console.log(myElement.property); // undefined
+```
+
+To fix this, you can either initialize your properties in your class constructor:
+
+```ts
+class MyElement extends Element {
+  public property: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+    property = props.property;
+  }
+}
+```
+
+or just define your properties using `declare` keyword:
+
+```ts
+class MyElement extends Element {
+  declare public property: string;
+  ...
+}
+```
 
 ### Deprecated API removals
 
@@ -329,12 +394,25 @@ The following APIs have been removed in `@itwin/appui-abstract`.
 
 #### @itwin/core-backend
 
-| Removed               | Replacement |
-| --------------------- | ----------- |
-| `IModelDb.nativeDb`   | N/A         |
-| `ECDb.nativeDb`       | N/A         |
-| `SQLiteDb.nativeDb`   | N/A         |
-| `IModelHost.platform` | N/A         |
+| Removed                              | Replacement                                                                                                    |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `IModelDb.nativeDb`                  | N/A                                                                                                            |
+| `ECDb.nativeDb`                      | N/A                                                                                                            |
+| `SQLiteDb.nativeDb`                  | N/A                                                                                                            |
+| `IModelHost.platform`                | N/A                                                                                                            |
+| `CheckpointArg`                      | `DownloadRequest`                                                                                              |
+| `ECDB.query`                         | Use `createQueryReader` instead (same parameter).                                                              |
+| `ECDB.queryRowCount`                 | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `ECDB.restartQuery`                  | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
+| `Element.collectPredecessorIds`      | `Element.collectReferenceIds`                                                                                  |
+| `Element.getPredecessorIds`          | `Element.getReferenceIds`                                                                                      |
+| `ElementAspect.findBySource`         | `ElementAspect.findAllBySource`                                                                                |
+| `Entity.getReferenceConcreteIds`     | `Entity.getReferenceIds`                                                                                       |
+| `Entity.collectReferenceConcreteIds` | `Entity.collectReferenceIds`                                                                                   |
+| `IModelDb.query`                     | Use `createQueryReader` instead (same parameter).                                                              |
+| `IModelDb.queryRowCount`             | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `IModelDb.restartQuery`              | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
+| `IModelDb.getViewStateData`          | `IModelDb.getViewStateProps`                                                                                   |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
@@ -568,6 +646,10 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client.        |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                             |
 
+### Opening connection to local snapshot requires IPC
+
+[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
+
 ### Change to pullMerge
 
 Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
@@ -580,7 +662,7 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the *fast-forward* method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
@@ -596,66 +678,3 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
-
-### TypeScript configuration changes
-
-There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
-
-#### `target`
-
-[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
-
-#### `useDefineForClassFields`
-
-Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
-
-This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
-
-```ts
-interface MyElementProps extends ElementProps {
-  property: string;
-}
-
-class MyElement extends Element {
-  public property!: string;
-
-  constructor(props: MyElementProps) {
-    super(props);
-  }
-}
-
-const myElement = new MyElement({ property: "value" });
-console.log(myElement.property); // undefined
-```
-
-To fix this, you can either initialize your properties in your class constructor:
-
-```ts
-class MyElement extends Element {
-  public property: string;
-
-  constructor(props: MyElementProps) {
-    super(props);
-    property = props.property;
-  }
-}
-```
-
-or just define your properties using `declare` keyword:
-
-```ts
-class MyElement extends Element {
-  declare public property: string;
-  ...
-}
-```
-
-## Attach/detach db
-
-Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
-
-```ts
-[[include:IModelDb_attachDb.code]]
-```
-
-> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'

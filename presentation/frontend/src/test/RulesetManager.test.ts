@@ -4,15 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 
 describe("RulesetManager", () => {
   let onRulesetModifiedSpy: sinon.SinonSpy<[RegisteredRuleset, Ruleset], Promise<void>>;
   let manager: RulesetManagerImpl;
+
+  function createTestRuleset(): Ruleset {
+    return {
+      id: "test-ruleset",
+      rules: [],
+    };
+  }
 
   beforeEach(() => {
     onRulesetModifiedSpy = sinon.stub<[RegisteredRuleset, Ruleset], Promise<void>>().resolves();
@@ -22,11 +27,11 @@ describe("RulesetManager", () => {
 
   describe("get", () => {
     it("returns undefined when ruleset is not registered", async () => {
-      expect(await manager.get(faker.random.word())).to.be.undefined;
+      expect(await manager.get("test-ruleset-id")).to.be.undefined;
     });
 
     it("returns registered ruleset", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset = createTestRuleset();
       const added = await manager.add(ruleset);
       const result = await manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
@@ -37,14 +42,14 @@ describe("RulesetManager", () => {
 
   describe("add", () => {
     it("registers a ruleset", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset = createTestRuleset();
       await manager.add(ruleset);
       expect((await manager.get(ruleset.id))!.toJSON()).to.deep.eq(ruleset);
     });
 
     it("allows registering 2 rulesets with the same id", async () => {
-      const rulesetId = faker.random.uuid();
-      const rulesets = [await createRandomRuleset(), await createRandomRuleset()];
+      const rulesetId = "test ruleset id";
+      const rulesets = [createTestRuleset(), createTestRuleset()];
       await Promise.all(
         rulesets.map(async (r) => {
           r.id = rulesetId;
@@ -56,7 +61,7 @@ describe("RulesetManager", () => {
 
   describe("modify", () => {
     it("modifies given ruleset and raises the `onRulesetModified` event", async () => {
-      const initialRuleset = await createRandomRuleset();
+      const initialRuleset = createTestRuleset();
       const registered = await manager.add(initialRuleset);
       expect(await manager.get(initialRuleset.id)).to.eq(registered);
       const newRule: Rule = {
@@ -74,17 +79,17 @@ describe("RulesetManager", () => {
 
   describe("remove", () => {
     it("does nothing if ruleset with the specified id is not registered", async () => {
-      expect(await manager.remove([faker.random.uuid(), faker.random.uuid()])).to.be.false;
+      expect(await manager.remove(["doesn't", "exist"])).to.be.false;
     });
 
     it("does nothing if ruleset with the specified uniqueIdentifier is not registered", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset = createTestRuleset();
       await manager.add(ruleset);
-      expect(await manager.remove([ruleset.id, faker.random.uuid()])).to.be.false;
+      expect(await manager.remove([ruleset.id, "hash"])).to.be.false;
     });
 
     it("removes ruleset with [id, uniqueIdentifier] argument", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset = createTestRuleset();
       const registered = await manager.add(ruleset);
       expect(await manager.get(ruleset.id)).to.not.be.undefined;
       expect(await manager.remove([ruleset.id, registered.uniqueIdentifier])).to.be.true;
@@ -92,7 +97,7 @@ describe("RulesetManager", () => {
     });
 
     it("removes ruleset with RegisteredRuleset argument", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset = createTestRuleset();
       const registered = await manager.add(ruleset);
       expect(await manager.get(ruleset.id)).to.not.be.undefined;
       expect(await manager.remove(registered)).to.be.true;
@@ -106,7 +111,7 @@ describe("RulesetManager", () => {
     });
 
     it("clears rulesets", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset = createTestRuleset();
       await manager.add(ruleset);
       await manager.clear();
     });
@@ -114,7 +119,7 @@ describe("RulesetManager", () => {
 
   describe("dispose", () => {
     it("disposes registered ruleset for add result", async () => {
-      const ruleset = await createRandomRuleset();
+      const ruleset = createTestRuleset();
       const result = await manager.add(ruleset);
       const eventSpy = sinon.spy(manager, "remove");
 

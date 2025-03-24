@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
@@ -69,7 +68,7 @@ describe("Presentation", () => {
 
     describe("props handling", () => {
       it("sets unused client lifetime provided through props", () => {
-        Presentation.initialize({ unusedClientLifetime: faker.random.number() });
+        Presentation.initialize({ unusedClientLifetime: 4455 });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
         expect(storage.props.unusedValueLifetime).to.eq(Presentation.initProps!.unusedClientLifetime);
       });

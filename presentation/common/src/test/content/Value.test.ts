@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import { DisplayValue, DisplayValuesArray, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "../../presentation-common/content/Value";
 
 describe("Value", () => {
@@ -14,10 +13,10 @@ describe("Value", () => {
     let nestedContentValue: NestedContentValue;
 
     beforeEach(() => {
-      primitiveValue = faker.random.number();
-      arrayValue = [faker.random.word()];
+      primitiveValue = 123;
+      arrayValue = ["456"];
       mapValue = {
-        test: faker.random.word(),
+        test: "789",
       };
       nestedContentValue = {
         primaryKeys: [],
@@ -74,10 +73,10 @@ describe("DisplayValue", () => {
     let mapValue: DisplayValuesMap;
 
     beforeEach(() => {
-      primitiveValue = faker.random.words();
-      arrayValue = [faker.random.word()];
+      primitiveValue = "lorem ipsum";
+      arrayValue = ["lorem"];
       mapValue = {
-        test: faker.random.word(),
+        test: "ipsum",
       };
     });
 

@@ -1643,6 +1643,12 @@ export class ConflictingLocksError extends IModelError {
     conflictingLocks?: ConflictingLock[];
 }
 
+// @beta
+export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
+
+// @beta
+export function constructITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -1901,6 +1907,9 @@ export interface CreateIModelProps extends IModelProps {
     // @alpha
     readonly thumbnail?: ThumbnailProps;
 }
+
+// @beta
+export function createITwinErrorTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
 
 // @public
 export interface CreateSnapshotIModelProps {
@@ -4125,6 +4134,9 @@ export enum GeometrySummaryVerbosity {
     Full = 30
 }
 
+// @beta
+export function getITwinErrorMetaData(error: ITwinError): object | undefined;
+
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
@@ -5232,7 +5244,7 @@ export type InterpolationFunction = (v: any, k: number) => number;
 
 // @beta
 export interface InUseLock {
-    briefcaseIds: number[];
+    briefcaseIds: BriefcaseId[];
     objectId: string;
     state: LockState;
 }
@@ -5240,17 +5252,7 @@ export interface InUseLock {
 // @beta
 export interface InUseLocksError extends ITwinError {
     // (undocumented)
-    errorKey: "in-use-locks";
-    // (undocumented)
     inUseLocks: InUseLock[];
-    // (undocumented)
-    namespace: "itwinjs-core";
-}
-
-// @beta (undocumented)
-export namespace InUseLocksError {
-    export function isInUseLocksError(error: unknown): error is InUseLocksError;
-    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
 }
 
 // @internal (undocumented)
@@ -5315,6 +5317,7 @@ export type IpcInvokeReturn = {
         message: string;
         errorNumber: number;
         stack?: string;
+        metadata?: LoggingMetaData;
     };
 } | {
     result?: never;
@@ -5457,6 +5460,9 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
+// @beta
+export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError;
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5476,7 +5482,7 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 export const iTwinChannel: (channel: string) => string;
 
 // @beta
-export interface ITwinError {
+export interface ITwinError extends Error {
     errorKey: string;
     message: string;
     metadata?: LoggingMetaData;
@@ -5484,11 +5490,19 @@ export interface ITwinError {
     stack?: string;
 }
 
-// @beta (undocumented)
-export namespace ITwinError {
-    export function getMetaData(err: ITwinError): object | undefined;
-    export function isITwinError(error: unknown): error is ITwinError;
-}
+// @beta
+export const iTwinErrorKeys: {
+    readonly inUseLocks: "in-use-locks";
+    readonly channelNest: "channel-may-not-nest";
+    readonly channelNotAllowed: "channel-not-allowed";
+    readonly channelRootExists: "channel-root-exists";
+};
+
+// @beta
+export const iTwinErrorMessages: Record<keyof typeof iTwinErrorKeys, (...args: any[]) => string>;
+
+// @beta
+export const iTwinjsCoreNamespace = "itwinjs-core";
 
 // @public
 export interface JsonGeometryStream {
@@ -9767,6 +9781,7 @@ export class TextBlock extends TextBlockComponent {
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
     justification: TextBlockJustification;
+    margins: TextBlockMargins;
     readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -9830,8 +9845,17 @@ export interface TextBlockLayoutResult {
 }
 
 // @beta
+export interface TextBlockMargins {
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+}
+
+// @beta
 export interface TextBlockProps extends TextBlockComponentProps {
     justification?: TextBlockJustification;
+    margins?: Partial<TextBlockMargins>;
     paragraphs?: ParagraphProps[];
     width?: number;
 }

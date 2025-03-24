@@ -1,6 +1,6 @@
 {
   "name": "@itwin/certa",
-  "version": "5.0.0-dev.78",
+  "version": "5.0.0-dev.89",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "",
     "docs": "",
@@ -37,7 +37,7 @@
     "express": "^4.21.2",
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.17.21",
-    "mocha": "^10.2.0",
+    "mocha": "^11.1.0",
     "playwright": "~1.47.1",
     "source-map-support": "^0.5.6",
     "yargs": "^17.4.0"
@@ -54,8 +54,8 @@
     "@types/yargs": "17.0.19",
     "electron": "^35.0.0",
     "eslint": "^9.13.0",
-    "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
+    "nyc": "^17.1.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "peerDependencies": {
