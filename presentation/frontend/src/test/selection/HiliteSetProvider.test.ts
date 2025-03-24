@@ -9,16 +9,12 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
-import {
-  createRandomECInstanceKey,
-  createRandomTransientId,
-  createTestContentDescriptor,
-  createTestContentItem,
-} from "@itwin/presentation-common/lib/cjs/test";
+import { createTestContentDescriptor, createTestContentItem, createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
 import { Presentation } from "../../presentation-frontend/Presentation";
 import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
+import { Id64, TransientIdSequence } from "@itwin/core-bentley";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -57,7 +53,7 @@ describe("HiliteSetProvider", () => {
     it("memoizes result", async () => {
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [createTestContentItem({ values: {}, displayValues: {} })]);
       fakeGetContentIterator.callsFake(async () => ({ total: 1, descriptor: resultContent.descriptor, items: iterate(resultContent.contentSet) }));
-      const keys = new KeySet([createRandomECInstanceKey()]);
+      const keys = new KeySet([createTestECInstanceKey()]);
 
       await provider.getHiliteSet(keys);
       // records are fetched for the first request
@@ -67,7 +63,7 @@ describe("HiliteSetProvider", () => {
       // keys didn't change - result returned from cache
       expect(fakeGetContentIterator).to.be.calledOnce;
 
-      keys.add(createRandomECInstanceKey());
+      keys.add(createTestECInstanceKey({ id: "0x456" }));
       await provider.getHiliteSet(keys);
       // keys did change - result fetched again
       expect(fakeGetContentIterator).to.be.calledTwice;
@@ -78,7 +74,7 @@ describe("HiliteSetProvider", () => {
     });
 
     it("creates result for transient element keys", async () => {
-      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
+      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: new TransientIdSequence().getNext() };
 
       fakeGetContentIterator.withArgs(sinon.match((opts: GetContentRequestOptions) => opts.keys.isEmpty)).resolves(undefined);
 
@@ -89,8 +85,8 @@ describe("HiliteSetProvider", () => {
     });
 
     it("creates result for persistent element keys", async () => {
-      const persistentKey = createRandomECInstanceKey();
-      const resultKey = createRandomECInstanceKey();
+      const persistentKey = createTestECInstanceKey();
+      const resultKey = createTestECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         createTestContentItem({ primaryKeys: [resultKey], values: {}, displayValues: {} }), // element
       ]);
@@ -107,8 +103,8 @@ describe("HiliteSetProvider", () => {
     });
 
     it("creates result for model keys", async () => {
-      const persistentKey = createRandomECInstanceKey();
-      const resultKey = createRandomECInstanceKey();
+      const persistentKey = createTestECInstanceKey();
+      const resultKey = createTestECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         createTestContentItem({ primaryKeys: [resultKey], values: {}, displayValues: {}, extendedData: { isModel: true } }),
       ]);
@@ -125,8 +121,8 @@ describe("HiliteSetProvider", () => {
     });
 
     it("creates result for subcategory keys", async () => {
-      const persistentKey = createRandomECInstanceKey();
-      const resultKey = createRandomECInstanceKey();
+      const persistentKey = createTestECInstanceKey();
+      const resultKey = createTestECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         createTestContentItem({ primaryKeys: [resultKey], values: {}, displayValues: {}, extendedData: { isSubCategory: true } }),
       ]);
@@ -143,11 +139,11 @@ describe("HiliteSetProvider", () => {
 
     it("creates combined result", async () => {
       // the handler asks selection manager for overall selection
-      const persistentKey = createRandomECInstanceKey();
-      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
-      const resultModelKey = createRandomECInstanceKey();
-      const resultSubCategoryKey = createRandomECInstanceKey();
-      const resultElementKey = createRandomECInstanceKey();
+      const persistentKey = createTestECInstanceKey();
+      const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: new TransientIdSequence().getNext() };
+      const resultModelKey = createTestECInstanceKey();
+      const resultSubCategoryKey = createTestECInstanceKey();
+      const resultElementKey = createTestECInstanceKey();
       const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
         createTestContentItem({ primaryKeys: [resultModelKey], values: {}, displayValues: {}, extendedData: { isModel: true } }),
         createTestContentItem({ primaryKeys: [resultSubCategoryKey], values: {}, displayValues: {}, extendedData: { isSubCategory: true } }),
@@ -168,11 +164,11 @@ describe("HiliteSetProvider", () => {
       // create a key set of such size that we need 3 content requests
       const inputKeys = new KeySet();
       for (let i = 0; i < 2 * DEFAULT_KEYS_BATCH_SIZE + 1; ++i) {
-        inputKeys.add(createRandomECInstanceKey());
+        inputKeys.add(createTestECInstanceKey({ id: Id64.fromUint32Pair(i, 111) }));
       }
 
       // first request returns content with an element key
-      const elementKey = createRandomECInstanceKey();
+      const elementKey = createTestECInstanceKey({ id: "0x222" });
       const resultContent1 = new Content(createTestContentDescriptor({ fields: [] }), [
         createTestContentItem({ primaryKeys: [elementKey], values: {}, displayValues: {} }),
       ]);
@@ -185,8 +181,8 @@ describe("HiliteSetProvider", () => {
         .resolves(undefined);
 
       // third request returns content with subcategory and model keys
-      const subCategoryKey = createRandomECInstanceKey();
-      const modelKey = createRandomECInstanceKey();
+      const subCategoryKey = createTestECInstanceKey({ id: "0x333" });
+      const modelKey = createTestECInstanceKey({ id: "0x444" });
       const resultContent2 = new Content(createTestContentDescriptor({ fields: [] }), [
         createTestContentItem({ primaryKeys: [subCategoryKey], values: {}, displayValues: {}, extendedData: { isSubCategory: true } }),
         createTestContentItem({ primaryKeys: [modelKey], values: {}, displayValues: {}, extendedData: { isModel: true } }),

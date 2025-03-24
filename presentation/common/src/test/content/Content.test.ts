@@ -3,11 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import { Content, ContentJSON } from "../../presentation-common/content/Content";
 import { Item } from "../../presentation-common/content/Item";
 import { createTestContentDescriptor } from "../_helpers/Content";
-import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
+import { createTestECClassInfo, createTestECInstanceKey, createTestLabelDefinition } from "../_helpers";
 
 describe("Content", () => {
   describe("constructor", () => {
@@ -36,15 +35,15 @@ describe("Content", () => {
         },
         contentSet: [
           {
-            classInfo: createRandomECClassInfo(),
-            primaryKeys: [createRandomECInstanceKey()],
-            labelDefinition: createRandomLabelDefinition(),
+            classInfo: createTestECClassInfo(),
+            primaryKeys: [createTestECInstanceKey()],
+            labelDefinition: createTestLabelDefinition(),
             mergedFieldNames: [],
             values: {
-              test: faker.random.number(),
+              test: 123,
             },
             displayValues: {
-              test: faker.random.words(),
+              test: "123",
             },
           },
         ],
