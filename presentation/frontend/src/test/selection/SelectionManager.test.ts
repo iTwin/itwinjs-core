@@ -6,19 +6,11 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { assert, BeDuration, Id64, Id64String, StopWatch } from "@itwin/core-bentley";
+import { assert, BeDuration, Id64, Id64String, StopWatch, TransientIdSequence } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
-import {
-  createRandomId,
-  createRandomSelectionScope,
-  createRandomTransientId,
-  createTestECInstanceKey,
-  createTestNodeKey,
-  ResolvablePromise,
-  waitForPendingAsyncs,
-} from "@itwin/presentation-common/lib/cjs/test";
+import { createTestECInstanceKey, createTestNodeKey, ResolvablePromise, waitForPendingAsyncs } from "@itwin/presentation-common/lib/cjs/test";
 import { createStorage, CustomSelectable, SelectionStorage, TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { Presentation } from "../../presentation-frontend/Presentation";
 import { PresentationManager } from "../../presentation-frontend/PresentationManager";
@@ -365,8 +357,8 @@ describe("SelectionManager", () => {
 
     describe("addToSelectionWithSelectionScope", () => {
       it("adds scoped selection", async () => {
-        const scope = createRandomSelectionScope();
-        const ids = [createRandomId()];
+        const scope: SelectionScope = { id: "element", label: "Element" };
+        const ids = ["0x123"];
         scopesManager.getSelectionScopes.resolves([scope]);
         scopesManager.computeSelection.resolves(new KeySet(baseSelection));
 
@@ -381,8 +373,8 @@ describe("SelectionManager", () => {
 
     describe("replaceSelectionWithSelectionScope", () => {
       it("replaces empty selection with scoped selection", async () => {
-        const scope = createRandomSelectionScope();
-        const ids = [createRandomId()];
+        const scope: SelectionScope = { id: "element", label: "Element" };
+        const ids = ["0x123"];
         scopesManager.getSelectionScopes.resolves([scope]);
         scopesManager.computeSelection.resolves(new KeySet(baseSelection));
 
@@ -398,8 +390,8 @@ describe("SelectionManager", () => {
 
     describe("removeFromSelectionWithSelectionScope", () => {
       it("removes scoped selection", async () => {
-        const scope = createRandomSelectionScope();
-        const ids = [createRandomId()];
+        const scope: SelectionScope = { id: "element", label: "Element" };
+        const ids = ["0x123"];
         scopesManager.getSelectionScopes.resolves([scope]);
         scopesManager.computeSelection.resolves(new KeySet(baseSelection));
 
@@ -509,7 +501,7 @@ describe("SelectionManager", () => {
         describe("choosing scope", () => {
           it('uses "element" scope when `activeScope = undefined`', async () => {
             scopesManager.computeSelection.resolves(new KeySet([createTestECInstanceKey()]));
-            ss.add({ elements: createRandomId() });
+            ss.add({ elements: "0x123" });
             await waitForPendingAsyncs(syncer);
             await waitForSelection(1, imodel);
             expect(scopesManager.computeSelection).to.be.calledWith(
@@ -522,7 +514,7 @@ describe("SelectionManager", () => {
           it('uses "element" scope when `activeScope = "element"`', async () => {
             scopesManager.activeScope = "element";
             scopesManager.computeSelection.resolves(new KeySet([createTestECInstanceKey()]));
-            ss.add({ elements: createRandomId() });
+            ss.add({ elements: "0x123" });
             await waitForPendingAsyncs(syncer);
             await waitForSelection(1, imodel);
             expect(scopesManager.computeSelection).to.be.calledWith(
@@ -549,7 +541,7 @@ describe("SelectionManager", () => {
               id: "test scope",
               label: "Test",
             };
-            transientElementId = createRandomTransientId();
+            transientElementId = new TransientIdSequence().getNext();
             transientElementKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: transientElementId };
             persistentElementId = "0x123";
             persistentElementKey = createTestECInstanceKey({ id: "0x123" });

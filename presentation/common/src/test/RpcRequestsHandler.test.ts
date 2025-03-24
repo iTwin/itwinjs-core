@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Id64, Logger } from "@itwin/core-bentley";
@@ -21,6 +20,7 @@ import {
   PresentationStatus,
   RpcRequestsHandler,
   SelectionInfo,
+  SelectionScope,
   SelectionScopeRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
@@ -58,14 +58,13 @@ import {
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import {
-  createRandomECInstanceKey,
-  createRandomECInstancesNode,
-  createRandomECInstancesNodeKey,
-  createRandomLabelDefinition,
-  createRandomNodePathElement,
-  createRandomSelectionScope,
-} from "./_helpers/random";
-import { ResolvablePromise } from "./_helpers";
+  createTestECInstanceKey,
+  createTestECInstancesNode,
+  createTestECInstancesNodeKey,
+  createTestLabelDefinition,
+  createTestNodePathElement,
+  ResolvablePromise,
+} from "./_helpers";
 
 describe("RpcRequestsHandler", () => {
   let clientId: string;
@@ -84,7 +83,7 @@ describe("RpcRequestsHandler", () => {
   });
 
   beforeEach(() => {
-    clientId = faker.random.uuid();
+    clientId = "test-client-id";
     defaultRpcHandlerOptions = { imodel: token };
   });
 
@@ -121,13 +120,13 @@ describe("RpcRequestsHandler", () => {
 
     describe("when request succeeds", () => {
       it("returns result of the request", async () => {
-        const result = faker.random.number();
+        const result = 123;
         const actualResult = await handler.request(async () => successResponse(result), defaultRpcHandlerOptions);
         expect(actualResult).to.eq(result);
       });
 
       it("calls diagnostics handler if provided", async () => {
-        const result = faker.random.number();
+        const result = 123;
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
@@ -221,13 +220,13 @@ describe("RpcRequestsHandler", () => {
     it("forwards getNodesCount call for root nodes", async () => {
       const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
       };
       const rpcOptions: HierarchyRpcRequestOptions = {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
       };
-      const result = faker.random.number();
+      const result = 123;
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
@@ -240,15 +239,15 @@ describe("RpcRequestsHandler", () => {
     it("forwards getNodesCount call for child nodes", async () => {
       const handlerOptions: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
-        parentKey: createRandomECInstancesNodeKey(),
+        rulesetOrId: "test-ruleset",
+        parentKey: createTestECInstancesNodeKey(),
       };
       const rpcOptions: HierarchyRpcRequestOptions = {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
         parentKey: handlerOptions.parentKey,
       };
-      const result = faker.random.number();
+      const result = 123;
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
@@ -261,9 +260,9 @@ describe("RpcRequestsHandler", () => {
     it("forwards getPagedNodes call", async () => {
       const handlerOptions: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON>> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         paging: { start: 1, size: 2 },
-        parentKey: createRandomECInstancesNodeKey(),
+        parentKey: createTestECInstancesNodeKey(),
       };
       const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
         clientId,
@@ -271,7 +270,7 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
         parentKey: handlerOptions.parentKey!,
       };
-      const result = { items: [createRandomECInstancesNode()], total: 1 };
+      const result = { items: [createTestECInstancesNode()], total: 1 };
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedNodes(token, rpcOptions))
@@ -286,7 +285,7 @@ describe("RpcRequestsHandler", () => {
         const handlerOptions: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> = {
           imodel: token,
           rulesetOrId: "test-ruleset",
-          parentKey: createRandomECInstancesNodeKey(),
+          parentKey: createTestECInstancesNodeKey(),
         };
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           clientId,
@@ -321,10 +320,10 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      const filterText = faker.random.word();
+      const filterText = "test-filter";
       const handlerOptions: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         filterText,
       };
       const rpcOptions: FilterByTextHierarchyRpcRequestOptions = {
@@ -332,7 +331,7 @@ describe("RpcRequestsHandler", () => {
         rulesetOrId: handlerOptions.rulesetOrId,
         filterText,
       };
-      const result = [createRandomNodePathElement()];
+      const result = [createTestNodePathElement()];
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getFilteredNodePaths(token, rpcOptions))
@@ -343,11 +342,11 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodePaths call", async () => {
-      const paths = [[createRandomECInstanceKey()]];
-      const markedIndex = faker.random.number();
+      const paths = [[createTestECInstanceKey()]];
+      const markedIndex = 123;
       const handlerOptions: FilterByInstancePathsHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         instancePaths: paths,
         markedIndex,
       };
@@ -357,7 +356,7 @@ describe("RpcRequestsHandler", () => {
         instancePaths: paths,
         markedIndex,
       };
-      const result = [createRandomNodePathElement()];
+      const result = [createTestNodePathElement()];
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodePaths(token, rpcOptions))
@@ -402,12 +401,12 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getContentDescriptor call", async () => {
-      const displayType = faker.random.word();
+      const displayType = "test-display-type";
       const keys = new KeySet().toJSON();
-      const selectionInfo: SelectionInfo = { providerName: faker.random.word() };
+      const selectionInfo: SelectionInfo = { providerName: "selection-provider" };
       const handlerOptions: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         displayType,
         keys,
         selection: selectionInfo,
@@ -432,10 +431,10 @@ describe("RpcRequestsHandler", () => {
     it("forwards getContentSetSize call", async () => {
       const descriptor = createTestContentDescriptor({ fields: [] }).toJSON();
       const keys = new KeySet().toJSON();
-      const result = faker.random.number();
+      const result = 123;
       const handlerOptions: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor,
         keys,
       };
@@ -466,7 +465,7 @@ describe("RpcRequestsHandler", () => {
       };
       const handlerOptions: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor,
         keys,
         paging: { start: 1, size: 2 },
@@ -496,7 +495,7 @@ describe("RpcRequestsHandler", () => {
       };
       const handlerOptions: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor,
         keys,
         paging: { start: 1, size: 2 },
@@ -520,7 +519,7 @@ describe("RpcRequestsHandler", () => {
     it("forwards getPagedDistinctValues call", async () => {
       const handlerOptions: DistinctValuesRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         descriptor: createTestContentDescriptor({ fields: [] }).toJSON(),
         keys: new KeySet().toJSON(),
         fieldDescriptor: {
@@ -563,7 +562,7 @@ describe("RpcRequestsHandler", () => {
     it("forwards getContentInstanceKeys call", async () => {
       const handlerOptions: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> = {
         imodel: token,
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset",
         displayType: "test display type",
         keys: new KeySet().toJSON(),
       };
@@ -596,7 +595,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getDisplayLabelDefinition call", async () => {
-      const key = createRandomECInstanceKey();
+      const key = createTestECInstanceKey();
       const handlerOptions: DisplayLabelRequestOptions<IModelRpcProps, InstanceKey> = {
         imodel: token,
         key,
@@ -605,7 +604,7 @@ describe("RpcRequestsHandler", () => {
         clientId,
         key,
       };
-      const result = createRandomLabelDefinition();
+      const result = createTestLabelDefinition();
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions))
@@ -616,7 +615,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getPagedDisplayLabelDefinitions call", async () => {
-      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const keys = [createTestECInstanceKey(), createTestECInstanceKey()];
       const handlerOptions: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKey> = {
         imodel: token,
         keys,
@@ -627,7 +626,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = {
         total: 2,
-        items: [createRandomLabelDefinition(), createRandomLabelDefinition()],
+        items: [createTestLabelDefinition(), createTestLabelDefinition()],
       };
       rpcInterfaceMock
         // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -646,7 +645,7 @@ describe("RpcRequestsHandler", () => {
       const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<any>> = {
         clientId,
       };
-      const result = [createRandomSelectionScope()];
+      const result: SelectionScope[] = [{ id: "element", label: "Element" }];
       rpcInterfaceMock
         .setup(async (x) => x.getSelectionScopes(token, rpcOptions))
         .returns(async () => successResponse(result))

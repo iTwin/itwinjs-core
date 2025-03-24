@@ -15,12 +15,11 @@ import {
   StringRulesetVariable,
   VariableValueTypes,
 } from "../presentation-common/RulesetVariables";
-import { createRandomId } from "./_helpers/random";
 
 describe("RulesetVariable", () => {
   describe("toJSON", () => {
     it("serializes Id64[] to CompressedId64Set", () => {
-      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
+      const ids = OrderedId64Iterable.sortArray(["0x123", "0x123"]);
       const variable: Id64sRulesetVariable = {
         type: VariableValueTypes.Id64Array,
         id: "test",
@@ -74,7 +73,7 @@ describe("RulesetVariable", () => {
 
   describe("fromJSON", () => {
     it("deserializes CompressedId64Set to Id64[]", () => {
-      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
+      const ids = OrderedId64Iterable.sortArray(["0x123", "0x456"]);
       const json: Id64sRulesetVariableJSON = {
         type: VariableValueTypes.Id64Array,
         id: "test",
