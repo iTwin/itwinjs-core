@@ -20,7 +20,7 @@ Table of contents:
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
-  - [Quantity](#quantity)
+  - [Quantity Formatting](#quantity-formatting)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -154,11 +154,11 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 
 > Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
-## Quantity
+## Quantity Formatting
 
 Following APIs have been added to support persistence:
 
-- [PresentationFormatSet]($quantity) defines an interface to support loading/saving formats.
+- [FormatSet]($ecschema-metadata) defines an interface to support loading/saving [Format]($ecschema-metadata).
 
 Learn more at the [Quantity](../learning/quantity/index.md#persistence) learnings article for examples and use cases.
 

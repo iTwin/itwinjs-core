@@ -14,7 +14,7 @@
     - [Mathematical Operation Parsing](#mathematical-operation-parsing)
       - [Limitations](#limitations)
   - [Persistence](#persistence)
-    - [PresentationFormatSet](#presentationformatset)
+    - [FormatSet](#formatset)
 
 The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing.
 For detailed API documentation, see our [iTwin.js reference documentation](https://www.itwinjs.org/reference/core-quantity/quantity/).
@@ -140,20 +140,20 @@ If a Format uses a spacer that conflicts with one of the operators above, additi
 
 We expose APIs and interfaces to support persistence of formats. Different from [KindOfQuantity](../../bis/ec/kindofquantity.md), which enables persistence of formats at the schema level, this section covers persistence at the application level.
 
-### PresentationFormatSet
+### FormatSet
 
-[PresentationFormatSet]($quantity) defines properties necessary to support persistence of a set of formats.
+[FormatSet]($ecschema-metadata) defines properties necessary to support persistence of a set of formats.
 
-Formats defined in a PFS needs to be mapped to the a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the format associated to a KoQ within a PFS would take precedence and be used over the default presentation formats of that KoQ.
+Each Format defined in a FormatSet need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the format associated to a KindofQuantity within a FormatSet would take precedence and be used over the default presentation formats of that KindOfQuantity.
 
-> The naming convention for a valid format within a PFS is <full-schema-name>:<koq-name>
+> The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
 <details>
-<summary>Example of a metric-based Presentation Format Set as JSON:</summary>
+<summary>Example of a metric-based FormatSet as JSON:</summary>
 
 ```json
 {
-  "id": "metric",
+  "name": "metric",
   "label": "Metric",
   "formats": {
     "AecUnits.LENGTH": {
@@ -186,11 +186,11 @@ Formats defined in a PFS needs to be mapped to the a valid [ECName](../../bis/ec
 </details>
 
 <details>
-<summary>Example of a imperial-based Presentation Format Set as JSON:</summary>
+<summary>Example of a imperial-based FormatSet as JSON:</summary>
 
 ```json
 {
-  "id": "imperial",
+  "name": "imperial",
   "label": "Imperial",
   "formats": {
     "AecUnits.LENGTH": {
