@@ -8,7 +8,7 @@
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/icons-generic",

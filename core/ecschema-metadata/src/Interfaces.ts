@@ -94,3 +94,13 @@ export interface HasMixins {
   mixins: LazyLoadedMixin[];
   getMixinsSync(): Iterable<Mixin>;
 }
+
+/** This interface is implemented by a class that would provide formats for use in formatting quantities.
+ * @beta
+ */
+export interface FormatsProvider {
+
+  getFormat(id: string): Promise<SchemaItemFormatProps | undefined>; // Should we add synchronous version of this method?
+  getFormats(ids?: string[]): Promise<SchemaItemFormatProps[]>;
+  // getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+}

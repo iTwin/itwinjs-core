@@ -445,6 +445,12 @@ importers:
 
   ../../core/ecschema-metadata:
     devDependencies:
+      '@bentley/aec-units-schema':
+        specifier: ^1.0.3
+        version: 1.0.3
+      '@bentley/formats-schema':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@bentley/units-schema':
         specifier: ^1.0.8
         version: 1.0.8

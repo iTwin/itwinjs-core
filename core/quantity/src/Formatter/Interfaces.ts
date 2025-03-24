@@ -6,7 +6,6 @@
  * @module Quantity
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
@@ -96,13 +95,3 @@ export interface CloneOptions {
   primaryUnit?: CloneUnit;
 }
 
-/** This interface is implemented by a class that would provide formats for use in formatting quantities.
- * @beta
- */
-export interface FormatsProvider {
-
-  getFormat(id: string): FormatProps | undefined; // Should we add synchronous version of this method?
-  getFormats(ids?: string[]): FormatProps[];
-
-  onFormatsUpdated: BeUiEvent<string[]>;
-}
