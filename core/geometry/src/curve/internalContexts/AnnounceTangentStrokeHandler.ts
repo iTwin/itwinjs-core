@@ -19,10 +19,12 @@ import { StrokeOptions } from "../StrokeOptions";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
 /**
- * Optional arguments for to find tangent to curve from a point.
+ * Optional arguments for to find tangent(s) to curve from a point.
  * @public
  */
 export interface TangentOptions {
+  /** A callback function to announce tangent(s). For example, the callback can find all tangents or just the closest tangent. */
+  announceTangent?: (tangent: CurveLocationDetail) => any;
   /** A point to be used to find the closest tangent to that point. */
   hintPoint?: Point3d,
   /** View plane normal. Default is(0, 0, 1). */
@@ -40,12 +42,12 @@ export interface TangentOptions {
 }
 
 /**
- * Context for searching for the closest tangent to a CurvePrimitive.
+ * Context for searching for the tangent(s) to a CurvePrimitive.
  * @internal
  */
-export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler implements IStrokeHandler {
+export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implements IStrokeHandler {
   private _curve: CurvePrimitive | undefined;
-  private _closestTangents: CurveLocationDetail[];
+  private _announceTangent: (tangent: CurveLocationDetail) => any;
   private _spacePoint: Point3d;
   private _viewNormal: Vector3d;
   // fraction and function value on one side of an interval that may bracket a root
@@ -59,32 +61,14 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, viewNormal?: Vector3d) {
+  public constructor(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, viewNormal?: Vector3d) {
     super();
+    this._announceTangent = announceTangent;
     this._spacePoint = spacePoint;
     this._viewNormal = viewNormal ?? Vector3d.unitZ();
-    this._closestTangents = [];
     this._workRay = Ray3d.createZero();
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
-  }
-  public claimResult(): CurveLocationDetail[] {
-    return this._closestTangents;
-  }
-  public findClosestTangentIndex(hintPoint?: Point3d): CurveLocationDetail | undefined {
-    if (this._closestTangents.length === 0)
-      return undefined;
-    const hp = hintPoint ?? this._spacePoint;
-    let minDistance = Number.MAX_VALUE;
-    let minIndex = -1;
-    for (let i = 0; i < this._closestTangents.length; i++) {
-      const distance = this._closestTangents[i].point.distance(hp);
-      if (distance < minDistance) {
-        minDistance = distance;
-        minIndex = i;
-      }
-    }
-    return this._closestTangents[minIndex];
   }
   public needPrimaryGeometryForStrokes() {
     return true;
@@ -111,15 +95,10 @@ export class ClosestTangentStrokeHandler extends NewtonRtoRStrokeHandler impleme
     }
   }
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
-    if (this._closestTangents.length > 0) { // avoid adding duplicate tangents
-      const lastFraction = this._closestTangents[this._closestTangents.length - 1].fraction;
-      if (Math.abs(fraction - lastFraction) < Geometry.smallFloatingPoint)
-        return;
-    }
-    const closestTangent = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point);
+    const tangent = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point);
     if (this._parentCurvePrimitive !== undefined)
-      closestTangent.curve = this._parentCurvePrimitive;
-    this._closestTangents?.push(closestTangent);
+      tangent.curve = this._parentCurvePrimitive;
+    this._announceTangent(tangent);
   }
   public announceSegmentInterval(
     cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
