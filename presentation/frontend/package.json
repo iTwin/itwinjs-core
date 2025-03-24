@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.0.0-dev.87",
+  "version": "5.0.0-dev.89",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -68,7 +68,6 @@
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.8",
     "@types/deep-equal": "^1",
-    "@types/faker": "^4.1.0",
     "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.6",
     "@types/sinon": "^17.0.2",
@@ -82,7 +81,6 @@
     "deep-equal": "^1",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
-    "faker": "^4.1.0",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
