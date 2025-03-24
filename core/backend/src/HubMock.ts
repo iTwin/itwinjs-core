@@ -10,10 +10,10 @@ import {
 } from "@itwin/core-common";
 import {
   AcquireNewBriefcaseIdArg,
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CheckpointArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
-import { CheckpointProps, ProgressFunction, ProgressStatus } from "./CheckpointManager";
+import { CheckpointProps, DownloadRequest, ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
@@ -229,8 +229,8 @@ export class HubMock {
     } as V2CheckpointAccessProps;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
+
+  public static async downloadV1Checkpoint(arg: DownloadRequest): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 

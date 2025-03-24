@@ -171,12 +171,6 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
 }
 
 /**
- * @deprecated in 3.x. Use [[DownloadRequest]].
- * @internal
- */
-export type CheckpointArg = DownloadRequest;
-
-/**
  * Arguments to create a new iModel in iModelHub
  *  @public
  */
