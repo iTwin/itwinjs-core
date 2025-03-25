@@ -671,11 +671,6 @@ export namespace RealityModelTileTree {
           this._layerRefHandler.clearLayers();
         }
       }));
-      removals.push(IModelApp.tileAdmin.onTileChildrenLoad.addListener(() => {
-        this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
-          this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
-          this._layerRefHandler.clearLayers();
-      }));
     }
 
     public override addToScene(context: SceneContext): void {
