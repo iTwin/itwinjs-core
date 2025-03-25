@@ -279,7 +279,8 @@ export class Logger {
     return BentleyError.getErrorMessage(err) + stack;
   }
 
-  /** Log the specified exception. The special "ExceptionType" property will be added as metadata.
+  /** Log the specified exception.
+   * For legacy [[BentleyError]] exceptions, the special "exceptionType" property will be added as metadata. Otherwise, all enumerable members of the exception are logged as metadata.
    * @param category  The category of the message.
    * @param err  The exception object.
    * @param log The logger output function to use - defaults to Logger.logError
