@@ -1735,8 +1735,6 @@ export class Schema implements CustomAttributeContainerProps {
     get description(): string | undefined;
     // (undocumented)
     protected _description?: string;
-    // (undocumented)
-    get doesECSpecVersionMatch(): boolean;
     fromJSON(schemaProps: SchemaProps): Promise<void>;
     // (undocumented)
     static fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema>;

@@ -126,8 +126,9 @@ export class Schema implements CustomAttributeContainerProps {
   public static get currentECSpecMajorVersion(): number { return parseInt(Schema._currentECSpecVersion.split(".")[0], 10); }
   public static get currentECSpecMinorVersion(): number { return parseInt(Schema._currentECSpecVersion.split(".")[1], 10); }
 
-  public get doesECSpecVersionMatch(): boolean {
-    return (this._originalECSpecMajorVersion === Schema.currentECSpecMajorVersion && this._originalECSpecMinorVersion === Schema.currentECSpecMinorVersion);
+  private get _isECSpecVersionUnsupported(): boolean {
+    return (this.originalECSpecMajorVersion !== 3 || this.originalECSpecMinorVersion === undefined
+      || (this.originalECSpecMinorVersion < 2 || this.originalECSpecMinorVersion > Schema.currentECSpecMinorVersion))
   }
 
   public get alias() {
@@ -690,7 +691,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Save this Schema's properties to an object for serializing to JSON.
    */
   public toJSON(): SchemaProps {
-    if (!this.doesECSpecVersionMatch)
+    if (this._isECSpecVersionUnsupported)
       throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaJson: { [value: string]: any } = {};
@@ -722,7 +723,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @param schemaXml An empty DOM document to which the schema will be written
    */
   public async toXml(schemaXml: Document): Promise<Document> {
-    if (!this.doesECSpecVersionMatch)
+    if (this._isECSpecVersionUnsupported)
       throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaMetadata = schemaXml.createElement("ECSchema");

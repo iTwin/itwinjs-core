@@ -626,6 +626,7 @@ describe("Schema", () => {
 
     type TestCase = [ xmlVersionMajor: number, xmlVersionMinor: number, deserializtionStatus: boolean, serializationStatus: boolean ];
     const testCases: TestCase[] = [
+      // [3, 1, false, false], // Will have to be uncommented and the test below updated when the ECSpec Version gets incremented next.
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, false, false],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion, true, true],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion + 1, true, false],
