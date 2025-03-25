@@ -26,7 +26,7 @@ export { Mixin } from "./Metadata/Mixin";
 export * from "./Metadata/OverrideFormat";
 export { Phenomenon } from "./Metadata/Phenomenon";
 export {
-  Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
+  Property, PropertyHandler, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
   StructArrayProperty, EnumerationArrayProperty, NavigationProperty, AnyArrayProperty, AnyEnumerationProperty,
   AnyPrimitiveProperty, AnyProperty, AnyStructProperty, ArrayProperty, PrimitiveOrEnumPropertyBase,
 } from "./Metadata/Property";

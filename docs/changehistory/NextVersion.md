@@ -14,6 +14,7 @@ Table of contents:
     - [Text Block Margins](#text-block-margins)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
+    - [Draping models onto reality data](#draping-models-onto-reality-data)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -22,12 +23,13 @@ Table of contents:
   - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
     - [FormatsProvider](#formatsprovider)
+    - [Persistence](#persistence)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
+      - [Deprecated metadata retrieval methods](#deprecated-metadata-retrieval-methods)
     - [@itwin/core-frontend](#itwincore-frontend)
-    - [@itwin/ecschema-metadata](#itwinecschema-metadata)
     - [@itwin/presentation-common](#itwinpresentation-common)
     - [@itwin/presentation-backend](#itwinpresentation-backend)
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
@@ -52,12 +54,13 @@ Table of contents:
       - [@itwin/presentation-frontend](#itwinpresentation-frontend-1)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-2)
-      - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
     - [Packages dropped](#packages-dropped)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
+    - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
+      - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
 
 ## Selection set
 
@@ -104,6 +107,14 @@ You can now surround a [TextBlock]($core-common) with padding by setting its [Te
 Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
+
+### Draping models onto reality data
+
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
+
+Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
+
+![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
 
 ## Back-end image conversion
 
@@ -158,7 +169,16 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 ## Quantity Formatting
 
 ### FormatsProvider
-A [FormatsProvider]($ecschema-metadata) interface and [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting. Further information and examples can be found in the [learning documentation](../learning/quantity/index.md) for Quantity.
+
+A [FormatsProvider]($ecschema-metadata) interface and [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+
+### Persistence
+
+Following APIs have been added to support persistence:
+
+- [FormatSet]($ecschema-metadata) defines an interface to support loading/saving [Format]($ecschema-metadata).
+
+Learn more at the [Quantity](../learning/quantity/index.md#persistence) learnings article for examples and use cases.
 
 ## API deprecations
 
@@ -191,11 +211,67 @@ A [FormatsProvider]($ecschema-metadata) interface and [SchemaFormatsProvider]($e
 ### @itwin/core-common
 
 - [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
+- Some types which are now more comprehensively exposed by backend's new `@itwin/ecschema-metadata` integration were made deprecated:
+  - [EntityMetaData]($common)
+  - [EntityMetaDataProps]($common)
+  - [CustomAttribute]($common)
+  - [PropertyMetaData]($common)
+  - [PropertyMetaDataProps]($common)
+
+| **Deprecated class from `@itwin/core-common`** | **Replacement class from `@itwin/ecschema-metadata`** |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| `EntityMetaData`                               | Use `EntityClass` instead.                            |
+| `CustomAttribute`                              | Use `CustomAttribute` instead.                        |
+| `PropertyMetaData`                             | Use `Property` instead.                               |
 
 ### @itwin/core-backend
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
-- Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
+- Added dependency to `@itwin/ecschema-metadata` and exposed the metadata from various spots (IModelDb, Entity).
+
+#### Deprecated metadata retrieval methods
+
+The `IModelDb.getMetaData(classFullName: string)` method has been deprecated in version 5.0. This method was used to get metadata for a class and would load the metadata from the iModel into the cache, if necessary.
+
+Similarly, other functions to retrieve metadata also have replacements:
+
+| **Deprecated from `@itwin/core-backend`** | **Replacement function**                                         | Usage                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `Element.getClassMetaData`                | Use `Element.getMetaData` from `@itwin/core-backend` instead.    | `await entity.getMetaData()`                                                   |
+| `Entity.forEachProperty`                  | Use `Entity.forEach` from `@itwin/core-backend` instead.         | `entity.forEach(callback)`                                                     |
+| `IModelDb.classMetaDataRegistry` getter   | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);` |
+| `IModelDb.getMetaData`                    | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);` |
+| `IModelDb.tryGetMetaData`                 | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `schemaContext.getSchemaItemSync("BisCore.Element", EntityClass)`              |
+| `IModelDb.forEachMetaData`                | Use `Entity.forEach` from `@itwin/core-backend` instead.         | `entity.forEach(callback)`                                                     |
+| `MetaDataRegistry` class                  | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);` |
+
+**Example function templates:**
+
+```typescript
+// Deprecated method
+iModelDb.getMetaData("SchemaName:ClassName");
+
+// Replacement using schemaContext with a schema key/schemaName-itemName combination/schema item full name
+await iModelDb.schemaContext.getSchemaItem(schemaItemKey);
+await iModelDb.schemaContext.getSchemaItem("SchemaName", "ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName.ClassName");
+```
+> The `schemaContext.getSchemaItem` function has a synchronous version as well `schemaContext.getSchemaItemSync` which supports all the same parameters as the asynchronous function. Refer to the examples [below](#deprecated-metadata-retrieval-methods).
+
+The deprecated `imodel.getMetaData()` function was limited to only Entity classes.
+The replacement method `schemaContext.getSchemaItem` on the iModel can fetch the metadata for all types of schema items.
+
+**Examples:**
+
+```typescript
+const metaData: RelationshipClass | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.ElementRefersToElements", RelationshipClass);
+const metaData: Enumeration | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.AutoHandledPropertyStatementType", Enumeration);
+const metaData: UnitSystem | undefined = await imodelDb.schemaContext.getSchemaItem("Units.SI", UnitSystem);
+const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem("Formats.DefaultReal", Format);
+const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
+```
+
 
 ### @itwin/core-frontend
 
@@ -212,14 +288,6 @@ A [FormatsProvider]($ecschema-metadata) interface and [SchemaFormatsProvider]($e
   - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
-
-### @itwin/ecschema-metadata
-
-Reworked the ISchemaItemLocater and Schema classes' APIs so it's type-safe.
-The original was never type-safe like it suggested. It just returned any schema item found.
-The new safe overload takes a constructor of a schema item subclass to only return items of that type.
-
-Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. EntityClass.isEntityClass())
 
 ### @itwin/presentation-common
 
@@ -623,17 +691,6 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 | `LogFunction`         |
 | `LoggingMetaData`     |
 
-#### @itwin/ecschema-metadata
-
-- Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
-- Replaced existing generic `getItem()` methods from `schemaItemLocater`, `schemaContext` and `Schema` as it suggested type safety when there was none. The new overload requires either no generic type at all, or providing an additional ctor parameter of the desired schemaItem class.
-
-Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted either into
-`context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
-A regex can be used to do bulk renaming:
-`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
-This applies to SchemaContext.getSchemaItem/Sync, Schema.getItem/Sync and Schema.lookupItem/Sync
-
 ### Packages dropped
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
@@ -676,3 +733,35 @@ This method offers several advantages:
 4. In the future, this method will be essential for lock-less editing as it enables applications to merge changes with domain intelligence.
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
+
+### Reworked @itwin/ecschema-metadata package
+
+- Removed generic type parameter from SchemaLocater/Context's `getSchema()` methods as it was only used by internal editing API
+- Removed `ISchemaItemLocater` interface, it was only ever used by our own `SchemaContext`.
+- Reworked the `SchemaContext` and `Schema` `getItem()` APIs so they provide a type-safe retrieval method.
+  The original suggested it was type-safe but didn't really verify returned types.
+  The new safe overload takes a constructor of a schema item subclass to only return items of that type.
+- Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. `EntityClass.isEntityClass()`)
+- We now consistently return `Iterable<T>` results. Previously some returned arrays and others `IterableIterator`. Modified methods: `getSchemaItems()`, `getItems()` and `getProperties()`
+  - `SchemaContext.getSchemaItems()` changed from `IterableIterator<SchemaItem>` to `Iterable<SchemaItem>`
+  - `ECClass.getProperties/Sync()` changed from `Property[]` to `Iterable<Property>`
+  - `ECClass.properties` previously `IterableIterator<Property>` has been integrated into `getProperties(excludeInherited: boolean)`
+  - `ECClass.getAllBaseClasses()` changed from `AsyncIterableIterator<ECClass>` to `Iterable<ECClass>`
+  - `Schema.getItems()` changed from `IterableIterator<SchemaItem>` to `Iterable<SchemaItem>`
+- Reworked caching for merged properties on ECClass. Previously there was a boolean flag `ECClass.getProperties(resetCache: boolean)`.
+  This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
+
+#### Tips for adjusting existing code:
+
+Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have to be adjusted either into
+`context.getSchemaItem("schema", "myName", EntityClass)` or more verbose as a general item followed by a type-guard:
+
+```ts
+const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element")
+if (item && EntityClass.isEntityClass(item )) {
+}
+```
+
+A regex can be used to do bulk renaming:
+`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
+This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.

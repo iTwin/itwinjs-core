@@ -277,9 +277,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected _baseClass?: LazyLoadedECClass;
     // (undocumented)
-    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): Promise<void>;
+    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void>;
     // (undocumented)
-    protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): void;
+    protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void;
+    // @internal
+    cleanCache(): void;
     protected createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
     // (undocumented)
     protected createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
@@ -312,7 +314,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     fromJSON(classProps: ClassProps): Promise<void>;
     // (undocumented)
     fromJSONSync(classProps: ClassProps): void;
-    getAllBaseClasses(): AsyncIterableIterator<ECClass>;
+    getAllBaseClasses(): AsyncIterable<ECClass>;
     // (undocumented)
     getAllBaseClassesSync(): Iterable<AnyClass>;
     // (undocumented)
@@ -322,10 +324,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     getDerivedClasses(): Promise<ECClass[] | undefined>;
     getInheritedProperty(name: string): Promise<Property | undefined>;
     getInheritedPropertySync(name: string): Property | undefined;
-    getProperties(resetCache?: boolean): Promise<Property[]>;
-    getPropertiesSync(resetCache?: boolean): Property[];
+    getProperties(excludeInherited?: boolean): Promise<Iterable<Property>>;
+    getPropertiesSync(excludeInherited?: boolean): Iterable<Property>;
     getProperty(name: string, includeInherited?: boolean): Promise<Property | undefined>;
     getPropertySync(name: string, includeInherited?: boolean): Property | undefined;
+    get hasLocalProperties(): boolean;
     is(targetClass: string, schemaName: string): Promise<boolean>;
     // (undocumented)
     is(targetClass: ECClass): Promise<boolean>;
@@ -341,13 +344,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass;
     // (undocumented)
-    protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Property[], overwriteExisting: boolean): void;
+    protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Iterable<Property>, overwriteExisting: boolean): void;
     // (undocumented)
     get modifier(): ECClassModifier;
     // (undocumented)
     protected _modifier: ECClassModifier;
-    // (undocumented)
-    get properties(): IterableIterator<Property> | undefined;
     // (undocumented)
     protected _properties?: Map<string, Property>;
     // (undocumented)
@@ -525,9 +526,9 @@ export class EntityClass extends ECClass implements HasMixins {
     protected addMixin(mixin: Mixin): void;
     static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass;
     // (undocumented)
-    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): Promise<void>;
+    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void>;
     // (undocumented)
-    protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): void;
+    protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void;
     // (undocumented)
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
     // (undocumented)
@@ -749,6 +750,18 @@ export class Format extends SchemaItem {
 }
 
 // @beta
+export interface FormatSet {
+    // (undocumented)
+    formats: {
+        [kindOfQuantityId: string]: SchemaItemFormatProps;
+    };
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    name: string;
+}
+
+// @beta
 export interface FormatsProvider {
     // (undocumented)
     addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
@@ -807,16 +820,6 @@ export interface InvertedUnitProps extends SchemaItemProps {
     readonly invertsUnit: string;
     // (undocumented)
     readonly unitSystem: string;
-}
-
-// @beta
-export interface ISchemaItemLocater {
-    getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
-    // (undocumented)
-    getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-    getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
-    // (undocumented)
-    getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
 }
 
 // @beta
@@ -1390,6 +1393,9 @@ export interface PropertyCategoryProps extends SchemaItemProps {
     readonly priority: number;
 }
 
+// @beta
+export type PropertyHandler = (name: string, property: Property) => void;
+
 // @beta (undocumented)
 export interface PropertyProps {
     // (undocumented)
@@ -1763,9 +1769,9 @@ export class Schema implements CustomAttributeContainerProps {
     getItem(name: string): Promise<SchemaItem | undefined>;
     // (undocumented)
     getItem<T extends typeof SchemaItem>(name: string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-    getItems(): IterableIterator<SchemaItem>;
+    getItems(): Iterable<SchemaItem>;
     // (undocumented)
-    getItems<T extends typeof SchemaItem>(itemConstructor: T): IterableIterator<InstanceType<T>>;
+    getItems<T extends typeof SchemaItem>(itemConstructor: T): Iterable<InstanceType<T>>;
     getItemSync(name: string): SchemaItem | undefined;
     // (undocumented)
     getItemSync<T extends typeof SchemaItem>(name: string, itemConstructor: T): InstanceType<T> | undefined;
@@ -1834,16 +1840,16 @@ export class SchemaCache implements ISchemaLocater {
     addSchemaSync(schema: Schema): void;
     // (undocumented)
     get count(): number;
-    getAllSchemas(): Schema[];
+    getAllSchemas(): Iterable<Schema>;
     getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<SchemaInfo | undefined>;
-    getSchemaItems(): IterableIterator<SchemaItem>;
+    getSchemaItems(): Iterable<SchemaItem>;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     schemaExists(schemaKey: SchemaKey): boolean;
 }
 
 // @beta
-export class SchemaContext implements ISchemaItemLocater {
+export class SchemaContext {
     constructor();
     addFallbackLocater(locater: ISchemaLocater): void;
     addLocater(locater: ISchemaLocater): void;
@@ -1856,16 +1862,24 @@ export class SchemaContext implements ISchemaItemLocater {
     getCachedSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     // @internal
     getCachedSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
-    getKnownSchemas(): Schema[];
+    getKnownSchemas(): Iterable<Schema>;
     getSchema(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType): Promise<SchemaInfo | undefined>;
-    getSchemaItem(schemaItemKey: SchemaItemKey): Promise<SchemaItem | undefined>;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<InstanceType<T> | undefined>;
     // (undocumented)
-    getSchemaItem<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): Promise<InstanceType<T> | undefined>;
-    getSchemaItems(): IterableIterator<SchemaItem>;
-    getSchemaItemSync(schemaItemKey: SchemaItemKey): SchemaItem | undefined;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): Promise<SchemaItem | undefined>;
     // (undocumented)
-    getSchemaItemSync<T extends typeof SchemaItem>(schemaItemKey: SchemaItemKey, itemConstructor: T): InstanceType<T> | undefined;
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): Promise<InstanceType<T> | undefined>;
+    // (undocumented)
+    getSchemaItem<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): Promise<SchemaItem | undefined>;
+    getSchemaItems(): Iterable<SchemaItem>;
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): InstanceType<T> | undefined;
+    // (undocumented)
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: SchemaItemKey | string, itemNameOrCtor?: T): SchemaItem | undefined;
+    // (undocumented)
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): InstanceType<T> | undefined;
+    // (undocumented)
+    getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): SchemaItem | undefined;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     // (undocumented)
     get locaters(): ISchemaLocater[];

@@ -47,12 +47,12 @@ beta;interface;EnumerationProps
 beta;interface;Enumerator
 beta;interface;EnumeratorProps
 beta;class;Format
+beta;interface;FormatSet
 beta;interface;FormatsProvider
 internal;function;getFormatProps
 beta;interface;HasMixins
 beta;class;InvertedUnit
 beta;interface;InvertedUnitProps
-beta;interface;ISchemaItemLocater
 beta;interface;ISchemaLocater
 beta;interface;ISchemaPartVisitor
 beta;function;isSupportedSchemaItemType
@@ -103,6 +103,7 @@ beta;function;primitiveTypeToString
 beta;class;Property
 beta;class;PropertyCategory
 beta;interface;PropertyCategoryProps
+beta;type;PropertyHandler
 beta;interface;PropertyProps
 beta;enum;PropertyType
 beta;function;propertyTypeToString

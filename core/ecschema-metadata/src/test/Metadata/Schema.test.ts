@@ -7,7 +7,6 @@ import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
-import { AnySchemaItem } from "../../Interfaces";
 import { ECClass, StructClass } from "../../Metadata/Class";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -142,14 +141,14 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
       await (testSchema as MutableSchema).createFormat("TestFormat");
 
-      const schemaItems = testSchema.getItems();
+      const schemaItems = Array.from(testSchema.getItems());
 
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
-      expect(schemaItems.next().done).to.equal(true);
+      expect(schemaItems.length).to.equal(5);
+      expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.Unit);
+      expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Format);
     });
 
     it("should succeed with case-insensitive search", async () => {
@@ -582,25 +581,25 @@ describe("Schema", () => {
     });
 
     describe("getItems", () => {
-      let schemaItems: IterableIterator<AnySchemaItem>;
+      let schemaItems: SchemaItem[];
 
       before(() => {
-        schemaItems = testSchema.getItems();
+        schemaItems = Array.from(testSchema.getItems());
       });
 
       it("should return all schema items in schema", () => {
         const itemArray = Array.from(testSchema.getItems());
         expect(itemArray.length).to.equal(8);
 
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.EntityClass);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Mixin);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.StructClass);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
-        expect(schemaItems.next().done).to.equal(true);
+        expect(schemaItems.length).to.equal(8);
+        expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.EntityClass);
+        expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Mixin);
+        expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.StructClass);
+        expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+        expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Enumeration);
+        expect(schemaItems[5].schemaItemType).to.equal(SchemaItemType.Unit);
+        expect(schemaItems[6].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+        expect(schemaItems[7].schemaItemType).to.equal(SchemaItemType.Format);
       });
 
       it("should return only class items in schema", async () => {
@@ -626,7 +625,8 @@ describe("Schema", () => {
 
     type TestCase = [ xmlVersionMajor: number, xmlVersionMinor: number, deserializtionStatus: boolean, serializationStatus: boolean ];
     const testCases: TestCase[] = [
-      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, true, true],
+      // [3, 1, false, false], // Will have to be uncommented and the test below updated when the ECSpec Version gets incremented next.
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, false, false],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion, true, true],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion + 1, true, false],
       [Schema.currentECSpecMajorVersion + 1, Schema.currentECSpecMinorVersion, false, false],
@@ -636,11 +636,11 @@ describe("Schema", () => {
     async function testSerialization(schema: Schema, serializationStatus: boolean, expectedError: string) {
       const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
       if (serializationStatus) {
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, expectedError);
-        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, expectedError);
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       } else {
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, expectedError);
-        expect(() => schema.toJSON()).to.throw(ECObjectsError, expectedError);
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.throw(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       }
     }
 
@@ -660,15 +660,15 @@ describe("Schema", () => {
         try {
           reader.readSchemaSync(schema, document);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
 
           // Schema serialization should fail if the major ECXml version is newer
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
+        assert.isTrue(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
         expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
         expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
         expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
@@ -692,7 +692,7 @@ describe("Schema", () => {
         try {
           await reader.readSchema(schema, new DOMParser().parseFromString(schemaXml));
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -711,8 +711,7 @@ describe("Schema", () => {
     });
 
     it("Deserialize and serialize newer JS schemas - sync", async () => {
-      // eslint-disable-next-line prefer-const
-      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
         const schemaJson = {
           $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
           name: "TestSchema",
@@ -733,15 +732,12 @@ describe("Schema", () => {
         try {
           schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
-          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
-          // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
-            serializationStatus = true;
-
-          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
+          // Hence, serialization should succeed in this case.
+          await testSerialization(schema, true, unsupportedVersionError);
           continue;
         }
 
@@ -756,8 +752,7 @@ describe("Schema", () => {
     });
 
     it("Deserialize and serialize newer JS schemas - async", async () => {
-      // eslint-disable-next-line prefer-const
-      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
         const schemaJson = {
           $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
           name: "TestSchema",
@@ -777,15 +772,12 @@ describe("Schema", () => {
         try {
           schema = await Schema.fromJson(schemaJson, new SchemaContext());
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
-          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
-          // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
-            serializationStatus = true;
-
-          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
+          // Hence, serialization should succeed in this case.
+          await testSerialization(schema, true, unsupportedVersionError);
           continue;
         }
 
@@ -812,7 +804,7 @@ describe("Schema", () => {
         try {
           schema.fromJSONSync(schemaJson);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -842,7 +834,7 @@ describe("Schema", () => {
         try {
           await schema.fromJSON(schemaJson);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
