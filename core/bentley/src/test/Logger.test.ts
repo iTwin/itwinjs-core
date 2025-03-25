@@ -478,7 +478,7 @@ describe("Logger", () => {
     expect(outerr[2]).deep.equal({ ...m1, exceptionType: "BentleyError" });
 
     clearOutlets();
-    const e2 = ITwinError.createError<ITwinError.Error & { val1: number }>({ iTwinErrorId: { key: "key1", scope: "scope1" }, message: "itwin error", val1: 200 });
+    const e2 = ITwinError.create<ITwinError & { val1: number }>({ iTwinErrorId: { key: "key1", scope: "scope1" }, message: "itwin error", val1: 200 });
     Logger.logException("testcat", e2);
     expect(outerr[0]).equal("testcat");
     expect(outerr[1]).equal("key1: itwin error");

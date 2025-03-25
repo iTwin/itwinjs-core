@@ -18,7 +18,7 @@ describe("BentleyError.getErrorMessage", () => {
     expect(ITwinError.isError({ iTwinErrorId: {} }, "a", "b")).false;
     expect(ITwinError.isError({ iTwinErrorId: { a: null } }, "a", "b")).false;
 
-    const err: ITwinError.Error = {
+    const err: ITwinError = {
       iTwinErrorId: {
         key: "key1",
         scope: "scope1",
@@ -29,7 +29,7 @@ describe("BentleyError.getErrorMessage", () => {
     expect(ITwinError.isError(err, "a", "b")).false;
     expect(ITwinError.isError(err, "scope1", "b")).false;
     expect(ITwinError.isError(err, "scope1", "key1")).true;
-    expect(ITwinError.isError(ITwinError.createError(err), "scope1", "key1")).true;
+    expect(ITwinError.isError(ITwinError.create(err), "scope1", "key1")).true;
   });
   it("returns string values", () => {
     expect(BentleyError.getErrorMessage("foo")).to.equal("foo");

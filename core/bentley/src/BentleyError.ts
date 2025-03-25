@@ -8,49 +8,51 @@
 
 import { DbResult } from "./BeSQLite";
 import { RepositoryStatus } from "./internal/RepositoryStatus";
+import { JsonUtils } from "./JsonUtils";
 import { Optional } from "./UtilityTypes";
 
-type BaseError = Error;
-
-/**
- * Namespace for handling all exceptions thrown by iTwin.js
+/** Uniquely identifies a specific kind of [[ITwinError]].
  * @beta
  */
-export namespace ITwinError {
-  /**
-   * All Exceptions thrown by iTwin.js libraries and applications should implement this interface.
-   *
-   * iTwin.js Error objects must have an `iTwinErrorId` member that includes string `scope` and `key` members that uniquely identify it.
-   * This allows programmers to identify errors where they're caught and does not rely on any specific Error class - which is
-   * problematic when exceptions are marshalled across process boundaries.
-   * @note This interface may be extended to throw errors with additional properties on them.
+export interface ITwinErrorId {
+  /** A "namespace" serving as a qualifier for the [[key]]. It should be specific enough to ensure uniqueness across all applications.
+   * For example, all errors originating from a given package should use that package's full name as their scope.
    */
-  export interface Error extends BaseError {
-    readonly iTwinErrorId: {
-      /** a namespace for the error. This is a qualifier for the key that should be specific enough to be unique across all applications (e.g. a package name). */
-      readonly scope: string;
-      /** key for the error, unique within scope. */
-      readonly key: string;
-    }
-  }
+  readonly scope: string;
+  /** Uniquely identifies a specific kind of [[ITwinError]] within the [[scope]]. */
+  readonly key: string;
+}
 
-  /**
-   * Create a new instance of an `ITwinError.Error`
-   * @note generally programmers will use [[throwError]] instead of this method, but it may be useful for tests.
+/** The interface that all exceptions thrown by iTwin.js libraries and applications should implement.
+ * Specific kinds of `ITwinError`s are identified by an [[ITwinErrorId]] that allows programmers to identify errors when they are caught without relying
+ * on specific class hierarchies, which is especially important when errors are marshalled across process boundaries.
+ * You can extend `ITwinError` to add properties that provide programmers with additional context for a particular kind of error.
+ * ###TODO how to down-cast safely.
+ * Those additional properties will also be logged as metadata by [[Logger.logException]].
+ * @beta
+ */
+export interface ITwinError extends Error {
+  /** Uniquely identifies the kind of error. */
+  readonly iTwinErrorId: ITwinErrorId;
+}
+
+/** @beta */
+export namespace ITwinError {
+  /** Instantiate a new `ITwinError` or subtype thereof.
+   * @see [[throwError]] to conveniently instantiate and throw the error.
    */
-  export function createError<T extends Error>(args: Optional<T, "name">): T {
+  export function create<T extends ITwinError>(args: Optional<T, "name">): T {
     const err = new Error(args.message);
     Object.assign(err, args);
     err.name = args.iTwinErrorId.key; // helpful because this is used by `toString` for Error class
     return err as T;
   }
 
-  /**
-   * Throw an `ITwinError.Error` exception.
-   * @note this function never returns
+  /** Instantiate and immediately throw an `ITwinError`.
+   * @see [[create]] to instantiate an error without throwing it.
    */
-  export function throwError<T extends Error>(args: Optional<T, "name">): never {
-    throw createError(args);
+  export function throwError<T extends ITwinError>(args: Optional<T, "name">): never {
+    throw create(args);
   }
 
   /**
@@ -61,14 +63,9 @@ export namespace ITwinError {
    * @param scope value for `error.iTwinErrorId.scope`
    * @param key value for `error.iTwinErrorId.key`
   */
-  export function isError<T extends Error>(error: unknown, scope?: string, key?: string): error is T {
-    return isObject(error) && isObject(error.iTwinErrorId) &&
-      (scope === undefined || error.iTwinErrorId.scope === scope) &&
-      (key === undefined || error.iTwinErrorId.key === key);
-  }
-
-  export function isObject(obj: unknown): obj is { [key: string]: unknown } {
-    return typeof obj === "object" && obj !== null;
+  export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T {
+    return JsonUtils.isObject(error) && "iTwinErrorId" in error && JsonUtils.isObject(error.iTwinErrorId)
+      && error.iTwinErrorId.scope === scope && (undefined === key || error.iTwinErrorId.key === key);
   }
 }
 
@@ -391,7 +388,7 @@ interface ErrorProps {
  * problematic since it is impossible to enforce across the iTwin.js library, let alone across applications. New code should
  * use `ITwinError` and identify errors with strings instead.
  * @beta */
-export interface LegacyITwinErrorWithNumber extends ITwinError.Error {
+export interface LegacyITwinErrorWithNumber extends ITwinError {
   /** a number to identify the error. */
   readonly errorNumber: number;
 
@@ -754,7 +751,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
     if (error instanceof Error)
       return error.toString();
 
-    if (ITwinError.isObject(error)) {
+    if (JsonUtils.isObject(error)) {
       if (typeof error.message === "string")
         return error.message;
 
@@ -774,7 +771,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
    * @public
    */
   public static getErrorStack(error: unknown): string | undefined {
-    if (ITwinError.isObject(error) && typeof error.stack === "string")
+    if (JsonUtils.isObject(error) && typeof error.stack === "string")
       return error.stack;
 
     return undefined;
@@ -786,7 +783,7 @@ export class BentleyError extends Error { // note: this class implements LegacyI
    * @public
    */
   public static getErrorMetadata(error: unknown): object | undefined {
-    if (ITwinError.isObject(error) && typeof error.getMetaData === "function") {
+    if (JsonUtils.isObject(error) && typeof error.getMetaData === "function") {
       const metadata = error.getMetaData();
       if (typeof metadata === "object" && metadata !== null)
         return metadata;
