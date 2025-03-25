@@ -98,8 +98,10 @@ export class IpcApp {
 
     // backend threw an exception, rethrow one on frontend
     const err = retVal.error;
-    if (!JsonUtils.isObject(err))
-      throw retVal.error; // exception wasn't an object?
+    if (!JsonUtils.isObject(err)) {
+      // Exception wasn't an object?
+      throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
+    }
 
     // Note: for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
     if (!BentleyError.isError(err))

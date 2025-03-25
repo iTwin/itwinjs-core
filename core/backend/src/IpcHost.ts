@@ -7,7 +7,7 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, ITwinError, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
