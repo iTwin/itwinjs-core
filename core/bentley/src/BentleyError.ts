@@ -40,7 +40,7 @@ export interface ITwinError extends Error {
 /** @beta */
 export namespace ITwinError {
   /** Instantiate a new `ITwinError` or subtype thereof.
-   * @see [[throwError]] to conveniently instantiate and throw the error.
+   * @see [[ITwinError.throwError]] to conveniently instantiate and throw the error.
    */
   export function create<T extends ITwinError>(args: Optional<T, "name">): T {
     const err = new Error(args.message);
@@ -50,7 +50,7 @@ export namespace ITwinError {
   }
 
   /** Instantiate and immediately throw an `ITwinError`.
-   * @see [[create]] to instantiate an error without throwing it.
+   * @see [[ITwinError.create]] to instantiate an error without throwing it.
    */
   export function throwError<T extends ITwinError>(args: Optional<T, "name">): never {
     throw create(args);
