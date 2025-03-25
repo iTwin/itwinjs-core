@@ -252,4 +252,56 @@ describe("CrossPlatform", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("MeshColor", () => {
+    // verify that mesh with auxiliary color roundtrips through FB after changing FB schema from int[] to uint[]
+    const ck = new Checker();
+    const testCases: TestCase[] = [];
+    const testName = "indexedMesh-fixedSize"; // has color
+    testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}.imjs`]], [[`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
+
+    for (let iTestCase = 0; iTestCase < testCases.length; ++iTestCase) {
+      const geometry: GeometryQuery[] = [];
+
+      // deserialize and collect all geometries
+      for (const platform of [Platform.Native, Platform.TypeScript]) {
+        for (const fileType of [FileType.FlatBuffer, FileType.JSON]) {
+          for (const fileName of testCases[iTestCase].fileNames[platform][fileType]) {
+            const geom = deserializeFirstGeom(fileName, fileType, true);
+            if (ck.testDefined(geom, `deserialized at least one geometry from ${fileName}`))
+              geometry.push(geom);
+          }
+        }
+      }
+
+      // all TestCase geometries should be equivalent
+      if (ck.testLE(4, geometry.length, "have at least four geometries to compare")) {
+        for (let i = 1; i < geometry.length; ++i)
+          ck.testTrue(geometry[0].isAlmostEqual(geometry[i]), `testCase[${iTestCase}]: geom0 compares to geom${i}`);
+      }
+
+      const meshWithColor = geometry[0];
+      if (ck.testType(meshWithColor, IndexedPolyface, "deserialized geometry is a mesh")) {
+        if (ck.testTrue(meshWithColor.colorCount > 0, "deserialized meshes have color")) {
+          // roundtrip through FB
+          const fbBytes = BentleyGeometryFlatBuffer.geometryToBytes(meshWithColor, true);
+          if (ck.testDefined(fbBytes, "exported to flatbuffer")) {
+            const meshFromFB = BentleyGeometryFlatBuffer.bytesToGeometry(fbBytes, true);
+            if (ck.testDefined(meshFromFB, "imported from flatbuffer") && ck.testType(meshFromFB, IndexedPolyface, "imported a single mesh")) {
+              ck.testTrue(meshWithColor.isAlmostEqual(meshFromFB), "roundtrip through flatbuffer");
+            }
+          }
+          // roundtrip through JSON
+          const json = IModelJson.Writer.toIModelJson(meshWithColor);
+          if (ck.testDefined(json, "exported to json")) {
+            const meshFromJson = IModelJson.Reader.parse(json);
+            if (ck.testDefined(meshFromJson, "imported from json") && ck.testType(meshFromJson, IndexedPolyface, "imported a single mesh")) {
+              ck.testTrue(meshWithColor.isAlmostEqual(meshFromJson), "roundtrip through json");
+            }
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
