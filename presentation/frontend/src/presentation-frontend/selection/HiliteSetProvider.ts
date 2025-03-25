@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/no-deprecated */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -13,7 +14,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "../Presentation.js";
-// @ts-ignore
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
 import hiliteRuleset from "./HiliteRules.json" with { type: "json" };
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 

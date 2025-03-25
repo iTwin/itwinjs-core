@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /** @packageDocumentation
  * @module Core
  */
@@ -17,7 +18,7 @@ import {
   DiagnosticsOptions,
   InstanceKey,
 } from "@itwin/presentation-common";
-// @ts-ignore
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
 import presentationStrings from "@itwin/presentation-common/locales/en/Presentation.json" with { type: "json" };
 
 /** @internal */

@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
@@ -379,11 +380,11 @@ interface RequestParams {
   cancelEvent?: BeEvent<() => void>;
 }
 
-// @ts-ignore
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
 import elementPropertiesRuleset from "./primary-presentation-rules/ElementProperties.PresentationRuleSet.json" with { type: "json" };
-// @ts-ignore
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
 import bisSupplementalRuleset from "./supplemental-presentation-rules/BisCore.PresentationRuleSet.json" with { type: "json" };
-// @ts-ignore
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
 import funcSupplementalRuleset from "./supplemental-presentation-rules/Functional.PresentationRuleSet.json" with { type: "json" };
 function setupRulesets(nativePlatform: NativePlatformDefinition, supplementalRulesetDirectories: string[], primaryRulesetDirectories: string[]): void {
   nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
