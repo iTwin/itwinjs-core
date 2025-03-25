@@ -748,6 +748,18 @@ export class Format extends SchemaItem {
     get uomSeparator(): string;
 }
 
+// @beta
+export interface FormatSet {
+    // (undocumented)
+    formats: {
+        [kindOfQuantityId: string]: SchemaItemFormatProps;
+    };
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    name: string;
+}
+
 // @internal (undocumented)
 export function getFormatProps(format: Format | OverrideFormat): FormatProps;
 
