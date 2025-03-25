@@ -10,7 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { EntityClass, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -34,16 +34,12 @@ export class Entity {
    */
   public static get className(): string { return "Entity"; }
 
-  private static _schemaItemKey?: SchemaItemKey;
-
   /** Serves as a unique identifier for this class. Typed variant of [[classFullName]].
    * @beta
    */
   public static get schemaItemKey(): SchemaItemKey {
-    if (!this._schemaItemKey) {
-      this._schemaItemKey = new SchemaItemKey(this.className, this.schema.schemaKey);
-    }
-    return this._schemaItemKey;
+    // We cannot cache this here because the className gets overridden in subclasses
+    return new SchemaItemKey(this.className, this.schema.schemaKey);
   }
 
   private _metadata?: EntityClass;
@@ -71,6 +67,7 @@ export class Entity {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty((props as any)[propName]), false);
   }
 
@@ -89,6 +86,7 @@ export class Entity {
     val.classFullName = this.classFullName;
     if (Id64.isValid(this.id))
       val.id = this.id;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.forEachProperty((propName: string) => val[propName] = (this as any)[propName], false);
     return val;
   }
@@ -97,9 +95,50 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @deprecated in 5.0. Please use `forEach` to get the metadata and iterate over the properties instead.
+   *
+   * @example
+   * ```typescript
+   * // Deprecated method
+   * entity.forEachProperty((name, propMetaData) => {
+   *   console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+   * });
+   *
+   * // New method
+   * entity.forEach((name, property) => {
+   *   console.log(`Property name: ${name}, Property type: ${property.propertyType}`);
+   * });
+   * ```
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachProperty(func: PropertyCallback, includeCustom: boolean = true) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.iModel.forEachMetaData(this.classFullName, true, func, includeCustom);
+  }
+
+  /**
+   * Call a function for each property of this Entity.
+   * @param func The callback to be invoked on each property.
+   * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
+   * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @throws Error if metadata for the class cannot be retrieved.
+   *
+   * @example
+   * ```typescript
+   * entity.forEach((name, property) => {
+   *   console.log(`Property name: ${name}, Property type: ${property.propertyType}`);
+   * });
+   * ```
+   */
+  public forEach(func: PropertyHandler, includeCustom: boolean = true) {
+    const metaData = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, EntityClass);
+    if (!metaData)
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+
+    for (const property of metaData.getPropertiesSync()) {
+      if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+        func(property.name, property);
+    }
   }
 
   /** Get the full BIS class name of this Entity in the form "schema:class" */
