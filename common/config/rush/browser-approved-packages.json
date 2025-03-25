@@ -431,6 +431,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "c8",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -632,7 +636,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "inversify",

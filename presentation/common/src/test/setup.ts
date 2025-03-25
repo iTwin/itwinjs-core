@@ -8,13 +8,7 @@ import chaiJestSnapshot from "chai-jest-snapshot";
 import chaiSubset from "chai-subset";
 import sinonChai from "sinon-chai";
 import sinon from "sinon";
-import sourceMapSupport from "source-map-support";
 import path from "path";
-
-// see https://github.com/babel/babel/issues/4605
-sourceMapSupport.install({
-  environment: "node",
-});
 
 // setup chai
 chai.use(chaiAsPromised);
