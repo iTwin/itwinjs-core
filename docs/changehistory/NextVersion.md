@@ -14,6 +14,7 @@ Table of contents:
     - [Text Block Margins](#text-block-margins)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
+    - [Draping models onto reality data](#draping-models-onto-reality-data)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -103,6 +104,14 @@ You can now surround a [TextBlock]($core-common) with padding by setting its [Te
 Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
+
+### Draping models onto reality data
+
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
+
+Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
+
+![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
 
 ## Back-end image conversion
 
