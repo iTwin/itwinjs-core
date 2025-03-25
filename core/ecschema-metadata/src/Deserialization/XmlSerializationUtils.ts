@@ -34,10 +34,7 @@ export namespace XmlSerializationUtils {
     if (nameAndNamespace[1])
       caElement.setAttribute("xmlns", nameAndNamespace[1]);
 
-    if (!caClass.properties)
-      return caElement;
-
-    for (const property of caClass.properties)
+    for (const property of await caClass.getProperties())
       await writeInstanceProperty(property, customAttribute, caElement, schemaDoc);
 
     return caElement;
@@ -105,10 +102,7 @@ export namespace XmlSerializationUtils {
    */
   export async function writeStructProperty(propertyClass: StructProperty, propertyValue: any, structElement: Element, schemaDoc: Document): Promise<void> {
     const structClass = propertyClass.structClass;
-    if (!structClass.properties)
-      return;
-
-    for (const propertyMetadata of structClass.properties)
+    for (const propertyMetadata of structClass.getPropertiesSync(true))
       await writeInstanceProperty(propertyMetadata, propertyValue, structElement, schemaDoc);
   }
 

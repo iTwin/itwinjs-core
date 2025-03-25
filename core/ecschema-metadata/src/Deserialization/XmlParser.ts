@@ -1032,9 +1032,6 @@ export class XmlParser extends AbstractParser<Element> {
 
   private addCAPropertyValues(caClass: CustomAttributeClass, propertyElements: Element[]): CustomAttribute {
     const instance = { className: caClass.fullName } as CustomAttribute;
-    if (!caClass.properties)
-      return instance;
-
     for (const propertyElement of propertyElements) {
       const value = this.readPropertyValue(propertyElement, caClass);
       if (value !== undefined)
