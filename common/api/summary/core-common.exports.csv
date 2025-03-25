@@ -175,6 +175,7 @@ internal;const;CURRENT_INVOCATION
 internal;const;CURRENT_REQUEST
 internal;enum;CurrentImdlVersion
 beta;interface;CustomAttribute
+deprecated;interface;CustomAttribute
 internal;interface;CustomViewState3dCreatorOptions
 internal;interface;CustomViewState3dProps
 public;class;CutStyle
@@ -264,7 +265,9 @@ public;class;EmptyLocalization
 public;interface;EntityIdAndClassId
 public;type;EntityIdAndClassIdIterable
 beta;class;EntityMetaData
+deprecated;class;EntityMetaData
 beta;interface;EntityMetaDataProps
+deprecated;interface;EntityMetaDataProps
 public;interface;EntityProps
 public;interface;EntityQueryParams
 alpha;type;EntityReference
@@ -636,9 +639,12 @@ public;class;Projection
 public;type;ProjectionMethod
 public;interface;ProjectionProps
 beta;type;PropertyCallback
+deprecated;type;PropertyCallback
 beta;class;PropertyMetaData
+deprecated;class;PropertyMetaData
 public;class;PropertyMetaDataMap
 beta;interface;PropertyMetaDataProps
+deprecated;interface;PropertyMetaDataProps
 internal;interface;PullChangesOptions
 public;class;QParams2d
 alpha;interface;QParams2dProps

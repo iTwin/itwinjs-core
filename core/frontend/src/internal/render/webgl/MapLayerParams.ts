@@ -12,8 +12,8 @@ import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TerrainTexture } from "../RenderTerrain";
 import { Matrix4 } from "./Matrix";
-import { BaseLayerSettings, ColorDef, ImageMapLayerSettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
-import { assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings, dispose, disposeArray } from "@itwin/core-bentley";
+import { ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
+import { assert, dispose, disposeArray } from "@itwin/core-bentley";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { System } from "./System";
 import { ViewState } from "../../../ViewState";
@@ -207,99 +207,4 @@ export function compareMapLayer(prevView: ViewState, newView: ViewState): boolea
   }
 
   return false;
-}
-
-export function compareBackgroundSettings(lhsBase?: BaseLayerSettings, rhsBase?: BaseLayerSettings, lhsLayers?: MapLayerSettings[], rhsLayers?: MapLayerSettings[]): number {
-  const baseComparison = comparePossiblyUndefined(compareBaseLayerSettings, lhsBase, rhsBase);
-  if (baseComparison !== 0) return baseComparison;
-
-  if (lhsLayers && rhsLayers) {
-    if (lhsLayers.length !== rhsLayers.length) return lhsLayers.length - rhsLayers.length;
-
-    for (let i = 0; i < lhsLayers.length; i++) {
-      const layerComparison = compareMapLayerSettings(lhsLayers[i], rhsLayers[i]);
-      if (layerComparison !== 0) return layerComparison;
-    }
-  } else if (lhsLayers || rhsLayers) {
-    return lhsLayers ? 1 : -1;
-  }
-
-  return 0;
-}
-
-function compareBaseLayerSettings(lhs: BaseLayerSettings, rhs: BaseLayerSettings): number {
-  if (lhs instanceof ColorDef && rhs instanceof ColorDef) {
-    return compareNumbers(lhs.tbgr, rhs.tbgr);
-  }
-
-  if (lhs instanceof ColorDef || rhs instanceof ColorDef) {
-    return (lhs instanceof ColorDef) ? -1 : 1;
-  }
-
-  const lhsBase = lhs;
-  const rhsBase = rhs;
-
-  let result = compareStrings(lhsBase.name, rhsBase.name);
-  if (result !== 0) return result;
-
-  result = compareBooleans(lhsBase.visible, rhsBase.visible);
-  if (result !== 0) return result;
-
-  result = compareNumbers(lhsBase.transparency, rhsBase.transparency);
-  if (result !== 0) return result;
-
-  result = compareBooleans(lhsBase.transparentBackground, rhsBase.transparentBackground);
-  if (result !== 0) return result;
-
-  if (lhsBase instanceof ImageMapLayerSettings && rhsBase instanceof ImageMapLayerSettings) {
-    result = compareStrings(lhsBase.url, rhsBase.url);
-    if (result !== 0) return result;
-
-    result = compareStrings(lhsBase.formatId, rhsBase.formatId);
-    if (result !== 0) return result;
-  }
-
-  return 0;
-}
-
-function compareMapLayerSettings(lhs: MapLayerSettings, rhs: MapLayerSettings): number {
-  let result = compareStrings(lhs.name, rhs.name);
-  if (result !== 0) return result;
-
-  result = compareBooleans(lhs.visible, rhs.visible);
-  if (result !== 0) return result;
-
-  result = compareNumbers(lhs.transparency, rhs.transparency);
-  if (result !== 0) return result;
-
-  result = compareBooleans(lhs.transparentBackground, rhs.transparentBackground);
-  if (result !== 0) return result;
-
-  if (lhs instanceof ImageMapLayerSettings && rhs instanceof ImageMapLayerSettings) {
-    result = compareStrings(lhs.url, rhs.url);
-    if (result !== 0) return result;
-
-    result = compareStrings(lhs.formatId, rhs.formatId);
-    if (result !== 0) return result;
-
-    if (lhs.subLayers.length !== rhs.subLayers.length) return lhs.subLayers.length - rhs.subLayers.length;
-
-    for (let i = 0; i < lhs.subLayers.length; i++) {
-      result = compareStrings(lhs.subLayers[i].idString, rhs.subLayers[i].idString);
-      if (result !== 0) return result;
-
-      result = compareBooleans(lhs.subLayers[i].visible, rhs.subLayers[i].visible);
-      if (result !== 0) return result;
-    }
-  }
-
-  if (lhs instanceof ModelMapLayerSettings && rhs instanceof ModelMapLayerSettings) {
-    result = compareStrings(lhs.modelId, rhs.modelId);
-    if (result !== 0) return result;
-
-    result = compareNumbers(lhs.drapeTarget, rhs.drapeTarget);
-    if (result !== 0) return result;
-  }
-
-  return 0;
 }

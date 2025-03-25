@@ -33,7 +33,7 @@ import {
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
-import { compareBackgroundSettings, compareMapLayer } from "../render/webgl/MapLayerParams";
+import { compareMapLayer } from "../render/webgl/MapLayerParams";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -80,8 +80,7 @@ namespace RealityTreeId {
       compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices) ||
       compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry) ||
       compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds) ||
-      comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform) ||
-      compareBackgroundSettings(lhs.backgroundBase, rhs.backgroundBase, lhs.backgroundLayers, rhs.backgroundLayers)
+      comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform)
     );
   }
 
@@ -586,8 +585,6 @@ export namespace RealityModelTileTree {
     private readonly _detachFromDisplayStyle: VoidFunction[] = [];
     private _layerRefHandler: LayerTileTreeReferenceHandler;
     public readonly iModel: IModelConnection;
-    protected _getBaseLayerSettings: () => BaseLayerSettings | undefined;
-    protected _getLayerSettings: () => MapLayerSettings[] | undefined;
 
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
     public abstract get modelId(): Id64String;
@@ -632,8 +629,6 @@ export namespace RealityModelTileTree {
 
       this._source = props.source;
       this._getDisplaySettings = () => props.getDisplaySettings();
-      this._getBaseLayerSettings = () => props.getBackgroundBase?.();
-      this._getLayerSettings = () => props.getBackgroundLayers?.();
 
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
@@ -661,6 +656,7 @@ export namespace RealityModelTileTree {
 
     public preInitializeLayers(context: SceneContext): void {
       const removals = this._detachFromDisplayStyle;
+      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
       if (0 === removals.length) {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
           this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
@@ -670,11 +666,15 @@ export namespace RealityModelTileTree {
       }
       removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
         if(compareMapLayer(previousViewState, vp.view)){
-          const mapImagery = context.viewport.displayStyle.settings.mapImagery;
           this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
           this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
           this._layerRefHandler.clearLayers();
         }
+      }));
+      removals.push(IModelApp.tileAdmin.onTileChildrenLoad.addListener(() => {
+        this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
+          this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
+          this._layerRefHandler.clearLayers();
       }));
     }
 
@@ -860,8 +860,6 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       deduplicateVertices: this._wantWiremesh,
       produceGeometry: this._produceGeometry,
       displaySettings: this._getDisplaySettings(),
-      backgroundBase: this._getBaseLayerSettings(),
-      backgroundLayers: this._getLayerSettings(),
     };
   }
 
