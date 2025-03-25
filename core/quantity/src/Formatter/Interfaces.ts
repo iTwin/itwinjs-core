@@ -94,4 +94,3 @@ export interface CloneOptions {
   /** allows primary unit and label to be specified */
   primaryUnit?: CloneUnit;
 }
-

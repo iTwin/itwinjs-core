@@ -106,17 +106,6 @@ export interface UnitsProvider {
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
 }
 
-/** Must be replaced by KindOfQuantityProps in ecschema-metadata once packages are combined.
- * @internal
- */
-export interface KindOfQuantityProps {
-  name: string;
-  label?: string;
-  readonly persistenceUnit: string;
-  readonly presentationUnits?: string | string[];
-  readonly relativeError: number;
-}
-
 /**
  * Used to uniquely identify a unit system.
  * @beta
