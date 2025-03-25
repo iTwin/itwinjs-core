@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import { Id64String } from "@itwin/core-bentley";
 import { CategoryDescription } from "../../presentation-common/content/Category";
 import {
@@ -34,7 +33,7 @@ describe("Descriptor", () => {
       const category = createTestCategoryDescription();
       const source: DescriptorSource = {
         contentFlags: 9,
-        displayType: faker.random.word(),
+        displayType: "any",
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
         selectClasses: [],
@@ -51,7 +50,7 @@ describe("Descriptor", () => {
       const category = createTestCategoryDescription();
       const source: DescriptorSource = {
         contentFlags: 9,
-        displayType: faker.random.word(),
+        displayType: "any",
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
         selectClasses: [],

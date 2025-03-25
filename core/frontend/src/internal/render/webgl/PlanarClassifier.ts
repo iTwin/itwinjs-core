@@ -408,7 +408,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const maxTextureSize = System.instance.maxTexSizeAllow;
     const requiredHeight = maxTextureSize;
     const requiredWidth = maxTextureSize;
-
     if (requiredWidth !== this._width || requiredHeight !== this._height)
       this[Symbol.dispose]();
 
