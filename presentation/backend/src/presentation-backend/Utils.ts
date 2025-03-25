@@ -17,22 +17,22 @@ import {
   DiagnosticsOptions,
   InstanceKey,
 } from "@itwin/presentation-common";
-
-const presentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/Presentation.json"); // eslint-disable-line @typescript-eslint/no-require-imports
+// @ts-ignore
+import presentationStrings from "@itwin/presentation-common/locales/en/Presentation.json" with { type: "json" };
 
 /** @internal */
 export function getLocalizedStringEN(key: string) {
-  let result = presentation;
+  let result: object | string = presentationStrings;
   const [namespace, identifier] = key.split(":", 2);
   if (namespace !== "Presentation") {
     return key;
   }
   const keySteps = identifier.split(".");
   for (const keyStep of keySteps) {
-    if (keyStep in result === false) {
+    if (typeof result !== "object" || keyStep in result === false) {
       return key;
     }
-    result = result[keyStep];
+    result = result[keyStep as keyof typeof result];
   }
   return typeof result === "string" ? result : key;
 }

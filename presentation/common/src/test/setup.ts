@@ -16,6 +16,7 @@ chai.use(chaiJestSnapshot);
 chai.use(sinonChai);
 chai.use(chaiSubset);
 
+import { takeCoverage } from "node:v8";
 export const mochaHooks = {
   beforeAll() {
     chaiJestSnapshot.resetSnapshotRegistry();
@@ -32,5 +33,7 @@ export const mochaHooks = {
   afterEach() {
     sinon.restore();
   },
-  afterAll() {},
+  afterAll() {
+    takeCoverage();
+  },
 };

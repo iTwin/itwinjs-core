@@ -74,15 +74,15 @@ import {
   createTestSelectClassInfo,
   createTestSimpleContentField,
   ResolvablePromise,
-} from "@itwin/presentation-common/lib/cjs/test";
-import { BackendDiagnosticsAttribute } from "../presentation-backend";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { Presentation } from "../presentation-backend/Presentation";
-import { PresentationManager } from "../presentation-backend/PresentationManager";
-import { PresentationManagerDetail } from "../presentation-backend/PresentationManagerDetail";
-import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
-import { RulesetManager } from "../presentation-backend/RulesetManager";
-import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+} from "@itwin/presentation-common/test-utils";
+import { BackendDiagnosticsAttribute } from "../presentation-backend.js";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform.js";
+import { Presentation } from "../presentation-backend/Presentation.js";
+import { PresentationManager } from "../presentation-backend/PresentationManager.js";
+import { PresentationManagerDetail } from "../presentation-backend/PresentationManagerDetail.js";
+import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl.js";
+import { RulesetManager } from "../presentation-backend/RulesetManager.js";
+import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated -- PresentationRpcInterface methods are deprecated */
 

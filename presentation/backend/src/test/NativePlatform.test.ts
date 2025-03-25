@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { _nativeDb, IModelDb, IModelHost, IModelJsNative, IModelNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
 import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, VariableValueTypes } from "@itwin/presentation-common";
-import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
+import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform.js";
 
 describe("default NativePlatform", () => {
   let nativePlatform: NativePlatformDefinition;
@@ -17,7 +17,7 @@ describe("default NativePlatform", () => {
 
   beforeEach(async () => {
     try {
-      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
+      await IModelHost.startup({ cacheDir: join(import.meta.dirname, ".cache", `${process.pid}`) });
     } catch (e) {
       let isLoaded = false;
       try {
