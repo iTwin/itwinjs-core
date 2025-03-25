@@ -47,6 +47,7 @@ beta;interface;EnumerationProps
 beta;interface;Enumerator
 beta;interface;EnumeratorProps
 beta;class;Format
+beta;interface;FormatSet
 internal;function;getFormatProps
 beta;interface;HasMixins
 beta;class;InvertedUnit
