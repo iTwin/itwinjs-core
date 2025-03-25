@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { ImageryMapTileTree, ImageryTileTreeState, ModelMapLayerTileTreeReference, Tile, TileDrawArgs } from "./internal";
-import { MapLayerSettings } from "@itwin/core-common";
+import { MapLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { SceneContext } from "../ViewContext";
 
@@ -59,6 +59,13 @@ export class LayerTileTreeHandler {
 
   /** @internal */
   public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
+    // Skip if draping onto the same model
+    if(layerTreeRef.layerSettings instanceof ModelMapLayerSettings){
+      if(this._ref.modelId === layerTreeRef.layerSettings.modelId) {
+        return;
+      }
+    }
+
     const classifier = context.addPlanarClassifier(`MapLayer ${this._ref.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
     if (classifier)
       this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
