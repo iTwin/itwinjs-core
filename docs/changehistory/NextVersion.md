@@ -21,7 +21,7 @@ Table of contents:
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
-    - [BasicUnitsProvider and BasicFormatsProvider](#basicunitsprovider-and-basicformatsprovider)
+    - [FormatsProvider](#formatsprovider)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -157,8 +157,8 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 
 ## Quantity Formatting
 
-### BasicUnitsProvider and BasicFormatsProvider
-A BasicUnitsProvider and BasicFormatsProvider has been added, each containing a set of default units and formats. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting. Further information and examples can be found in the [learning documentation](../learning/quantity/index.md) for Quantity.
+### FormatsProvider
+A [FormatsProvider]($ecschema-metadata) interface and [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting. Further information and examples can be found in the [learning documentation](../learning/quantity/index.md) for Quantity.
 
 ## API deprecations
 

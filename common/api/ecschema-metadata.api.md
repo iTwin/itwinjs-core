@@ -6,6 +6,7 @@
 
 import { BaseFormat } from '@itwin/core-quantity';
 import { BentleyError } from '@itwin/core-bentley';
+import { BeUiEvent } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
@@ -745,6 +746,18 @@ export class Format extends SchemaItem {
     protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
     // (undocumented)
     get uomSeparator(): string;
+}
+
+// @beta
+export interface FormatsProvider {
+    // (undocumented)
+    addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
+    // (undocumented)
+    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    onFormatUpdated: BeUiEvent<string>;
 }
 
 // @internal (undocumented)
@@ -1857,6 +1870,18 @@ export class SchemaContext implements ISchemaItemLocater {
     // (undocumented)
     get locaters(): ISchemaLocater[];
     schemaExists(schemaKey: SchemaKey): boolean;
+}
+
+// @beta
+export class SchemaFormatsProvider implements FormatsProvider {
+    constructor(contextOrLocater: ISchemaLocater);
+    addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
+    // (undocumented)
+    getFormat(id: string): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    onFormatUpdated: BeUiEvent<string>;
 }
 
 // @internal

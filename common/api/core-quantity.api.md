@@ -5,7 +5,6 @@
 ```ts
 
 import { BentleyError } from '@itwin/core-bentley';
-import { BeUiEvent } from '@itwin/core-bentley';
 
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
@@ -151,21 +150,6 @@ export class BaseFormat {
     protected _uomSeparator: string;
 }
 
-// @public (undocumented)
-export class BasicFormatsProvider implements FormatsProvider {
-    constructor();
-    // (undocumented)
-    addFormat(id: string, format: ExtendedFormatProps): void;
-    // (undocumented)
-    getFormat(id: string): FormatProps | undefined;
-    // (undocumented)
-    getFormatByKindOfQuantity(kindOfQuantityId: string): FormatProps | undefined;
-    // (undocumented)
-    getFormats(ids?: string[]): FormatProps[];
-    // (undocumented)
-    onFormatsUpdated: BeUiEvent<string[]>;
-}
-
 // @beta
 export class BasicUnit implements UnitProps {
     constructor(name: string, label: string, phenomenon: string, system?: string);
@@ -305,16 +289,6 @@ export interface FormatProps {
     readonly type: string;
     // (undocumented)
     readonly uomSeparator?: string;
-}
-
-// @beta
-export interface FormatsProvider {
-    // (undocumented)
-    getFormat(id: string): FormatProps | undefined;
-    // (undocumented)
-    getFormats(ids?: string[]): FormatProps[];
-    // (undocumented)
-    onFormatsUpdated: BeUiEvent<string[]>;
 }
 
 // @internal

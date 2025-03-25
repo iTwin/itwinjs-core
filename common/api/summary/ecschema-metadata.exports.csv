@@ -47,6 +47,7 @@ beta;interface;EnumerationProps
 beta;interface;Enumerator
 beta;interface;EnumeratorProps
 beta;class;Format
+beta;interface;FormatsProvider
 internal;function;getFormatProps
 beta;interface;HasMixins
 beta;class;InvertedUnit
@@ -116,6 +117,7 @@ beta;class;RelationshipMultiplicity
 beta;class;Schema
 internal;class;SchemaCache
 beta;class;SchemaContext
+beta;class;SchemaFormatsProvider
 internal;class;SchemaGraph
 internal;class;SchemaGraphUtil
 beta;interface;SchemaInfo

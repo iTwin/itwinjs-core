@@ -45,9 +45,11 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 #### Formats Provider
 
-A formats provider helps provide all the necessary formats for displaying formatted quantity values, while also enabling users to add formats of their own.
+A [FormatsProvider]($ecschema-metadata) interface helps provide all the necessary formats for displaying formatted quantity values, while also enabling users to add formats of their own.
 
-The [BasicFormatsProvider]($quantity) holds many common formats used in engineering and construction, while also exposing a way to get formats associated with a [KindOfQuantity]($docs/bis/ec/kindofquantity/).
+The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide default Formats coming from schemas.
+
+> Adding a format to a SchemaFormatsProvider will not modify the schema, it will only populate the format cache of the provider.
 
 #### Units Provider
 
@@ -103,13 +105,13 @@ For the composite format below, we provide a unit in meters and produce a format
 
 #### Using a FormatsProvider
 
-The example below uses the BasicFormatsProvider available in `core-quantity` to parse and format values associated with the length of an object.
+The example below uses the SchemaFormatsProvider, an implementation of a FormatsProvider, found in `ecschema-metadata` to parse and format values associated with the length of an object.
 
 <details>
   <summary>Example of Formatting</summary>
 
 ```ts
-[[include:Quantity_Formatting.Basic_Formats_Provider_Simple_Formatting]]
+[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting]]
 ```
 
 </details>
@@ -118,7 +120,7 @@ The example below uses the BasicFormatsProvider available in `core-quantity` to 
   <summary>Example of Parsing</summary>
 
 ```ts
-[[include:Quantity_Formatting.Basic_Formats_Provider_Simple_Parsing]]
+[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Parsing]]
 ```
 
 </details>

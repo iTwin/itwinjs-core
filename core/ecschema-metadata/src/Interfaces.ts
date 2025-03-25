@@ -6,7 +6,9 @@
  * @module Metadata
  */
 
+import { BeUiEvent } from "@itwin/core-bentley";
 import { DelayedPromise } from "./DelayedPromise";
+import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { ECClass, StructClass } from "./Metadata/Class";
 import { Constant } from "./Metadata/Constant";
 import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
@@ -99,8 +101,9 @@ export interface HasMixins {
  * @beta
  */
 export interface FormatsProvider {
+  getFormat(name: string): Promise<SchemaItemFormatProps | undefined>; // Should we add synchronous version of this method?
+  getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+  addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
 
-  getFormat(id: string): Promise<SchemaItemFormatProps | undefined>; // Should we add synchronous version of this method?
-  getFormats(ids?: string[]): Promise<SchemaItemFormatProps[]>;
-  // getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+  onFormatUpdated: BeUiEvent<string>;
 }

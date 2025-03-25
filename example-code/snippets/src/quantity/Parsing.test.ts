@@ -1,5 +1,5 @@
 import { QuantityFormatter } from "@itwin/core-frontend";
-import { BasicFormatsProvider, BasicUnitsProvider, Format, ParsedQuantity, Parser, ParserSpec } from "@itwin/core-quantity";
+import { Format, ParsedQuantity, Parser, ParserSpec } from "@itwin/core-quantity";
 import { assert } from "chai";
 
 
@@ -141,20 +141,4 @@ describe("Parsing examples", () => {
     assert.equal((result as ParsedQuantity).value,(result2 as ParsedQuantity).value);
   });
 
-  it("BasicFormatsProvider Parsing", async () => {
-    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Basic_Formats_Provider_Simple_Parsing
-    const formatsProvider = new BasicFormatsProvider();
-    const unitsProvider = new BasicUnitsProvider();
-    const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
-
-
-    const formatProps = formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH_LONG");
-    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
-    const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
-    const result = parserSpec.parseToQuantityValue("50 km");
-    // result.value 50000  (value in meters)
-    // __PUBLISH_EXTRACT_END__
-
-    assert.equal((result as ParsedQuantity).value, 50000);
-  });
 });

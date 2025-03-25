@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
