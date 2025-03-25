@@ -48,7 +48,10 @@ yargs.strict(true)
         },
         "onlyJson": {
           describe: "Specify a baseUrl to resolve modules"
-        }
+        },
+        "tsconfig": {
+          describe: "."
+        },
       })
     },
     (argv) => { docsCommand(argv) })
@@ -145,9 +148,11 @@ function docsCommand(options) {
   const testExcludeGlobOpt = options.testExcludeGlob ? ["--testExcludeGlob", options.testExcludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
+  const tsconfigOpt = options.tsconfig ? ["--tsconfig", options.tsconfig] : [];
   exec("node", [getScriptPath("docs.js"),
   ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt,
-  ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
+  ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, 
+  ...indexFileOpt, ...onlyJsonOpt, ...tsconfigOpt]);
 }
 
 function extractCommand(options) {
