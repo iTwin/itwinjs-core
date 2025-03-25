@@ -286,7 +286,12 @@ export class Logger {
    */
   public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>" };
+      // For backwards compatibility, log BentleyError old way
+      if (BentleyError.isError(err))
+        return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>" };
+
+      // return a copy of the error, with non-enumerable members `message` and `stack` removed, as "metadata" for log.
+      return { ...err };
     });
   }
 

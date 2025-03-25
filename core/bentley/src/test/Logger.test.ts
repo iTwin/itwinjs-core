@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-import { BentleyError, LoggingMetaData } from "../BentleyError";
+import { BentleyError, IModelStatus, ITwinError, LoggingMetaData } from "../BentleyError";
 import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { BeDuration } from "../Time";
 
@@ -469,6 +469,20 @@ describe("Logger", () => {
       Logger.logException("testcat", err);
     }
     checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
+    const m1 = { a: 200, b: "b" };
+    const e1 = new BentleyError(IModelStatus.AlreadyLoaded, "test message", m1);
+    clearOutlets();
+    Logger.logException("testcat", e1);
+    expect(outerr[0]).equal("testcat");
+    expect(outerr[1]).equal("Already Loaded: test message")
+    expect(outerr[2]).deep.equal({ ...m1, exceptionType: "BentleyError" });
+
+    clearOutlets();
+    const e2 = ITwinError.createError<ITwinError.Error & { val1: number }>({ iTwinErrorId: { key: "key1", scope: "scope1" }, message: "itwin error", val1: 200 });
+    Logger.logException("testcat", e2);
+    expect(outerr[0]).equal("testcat");
+    expect(outerr[1]).equal("key1: itwin error");
+    expect(outerr[2]).deep.equal({ ...e2 }); // message and stack should be stripped off 
 
     clearOutlets();
     expect(() => Logger.logException("testcat", undefined)).to.not.throw("undefined exception");
@@ -477,7 +491,5 @@ describe("Logger", () => {
     clearOutlets();
     expect(() => Logger.logException("testcat", null)).to.not.throw("null exception");
     checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
-
   });
-
 });
