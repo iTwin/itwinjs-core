@@ -9,6 +9,7 @@ import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { EntityClass } from "@itwin/ecschema-metadata";
 
 describe("Schema XML Import Tests", () => {
   let imodel: SnapshotDb;
@@ -35,10 +36,12 @@ describe("Schema XML Import Tests", () => {
 
     await imodel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
-    const testDomainClass = imodel.getMetaData("Test3:Test3Element"); // will throw on failure
+    const testDomainClass = await imodel.schemaContext.getSchemaItem("Test3.Test3Element", EntityClass);
+    assert.isDefined(testDomainClass);
 
-    assert.equal(testDomainClass.baseClasses.length, 1);
-    assert.equal(testDomainClass.baseClasses[0], PhysicalElement.classFullName);
+    assert.isDefined(testDomainClass?.baseClass);
+
+    assert.equal(testDomainClass?.baseClass?.fullName, PhysicalElement.classFullName.replace(":", "."));
   });
 
   it("Schema import for newer ECXml Versions", async () => {

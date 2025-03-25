@@ -29,6 +29,7 @@ export class PerfTestDataMgr {
     if (this.db) {
       await this.db.importSchemas([schemaPath]);
       if (testCName)
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
       this.db.saveChanges();
     }

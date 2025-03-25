@@ -6,9 +6,8 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { ElementProps } from "@itwin/core-common";
-import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils";
+import { ElementProps } from "@itwin/core-common";
 
 describe("getElementKey", () => {
   const imodel = moq.Mock.ofType<IModelDb>();
@@ -28,10 +27,9 @@ describe("getElementKey", () => {
   });
 
   it("returns valid key for existing id", () => {
-    const id = createRandomId();
-    elementResult = { classFullName: "schema:class" };
+    const id = "0x123";
     const result = getElementKey(imodel.object, id);
-    expect(result).to.deep.eq({ className: elementResult.classFullName, id });
+    expect(result).to.deep.eq({ className: elementResult?.classFullName, id });
   });
 
   it("returns undefined for non-existing id", () => {

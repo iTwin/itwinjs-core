@@ -3,13 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as moq from "typemoq";
 import { DrawingGraphic, Element, IModelDb } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ElementProps, EntityMetaData, GeometricElement2dProps, ModelProps } from "@itwin/core-common";
+import { CodeProps, ElementProps, GeometricElement2dProps, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
+import { createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { stubECSqlReader } from "./Helpers";
 
@@ -22,44 +21,43 @@ describe("SelectionScopesHelper", () => {
   });
 
   describe("computeSelection", () => {
+    let elementIdCounter = 1;
     const imodelMock = moq.Mock.ofType<IModelDb>();
     const elementsMock = moq.Mock.ofType<IModelDb.Elements>();
     const modelsMock = moq.Mock.ofType<IModelDb.Models>();
 
-    const createRandomModelProps = (): ModelProps => {
-      const id = createRandomId();
-      const props: ModelProps = {
-        classFullName: faker.random.words(),
-        modeledElement: { relClassName: faker.random.word(), id },
-        id,
-      };
-      return props;
-    };
+    const createTestModelProps = (props?: Partial<ModelProps>): ModelProps => ({
+      classFullName: "TestSchema:TestClass",
+      id: "0x111",
+      modeledElement: { relClassName: "TestSchema:TestRelationship", id: props?.id ?? "0x111" },
+      ...props,
+    });
 
-    const createRandomTopmostElementProps = (): ElementProps => {
-      const props: ElementProps = {
-        classFullName: faker.random.words(),
-        code: {
-          scope: faker.random.word(),
-          spec: faker.random.word(),
-        },
-        model: createRandomId(),
-        id: createRandomId(),
-      };
-      return props;
-    };
+    const createTestTopmostElementProps = (props?: Partial<ElementProps>): ElementProps => ({
+      classFullName: "TestSchema:TestClass",
+      code: createTestCode(),
+      model: "0x222",
+      id: "0x333",
+      ...props,
+    });
 
-    const createRandomElementProps = (parentId?: Id64String): ElementProps => {
+    const createTestElementProps = (parentId?: Id64String): ElementProps => {
       if (!parentId) {
-        parentId = createRandomId();
+        parentId = "0x444";
       }
       return {
-        ...createRandomTopmostElementProps(),
-        parent: { relClassName: faker.random.word(), id: parentId },
+        ...createTestTopmostElementProps(),
+        parent: { relClassName: "TestSchema:TestRelationship", id: parentId },
       };
     };
 
-    const createTransientElementId = () => Id64.fromLocalAndBriefcaseIds(faker.random.number(), 0xffffff);
+    const createTransientElementId = () => Id64.fromLocalAndBriefcaseIds(159, 0xffffff);
+
+    const createTestCode = (props?: Partial<CodeProps>): CodeProps => ({
+      scope: "TestScope",
+      spec: "ScopeSpec",
+      ...props,
+    });
 
     const setupIModelForFunctionalKeyQuery = (props: { graphicalElementKey: InstanceKey; functionalElementKey?: InstanceKey }) => {
       const functionalKeyQueryIdentifier = "SELECT funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId";
@@ -81,9 +79,9 @@ describe("SelectionScopesHelper", () => {
     };
 
     const setupIModelForElementProps = (props?: { key?: InstanceKey; parentKey?: InstanceKey }) => {
-      const key = props?.key ?? createRandomECInstanceKey();
+      const key = props?.key ?? createTestECInstanceKey({ id: Id64.fromUint32Pair(elementIdCounter++, 999) });
       const elementProps = {
-        ...(props?.parentKey ? createRandomElementProps(props.parentKey.id) : createRandomTopmostElementProps()),
+        ...(props?.parentKey ? createTestElementProps(props.parentKey.id) : createTestTopmostElementProps()),
         classFullName: key.className,
         id: key.id,
       };
@@ -109,17 +107,10 @@ describe("SelectionScopesHelper", () => {
       imodelMock.reset();
       imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
       imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
-      imodelMock
-        .setup((x) => x.getMetaData(moq.It.isAnyString()))
-        .returns(
-          (className: string) =>
-            new EntityMetaData({
-              classId: "0x123",
-              baseClasses: [],
-              properties: {},
-              ecclass: className,
-            }),
-        );
+    });
+
+    afterEach(() => {
+      elementIdCounter = 1;
     });
 
     it("throws on invalid scopeId", async () => {
@@ -128,7 +119,7 @@ describe("SelectionScopesHelper", () => {
 
     describe("scope: 'element'", () => {
       it("returns element keys", async () => {
-        const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        const keys = [createTestECInstanceKey({ id: "0x111" }), createTestECInstanceKey({ id: "0x222" })];
         keys.forEach((key) => setupIModelForElementProps({ key }));
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
@@ -137,13 +128,13 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips non-existing element ids", async () => {
-        const keys = [createRandomECInstanceKey()];
+        const keys = [createTestECInstanceKey()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
         expect(result.size).to.eq(0);
       });
 
       it("skips transient element ids", async () => {
-        const keys = [createRandomECInstanceKey(), { className: "any:class", id: createTransientElementId() }];
+        const keys = [createTestECInstanceKey(), { className: "any:class", id: createTransientElementId() }];
         setupIModelForElementProps({ key: keys[0] });
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
@@ -152,7 +143,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("handles invalid id", async () => {
-        const validKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        const validKeys = [createTestECInstanceKey({ id: "0x111" }), createTestECInstanceKey({ id: "0x222" })];
         setupIModelForElementProps({ key: validKeys[0] });
         setupIModelForElementProps({ key: validKeys[1] });
 
@@ -166,10 +157,10 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns nth parent key", async () => {
-        const parent3 = setupIModelForElementProps({ key: createRandomECInstanceKey() });
-        const parent2 = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: parent3.key });
-        const parent1 = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: parent2.key });
-        const element = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: parent1.key });
+        const parent3 = setupIModelForElementProps({ key: createTestECInstanceKey() });
+        const parent2 = setupIModelForElementProps({ key: createTestECInstanceKey(), parentKey: parent3.key });
+        const parent1 = setupIModelForElementProps({ key: createTestECInstanceKey(), parentKey: parent2.key });
+        const element = setupIModelForElementProps({ key: createTestECInstanceKey(), parentKey: parent1.key });
         setupIModelForElementProps({ key: parent2.key });
 
         const result = await SelectionScopesHelper.computeSelection({
@@ -184,7 +175,7 @@ describe("SelectionScopesHelper", () => {
 
     describe("scope: 'assembly'", () => {
       it("returns parent keys", async () => {
-        const parentKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        const parentKeys = [createTestECInstanceKey({ id: "0x111" }), createTestECInstanceKey({ id: "0x222" })];
         parentKeys.forEach((key) => setupIModelForElementProps({ key }));
         const elementKeys = parentKeys.map((pk) => setupIModelForElementProps({ parentKey: pk }).key);
         const result = await SelectionScopesHelper.computeSelection({
@@ -209,7 +200,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns element key if it has no parent", async () => {
-        const key = createRandomECInstanceKey();
+        const key = createTestECInstanceKey();
         setupIModelForElementProps({ key });
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "assembly" } });
         expect(result.size).to.eq(1);
@@ -217,7 +208,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips non-existing element ids", async () => {
-        const key = createRandomECInstanceKey();
+        const key = createTestECInstanceKey();
         elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => undefined);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "assembly" } });
         expect(result.size).to.eq(0);
@@ -238,7 +229,8 @@ describe("SelectionScopesHelper", () => {
         const { key: grandparentKey } = setupIModelForElementProps();
         const { key: parentKey } = setupIModelForElementProps({ parentKey: grandparentKey });
         const { key: elementKey } = setupIModelForElementProps({ parentKey });
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementKey.id], scope: { id: "top-assembly" } });
+
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementKey.id!], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(grandparentKey)).to.be.true;
       });
@@ -251,7 +243,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips non-existing element ids", async () => {
-        const key = createRandomECInstanceKey();
+        const key = createTestECInstanceKey();
         elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => undefined);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(0);
@@ -269,14 +261,14 @@ describe("SelectionScopesHelper", () => {
 
     describe("scope: 'category'", () => {
       it("returns category key", async () => {
-        const category = createRandomElementProps();
-        const elementId = createRandomId();
+        const category = createTestElementProps();
+        const elementId = "0x123";
         const element = {
           id: elementId,
-          classFullName: faker.random.word(),
-          model: createRandomId(),
+          classFullName: "TestSchema:TestClass",
+          model: "0x123",
           category: category.id!,
-          code: { scope: faker.random.word(), spec: faker.random.word() },
+          code: createTestCode(),
         } as DrawingGraphic;
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
         elementsMock.setup((x) => x.tryGetElementProps(category.id!)).returns(() => category);
@@ -287,21 +279,21 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips categories of removed elements", async () => {
-        const elementId = createRandomId();
+        const elementId = "0x123";
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => undefined);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "category" } });
         expect(result.isEmpty).to.be.true;
       });
 
       it("skips removed categories", async () => {
-        const categoryId = createRandomId();
-        const elementId = createRandomId();
+        const categoryId = "0x123";
+        const elementId = "0x123";
         const element = {
           id: elementId,
-          classFullName: faker.random.word(),
-          model: createRandomId(),
+          classFullName: "TestSchema:TestClass",
+          model: "0x123",
           category: categoryId,
-          code: { scope: faker.random.word(), spec: faker.random.word() },
+          code: createTestCode(),
         } as DrawingGraphic;
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
         elementsMock.setup((x) => x.tryGetElementProps(categoryId)).returns(() => undefined);
@@ -311,7 +303,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips non-geometric elementProps", async () => {
-        const elementId = createRandomId();
+        const elementId = "0x123";
         const element = moq.Mock.ofType<Element>();
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element.object);
 
@@ -320,14 +312,14 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips transient element ids", async () => {
-        const category = createRandomElementProps();
-        const elementId = createRandomId();
+        const category = createTestElementProps();
+        const elementId = "0x123";
         const element = {
           id: elementId,
-          classFullName: faker.random.word(),
-          model: createRandomId(),
+          classFullName: "TestSchema:TestClass",
+          model: "0x123",
           category: category.id!,
-          code: { scope: faker.random.word(), spec: faker.random.word() },
+          code: createTestCode(),
         } as DrawingGraphic;
         elementsMock.setup((x) => x.tryGetElement(elementId)).returns(() => element);
         elementsMock.setup((x) => x.tryGetElementProps(category.id!)).returns(() => category);
@@ -341,14 +333,14 @@ describe("SelectionScopesHelper", () => {
 
     describe("scope: 'model'", () => {
       it("returns model key", async () => {
-        const model = createRandomModelProps();
-        const elementId = createRandomId();
+        const model = createTestModelProps();
+        const elementId = "0x123";
         const element = {
           id: elementId,
-          classFullName: faker.random.word(),
+          classFullName: "TestSchema:TestClass",
           model: model.id!,
-          category: createRandomId(),
-          code: { scope: faker.random.word(), spec: faker.random.word() },
+          category: "0x123",
+          code: createTestCode(),
         } as GeometricElement2dProps;
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
@@ -359,21 +351,21 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips models of removed elements", async () => {
-        const elementId = createRandomId();
+        const elementId = "0x123";
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => undefined);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementId], scope: { id: "model" } });
         expect(result.isEmpty).to.be.true;
       });
 
       it("skips removed models", async () => {
-        const modelId = createRandomId();
-        const elementId = createRandomId();
+        const modelId = "0x123";
+        const elementId = "0x123";
         const element = {
           id: elementId,
-          classFullName: faker.random.word(),
+          classFullName: "TestSchema:TestClass",
           model: modelId,
-          category: createRandomId(),
-          code: { scope: faker.random.word(), spec: faker.random.word() },
+          category: "0x123",
+          code: createTestCode(),
         } as GeometricElement2dProps;
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(modelId)).returns(() => undefined);
@@ -383,14 +375,14 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips transient element ids", async () => {
-        const model = createRandomModelProps();
-        const elementId = createRandomId();
+        const model = createTestModelProps();
+        const elementId = "0x123";
         const element = {
           id: elementId,
-          classFullName: faker.random.word(),
+          classFullName: "TestSchema:TestClass",
           model: model.id!,
-          category: createRandomId(),
-          code: { scope: faker.random.word(), spec: faker.random.word() },
+          category: "0x123",
+          code: createTestCode(),
         } as GeometricElement2dProps;
         elementsMock.setup((x) => x.tryGetElementProps(elementId)).returns(() => element);
         modelsMock.setup((x) => x.tryGetModelProps(model.id!)).returns(() => model);
@@ -418,8 +410,8 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key if GeometricElement3d has an associated functional element", async () => {
-        const functionalElementKey = createRandomECInstanceKey();
-        const graphicalElementKey = createRandomECInstanceKey();
+        const functionalElementKey = createTestECInstanceKey({ id: "0x111" });
+        const graphicalElementKey = createTestECInstanceKey({ id: "0x222" });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(true);
 
@@ -465,8 +457,8 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key if GeometricElement2d has an associated functional element", async () => {
-        const functionalElementKey = createRandomECInstanceKey();
-        const graphicalElementKey = createRandomECInstanceKey();
+        const functionalElementKey = createTestECInstanceKey({ id: "0x111" });
+        const graphicalElementKey = createTestECInstanceKey({ id: "0x222" });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
         setupIModelDerivesFromClassQuery(false);
 
@@ -480,7 +472,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key of the first GeometricElement2d parent that has related functional element", async () => {
-        const functionalElementKey = createRandomECInstanceKey();
+        const functionalElementKey = createTestECInstanceKey();
         const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
         const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
         const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
@@ -544,7 +536,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key of GeometricElement3d parent", async () => {
-        const functionalElementKey = createRandomECInstanceKey();
+        const functionalElementKey = createTestECInstanceKey();
         const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
         const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
         const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
@@ -662,7 +654,7 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key of the topmost GeometricElement3d parent", async () => {
-        const functionalElementKey = createRandomECInstanceKey();
+        const functionalElementKey = createTestECInstanceKey();
         const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
         const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
         const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });

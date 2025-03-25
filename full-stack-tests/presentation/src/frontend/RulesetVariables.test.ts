@@ -3,11 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
@@ -26,16 +24,16 @@ describe("Ruleset Variables", async () => {
   });
 
   it("adds and modifies string variable", async () => {
-    const value = faker.random.word();
-    const variableId = faker.random.word();
+    const value = "test value";
+    const variableId = "test var id";
     await variables.setString(variableId, value);
     const actualValue = await variables.getString(variableId);
     expect(actualValue).to.equal(value);
   });
 
   it("adds and modifies boolean variable", async () => {
-    let value = faker.random.boolean();
-    const variableId = faker.random.word();
+    let value = true;
+    const variableId = "test var id";
     await variables.setBool(variableId, value);
     let actualValue = await variables.getBool(variableId);
     expect(actualValue).to.equal(value);
@@ -47,60 +45,60 @@ describe("Ruleset Variables", async () => {
   });
 
   it("adds and modifies integer variable", async () => {
-    let value = faker.random.number();
-    const variableId = faker.random.word();
+    let value = 123;
+    const variableId = "test var id";
     await variables.setInt(variableId, value);
     let actualValue = await variables.getInt(variableId);
     expect(actualValue).to.equal(value);
 
-    value = faker.random.number();
+    value = 456;
     await variables.setInt(variableId, value);
     actualValue = await variables.getInt(variableId);
     expect(actualValue).to.equal(value);
   });
 
   it("adds and modifies int[] variable", async () => {
-    let valueArray = [faker.random.number(), faker.random.number(), faker.random.number()];
-    const variableId = faker.random.word();
+    let valueArray = [1, 2, 3];
+    const variableId = "test var id";
     await variables.setInts(variableId, valueArray);
     let actualValueArray = await variables.getInts(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
 
-    valueArray = [faker.random.number(), faker.random.number(), faker.random.number(), faker.random.number()];
+    valueArray = [4, 5, 6, 7];
     await variables.setInts(variableId, valueArray);
     actualValueArray = await variables.getInts(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
   });
 
   it("adds and modifies Id64 variable", async () => {
-    let value = createRandomId();
-    const variableId = faker.random.word();
+    let value = "0x123";
+    const variableId = "test var id";
     await variables.setId64(variableId, value);
     let actualValue = await variables.getId64(variableId);
     expect(actualValue).to.deep.equal(value);
 
-    value = createRandomId();
+    value = "0x456";
     await variables.setId64(variableId, value);
     actualValue = await variables.getId64(variableId);
     expect(actualValue).to.deep.equal(value);
   });
 
   it("adds and modifies Id64[] variable", async () => {
-    let valueArray = [createRandomId(), createRandomId(), createRandomId()];
-    const variableId = faker.random.word();
+    let valueArray = ["0x1", "0x2", "0x3"];
+    const variableId = "test var id";
     await variables.setId64s(variableId, valueArray);
     let actualValueArray = await variables.getId64s(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
 
-    valueArray = [createRandomId(), createRandomId(), createRandomId(), createRandomId()];
+    valueArray = ["0x4", "0x5", "0x6", "0x7"];
     await variables.setId64s(variableId, valueArray);
     actualValueArray = await variables.getId64s(variableId);
     expect(actualValueArray).to.deep.equal(valueArray);
   });
 
   it("accessing int[] variable with different types", async () => {
-    const valueArray = [faker.random.number(), faker.random.number(), faker.random.number(), faker.random.number()];
-    const variableId = faker.random.word();
+    const valueArray = [9, 8, 7, 6];
+    const variableId = "test var id";
     await variables.setInts(variableId, valueArray);
 
     const boolValue = await variables.getBool(variableId);
@@ -124,12 +122,12 @@ describe("Ruleset Variables", async () => {
   });
 
   it("accessing int variable with different types", async () => {
-    const value = faker.random.number();
-    const variableId = faker.random.word();
+    const value = 555;
+    const variableId = "test var id";
     await variables.setInt(variableId, value);
 
     const boolValue = await variables.getBool(variableId);
-    expect(boolValue).to.eq(value !== 0);
+    expect(boolValue).to.eq(true);
 
     const id64ArrayValue = await variables.getId64s(variableId);
     expect(id64ArrayValue.length).to.equal(0);
@@ -145,8 +143,8 @@ describe("Ruleset Variables", async () => {
   });
 
   it("accessing bool variable with different types", async () => {
-    const value = faker.random.boolean();
-    const variableId = faker.random.word();
+    const value = true;
+    const variableId = "test var id";
     await variables.setBool(variableId, value);
 
     const id64ArrayValue = await variables.getId64s(variableId);
@@ -166,8 +164,8 @@ describe("Ruleset Variables", async () => {
   });
 
   it("accessing string variable with different types", async () => {
-    const value = faker.random.word();
-    const variableId = faker.random.word();
+    const value = "test value";
+    const variableId = "test var id";
     await variables.setString(variableId, value);
 
     const id64ArrayValue = await variables.getId64s(variableId);
@@ -187,8 +185,8 @@ describe("Ruleset Variables", async () => {
   });
 
   it("accessing Id64 variable with different types", async () => {
-    const value = createRandomId();
-    const variableId = faker.random.word();
+    const value = "0x753";
+    const variableId = "test var id";
     await variables.setId64(variableId, value);
 
     const id64ArrayValue = await variables.getId64s(variableId);
@@ -205,8 +203,8 @@ describe("Ruleset Variables", async () => {
   });
 
   it("accessing Id64[] variable with different types", async () => {
-    const valueArray = [createRandomId(), createRandomId(), createRandomId(), createRandomId()];
-    const variableId = faker.random.word();
+    const valueArray = ["0x1", "0x2", "0x3"];
+    const variableId = "test var id";
     await variables.setId64s(variableId, valueArray);
 
     const boolValue = await variables.getBool(variableId);
@@ -292,8 +290,8 @@ describe("Ruleset Variables", async () => {
 
     it("can use the same frontend-registered ruleset variables after backend is reset", async () => {
       const vars = frontend.vars("AnyRulesetId");
-      const var1: [string, string] = [faker.random.uuid(), faker.random.words()];
-      const var2: [string, number] = [faker.random.uuid(), faker.random.number()];
+      const var1: [string, string] = ["var 1", "test value"];
+      const var2: [string, number] = ["var 2", 789];
 
       await vars.setString(var1[0], var1[1]);
       expect(await vars.getString(var1[0])).to.eq(var1[1]);

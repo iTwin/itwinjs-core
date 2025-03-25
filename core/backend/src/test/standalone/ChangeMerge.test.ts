@@ -24,7 +24,7 @@ import { HubMock } from "../../HubMock";
 import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+import * as sinon from "sinon";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
