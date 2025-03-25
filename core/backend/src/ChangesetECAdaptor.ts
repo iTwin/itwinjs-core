@@ -474,7 +474,7 @@ export class PartialECChangeUnifier implements Disposable {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
     const key = this.buildKey(rhs);
-    const lhs = this.getInstance(key); // get from temp db instead
+    const lhs = this.getInstance(key);
     if (lhs) {
       const { $meta: _, ...restOfRhs } = rhs;
       Object.assign(lhs, restOfRhs);
@@ -515,7 +515,7 @@ export class PartialECChangeUnifier implements Disposable {
       return undefined;
     });
   }
-  
+
   private static replaceBase64WithUint8Array(row: any): void {
     for (const key of Object.keys(row)) {
       const val = row[key];
@@ -528,6 +528,7 @@ export class PartialECChangeUnifier implements Disposable {
       }
     }
   }
+
   private static replaceUint8ArrayWithBase64(row: any): void {
     for (const key of Object.keys(row)) {
       const val = row[key];
@@ -538,6 +539,7 @@ export class PartialECChangeUnifier implements Disposable {
       }
     }
   }
+
   private setInstance(key: string, value: ChangedECInstance): void {
     const shallowCopy = Object.assign({}, value);
     PartialECChangeUnifier.replaceUint8ArrayWithBase64(shallowCopy);
@@ -545,28 +547,24 @@ export class PartialECChangeUnifier implements Disposable {
       stmt.bindString(1, key);
       stmt.bindString(2, JSON.stringify(shallowCopy));
       stmt.step();
-
     });
   }
 
   private createTempTable(): void {
     // table name should be unique in case two PartialECChangeUnifiers are made
     this._db.withPreparedSqliteStatement(`CREATE TABLE [temp].[${this._cacheTable}] ([key] text primary key, [value] text)`, (stmt) => {
-      if (DbResult.BE_SQLITE_DONE !== stmt.step()) {
-        // throw new Error(db.nativeDb.getLastError());
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to create temp table");
-      }
     });
   }
-  
+
   private dropTempTable(): void {
     this._db.withPreparedSqliteStatement(`DROP TABLE IF EXISTS [temp].[${this._cacheTable}]`, (stmt) => {
-      if (DbResult.BE_SQLITE_DONE !== stmt.step()) {
-        // throw new Error(db.nativeDb.getLastError());
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to drop temp table");
-      }
     });
   }
+
   /**
    * Build key from EC change.
    * @param change EC change
@@ -584,6 +582,7 @@ export class PartialECChangeUnifier implements Disposable {
     }
     return `${change.ECInstanceId}-${classId}-${change.$meta?.stage}`.toLowerCase();
   }
+
   /**
    * Append partial changes which will be combine using there instance key.
    * @note $meta property must be present on partial change as information
@@ -619,7 +618,7 @@ export class PartialECChangeUnifier implements Disposable {
     });
     this._readonly = true;
   }
-  
+
   private *getInstances(): IterableIterator<ChangedECInstance> {
     const stmt = this._db.prepareSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -629,7 +628,7 @@ export class PartialECChangeUnifier implements Disposable {
     }
     stmt[Symbol.dispose]();
   }
-  
+
   /**
    * Returns complete EC change instances.
    * @beta
