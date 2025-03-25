@@ -7,7 +7,7 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, ITwinError, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, ITwinError, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
@@ -174,7 +174,7 @@ export abstract class IpcHandler {
         return { result: await func.call(impl, ...args) };
       } catch (err: unknown) {
 
-        if (!ITwinError.isObject(err)) // if the exception isn't an object, just forward it
+        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
           return { error: err as any };
 
         const ret = { error: { ...err } };

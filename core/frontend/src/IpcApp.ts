@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BentleyError, IModelStatus, ITwinError, PickAsyncMethods } from "@itwin/core-bentley";
+import { BentleyError, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
   RemoveFunction,
@@ -98,7 +98,7 @@ export class IpcApp {
 
     // backend threw an exception, rethrow one on frontend
     const err = retVal.error;
-    if (!ITwinError.isObject(err))
+    if (!JsonUtils.isObject(err))
       throw retVal.error; // exception wasn't an object?
 
     // Note: for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.

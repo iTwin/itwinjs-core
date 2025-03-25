@@ -27,7 +27,8 @@ export interface ITwinErrorId {
  * Specific kinds of `ITwinError`s are identified by an [[ITwinErrorId]] that allows programmers to identify errors when they are caught without relying
  * on specific class hierarchies, which is especially important when errors are marshalled across process boundaries.
  * You can extend `ITwinError` to add properties that provide programmers with additional context for a particular kind of error.
- * ###TODO how to down-cast safely.
+ * When catching errors, programmers can use [[isError]] to determine if the error is of a specific sub-type, and if so access the
+ * additional properties.
  * Those additional properties will also be logged as metadata by [[Logger.logException]].
  * @beta
  */
