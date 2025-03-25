@@ -384,7 +384,7 @@ interface ErrorProps {
 }
 
 /**
- * An `ITwinError.Error` instance that also supplies an `errorNumber`.
+ * An [[ITwinError]] that also supplies an `errorNumber`.
  * @note this interface exists *only* for legacy errors derived from `BentleyError`. The concept of "error number" is
  * problematic since it is impossible to enforce across the iTwin.js library, let alone across applications. New code should
  * use `ITwinError` and identify errors with strings instead.
