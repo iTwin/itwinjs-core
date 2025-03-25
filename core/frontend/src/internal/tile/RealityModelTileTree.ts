@@ -656,6 +656,7 @@ export namespace RealityModelTileTree {
 
     public preInitializeLayers(context: SceneContext): void {
       const removals = this._detachFromDisplayStyle;
+      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
       if (0 === removals.length) {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
           this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
@@ -665,11 +666,15 @@ export namespace RealityModelTileTree {
       }
       removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
         if(compareMapLayer(previousViewState, vp.view)){
-          const mapImagery = context.viewport.displayStyle.settings.mapImagery;
           this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
           this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
           this._layerRefHandler.clearLayers();
         }
+      }));
+      removals.push(IModelApp.tileAdmin.onTileChildrenLoad.addListener(() => {
+        this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
+          this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
+          this._layerRefHandler.clearLayers();
       }));
     }
 
