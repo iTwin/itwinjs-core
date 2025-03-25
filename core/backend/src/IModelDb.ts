@@ -1727,6 +1727,35 @@ export namespace IModelDb {
       return modelJson;
     }
 
+    private tryGetReadProps<T extends ModelProps>(loadProps: ModelLoadProps): T | undefined {
+      const { id, code } = loadProps;
+
+      if (!this._iModel.isOpen)
+        return undefined;
+
+      let elementId: string | undefined;
+      let classFullName: string | undefined;
+
+      if (id !== undefined) {
+        [elementId, classFullName] = this._iModel.withPreparedStatement("SELECT ECClassId FROM Bis.Element WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [id, stmt.getValue(0).getClassNameForClassId()] : [id, undefined];
+        });
+      } else if (code !== undefined) {
+        [elementId, classFullName] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, code.spec);
+          stmt.bindId(2, code.scope);
+          code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getClassNameForClassId()] : [undefined, undefined];
+        });
+      }
+
+      if (elementId === undefined || classFullName === undefined)
+        return undefined;
+
+      return { id: elementId, classFullName } as T;
+    }
+
     /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @returns a json string with the properties of the model or `undefined` if the model is not found.
@@ -1734,7 +1763,18 @@ export namespace IModelDb {
      */
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
-        return this._iModel[_nativeDb].getModel(modelIdArg) as T;
+        if (_useOldNative)
+          return this._iModel[_nativeDb].getModel(modelIdArg) as T;
+        else {
+          const options = {
+            useJsNames: true,
+            classIdsToClassNames: true
+          }
+          const readProps = this.tryGetReadProps<T>(modelIdArg);
+          if (undefined === readProps)
+            throw new IModelError(IModelStatus.NotFound, `Element=${modelIdArg.id}`);
+          return this._iModel[_nativeDb].readInstance(modelIdArg, options) as T;
+        }
       } catch {
         return undefined;
       }
@@ -1862,6 +1902,10 @@ export namespace IModelDb {
     getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
   }
 
+  const _counter = 0;
+  // private _useNewNative = ++this._counter % 2;
+  const _useOldNative = false;
+
   /** The collection of elements in an [[IModelDb]].
    * @public
    */
@@ -1897,6 +1941,40 @@ export namespace IModelDb {
       return elementProps;
     }
 
+    private tryGetReadProps<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
+      const { id, code, federationGuid } = loadProps;
+
+      if (!this._iModel.isOpen)
+        return undefined;
+
+      let elementId: string | undefined;
+      let classFullName: string | undefined;
+
+      if (id !== undefined) {
+        [elementId, classFullName] = this._iModel.withPreparedStatement("SELECT ECClassId FROM Bis.Element WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, id);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [id, stmt.getValue(0).getClassNameForClassId()] : [id, undefined];
+        });
+      } else if (federationGuid !== undefined) {
+        [elementId, classFullName] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE FederationGuid=?", (stmt: ECSqlStatement) => {
+          stmt.bindGuid(1, federationGuid);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getClassNameForClassId()] : [undefined, undefined];
+        });
+      } else if (code !== undefined) {
+        [elementId, classFullName] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
+          stmt.bindId(1, code.spec);
+          stmt.bindId(2, code.scope);
+          code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
+          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getClassNameForClassId()] : [undefined, undefined];
+        });
+      }
+
+      if (elementId === undefined || classFullName === undefined)
+        return undefined;
+
+      return { id: elementId, classFullName } as T;
+    }
+
     /** Read element data from the iModel as JSON
      * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element or `undefined` if the element is not found.
@@ -1905,7 +1983,22 @@ export namespace IModelDb {
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
-        return this._iModel[_nativeDb].getElement(loadProps) as T;
+        if (_useOldNative)
+          return this._iModel[_nativeDb].getElement(loadProps) as T;
+        else {
+          const options = {
+            useJsNames: true,
+            classIdsToClassNames: true
+          }
+          const readProps = this.tryGetReadProps<T>(loadProps);
+          if (undefined === readProps)
+            throw new IModelError(IModelStatus.NotFound, `Element=${loadProps.id}`);
+          const element = this._iModel[_nativeDb].readInstance(readProps, options) as T;
+          if (typeof element.jsonProperties === "string") {
+            element.jsonProperties = JSON.parse(element.jsonProperties);
+          }
+          return element;
+        }
       } catch {
         return undefined;
       }
@@ -1922,7 +2015,18 @@ export namespace IModelDb {
         props = { code: props };
       }
       try {
-        return this._iModel[_nativeDb].getElement(props) as T;
+        if (_useOldNative)
+          return this._iModel[_nativeDb].getElement(props) as T;
+        else {
+          const options = {
+            useJsNames: true,
+            classIdsToClassNames: true
+          }
+          const readProps = this.tryGetReadProps<T>(props);
+          if (undefined === readProps)
+            throw new IModelError(IModelStatus.NotFound, `Element=${props.id}`);
+          return this._iModel[_nativeDb].readInstance(readProps, options) as T;
+        }
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
