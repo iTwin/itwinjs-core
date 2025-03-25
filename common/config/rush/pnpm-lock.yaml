@@ -2698,9 +2698,6 @@ importers:
       '@types/deep-equal':
         specifier: ^1
         version: 1.0.0
-      '@types/faker':
-        specifier: ^4.1.0
-        version: 4.1.0
       '@types/jsdom':
         specifier: ^21.1.7
         version: 21.1.7
@@ -2755,9 +2752,6 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@9.13.0)
-      faker:
-        specifier: ^4.1.0
-        version: 4.1.0
       fast-sort:
         specifier: ^3.0.2
         version: 3.0.2
@@ -3106,9 +3100,6 @@ importers:
       '@types/deep-equal':
         specifier: ^1
         version: 1.0.0
-      '@types/faker':
-        specifier: ^4.1.0
-        version: 4.1.0
       '@types/lolex':
         specifier: ^2.1.2
         version: 2.1.2
@@ -3163,9 +3154,6 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@9.13.0)
-      faker:
-        specifier: ^4.1.0
-        version: 4.1.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -3229,9 +3217,6 @@ importers:
       '@types/deep-equal':
         specifier: ^1
         version: 1.0.0
-      '@types/faker':
-        specifier: ^4.1.0
-        version: 4.1.0
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
@@ -3271,9 +3256,6 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@9.13.0)
-      faker:
-        specifier: ^4.1.0
-        version: 4.1.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -3359,9 +3341,6 @@ importers:
       '@types/deep-equal':
         specifier: ^1
         version: 1.0.0
-      '@types/faker':
-        specifier: ^4.1.0
-        version: 4.1.0
       '@types/jsdom':
         specifier: ^21.1.7
         version: 21.1.7
@@ -3401,9 +3380,6 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@9.13.0)
-      faker:
-        specifier: ^4.1.0
-        version: 4.1.0
       jsdom:
         specifier: ^26.0.0
         version: 26.0.0
@@ -5717,9 +5693,6 @@ packages:
   '@types/express@4.17.21':
     resolution: {integrity: sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ==}
 
-  '@types/faker@4.1.0':
-    resolution: {integrity: sha512-IqLvN+wl9U6i4xJv3U/BdtjAY5RozgP2oscKO3OszUzMUA1jwPMvPSWcbkT3cJIJI/1p5QzaBCYHZ05BcbDisw==}
-
   '@types/file-saver@2.0.1':
     resolution: {integrity: sha512-g1QUuhYVVAamfCifK7oB7G3aIl4BbOyzDOqVyUfEr4tfBKrXfeH+M+Tg7HKCXSrbzxYdhyCP7z9WbKo0R2hBCw==}
 
@@ -7404,9 +7377,6 @@ packages:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
     hasBin: true
-
-  faker@4.1.0:
-    resolution: {integrity: sha512-ILKg69P6y/D8/wSmDXw35Ly0re8QzQ8pMfBCflsGiZG2ZjMUNLYNexA6lz5pkmJlepVdsiDFUxYAzPQ9/+iGLA==}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -12102,8 +12072,6 @@ snapshots:
       '@types/qs': 6.9.18
       '@types/serve-static': 1.15.7
 
-  '@types/faker@4.1.0': {}
-
   '@types/file-saver@2.0.1': {}
 
   '@types/flatbuffers@1.10.0': {}
@@ -14235,8 +14203,6 @@ snapshots:
       '@types/yauzl': 2.10.3
     transitivePeerDependencies:
       - supports-color
-
-  faker@4.1.0: {}
 
   fast-deep-equal@3.1.3: {}
 

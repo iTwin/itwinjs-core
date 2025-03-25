@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-backend",
-  "version": "5.0.0-dev.88",
+  "version": "5.0.0-dev.90",
   "description": "iTwin.js editor backend",
   "main": "lib/cjs/editor-backend.js",
   "typings": "lib/cjs/editor-backend",

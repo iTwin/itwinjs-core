@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import faker from "faker";
 import fs from "fs";
 import { IModelDb, StandaloneDb, Subject } from "@itwin/core-backend";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
@@ -152,7 +151,7 @@ describe("RulesEmbedding", () => {
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
-    rulesetElement.setJsonProperty("id", faker.random.uuid());
+    rulesetElement.setJsonProperty("id", "some value");
     imodel.elements.updateElement(rulesetElement.toJSON());
 
     rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });

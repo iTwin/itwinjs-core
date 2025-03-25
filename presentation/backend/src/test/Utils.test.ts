@@ -7,7 +7,6 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
-import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {
@@ -25,7 +24,7 @@ describe("getElementKey", () => {
   });
 
   it("returns valid key for existing id", () => {
-    const id = createRandomId();
+    const id = "0x123";
 
     const sqlQueryResult = moq.Mock.ofType<ECSqlValue>();
     sqlQueryResult.setup((x) => x.getClassNameForClassId()).returns(() => "schema.class");

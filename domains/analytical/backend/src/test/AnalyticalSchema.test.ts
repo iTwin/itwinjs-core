@@ -12,7 +12,7 @@ import {
   Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import {
-  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
+  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement,
   TypeDefinitionElementProps,
 } from "@itwin/core-common";
 import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
@@ -123,25 +123,19 @@ describe("AnalyticalSchema", () => {
     const elementId: Id64String = iModelDb.elements.insertElement(elementProps);
     // test forEachProperty and PropertyMetaData.isNavigation
     const element: GeometricElement3d = iModelDb.elements.getElement(elementId);
-    element.forEachProperty((propertyName: string, meta: PropertyMetaData) => {
-      switch (propertyName) {
+    element.forEach((propName, property) => {
+      switch (propName) {
         case "model":
-          assert.isTrue(meta.isNavigation);
-          break;
         case "category":
-          assert.isTrue(meta.isNavigation);
-          break;
         case "typeDefinition":
-          assert.isTrue(meta.isNavigation);
+          assert.isTrue(property.isNavigation());
           break;
         case "codeValue":
-          assert.isFalse(meta.isNavigation);
-          break;
         case "userLabel":
-          assert.isFalse(meta.isNavigation);
-          break;
+          assert.isFalse(property.isNavigation());
       }
-    });
+    }, true);
+
     // test typeDefinition update scenarios
     assert.isTrue(Id64.isValidId64(elementId));
     assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
