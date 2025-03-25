@@ -65,7 +65,7 @@ import { TemporaryStorage } from "./TemporaryStorage.js";
 
 // @ts-expect-error TS complains about `with` in CJS builds; The path is fine at runtime, but not at compile time
 // eslint-disable-next-line @itwin/import-within-package
-import packageJson from "../../../package.json";
+import packageJson from "../../../package.json" with { type: "json" };
 const packageJsonVersion = packageJson.version;
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;
