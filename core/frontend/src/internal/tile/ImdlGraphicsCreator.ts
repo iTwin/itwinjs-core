@@ -29,7 +29,6 @@ import { _implementationProhibited, _textures } from "../../common/internal/Symb
 import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../../internal/render/GraphicTemplateImpl";
 import { GraphicTemplate } from "../../render/GraphicTemplate";
-import { Tile } from "../../tile/internal";
 import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 /** Options provided to [[decodeImdlContent]].
