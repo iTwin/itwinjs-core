@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
@@ -57,23 +56,21 @@ import {
   RulesetVariable,
   RulesetVariableJSON,
   SelectClassInfo,
+  SelectionScope,
   SelectionScopeRequestOptions,
   VariableValueTypes,
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
   configureForPromiseResult,
-  createRandomECInstanceKey,
-  createRandomECInstancesNodeKey,
-  createRandomId,
-  createRandomLabelDefinition,
-  createRandomNodePathElement,
-  createRandomSelectionScope,
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestECClassInfo,
   createTestECInstanceKey,
+  createTestECInstancesNodeKey,
+  createTestLabelDefinition,
   createTestNode,
+  createTestNodePathElement,
   createTestSelectClassInfo,
   createTestSimpleContentField,
   ResolvablePromise,
@@ -111,7 +108,7 @@ describe("PresentationRpcImpl", () => {
   });
 
   it("uses custom requestTimeout", () => {
-    const randomRequestTimeout = faker.random.number({ min: 0, max: 90000 });
+    const randomRequestTimeout = 4455;
     using impl = new PresentationRpcImpl({ requestTimeout: randomRequestTimeout });
     expect(impl.requestTimeout).to.not.throw;
     expect(impl.requestTimeout).to.equal(randomRequestTimeout);
@@ -263,12 +260,12 @@ describe("PresentationRpcImpl", () => {
       testData = {
         imodelToken: createIModelRpcProps(),
         imodelMock: moq.Mock.ofType<IModelDb>(),
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test-ruleset-id",
         pageOptions: { start: 123, size: 45 } as PageOptions,
         displayType: "sample display type",
       };
       configureForPromiseResult(testData.imodelMock);
-      defaultRpcParams = { clientId: faker.random.uuid() };
+      defaultRpcParams = { clientId: "test-client-id" };
       stub_IModelDb_findByKey = sinon.stub(IModelDb, "findByKey").withArgs(testData.imodelToken.key).returns(testData.imodelMock.object);
       impl = new PresentationRpcImpl({ requestTimeout: 10 });
     });
@@ -525,7 +522,7 @@ describe("PresentationRpcImpl", () => {
 
       it("calls manager for child nodes count", async () => {
         const result = 999;
-        const parentNodeKey = createRandomECInstancesNodeKey();
+        const parentNodeKey = createTestECInstancesNodeKey();
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
@@ -591,7 +588,7 @@ describe("PresentationRpcImpl", () => {
           supportsFiltering: true,
         };
         const getChildNodesCountResult = 999;
-        const parentNodeKey = createRandomECInstancesNodeKey();
+        const parentNodeKey = createTestECInstancesNodeKey();
         const rpcOptions: Paged<HierarchyRpcRequestOptions> = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
@@ -714,7 +711,7 @@ describe("PresentationRpcImpl", () => {
     describe("getNodesDescriptor", () => {
       it("calls manager for child nodes descriptor", async () => {
         const result = createTestContentDescriptor({ fields: [] });
-        const parentNodeKey = createRandomECInstancesNodeKey();
+        const parentNodeKey = createTestECInstancesNodeKey();
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
@@ -738,7 +735,7 @@ describe("PresentationRpcImpl", () => {
 
     describe("getFilteredNodePaths", () => {
       it("calls manager", async () => {
-        const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
+        const result = [createTestNodePathElement(), createTestNodePathElement()];
         const managerOptions: WithCancelEvent<FilterByTextHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
@@ -763,8 +760,8 @@ describe("PresentationRpcImpl", () => {
 
     describe("getNodePaths", () => {
       it("calls manager", async () => {
-        const result = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
-        const keyArray: InstanceKey[][] = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
+        const result = [createTestNodePathElement(), createTestNodePathElement()];
+        const keyArray: InstanceKey[][] = [[createTestECInstanceKey(), createTestECInstanceKey()]];
         const managerOptions: WithCancelEvent<FilterByInstancePathsHierarchyRequestOptions<IModelDb>> = {
           imodel: testData.imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
@@ -1844,8 +1841,8 @@ describe("PresentationRpcImpl", () => {
 
     describe("getDisplayLabelDefinition", () => {
       it("calls manager", async () => {
-        const result = createRandomLabelDefinition();
-        const key = createRandomECInstanceKey();
+        const result = createTestLabelDefinition();
+        const key = createTestECInstanceKey();
         const rpcOptions: Paged<DisplayLabelRpcRequestOptions> = {
           ...defaultRpcParams,
           paging: testData.pageOptions,
@@ -1874,8 +1871,8 @@ describe("PresentationRpcImpl", () => {
 
     describe("getPagedDisplayLabelDefinitions", () => {
       it("calls manager", async () => {
-        const result = [createRandomLabelDefinition(), createRandomLabelDefinition()];
-        const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        const result = [createTestLabelDefinition(), createTestLabelDefinition()];
+        const keys = [createTestECInstanceKey(), createTestECInstanceKey()];
         const rpcOptions: DisplayLabelsRpcRequestOptions = {
           ...defaultRpcParams,
           keys,
@@ -1900,8 +1897,8 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("enforces maximum page size when requesting more labels than allowed", async () => {
-        const result = new Array(MAX_ALLOWED_PAGE_SIZE).fill(createRandomLabelDefinition());
-        const keys = new Array(MAX_ALLOWED_PAGE_SIZE + 1).fill(createRandomECInstanceKey());
+        const result = new Array(MAX_ALLOWED_PAGE_SIZE).fill(createTestLabelDefinition());
+        const keys = new Array(MAX_ALLOWED_PAGE_SIZE + 1).fill(createTestECInstanceKey());
         const rpcOptions: DisplayLabelsRpcRequestOptions = {
           ...defaultRpcParams,
           keys,
@@ -1935,7 +1932,7 @@ describe("PresentationRpcImpl", () => {
           imodel: testData.imodelMock.object,
           cancelEvent: new BeEvent<() => void>(),
         };
-        const result = [createRandomSelectionScope()];
+        const result: SelectionScope[] = [{ id: "element", label: "Element" }];
         presentationManagerMock
           .setup(async (x) => x.getSelectionScopes(managerOptions))
           .returns(async () => result)
@@ -1950,7 +1947,7 @@ describe("PresentationRpcImpl", () => {
       it("calls manager", async () => {
         const scopeId = "element";
         const ancestorLevel = 123;
-        const elementIds = [createRandomId()];
+        const elementIds = ["0x123"];
         const rpcOptions: ComputeSelectionRpcRequestOptions = {
           ...defaultRpcParams,
           elementIds,

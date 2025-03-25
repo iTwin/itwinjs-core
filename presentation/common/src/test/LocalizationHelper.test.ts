@@ -10,13 +10,12 @@ import { DisplayValueGroup, NavigationPropertyValue } from "../presentation-comm
 import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition";
 import { LocalizationHelper } from "../presentation-common/LocalizationHelper";
 import {
-  createRandomECInstancesNode,
-  createRandomLabelCompositeValue,
   createTestArrayPropertiesContentField,
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
   createTestECInstanceKey,
+  createTestECInstancesNode,
   createTestLabelDefinition,
   createTestNestedContentField,
   createTestPropertiesContentField,
@@ -61,7 +60,7 @@ describe("LocalizationHelper", () => {
 
   describe("getLocalizedNodes", () => {
     it("translates labelDefinition", () => {
-      const node = createRandomECInstancesNode();
+      const node = createTestECInstancesNode();
       node.label.rawValue = "@namespace:LocalizedRawValue@";
       node.label.displayValue = "@namespace:LocalizedDisplayValue@";
       node.description = "@namespace:LocalizedDescription@";
@@ -74,10 +73,10 @@ describe("LocalizationHelper", () => {
 
   describe("getLocalizedNodePathElement", () => {
     it("translates the node", () => {
-      const node1 = createRandomECInstancesNode();
+      const node1 = createTestECInstancesNode();
       node1.label.displayValue = "@namespace:LocalizedDisplayValue1@";
 
-      const node2 = createRandomECInstancesNode();
+      const node2 = createTestECInstancesNode();
       node2.label.displayValue = "@namespace:LocalizedDisplayValue2@";
 
       const npe: NodePathElement = {
@@ -355,13 +354,15 @@ describe("LocalizationHelper", () => {
     });
 
     it("translates labelDefinition with composite value", () => {
-      const compositeValue = createRandomLabelCompositeValue();
-      compositeValue.values.forEach((value) => {
-        value.rawValue = "@namespace:LocalizedValue@";
-      });
       const labelDefinition: LabelDefinition = {
         displayValue: "Display",
-        rawValue: compositeValue,
+        rawValue: {
+          separator: "/",
+          values: [
+            createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue@" }),
+            createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue@" }),
+          ],
+        },
         typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME,
       };
       const result = localizationHelper.getLocalizedLabelDefinition(labelDefinition);

@@ -12,10 +12,6 @@ sourceMapSupport.install({
   environment: "node",
 });
 
-// init faker
-import faker from "faker";
-faker.seed(1);
-
 // setup chai
 import * as chai from "chai";
 import chaiJestSnapshot from "chai-jest-snapshot";
@@ -41,13 +37,6 @@ export const mochaHooks = {
   },
   beforeEach() {
     const currentTest = (this as unknown as Mocha.Context).currentTest!;
-
-    // we want snapshot tests to use the same random data between runs
-    let seed = 0;
-    for (let i = 0; i < currentTest.fullTitle().length; ++i) {
-      seed += currentTest.fullTitle().charCodeAt(i);
-    }
-    faker.seed(seed);
 
     // set up snapshot name
     const sourceFilePath = currentTest.file!.replace("lib", "src").replace(/\.(jsx?|tsx?)$/, "");
