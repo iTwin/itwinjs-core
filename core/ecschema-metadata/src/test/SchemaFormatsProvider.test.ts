@@ -13,8 +13,7 @@ import { SchemaUnitProvider } from "../UnitProvider/SchemaUnitProvider";
 import { UNIT_EXTRA_DATA } from "./UnitProvider/UnitData";
 import { Format, FormatterSpec } from "@itwin/core-quantity";
 import * as Sinon from "sinon";
-describe.only("SchemaFormatsProvider", () => {
-  // ZOMBIES
+describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
   let formatsProvider: SchemaFormatsProvider;
   let unitsProvider: SchemaUnitProvider;
@@ -59,18 +58,16 @@ describe.only("SchemaFormatsProvider", () => {
     expect(format).to.be.undefined;
   });
 
-  // Getters
-  it("should return a format when it exists", async () => {
+  it("should return a format from the Formats schema", async () => {
     const format = await formatsProvider.getFormat("Formats.AmerI");
     expect(format).not.to.be.undefined;
   });
 
-  it("should return a format by KindOfQuantity", async () => {
-    const format = await formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH");
+  it("should return a format given a KindOfQuantity", async () => {
+    const format = await formatsProvider.getFormat("AecUnits.LENGTH");
     expect(format).not.to.be.undefined;
     expect(format?.composite?.units.length).to.be.greaterThan(0);
   });
-  // Setters
 
   it("should add a format", async () => {
     const spy = Sinon.spy();
@@ -90,8 +87,46 @@ describe.only("SchemaFormatsProvider", () => {
     formatsProvider.onFormatUpdated.removeListener(spy);
   });
 
+  it("should add a format whose KindOfQuantity already exists in a schema", async () => {
+    const spy = Sinon.spy();
+    formatsProvider.onFormatUpdated.addListener(spy);
+    const existingKoq = "AecUnits.LENGTH";
+    const defaultFormatProps = await formatsProvider.getFormat(existingKoq);
+    expect(defaultFormatProps).not.to.be.undefined;
+    expect(defaultFormatProps?.description).not.to.equal("Test");
+    const newFormatProps: SchemaItemFormatProps = {
+      ...defaultFormatProps!,
+      description: "Test"
+    }
+    await formatsProvider.addFormat(existingKoq, newFormatProps);
+
+    const retrievedFormat = await formatsProvider.getFormat(existingKoq);
+    expect(retrievedFormat!.description).to.equal("Test");
+    expect(spy.calledWith(existingKoq)).to.be.true;
+    formatsProvider.onFormatUpdated.removeListener(spy);
+  });
+
+  it("should remove a format from cache", async () => {
+    const spy = Sinon.spy();
+    formatsProvider.onFormatUpdated.addListener(spy);
+    const format: SchemaItemFormatProps = {
+      label: "NewFormat",
+      type: "Fractional",
+      precision: 8,
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      uomSeparator: "",
+    };
+    const formatName = "NonexistentSchema.newFormat";
+    await formatsProvider.addFormat(formatName, format);
+    const retrievedFormat = await formatsProvider.getFormat(formatName);
+    expect(retrievedFormat).to.equal(format);
+    expect(spy.calledWith(formatName)).to.be.true;
+
+    formatsProvider.onFormatUpdated.removeListener(spy);
+  });
+
   it("should format a length quantity to meters given a KoQ and unit provider", async () => {
-    const formatProps = await formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH");
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
     expect(formatProps).not.to.be.undefined;
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
     const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
@@ -103,7 +138,7 @@ describe.only("SchemaFormatsProvider", () => {
   });
 
   it("should format a length quantity to kilometers given a KoQ and unit provider", async () => {
-    const formatProps = await formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH_LONG");
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
     expect(formatProps).not.to.be.undefined;
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
     const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");

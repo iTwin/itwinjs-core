@@ -49,7 +49,7 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 A [FormatsProvider]($ecschema-metadata) interface helps provide all the necessary formats for displaying formatted quantity values, while also enabling users to add formats of their own.
 
-The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide default Formats coming from schemas.
+The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide default Formats coming from schemas. Users can map a KindOfQuantity to a Format when adding formats to this FormatsProvider.
 
 > Adding a format to a SchemaFormatsProvider will not modify the schema, it will only populate the format cache of the provider.
 
@@ -57,7 +57,7 @@ The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecsc
 
 To appropriately parse and output formatted values, a units provider is used to define all available units and provides conversion factors between units. There are several implementations of the UnitsProvider across iTwin.js:
 
-The [BasicUnitsProvider]($quantity) holds many common units and their conversions between each other.
+The [BasicUnitsProvider]($frontend) holds many common units and their conversions between each other.
 
 The [SchemaUnitProvider]($ecschema-metadata) is used to load unit definitions of schemas from an iModel. This holds more extensive units through the Units schema, while also allowing users to define their own units.
 

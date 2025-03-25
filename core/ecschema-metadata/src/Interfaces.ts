@@ -101,9 +101,11 @@ export interface HasMixins {
  * @beta
  */
 export interface FormatsProvider {
-  getFormat(name: string): Promise<SchemaItemFormatProps | undefined>; // Should we add synchronous version of this method?
-  getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+  getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
   addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
+  removeFormat(name: string): Promise<void>;
 
   onFormatUpdated: BeUiEvent<string>;
+  onFormatRemoved: BeUiEvent<string>;
+  onCacheCleared: BeUiEvent<void>;
 }

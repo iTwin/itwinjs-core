@@ -4,7 +4,7 @@ import { SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin
 import { assert } from "chai";
 import path from "path";
 
-describe.only("FormatsProvider examples", () => {
+describe("FormatsProvider examples", () => {
   let schemaContext: SchemaContext;
 
   before(() => {
@@ -31,7 +31,7 @@ describe.only("FormatsProvider examples", () => {
     const unitsProvider = new SchemaUnitProvider(schemaContext);
     const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
 
-    const formatProps = await formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH_LONG");
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
     const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
 
@@ -49,7 +49,7 @@ describe.only("FormatsProvider examples", () => {
     const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
 
 
-    const formatProps = await formatsProvider.getFormatByKindOfQuantity("AecUnits.LENGTH_LONG");
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
     const parserSpec = await ParserSpec.create(format, unitsProvider, persistenceUnit);
     const result = parserSpec.parseToQuantityValue("50 km");

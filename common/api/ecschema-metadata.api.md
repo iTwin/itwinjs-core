@@ -768,9 +768,13 @@ export interface FormatsProvider {
     // (undocumented)
     getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
-    getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+    onCacheCleared: BeUiEvent<void>;
+    // (undocumented)
+    onFormatRemoved: BeUiEvent<string>;
     // (undocumented)
     onFormatUpdated: BeUiEvent<string>;
+    // (undocumented)
+    removeFormat(name: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -1094,7 +1098,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1891,11 +1895,17 @@ export class SchemaFormatsProvider implements FormatsProvider {
     constructor(contextOrLocater: ISchemaLocater);
     addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
     // (undocumented)
+    clearFormatCache(): Promise<void>;
+    // (undocumented)
     getFormat(id: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
-    getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined>;
+    onCacheCleared: BeUiEvent<void>;
+    // (undocumented)
+    onFormatRemoved: BeUiEvent<string>;
     // (undocumented)
     onFormatUpdated: BeUiEvent<string>;
+    // (undocumented)
+    removeFormat(name: string): Promise<void>;
 }
 
 // @internal

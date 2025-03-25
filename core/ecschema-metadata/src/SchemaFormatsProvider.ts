@@ -17,15 +17,15 @@ import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
 
 /**
- * Provides default formats and kind of quantities coming from a given SchemaContext or SchemaLocater.
+ * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
  * @beta
  */
 export class SchemaFormatsProvider implements FormatsProvider {
   private _context: SchemaContext;
   private _formatCache: Map<string, SchemaItemFormatProps> = new Map();
-  // Maybe add a 2nd format cache for KindOfQuantity to Format mapping?
-  // private _kindOfQuantityCache: Map<string, SchemaItemFormatProps> = new Map();
   public onFormatUpdated = new BeUiEvent<string>();
+  public onFormatRemoved = new BeUiEvent<string>();
+  public onCacheCleared = new BeUiEvent<void>();
   /**
    *
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
@@ -42,6 +42,10 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
   }
 
+  /**
+   * Try retrieving the format from schemas. If the format is not part of the base Formats schema, but from a KindOfQuantity, the format will be constructed
+   * from the default presentation format of that KindOfQuantity.
+   */
   private async getFormatFromSchema(id: string): Promise<SchemaItemFormatProps | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(id);
     const schemaKey = new SchemaKey(schemaName);
@@ -50,22 +54,28 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return undefined;
     }
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const format = await this._context.getSchemaItem(itemKey, Format);
-    if (!format) {
-      return undefined;
+
+    if (schema.name === "Formats") {
+      const format = await this._context.getSchemaItem(itemKey, Format);
+      if (!format) {
+        return undefined;
+      }
+      return format.toJSON(true);
     }
-    return format.toJSON(true);
+    return this.getKindOfQuantityFormatFromSchema(itemKey);
   }
 
-  private async getKindOfQuantityFromSchema(id: string): Promise<KindOfQuantity | undefined> {
-    const [schemaName, schemaItemName] = SchemaItem.parseFullName(id);
-    const schemaKey = new SchemaKey(schemaName);
-    const schema = await this._context.getSchema(schemaKey);
-    if (!schema) {
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<SchemaItemFormatProps | undefined> {
+    const kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
+
+    if (!kindOfQuantity) {
       return undefined;
     }
-    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    return this._context.getSchemaItem(itemKey, KindOfQuantity);
+    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
+    if (!defaultFormat) {
+      return undefined;
+    }
+    return getFormatProps(defaultFormat);
   }
 
   /**
@@ -80,24 +90,21 @@ export class SchemaFormatsProvider implements FormatsProvider {
     return this.getFormatFromSchema(id);
   }
 
-  public async getFormatByKindOfQuantity(kindOfQuantityId: string): Promise<SchemaItemFormatProps | undefined> {
-    // Lookup KindOfQuantity first.
-    const kindOfQuantity = await this.getKindOfQuantityFromSchema(kindOfQuantityId);
-    if (!kindOfQuantity) {
-      return undefined;
-    }
-    const defaultFormat = kindOfQuantity.defaultPresentationFormat;
-    if (!defaultFormat) {
-      return undefined;
-    }
-    return getFormatProps(defaultFormat);
-  }
-
   /**
    * Adds a format to the provider's cache. If the cache already has a format with the same name, override the format.
    */
   public async addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void> {
     this._formatCache.set(name, formatProps);
     this.onFormatUpdated.emit(name);
+  }
+
+  public async removeFormat(name: string): Promise<void> {
+    this._formatCache.delete(name);
+    this.onFormatRemoved.emit(name);
+  }
+
+  public async clearFormatCache(): Promise<void> {
+    this._formatCache.clear();
+    this.onCacheCleared.emit();
   }
 }
