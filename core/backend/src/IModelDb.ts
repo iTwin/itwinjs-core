@@ -1763,17 +1763,16 @@ export namespace IModelDb {
      */
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
-        if (_useOldNative)
-          return this._iModel[_nativeDb].getModel(modelIdArg) as T;
-        else {
+        if (IModelHost.configuration?.enableNativeInstanceFunctions) {
           const options = {
             useJsNames: true,
-            classIdsToClassNames: true
           }
           const readProps = this.tryGetReadProps<T>(modelIdArg);
           if (undefined === readProps)
             throw new IModelError(IModelStatus.NotFound, `Element=${modelIdArg.id}`);
           return this._iModel[_nativeDb].readInstance(modelIdArg, options) as T;
+        } else {
+          return this._iModel[_nativeDb].getModel(modelIdArg) as T;
         }
       } catch {
         return undefined;
@@ -1902,10 +1901,6 @@ export namespace IModelDb {
     getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
   }
 
-  const _counter = 0;
-  // private _useNewNative = ++this._counter % 2;
-  const _useOldNative = false;
-
   /** The collection of elements in an [[IModelDb]].
    * @public
    */
@@ -1975,6 +1970,19 @@ export namespace IModelDb {
       return { id: elementId, classFullName } as T;
     }
 
+    private removeNullValues(obj: any): any {
+      if (obj && typeof obj === "object") {
+        for (const key in obj) {
+          if (obj[key] === null) {
+            delete obj[key];
+          } else if (typeof obj[key] === "object") {
+            this.removeNullValues(obj[key]);
+          }
+        }
+      }
+      return obj;
+    }
+
     /** Read element data from the iModel as JSON
      * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element or `undefined` if the element is not found.
@@ -1983,12 +1991,9 @@ export namespace IModelDb {
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
-        if (_useOldNative)
-          return this._iModel[_nativeDb].getElement(loadProps) as T;
-        else {
+        if (IModelHost.configuration?.enableNativeInstanceFunctions) {
           const options = {
             useJsNames: true,
-            classIdsToClassNames: true
           }
           const readProps = this.tryGetReadProps<T>(loadProps);
           if (undefined === readProps)
@@ -1996,8 +2001,11 @@ export namespace IModelDb {
           const element = this._iModel[_nativeDb].readInstance(readProps, options) as T;
           if (typeof element.jsonProperties === "string") {
             element.jsonProperties = JSON.parse(element.jsonProperties);
+            element.jsonProperties = this.removeNullValues(element.jsonProperties); // Remove null values from json
           }
           return element;
+        } else {
+          return this._iModel[_nativeDb].getElement(loadProps) as T;
         }
       } catch {
         return undefined;
@@ -2015,17 +2023,16 @@ export namespace IModelDb {
         props = { code: props };
       }
       try {
-        if (_useOldNative)
-          return this._iModel[_nativeDb].getElement(props) as T;
-        else {
+        if (IModelHost.configuration?.enableNativeInstanceFunctions) {
           const options = {
             useJsNames: true,
-            classIdsToClassNames: true
           }
           const readProps = this.tryGetReadProps<T>(props);
           if (undefined === readProps)
             throw new IModelError(IModelStatus.NotFound, `Element=${props.id}`);
-          return this._iModel[_nativeDb].readInstance(readProps, options) as T;
+          return this._iModel[_nativeDb].readInstance(readProps, options) as T
+        } else {
+          return this._iModel[_nativeDb].getElement(props) as T;
         }
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);

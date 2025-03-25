@@ -195,7 +195,10 @@ export interface IModelHostOptions {
    * Will be changed to default to `false` in 5.0.
    */
   allowSharedChannel?: boolean;
-
+  /**
+   * Use native instance functions for element, model, and aspect CRUD operations.
+   */
+  enableNativeInstanceFunctions?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -231,6 +234,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
+  /** @beta */
+  public enableNativeInstanceFunctions = true;
 }
 
 /**
