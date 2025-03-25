@@ -1025,21 +1025,21 @@ export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, 
 export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
 
 // @beta
+export interface ITwinError extends Error {
+    readonly iTwinErrorId: ITwinErrorId;
+}
+
+// @beta (undocumented)
 export namespace ITwinError {
-    export function createError<T extends Error>(args: Optional<T, "name">): T;
-    export interface Error extends BaseError {
-        // (undocumented)
-        readonly iTwinErrorId: {
-            readonly scope: string;
-            readonly key: string;
-        };
-    }
-    export function isError<T extends Error>(error: unknown, scope: string, key: string): error is T;
-    // (undocumented)
-    export function isObject(obj: unknown): obj is {
-        [key: string]: unknown;
-    };
-    export function throwError<T extends Error>(args: Optional<T, "name">): never;
+    export function create<T extends ITwinError>(args: Optional<T, "name">): T;
+    export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T;
+    export function throwError<T extends ITwinError>(args: Optional<T, "name">): never;
+}
+
+// @beta
+export interface ITwinErrorId {
+    readonly key: string;
+    readonly scope: string;
 }
 
 // @public (undocumented)
@@ -1191,13 +1191,16 @@ export namespace JsonUtils {
     export function isEmptyObject(json: any): boolean;
     export function isEmptyObjectOrUndefined(json: any): boolean;
     export function isNonEmptyObject(value: any): value is object;
+    export function isObject(json: unknown): json is {
+        [key: string]: unknown;
+    };
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
 }
 
 // @beta
-export interface LegacyITwinErrorWithNumber extends ITwinError.Error {
+export interface LegacyITwinErrorWithNumber extends ITwinError {
     readonly errorNumber: number;
     loggingMetadata?: object;
 }

@@ -1167,14 +1167,15 @@ export enum ChangesetType {
 }
 
 // @beta
+export interface ChannelError extends ITwinError {
+    readonly channelKey: string;
+}
+
+// @beta (undocumented)
 export namespace ChannelError {
-    // (undocumented)
-    export interface Error extends ITwinError.Error {
-        channelKey: string;
-    }
     const // (undocumented)
     scope = "itwin-channel-errors";
-    export function isError(error: unknown, key: Key): error is ChannelError.Error;
+    export function isError(error: unknown, key?: Key): error is ChannelError;
     export type Key =
     /** an attempt to create a channel within an existing channel */
     "may-not-nest" |

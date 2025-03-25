@@ -76,7 +76,9 @@ deprecated;function;isIDisposable
 public;function;isInstanceOf
 public;function;isProperSubclassOf
 public;function;isSubclassOf
+beta;interface;ITwinError
 beta;namespace;ITwinError
+beta;interface;ITwinErrorId
 public;interface;JSONSchema
 public;interface;JSONSchemaMap
 public;interface;JSONSchemaSnippet

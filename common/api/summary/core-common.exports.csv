@@ -110,6 +110,7 @@ public;type;ChangesetIndexOrId
 public;interface;ChangesetProps
 public;interface;ChangesetRange
 public;enum;ChangesetType
+beta;interface;ChannelError
 beta;namespace;ChannelError
 public;interface;ChannelRootAspectProps
 internal;interface;ClassifierTileTreeId
