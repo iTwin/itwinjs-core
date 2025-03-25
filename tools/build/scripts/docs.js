@@ -69,7 +69,7 @@ if (argv.theme) options.push("--theme", argv.theme);
 if (argv.tsconfig) options.push("--tsconfig", argv.tsconfig);
 
 const args = [
-  "--entryPointStrategy", "expand", path.resolve(process.cwd(), source),
+  "--entryPointStrategy", "expand", path.resolve(process.cwd(), source).replaceAll("\\", "/"),
   ...options,
   ...excludeArray,
   ...outputOptions,
