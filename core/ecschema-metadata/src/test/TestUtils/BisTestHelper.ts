@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ECSchemaNamespaceUris } from "../../Constants";
 import { SchemaContext } from "../../Context";
 import { Schema } from "../../Metadata/Schema";
 
@@ -19,7 +20,7 @@ export class BisTestHelper {
 }
 
 const coreCustomAttributesSchema = {
-  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
   name: "CoreCustomAttributes",
   alias: "CoreCA",
   version: "01.00.01",
@@ -35,7 +36,7 @@ const coreCustomAttributesSchema = {
 };
 
 const bisCoreSchema = {
-  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
   alias: "bis",
   name: "BisCore",
   version: "01.00.01",

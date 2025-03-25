@@ -16,6 +16,7 @@ import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstrain
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -180,7 +181,7 @@ describe("RelationshipClass", () => {
 
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -451,7 +452,7 @@ describe("RelationshipClass", () => {
   describe("toJson", () => {
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -505,7 +506,7 @@ describe("RelationshipClass", () => {
       const schema = await Schema.fromJson(createSchemaJson(validRelationshipJson), new SchemaContext());
       const relClass = await schema.getItem("TestRelationship", RelationshipClass);
       const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "TestRelationship",
         schema: "TestSchema",
         schemaVersion: "01.02.03",
@@ -686,7 +687,7 @@ describe("RelationshipClass", () => {
 
     function getSchemaJson(customAttributeJson?: any) {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
