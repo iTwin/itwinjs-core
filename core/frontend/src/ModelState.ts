@@ -119,6 +119,8 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
     const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
+    const getBackgroundBase = () => view.displayStyle.settings.mapImagery.backgroundBase;
+    const getBackgroundLayers = () => view.displayStyle.settings.mapImagery.backgroundLayers
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
@@ -132,8 +134,8 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
           getDisplaySettings,
-          getBackgroundBase: () => view.displayStyle.settings.mapImagery.backgroundBase,
-          getBackgroundLayers: () => view.displayStyle.settings.mapImagery.backgroundLayers,
+          getBackgroundBase,
+          getBackgroundLayers,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -187,13 +189,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
         getDisplaySettings,
-        getBackgroundBase: () => view.displayStyle.settings.mapImagery.backgroundBase,
-        getBackgroundLayers: () => view.displayStyle.settings.mapImagery.backgroundLayers,
+        getBackgroundBase,
+        getBackgroundLayers,
     });
     }
 
-    return createPrimaryTileTreeReference(view, this);
-
+    return createPrimaryTileTreeReference(view, this, getBackgroundBase, getBackgroundLayers);
   }
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).

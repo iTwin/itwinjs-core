@@ -115,6 +115,11 @@ export class IModelTile extends Tile {
         system,
         isCanceled,
         sizeMultiplier,
+        tileData: {
+          ecefTransform: this.tree.iModel.getEcefTransform(),
+          range: this.range,
+          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+        },
       });
     } catch {
       //
