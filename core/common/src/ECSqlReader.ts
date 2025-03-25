@@ -528,7 +528,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
    * @param meta - metadata that will be returned along with the rows
    * @returns A database query response object with the provided rows and metadata
    */
-  public static createDbResponseFromRows(rows: any[], status: DbResponseStatus, meta: MetadataWithOptionalLegacyFields[]): MinimalDbQueryResponse {
+  public static createDbResponseFromRows(rows: any[], status: DbResponseStatus, meta?: MetadataWithOptionalLegacyFields[]): MinimalDbQueryResponse {
     return {
       rowCount: rows.length,
       data: rows,
@@ -542,7 +542,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       },
       status,
       kind: DbResponseKind.ECSql,
-      meta,
+      meta: meta ?? [],
     };
   }
 }
