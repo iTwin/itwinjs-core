@@ -1039,8 +1039,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.2
       i18next-http-backend:
-        specifier: ^1.4.4
-        version: 1.4.4
+        specifier: ^3.0.2
+        version: 3.0.2
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -2713,9 +2713,6 @@ importers:
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.0
-      '@types/source-map-support':
-        specifier: ^0.4.0
-        version: 0.4.0
       cache-require-paths:
         specifier: ^0.3.0
         version: 0.3.0
@@ -2762,8 +2759,8 @@ importers:
         specifier: ^25.0.0
         version: 25.0.0(jsdom@26.0.0)
       i18next-http-backend:
-        specifier: ^1.4.4
-        version: 1.4.4
+        specifier: ^3.0.2
+        version: 3.0.2
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -2788,9 +2785,6 @@ importers:
       sinon-chai:
         specifier: ^3.7.0
         version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
-      source-map-support:
-        specifier: ^0.5.6
-        version: 0.5.6
       typemoq:
         specifier: ^2.1.0
         version: 2.1.0
@@ -5831,9 +5825,6 @@ packages:
   '@types/sizzle@2.3.9':
     resolution: {integrity: sha512-xzLEyKB50yqCUPUJkIsrVvoWNfFUbIZI+RspLWt8u+tIW/BetMBZtgV2LY/2o+tYH8dRvQ+eoPf3NdhQCcLE2w==}
 
-  '@types/source-map-support@0.4.0':
-    resolution: {integrity: sha512-9oVAi1Jlr274pbMGPEe0S3IPImV9knVNafa6E4MookD/fjOZAE6EmLkFX5ZjtZ9OXNPi2FCIZzUSMvwAUUKeSg==}
-
   '@types/spdy@3.4.4':
     resolution: {integrity: sha512-N9LBlbVRRYq6HgYpPkqQc3a9HJ/iEtVZToW6xlTtJiMhmRJ7jJdV7TaZQJw/Ve/1ePUsQiCTDc4JMuzzag94GA==}
 
@@ -6774,8 +6765,8 @@ packages:
     engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
 
-  cross-fetch@3.1.5:
-    resolution: {integrity: sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==}
+  cross-fetch@4.0.0:
+    resolution: {integrity: sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g==}
 
   cross-spawn@7.0.5:
     resolution: {integrity: sha512-ZVJrKKYunU38/76t0RMOulHOnUcbU9GbpWKAOZ0mhjr7CX6FVrH+4FrAapSOekrgFQ3f/8gwMEuIft0aKq6Hug==}
@@ -7849,8 +7840,8 @@ packages:
   i18next-browser-languagedetector@6.1.2:
     resolution: {integrity: sha512-YDzIGHhMRvr7M+c8B3EQUKyiMBhfqox4o1qkFvt4QXuu5V2cxf74+NCr+VEkUuU0y+RwcupA238eeolW1Yn80g==}
 
-  i18next-http-backend@1.4.4:
-    resolution: {integrity: sha512-M4gLPe6JKZ2p1UmE6t4rzWV/sAxgrLThW7ztXAsTpFwFqXoyzhTzX8eYxVv9KjpCQh4K9nwxnEjEi+74C4Thbg==}
+  i18next-http-backend@3.0.2:
+    resolution: {integrity: sha512-PdlvPnvIp4E1sYi46Ik4tBYh/v/NbYfFFgTjkwFl0is8A18s7/bx9aXqsrOax9WUbeNS6mD2oix7Z0yGGf6m5g==}
 
   i18next@21.9.1:
     resolution: {integrity: sha512-ITbDrAjbRR73spZAiu6+ex5WNlHRr1mY+acDi2ioTHuUiviJqSz269Le1xHAf0QaQ6GgIHResUhQNcxGwa/PhA==}
@@ -8744,8 +8735,8 @@ packages:
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
 
-  node-fetch@2.6.7:
-    resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
+  node-fetch@2.7.0:
+    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
     peerDependencies:
       encoding: ^0.1.0
@@ -12229,10 +12220,6 @@ snapshots:
 
   '@types/sizzle@2.3.9': {}
 
-  '@types/source-map-support@0.4.0':
-    dependencies:
-      '@types/node': 20.17.0
-
   '@types/spdy@3.4.4':
     dependencies:
       '@types/node': 20.17.0
@@ -13431,9 +13418,9 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
 
-  cross-fetch@3.1.5:
+  cross-fetch@4.0.0:
     dependencies:
-      node-fetch: 2.6.7
+      node-fetch: 2.7.0
     transitivePeerDependencies:
       - encoding
 
@@ -14747,9 +14734,9 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.26.10
 
-  i18next-http-backend@1.4.4:
+  i18next-http-backend@3.0.2:
     dependencies:
-      cross-fetch: 3.1.5
+      cross-fetch: 4.0.0
     transitivePeerDependencies:
       - encoding
 
@@ -15723,7 +15710,7 @@ snapshots:
 
   node-abort-controller@3.1.1: {}
 
-  node-fetch@2.6.7:
+  node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
 

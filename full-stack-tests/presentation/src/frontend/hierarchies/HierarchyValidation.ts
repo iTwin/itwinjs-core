@@ -6,7 +6,7 @@
 import { IModelConnection } from "@itwin/core-frontend";
 import { HierarchyRequestOptions, InstanceKey, Node, NodeKey, RulesetVariable } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { collect } from "../../Utils";
+import { collect } from "../../Utils.js";
 
 interface HierarchyDef<TNode> {
   node: TNode;
