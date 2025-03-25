@@ -375,16 +375,16 @@ public static circlesTangentCCL(
 ):ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
   /*--------------------------------------------------------------------------------------
 
-(x-x0)^2 + (y-y0)^2 - (r + r0)^2 = 0
+(x-xA)^2 + (y-y0)^2 - (r + r0)^2 = 0
 
-(x-x1)^2 + (y-y1)^2 - (r + r1)^2 = 0
+(x-xB)^2 + (y-y1)^2 - (r + r1)^2 = 0
     y = r       NOTE: Cannot arbitrarily change sign of r as is done in 3-circle case.
 -------------------------------------------
-x^2 -2 x0 x + x0^2 -2 y0 y + y0^2 - 2 r0 y - r0^2 = 0
-x^2 -2 x1 x + x1^2 -2 y1 y + y1^2 - 2 r1 y - r1^2 = 0
+x^2 -2 xA x + xA^2 -2 y0 y + y0^2 - 2 r0 y - r0^2 = 0
+x^2 -2 xB x + xB^2 -2 y1 y + y1^2 - 2 r1 y - r1^2 = 0
 -------------------------------------------
-x^2 -2 x0 x + -2 (y0 + r0) y + a0= 0          a0 = x0^2 + y0^2 - r0^2
-x^2 -2 x1 x + -2 (y1 + r1) y + a1= 0          a1 = x1^2 + y1^2 - r1^2
+x^2 -2 xA x + -2 (y0 + r0) y + a0= 0          a0 = xA^2 + y0^2 - r0^2
+x^2 -2 xB x + -2 (y1 + r1) y + a1= 0          a1 = xB^2 + y1^2 - r1^2
 -------------------------------------------
 
 (A0) x^2 + b0 x + c0 y + a0= 0          b0 = -2x0    c0 = -2 (y0 + r0)
@@ -457,6 +457,89 @@ Solve for two x values.  Substitute in with largest c0, c1.
     }
     return result;
   }
+/**
+ *
+ * @param circleA first input circle
+ * @param circleB second input circle
+ * @param circleC.center third inpu circle
+ * @param rA signed radius for circleA
+ * @param rB signed radius for circleB.center
+ * @param rC signed radius for circleC.center
+ * @param result pre-initialized array to which tangent circle markup will be added.
+ */
+private static solveColinearCCCTangents(
+  circleA: UnboundedCircle2dByCenterAndRadius,
+  circleB : UnboundedCircle2dByCenterAndRadius,
+  circleC : UnboundedCircle2dByCenterAndRadius,
+  rA : number,
+  rB : number,
+  rC : number,
+  result : ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[]) {
+  const vectorAB = Vector2d.createStartEnd(circleA.center, circleB.center);
+  const vectorAC = Vector2d.createStartEnd(circleA.center, circleC.center);
+  const xB = vectorAB.magnitude();
+  let xC = vectorAC.magnitude();
+  if (vectorAB.dotProduct(vectorAC) < 0)
+      xC = -xC;
+  const unitAB = vectorAB.normalize();
+  if (unitAB === undefined)
+      return;   // hm..   There are circle-in-circle cases with common centers.....
+  const unitPerp = unitAB.rotate90CCWXY();
+  /*
+  Measuring from center A in rotated system:
+  x^2 + y^2  = (r+rA)^2
+  (x-xB)^2 + y^2 = (r+rB)^2
+  (x-xC)^2 + y^2 = (r+rC)^2
+  -------------------------
+  x^2 + y^2  = (r+rA)^2
+  -2xB x + xB^2 = (r+rB)^2 - (r+rA)^2
+  -2xC x + xC^2 = (r+rC)^2 - (r+rA)^2
+  -------------------------
+  x^2 + y^2  = (r+rA)^2
+  -2xB x = 2 (rB-rA) r + rB^2 - rA^2 - xB^2
+  -2x2 x = 2 (rC-rA) r + rC^2 - rA^2 - xC^2
+  -------------------------
+  Solve
+  -2xB x - 2 (rB-rA) r = rB^2 - rA^2 - xB^2
+  -2xC x - 2 (rC-rA) r = rC^2 - rA^2 - xC^2
+  */
+  const ax = -2.0 * xB;
+  const ar = -2.0 * (rB - rA);
+  const a = rB * rB - rA * rA - xB * xB;
+  const bx = -2.0 * xC;
+  const br = -2.0 * (rC - rA);
+  const b = rC * rC - rA * rA - xC * xC;
+  const sRelTol = 1.0e-14;
+  const origin = Point2d.create(circleA.center.x, circleA.center.y);
+  const solutionVector = Vector2d.create();
+  if (SmallSystem.linearSystem2d(
+      ax, ar,
+      bx, br,
+      a, b, solutionVector))
+  {
+      const x = solutionVector.x;
+      const r = solutionVector.y;
+      let dd = (r + rA) * (r + rA) - x * x;
+      const tol = sRelTol * x * x;
+      if (Math.abs(dd) < tol)
+          dd = 0.0;
+      if (dd >= 0.0)
+      {
+          const y = Math.sqrt(dd);
+          const xy0 = origin.plus2Scaled(unitAB, x, unitPerp, y);
+          const xy1 = origin.plus2Scaled(unitAB, x, unitPerp, -y);
+          for (const newCenter of[xy0, xy1]) {
+              const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(newCenter, r);
+              const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+              markup.appendClosePoint(newCircle.center, circleA, newCircle.center, r);
+              markup.appendClosePoint(newCircle.center, circleB, newCircle.center, r);
+              markup.appendClosePoint(newCircle.center, circleC, newCircle.center, r);
+              result.push(markup);
+          }
+      }
+  }
+}
+
   /**
    * Return all (i.e. up to 8) circles tangent to 3 circles.
    * @param circles
@@ -465,8 +548,7 @@ Solve for two x values.  Substitute in with largest c0, c1.
   private static circlesTangentCCCThisOrder(
     circles: UnboundedCircle2dByCenterAndRadius [],
   ):ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
-  const result = [];
-  const r0 = circles[0].radius;
+  const result: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] = [];
   const vector01 = Vector2d.createStartEnd (circles[0].center, circles[1].center);
   const vector02 = Vector2d.createStartEnd (circles[0].center, circles[2].center);
   const dot12 = vector01.dotProduct (vector02);
@@ -475,10 +557,22 @@ Solve for two x values.  Substitute in with largest c0, c1.
   const oneOverDeterminant = Geometry.conditionalDivideFraction (1.0, determinant);
   // Messy tolerance test ported.  Why not just a parallel test on the vectors?
   // Maybe having 1/determinant is worth it?
-  if (Math.abs (determinant) <= determinantTol * Math.abs (dot12) || oneOverDeterminant === undefined){
-    return undefined;
+  if (oneOverDeterminant === undefined || Math.abs (determinant) <= determinantTol * Math.abs (dot12) || oneOverDeterminant === undefined){
+    for (const signedR0 of [circles[0].radius, - circles[0].radius]){
+      for (const signedR1 of [circles[1].radius, -circles[1].radius]){
+        for (const signedR2 of [circles[2].radius, -circles[2].radius]){
+          this.solveColinearCCCTangents (
+            circles[0], circles[1], circles[2],
+            signedR0, signedR1, signedR2,
+            result);
+        }
+      }
     }
-    const inverseMatrix = Matrix3d.createRowValues(
+    return result.length > 0 ? result : undefined;
+  }
+  const r0 = circles[0].radius;
+
+  const inverseMatrix = Matrix3d.createRowValues(
       vector02.y * oneOverDeterminant,  -vector01.y * oneOverDeterminant, 0.0,
      -vector02.x * oneOverDeterminant,   vector01.x * oneOverDeterminant, 0.0,
       0.0,          0.0,        1.0);

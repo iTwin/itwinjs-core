@@ -46,8 +46,21 @@ function implicitLine2dToLineSegment3d (line: UnboundedLine2dByPointAndNormal, z
       return;
     ck.testParallelOrAntiParllel2d (vectorA, vectorB, "expect parallelGradiants");
   }
+
+/**
+ *
+ * @param ck checker4
+ * @param allGeometry output capture array
+ * @param x0 output x shift
+ * @param y0 output y shift
+ * @param markup circles to output with lines to tangency
+ * @param inputGeometry additional input geometry to output with each markup batch
+ * @param yStep step to apply to y0 for each output circle and markup batch
+ * @returns
+ */
 function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: number, y0: number,
-  markup: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined){
+  markup: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined,
+  inputGeometry: UnboundedCircle2dByCenterAndRadius [] | undefined = undefined, yStep: number = 0){
     if (markup === undefined)
         return;
     for (const m of markup){
@@ -55,6 +68,12 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
       GeometryCoreTestIO.captureCloneGeometry (allGeometry,
         implicitCircle2dToArc3d (m.curve), x0, y0);
         for (const g of m.data){
+             if (inputGeometry){
+                for (const circle of inputGeometry){
+                  GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+                    implicitCircle2dToArc3d (circle), x0, y0);
+                  }
+             }
             GeometryCoreTestIO.captureCloneGeometry (allGeometry,
               LineSegment3d.create (
                 Point3d.create (m.curve.center.x, m.curve.center.y),
@@ -68,6 +87,7 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
             ck.testCoordinate (fG, 0.0, "function value fG at tangency", m.curve, g.curve);
             testParallelGradiants (ck, gradM, gradG);
             }
+        y0 += yStep;
         }
       }
 
@@ -356,3 +376,51 @@ it("LineTangentPointArc", () => {
   }
   GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "LineTangentPointArc");
 });
+
+it("CircleTangentCCCColinear", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (-1,2,1);
+  const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (5,2,2);
+  const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius (9,2,1);
+
+  const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius (1,5,1);
+  const circleE = UnboundedCircle2dByCenterAndRadius.createXYRadius (-1,1,2);
+  const circleF = UnboundedCircle2dByCenterAndRadius.createXYRadius (5,13,1.5);
+
+  const circleG = UnboundedCircle2dByCenterAndRadius.createXYRadius (1,5,1);
+  const circleH = UnboundedCircle2dByCenterAndRadius.createXYRadius (-1,1,2);
+  const circleI = UnboundedCircle2dByCenterAndRadius.createXYRadius (5,13,5.5);
+
+
+  const allCircleTriples = [
+    [circleA, circleB, circleC],
+    [circleD, circleE, circleF],
+    [circleG, circleH, circleI]
+  ];
+
+
+  let x0 = 0;
+  let y0 = 0;
+  for (const inputCircles of allCircleTriples){
+    y0 = 0;
+    const circle0 = inputCircles[0];
+    const circle1 = inputCircles[1];
+    const circle2 = inputCircles[2];
+    const circles = ConstrainedConstruction.circlesTangentCCC(circle0, circle1, circle2);
+    outputCircleMarkup (ck, allGeometry, x0, y0, circles, inputCircles, 100);
+/*
+    if (circles){
+      for(const c of circles){
+        GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+          implicitCircle2dToArc3d (c.curve), x0, y0);
+      }
+    }
+*/
+    x0 += 200;
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCCColinear");
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+

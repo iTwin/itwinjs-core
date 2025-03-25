@@ -78,14 +78,14 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
  */
   public appendClosePoint (spacePoint: Point2d,
     curve:ImplicitCurve2d,
-    biasPoint: Point2d,
+    biasPoint: XAndY,
     biasDistance: number,
   ):boolean{
     let dMin : undefined | number;
     let closestPoint;
     curve.emitPerpendiculars (spacePoint,
        (curvePoint: Point2d) =>{
-        const d = Math.abs(curvePoint.distance (biasPoint) - biasDistance);
+        const d = Math.abs(curvePoint.distance (biasPoint) - Math.abs (biasDistance));
           if (dMin === undefined || d < dMin){
             dMin = d;
             closestPoint = curvePoint.clone();
