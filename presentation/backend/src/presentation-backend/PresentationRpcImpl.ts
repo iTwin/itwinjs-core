@@ -60,13 +60,12 @@ import {
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import { Presentation } from "./Presentation.js";
 import { PresentationManager } from "./PresentationManager.js";
-import { TemporaryStorage } from "./TemporaryStorage.js";
 import { getRulesetIdObject } from "./PresentationManagerDetail.js";
+import { TemporaryStorage } from "./TemporaryStorage.js";
+
 // @ts-expect-error TS complains about `with` in CJS builds; The path is fine at runtime, but not at compile time
 // eslint-disable-next-line @itwin/import-within-package
-import packageJson from "../../../package.json" with { type: "json" };
-
-// const packageJsonVersion = require("../../../package.json").version;
+import packageJson from "../../../package.json";
 const packageJsonVersion = packageJson.version;
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;
