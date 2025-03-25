@@ -52,7 +52,7 @@
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-common",
     "docs:reference": "betools docs --json=../../generated-docs/presentation/presentation-common/file.json --tsIndexFile=presentation-common.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
-    "extract-api": "betools extract-api --entry=presentation-common/lib/esm",
+    "extract-api": "betools extract-api --entry=lib/esm/presentation-common",
     "ruleset-json-schema": "npm run -s ruleset-json-schema:generate && npm run -s ruleset-json-schema:post-process",
     "ruleset-json-schema:generate": "typescript-json-schema ./tsconfig.json Ruleset --noExtraProps --required --strictNullChecks --validationKeywords deprecated --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.cjs --path ./Ruleset.schema.json",

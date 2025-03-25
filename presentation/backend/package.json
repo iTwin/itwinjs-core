@@ -41,7 +41,7 @@
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-backend",
     "docs:reference": "betools docs --json=../../generated-docs/presentation/presentation-backend/file.json --tsIndexFile=presentation-backend.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
-    "extract-api": "betools extract-api --entry=presentation-backend/lib/esm",
+    "extract-api": "betools extract-api --entry=lib/esm/presentation-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha --enable-source-maps  --config ./.mocharc.json",
     "prettier:fix": "prettier --write ."
