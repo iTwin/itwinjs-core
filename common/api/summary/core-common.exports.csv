@@ -859,6 +859,7 @@ beta;interface;TextBlockGeometryProps
 beta;type;TextBlockGeometryPropsEntry
 beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
+beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
 beta;interface;TextBlockStringifyOptions
 beta;class;TextRun
