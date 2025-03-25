@@ -8,17 +8,11 @@ import chaiAsPromised from "chai-as-promised";
 import chaiJestSnapshot from "chai-jest-snapshot";
 import sinonChai from "sinon-chai";
 import sinon from "sinon";
-import sourceMapSupport from "source-map-support";
 import path from "path";
 import { JSDOM } from "jsdom";
 
 // FIXME: This goes against jsdom best practices. https://github.com/jsdom/jsdom/wiki/Don%27t-stuff-jsdom-globals-onto-the-Node-global
 globalThis.window = new JSDOM().window as any;
-
-// see https://github.com/babel/babel/issues/4605
-sourceMapSupport.install({
-  environment: "node",
-});
 
 // setup chai
 chai.use(chaiAsPromised);

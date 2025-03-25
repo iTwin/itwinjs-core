@@ -58,11 +58,11 @@ import {
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "./IpcRequestsHandler";
-import { FrontendLocalizationHelper } from "./LocalizationHelper";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { IpcRequestsHandler } from "./IpcRequestsHandler.js";
+import { FrontendLocalizationHelper } from "./LocalizationHelper.js";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager.js";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
+import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 /**
@@ -267,7 +267,7 @@ export class PresentationManager implements Disposable {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -280,14 +280,14 @@ export class PresentationManager implements Disposable {
   /** @note This is only called in native apps after changes in iModels */
   private async handleUpdateAsync(report: UpdateInfo) {
     for (const imodelKey in report) {
-      // istanbul ignore if
+      /* c8 ignore next 3 */
       if (!report.hasOwnProperty(imodelKey)) {
         continue;
       }
 
       const imodelReport = report[imodelKey];
       for (const rulesetId in imodelReport) {
-        // istanbul ignore if
+        /* c8 ignore next 3 */
         if (!imodelReport.hasOwnProperty(rulesetId)) {
           continue;
         }
@@ -570,7 +570,7 @@ export class PresentationManager implements Disposable {
       firstPage = firstPageResponse?.contentSet;
     }
 
-    // istanbul ignore if
+    /* c8 ignore next 3 */
     if (!descriptor) {
       return undefined;
     }
@@ -809,7 +809,7 @@ const stripTransientElementKeys = (keys: KeySet) => {
   copy.add(keys, (key) => {
     // the callback is not going to be called with EntityProps as KeySet converts them
     // to InstanceKeys, but we want to keep the EntityProps case for correctness
-    // istanbul ignore next
+    /* c8 ignore next 3 */
     const isTransient =
       (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) ||
       (Key.isEntityProps(key) && key.classFullName === TRANSIENT_ELEMENT_CLASSNAME);

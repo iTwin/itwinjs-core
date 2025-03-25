@@ -432,7 +432,7 @@
     },
     {
       "name": "c8",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "cache-require-paths",
@@ -636,7 +636,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "inversify",

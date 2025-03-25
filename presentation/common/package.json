@@ -27,6 +27,10 @@
       "import": "./lib/esm/presentation-common.js",
       "require": "./lib/cjs/presentation-common.js"
     },
+    "./test-utils": {
+      "import": "./lib/esm/test/index.js",
+      "require": "./lib/cjs/test/index.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

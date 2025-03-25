@@ -8,13 +8,13 @@
  * @docs-group-description Core
  * Common types used for retrieving presentation data from iModels.
  */
-export * from "./presentation-frontend/Presentation";
-export * from "./presentation-frontend/PresentationManager";
-export * from "./presentation-frontend/RulesetManager";
-export * from "./presentation-frontend/RulesetVariablesManager";
-export * from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
-export * from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-export * from "./presentation-frontend/Diagnostics";
+export * from "./presentation-frontend/Presentation.js";
+export * from "./presentation-frontend/PresentationManager.js";
+export * from "./presentation-frontend/RulesetManager.js";
+export * from "./presentation-frontend/RulesetVariablesManager.js";
+export * from "./presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
+export * from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
+export * from "./presentation-frontend/Diagnostics.js";
 
 /**
  * @module Logging
@@ -22,7 +22,7 @@ export * from "./presentation-frontend/Diagnostics";
  * @docs-group-description Logging
  * Types related to logging in this package.
  */
-export * from "./presentation-frontend/FrontendLoggerCategory";
+export * from "./presentation-frontend/FrontendLoggerCategory.js";
 
 /**
  * @module UnifiedSelection
@@ -30,10 +30,10 @@ export * from "./presentation-frontend/FrontendLoggerCategory";
  * @docs-group-description UnifiedSelection
  * Types related to [unified selection]($docs/presentation/unified-selection/index.md).
  */
-export * from "./presentation-frontend/selection/SelectionChangeEvent";
-export * from "./presentation-frontend/selection/ISelectionProvider";
-export * from "./presentation-frontend/selection/SelectionManager";
-export * from "./presentation-frontend/selection/SelectionScopesManager";
-export * from "./presentation-frontend/selection/SelectionHandler";
-export * from "./presentation-frontend/selection/HiliteSetProvider";
-export * from "./presentation-frontend/selection/SelectionHelper";
+export * from "./presentation-frontend/selection/SelectionChangeEvent.js";
+export * from "./presentation-frontend/selection/ISelectionProvider.js";
+export * from "./presentation-frontend/selection/SelectionManager.js";
+export * from "./presentation-frontend/selection/SelectionScopesManager.js";
+export * from "./presentation-frontend/selection/SelectionHandler.js";
+export * from "./presentation-frontend/selection/HiliteSetProvider.js";
+export * from "./presentation-frontend/selection/SelectionHelper.js";
