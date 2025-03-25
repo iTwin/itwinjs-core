@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
@@ -198,6 +198,8 @@ export enum ModelMapLayerDrapeTarget {
   Globe = 0,
   /** Drape only onto all attached reality data. */
   RealityData = 1,
+  /** Drape only onto models within the iModel. See [[ModelMapLayerProps.drapeModels]] for how to control which models receive the draping. */
+  IModel = 2,
 }
 
 /** JSON representation of a [[ModelMapLayerSettings]].
@@ -211,7 +213,10 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
    * @beta
    */
   drapeTarget?: ModelMapLayerDrapeTarget;
-
+  /**  If [[drapeTarget]] is [[ModelMapLayerDrapeTarget.IModel]], specifies a list of models within the iModel which will receive the draping.
+   * @beta
+   */
+  drapeModels?: Id64Array;
   /** @internal */
   url?: never;
   /** @internal */

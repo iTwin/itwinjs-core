@@ -150,7 +150,7 @@ class PrimaryTreeReference extends TileTreeReference {
   public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
     const mapLayerSettings = layerTreeRef?.layerSettings;
     if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
-      return ModelMapLayerDrapeTarget.RealityData === mapLayerSettings.drapeTarget;
+      return ModelMapLayerDrapeTarget.IModel === mapLayerSettings.drapeTarget;
     return false;
   }
 

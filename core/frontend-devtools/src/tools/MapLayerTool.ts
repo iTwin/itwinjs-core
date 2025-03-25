@@ -66,11 +66,11 @@ class AttachMapLayerBaseTool extends Tool {
  */
 export class AttachModelMapLayerTool extends Tool {
   public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get maxArgs() { return 3; }
   public static override toolId = "AttachModelMapLayerTool";
   constructor(protected _formatId: string) { super(); }
 
-  public override async run(nameIn?: string, drapeTarget?: string): Promise<boolean> {
+  public override async run(nameIn?: string, drapeTarget?: string, drapeModels?: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
@@ -89,14 +89,20 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: "reality" === drapeTarget ? ModelMapLayerDrapeTarget.RealityData : undefined });
+      let settingsDrapeTarget: ModelMapLayerDrapeTarget | undefined;
+      if ("reality" === drapeTarget)
+        settingsDrapeTarget = ModelMapLayerDrapeTarget.RealityData;
+      else if ("imodel" === drapeTarget)
+        settingsDrapeTarget = ModelMapLayerDrapeTarget.IModel;
+      const settingsDrapeModels = drapeModels ? drapeModels.split(",") : undefined;
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: settingsDrapeTarget, drapeModels: settingsDrapeModels });
       vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } });
     }
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(args[0], args[1]);
+    return this.run(args[0], args[1], args[2]);
   }
   public async onRestartTool() {
   }
