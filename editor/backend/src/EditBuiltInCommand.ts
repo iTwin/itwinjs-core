@@ -11,7 +11,7 @@ import { Matrix3d, Matrix3dProps, Point3d, Range3d, Range3dProps, Transform, Tra
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import { BRepEntity, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError } from "@itwin/core-common";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds, FlatBufferGeometryFilter } from "@itwin/editor-common";
-import { EditCommand } from "./EditCommand";
+import { EditCommand } from "./EditCommand.js";
 
 /** Implementation for a EditCommand command that provides basic creation and modification operations.
  * @beta

@@ -1604,6 +1604,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
