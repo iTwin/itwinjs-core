@@ -31,7 +31,10 @@ export abstract class ImplicitCurve2d {
     * Return true if the item has degenerate defining data.
     */
     public abstract isDegenerate ():boolean;
-
+    /**
+     * return a clone of the curve.
+     */
+    public abstract clone (): ImplicitCurve2d;
 }
 
 export class Point2dImplicitCurve2d {

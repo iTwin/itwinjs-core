@@ -198,6 +198,19 @@ export class Point2d extends XY implements BeJSONFunctions {
     return new Point2d(x, y);
   }
   /**
+   * Return a point at interpolated coordinates between two given points.
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param result optional result
+   */
+  public static createInterpolated(xyA: XAndY, fraction: number, xyB: XAndY): Point2d {
+    return new Point2d(
+      Geometry.interpolate (xyA.x, fraction, xyB.x),
+      Geometry.interpolate(xyA.y, fraction, xyB.y),
+      );
+  }
+
+  /**
    * Set x and y from a JSON input such as `[1,2]` or `{x:1, y:2}`
    * * If no JSON input is provided, 0 would be used as default values for x and y.
    * @param json the JSON input

@@ -66,7 +66,7 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
     /**
    * Create an UnboundedLine2dByPointAndNormal from XY parts of two points on the line.
    * @param pointAX x coordinate of first point on the line
-   * @param ApointY y coordinate of first point on the line
+   * @param pointAY y coordinate of first point on the line
    * @param pointBX x coordinate of second point on the line
    * @param pointBY y componnet of second pont on the line
    * @returns new line object.
@@ -83,6 +83,13 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
    */
     public static createPointPoint (pointA: XAndY, pointB: XAndY): UnboundedLine2dByPointAndNormal{
       return this.createPointXYDirectionXY (pointA.x, pointA.y, pointB.x-pointA.x, pointB.y-pointA.y);
+    }
+    /**
+     * Return a clone of this line.
+     */
+    public clone () : UnboundedLine2dByPointAndNormal {
+      // (The create method clones the inputs . . .)
+      return  UnboundedLine2dByPointAndNormal.createPointNormal (this.point, this.normal);
     }
     /**
        * Return true if the normal vector has zero length.
