@@ -914,7 +914,7 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("ClosestTangent", () => {
+  it("AllTangentsAndClosestTangent", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
@@ -923,7 +923,7 @@ describe("BsplineCurve", () => {
     let tangent: CurveLocationDetail | undefined;
     let hintPoint: Point3d | undefined;
 
-    const captureGeometry = (hintPoint?: Point3d, tangents?: CurveLocationDetail[], tangent?: CurveLocationDetail) => {
+    const captureGeometry = () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.1, dx, dy);
       if (hintPoint)
@@ -948,31 +948,34 @@ describe("BsplineCurve", () => {
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(1, tangents!.length, "1 tangent found");
     ck.testCoordinate(0.5, tangents![0].fraction, "tangent fraction");
-    captureGeometry(undefined, tangents);
+    captureGeometry();
 
     dx += 7;
     spacePoint = Point3d.create(2, 3);
     tangents = bspline.allTangents(spacePoint);
     ck.testCoordinate(2, tangents!.length, "2 tangent found");
-    ck.testCoordinate(0.0792257, tangents![0]!.fraction, "closest tangent fraction is 0.0792257");
-    ck.testCoordinate(1 - 0.0792257, tangents![1]!.fraction, "closest tangent fraction is 1- 0.0792257");
-    captureGeometry(undefined, tangents);
+    ck.testCoordinate(0.0792257, tangents![0].fraction, "closest tangent fraction is 0.0792257");
+    ck.testCoordinate(1 - 0.0792257, tangents![1].fraction, "closest tangent fraction is 1- 0.0792257");
+    captureGeometry();
     dy += 5;
+    tangents = undefined;
     spacePoint = Point3d.create(2, 3);
     hintPoint = Point3d.create(0, 2);
     tangent = bspline.closestTangent(spacePoint, { hintPoint });
     ck.testDefined(tangent, "tangent is defined");
     ck.testCoordinate(0.0792257, tangent!.fraction, "closest tangent fraction is 0.0792257");
-    captureGeometry(hintPoint, undefined, tangent);
+    captureGeometry();
     dy += 5;
     hintPoint = Point3d.create(5, 2);
     tangent = bspline.closestTangent(spacePoint, { hintPoint });
     ck.testDefined(tangent, "tangent is defined");
     ck.testCoordinate(1 - 0.0792257, tangent!.fraction, "closest tangent fraction is 1 - 0.0792257");
-    captureGeometry(hintPoint, undefined, tangent);
+    captureGeometry();
 
     // space point inside non-convex closed curve; 2 tangents
     dx += 7;
+    hintPoint = undefined;
+    tangent = undefined;
     dy = 0;
     poleArray = [
       Point3d.create(0, 0), Point3d.create(-2, 2), Point3d.create(7, 3),
@@ -984,9 +987,9 @@ describe("BsplineCurve", () => {
     tangents = bspline.allTangents(spacePoint);
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
-    captureGeometry(undefined, tangents);
+    captureGeometry();
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "ClosestTangent");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "AllTangentsAndClosestTangent");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
