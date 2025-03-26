@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { CategoryDescription } from "../../presentation-common/content/Category";
+import { CategoryDescription } from "../../presentation-common/content/Category.js";
 import {
   Descriptor,
   DescriptorJSON,
@@ -12,11 +12,11 @@ import {
   SelectClassInfo,
   SelectClassInfoJSON,
   SortDirection,
-} from "../../presentation-common/content/Descriptor";
-import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields";
-import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
-import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
-import { InstanceFilterDefinition } from "../../presentation-common/InstanceFilterDefinition";
+} from "../../presentation-common/content/Descriptor.js";
+import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields.js";
+import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription.js";
+import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC.js";
+import { InstanceFilterDefinition } from "../../presentation-common/InstanceFilterDefinition.js";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
@@ -24,8 +24,8 @@ import {
   createTestPropertiesContentField,
   createTestSelectClassInfo,
   createTestSimpleContentField,
-} from "../_helpers/Content";
-import { createTestPropertyInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "../_helpers/EC";
+} from "../_helpers/Content.js";
+import { createTestPropertyInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "../_helpers/EC.js";
 
 describe("Descriptor", () => {
   describe("constructor", () => {

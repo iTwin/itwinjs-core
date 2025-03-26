@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Implement draping of models within iModels onto attached reality data.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

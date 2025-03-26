@@ -8,7 +8,7 @@
 
 import { assert, BeEvent, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RulesetVariable, VariableValue, VariableValueTypes } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "./IpcRequestsHandler";
+import { IpcRequestsHandler } from "./IpcRequestsHandler.js";
 
 /**
  * Presentation ruleset variables' registry.

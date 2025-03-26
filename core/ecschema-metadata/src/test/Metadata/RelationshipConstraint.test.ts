@@ -10,6 +10,7 @@ import { RelationshipClass, RelationshipConstraint } from "../../Metadata/Relati
 import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -118,7 +119,7 @@ describe("RelationshipConstraint", () => {
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
     });
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       polymorphic: true,
       multiplicity: "(0..1)",
@@ -218,7 +219,7 @@ describe("RelationshipConstraint", () => {
     });
 
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       polymorphic: true,
       multiplicity: "(0..1)",
@@ -329,7 +330,7 @@ describe("RelationshipConstraint", () => {
     });
 
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       polymorphic: true,
       multiplicity: "(0..1)",

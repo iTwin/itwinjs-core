@@ -8,16 +8,16 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
-import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
-import { ItemJSON } from "./content/Item";
-import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics";
-import { CompressedClassInfoJSON, InstanceKey } from "./EC";
-import { ElementProperties } from "./ElementProperties";
-import { PresentationStatus } from "./Error";
-import { NodeKey } from "./hierarchy/Key";
-import { Node } from "./hierarchy/Node";
-import { KeySetJSON } from "./KeySet";
-import { LabelDefinition } from "./LabelDefinition";
+import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor.js";
+import { ItemJSON } from "./content/Item.js";
+import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics.js";
+import { CompressedClassInfoJSON, InstanceKey } from "./EC.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { PresentationStatus } from "./Error.js";
+import { NodeKey } from "./hierarchy/Key.js";
+import { Node } from "./hierarchy/Node.js";
+import { KeySetJSON } from "./KeySet.js";
+import { LabelDefinition } from "./LabelDefinition.js";
 import {
   ComputeSelectionRequestOptions,
   ContentDescriptorRequestOptions,
@@ -34,12 +34,12 @@ import {
   Paged,
   SelectionScopeRequestOptions,
   SingleElementPropertiesRequestOptions,
-} from "./PresentationManagerOptions";
-import { RulesetVariableJSON } from "./RulesetVariables";
-import { SelectionScope } from "./selection/SelectionScope";
-import { deepReplaceNullsToUndefined, Omit, PagedResponse } from "./Utils";
-import { NodePathElement } from "./hierarchy/NodePathElement";
-import { DisplayValueGroup } from "./content/Value";
+} from "./PresentationManagerOptions.js";
+import { RulesetVariableJSON } from "./RulesetVariables.js";
+import { SelectionScope } from "./selection/SelectionScope.js";
+import { deepReplaceNullsToUndefined, Omit, PagedResponse } from "./Utils.js";
+import { NodePathElement } from "./hierarchy/NodePathElement.js";
+import { DisplayValueGroup } from "./content/Value.js";
 
 /**
  * Base options for all presentation RPC requests.
@@ -259,7 +259,7 @@ export class PresentationRpcInterface extends RpcInterface {
     return {
       ...rpcResponse,
       ...(rpcResponse.result
-        ? /* istanbul ignore next */ { result: { ...rpcResponse.result, contentSet: deepReplaceNullsToUndefined(rpcResponse.result.contentSet) } }
+        ? /* c8 ignore next */ { result: { ...rpcResponse.result, contentSet: deepReplaceNullsToUndefined(rpcResponse.result.contentSet) } }
         : {}),
     };
   }

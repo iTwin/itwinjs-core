@@ -10,7 +10,7 @@ import { BeEvent, isDisposable, isIDisposable } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
-import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
+import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage.js";
 
 /**
  * Scopes that favorite properties can be stored in.
@@ -70,7 +70,8 @@ export class FavoritePropertiesManager implements Disposable {
   /** Event raised after favorite properties have changed. */
   public onFavoritesChanged = new BeEvent<() => void>();
 
-  private _storage: IFavoritePropertiesStorage;
+  public readonly storage: IFavoritePropertiesStorage;
+
   private _globalProperties: Set<PropertyFullName> | undefined;
   private _iTwinProperties: Map<string, Set<PropertyFullName>>;
   private _imodelProperties: Map<string, Set<PropertyFullName>>;
@@ -81,7 +82,7 @@ export class FavoritePropertiesManager implements Disposable {
   private _propertiesOrder: Map<string, FavoritePropertiesOrderInfo[]>;
 
   public constructor(props: FavoritePropertiesManagerProps) {
-    this._storage = props.storage;
+    this.storage = props.storage;
     this._iTwinProperties = new Map<string, Set<PropertyFullName>>();
     this._imodelProperties = new Map<string, Set<PropertyFullName>>();
     this._propertiesOrder = new Map<string, FavoritePropertiesOrderInfo[]>();
@@ -90,16 +91,16 @@ export class FavoritePropertiesManager implements Disposable {
   }
 
   public [Symbol.dispose]() {
-    // istanbul ignore else
-    if (isDisposable(this._storage)) {
-      this._storage[Symbol.dispose]();
-    } else if (isIDisposable(this._storage)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
-      this._storage.dispose();
+    if (isDisposable(this.storage)) {
+      this.storage[Symbol.dispose]();
+    /* c8 ignore next 3 */
+    } else if (isIDisposable(this.storage)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
+      this.storage.dispose();
     }
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -113,19 +114,19 @@ export class FavoritePropertiesManager implements Disposable {
     const iTwinId = imodel.iTwinId!;
 
     if (this._globalProperties === undefined) {
-      this._globalProperties = (await this._storage.loadProperties()) || new Set<PropertyFullName>();
+      this._globalProperties = (await this.storage.loadProperties()) || new Set<PropertyFullName>();
     }
 
     if (!this._iTwinProperties.has(iTwinId)) {
-      const iTwinProperties = (await this._storage.loadProperties(iTwinId)) || new Set<PropertyFullName>();
+      const iTwinProperties = (await this.storage.loadProperties(iTwinId)) || new Set<PropertyFullName>();
       this._iTwinProperties.set(iTwinId, iTwinProperties);
     }
 
     if (!this._imodelProperties.has(getiModelInfo(iTwinId, imodelId))) {
-      const imodelProperties = (await this._storage.loadProperties(iTwinId, imodelId)) || new Set<PropertyFullName>();
+      const imodelProperties = (await this.storage.loadProperties(iTwinId, imodelId)) || new Set<PropertyFullName>();
       this._imodelProperties.set(getiModelInfo(iTwinId, imodelId), imodelProperties);
     }
-    const propertiesOrder = (await this._storage.loadPropertiesOrder(iTwinId, imodelId)) || [];
+    const propertiesOrder = (await this.storage.loadPropertiesOrder(iTwinId, imodelId)) || [];
     this._propertiesOrder.set(getiModelInfo(iTwinId, imodelId), propertiesOrder);
     await this._adjustPropertyOrderInfos(iTwinId, imodelId);
   };
@@ -235,15 +236,15 @@ export class FavoritePropertiesManager implements Disposable {
     switch (scope) {
       case FavoritePropertiesScope.Global:
         favoriteProperties = this._globalProperties!;
-        saveProperties = async (properties) => this._storage.saveProperties(properties);
+        saveProperties = async (properties) => this.storage.saveProperties(properties);
         break;
       case FavoritePropertiesScope.ITwin:
         favoriteProperties = this._iTwinProperties.get(iTwinId)!;
-        saveProperties = async (properties) => this._storage.saveProperties(properties, iTwinId);
+        saveProperties = async (properties) => this.storage.saveProperties(properties, iTwinId);
         break;
       default:
         favoriteProperties = this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!;
-        saveProperties = async (properties) => this._storage.saveProperties(properties, iTwinId, imodelId);
+        saveProperties = async (properties) => this.storage.saveProperties(properties, iTwinId, imodelId);
     }
 
     const countBefore = favoriteProperties.size;
@@ -255,7 +256,7 @@ export class FavoritePropertiesManager implements Disposable {
 
       const propertiesOrder = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
       addOrderInfos(propertiesOrder, createFieldOrderInfos(field));
-      saves.push(this._storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId));
+      saves.push(this.storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId));
 
       await Promise.all(saves);
       this.onFavoritesChanged.raiseEvent();
@@ -277,18 +278,18 @@ export class FavoritePropertiesManager implements Disposable {
     const workingScopes: Array<{ properties: Set<PropertyFullName>; save: (properties: Set<PropertyFullName>) => Promise<void> }> = [];
     workingScopes.push({
       properties: this._globalProperties!,
-      save: async (properties) => this._storage.saveProperties(properties),
+      save: async (properties) => this.storage.saveProperties(properties),
     });
     if (scope === FavoritePropertiesScope.ITwin || scope === FavoritePropertiesScope.IModel) {
       workingScopes.push({
         properties: this._iTwinProperties.get(iTwinId)!,
-        save: async (properties) => this._storage.saveProperties(properties, iTwinId),
+        save: async (properties) => this.storage.saveProperties(properties, iTwinId),
       });
     }
     if (scope === FavoritePropertiesScope.IModel) {
       workingScopes.push({
         properties: this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!,
-        save: async (properties) => this._storage.saveProperties(properties, iTwinId, imodelId),
+        save: async (properties) => this.storage.saveProperties(properties, iTwinId, imodelId),
       });
     }
 
@@ -308,7 +309,7 @@ export class FavoritePropertiesManager implements Disposable {
 
     const propertiesOrder = this._propertiesOrder.get(getiModelInfo(iTwinId, imodelId))!;
     removeOrderInfos(propertiesOrder, createFieldOrderInfos(field));
-    saves.push(this._storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId));
+    saves.push(this.storage.savePropertiesOrder(propertiesOrder, iTwinId, imodelId));
 
     await Promise.all(saves);
     this.onFavoritesChanged.raiseEvent();
@@ -329,15 +330,15 @@ export class FavoritePropertiesManager implements Disposable {
     switch (scope) {
       case FavoritePropertiesScope.Global:
         favoriteProperties = this._globalProperties!;
-        saveProperties = async () => this._storage.saveProperties(new Set<PropertyFullName>());
+        saveProperties = async () => this.storage.saveProperties(new Set<PropertyFullName>());
         break;
       case FavoritePropertiesScope.ITwin:
         favoriteProperties = this._iTwinProperties.get(iTwinId)!;
-        saveProperties = async () => this._storage.saveProperties(new Set<PropertyFullName>(), iTwinId);
+        saveProperties = async () => this.storage.saveProperties(new Set<PropertyFullName>(), iTwinId);
         break;
       default:
         favoriteProperties = this._imodelProperties.get(getiModelInfo(iTwinId, imodelId))!;
-        saveProperties = async () => this._storage.saveProperties(new Set<PropertyFullName>(), iTwinId, imodelId);
+        saveProperties = async () => this.storage.saveProperties(new Set<PropertyFullName>(), iTwinId, imodelId);
     }
 
     if (favoriteProperties.size === 0) {
@@ -612,7 +613,7 @@ export class FavoritePropertiesManager implements Disposable {
     let priority = allOrderInfos.length;
     allOrderInfos.forEach((oi) => (oi.priority = priority--));
 
-    await this._storage.savePropertiesOrder(allOrderInfos, iTwinId, imodelId);
+    await this.storage.savePropertiesOrder(allOrderInfos, iTwinId, imodelId);
     this.onFavoritesChanged.raiseEvent();
   }
 }
@@ -707,7 +708,6 @@ const addOrderInfos = (dest: FavoritePropertiesOrderInfo[], source: FavoriteProp
 const removeOrderInfos = (container: FavoritePropertiesOrderInfo[], toRemove: FavoritePropertiesOrderInfo[]) => {
   toRemove.forEach((roi) => {
     const index = container.findIndex((oi) => oi.name === roi.name);
-    /* istanbul ignore else */
     if (index >= 0) {
       container.splice(index, 1);
     }

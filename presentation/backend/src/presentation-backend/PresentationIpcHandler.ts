@@ -15,7 +15,7 @@ import {
   SetRulesetVariableParams,
   UnsetRulesetVariableParams,
 } from "@itwin/presentation-common";
-import { Presentation } from "./Presentation";
+import { Presentation } from "./Presentation.js";
 
 /** @internal */
 export class PresentationIpcHandler extends IpcHandler implements PresentationIpcInterface {

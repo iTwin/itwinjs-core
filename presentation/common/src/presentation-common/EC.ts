@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
-import { PartialBy } from "./Utils";
+import { PartialBy } from "./Utils.js";
 
 /**
  * Type of an ECClass ID.

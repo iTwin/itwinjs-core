@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { VariableValueTypes } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform.js";
+import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager.js";
 
 describe("RulesetVariablesManager", () => {
   let manager: RulesetVariablesManagerImpl;
