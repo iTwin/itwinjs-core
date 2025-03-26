@@ -279,3 +279,30 @@ export function deleteElementWithHandlers(iModel: IModelDb, elementId: Id64Arg):
     parentClassDef.onChildDeleted({ iModel, childId: elementId, parentId: parent.id });
   }
 }
+
+/**
+ * Function deletes a model in an iModel and calls the pre-delete and post-delete domain handlers.
+ * @param iModel The iModel that contains the model to delete.
+ * @param modelId The Id of the model to delete.
+ * @internal
+ */
+export function deleteModelWithHandlers(iModel: IModelDb, modelId: Id64Arg): void {
+  // Delete options
+  const deleteOptions = { useJsNames: true };
+
+  // Get the Model Class Definition and check if its valid
+  const model = iModel.models.getModelProps(modelId); // Will throw if model does not exist
+  const classDef = iModel.getJsClass<typeof Model>(model.classFullName);
+
+  // Call pre-delete Domain Handlers
+  classDef.onDelete({ iModel, id: model.id });
+
+  // Perform delete
+  const deleteResult = iModel[_nativeDb].deleteInstance(modelId, deleteOptions);
+  if (!deleteResult) {
+    throw new Error(`Failed to delete model with id: ${modelId}`);
+  }
+
+  // Call post-delete Domain Handlers
+  classDef.onDeleted({ iModel, id: modelId });
+}
