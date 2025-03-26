@@ -13,17 +13,13 @@ import { Id64Array } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  buildElementProperties,
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
-  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -41,12 +37,10 @@ import {
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
-  isSingleElementPropertiesRequestOptions,
   Item,
   KeySet,
   KoqPropertyValueFormatter,
   LabelDefinition,
-  LocalizationHelper,
   MultiElementPropertiesRequestOptions,
   Node,
   NodeKey,
@@ -64,13 +58,21 @@ import {
   SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper";
-import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
-import { RulesetManager } from "./RulesetManager";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils";
+import {
+  buildElementProperties,
+  ContentFormatter,
+  ContentPropertyValueFormatter,
+  deepReplaceNullsToUndefined,
+  isSingleElementPropertiesRequestOptions,
+  LocalizationHelper,
+} from "@itwin/presentation-common/internal";
+import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper.js";
+import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform.js";
+import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail.js";
+import { RulesetManager } from "./RulesetManager.js";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
+import { SelectionScopesHelper } from "./SelectionScopesHelper.js";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils.js";
 
 /**
  * Presentation hierarchy cache mode.
@@ -375,7 +377,7 @@ export class PresentationManager {
   public get activeUnitSystem(): UnitSystemKey | undefined {
     return this._detail.activeUnitSystem;
   }
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public set activeUnitSystem(value: UnitSystemKey | undefined) {
     this._detail.activeUnitSystem = value;
   }
@@ -386,7 +388,7 @@ export class PresentationManager {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -420,7 +422,7 @@ export class PresentationManager {
   };
 
   /** @internal */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public getDetail(): PresentationManagerDetail {
     return this._detail;
   }
@@ -653,16 +655,16 @@ export class PresentationManager {
     // and can be shared across all batch requests for that class. Handling multiple classes at the same time not only increases memory footprint,
     // but also may push descriptors out of cache, requiring us to recreate them, thus making performance worse. For those reasons we handle at
     // most `workerThreadsCount / 2` classes in parallel.
-    // istanbul ignore next
+    /* c8 ignore next */
     const classParallelism = workerThreadsCount > 1 ? Math.ceil(workerThreadsCount / 2) : 1;
 
     // We want all worker threads to be constantly busy. However, there's some fairly expensive work being done after the worker thread is done,
     // but before we receive the response. That means the worker thread would be starving if we sent only `workerThreadsCount` requests in parallel.
     // To avoid that, we keep twice as much requests active.
-    // istanbul ignore next
+    /* c8 ignore next */
     const batchesParallelism = workerThreadsCount > 0 ? workerThreadsCount : 1;
 
-    // istanbul ignore next
+    /* c8 ignore next */
     const batchSize = batchSizeOption ?? 100;
 
     const elementsIdentifier = ((): { elementIds: Id64Array } | { elementClasses: string[] } => {
@@ -671,13 +673,12 @@ export class PresentationManager {
         delete contentOptions.elementIds;
         return { elementIds };
       }
-      // istanbul ignore else
       if ("elementClasses" in contentOptions && contentOptions.elementClasses !== undefined) {
         const elementClasses = contentOptions.elementClasses;
         delete contentOptions.elementClasses;
         return { elementClasses };
       }
-      // istanbul ignore next
+      /* c8 ignore next */
       return { elementClasses: ["BisCore:Element"] };
     })();
 

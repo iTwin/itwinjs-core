@@ -19,6 +19,7 @@ import { SchemaKey } from "../../SchemaKey";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { StrengthDirection } from "../../ECObjects";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -95,52 +96,52 @@ describe("ECClass", () => {
     });
 
     it("should do nothing when deleting property name that is not in class", async () => {
-      expect(entityClass.properties).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
 
-      expect(entityClass.properties).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
     });
 
     it("should do nothing when deleting property name that is not in class, synchronous", async () => {
-      expect(entityClass.properties).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
 
-      expect(entityClass.properties).to.be.undefined;
+      expect(entityClass.getPropertiesSync(true)).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
     });
 
     it("should do nothing if a property is already deleted, synchronous", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp")).equal(primProp);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
     });
 
     it("should do nothing if a property is already deleted", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp")).equal(primProp);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
     });
 
@@ -149,21 +150,21 @@ describe("ECClass", () => {
       const primProp2 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp2");
       const primProp3 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp3");
 
-      expect([...entityClass.properties!].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
       expect(await entityClass.getProperty("TestProp1")).equal(primProp1);
       expect(await entityClass.getProperty("TestProp2")).equal(primProp2);
       expect(await entityClass.getProperty("TestProp3")).equal(primProp3);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp1");
-      expect([...entityClass.properties!].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
       expect(await entityClass.getProperty("TestProp1")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("testprop2");
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp2")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TESTPROP3");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp3")).to.be.undefined;
     });
 
@@ -172,21 +173,21 @@ describe("ECClass", () => {
       const primProp2 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp2");
       const primProp3 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp3");
 
-      expect([...entityClass.properties!].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
       expect(await entityClass.getProperty("TestProp1")).equal(primProp1);
       expect(await entityClass.getProperty("TestProp2")).equal(primProp2);
       expect(await entityClass.getProperty("TestProp3")).equal(primProp3);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp1");
-      expect([...entityClass.properties!].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
       expect(await entityClass.getProperty("TestProp1")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("testprop2");
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp2")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TESTPROP3");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp3")).to.be.undefined;
     });
 
@@ -197,7 +198,7 @@ describe("ECClass", () => {
       const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
       const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
 
-      expect([...entityClass.properties!].length).to.equal(5);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
       expect(await entityClass.getProperty("PrimArrProp")).equal(primArrProp);
       expect(await entityClass.getProperty("StructProp")).equal(structProp);
@@ -205,23 +206,23 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("NavProp")).equal(navProp);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("PrimProp");
-      expect([...entityClass.properties!].length).to.equal(4);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(4);
       expect(await entityClass.getProperty("PrimProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("PrimArrProp");
-      expect([...entityClass.properties!].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
       expect(await entityClass.getProperty("PrimArrProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("StructProp");
-      expect([...entityClass.properties!].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
       expect(await entityClass.getProperty("StructProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("StructArrProp");
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
       expect(await entityClass.getProperty("StructArrProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("NavProp");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("NavProp")).to.be.undefined;
     });
 
@@ -232,7 +233,7 @@ describe("ECClass", () => {
       const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
       const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
 
-      expect([...entityClass.properties!].length).to.equal(5);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
       expect(await entityClass.getProperty("PrimArrProp")).equal(primArrProp);
       expect(await entityClass.getProperty("StructProp")).equal(structProp);
@@ -240,23 +241,23 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("NavProp")).equal(navProp);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("PrimProp");
-      expect([...entityClass.properties!].length).to.equal(4);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(4);
       expect(await entityClass.getProperty("PrimProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("PrimArrProp");
-      expect([...entityClass.properties!].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
       expect(await entityClass.getProperty("PrimArrProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("StructProp");
-      expect([...entityClass.properties!].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
       expect(await entityClass.getProperty("StructProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("StructArrProp");
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
       expect(await entityClass.getProperty("StructArrProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("NavProp");
-      expect([...entityClass.properties!].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
       expect(await entityClass.getProperty("NavProp")).to.be.undefined;
     });
   });
@@ -286,7 +287,7 @@ describe("ECClass", () => {
 
     it("class has one branch inheritance", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -356,7 +357,7 @@ describe("ECClass", () => {
 
     it("class has multiple branches of inheritance", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -490,7 +491,7 @@ describe("ECClass", () => {
   describe("deserialization", () => {
     it("class with base class", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -522,7 +523,7 @@ describe("ECClass", () => {
 
     it("class with base class in reference schema", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         references: [
@@ -560,7 +561,7 @@ describe("ECClass", () => {
 
     it("should throw for missing base class", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -575,7 +576,7 @@ describe("ECClass", () => {
     });
 
     const oneCustomAttributeJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -612,7 +613,7 @@ describe("ECClass", () => {
       assert.isTrue(testClass!.customAttributes!.get("TestSchema.TestCAClass")!.ShowClasses);
     });
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -651,7 +652,7 @@ describe("ECClass", () => {
       assert.isDefined(testClass!.customAttributes!.get("TestSchema.TestCAClassB"));
     });
     const mustBeAnArrayJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -669,7 +670,7 @@ describe("ECClass", () => {
     });
     it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const classJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -712,7 +713,7 @@ describe("ECClass", () => {
     // specific test files.
     it("with properties", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -767,7 +768,7 @@ describe("ECClass", () => {
   describe("deserialization sync", () => {
     it("Multiple classes with same base class, derived classes set properly", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -808,7 +809,7 @@ describe("ECClass", () => {
 
     it("class with base class in reference schema", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         references: [
@@ -847,7 +848,7 @@ describe("ECClass", () => {
     // specific test files.
     it("with properties", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -902,7 +903,7 @@ describe("ECClass", () => {
   describe("toJSON", () => {
     function getTestSchemaJson(classJson: any = {}) {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {
@@ -939,7 +940,7 @@ describe("ECClass", () => {
       expect(testClass).to.exist;
       const serialized = testClass!.toJSON(true, true);
       const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "testClass",
         schema: "TestSchema",
         schemaVersion: "01.02.03",
@@ -999,7 +1000,7 @@ describe("ECClass", () => {
       assert.isDefined(testClass);
       const serialized = testClass!.toJSON(true, true);
       const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "testClass",
         schema: "TestSchema",
         schemaVersion: "01.02.03",
@@ -1023,7 +1024,7 @@ describe("ECClass", () => {
     });
 
     const schemaJsonFive = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -1087,7 +1088,7 @@ describe("ECClass", () => {
       assert.strictEqual(serialized.properties![0].customAttributes![2].IntegerValue, 5);
     });
     const schemaJsonSix = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -1166,7 +1167,7 @@ describe("ECClass", () => {
 
     function getSchemaJson(customAttributeJson?: any) {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         alias: "ts",
         version: "1.2.3",
@@ -1573,7 +1574,7 @@ describe("ECClass", () => {
     //        [    H    ]
     //
     const testSchemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -1590,7 +1591,7 @@ describe("ECClass", () => {
     };
 
     const childSchemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ChildSchema",
       version: "01.00.00",
       alias: "ts",
@@ -1606,7 +1607,7 @@ describe("ECClass", () => {
     };
 
     const grandChildSchemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "GrandChildSchema",
       version: "01.00.00",
       alias: "ts",

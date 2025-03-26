@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Updated comments to mention new replacements for the deprecated methods forEachProperty, getMetaData, tryGetMetaData and forEachMetaData.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -3,19 +3,18 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { Presentation } from "../presentation-backend/Presentation";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
-import { PresentationManager } from "../presentation-backend/PresentationManager";
-import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
-import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform.js";
+import { Presentation } from "../presentation-backend/Presentation.js";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler.js";
+import { PresentationManager } from "../presentation-backend/PresentationManager.js";
+import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl.js";
+import { TemporaryStorage } from "../presentation-backend/TemporaryStorage.js";
 
 describe("Presentation", () => {
   afterEach(async () => {
@@ -69,7 +68,7 @@ describe("Presentation", () => {
 
     describe("props handling", () => {
       it("sets unused client lifetime provided through props", () => {
-        Presentation.initialize({ unusedClientLifetime: faker.random.number() });
+        Presentation.initialize({ unusedClientLifetime: 4455 });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
         expect(storage.props.unusedValueLifetime).to.eq(Presentation.initProps!.unusedClientLifetime);
       });

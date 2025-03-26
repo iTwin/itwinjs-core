@@ -9,9 +9,10 @@ import * as moq from "typemoq";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, ElementSelectionScopeProps, KeySet, RpcRequestsHandler } from "@itwin/presentation-common";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
+import { DEFAULT_KEYS_BATCH_SIZE, ElementSelectionScopeProps, KeySet, SelectionScope } from "@itwin/presentation-common";
+import { RpcRequestsHandler } from "@itwin/presentation-common/internal";
+import { createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
+import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager.js";
 
 describe("SelectionScopesManager", () => {
   const imodelToken = {} as IModelRpcProps;
@@ -47,7 +48,7 @@ describe("SelectionScopesManager", () => {
 
     it("gets and sets active scope as SelectionScope", () => {
       expect(getManager().activeScope).to.be.undefined;
-      const scope = createRandomSelectionScope();
+      const scope = "element";
       getManager().activeScope = scope;
       expect(getManager().activeScope).to.eq(scope);
     });
@@ -55,7 +56,7 @@ describe("SelectionScopesManager", () => {
 
   describe("getSelectionScopes", () => {
     it("forwards request to RpcRequestsHandler", async () => {
-      const result = [createRandomSelectionScope()];
+      const result: SelectionScope[] = [{ id: "element", label: "Element" }];
       rpcRequestsHandlerMock
         .setup(async (x) => x.getSelectionScopes(moq.It.isObjectWith({ imodel: imodelToken, locale: undefined })))
         .returns(async () => result)
@@ -69,7 +70,7 @@ describe("SelectionScopesManager", () => {
         ...managerProps,
         localeProvider: () => "lt",
       };
-      const result = [createRandomSelectionScope()];
+      const result: SelectionScope[] = [{ id: "element", label: "Element" }];
       rpcRequestsHandlerMock
         .setup(async (x) => x.getSelectionScopes(moq.It.isObjectWith({ imodel: imodelToken, locale: "lt" })))
         .returns(async () => result)
@@ -83,7 +84,7 @@ describe("SelectionScopesManager", () => {
         ...managerProps,
         localeProvider: () => "lt",
       };
-      const result = [createRandomSelectionScope()];
+      const result: SelectionScope[] = [{ id: "element", label: "Element" }];
       rpcRequestsHandlerMock
         .setup(async (x) => x.getSelectionScopes(moq.It.isObjectWith({ imodel: imodelToken, locale: "de" })))
         .returns(async () => result)
@@ -95,8 +96,8 @@ describe("SelectionScopesManager", () => {
 
   describe("computeSelection", () => {
     it("forwards request to RpcRequestsHandler with scope as SelectionScope", async () => {
-      const ids = [createRandomId()];
-      const scope = createRandomSelectionScope();
+      const ids = ["0x123"];
+      const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) =>
@@ -115,8 +116,8 @@ describe("SelectionScopesManager", () => {
     });
 
     it("forwards request to RpcRequestsHandler with scope as SelectionScope id", async () => {
-      const ids = [createRandomId()];
-      const scope = createRandomSelectionScope();
+      const ids = ["0x123"];
+      const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) =>
@@ -135,7 +136,7 @@ describe("SelectionScopesManager", () => {
     });
 
     it("forwards request to RpcRequestsHandler with element scope and params", async () => {
-      const elementIds = [createRandomId()];
+      const elementIds = ["0x123"];
       const scope: ElementSelectionScopeProps = {
         id: "element",
         ancestorLevel: 123,
@@ -165,11 +166,11 @@ describe("SelectionScopesManager", () => {
     it("forwards multiple requests to RpcRequestsHandler when ids count exceeds max batch size", async () => {
       const ids = new Array<Id64String>();
       for (let i = 0; i < DEFAULT_KEYS_BATCH_SIZE + 1; ++i) {
-        ids.push(createRandomId());
+        ids.push("0x123");
       }
-      const scope = createRandomSelectionScope();
-      const result1 = new KeySet([createRandomECInstanceKey()]);
-      const result2 = new KeySet([createRandomECInstanceKey()]);
+      const scope: SelectionScope = { id: "element", label: "Element" };
+      const result1 = new KeySet([createTestECInstanceKey({ id: "0x111" })]);
+      const result2 = new KeySet([createTestECInstanceKey({ id: "0x222" })]);
       rpcRequestsHandlerMock
         .setup(async (x) =>
           x.computeSelection(
@@ -198,8 +199,8 @@ describe("SelectionScopesManager", () => {
     });
 
     it("forwards request to RpcRequestsHandler with ids as a single ID", async () => {
-      const id = createRandomId();
-      const scope = createRandomSelectionScope();
+      const id = "0x123";
+      const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) =>
@@ -218,8 +219,8 @@ describe("SelectionScopesManager", () => {
     });
 
     it("forwards request to RpcRequestsHandler with ids as Set<Id64String>", async () => {
-      const id = createRandomId();
-      const scope = createRandomSelectionScope();
+      const id = "0x123";
+      const scope: SelectionScope = { id: "element", label: "Element" };
       const result = new KeySet();
       rpcRequestsHandlerMock
         .setup(async (x) =>

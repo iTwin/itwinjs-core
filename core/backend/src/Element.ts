@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
@@ -355,14 +355,6 @@ export class Element extends Entity {
     return val;
   }
 
-  /** Collect the Ids of this element's *references* at this level of the class hierarchy.
-   * @deprecated in 3.x. use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   * @beta
-   */
-  protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void {
-    return this.collectReferenceIds(predecessorIds);
-  }
-
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addModel(this.model); // The modeledElement is a reference
@@ -370,15 +362,6 @@ export class Element extends Entity {
       referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
     if (this.parent)
       referenceIds.addElement(this.parent.id); // A parent element is a reference
-  }
-
-  /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @beta
-   * @deprecated in 3.x. use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   */
-  public getPredecessorIds(): Id64Set {
-    return this.getReferenceIds();
   }
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
@@ -398,7 +381,19 @@ export class Element extends Entity {
     model: ConcreteEntityTypes.Model,
   };
 
-  /** Get the class metadata for this element. */
+  /** Get the class metadata for this element.
+   * @deprecated in 5.0. Please use `getMetaData` provided by the parent class `Entity` instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData | undefined = element.getClassMetaData();
+   *
+   * // Replacement:
+   * const metaData: EntityClass = await element.getMetaData();
+   * ```
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any {

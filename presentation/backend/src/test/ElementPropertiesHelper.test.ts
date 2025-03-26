@@ -8,8 +8,8 @@ import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
-import { createIdBatches, getBatchedClassElementIds, getElementsCount } from "../presentation-backend/ElementPropertiesHelper";
-import { stubECSqlReader } from "./Helpers";
+import { createIdBatches, getBatchedClassElementIds, getElementsCount } from "../presentation-backend/ElementPropertiesHelper.js";
+import { stubECSqlReader } from "./Helpers.js";
 
 describe("getElementsCount", () => {
   const imodelMock = moq.Mock.ofType<IModelDb>();

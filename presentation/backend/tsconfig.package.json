@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".",  // if out path for a file is same as its src path, nothing will be emitted
+    "resolveJsonModule": true,
+    "composite": true  // required on the dependency project for references to work
+  },
+  "include": [
+    "package.json"
+  ]
+}

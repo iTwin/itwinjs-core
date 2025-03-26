@@ -10,7 +10,6 @@ import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { BeEvent, ErrorCategory, Logger, omit, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcPendingResponse } from "@itwin/core-common";
 import {
-  buildElementProperties,
   ClientDiagnostics,
   ComputeSelectionRpcRequestOptions,
   ContentDescriptorRpcRequestOptions,
@@ -19,8 +18,6 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
-  createCancellableTimeoutPromise,
-  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
@@ -57,14 +54,17 @@ import {
   SelectionScopeRpcRequestOptions,
   SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
-import { Presentation } from "./Presentation";
-import { PresentationManager } from "./PresentationManager";
-import { TemporaryStorage } from "./TemporaryStorage";
-import { getRulesetIdObject } from "./PresentationManagerDetail";
+import { buildElementProperties, createCancellableTimeoutPromise, deepReplaceNullsToUndefined } from "@itwin/presentation-common/internal";
+// @ts-expect-error TS complains about `with` in CJS builds; The path is fine at runtime, but not at compile time
+// eslint-disable-next-line @itwin/import-within-package
+import packageJson from "../../../package.json" with { type: "json" };
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { Presentation } from "./Presentation.js";
+import { PresentationManager } from "./PresentationManager.js";
+import { getRulesetIdObject } from "./PresentationManagerDetail.js";
+import { TemporaryStorage } from "./TemporaryStorage.js";
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const packageJsonVersion = require("../../../package.json").version;
+const packageJsonVersion = packageJson.version;
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;
 
@@ -101,7 +101,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       cleanupHandler: (id, _, reason) => {
         if (reason !== "request") {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
-          // istanbul ignore next
+          /* c8 ignore next */
           this._cancelEvents.get(id)?.raiseEvent();
         }
         this._cancelEvents.delete(id);
@@ -521,7 +521,7 @@ const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
 };
 
 // not testing temporary solution
-// istanbul ignore next
+/* c8 ignore start */
 function createStatusCategoryHandler() {
   return (e: Error) => {
     if (e instanceof PresentationError) {
@@ -552,3 +552,4 @@ function createStatusCategoryHandler() {
     return undefined;
   };
 }
+/* c8 ignore end */
