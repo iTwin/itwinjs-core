@@ -22,12 +22,12 @@ import {
   SelectionInfo,
   SelectionScope,
   SelectionScopeRequestOptions,
-} from "../presentation-common";
-import { FieldDescriptorType } from "../presentation-common/content/Fields";
-import { ItemJSON } from "../presentation-common/content/Item";
-import { ClientDiagnostics } from "../presentation-common/Diagnostics";
-import { InstanceKey } from "../presentation-common/EC";
-import { NodeKey } from "../presentation-common/hierarchy/Key";
+} from "../presentation-common.js";
+import { FieldDescriptorType } from "../presentation-common/content/Fields.js";
+import { ItemJSON } from "../presentation-common/content/Item.js";
+import { ClientDiagnostics } from "../presentation-common/Diagnostics.js";
+import { InstanceKey } from "../presentation-common/EC.js";
+import { NodeKey } from "../presentation-common/hierarchy/Key.js";
 import {
   ComputeSelectionRequestOptions,
   ContentDescriptorRequestOptions,
@@ -41,7 +41,7 @@ import {
   FilterByTextHierarchyRequestOptions,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
-} from "../presentation-common/PresentationManagerOptions";
+} from "../presentation-common/PresentationManagerOptions.js";
 import {
   ContentDescriptorRpcRequestOptions,
   ContentInstanceKeysRpcRequestOptions,
@@ -54,9 +54,9 @@ import {
   FilterByTextHierarchyRpcRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
-} from "../presentation-common/PresentationRpcInterface";
-import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
-import { createTestContentDescriptor } from "./_helpers/Content";
+} from "../presentation-common/PresentationRpcInterface.js";
+import { RulesetVariableJSON } from "../presentation-common/RulesetVariables.js";
+import { createTestContentDescriptor } from "./_helpers/Content.js";
 import {
   createTestECInstanceKey,
   createTestECInstancesNode,
@@ -64,7 +64,7 @@ import {
   createTestLabelDefinition,
   createTestNodePathElement,
   ResolvablePromise,
-} from "./_helpers";
+} from "./_helpers/index.js";
 
 describe("RpcRequestsHandler", () => {
   let clientId: string;

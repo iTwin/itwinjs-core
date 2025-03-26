@@ -10,8 +10,8 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE, ElementSelectionScopeProps, KeySet, RpcRequestsHandler, SelectionScope } from "@itwin/presentation-common";
-import { createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
+import { createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
+import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager.js";
 
 describe("SelectionScopesManager", () => {
   const imodelToken = {} as IModelRpcProps;

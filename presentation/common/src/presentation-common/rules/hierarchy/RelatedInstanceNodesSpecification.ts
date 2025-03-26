@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification.js";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification.js";
 
 /**
  * Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined

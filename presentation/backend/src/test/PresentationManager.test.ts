@@ -2,11 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-common/lib/cjs/test/_helpers/Promises";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import deepEqual from "deep-equal";
 import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -86,26 +86,24 @@ import {
   createTestRelationshipPath,
   createTestSelectClassInfo,
   createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/cjs/test";
+} from "@itwin/presentation-common/test-utils";
 import {
   NativePlatformDefinition,
   NativePlatformRequestTypes,
   NativePresentationUnitSystem,
   PresentationNativePlatformResponseError,
-} from "../presentation-backend/NativePlatform";
-import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager";
-import { getKeysForContentRequest, ipcUpdatesHandler, noopUpdatesHandler } from "../presentation-backend/PresentationManagerDetail";
-import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
-import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
-import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
-import { stubECSqlReader } from "./Helpers";
-
-const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-require-imports
+} from "../presentation-backend/NativePlatform.js";
+import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager.js";
+import { getKeysForContentRequest, ipcUpdatesHandler, noopUpdatesHandler } from "../presentation-backend/PresentationManagerDetail.js";
+import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
+import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager.js";
+import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
+import { stubECSqlReader } from "./Helpers.js";
 
 describe("PresentationManager", () => {
   before(async () => {
     try {
-      await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
+      await IModelHost.startup({ cacheDir: path.join(import.meta.dirname, ".cache", `${process.pid}`) });
     } catch (e) {
       let isLoaded = false;
       try {

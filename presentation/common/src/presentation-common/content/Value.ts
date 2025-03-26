@@ -6,9 +6,9 @@
  * @module Content
  */
 
-import { InstanceId, InstanceKey } from "../EC";
-import { LabelDefinition } from "../LabelDefinition";
-import { ValuesDictionary } from "../Utils";
+import { InstanceId, InstanceKey } from "../EC.js";
+import { LabelDefinition } from "../LabelDefinition.js";
+import { ValuesDictionary } from "../Utils.js";
 
 /**
  * Raw value type

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { CodeProps, ElementProps, EntityMetaData, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
+import { CodeProps, ElementProps, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
-import { createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
+import { createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
+import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
 
 describe("SelectionScopesHelper", () => {
   describe("getSelectionScopes", () => {
@@ -155,17 +155,6 @@ describe("SelectionScopesHelper", () => {
       imodelMock.reset();
       imodelMock.setup((x) => x.elements).returns(() => elementsMock.object);
       imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
-      imodelMock
-        .setup((x) => x.getMetaData(moq.It.isAnyString()))
-        .returns(
-          (className: string) =>
-            new EntityMetaData({
-              classId: "0x123",
-              baseClasses: [],
-              properties: {},
-              ecclass: className,
-            }),
-        );
     });
 
     it("throws on invalid scopeId", async () => {

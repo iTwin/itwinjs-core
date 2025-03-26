@@ -1,8 +1,9 @@
 {
   "name": "@itwin/ecschema-rpcinterface-impl",
-  "version": "5.0.0-dev.89",
+  "version": "5.0.0-dev.91",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/cjs/ecschema-rpc-impl.js",
+  "module": "lib/esm/ecschema-rpc-impl.js",
   "typings": "lib/cjs/ecschema-rpc-impl",
   "license": "MIT",
   "repository": {
@@ -11,8 +12,9 @@
     "directory": "core/ecschema-rpc/impl"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",

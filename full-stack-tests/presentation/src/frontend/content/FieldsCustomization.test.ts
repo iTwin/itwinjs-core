@@ -7,15 +7,15 @@ import { expect } from "chai";
 import { assert, Guid } from "@itwin/core-bentley";
 import { InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { getFieldByLabel } from "../../Utils";
+import { getFieldByLabel } from "../../Utils.js";
 import {
   buildTestIModelConnection,
   importSchema,
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
-import { describeContentTestSuite } from "./Utils";
+} from "../../IModelSetupUtils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Fields' customization", () => {
   it("assigns custom renderer and editor to struct member property", async function () {

@@ -14,7 +14,7 @@ import {
   RulesetVariable,
   StringRulesetVariable,
   VariableValueTypes,
-} from "../presentation-common/RulesetVariables";
+} from "../presentation-common/RulesetVariables.js";
 
 describe("RulesetVariable", () => {
   describe("toJSON", () => {

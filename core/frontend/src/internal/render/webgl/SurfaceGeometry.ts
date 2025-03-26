@@ -7,9 +7,8 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { FillFlags, RenderMode, TextureTransparency, ThematicGradientTransparencyMode, ViewFlags } from "@itwin/core-common";
+import { CartographicRange, FillFlags, RenderMode, TextureTransparency, ThematicGradientTransparencyMode, ViewFlags } from "@itwin/core-common";
 import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
-import { VertexIndices } from "../../../common/internal/render/VertexIndices";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ShaderProgramParams } from "./DrawCommand";
@@ -22,6 +21,11 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
+import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams";
+import { MeshParams } from "../../../common/internal/render/MeshParams";
+import { MapCartoRectangle, PlanarProjection, PlanarTilePatch } from "../../../tile/internal";
+import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
+import { Vector3d } from "@itwin/core-geometry";
 
 /** @internal */
 export function wantMaterials(vf: ViewFlags): boolean {
@@ -36,12 +40,74 @@ function wantLighting(vf: ViewFlags) {
 export class SurfaceGeometry extends MeshGeometry {
   private readonly _buffers: BuffersContainer;
   private readonly _indices: BufferHandle;
+  public readonly hasTextures: boolean;
+  public textureParams: LayerTextureParams | undefined;
 
   public get lutBuffers() { return this._buffers; }
 
-  public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
+  public static create(mesh: MeshData, params: MeshParams): SurfaceGeometry | undefined {
+    const indices = params.surface.indices;
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
-    return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh) : undefined;
+
+    const tile = params.tileData;
+
+    const layerClassifiers = tile?.layerClassifiers;
+
+    if (!layerClassifiers?.size || !tile || undefined === layerClassifiers) {
+      return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    }
+
+    const transformECEF = tile.ecefTransform;
+
+    const tileEcefRange = transformECEF.multiplyRange(tile.range);
+    const cartographicRange = new CartographicRange(tileEcefRange, transformECEF);
+    const boundingBox = cartographicRange.getLongitudeLatitudeBoundingBox();
+    const mapCartoRectangle = MapCartoRectangle.fromRadians(
+      boundingBox.low.x,
+      boundingBox.low.y,
+      boundingBox.high.x,
+      boundingBox.high.y
+    );
+
+    const corners = tile.range.corners();
+
+    const normal = Vector3d.createCrossProductToPoints(corners[0], corners[1], corners[2])?.normalize();
+    if (!normal) {
+      return undefined !== indexBuffer ? new SurfaceGeometry(indexBuffer, indices.length, mesh, undefined) : undefined;
+    }
+    const chordHeight = corners[0].distance(corners[3]) / 2;
+
+    const surfacePlanarTilePatch = new PlanarTilePatch(corners, normal, chordHeight);
+    const surfaceProjection = new PlanarProjection(surfacePlanarTilePatch);
+
+    const meshParams: MeshMapLayerGraphicParams = {
+      projection: surfaceProjection,
+      tileRectangle: mapCartoRectangle,
+      tileId: undefined,
+      baseColor: undefined,
+      baseTransparent: false,
+      layerClassifiers
+    };
+
+    const layerTextures: ProjectedTexture[] = [];
+
+    let sequentialIndex = 0;
+
+    layerClassifiers?.forEach((layerClassifier) => {
+      layerTextures[sequentialIndex++] = new ProjectedTexture(layerClassifier, meshParams, meshParams.tileRectangle);
+    });
+
+    let surfaceGeometry;
+
+    if (undefined !== indexBuffer) {
+      const indexCount = indices.length;
+      const hasLayerTextures = layerTextures.length > 0;
+      const layerTextureParams = hasLayerTextures ? LayerTextureParams.create(layerTextures) : undefined;
+
+      surfaceGeometry = new SurfaceGeometry(indexBuffer, indexCount, mesh, layerTextureParams);
+    }
+
+    return surfaceGeometry;
   }
 
   public get isDisposed(): boolean {
@@ -295,13 +361,15 @@ export class SurfaceGeometry extends MeshGeometry {
     }
   }
 
-  private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {
+  private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData, textureParams?: LayerTextureParams) {
     super(mesh, numIndices);
+    this.textureParams = textureParams;
     this._buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Surface, false);
     assert(undefined !== attrPos);
     this._buffers.addBuffer(indices, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this._indices = indices;
+    this.hasTextures = undefined !== this.textureParams && this.textureParams.params.some((x) => undefined !== x.texture);
   }
 
   private wantTextures(target: Target, surfaceTextureExists: boolean): boolean {
