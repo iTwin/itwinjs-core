@@ -1,23 +1,17 @@
 sep=;
 Release Tag;API Item Type;API Item Name
-internal;class;BrowserLocalFavoritePropertiesStorage
 public;function;consoleDiagnosticsHandler
 public;function;createCombinedDiagnosticsHandler
 public;function;createFavoritePropertiesStorage
-internal;const;createFieldOrderInfos
 public;function;createSelectionScopeProps
 deprecated;function;createSelectionScopeProps
 public;enum;DefaultFavoritePropertiesStorageTypes
-internal;const;DEPRECATED_PROPERTIES_SETTING_NAMESPACE
-internal;const;FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME
-internal;const;FAVORITE_PROPERTIES_SETTING_NAME
 public;class;FavoritePropertiesManager
 public;interface;FavoritePropertiesManagerProps
 public;interface;FavoritePropertiesOrderInfo
 public;enum;FavoritePropertiesScope
 public;type;GetContentRequestOptions
 public;type;GetDistinctValuesRequestOptions
-internal;const;getFieldInfos
 public;type;GetNodesRequestOptions
 public;interface;HiliteSet
 deprecated;interface;HiliteSet
@@ -26,16 +20,11 @@ deprecated;class;HiliteSetProvider
 public;interface;HiliteSetProviderProps
 deprecated;interface;HiliteSetProviderProps
 public;interface;IFavoritePropertiesStorage
-internal;class;IModelAppFavoritePropertiesStorage
 public;interface;IModelContentChangeEventArgs
 public;interface;IModelHierarchyChangeEventArgs
-internal;const;IMODELJS_PRESENTATION_SETTING_NAMESPACE
 public;interface;ISelectionProvider
 deprecated;interface;ISelectionProvider
 public;type;MultipleValuesRequestOptions
-internal;class;NoopFavoritePropertiesStorage
-internal;class;OfflineCachingFavoritePropertiesStorage
-internal;interface;OfflineCachingFavoritePropertiesStorageProps
 public;class;Presentation
 public;enum;PresentationFrontendLoggerCategory
 public;class;PresentationManager
@@ -43,9 +32,7 @@ public;interface;PresentationManagerProps
 public;interface;PresentationProps
 public;type;PropertyFullName
 public;interface;RulesetManager
-internal;class;RulesetManagerImpl
 public;interface;RulesetVariablesManager
-internal;class;RulesetVariablesManagerImpl
 public;class;SelectionChangeEvent
 deprecated;class;SelectionChangeEvent
 public;interface;SelectionChangeEventArgs
@@ -68,4 +55,3 @@ public;class;SelectionScopesManager
 deprecated;class;SelectionScopesManager
 public;interface;SelectionScopesManagerProps
 deprecated;interface;SelectionScopesManagerProps
-internal;class;ToolSelectionSyncHandler
