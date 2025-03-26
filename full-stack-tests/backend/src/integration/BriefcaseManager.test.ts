@@ -5,11 +5,12 @@
 
 import { assert, expect } from "chai";
 import * as os from "os";
+import * as path from "path";
 import * as readline from "readline";
 import * as sinon from "sinon";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, CheckpointManager, CloudSqlite, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
@@ -29,7 +30,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 //      - Required to be a SPA
 //    IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
 //    IMJS_OIDC_BROWSER_TEST_SCOPES
-//      - Required scopes: "openid imodelhub context-registry-service:read-only"
+//      - Required scopes: "itwin-platform"
 
 describe("BriefcaseManager", () => {
   let testITwinId: string;
@@ -97,7 +98,7 @@ describe("BriefcaseManager", () => {
     iModel.close();
   });
 
-  it.skip("should reuse checkpoints", async () => {
+  it("should reuse checkpoints", async () => {
     const iModel1 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
@@ -110,8 +111,11 @@ describe("BriefcaseManager", () => {
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
 
     const pathname2 = iModel2.pathName;
+    const cache = CloudSqlite.CloudCaches.findCache(V2CheckpointManager.cloudCacheName);
+    assert.exists(cache, "Checkpoints cloud cache not found");
+    const fullPathName2 = path.join(cache!.rootDir, pathname2);
     iModel2.close();
-    assert.isTrue(IModelJsFs.existsSync(pathname2));
+    assert.isTrue(IModelJsFs.existsSync(fullPathName2));
 
     const pathname3 = iModel3.pathName;
     iModel3.close();
