@@ -100,11 +100,11 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "4.11.22",
+    "@bentley/imodeljs-native": "4.11.26",
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/core-telemetry": "workspace:*",
-    "@itwin/object-storage-azure": "^2.2.5",
-    "@itwin/object-storage-core": "^2.2.5",
+    "@itwin/object-storage-azure": "^2.3.0",
+    "@itwin/object-storage-core": "^2.3.0",
     "form-data": "^4.0.1",
     "fs-extra": "^8.1.0",
     "inversify": "~6.0.1",

@@ -11,7 +11,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.11.22
+      '@bentley/imodeljs-native': 4.11.26
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
       '@itwin/core-bentley': workspace:*
@@ -21,8 +21,8 @@ importers:
       '@itwin/core-webpack-tools': workspace:*
       '@itwin/ecsql-common': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
-      '@itwin/object-storage-azure': ^2.2.5
-      '@itwin/object-storage-core': ^2.2.5
+      '@itwin/object-storage-azure': ^2.3.0
+      '@itwin/object-storage-core': ^2.3.0
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -63,11 +63,11 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 4.11.22
+      '@bentley/imodeljs-native': 4.11.26
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-azure': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
-      '@itwin/object-storage-core': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-azure': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
       form-data: 4.0.1
       fs-extra: 8.1.0
       inversify: 6.0.1
@@ -144,7 +144,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
-      '@itwin/object-storage-core': ^2.2.5
+      '@itwin/object-storage-core': ^2.3.0
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/node': ~18.16.20
@@ -164,7 +164,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
-      '@itwin/object-storage-core': 2.2.5
+      '@itwin/object-storage-core': 2.3.0
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/node': 18.16.20
@@ -563,7 +563,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
-      '@itwin/object-storage-core': ^2.2.5
+      '@itwin/object-storage-core': ^2.3.0
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
@@ -589,7 +589,7 @@ importers:
       '@itwin/cloud-agnostic-core': 2.2.4
       '@itwin/core-i18n': link:../i18n
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-core': 2.2.5
+      '@itwin/object-storage-core': 2.3.0
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.1.6
       '@loaders.gl/draco': 3.1.6
@@ -1296,12 +1296,13 @@ importers:
       '@itwin/core-extension': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-editing': workspace:*
       '@itwin/ecschema-locaters': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@itwin/imodel-transformer': ^0.4.2
-      '@itwin/itwins-client': ^1.2.0
+      '@itwin/itwins-client': ^1.6.1
       '@itwin/oidc-signin-tool': ^4.4.1
       '@itwin/service-authorization': ^1.0.0
       '@types/chai': 4.3.1
@@ -1310,7 +1311,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
-      azurite: ^3.32.0
+      azurite: ^3.34.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1329,14 +1330,15 @@ importers:
       '@itwin/core-extension': link:../../core/extension
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-editing': link:../../core/ecschema-editing
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodel-transformer': 0.4.2_weqmipkhmjm5vfy37lv47aijmu
-      '@itwin/itwins-client': 1.2.0
+      '@itwin/imodel-transformer': 0.4.2_kr6ef5wz3afhzh2i3iv4ser4ly
+      '@itwin/itwins-client': 1.6.1
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.5
-      azurite: 3.32.0
+      azurite: 3.34.0
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1578,7 +1580,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@itwin/imodels-access-backend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
-      '@itwin/itwins-client': ^1.2.0
+      '@itwin/itwins-client': ^1.6.1
       '@itwin/oidc-signin-tool': ^4.4.1
       '@itwin/perf-tools': workspace:*
       '@types/chai': 4.3.1
@@ -1586,7 +1588,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
-      azurite: ^3.32.0
+      azurite: ^3.34.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1628,10 +1630,10 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/imodels-access-backend': 5.2.1_wj555zckjupkhkzyssqqpl4sei
       '@itwin/imodels-client-authoring': 5.8.1
-      '@itwin/itwins-client': 1.2.0
+      '@itwin/itwins-client': 1.6.1
       '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
       '@itwin/perf-tools': link:../../tools/perf-tools
-      azurite: 3.32.0
+      azurite: 3.34.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -1684,8 +1686,8 @@ importers:
       '@itwin/imodels-access-frontend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
-      '@itwin/itwins-client': ^1.2.0
-      '@itwin/object-storage-core': ^2.2.5
+      '@itwin/itwins-client': ^1.6.1
+      '@itwin/object-storage-core': ^2.3.0
       '@itwin/oidc-signin-tool': ^4.4.1
       '@itwin/reality-data-client': ^1.2.1
       '@types/chai': 4.3.1
@@ -1696,7 +1698,7 @@ importers:
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
-      azurite: ^3.32.0
+      azurite: ^3.34.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
@@ -1751,7 +1753,7 @@ importers:
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
-      azurite: 3.32.0
+      azurite: 3.34.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       electron: 33.4.2
@@ -1762,8 +1764,8 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
-      '@itwin/itwins-client': 1.2.0
-      '@itwin/object-storage-core': 2.2.5
+      '@itwin/itwins-client': 1.6.1
+      '@itwin/object-storage-core': 2.3.0
       '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -1816,7 +1818,7 @@ importers:
       '@itwin/imodels-access-frontend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
-      '@itwin/itwins-client': ^1.2.0
+      '@itwin/itwins-client': ^1.6.1
       '@itwin/oidc-signin-tool': ^4.4.1
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -1873,7 +1875,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@itwin/express-server': link:../../core/express-server
-      '@itwin/itwins-client': 1.2.0
+      '@itwin/itwins-client': 1.6.1
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
@@ -2096,7 +2098,7 @@ importers:
       '@itwin/imodels-access-frontend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
-      '@itwin/itwins-client': ^1.2.0
+      '@itwin/itwins-client': ^1.6.1
       '@itwin/oidc-signin-tool': ^4.4.1
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
@@ -2154,7 +2156,7 @@ importers:
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/express-server': link:../../core/express-server
-      '@itwin/itwins-client': 1.2.0
+      '@itwin/itwins-client': 1.6.1
       '@itwin/presentation-backend': link:../../presentation/backend
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -2580,7 +2582,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/map-layers-formats': workspace:*
-      '@itwin/object-storage-core': ^2.2.5
+      '@itwin/object-storage-core': ^2.3.0
       '@itwin/reality-data-client': ^1.2.1
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.17.20
@@ -2644,7 +2646,7 @@ importers:
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
-      '@itwin/object-storage-core': 2.2.5
+      '@itwin/object-storage-core': 2.3.0
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.3
@@ -3248,7 +3250,7 @@ packages:
     resolution: {integrity: sha512-nBrLsEWm4J2u5LpAPjxADTlq3trDgVZZXHNKabeXZtpq3d3AbN/KGO82R87rdDz5/lYB024rtEf10/q0urNgsA==}
     engines: {node: '>=18.0.0'}
     dependencies:
-      tslib: 2.6.3
+      tslib: 2.8.1
     dev: false
 
   /@azure/core-auth/1.7.2:
@@ -3324,6 +3326,13 @@ packages:
     engines: {node: '>=18.0.0'}
     dependencies:
       tslib: 2.6.3
+    dev: false
+
+  /@azure/core-tracing/1.2.0:
+    resolution: {integrity: sha512-UKTiEJPkWcESPYJz3X5uKRYyOcJD+4nYph+KpfdPRnQJVrZfk0KJgdnaAWKfhsBBtAf/D58Az4AvCJEmWgIBAg==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      tslib: 2.8.1
     dev: false
 
   /@azure/core-util/1.9.2:
@@ -3424,6 +3433,20 @@ packages:
       '@azure/msal-common': 14.14.1
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
+    dev: false
+
+  /@azure/opentelemetry-instrumentation-azure-sdk/1.0.0-beta.8:
+    resolution: {integrity: sha512-8R+gRqNhbK1lv6CIGt55a73LsuK9EKU54323FFrQqSpGduQjENpRa3Wy+AWzw/i5YGzTuLL8NN5vifCOJdeJcg==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      '@azure/core-tracing': 1.2.0
+      '@azure/logger': 1.1.4
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 1.30.1_@opentelemetry+api@1.9.0
+      '@opentelemetry/instrumentation': 0.57.2_@opentelemetry+api@1.9.0
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /@azure/storage-blob/12.24.0:
@@ -3702,8 +3725,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.11.22:
-    resolution: {integrity: sha512-HWdqMsuirbW1d3oYHGF9kld+S84FQueiixQkBfteysi0pTFtN8xzkX4nLobaGIQxecSnZxbm4ylYSAJNODdQwg==}
+  /@bentley/imodeljs-native/4.11.26:
+    resolution: {integrity: sha512-lvJWjAPnvtO8eDLqF2h8RUk1TLX2N6+3zEOeHA/gr6G2cumGvflJb2BQ5NF1LgTZ9paBdPA3pcZnFweJgmIC2Q==}
     requiresBuild: true
     dev: false
 
@@ -4195,17 +4218,27 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@itwin/cloud-agnostic-core/2.2.5:
-    resolution: {integrity: sha512-pLEWIjQ4Z1kos7z6RWu/kG2lTEyojr906WVGAXKouxA/BobWuUlb1HG1/Zw8+SovA284wauKhHJsydRhYeddIQ==}
+  /@itwin/cloud-agnostic-core/2.3.0:
+    resolution: {integrity: sha512-oFSaERSqnuXtpzJ/dX61/p47eFoNoZ3NG0F9NUpndmiErVYba8aEnlVHQqXBQb5kycXBd7c9a5Ihnif1ussLLw==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
 
-  /@itwin/cloud-agnostic-core/2.2.5_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-pLEWIjQ4Z1kos7z6RWu/kG2lTEyojr906WVGAXKouxA/BobWuUlb1HG1/Zw8+SovA284wauKhHJsydRhYeddIQ==}
+  /@itwin/cloud-agnostic-core/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-oFSaERSqnuXtpzJ/dX61/p47eFoNoZ3NG0F9NUpndmiErVYba8aEnlVHQqXBQb5kycXBd7c9a5Ihnif1ussLLw==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
     dependencies:
       inversify: 6.0.1
       reflect-metadata: 0.1.13
@@ -4266,7 +4299,7 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@itwin/imodel-transformer/0.4.2_weqmipkhmjm5vfy37lv47aijmu:
+  /@itwin/imodel-transformer/0.4.2_kr6ef5wz3afhzh2i3iv4ser4ly:
     resolution: {integrity: sha512-uSfVKFdzMvptc634gtnorxAthflL2n2y72e4z6fXV0Q4ToXRSn25kFGPVgDtaASAptIh5VPz2xaqT1Obbq/ImA==}
     engines: {node: ^18.0.0}
     peerDependencies:
@@ -4274,6 +4307,7 @@ packages:
       '@itwin/core-bentley': ^3.6.0 || ^4.0.0
       '@itwin/core-common': ^3.6.0 || ^4.0.0
       '@itwin/core-geometry': ^3.6.0 || ^4.0.0
+      '@itwin/core-quantity': ^3.6.0 || ^4.0.0
       '@itwin/ecschema-metadata': ^3.6.0 || ^4.0.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
@@ -4340,8 +4374,8 @@ packages:
     dependencies:
       '@azure/storage-blob': 12.24.0
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/object-storage-azure': 2.2.5
-      '@itwin/object-storage-core': 2.2.5
+      '@itwin/object-storage-azure': 2.3.0
+      '@itwin/object-storage-core': 2.3.0
     transitivePeerDependencies:
       - debug
       - inversify
@@ -4357,38 +4391,48 @@ packages:
       - debug
     dev: false
 
-  /@itwin/itwins-client/1.2.0:
-    resolution: {integrity: sha512-J0yksZPMVYYp8KotRJ8u7uzz8zBIFq8gqDamBDtG2hy8Uv0MnoYDooPoFOR7zhm3JNdjMrb4Vcz0Z+ZwJ7GoRg==}
+  /@itwin/itwins-client/1.6.1:
+    resolution: {integrity: sha512-3/fXtJUdH7NoGr8msQba7fBrZ2sASBrAdqnEPI1ue6rLNuTkJqSR4kVoOVF7JE/VeZcQDNACHj20YWoT5ofMTw==}
     dependencies:
-      axios: 0.25.0
+      axios: 1.7.4
     transitivePeerDependencies:
       - debug
 
-  /@itwin/object-storage-azure/2.2.5:
-    resolution: {integrity: sha512-LvnQupvyK28UhIimnEnZqKoBRSMwl3cw8wJ30mYu0UD5c+xuKAaphFCy79QXF2mENqC68uh0JKrFbaSAphwDHQ==}
+  /@itwin/object-storage-azure/2.3.0:
+    resolution: {integrity: sha512-WHECH+aBo9OVk5xcY5cdGnj5g08d2jMQefm6Q4rvHcqlfFtCKh4hfUMkaU5GAF8peNZxkxy06Goe206RWTtsVw==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
     dependencies:
       '@azure/core-paging': 1.6.2
       '@azure/storage-blob': 12.24.0
-      '@itwin/cloud-agnostic-core': 2.2.5
-      '@itwin/object-storage-core': 2.2.5
+      '@itwin/cloud-agnostic-core': 2.3.0
+      '@itwin/object-storage-core': 2.3.0
     transitivePeerDependencies:
       - debug
       - supports-color
     dev: false
 
-  /@itwin/object-storage-azure/2.2.5_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-LvnQupvyK28UhIimnEnZqKoBRSMwl3cw8wJ30mYu0UD5c+xuKAaphFCy79QXF2mENqC68uh0JKrFbaSAphwDHQ==}
+  /@itwin/object-storage-azure/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-WHECH+aBo9OVk5xcY5cdGnj5g08d2jMQefm6Q4rvHcqlfFtCKh4hfUMkaU5GAF8peNZxkxy06Goe206RWTtsVw==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
     dependencies:
       '@azure/core-paging': 1.6.2
       '@azure/storage-blob': 12.24.0
-      '@itwin/cloud-agnostic-core': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
-      '@itwin/object-storage-core': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/cloud-agnostic-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
       inversify: 6.0.1
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
@@ -4396,24 +4440,34 @@ packages:
       - supports-color
     dev: false
 
-  /@itwin/object-storage-core/2.2.5:
-    resolution: {integrity: sha512-IaGryht2Sg2piCVyrnzfTnxSClhi2k8Xv+OxFD2ARvd+J2o3XFgo5EJBezNe1gVz60+9tuqlczIU6blxfbX05g==}
+  /@itwin/object-storage-core/2.3.0:
+    resolution: {integrity: sha512-PAHaTMG7sE1hLlXBmSimxo/oZDJZJ81vS/hJ1p7QnwEu6MEtLgo5wXMU7sy7fHtOeh8ZqzKpXWkQyry5kRDXAg==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.2.5
+      '@itwin/cloud-agnostic-core': 2.3.0
       axios: 1.7.4
     transitivePeerDependencies:
       - debug
 
-  /@itwin/object-storage-core/2.2.5_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-IaGryht2Sg2piCVyrnzfTnxSClhi2k8Xv+OxFD2ARvd+J2o3XFgo5EJBezNe1gVz60+9tuqlczIU6blxfbX05g==}
+  /@itwin/object-storage-core/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-PAHaTMG7sE1hLlXBmSimxo/oZDJZJ81vS/hJ1p7QnwEu6MEtLgo5wXMU7sy7fHtOeh8ZqzKpXWkQyry5kRDXAg==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/cloud-agnostic-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
       axios: 1.7.4
       inversify: 6.0.1
       reflect-metadata: 0.1.13
@@ -4608,6 +4662,10 @@ packages:
       - '@types/node'
     dev: false
 
+  /@microsoft/applicationinsights-web-snippet/1.0.1:
+    resolution: {integrity: sha512-2IHAOaLauc8qaAitvWS+U931T+ze+7MNWrDHY47IENP5y2UA0vqJDu67kWZDdpCN1fFC77sfgfB+HV7SrKshnQ==}
+    dev: false
+
   /@microsoft/tsdoc-config/0.17.0:
     resolution: {integrity: sha512-v/EYRXnCAIHxOHW+Plb6OWuUoMotxTN0GLatnpOb1xq0KuTNw/WI3pamJx/UbsoJP5k9MCw1QxvvhPcF9pH3Zg==}
     dependencies:
@@ -4692,10 +4750,82 @@ packages:
       - debug
     dev: false
 
+  /@opentelemetry/api-logs/0.57.2:
+    resolution: {integrity: sha512-uIX52NnTM0iBh84MShlpouI7UKqkZ7MrUszTmaypHBu4r7NofznSnQRfJ+uUeDtQDj6w8eFGg5KBLDAwAPz1+A==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+    dev: false
+
   /@opentelemetry/api/1.0.4:
     resolution: {integrity: sha512-BuJuXRSJNQ3QoKA6GWWDyuLpOUck+9hAXNMCnrloc1aWVoy6Xq6t9PUV08aBZ4Lutqq2LEHM486bpZqoViScog==}
     engines: {node: '>=8.0.0'}
     dev: true
+
+  /@opentelemetry/api/1.9.0:
+    resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
+    engines: {node: '>=8.0.0'}
+    dev: false
+
+  /@opentelemetry/core/1.30.1_@opentelemetry+api@1.9.0:
+    resolution: {integrity: sha512-OOCM2C/QIURhJMuKaekP3TRBxBKxG/TWWA0TL2J6nXUtDnuCtccy49LUJF8xPFXMX+0LMcxFpCo8M9cGY1W6rQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.10.0'
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/semantic-conventions': 1.28.0
+    dev: false
+
+  /@opentelemetry/instrumentation/0.57.2_@opentelemetry+api@1.9.0:
+    resolution: {integrity: sha512-BdBGhQBh8IjZ2oIIX6F2/Q3LKm/FDDKi6ccYKcBTeilh6SNdNKveDOLk73BkSJjQLJk6qe4Yh+hHw1UPhCDdrg==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': ^1.3.0
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/api-logs': 0.57.2
+      '@types/shimmer': 1.2.0
+      import-in-the-middle: 1.13.1
+      require-in-the-middle: 7.5.2
+      semver: 7.6.3
+      shimmer: 1.2.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@opentelemetry/resources/1.30.1_@opentelemetry+api@1.9.0:
+    resolution: {integrity: sha512-5UxZqiAgLYGFjS4s9qm5mBVo433u+dSPUFWVWXmLAD4wB65oMCoXaJP1KJa9DIYYMeHu3z4BZcStG3LC593cWA==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.10.0'
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 1.30.1_@opentelemetry+api@1.9.0
+      '@opentelemetry/semantic-conventions': 1.28.0
+    dev: false
+
+  /@opentelemetry/sdk-trace-base/1.30.1_@opentelemetry+api@1.9.0:
+    resolution: {integrity: sha512-jVPgBbH1gCy2Lb7X0AVQ8XAfgg0pJ4nvl8/IiQA6nxOsPvS+0zMJaFSs2ltXe0J6C8dqjcnpyqINDJmU30+uOg==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.10.0'
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 1.30.1_@opentelemetry+api@1.9.0
+      '@opentelemetry/resources': 1.30.1_@opentelemetry+api@1.9.0
+      '@opentelemetry/semantic-conventions': 1.28.0
+    dev: false
+
+  /@opentelemetry/semantic-conventions/1.28.0:
+    resolution: {integrity: sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA==}
+    engines: {node: '>=14'}
+    dev: false
+
+  /@opentelemetry/semantic-conventions/1.30.0:
+    resolution: {integrity: sha512-4VlGgo32k2EQ2wcCY3vEU28A0O13aOtHz3Xt2/2U5FAh9EfhD6t6DqL5Z6yAnRCntbTFDU4YfbpyzSlHNWycPw==}
+    engines: {node: '>=14'}
+    dev: false
 
   /@panva/asn1.js/1.0.0:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
@@ -5401,6 +5531,10 @@ packages:
       '@types/node': 18.16.20
       '@types/send': 0.17.4
 
+  /@types/shimmer/1.2.0:
+    resolution: {integrity: sha512-UE7oxhQLLd9gub6JKIAhDq06T0F6FnztwMNRvYgjeQSBeMc1ZG/tA47EwfduvkuQS8apbkM/lpLpWsaCeYsXVg==}
+    dev: false
+
   /@types/sinon-chai/3.2.0:
     resolution: {integrity: sha512-VpsC3L8/ynicaLJB/aVvLCFn+c2tjo5jJ5MGiy7keoN431LSAKv9xhLO9dhx9vSVJHG8cjfshdqU4+W8Occf7w==}
     dependencies:
@@ -5961,6 +6095,14 @@ packages:
     dependencies:
       acorn: 8.12.1
 
+  /acorn-import-attributes/1.9.5_acorn@8.14.1:
+    resolution: {integrity: sha512-n02Vykv5uA3eHGM/Z2dQrcD56kL8TyDb2p1+0P83PClMnC/nc+anbQRhIOWnSq4Ke/KvDPrY3C9hDtC/A3eHnQ==}
+    peerDependencies:
+      acorn: ^8
+    dependencies:
+      acorn: 8.14.1
+    dev: false
+
   /acorn-jsx/5.3.2_acorn@8.12.1:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -5977,7 +6119,7 @@ packages:
     resolution: {integrity: sha512-MxXdReSRhGO7VlFe1bRG/oI7/mdLV9B9JJT0N8vZOhF7gFRR5l3M8W9G8JxmKV+JC5mGqJ0QvqfSOLsCPa4nUw==}
     engines: {node: '>=0.4.0'}
     dependencies:
-      acorn: 8.12.1
+      acorn: 8.14.1
     dev: true
 
   /acorn/7.4.1:
@@ -5988,6 +6130,11 @@ packages:
 
   /acorn/8.12.1:
     resolution: {integrity: sha512-tcpGyI9zbizT9JbV6oYE477V6mTlXvvi0T0G3SNIYE2apm/G5huBa1+K89VGeovbg+jycCrfhl3ADxErOuO6Jg==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
+  /acorn/8.14.1:
+    resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -6174,6 +6321,31 @@ packages:
     dependencies:
       default-require-extensions: 3.0.1
 
+  /applicationinsights/2.9.6:
+    resolution: {integrity: sha512-BLeBYJUZaKmnzqG/6Q/IFSCqpiVECjSTIvwozLex/1ZZpSxOjPiBxGMev+iIBfNZ2pc7vvnV7DuPOtsoG2DJeQ==}
+    engines: {node: '>=8.0.0'}
+    peerDependencies:
+      applicationinsights-native-metrics: '*'
+    peerDependenciesMeta:
+      applicationinsights-native-metrics:
+        optional: true
+    dependencies:
+      '@azure/core-auth': 1.7.2
+      '@azure/core-rest-pipeline': 1.16.3
+      '@azure/opentelemetry-instrumentation-azure-sdk': 1.0.0-beta.8
+      '@microsoft/applicationinsights-web-snippet': 1.0.1
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 1.30.1_@opentelemetry+api@1.9.0
+      '@opentelemetry/sdk-trace-base': 1.30.1_@opentelemetry+api@1.9.0
+      '@opentelemetry/semantic-conventions': 1.30.0
+      cls-hooked: 4.2.2
+      continuation-local-storage: 3.2.1
+      diagnostic-channel: 1.1.1
+      diagnostic-channel-publishers: 1.0.8_diagnostic-channel@1.1.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /archy/1.0.0:
     resolution: {integrity: sha512-Xg+9RwCg/0p32teKdGMPTPnVXKD0w3DfHnFTficozsAgsvq2XenPJq/MYpzzQ/v8zrOyJn6Ds39VA4JIDwFfqw==}
 
@@ -6332,6 +6504,21 @@ packages:
   /ast-types-flow/0.0.8:
     resolution: {integrity: sha512-OH/2E5Fg20h2aPrbe+QL8JZQFko0YZaF+j4mnQ7BGhfavO7OpSLa8a0y9sBwomHdSbkhTS8TQNayBfnW5DwbvQ==}
 
+  /async-hook-jl/1.7.6:
+    resolution: {integrity: sha512-gFaHkFfSxTjvoxDMYqDuGHlcRyUuamF8s+ZTtJdDzqjws4mCt7v0vuV79/E2Wr2/riMQgtG4/yUtXWs1gZ7JMg==}
+    engines: {node: ^4.7 || >=6.9 || >=7.3}
+    dependencies:
+      stack-chain: 1.3.7
+    dev: false
+
+  /async-listener/0.6.10:
+    resolution: {integrity: sha512-gpuo6xOyF4D5DE5WvyqZdPA3NGhiT6Qf07l7DCB0wwDEsLvDIbCr6j9S5aj5Ch96dLace5tXVzWBZkxU/c5ohw==}
+    engines: {node: <=0.11.8 || >0.11.10}
+    dependencies:
+      semver: 5.7.2
+      shimmer: 1.2.1
+    dev: false
+
   /async/3.2.5:
     resolution: {integrity: sha512-baNZyqaaLhyLVKm/DlvdW051MSgO6b8eVfIezl9E5PqWxFgzLm/wQntEW4zOytVburDEr0JlALEpdOFwvErLsg==}
     dev: false
@@ -6380,13 +6567,6 @@ packages:
       - debug
     dev: false
 
-  /axios/0.25.0:
-    resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
-    dependencies:
-      follow-redirects: 1.15.6
-    transitivePeerDependencies:
-      - debug
-
   /axios/0.27.2:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
     dependencies:
@@ -6409,12 +6589,13 @@ packages:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
 
-  /azurite/3.32.0:
-    resolution: {integrity: sha512-1qwJ8NQpv31V/sr4OIYqUd/DkOTzR6UjRoDv14youv764rnvq0/5/JbAcz/pFvxSDTRaU/hUe58VB2J3vpmaYA==}
+  /azurite/3.34.0:
+    resolution: {integrity: sha512-1uPtXTHtH318SEPV1sUkarcCMNNpTGy0pzMx1C2QNsQzdrllg+XvsLqD6j+NTuScZqow9+h704pfruK0BQGenQ==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
       '@azure/ms-rest-js': 1.11.2
+      applicationinsights: 2.9.6
       args: 5.0.3
       axios: 0.27.2
       etag: 1.8.1
@@ -6437,6 +6618,7 @@ packages:
       winston: 3.14.1
       xml2js: 0.6.2
     transitivePeerDependencies:
+      - applicationinsights-native-metrics
       - debug
       - ibm_db
       - mariadb
@@ -6983,6 +7165,10 @@ packages:
     resolution: {integrity: sha512-UZK3NBx2Mca+b5LsG7bY183pHWt5Y1xts4P3Pz7ENTwGVnJOUWbRb3ocjvX7hx9tq/yTAdclXm9sZ38gNuem4A==}
     deprecated: CircularJSON is in maintenance only, flatted is its successor.
 
+  /cjs-module-lexer/1.4.3:
+    resolution: {integrity: sha512-9z8TZaGM1pfswYeXrUpzPrkx8UnWYdhJclsiYMm6x/w5+nN+8Tf/LnAgfLGQCm59qAOxU8WwHEq2vNwF6i4j+Q==}
+    dev: false
+
   /clean-stack/2.2.0:
     resolution: {integrity: sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==}
     engines: {node: '>=6'}
@@ -7033,6 +7219,15 @@ packages:
     resolution: {integrity: sha512-ROoL94jJH2dUVML2Y/5PEDNaSHgeOdSDicUyS7izcF63G6sTc/FTjLub4b8Il9S8S0beOfYt0TaA5qvFK+w0wA==}
     dependencies:
       mimic-response: 1.0.1
+
+  /cls-hooked/4.2.2:
+    resolution: {integrity: sha512-J4Xj5f5wq/4jAvcdgoGsL3G103BtWpZrMo8NEinRltN+xpTZdI+M38pyQqhuFU/P792xkMFvnKSf+Lm81U1bxw==}
+    engines: {node: ^4.7 || >=6.9 || >=7.3 || >=8.2.1}
+    dependencies:
+      async-hook-jl: 1.7.6
+      emitter-listener: 1.1.2
+      semver: 5.7.2
+    dev: false
 
   /co/4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
@@ -7191,6 +7386,13 @@ packages:
   /content-type/1.0.5:
     resolution: {integrity: sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==}
     engines: {node: '>= 0.6'}
+
+  /continuation-local-storage/3.2.1:
+    resolution: {integrity: sha512-jx44cconVqkCEEyLSKWwkvUXwO561jXMa3LPjTPsm5QR22PA0/mhe33FT4Xb5y74JDvt/Cq+5lm8S8rskLv9ZA==}
+    dependencies:
+      async-listener: 0.6.10
+      emitter-listener: 1.1.2
+    dev: false
 
   /convert-source-map/1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
@@ -7599,6 +7801,20 @@ packages:
       asap: 2.0.6
       wrappy: 1.0.2
 
+  /diagnostic-channel-publishers/1.0.8_diagnostic-channel@1.1.1:
+    resolution: {integrity: sha512-HmSm9hXxSPxA9BaLGY98QU1zsdjeCk113KjAYGPCen1ZP6mhVaTPzHd6UYv5r21DnWANi+f+NyPOHruGT9jpqQ==}
+    peerDependencies:
+      diagnostic-channel: '*'
+    dependencies:
+      diagnostic-channel: 1.1.1
+    dev: false
+
+  /diagnostic-channel/1.1.1:
+    resolution: {integrity: sha512-r2HV5qFkUICyoaKlBEpLKHjxMXATUf/l+h8UZPGBHGLy4DDiY2sOLcIctax4eRnTw5wH2jTMExLntGPJ8eOJxw==}
+    dependencies:
+      semver: 7.6.3
+    dev: false
+
   /diff/3.5.0:
     resolution: {integrity: sha512-A46qtFgd+g7pDZinpnwiRJtxbC1hpgf0uzP3iG89scHk0AUC7A1TGxf5OiiOUv/JMZR8GOt8hL900hV0bOy5xA==}
     engines: {node: '>=0.3.1'}
@@ -7746,6 +7962,12 @@ packages:
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
     dev: true
+
+  /emitter-listener/1.1.2:
+    resolution: {integrity: sha512-Bt1sBAGFHY9DKY+4/2cV6izcKJUf5T7/gkdmkxzX/qv9CcGH8xSwVRW5mtX03SWJtRTWSOpzCuWN9rBFYZepZQ==}
+    dependencies:
+      shimmer: 1.2.1
+    dev: false
 
   /emoji-regex/8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -9491,6 +9713,15 @@ packages:
       parent-module: 1.0.1
       resolve-from: 4.0.0
 
+  /import-in-the-middle/1.13.1:
+    resolution: {integrity: sha512-k2V9wNm9B+ysuelDTHjI9d5KPc4l8zAZTGqj+pcynvWkypZd857ryzN8jNC7Pg2YZXNMJcHRPpaDyCBbNyVRpA==}
+    dependencies:
+      acorn: 8.14.1
+      acorn-import-attributes: 1.9.5_acorn@8.14.1
+      cjs-module-lexer: 1.4.3
+      module-details-from-path: 1.0.3
+    dev: false
+
   /import-lazy/2.1.0:
     resolution: {integrity: sha512-m7ZEHgtw69qOGw+jwxXkHlrlIPdTGkyh66zXZ1ajZbxkDBNjSY/LGbmjc7h0s2ELsUDTAhFr55TrPSSqJGPG0A==}
     engines: {node: '>=4'}
@@ -10884,6 +11115,10 @@ packages:
       yargs-parser: 20.2.4
       yargs-unparser: 2.0.0
 
+  /module-details-from-path/1.0.3:
+    resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
+    dev: false
+
   /moment-timezone/0.5.45:
     resolution: {integrity: sha512-HIWmqA86KcmCAhnMAN0wuDOARV/525R2+lOLotuGFzn4HO+FH+/645z2wx0Dt3iDv6/p61SIvKnDstISainhLQ==}
     dependencies:
@@ -12139,6 +12374,17 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: false
 
+  /require-in-the-middle/7.5.2:
+    resolution: {integrity: sha512-gAZ+kLqBdHarXB64XpAe2VCjB7rIRv+mU8tfRWziHRJ5umKsIHN2tLLv6EtMw7WCdP19S0ERVMldNvxYCHnhSQ==}
+    engines: {node: '>=8.6.0'}
+    dependencies:
+      debug: 4.4.0
+      module-details-from-path: 1.0.3
+      resolve: 1.22.8
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /require-main-filename/2.0.0:
     resolution: {integrity: sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==}
 
@@ -12655,6 +12901,10 @@ packages:
       '@types/hast': 3.0.4
     dev: false
 
+  /shimmer/1.2.1:
+    resolution: {integrity: sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw==}
+    dev: false
+
   /side-channel/1.0.6:
     resolution: {integrity: sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA==}
     engines: {node: '>= 0.4'}
@@ -12859,6 +13109,10 @@ packages:
   /sqlstring/2.3.3:
     resolution: {integrity: sha512-qC9iz2FlN7DQl3+wjwn3802RTyjCx7sDvfQEXchwa6CWOx07/WVfh91gBmQ9fahw8snwGEWU3xGzOt4tFyHLxg==}
     engines: {node: '>= 0.6'}
+    dev: false
+
+  /stack-chain/1.3.7:
+    resolution: {integrity: sha512-D8cWtWVdIe/jBA7v5p5Hwl5yOSOrmZPWDPe2KxQ5UAGD+nxbxU0lKXA4h85Ta6+qgdKVL3vUxsbIZjc1kBG7ug==}
     dev: false
 
   /stack-trace/0.0.10:
@@ -13149,7 +13403,7 @@ packages:
     engines: {node: ^14.18.0 || >=16.0.0}
     dependencies:
       '@pkgr/core': 0.1.1
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   /tapable/2.2.1:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
@@ -13218,7 +13472,7 @@ packages:
     hasBin: true
     dependencies:
       '@jridgewell/source-map': 0.3.6
-      acorn: 8.12.1
+      acorn: 8.14.1
       commander: 2.20.3
       source-map-support: 0.5.21
 
@@ -13421,6 +13675,10 @@ packages:
 
   /tslib/2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+    dev: false
+
+  /tslib/2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
   /tunnel/0.0.6:
     resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
