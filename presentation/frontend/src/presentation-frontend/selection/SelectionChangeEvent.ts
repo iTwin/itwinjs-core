@@ -10,7 +10,7 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
-import { ISelectionProvider } from "./ISelectionProvider";
+import { ISelectionProvider } from "./ISelectionProvider.js";
 
 /**
  * An interface for selection change listeners.

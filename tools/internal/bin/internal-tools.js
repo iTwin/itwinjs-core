@@ -12,4 +12,5 @@ const argv = yargs.strict(true)
   .wrap(Math.min(150, yargs.terminalWidth()))
   .command(require("../scripts/linkextensions"))
   .command(require("../scripts/copyConfig"))
+  .command(require("../scripts/create-cjs-package-json"))
   .argv;

@@ -16,12 +16,12 @@ import {
   RelatedClassInfoWithOptionalRelationshipJSON,
   RelationshipPath,
   RelationshipPathJSON,
-} from "../EC";
-import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
-import { Ruleset } from "../rules/Ruleset";
-import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields";
-import { omitUndefined } from "../Utils";
+} from "../EC.js";
+import { InstanceFilterDefinition } from "../InstanceFilterDefinition.js";
+import { Ruleset } from "../rules/Ruleset.js";
+import { CategoryDescription, CategoryDescriptionJSON } from "./Category.js";
+import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields.js";
+import { omitUndefined } from "../Utils.js";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -434,8 +434,8 @@ export class Descriptor implements DescriptorSource {
     const fields = this.getFieldsFromJSON(jsonFields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
     return new Descriptor({
       ...leftOverJson,
-      ...(connectionId ? /* istanbul ignore next */ { connectionId } : undefined),
-      ...(inputKeysHash ? /* istanbul ignore next */ { inputKeysHash } : undefined),
+      ...(connectionId ? /* c8 ignore next */ { connectionId } : undefined),
+      ...(inputKeysHash ? /* c8 ignore next */ { inputKeysHash } : undefined),
       selectClasses,
       categories,
       fields,

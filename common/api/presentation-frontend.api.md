@@ -135,6 +135,8 @@ export class FavoritePropertiesManager implements Disposable {
     sortFieldsAsync(imodel: IModelConnection, fields: Field[]): Promise<Field[]>;
     // @internal
     startConnectionInitialization(imodel: IModelConnection): void;
+    // (undocumented)
+    readonly storage: IFavoritePropertiesStorage;
 }
 
 // @public

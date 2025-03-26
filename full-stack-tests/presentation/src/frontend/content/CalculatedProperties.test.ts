@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { Content, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
-import { describeContentTestSuite } from "./Utils";
+import { collect, getFieldByLabel } from "../../Utils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Calculated Properties", ({ getDefaultSuiteIModel }) => {
   it("creates calculated fields", async () => {

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LabelDefinition } from "../presentation-common/LabelDefinition";
+import { LabelDefinition } from "../presentation-common/LabelDefinition.js";
 
 describe("LabelDefinition", () => {
   describe("fromLabelString", () => {
