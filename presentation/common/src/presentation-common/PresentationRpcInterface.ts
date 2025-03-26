@@ -10,12 +10,14 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor.js";
 import { ItemJSON } from "./content/Item.js";
+import { DisplayValueGroup } from "./content/Value.js";
 import { ClientDiagnostics, ClientDiagnosticsOptions } from "./Diagnostics.js";
 import { CompressedClassInfoJSON, InstanceKey } from "./EC.js";
 import { ElementProperties } from "./ElementProperties.js";
 import { PresentationStatus } from "./Error.js";
 import { NodeKey } from "./hierarchy/Key.js";
 import { Node } from "./hierarchy/Node.js";
+import { NodePathElement } from "./hierarchy/NodePathElement.js";
 import { KeySetJSON } from "./KeySet.js";
 import { LabelDefinition } from "./LabelDefinition.js";
 import {
@@ -38,8 +40,6 @@ import {
 import { RulesetVariableJSON } from "./RulesetVariables.js";
 import { SelectionScope } from "./selection/SelectionScope.js";
 import { deepReplaceNullsToUndefined, Omit, PagedResponse } from "./Utils.js";
-import { NodePathElement } from "./hierarchy/NodePathElement.js";
-import { DisplayValueGroup } from "./content/Value.js";
 
 /**
  * Base options for all presentation RPC requests.
@@ -317,12 +317,4 @@ export class PresentationRpcInterface extends RpcInterface {
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON> {
     return this.forward(arguments);
   }
-}
-
-/** @internal */
-export enum PresentationIpcEvents {
-  /**
-   * ID of an event that's emitted when backend detects changes in presented data.
-   */
-  Update = "presentation.onUpdate",
 }

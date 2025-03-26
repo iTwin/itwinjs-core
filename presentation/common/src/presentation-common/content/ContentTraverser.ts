@@ -660,7 +660,7 @@ function mergeHierarchies(lhs: FieldHierarchy, rhs: FieldHierarchy) {
 }
 
 /**
- * Adds a field hierarchy into root field hierarchies list. *
+ * Adds a field hierarchy into root field hierarchies list.
  * @public
  */
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void {

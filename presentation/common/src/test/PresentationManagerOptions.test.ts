@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { isSingleElementPropertiesRequestOptions } from "../presentation-common.js";
+import { isSingleElementPropertiesRequestOptions } from "../presentation-common/PresentationManagerOptions.js";
 
 describe("isSingleElementPropertiesRequestOptions", () => {
   it("return correct result for different element properties request options", () => {
