@@ -11,7 +11,7 @@ import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream } from "@itwin/core-common";
 import { BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LocateResponse, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
+import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool.js";
 
 /** Edit tool base class for updating existing elements.
  * @beta

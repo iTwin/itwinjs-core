@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "change editor-frontend to pure esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

@@ -9,9 +9,9 @@
 import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, LengthDescription, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
-import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
+import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration.js";
 import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
-import { EditTools } from "../EditTool";
+import { EditTools } from "../EditTool.js";
 
 function translatePrompt(key: string) {
   return EditTools.translate(`ProjectLocation:Prompts.${key}`);

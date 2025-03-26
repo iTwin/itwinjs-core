@@ -10,9 +10,9 @@ import { BeDuration } from "@itwin/core-bentley";
 import { _callIpcChannel, IModelApp, IpcApp } from "@itwin/core-frontend";
 import { editorIpcStrings } from "@itwin/editor-common";
 
-import * as UndoRedoTools from "./UndoRedoTool";
-import * as ProjectLocation from "./ProjectLocation/ProjectExtentsDecoration";
-import * as ProjectGeoLocation from "./ProjectLocation/ProjectGeolocation";
+import * as UndoRedoTools from "./UndoRedoTool.js";
+import * as ProjectLocation from "./ProjectLocation/ProjectExtentsDecoration.js";
+import * as ProjectGeoLocation from "./ProjectLocation/ProjectGeolocation.js";
 
 /** @beta */
 export namespace EditTools {
