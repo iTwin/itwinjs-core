@@ -9,14 +9,14 @@
 import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
 import * as path from "path";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { ECDb, ECDbOpenMode } from "./ECDb";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
-import { IModelHost, KnownLocations } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { _hubAccess, _nativeDb } from "./internal/Symbols";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { BriefcaseManager } from "./BriefcaseManager.js";
+import { ECDb, ECDbOpenMode } from "./ECDb.js";
+import { ECSqlStatement } from "./ECSqlStatement.js";
+import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb.js";
+import { IModelHost, KnownLocations } from "./IModelHost.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { _hubAccess, _nativeDb } from "./internal/Symbols.js";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 

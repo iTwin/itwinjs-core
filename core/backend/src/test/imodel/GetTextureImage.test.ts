@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { TextureLoadProps } from "@itwin/core-common";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { SnapshotDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("IModelDb.queryTextureData", () => {
   let imodel: SnapshotDb;

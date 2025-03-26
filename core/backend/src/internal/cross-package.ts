@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
-export { IModelNative } from "./NativePlatform";
+import { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
+
+export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory };
+export { IModelNative } from "./NativePlatform.js";
 export {
   _nativeDb,
-} from "./Symbols";
+} from "./Symbols.js";

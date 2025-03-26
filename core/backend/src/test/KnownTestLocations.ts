@@ -16,7 +16,7 @@ export class KnownTestLocations {
       return join(tmpdir(), "assets");
     }
 
-    return join(__dirname, "assets");
+    return join(import.meta.dirname, "assets");
   }
 
   /** The directory where tests can write. */
@@ -26,6 +26,6 @@ export class KnownTestLocations {
     }
 
     // Assume that we are running in nodejs
-    return join(__dirname, "output");
+    return join(import.meta.dirname, "output");
   }
 }

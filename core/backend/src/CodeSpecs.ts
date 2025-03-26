@@ -8,8 +8,8 @@
 
 import { BentleyError, DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, CodeSpecProperties, IModelError } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
-import { CodeService } from "./CodeService";
+import { IModelDb } from "./IModelDb.js";
+import { CodeService } from "./CodeService.js";
 
 /** Manages [CodeSpecs]($docs/BIS/guide/fundamentals/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public

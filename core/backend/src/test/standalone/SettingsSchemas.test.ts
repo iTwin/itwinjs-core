@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelHost } from "../../IModelHost";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { IModelHost } from "../../IModelHost.js";
 
 describe("SettingsSchemas", () => {
 

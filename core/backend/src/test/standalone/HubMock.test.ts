@@ -7,16 +7,16 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType, LockState } from "@itwin/core-common";
-import { LockProps } from "../../BackendHubAccess";
-import { BriefcaseManager } from "../../BriefcaseManager";
-import { IModelHost } from "../../IModelHost";
-import { IModelJsFs } from "../../IModelJsFs";
-import { HubMock } from "../../HubMock";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
-import { ProgressFunction, ProgressStatus } from "../../CheckpointManager";
-import { _hubAccess } from "../../internal/Symbols";
+import { LockProps } from "../../BackendHubAccess.js";
+import { BriefcaseManager } from "../../BriefcaseManager.js";
+import { IModelHost } from "../../IModelHost.js";
+import { IModelJsFs } from "../../IModelJsFs.js";
+import { HubMock } from "../../HubMock.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { LockStatusExclusive, LockStatusShared } from "../../LocalHub.js";
+import { ProgressFunction, ProgressStatus } from "../../CheckpointManager.js";
+import { _hubAccess } from "../../internal/Symbols.js";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");

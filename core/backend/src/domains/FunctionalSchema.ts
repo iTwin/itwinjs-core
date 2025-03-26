@@ -9,12 +9,12 @@
 import * as path from "path";
 import { DbResult } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { ClassRegistry } from "../ClassRegistry";
-import { IModelDb } from "../IModelDb";
-import { KnownLocations } from "../IModelHost";
-import { Schema, Schemas } from "../Schema";
-import * as elementsModule from "./FunctionalElements";
-import { _nativeDb } from "../internal/Symbols";
+import { ClassRegistry } from "../ClassRegistry.js";
+import { IModelDb } from "../IModelDb.js";
+import { KnownLocations } from "../IModelHost.js";
+import { Schema, Schemas } from "../Schema.js";
+import * as elementsModule from "./FunctionalElements.js";
+import { _nativeDb } from "../internal/Symbols.js";
 
 /** @public */
 export class FunctionalSchema extends Schema {

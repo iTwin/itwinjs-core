@@ -9,7 +9,7 @@
 
 // cspell: ignore wflag
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 
 /* TODO: define File Mode Constants: S_IWUSR, et al. */

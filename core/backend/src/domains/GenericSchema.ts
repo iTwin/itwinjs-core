@@ -7,10 +7,10 @@
  */
 
 import * as path from "path";
-import { ClassRegistry } from "../ClassRegistry";
-import { KnownLocations } from "../IModelHost";
-import { Schema, Schemas } from "../Schema";
-import * as elementsModule from "./GenericElements";
+import { ClassRegistry } from "../ClassRegistry.js";
+import { KnownLocations } from "../IModelHost.js";
+import { Schema, Schemas } from "../Schema.js";
+import * as elementsModule from "./GenericElements.js";
 
 /** @public */
 export class GenericSchema extends Schema {
