@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
 } from "@itwin/core-common";
@@ -109,20 +109,17 @@ export class IModelTile extends Tile {
 
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
     try {
-      const classifiers = this.tree.layerHandler?.layerClassifiers;
       content = await this.iModelTree.decoder.decode({
         stream: streamBuffer,
         options: { tileId: this.contentId },
         system,
         isCanceled,
         sizeMultiplier,
-        ...(classifiers?.size ? {
-          tileData: {
-            ecefTransform: this.tree.iModel.getEcefTransform(),
-            range: this.range,
-            layerClassifiers: this.tree.layerHandler?.layerClassifiers,
-          },
-        } : {}),
+        tileData: {
+          ecefTransform: this.tree.iModel.ecefLocation?.getTransform() ?? Transform.createIdentity(),
+          range: this.range,
+          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+        },
       });
     } catch {
       //
