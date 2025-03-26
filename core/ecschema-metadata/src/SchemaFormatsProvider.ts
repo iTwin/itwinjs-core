@@ -98,8 +98,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
   }
 
   /**
-   * Retrieves a Format from the cache or from the schema. If retrieving from the schema,
-   * an optional unitSystem can be provided to get the the
+   * Retrieves a Format from the cache or from the schema. If retrieving from the schema, and the format is part of a KindOfQuantity,
+   * an optional UnitSystemKey can be provided to get the first presentation format in the KindOfQuantity that matches the unit system.
    * @param id The full name of the Format.
    * @returns
    */

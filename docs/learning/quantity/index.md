@@ -128,7 +128,7 @@ Each Format defined in a FormatSet need to be mapped to a valid [ECName](../../b
       "composite": {
         "includeZero": true,
         "spacer": "",
-        "units": [{ "label": "'", "name": "Units.FT" }, { "label": "\"", "name": "Units.IN" }],},
+        "units": [{ "label": "'", "name": "Units.FT" }, { "label": "\"", "name": "Units.IN" }]},
       "formatTraits": ["keepSingleZero", "showUnitLabel"],
       "precision": 4,
       "type": "Decimal",
@@ -191,7 +191,7 @@ For the composite format below, we provide a unit in meters and produce a format
 
 ### Using a FormatsProvider
 
-The example below uses the SchemaFormatsProvider, an implementation of a FormatsProvider, found in `ecschema-metadata` to parse and format values associated with the length of an object.
+The example below uses the SchemaFormatsProvider, an implementation of a FormatsProvider, found in `ecschema-metadata` to format values associated with the length of an object.
 
 <details>
   <summary>Example of Formatting</summary>
@@ -202,6 +202,21 @@ The example below uses the SchemaFormatsProvider, an implementation of a Formats
 
 </details>
 
+When retrieving a format from a schema, users might want to ensure the format they get matches the unit system they are currently using. They can add an optional [UnitSystemKey]($quantity) to the getFormat method, like such:
+
+<details>
+  <summary>Example of Formatting with Unit System</summary>
+
+```ts
+[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting_With_Unit_System]]
+```
+
+</details>
+
+> If the format was retrieved through the cache of the SchemaFormatsProvider, it won't use the unitSystem provided.
+
+The example below uses the SchemaFormatsProvider, an implementation of a FormatsProvider, found in `ecschema-metadata` to parse values associated with the length of an object.
+
 <details>
   <summary>Example of Parsing</summary>
 
@@ -210,6 +225,7 @@ The example below uses the SchemaFormatsProvider, an implementation of a Formats
 ```
 
 </details>
+
 ### Mathematical Operation Parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting each value present, according to the specified format. This makes it possible to process several different units at once.
@@ -250,4 +266,3 @@ If a Format uses a spacer that conflicts with one of the operators above, additi
 ```
 
 </details>
-

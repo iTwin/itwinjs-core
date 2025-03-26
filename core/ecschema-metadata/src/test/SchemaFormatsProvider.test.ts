@@ -160,7 +160,7 @@ describe("SchemaFormatsProvider", () => {
     expect(result).to.equal("164'0 1/2\"");
   });
 
-  it("retrieve different presentation formats from a KoQ based on different unit systems", async () => {
+  it("retrieve different default presentation formats from a KoQ based on different unit systems", async () => {
     const formatPropsImperial = await formatsProvider.getFormat("AecUnits.LENGTH_LONG", "imperial");
     expect(formatPropsImperial).not.to.be.undefined;
     expect(formatPropsImperial!.composite?.units[0].name).to.equal("Units.FT");
