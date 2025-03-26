@@ -55,7 +55,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=lib/esm/presentation-common",
     "ruleset-json-schema": "npm run -s ruleset-json-schema:generate && npm run -s ruleset-json-schema:post-process",
-    "ruleset-json-schema:generate": "typescript-json-schema ./src/presentation-common/rules/**/*.ts Ruleset --noExtraProps --required --strictNullChecks --validationKeywords deprecated > ./Ruleset.schema.json",
+    "ruleset-json-schema:generate": "typescript-json-schema \"./src/presentation-common/rules/**/*.ts\" Ruleset --noExtraProps --required --strictNullChecks --validationKeywords deprecated > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.cjs --path ./Ruleset.schema.json",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
