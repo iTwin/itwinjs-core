@@ -90,6 +90,7 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
 
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
@@ -100,6 +101,7 @@ function getCount(imodel: IModelDb, className: string) {
 
 function measureGetRowTime(imodel: IModelDb, className: string): number {
   let totalTime = 0.0;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT * FROM ${className}`, (stmt: ECSqlStatement) => {
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       const startTime = new Date().getTime();
