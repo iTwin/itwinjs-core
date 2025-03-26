@@ -220,7 +220,7 @@ export function updateAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
     throw new Error("Element Id is required to update a aspect");
   }
 
-  // Get the Model Class Definition and check if its valid
+  // Get the Element Class Definition and check if its valid
   const element = iModel.elements.getElementProps(aspectProps.element); // Will Throw is Element Doesn't Exist
   const classDef = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName);
 
@@ -305,4 +305,32 @@ export function deleteModelWithHandlers(iModel: IModelDb, modelId: Id64Arg): voi
 
   // Call post-delete Domain Handlers
   classDef.onDeleted({ iModel, id: modelId });
+}
+
+/**
+ * Function deletes an element aspect in an iModel and calls the pre-delete and post-delete domain handlers.
+ * @param iModel The iModel that contains the element aspect to delete.
+ * @param aspectId The Id of the aspect to delete.
+ * @internal
+ */
+export function deleteAspectWithHandlers(iModel: IModelDb, aspectId: Id64Arg): void {
+  // Delete options
+  const deleteOptions = { useJsNames: true };
+
+  // Get the aspect Class Definition and check if its valid
+  const aspect = iModel.elements.getAspect(aspectId); // Will throw if aspect does not exist
+  const element = iModel.elements.getElement(aspect.element); // Will throw if element does not exist
+  const classDef = iModel.getJsClass<typeof ElementAspect>(aspect.classFullName);
+
+  // Call pre-delete Domain Handlers
+  classDef.onDelete({ iModel, aspectId, model: element.model });
+
+  // Perform delete
+  const deleteResult = iModel[_nativeDb].deleteInstance(aspectId, deleteOptions);
+  if (!deleteResult) {
+    throw new Error(`Failed to delete aspect with id: ${aspectId}`);
+  }
+
+  // Call post-delete Domain Handlers
+  classDef.onDeleted({ iModel, aspectId, model: element.model });
 }
