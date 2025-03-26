@@ -140,7 +140,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model to be deleted
    * @beta
    */
-  protected static onDelete(arg: OnModelIdArg): void {
+  public static onDelete(arg: OnModelIdArg): void {
     arg.iModel.channels[_verifyChannel](arg.id);
     arg.iModel.locks.checkExclusiveLock(arg.id, "model", "delete");
   }
@@ -150,7 +150,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnModelIdArg): void { }
+  public static onDeleted(_arg: OnModelIdArg): void { }
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
    * @note throw an exception to disallow the insert
@@ -188,14 +188,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onDeleteElement(_arg: OnElementInModelIdArg): void { }
+  public static onDeleteElement(_arg: OnElementInModelIdArg): void { }
 
   /** Called after an Element in an instance of a Model of this class has been deleted.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
+  public static onDeletedElement(_arg: OnElementInModelIdArg): void { }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
