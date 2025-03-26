@@ -697,11 +697,4 @@ describe("SelectClassInfo", () => {
       expect(actualClassesMap).to.containSubset(classesMap);
     });
   });
-
-  describe("listFromCompressedJSON", () => {
-    it("creates valid SelectClassInfo[] from compressed JSON", () => {
-      const result = SelectClassInfo.listFromCompressedJSON([compressedJson], classesMap);
-      expect(result).to.deep.equal([obj]);
-    });
-  });
 });

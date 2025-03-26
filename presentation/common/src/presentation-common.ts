@@ -8,32 +8,110 @@
  * @docs-group-description Core
  * Common types used all across Presentation packages.
  */
-export * from "./presentation-common/AsyncTasks.js";
-export * from "./presentation-common/Diagnostics.js";
-export * from "./presentation-common/EC.js";
-export * from "./presentation-common/Error.js";
-export * from "./presentation-common/KeySet.js";
-export * from "./presentation-common/LabelDefinition.js";
-export * from "./presentation-common/PresentationManagerOptions.js";
-export * from "./presentation-common/RegisteredRuleset.js";
-export * from "./presentation-common/RulesetVariables.js";
-export * from "./presentation-common/RulesetsFactory.js";
-export * from "./presentation-common/Update.js";
 export {
-  DEFAULT_KEYS_BATCH_SIZE,
-  Omit,
-  PagedResponse,
-  PartialBy,
-  Subtract,
-  ValuesDictionary,
-  getInstancesCount,
-  deepReplaceNullsToUndefined,
-  createCancellableTimeoutPromise,
-} from "./presentation-common/Utils.js";
-export * from "./presentation-common/PresentationIpcInterface.js";
-export * from "./presentation-common/LocalizationHelper.js";
-export * from "./presentation-common/InstanceFilterDefinition.js";
-export * from "./presentation-common/KoqPropertyValueFormatter.js";
+  DiagnosticsLoggerSeverity,
+  Diagnostics,
+  ClientDiagnostics,
+  DiagnosticsOptions,
+  ClientDiagnosticsHandler,
+  ClientDiagnosticsOptions,
+  ClientDiagnosticsAttribute,
+  DiagnosticsLogMessage,
+  DiagnosticsScopeLogs,
+  DiagnosticsLogEntry,
+} from "./presentation-common/Diagnostics.js";
+export {
+  ClassId,
+  InstanceId,
+  InstanceKey,
+  ClassInfo,
+  CompressedClassInfoJSON,
+  EnumerationChoice,
+  EnumerationInfo,
+  KindOfQuantityInfo,
+  NavigationPropertyInfo,
+  NavigationPropertyInfoJSON,
+  PropertyInfo,
+  PropertyValueConstraints,
+  StringPropertyValueConstraints,
+  NumericPropertyValueConstraints,
+  ArrayPropertyValueConstraints,
+  PropertyInfoJSON,
+  RelatedClassInfo,
+  RelatedClassInfoJSON,
+  RelatedClassInfoWithOptionalRelationship,
+  RelatedClassInfoWithOptionalRelationshipJSON,
+  RelationshipPath,
+  RelationshipPathJSON,
+  StrippedRelatedClassInfo,
+  StrippedRelationshipPath,
+} from "./presentation-common/EC.js";
+export { PresentationStatus, PresentationError } from "./presentation-common/Error.js";
+export { Key, Keys, KeySetJSON, KeySet } from "./presentation-common/KeySet.js";
+export { LabelCompositeValue, LabelRawValue, LabelDefinition } from "./presentation-common/LabelDefinition.js";
+export {
+  RequestOptions,
+  RequestOptionsWithRuleset,
+  HierarchyRequestOptions,
+  HierarchyLevelDescriptorRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions,
+  ContentSourcesRequestOptions,
+  ContentDescriptorRequestOptions,
+  ContentRequestOptions,
+  DistinctValuesRequestOptions,
+  ElementPropertiesRequestOptions,
+  SingleElementPropertiesRequestOptions,
+  MultiElementPropertiesByClassRequestOptions,
+  MultiElementPropertiesByIdsRequestOptions,
+  MultiElementPropertiesRequestOptions,
+  ContentInstanceKeysRequestOptions,
+  DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions,
+  SelectionScopeRequestOptions,
+  ComputeSelectionRequestOptions,
+  HierarchyCompareOptions,
+  PageOptions,
+  Paged,
+  Prioritized,
+  WithCancelEvent,
+} from "./presentation-common/PresentationManagerOptions.js";
+export { RegisteredRuleset } from "./presentation-common/RegisteredRuleset.js";
+export {
+  VariableValueTypes,
+  VariableValue,
+  VariableValueJSON,
+  BooleanRulesetVariable,
+  StringRulesetVariable,
+  IntRulesetVariable,
+  IntsRulesetVariable,
+  Id64RulesetVariable,
+  Id64sRulesetVariable,
+  RulesetVariable,
+  Id64sRulesetVariableJSON,
+  RulesetVariableJSON,
+} from "./presentation-common/RulesetVariables.js";
+export { RulesetsFactory, ComputeDisplayValueCallback, PrimitivePropertyValue } from "./presentation-common/RulesetsFactory.js";
+export {
+  UPDATE_FULL,
+  UpdateInfo,
+  HierarchyUpdateInfo,
+  ContentUpdateInfo,
+  PartialHierarchyModification,
+  NodeInsertionInfo,
+  NodeDeletionInfo,
+  NodeUpdateInfo,
+  HierarchyCompareInfo,
+} from "./presentation-common/Update.js";
+export { DEFAULT_KEYS_BATCH_SIZE, Omit, PagedResponse, PartialBy, Subtract, ValuesDictionary, getInstancesCount } from "./presentation-common/Utils.js";
+export {
+  InstanceFilterDefinition,
+  InstanceFilterRelatedInstanceDefinition,
+  InstanceFilterRelatedInstancePath,
+  InstanceFilterRelatedInstanceTargetAlias,
+  InstanceFilterRelatedInstanceRelationshipAlias,
+} from "./presentation-common/InstanceFilterDefinition.js";
+export { UnitSystemFormat, FormatsMap, FormatOptions, KoqPropertyValueFormatter } from "./presentation-common/KoqPropertyValueFormatter.js";
 
 /**
  * @module RPC
@@ -42,8 +120,28 @@ export * from "./presentation-common/KoqPropertyValueFormatter.js";
  * Types used for RPC communication between frontend and backend. Generally should
  * only be used internally by presentation packages.
  */
-export * from "./presentation-common/PresentationRpcInterface.js";
-export * from "./presentation-common/RpcRequestsHandler.js";
+export {
+  PresentationRpcRequestOptions,
+  PresentationRpcResponseData,
+  RpcDiagnosticsOptions,
+  PresentationRpcResponse,
+  HierarchyRpcRequestOptions,
+  HierarchyLevelDescriptorRpcRequestOptions,
+  FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions,
+  ContentSourcesRpcRequestOptions,
+  ContentSourcesRpcResult,
+  ContentDescriptorRpcRequestOptions,
+  ContentRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
+  DistinctValuesRpcRequestOptions,
+  ContentInstanceKeysRpcRequestOptions,
+  DisplayLabelRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions,
+  SelectionScopeRpcRequestOptions,
+  ComputeSelectionRpcRequestOptions,
+  PresentationRpcInterface,
+} from "./presentation-common/PresentationRpcInterface.js";
 
 /**
  * @module UnifiedSelection
@@ -51,7 +149,7 @@ export * from "./presentation-common/RpcRequestsHandler.js";
  * @docs-group-description UnifiedSelection
  * Types related to [unified selection]($docs/presentation/unified-selection/index.md).
  */
-export * from "./presentation-common/selection/SelectionScope.js";
+export { SelectionScope, ElementSelectionScopeProps, SelectionScopeProps } from "./presentation-common/selection/SelectionScope.js";
 
 /**
  * @module Content
@@ -59,20 +157,91 @@ export * from "./presentation-common/selection/SelectionScope.js";
  * @docs-group-description Content
  * Types related to presentation [content]($docs/presentation/content/index.md).
  */
-export * from "./presentation-common/content/Category.js";
-export * from "./presentation-common/content/Content.js";
-export * from "./presentation-common/content/Descriptor.js";
-export * from "./presentation-common/content/DisplayTypes.js";
-export * from "./presentation-common/content/Editor.js";
-export * from "./presentation-common/content/Fields.js";
-export * from "./presentation-common/content/Item.js";
-export * from "./presentation-common/content/Property.js";
-export * from "./presentation-common/content/Renderer.js";
-export * from "./presentation-common/content/TypeDescription.js";
-export * from "./presentation-common/content/Value.js";
-export * from "./presentation-common/content/ContentTraverser.js";
-export * from "./presentation-common/content/PropertyValueFormatter.js";
-export * from "./presentation-common/ElementProperties.js";
+export { CategoryDescription, CategoryDescriptionJSON } from "./presentation-common/content/Category.js";
+export { ContentJSON, Content } from "./presentation-common/content/Content.js";
+export {
+  SelectClassInfo,
+  SelectClassInfoJSON,
+  ContentFlags,
+  SortDirection,
+  SelectionInfo,
+  DescriptorJSON,
+  DescriptorOverrides,
+  DescriptorSource,
+  Descriptor,
+} from "./presentation-common/content/Descriptor.js";
+export { DefaultContentDisplayTypes } from "./presentation-common/content/DisplayTypes.js";
+export { EditorDescription } from "./presentation-common/content/Editor.js";
+export {
+  PropertiesFieldJSON,
+  ArrayPropertiesFieldJSON,
+  StructPropertiesFieldJSON,
+  NestedContentFieldJSON,
+  FieldJSON,
+  Field,
+  PropertiesField,
+  ArrayPropertiesField,
+  StructPropertiesField,
+  NestedContentField,
+  FieldDescriptorType,
+  FieldDescriptor,
+  NamedFieldDescriptor,
+  PropertiesFieldDescriptor,
+} from "./presentation-common/content/Fields.js";
+export { ItemJSON, Item } from "./presentation-common/content/Item.js";
+export { PropertyAccessor, PropertyAccessorPath, Property, PropertyJSON } from "./presentation-common/content/Property.js";
+export { RendererDescription } from "./presentation-common/content/Renderer.js";
+export {
+  PropertyValueFormat,
+  PrimitiveTypeDescription,
+  ArrayTypeDescription,
+  StructFieldMemberDescription,
+  StructTypeDescription,
+  TypeDescription,
+} from "./presentation-common/content/TypeDescription.js";
+export {
+  Value,
+  ValuesMap,
+  ValuesArray,
+  DisplayValue,
+  DisplayValuesMap,
+  DisplayValuesArray,
+  NestedContentValue,
+  NavigationPropertyValue,
+  DisplayValueGroup,
+} from "./presentation-common/content/Value.js";
+export {
+  FieldHierarchy,
+  StartContentProps,
+  ProcessFieldHierarchiesProps,
+  StartItemProps,
+  StartCategoryProps,
+  StartFieldProps,
+  StartStructProps,
+  StartArrayProps,
+  ProcessMergedValueProps,
+  ProcessPrimitiveValueProps,
+  IContentVisitor,
+  traverseFieldHierarchy,
+  traverseContent,
+  traverseContentItem,
+  createFieldHierarchies,
+  addFieldHierarchy,
+  combineFieldNames,
+  parseCombinedFieldNames,
+} from "./presentation-common/content/ContentTraverser.js";
+export {
+  ElementProperties,
+  ElementPropertiesCategoryItem,
+  ElementPropertiesPrimitivePropertyItem,
+  ElementPropertiesPrimitiveArrayPropertyItem,
+  ElementPropertiesStructArrayPropertyItem,
+  ElementPropertiesArrayPropertyItem,
+  ElementPropertiesStructPropertyItem,
+  ElementPropertiesPropertyValueType,
+  ElementPropertiesPropertyItem,
+  ElementPropertiesItem,
+} from "./presentation-common/ElementProperties.js";
 
 /**
  * @module Hierarchies
@@ -80,10 +249,26 @@ export * from "./presentation-common/ElementProperties.js";
  * @docs-group-description Hierarchies
  * Types related to presentation [hierarchies]($docs/presentation/hierarchies/index.md).
  */
-export * from "./presentation-common/hierarchy/HierarchyLevel.js";
-export * from "./presentation-common/hierarchy/Key.js";
-export * from "./presentation-common/hierarchy/Node.js";
-export * from "./presentation-common/hierarchy/NodePathElement.js";
+export { HierarchyLevel } from "./presentation-common/hierarchy/HierarchyLevel.js";
+export {
+  StandardNodeTypes,
+  NodeKey,
+  NodeKeyPath,
+  BaseNodeKey,
+  ECInstancesNodeKey,
+  GroupingNodeKey,
+  ECClassGroupingNodeKey,
+  ECPropertyGroupingNodeKey,
+  LabelGroupingNodeKey,
+  PresentationQuery,
+  IdBinding,
+  IdSetBinding,
+  ECValueBinding,
+  ECValueSetBinding,
+  PresentationQueryBinding,
+} from "./presentation-common/hierarchy/Key.js";
+export { Node, PartialNode } from "./presentation-common/hierarchy/Node.js";
+export { NodePathElement, NodePathFilteringData } from "./presentation-common/hierarchy/NodePathElement.js";
 
 /**
  * @module PresentationRules
@@ -91,6 +276,7 @@ export * from "./presentation-common/hierarchy/NodePathElement.js";
  * @docs-group-description PresentationRules
  * Types for defining the presentation ruleset.
  */
+// note: everything under `rules/` is public, so no need to name each exported api
 export * from "./presentation-common/rules/hierarchy/ChildNodeRule.js";
 export * from "./presentation-common/rules/hierarchy/ChildNodeSpecification.js";
 export * from "./presentation-common/rules/hierarchy/CustomNodeSpecification.js";

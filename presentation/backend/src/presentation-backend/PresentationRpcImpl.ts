@@ -10,7 +10,6 @@ import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { BeEvent, ErrorCategory, Logger, omit, StatusCategory, SuccessCategory } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcPendingResponse } from "@itwin/core-common";
 import {
-  buildElementProperties,
   ClientDiagnostics,
   ComputeSelectionRpcRequestOptions,
   ContentDescriptorRpcRequestOptions,
@@ -19,8 +18,6 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
-  createCancellableTimeoutPromise,
-  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
@@ -57,15 +54,16 @@ import {
   SelectionScopeRpcRequestOptions,
   SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
+import { buildElementProperties, createCancellableTimeoutPromise, deepReplaceNullsToUndefined } from "@itwin/presentation-common/internal";
+// @ts-expect-error TS complains about `with` in CJS builds; The path is fine at runtime, but not at compile time
+// eslint-disable-next-line @itwin/import-within-package
+import packageJson from "../../../package.json" with { type: "json" };
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import { Presentation } from "./Presentation.js";
 import { PresentationManager } from "./PresentationManager.js";
 import { getRulesetIdObject } from "./PresentationManagerDetail.js";
 import { TemporaryStorage } from "./TemporaryStorage.js";
 
-// @ts-expect-error TS complains about `with` in CJS builds; The path is fine at runtime, but not at compile time
-// eslint-disable-next-line @itwin/import-within-package
-import packageJson from "../../../package.json" with { type: "json" };
 const packageJsonVersion = packageJson.version;
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;

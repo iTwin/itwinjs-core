@@ -6,7 +6,8 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { _callIpcChannel, IpcApp } from "@itwin/core-frontend";
-import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import { RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import { PRESENTATION_IPC_CHANNEL_NAME } from "@itwin/presentation-common/internal";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler.js";
 
 describe("IpcRequestsHandler", () => {

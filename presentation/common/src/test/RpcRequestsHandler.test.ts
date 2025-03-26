@@ -7,27 +7,14 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Id64, Logger } from "@itwin/core-bentley";
 import { CURRENT_REQUEST, IModelRpcProps, RpcInterface, RpcManager, RpcRequest } from "@itwin/core-common";
-import {
-  DescriptorOverrides,
-  DistinctValuesRpcRequestOptions,
-  KeySet,
-  KeySetJSON,
-  Paged,
-  PresentationError,
-  PresentationRpcInterface,
-  PresentationRpcRequestOptions,
-  PresentationRpcResponse,
-  PresentationStatus,
-  RpcRequestsHandler,
-  SelectionInfo,
-  SelectionScope,
-  SelectionScopeRequestOptions,
-} from "../presentation-common.js";
+import { DescriptorOverrides, SelectionInfo } from "../presentation-common/content/Descriptor.js";
 import { FieldDescriptorType } from "../presentation-common/content/Fields.js";
 import { ItemJSON } from "../presentation-common/content/Item.js";
 import { ClientDiagnostics } from "../presentation-common/Diagnostics.js";
 import { InstanceKey } from "../presentation-common/EC.js";
+import { PresentationError, PresentationStatus } from "../presentation-common/Error.js";
 import { NodeKey } from "../presentation-common/hierarchy/Key.js";
+import { KeySet, KeySetJSON } from "../presentation-common/KeySet.js";
 import {
   ComputeSelectionRequestOptions,
   ContentDescriptorRequestOptions,
@@ -41,6 +28,8 @@ import {
   FilterByTextHierarchyRequestOptions,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
+  Paged,
+  SelectionScopeRequestOptions,
 } from "../presentation-common/PresentationManagerOptions.js";
 import {
   ContentDescriptorRpcRequestOptions,
@@ -50,12 +39,18 @@ import {
   ContentSourcesRpcResult,
   DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions,
+  DistinctValuesRpcRequestOptions,
   FilterByInstancePathsHierarchyRpcRequestOptions,
   FilterByTextHierarchyRpcRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
+  PresentationRpcInterface,
+  PresentationRpcRequestOptions,
+  PresentationRpcResponse,
 } from "../presentation-common/PresentationRpcInterface.js";
+import { RpcRequestsHandler } from "../presentation-common/RpcRequestsHandler.js";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables.js";
+import { SelectionScope } from "../presentation-common/selection/SelectionScope.js";
 import { createTestContentDescriptor } from "./_helpers/Content.js";
 import {
   createTestECInstanceKey,
