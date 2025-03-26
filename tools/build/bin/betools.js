@@ -50,7 +50,7 @@ yargs.strict(true)
           describe: "Specify a baseUrl to resolve modules"
         },
         "tsconfig": {
-          describe: "."
+          describe: "Specify a path to `tsconfig.json` configuration file used to build the package. Defaults to `./tsconfig.json`"
         },
       })
     },
@@ -151,7 +151,7 @@ function docsCommand(options) {
   const tsconfigOpt = options.tsconfig ? ["--tsconfig", options.tsconfig] : [];
   exec("node", [getScriptPath("docs.js"),
   ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt,
-  ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, 
+  ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt,
   ...indexFileOpt, ...onlyJsonOpt, ...tsconfigOpt]);
 }
 

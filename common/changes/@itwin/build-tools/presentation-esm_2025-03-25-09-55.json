@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/build-tools",
-      "comment": "Bump `typedoc` to `^0.28.1`. Add a `tsconfig` option to `docs` command to allow specifying a custom TS configuration.",
+      "comment": "Add a `tsconfig` option to `docs` command to allow specifying a custom TS configuration.",
       "type": "none"
     }
   ],
