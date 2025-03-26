@@ -13,17 +13,13 @@ import { Id64Array } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  buildElementProperties,
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
-  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -41,12 +37,10 @@ import {
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
-  isSingleElementPropertiesRequestOptions,
   Item,
   KeySet,
   KoqPropertyValueFormatter,
   LabelDefinition,
-  LocalizationHelper,
   MultiElementPropertiesRequestOptions,
   Node,
   NodeKey,
@@ -64,6 +58,14 @@ import {
   SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
+import {
+  buildElementProperties,
+  ContentFormatter,
+  ContentPropertyValueFormatter,
+  deepReplaceNullsToUndefined,
+  isSingleElementPropertiesRequestOptions,
+  LocalizationHelper,
+} from "@itwin/presentation-common/internal";
 import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper.js";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform.js";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail.js";

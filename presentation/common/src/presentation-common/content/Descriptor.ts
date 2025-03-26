@@ -19,9 +19,9 @@ import {
 } from "../EC.js";
 import { InstanceFilterDefinition } from "../InstanceFilterDefinition.js";
 import { Ruleset } from "../rules/Ruleset.js";
+import { omitUndefined } from "../Utils.js";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category.js";
 import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields.js";
-import { omitUndefined } from "../Utils.js";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -119,17 +119,6 @@ export namespace SelectClassInfo {
           }
         : undefined),
     };
-  }
-
-  /**
-   * Deserialize [[SelectClassInfo]] list from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized [[SelectClassInfo]] objects list
-   *
-   * @internal
-   */
-  export function listFromCompressedJSON(json: SelectClassInfoJSON<Id64String>[], classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo[] {
-    return json.map((sci) => fromCompressedJSON(sci, classesMap));
   }
 }
 
@@ -430,7 +419,7 @@ export class Descriptor implements DescriptorSource {
       ...leftOverJson
     } = json;
     const categories = CategoryDescription.listFromJSON(jsonCategories);
-    const selectClasses = SelectClassInfo.listFromCompressedJSON(jsonSelectClasses, classesMap);
+    const selectClasses = jsonSelectClasses.map((jsc) => SelectClassInfo.fromCompressedJSON(jsc, classesMap));
     const fields = this.getFieldsFromJSON(jsonFields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
     return new Descriptor({
       ...leftOverJson,

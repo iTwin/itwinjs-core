@@ -9,7 +9,8 @@ import * as moq from "typemoq";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, ElementSelectionScopeProps, KeySet, RpcRequestsHandler, SelectionScope } from "@itwin/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, ElementSelectionScopeProps, KeySet, SelectionScope } from "@itwin/presentation-common";
+import { RpcRequestsHandler } from "@itwin/presentation-common/internal";
 import { createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
 import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager.js";
 

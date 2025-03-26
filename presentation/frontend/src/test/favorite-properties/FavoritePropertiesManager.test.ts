@@ -22,9 +22,9 @@ import {
   FavoritePropertiesOrderInfo,
   FavoritePropertiesScope,
   getFieldInfos,
-  IFavoritePropertiesStorage,
-} from "../../presentation-frontend.js";
-import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
+  PropertyFullName,
+} from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
+import { IFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
 
 describe("FavoritePropertiesManager", () => {
   let manager: FavoritePropertiesManager;

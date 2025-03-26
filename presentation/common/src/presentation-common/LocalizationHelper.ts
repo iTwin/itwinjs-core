@@ -19,8 +19,7 @@ import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition.js";
 
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
-/** @internal */
-export interface LocalizationHelperProps {
+interface LocalizationHelperProps {
   getLocalizedString: (key: string) => string;
 }
 

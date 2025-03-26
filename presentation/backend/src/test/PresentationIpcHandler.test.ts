@@ -5,14 +5,7 @@
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
-import {
-  Id64sRulesetVariableJSON,
-  RulesetVariableJSON,
-  SetRulesetVariableParams,
-  StringRulesetVariable,
-  UnsetRulesetVariableParams,
-  VariableValueTypes,
-} from "@itwin/presentation-common";
+import { Id64sRulesetVariableJSON, StringRulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
 import { Presentation } from "../presentation-backend/Presentation.js";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler.js";
 import { PresentationManager } from "../presentation-backend/PresentationManager.js";
@@ -39,12 +32,11 @@ describe("PresentationIpcHandler", () => {
       variablesManagerMock.setup((x) => x.setValue(testVariable.id, testVariable.type, testVariable.value)).verifiable(moq.Times.once());
 
       const ipcHandler = new PresentationIpcHandler();
-      const params: SetRulesetVariableParams<RulesetVariableJSON> = {
+      await ipcHandler.setRulesetVariable({
         clientId: "test-client-id",
         rulesetId: testRulesetId,
         variable: testVariable,
-      };
-      await ipcHandler.setRulesetVariable(params);
+      });
       variablesManagerMock.verifyAll();
     });
 
@@ -58,12 +50,11 @@ describe("PresentationIpcHandler", () => {
 
       variablesManagerMock.setup((x) => x.setValue(testVariable.id, testVariable.type, ids)).verifiable(moq.Times.once());
       const ipcHandler = new PresentationIpcHandler();
-      const params: SetRulesetVariableParams<RulesetVariableJSON> = {
+      await ipcHandler.setRulesetVariable({
         clientId: "test-client-id",
         rulesetId: testRulesetId,
         variable: testVariable,
-      };
-      await ipcHandler.setRulesetVariable(params);
+      });
       variablesManagerMock.verifyAll();
     });
   });
@@ -80,12 +71,11 @@ describe("PresentationIpcHandler", () => {
       variablesManagerMock.setup((x) => x.unset("test-id")).verifiable(moq.Times.once());
 
       const ipcHandler = new PresentationIpcHandler();
-      const params: UnsetRulesetVariableParams = {
+      await ipcHandler.unsetRulesetVariable({
         clientId: "test-client-id",
         rulesetId: testRulesetId,
         variableId: "test-id",
-      };
-      await ipcHandler.unsetRulesetVariable(params);
+      });
       variablesManagerMock.verifyAll();
     });
   });

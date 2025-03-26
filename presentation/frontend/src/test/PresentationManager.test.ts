@@ -37,16 +37,15 @@ import {
   KeySet,
   NodeKey,
   Paged,
-  PresentationIpcEvents,
   PropertyValueFormat,
   RegisteredRuleset,
-  RpcRequestsHandler,
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
+import { PresentationIpcEvents, RpcRequestsHandler } from "@itwin/presentation-common/internal";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
