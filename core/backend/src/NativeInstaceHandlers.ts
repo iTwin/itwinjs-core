@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb } from "./IModelDb";
+import { IModelDb, UpdateModelOptions } from "./IModelDb";
 import { Element } from "./Element";
 import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
@@ -57,7 +57,6 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
 
   return elProps.id;
 }
-
 
 /**
  * Function inserts a Model into an iModel and calls the pre-insert and post-insert domain handlers.
@@ -123,4 +122,121 @@ export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
   iModel.models.getModel(element.model).update();
 
   return aspectProps.id;
+}
+
+// TODO: Could potentially be used to enforce that the id is required in the ElementProps, Do we want to do this?
+// export type ElementPropsWithId = Partial<ElementProps> & Required<Pick<ElementProps, "id">>;
+
+/**
+ * Function updates an element in an iModel and calls the pre-update and post-update domain handlers.
+ * @param iModel The iModel that containers the element to update.
+ * @param elProps The properties of the element to update.
+ * @param options Update options.
+ * @internal
+ */
+export function updateElementWithHandlers<T extends ElementProps>(iModel: IModelDb, elProps: Partial<T>): void {
+  // Update options
+  const updateOptions = { useJsNames: true };
+
+  // Check if the element args are valid and fail early
+  if (elProps.id === undefined) {
+    throw new Error("Element Id is required to update a Element");
+  }
+
+  // Get the Element Class Definition and check if its valid
+  const element = iModel.elements.getElementProps(elProps.id); // Will Throw is Element Doesn't Exist
+  const classDef = iModel.getJsClass<typeof Element>(element.classFullName);
+  const model = iModel.models.tryGetModelProps(element.model);
+  const modelClassDef = model ? iModel.getJsClass<typeof Model>(model.classFullName) : undefined;
+  const parent = element.parent?.id ? iModel.elements.tryGetElementProps(element.parent.id) : undefined;
+  const parentClassDef = parent ? iModel.getJsClass<typeof Element>(parent.classFullName) : undefined;
+
+  // Call pre-update Domain Handlers
+  classDef.onUpdate({ iModel, props: element });
+  if (modelClassDef !== undefined && model?.id) {
+    modelClassDef.onUpdateElement({ iModel, elementProps: element, id: model.id });
+  }
+  if (parentClassDef !== undefined && parent?.id) {
+    parentClassDef.onChildUpdate({ iModel, childProps: element, parentId: parent.id });
+  }
+
+  // Perform update
+  const updateResult = iModel[_nativeDb].updateInstance(elProps, updateOptions);
+  if (!updateResult) {
+    throw new Error(`Failed to update element with id: ${elProps.id}`);
+  }
+
+  // Call post-update Domain Handlers
+  if (element.federationGuid !== undefined) {
+    classDef.onUpdated({ iModel, id: elProps.id, federationGuid: element.federationGuid, model: element.model });
+  }
+  if (modelClassDef !== undefined && model?.id) {
+    modelClassDef.onUpdatedElement({ iModel, elementId: elProps.id, id: model?.id });
+  }
+  if (parentClassDef !== undefined && parent?.id) {
+    parentClassDef.onChildUpdated({ iModel, childId: elProps.id, parentId: parent?.id });
+  }
+}
+
+/**
+ * Function updates a model in an iModel and calls the pre-update and post-update domain handlers.
+ * @param iModel The iModel containing the model to update.
+ * @param modelProps The properties of the model to update.
+ * @internal
+ */
+export function updateModelWithHandlers(iModel: IModelDb, modelProps: UpdateModelOptions): void {
+  // Update options
+  const updateOptions = { useJsNames: true };
+
+  // Check if the element args are valid and fail early
+  if (modelProps.id === undefined) {
+    throw new Error("Model Id is required to update a model");
+  }
+
+  // Get the Model Class Definition and check if its valid
+  const classDef = iModel.getJsClass<typeof Model>(modelProps.classFullName);
+
+  // Call pre-update Domain Handlers
+  classDef.onUpdate({ iModel, props: modelProps });
+
+  // Perform update
+  const updateResult = iModel[_nativeDb].updateInstance(modelProps, updateOptions);
+  if (!updateResult) {
+    throw new Error(`Failed to update model with id: ${modelProps.id}`);
+  }
+
+  // Call post-update Domain Handlers
+  classDef.onUpdated({ iModel, id: modelProps.id });
+}
+
+/**
+ * Function updates an aspect in an iModel and calls the pre-update and post-update domain handlers.
+ * @param iModel The iModel containing the aspect to update.
+ * @param aspectProps The properties of the aspect to update.
+ * @internal
+ */
+export function updateAspectWithHandlers(iModel: IModelDb, aspectProps: ElementAspectProps): void {
+  // Update options
+  const updateOptions = { useJsNames: true };
+
+  // Check if the element args are valid and fail early
+  if (aspectProps.element === undefined) {
+    throw new Error("Element Id is required to update a aspect");
+  }
+
+  // Get the Model Class Definition and check if its valid
+  const element = iModel.elements.getElementProps(aspectProps.element); // Will Throw is Element Doesn't Exist
+  const classDef = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName);
+
+  // Call pre-update Domain Handlers
+  classDef.onUpdate({ iModel, props: aspectProps, model: element.model});
+
+  // Perform update
+  const updateResult = iModel[_nativeDb].updateInstance(aspectProps, updateOptions);
+  if (!updateResult) {
+    throw new Error(`Failed to update aspect with id: ${aspectProps.id}`);
+  }
+
+  // Call post-update Domain Handlers
+  classDef.onUpdated({ iModel, props: aspectProps, model: element.model});
 }

@@ -71,7 +71,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
-import { insertAspectWithHandlers, insertElementWithHandlers, insertModelWithHandlers } from "./NativeInstaceHandlers";
+import { insertAspectWithHandlers, insertElementWithHandlers, insertModelWithHandlers, updateAspectWithHandlers, updateElementWithHandlers, updateModelWithHandlers } from "./NativeInstaceHandlers";
 
 // spell:ignore fontid fontmap
 
@@ -1287,7 +1287,7 @@ export abstract class IModelDb extends IModel {
    * @param parentClassFullName The parent class fullName
    * @returns true if the childClassFullName is a subclass of parentClassFullName, false otherwise.
    */
-  public isSubClassOf(childClassFullName: string, parentClassFullName: string): boolean { return this[_nativeDb].isSubClassof(childClassFullName, parentClassFullName); }
+  public isSubClassOf(childClassFullName: string, parentClassFullName: string): boolean { return this[_nativeDb].isSubClassOf(childClassFullName, parentClassFullName); }
 
   /** Query for a schema of the specified name in this iModel.
    * @returns The schema version as a semver-compatible string or `undefined` if the schema has not been imported.
@@ -1807,7 +1807,11 @@ export namespace IModelDb {
      */
     public updateModel(props: UpdateModelOptions): void {
       try {
-        this._iModel[_nativeDb].updateModel(props);
+        if (IModelHost.configuration?.useNativeInstance) {
+          updateModelWithHandlers(this._iModel, props);
+        } else {
+          this._iModel[_nativeDb].updateModel(props);
+        }
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
@@ -2084,7 +2088,11 @@ export namespace IModelDb {
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
-        this._iModel[_nativeDb].updateElement(elProps);
+        if (IModelHost.configuration?.useNativeInstance) {
+          updateElementWithHandlers(this._iModel, elProps);
+        } else {
+          this._iModel[_nativeDb].updateElement(elProps);
+        }
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
         err.metadata = { elProps };
@@ -2400,7 +2408,11 @@ export namespace IModelDb {
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
       try {
-        this._iModel[_nativeDb].updateElementAspect(aspectProps);
+        if (IModelHost.configuration?.useNativeInstance) {
+          updateAspectWithHandlers(this._iModel, aspectProps);
+        } else {
+          this._iModel[_nativeDb].updateElementAspect(aspectProps);
+        }
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
       }
