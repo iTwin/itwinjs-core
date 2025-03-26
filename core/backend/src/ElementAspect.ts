@@ -97,7 +97,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onDelete(arg: OnAspectIdArg): void {
+  public static onDelete(arg: OnAspectIdArg): void {
     const { aspectId, iModel } = arg;
     iModel.channels[_verifyChannel](arg.model);
     const { element } = iModel.elements.getAspect(aspectId);
@@ -108,7 +108,7 @@ export class ElementAspect extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onDeleted(_arg: OnAspectIdArg): void { }
+  public static onDeleted(_arg: OnAspectIdArg): void { }
 }
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
  * @public
