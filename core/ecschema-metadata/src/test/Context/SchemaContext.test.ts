@@ -12,7 +12,7 @@ import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { SchemaItem } from "../../Metadata/SchemaItem";
-import { CustomAttributeClass, Enumeration, Format, KindOfQuantity, Mixin, Phenomenon, RelationshipClass, StructClass, Unit, UnitSystem } from "../../ecschema-metadata";
+import { CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, KindOfQuantity, Mixin, Phenomenon, RelationshipClass, StructClass, Unit, UnitSystem } from "../../ecschema-metadata";
 
 const assert = chai.assert;
 const expect = chai.expect;
@@ -177,7 +177,7 @@ describe("Schema Context", () => {
 
     before(async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.0.0",
         alias: "ts",

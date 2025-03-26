@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-i18n",
+      "comment": "Bump `i18next-http-backend` dependency version to `^3.0.2`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-i18n"
+}

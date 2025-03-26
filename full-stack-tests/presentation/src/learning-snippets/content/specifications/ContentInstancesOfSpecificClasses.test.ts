@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../../IntegrationTests";
-import { collect, getFieldByLabel } from "../../../Utils";
-import { TestIModelConnection } from "../../../IModelSetupUtils";
+import { initialize, terminate } from "../../../IntegrationTests.js";
+import { collect, getFieldByLabel } from "../../../Utils.js";
+import { TestIModelConnection } from "../../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
