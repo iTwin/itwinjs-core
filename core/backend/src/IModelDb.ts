@@ -72,7 +72,7 @@ import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
-import { insertAspectWithHandlers, insertElementWithHandlers, insertModelWithHandlers, updateAspectWithHandlers, updateElementWithHandlers, updateModelWithHandlers } from "./NativeInstaceHandlers";
+import { deleteAspectWithHandlers, deleteElementWithHandlers, deleteModelWithHandlers, insertAspectWithHandlers, insertElementWithHandlers, insertModelWithHandlers, updateAspectWithHandlers, updateElementWithHandlers, updateModelWithHandlers } from "./NativeInstaceHandlers";
 
 // spell:ignore fontid fontmap
 
@@ -1289,7 +1289,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
     assert(undefined !== val.result);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData = new EntityMetaData(JSON.parse(val.result));
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -1878,7 +1878,11 @@ export namespace IModelDb {
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         try {
-          this._iModel[_nativeDb].deleteModel(id);
+          if (IModelHost.configuration?.useNativeInstance) {
+            deleteModelWithHandlers(this._iModel, id);
+          } else {
+            this._iModel[_nativeDb].deleteModel(id);
+          }
         } catch (err: any) {
           throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
         }
@@ -2145,10 +2149,13 @@ export namespace IModelDb {
      * @see deleteDefinitionElements
      */
     public deleteElement(ids: Id64Arg): void {
-      const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         try {
-          iModel[_nativeDb].deleteElement(id);
+          if (IModelHost.configuration?.useNativeInstance) {
+            deleteElementWithHandlers(this._iModel, id);
+          } else {
+            this._iModel[_nativeDb].deleteElement(id);
+          }
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
           err.metadata = { elementId: id };
@@ -2390,7 +2397,7 @@ export namespace IModelDb {
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel[_nativeDb].getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         const metaData = new EntityMetaData(JSON.parse(val.result));
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
           return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);
@@ -2459,16 +2466,19 @@ export namespace IModelDb {
     }
 
     /** Delete one or more ElementAspects from this iModel.
-     * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
+     * @param ids The set of instance Ids of the ElementAspect(s) to be deleted
      * @throws [[IModelError]] if unable to delete the ElementAspect.
      */
-    public deleteAspect(aspectInstanceIds: Id64Arg): void {
-      const iModel = this._iModel;
-      Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
+    public deleteAspect(ids: Id64Arg): void {
+      Id64.toIdSet(ids).forEach((id) => {
         try {
-          iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
+          if (IModelHost.configuration?.useNativeInstance) {
+            deleteAspectWithHandlers(this._iModel, id);
+          } else {
+            this._iModel[_nativeDb].deleteElementAspect(id);
+          }
         } catch (err: any) {
-          throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${id}`);
         }
       });
     }
