@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export * from "./EditorIpc";
-export * from "./EditorBuiltInIpc";
+export * from "./EditorIpc.js";
+export * from "./EditorBuiltInIpc.js";
 
 /** @docs-package-description
  * The editor-common package contains common functionality for editing iModels.
