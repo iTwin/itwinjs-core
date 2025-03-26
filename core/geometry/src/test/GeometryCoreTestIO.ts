@@ -24,6 +24,7 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
+import { Point2d } from "../geometry3d/Point2dVector2d";
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
@@ -302,6 +303,7 @@ export class GeometryCoreTestIO {
       }
     }
   }
+
   /**
    * Create a marker (or many markers) given center and size  Save in collection, shifted by [dx,dy,dz]
    * * marker = 0 is a circle
@@ -317,7 +319,7 @@ export class GeometryCoreTestIO {
   public static createAndCaptureXYMarker(
     collection: GeometryQuery[],
     markerId: number,
-    center: Point3d | Point3d[],
+    center: Point3d | Point2d | Point3d[] | Point2d[],
     a: number,
     dx: number = 0,
     dy: number = 0,
@@ -326,14 +328,15 @@ export class GeometryCoreTestIO {
     if (Array.isArray(center)) {
       for (const c of center)
         if (markerId === 0)
-          this.createAndCaptureXYCircle(collection, c, a, dx, dy, dz);
+          this.createAndCaptureXYCircle(collection, clone3d(c), a, dx, dy, dz);
         else
           this.createAndCaptureXYMarker(collection, markerId, c, a, dx, dy, dz);
       return;
     }
-    const x = center.x + dx;
-    const y = center.y + dy;
-    const z = center.z + dz;
+    const myCenter = clone3d (center);
+    const x = myCenter.x + dx;
+    const y = myCenter.y + dy;
+    const z = myCenter.z + dz;
     const n = Math.abs(markerId);
     if (markerId > 0 && n <= 10) {
       const linestring = LineString3d.create();
@@ -361,7 +364,7 @@ export class GeometryCoreTestIO {
       }
       collection.push(linestring);
     } else
-      this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
+      this.createAndCaptureXYCircle(collection, myCenter, a, dx, dy, dz);
   }
   /**
    * Create transformed edges of a range.
@@ -538,4 +541,9 @@ export class GeometryCoreTestIO {
     }
     return undefined;
   }
+}
+function clone3d (point: Point2d | Point3d): Point3d{
+  if (point instanceof Point3d)
+    return point.clone()
+  return Point3d.create (point.x, point.y, 0);
 }

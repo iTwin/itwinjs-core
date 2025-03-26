@@ -13,7 +13,7 @@ import { ConstrainedConstruction } from "../../curve/internalContexts/geometry2d
 import { Arc3d } from "../../curve/Arc3d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { CurvePrimitive, LineString3d } from "../../core-geometry";
@@ -446,4 +446,119 @@ it("CircleTangentCCCColinear", () => {
   expect(ck.getNumErrors()).toBe(0);
 });
 
+it("CircleCircleIntersection", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,1);
+  const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,0,2);
+  const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius (4,5,4);
+  const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius (5,7,3);
+  const circleZ = UnboundedCircle2dByCenterAndRadius.createXYRadius (14,5,4);
 
+  const pointsAB = circleA.intersectCircle (circleB);
+  ck.testExactNumber (pointsAB.length, 2);
+
+  const pointsCZ = circleC.intersectCircle (circleZ);
+  ck.testExactNumber (pointsCZ.length, 0);
+
+  const x0 = 0;
+  const y0 = 0;
+  for (const circles of [
+    [circleA, circleB], [circleB, circleC],
+    [circleC, circleD]]){
+    const points = circles[0].intersectCircle (circles[1]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, implicitCircle2dToArc3d (circles[0]), x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, implicitCircle2dToArc3d (circles[1]), x0, y0);
+    if (points.length === 2)
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+        [Point3d.createFrom (points[0]), Point3d.createFrom (points[1])],
+        x0, y0);
+    else
+    for (const p of points)
+      GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 4, p, 0.08, x0, y0);
+    }
+
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "CircleCircleIntersection");
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+
+it("LineLIneIntersection", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (0,0, 1,0);
+  const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (0,0, 0,1);
+  const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (1,1, 1,-2);
+  const lineR = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (-1,1, 2,2);
+  lineQ.normal.normalize (lineQ.normal);
+  lineR.normal.normalize (lineR.normal);
+
+
+  let x0 = 0;
+  const y0 = 0;
+
+  for (const line of [lineX, lineY, lineQ, lineR]){
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+      implicitLine2dToLineSegment3d (line, 0, -5, 5), x0, y0);
+  }
+
+  for (const linePair of [[lineX, lineY], [lineY, lineQ], [lineQ, lineX], [lineQ,lineR], [lineR,lineX]]){
+    const point = linePair[0].interesectUnboundedLine2dByPointAndNormalWithOffsets (linePair[1]);
+    if (ck.testType (point, Point2d, "expect intersectioni")){
+      GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 3, point, 0.08, x0, y0);
+      }
+  }
+  x0 += 10;
+  for (const line of [lineQ, lineR]){
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+      implicitLine2dToLineSegment3d (line, 0, -5, 5), x0, y0);
+  }
+
+  for (const offsetA of [1,2,3,0,-1,-2,-3]){
+    for (const offsetB of [1,2,3,0,-1,-2,-3]){
+      const p = lineQ.interesectUnboundedLine2dByPointAndNormalWithOffsets (lineR, offsetA, offsetB);
+      if (ck.testType (p, Point2d, "expect intersectioni")){
+        GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 3, p, 0.04, x0, y0);
+        ck.testCoordinate (offsetA, lineQ.functionValue (p), "on offset lineQ", p);
+        ck.testCoordinate (offsetB, lineR.functionValue (p), "on offset lineR", p);
+      }
+    }
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "LineLineIntersection");
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+it("LineCircleIntersection", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (0,0, 1,0);
+  const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (0,0, 0,1);
+  const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (1,1, 1,-2);
+  const lineR = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY (-1,1, 2,2);
+  const circleU = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0, 1.0);
+  const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,3, 2.5);
+  const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,3,3);
+
+
+  let x0 = 0;
+  const y0 = 0;
+
+  for (const line of [lineX, lineY, lineQ, lineR]){
+    for (const circle of [circleU, circleA, circleB]){
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+        implicitLine2dToLineSegment3d (line, 0, -4, 4), x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          implicitCircle2dToArc3d (circle), x0, y0);
+        const points = circle.intersectLine (line);
+        for (const p of points){
+          ck.testCoordinate (0, circle.functionValue (p), "on circle", p);
+          ck.testCoordinate (0, line.functionValue (p), "on line", p);
+        }
+        GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 3, points, 0.08, x0, y0);
+
+      x0 += 10;
+    }
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "LineCircleIntersection");
+  expect(ck.getNumErrors()).toBe(0);
+});

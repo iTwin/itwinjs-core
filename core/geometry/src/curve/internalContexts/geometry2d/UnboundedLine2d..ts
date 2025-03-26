@@ -12,6 +12,8 @@ import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { ImplicitCurve2d } from "./implicitCurve2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
+import { SmallSystem } from "../../../numerics/SmallSystem";
+
 
 /**
  * An UnboundedLine2dByPointAndNormal represents an infinite line by
@@ -118,6 +120,15 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
      * @returns a vector along the line, i.e. rotated 90 degrees from the normal vector, with normal to the left
      */
     public vectorAlongLine () : Vector2d {return this.normal.rotate90CWXY();}
+    /**
+     * * rotate the line normal by 90 degrees counterclockwise.
+     * * normalize it
+     * @returns the unit vector, or undefined if the normal is zero length.
+     *
+     */
+    public unitVectorAlongLine () : Vector2d | undefined {
+      return this.normal.rotate90CCWXY().normalize ();
+    }
     public override emitPerpendiculars(spacePoint: Point2d,
       handler :(curvePoint: Point2d)=>any):any{
         const fraction = Geometry.fractionOfProjectionToVectorXYXY (
@@ -143,4 +154,26 @@ return new UnboundedLine2dByPointAndNormal (
     Point2d.create (this.point.x - newOrigin.x, this.point.y - newOrigin.y),
     Vector2d.create (unitNormal.x, unitNormal.y));
 }
+/**
+ * Compute the intersection of two lines.
+ * * Each can be offset.
+ * * Offsets are in units of the dot products with normal vectors.
+ *   * If normal vectors are unit vetors, the offsets are simple distance.
+ *   * Otherwise the offset scaling is scaled --- use carefully.
+ * @param other the other line.
+ * @param thisOffset target function value for dot proucts with this line
+ * @param otherOffset target function value for dot products with other line
+ */
+public interesectUnboundedLine2dByPointAndNormalWithOffsets (other: UnboundedLine2dByPointAndNormal, thisOffset: number = 0, otherOffset: number = 0):Point2d | undefined{
+  const xy = Vector2d.create ();
+  if (SmallSystem.linearSystem2d (
+        this.normal.x, this.normal.y,
+        other.normal.x, other.normal.y,
+        thisOffset + this.normal.dotProduct (this.point),
+        otherOffset + other.normal.dotProduct (other.point),
+      xy)){
+        return Point2d.create (xy.x, xy.y);
+      }
+      return undefined;
+  }
 }

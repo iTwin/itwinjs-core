@@ -10,7 +10,9 @@
 import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
+import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
 import { ImplicitCurve2d } from "./implicitCurve2d";
+import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
 
 /**
  * Internal class for a complete circle in the xy plane, with center and radius stored.
@@ -98,7 +100,58 @@ public isSameCircle (other: UnboundedCircle2dByCenterAndRadius, negatedRadiiAreE
 return Geometry.isSameCoordinate (this.radius, other.radius)
     && Geometry.isSamePoint2d (this.center, other.center);
 }
-
+/**
+ * Compute intersectionsn with another circle.
+ * @param other second circle
+ * @return array of 0, 1, or 2 points of intersection
+ */
+public intersectCircle (other: UnboundedCircle2dByCenterAndRadius): Point2d[]{
+  const vectorAB = Vector2d.createStartEnd (this.center, other.center);
+  const unitAB = vectorAB.normalize ();
+  if (unitAB === undefined)
+    return [];
+  const d = vectorAB.magnitude();
+  const rA2 = Geometry.square(this.radius);
+  const rB2 = Geometry.square (other.radius);
+  const b = Geometry.conditionalDivideCoordinate (rA2 - rB2 - d * d, -2 * d);
+  const points = [];
+  if (b !== undefined){
+    const c2 = rB2 - b * b;
+    if (Math.abs(c2) < Geometry.smallMetricDistanceSquared)
+      points.push (other.center.plusScaled(unitAB, - b));
+    else if (c2 > 0){
+      const c = Math.sqrt (c2);
+      points.push (other.center.addForwardLeft (-b, c, unitAB));
+      points.push (other.center.addForwardLeft (-b, -c, unitAB));
+    }
+  }
+  return points;
+  }
+/**
+ * Compute intersectionsn with another circle.
+ * @param other second circle
+ * @return array of 0, 1, or 2 points of intersection
+ */
+public intersectLine (line: UnboundedLine2dByPointAndNormal): Point2d[]{
+  const vectorU = line.vectorAlongLine ();
+  // Point on line is X = P + alpha * U
+  //   where P is line.point and U is the vector along line.
+  // Vector from X to center is (X-C) = ((P-C) + alpha* U)
+  // Match distance squared to center with this.radius squared
+  // (define P-C = V)
+  //       (V + alpha U) dot (V + alpha U) = r^2
+  const vectorV = Vector2d.createStartEnd (this.center, line.point);
+  const uDotV = vectorU.dotProduct (vectorV);
+  const vDotV = vectorV.dotProduct(vectorV);
+  const uDotU = vectorU.dotProduct (vectorU);
+  const fractions = Degree2PowerPolynomial.solveQuadratic (uDotU, 2 * uDotV, vDotV - this.radius * this.radius);
+  const points = [];
+  if (fractions !== undefined)
+    for (const f of fractions){
+      points.push (line.point.plusScaled (vectorU, f));
+      }
+  return points;
+  }
 }
 
 export class Point2dImplicitCurve2d {
