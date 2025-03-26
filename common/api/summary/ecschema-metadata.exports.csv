@@ -34,6 +34,7 @@ beta;enum;ECClassModifier
 public;class;ECName
 internal;class;ECObjectsError
 beta;enum;ECObjectsStatus
+internal;namespace;ECSchemaNamespaceUris
 internal;interface;ECSpecVersion
 internal;class;ECStringConstants
 beta;class;ECVersion

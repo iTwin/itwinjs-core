@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ECSchemaNamespaceUris } from "../../Constants";
 import { ISchemaLocater, SchemaContext } from "../../Context";
 import { SchemaMatchType } from "../../ECObjects";
 import { SchemaInfo } from "../../Interfaces";
@@ -38,7 +39,7 @@ export class TestSchemaLocater implements ISchemaLocater {
 }
 
 const testFormatSchema = {
-  $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
   name: "Formats",
   version: "1.0.0",
   alias: "f",
