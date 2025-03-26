@@ -15,7 +15,6 @@ import { ElementAspect } from "./ElementAspect";
  * Function inserts an element into an iModel and calls the pre-insert and post-insert domain handlers.
  * @param iModel The iModel to insert the element into.
  * @param elProps The properties of the element to insert.
- * @param options Insert options.
  * @returns The Id of the inserted element.
  * @internal
  */
@@ -62,7 +61,6 @@ export function insertElementWithHandlers(iModel: IModelDb, elProps: ElementProp
  * Function inserts a Model into an iModel and calls the pre-insert and post-insert domain handlers.
  * @param iModel The iModel to insert the model into.
  * @param modelProps The properties of the model to insert.
- * @param options Insert options.
  * @returns The Id of the inserted model.
  * @internal
  */
@@ -91,7 +89,6 @@ export function insertModelWithHandlers(iModel: IModelDb, modelProps: ModelProps
  * Function inserts an elementAspect into an iModel and calls the pre-insert and post-insert domain handlers.
  * @param iModel The iModel to insert the elementAspect into.
  * @param aspectProps The properties of the elementAspect to insert.
- * @param options Insert options.
  * @returns The Id of the inserted aspect.
  * @internal
  */
@@ -129,9 +126,8 @@ export function insertAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
 
 /**
  * Function updates an element in an iModel and calls the pre-update and post-update domain handlers.
- * @param iModel The iModel that containers the element to update.
+ * @param iModel The iModel that contains the element to update.
  * @param elProps The properties of the element to update.
- * @param options Update options.
  * @internal
  */
 export function updateElementWithHandlers<T extends ElementProps>(iModel: IModelDb, elProps: Partial<T>): void {
@@ -171,10 +167,10 @@ export function updateElementWithHandlers<T extends ElementProps>(iModel: IModel
     classDef.onUpdated({ iModel, id: elProps.id, federationGuid: element.federationGuid, model: element.model });
   }
   if (modelClassDef !== undefined && model?.id) {
-    modelClassDef.onUpdatedElement({ iModel, elementId: elProps.id, id: model?.id });
+    modelClassDef.onUpdatedElement({ iModel, elementId: elProps.id, id: model.id });
   }
   if (parentClassDef !== undefined && parent?.id) {
-    parentClassDef.onChildUpdated({ iModel, childId: elProps.id, parentId: parent?.id });
+    parentClassDef.onChildUpdated({ iModel, childId: elProps.id, parentId: parent.id });
   }
 }
 
@@ -239,4 +235,47 @@ export function updateAspectWithHandlers(iModel: IModelDb, aspectProps: ElementA
 
   // Call post-update Domain Handlers
   classDef.onUpdated({ iModel, props: aspectProps, model: element.model});
+}
+
+/**
+ * Function deletes an element in an iModel and calls the pre-delete and post-delete domain handlers.
+ * @param iModel The iModel that contains the element to delete.
+ * @param elementId The Id of the element to delete.
+ * @internal
+ */
+export function deleteElementWithHandlers(iModel: IModelDb, elementId: Id64Arg): void {
+  // Delete options
+  const deleteOptions = { useJsNames: true };
+
+  // Get the Element Class Definition and check if its valid
+  const element = iModel.elements.getElementProps(elementId); // Will Throw is Element Doesn't Exist
+  const classDef = iModel.getJsClass<typeof Element>(element.classFullName);
+  const model = iModel.models.tryGetModelProps(element.model);
+  const modelClassDef = model ? iModel.getJsClass<typeof Model>(model.classFullName) : undefined;
+  const parent = element.parent?.id ? iModel.elements.tryGetElementProps(element.parent.id) : undefined;
+  const parentClassDef = parent ? iModel.getJsClass<typeof Element>(parent.classFullName) : undefined;
+
+  // Call pre-delete Domain Handlers
+  classDef.onDelete({ iModel, id: element.id, model: element.model, federationGuid: element.federationGuid });
+  if (modelClassDef !== undefined && model?.id) {
+    modelClassDef.onDeleteElement({ iModel, elementId, id: model.id });
+  }
+  if (parentClassDef !== undefined && parent?.id) {
+    parentClassDef.onChildDelete({ iModel, childId: elementId, parentId: parent.id });
+  }
+
+  // Perform delete
+  const deleteResult = iModel[_nativeDb].deleteInstance(elementId, deleteOptions);
+  if (!deleteResult) {
+    throw new Error(`Failed to delete element with id: ${elementId}`);
+  }
+
+  // Call post-delete Domain Handlers
+  classDef.onDeleted({ iModel, id: element.id, model: element.model, federationGuid: element.federationGuid });
+  if (modelClassDef !== undefined && model?.id) {
+    modelClassDef.onDeletedElement({ iModel, elementId, id: model.id });
+  }
+  if (parentClassDef !== undefined && parent?.id) {
+    parentClassDef.onChildDeleted({ iModel, childId: elementId, parentId: parent.id });
+  }
 }
