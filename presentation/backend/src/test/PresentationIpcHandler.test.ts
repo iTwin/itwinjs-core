@@ -13,11 +13,10 @@ import {
   UnsetRulesetVariableParams,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { Presentation } from "../presentation-backend/Presentation";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
-import { PresentationManager } from "../presentation-backend/PresentationManager";
-import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import { Presentation } from "../presentation-backend/Presentation.js";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler.js";
+import { PresentationManager } from "../presentation-backend/PresentationManager.js";
+import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager.js";
 
 describe("PresentationIpcHandler", () => {
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
@@ -50,7 +49,7 @@ describe("PresentationIpcHandler", () => {
     });
 
     it("decompresses ids set before setting value variables", async () => {
-      const ids = OrderedId64Iterable.sortArray([createRandomId(), createRandomId()]);
+      const ids = OrderedId64Iterable.sortArray(["0x123", "0x456"]);
       const testVariable: Id64sRulesetVariableJSON = {
         type: VariableValueTypes.Id64Array,
         id: "test",

@@ -22,9 +22,13 @@ copyITwinFrontendAssets(path.join(libDir, "public"));
 function copyITwinBackendAssets(outputDir) {
   const iTwinPackagesPath = "node_modules/@itwin";
   fs.readdirSync(iTwinPackagesPath)
-    .map((packageName) => {
+    .flatMap((packageName) => {
       const packagePath = path.resolve(iTwinPackagesPath, packageName);
-      return path.join(packagePath, "lib", "cjs", "assets");
+      return [
+        // TODO: remove this once all iTwin.js backend packages have ESM builds and migrate their assets to "assets" folder
+        path.join(packagePath, "lib", "cjs", "assets"),
+        path.join(packagePath, "lib", "assets"),
+      ];
     })
     .filter((assetsPath) => {
       return fs.existsSync(assetsPath);

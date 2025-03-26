@@ -3,11 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as moq from "typemoq";
 import { RegisteredRuleset } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform.js";
+import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
 
 describe("RulesetManager", () => {
   let manager: RulesetManagerImpl;
@@ -19,8 +18,8 @@ describe("RulesetManager", () => {
 
   describe("get", () => {
     it("calls addon's getRulesets", async () => {
-      const ruleset = { id: faker.random.uuid(), rules: [] };
-      const hash = faker.random.uuid();
+      const ruleset = { id: "ruleset-id", rules: [] };
+      const hash = "test-hash";
       addonMock
         .setup((x) => x.getRulesets(ruleset.id))
         .returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) }))
@@ -33,7 +32,7 @@ describe("RulesetManager", () => {
     });
 
     it("handles empty array response", async () => {
-      const rulesetId = faker.random.uuid();
+      const rulesetId = "ruleset-id";
       addonMock
         .setup((x) => x.getRulesets(rulesetId))
         .returns(() => ({ result: JSON.stringify([]) }))
@@ -44,8 +43,8 @@ describe("RulesetManager", () => {
     });
 
     it("does not call addon's getRulesets second time", async () => {
-      const ruleset = { id: faker.random.uuid(), rules: [] };
-      const hash = faker.random.uuid();
+      const ruleset = { id: "ruleset-id", rules: [] };
+      const hash = "test-hash";
       addonMock
         .setup((x) => x.getRulesets(ruleset.id))
         .returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) }))
@@ -61,8 +60,8 @@ describe("RulesetManager", () => {
 
   describe("add", () => {
     it("calls addon's addRuleset", async () => {
-      const ruleset = { id: faker.random.uuid(), rules: [] };
-      const hash = faker.random.uuid();
+      const ruleset = { id: "ruleset-id", rules: [] };
+      const hash = "test-hash";
       addonMock
         .setup((x) => x.addRuleset(JSON.stringify(ruleset)))
         .returns(() => ({ result: hash }))
@@ -74,8 +73,8 @@ describe("RulesetManager", () => {
     });
 
     it("does not call addon's addRuleset second time", async () => {
-      const ruleset = { id: faker.random.uuid(), rules: [] };
-      const hash = faker.random.uuid();
+      const ruleset = { id: "ruleset-id", rules: [] };
+      const hash = "test-hash";
       addonMock
         .setup((x) => x.addRuleset(JSON.stringify(ruleset)))
         .returns(() => ({ result: hash }))
@@ -90,8 +89,8 @@ describe("RulesetManager", () => {
 
   describe("remove", () => {
     it("calls addon's removeRuleset with [id, hash] argument", async () => {
-      const rulesetId = faker.random.uuid();
-      const hash = faker.random.uuid();
+      const rulesetId = "ruleset-id";
+      const hash = "test-hash";
       addonMock
         .setup((x) => x.removeRuleset(rulesetId, hash))
         .returns(() => ({ result: true }))
@@ -102,8 +101,8 @@ describe("RulesetManager", () => {
     });
 
     it("calls addon's removeRuleset with RegisteredRuleset argument", async () => {
-      const ruleset = { id: faker.random.uuid(), rules: [] };
-      const registered = new RegisteredRuleset(ruleset, faker.random.uuid(), (r: RegisteredRuleset) => manager.remove(r));
+      const ruleset = { id: "ruleset-id", rules: [] };
+      const registered = new RegisteredRuleset(ruleset, "ruleset-id-unique", (r: RegisteredRuleset) => manager.remove(r));
       addonMock
         .setup((x) => x.removeRuleset(ruleset.id, registered.uniqueIdentifier))
         .returns(() => ({ result: true }))
@@ -124,8 +123,8 @@ describe("RulesetManager", () => {
 
   describe("dispose", () => {
     it("disposes registered ruleset for get result", async () => {
-      const ruleset = { id: faker.random.uuid(), rules: [] };
-      const hash = faker.random.uuid();
+      const ruleset = { id: "ruleset-id", rules: [] };
+      const hash = "test-hash";
       addonMock
         .setup((x) => x.getRulesets(ruleset.id))
         .returns(() => ({ result: JSON.stringify([{ ruleset, hash }]) }))
@@ -143,8 +142,8 @@ describe("RulesetManager", () => {
     });
 
     it("disposes registered ruleset for add result", async () => {
-      const ruleset = { id: faker.random.uuid(), rules: [] };
-      const hash = faker.random.uuid();
+      const ruleset = { id: "ruleset-id", rules: [] };
+      const hash = "test-hash";
       addonMock
         .setup((x) => x.addRuleset(JSON.stringify(ruleset)))
         .returns(() => ({ result: hash }))

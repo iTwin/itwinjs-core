@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { RulesetVariableJSON } from "./RulesetVariables";
+import { RulesetVariableJSON } from "./RulesetVariables.js";
 
 /** @internal */
 export const PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface";

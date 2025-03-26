@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { InstanceKey } from "../EC";
+import { InstanceKey } from "../EC.js";
 
 /**
  * Standard node types

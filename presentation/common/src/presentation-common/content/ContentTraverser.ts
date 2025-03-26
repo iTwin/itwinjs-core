@@ -7,13 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { LabelDefinition } from "../LabelDefinition";
-import { CategoryDescription } from "./Category";
-import { Content } from "./Content";
-import { Descriptor } from "./Descriptor";
-import { Field, NestedContentField } from "./Fields";
-import { Item } from "./Item";
-import { PropertyValueFormat, TypeDescription } from "./TypeDescription";
+import { LabelDefinition } from "../LabelDefinition.js";
+import { CategoryDescription } from "./Category.js";
+import { Content } from "./Content.js";
+import { Descriptor } from "./Descriptor.js";
+import { Field, NestedContentField } from "./Fields.js";
+import { Item } from "./Item.js";
+import { PropertyValueFormat, TypeDescription } from "./TypeDescription.js";
 import {
   DisplayValue,
   DisplayValuesArray,
@@ -22,7 +22,7 @@ import {
   Value as PresentationValue,
   ValuesArray as PresentationValuesArray,
   ValuesMap as PresentationValuesMap,
-} from "./Value";
+} from "./Value.js";
 
 const NESTED_CONTENT_LABEL_SYMBOL = Symbol();
 

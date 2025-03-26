@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { LocalizationHelper } from "@itwin/presentation-common";
-import { Presentation } from "./Presentation";
+import { Presentation } from "./Presentation.js";
 
 const NAMESPACES = ["Presentation"];
 

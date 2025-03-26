@@ -6,11 +6,11 @@
  * @module PresentationRules
  */
 
-import { NodeArtifactsRule } from "../hierarchy/NodeArtifactsRule";
-import { ExtendedDataRule } from "./ExtendedDataRule";
-import { GroupingRule } from "./GroupingRule";
-import { InstanceLabelOverride } from "./InstanceLabelOverride";
-import { SortingRule } from "./SortingRule";
+import { NodeArtifactsRule } from "../hierarchy/NodeArtifactsRule.js";
+import { ExtendedDataRule } from "./ExtendedDataRule.js";
+import { GroupingRule } from "./GroupingRule.js";
+import { InstanceLabelOverride } from "./InstanceLabelOverride.js";
+import { SortingRule } from "./SortingRule.js";
 
 /**
  * Customization rules allow customizing each node or content item separately.

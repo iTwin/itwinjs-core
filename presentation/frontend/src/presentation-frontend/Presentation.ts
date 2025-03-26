@@ -9,12 +9,12 @@
 import { IModelApp } from "@itwin/core-frontend";
 import { Localization } from "@itwin/core-common";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
-import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
-import { FrontendLocalizationHelper } from "./LocalizationHelper";
-import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
-import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
-import { SelectionScopesManager } from "./selection/SelectionScopesManager";
+import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager.js";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage.js";
+import { FrontendLocalizationHelper } from "./LocalizationHelper.js";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager.js";
+import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager.js";
+import { SelectionScopesManager } from "./selection/SelectionScopesManager.js";
 
 let localization: Localization | undefined;
 let presentationManager: PresentationManager | undefined;
@@ -54,7 +54,7 @@ export interface PresentationProps {
  * @public
  */
 export class Presentation {
-  /* istanbul ignore next */
+  /* c8 ignore next */
   private constructor() {}
 
   /**
