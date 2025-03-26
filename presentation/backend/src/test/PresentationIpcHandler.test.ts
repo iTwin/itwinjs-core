@@ -13,10 +13,10 @@ import {
   UnsetRulesetVariableParams,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { Presentation } from "../presentation-backend/Presentation";
-import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
-import { PresentationManager } from "../presentation-backend/PresentationManager";
-import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import { Presentation } from "../presentation-backend/Presentation.js";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler.js";
+import { PresentationManager } from "../presentation-backend/PresentationManager.js";
+import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager.js";
 
 describe("PresentationIpcHandler", () => {
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();

@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AsyncTasksTracker } from "../presentation-common";
+import { AsyncTasksTracker } from "../presentation-common.js";
 
 describe("AsyncTasksTracker", () => {
   it("tracks async task while it's disposed", () => {

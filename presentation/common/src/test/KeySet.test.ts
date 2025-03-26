@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { InstanceKey, Key, KeySet, KeySetJSON, PresentationError } from "../presentation-common";
-import { createTestECInstanceKey, createTestECInstancesNodeKey } from "./_helpers";
+import { InstanceKey, Key, KeySet, KeySetJSON, PresentationError } from "../presentation-common.js";
+import { createTestECInstanceKey, createTestECInstancesNodeKey } from "./_helpers/index.js";
 import { EntityProps } from "@itwin/core-common";
 
 describe("KeySet", () => {

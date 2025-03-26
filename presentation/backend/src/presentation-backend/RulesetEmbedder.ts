@@ -36,9 +36,9 @@ import {
   SubjectProps,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
-import { PresentationRules } from "./domain/PresentationRulesDomain";
-import * as RulesetElements from "./domain/RulesetElements";
-import { normalizeVersion } from "./Utils";
+import { PresentationRules } from "./domain/PresentationRulesDomain.js";
+import * as RulesetElements from "./domain/RulesetElements.js";
+import { normalizeVersion } from "./Utils.js";
 
 /**
  * Interface for callbacks which will be called before and after Element/Model updates
@@ -358,36 +358,36 @@ export class RulesetEmbedder {
 
   private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks): Promise<Element> {
     const element = this._imodel.elements.createElement(props);
-    // istanbul ignore next
+    /* c8 ignore next */
     await callbacks?.onBeforeInsert(element);
     try {
       return this._imodel.elements.getElement(element.insert());
     } finally {
-      // istanbul ignore next
+      /* c8 ignore next */
       await callbacks?.onAfterInsert(element);
     }
   }
 
   private async insertModel(props: ModelProps, callbacks?: InsertCallbacks): Promise<Model> {
     const model = this._imodel.models.createModel(props);
-    // istanbul ignore next
+    /* c8 ignore next */
     await callbacks?.onBeforeInsert(model);
     try {
       model.id = model.insert();
       return model;
     } finally {
-      // istanbul ignore next
+      /* c8 ignore next */
       await callbacks?.onAfterInsert(model);
     }
   }
 
   private async updateElement(element: Element, callbacks?: UpdateCallbacks) {
-    // istanbul ignore next
+    /* c8 ignore next */
     await callbacks?.onBeforeUpdate(element);
     try {
       element.update();
     } finally {
-      // istanbul ignore next
+      /* c8 ignore next */
       await callbacks?.onAfterUpdate(element);
     }
   }

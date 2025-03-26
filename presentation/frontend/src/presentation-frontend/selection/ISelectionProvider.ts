@@ -9,7 +9,7 @@
 
 import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
-import { SelectionChangeEvent } from "./SelectionChangeEvent";
+import { SelectionChangeEvent } from "./SelectionChangeEvent.js";
 
 /**
  * Selection provider interface which provides main selection and sub-selection.

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../../IntegrationTests";
-import { getFieldByLabel } from "../../../Utils";
-import { printRuleset } from "../../Utils";
-import { TestIModelConnection } from "../../../IModelSetupUtils";
+import { initialize, terminate } from "../../../IntegrationTests.js";
+import { getFieldByLabel } from "../../../Utils.js";
+import { printRuleset } from "../../Utils.js";
+import { TestIModelConnection } from "../../../IModelSetupUtils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -178,7 +178,7 @@ describe("Learning Snippets", () => {
                       value: "123",
                       extendedData: {
                         extendedDataInt: "2*2",
-                        extendedDataStr: "\"xxx\""
+                        extendedDataStr: '"xxx"',
                       },
                     },
                   ],
@@ -203,7 +203,7 @@ describe("Learning Snippets", () => {
             label: "My Calculated Property",
             extendedData: {
               extendedDataInt: 4,
-              extendedDataStr: "xxx"
+              extendedDataStr: "xxx",
             },
           },
         ]);
@@ -226,7 +226,7 @@ describe("Learning Snippets", () => {
                     {
                       label: "My Calculated Property",
                       value: "2+2",
-                      type: "int"
+                      type: "int",
                     },
                   ],
                 },

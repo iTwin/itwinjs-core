@@ -9,8 +9,8 @@ import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel, SubjectProps } from "@itwin/core-common";
 import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
-import { prepareOutputFilePath } from "../Utils";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { prepareOutputFilePath } from "../Utils.js";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",

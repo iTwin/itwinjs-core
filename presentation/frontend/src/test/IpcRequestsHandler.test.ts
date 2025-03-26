@@ -7,7 +7,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { _callIpcChannel, IpcApp } from "@itwin/core-frontend";
 import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
+import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler.js";
 
 describe("IpcRequestsHandler", () => {
   const clientId = "test-client-id";
