@@ -31,8 +31,6 @@ export type PropertyAccessorPath = PropertyAccessor[];
  * Data structure that describes a single ECProperty that's
  * included in a [[PropertiesField]].
  *
- * TODO: Remove?
- *
  * @public
  */
 export interface Property {

@@ -33,7 +33,7 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
-    "build:cjs": "internal-tools create-cjs-package-json -o ./lib/cjs && tsc 1>&2 -p tsconfig.cjs.json",
+    "build:cjs": "internal-tools build-cjs",
     "build:esm": "tsc 1>&2 -p tsconfig.esm.json",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "cover": "c8 npm -s test",
