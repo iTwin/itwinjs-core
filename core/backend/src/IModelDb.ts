@@ -1970,19 +1970,6 @@ export namespace IModelDb {
       return { id: elementId, classFullName } as T;
     }
 
-    private removeNullValues(obj: any): any {
-      if (obj && typeof obj === "object") {
-        for (const key in obj) {
-          if (obj[key] === null) {
-            delete obj[key];
-          } else if (typeof obj[key] === "object") {
-            this.removeNullValues(obj[key]);
-          }
-        }
-      }
-      return obj;
-    }
-
     /** Read element data from the iModel as JSON
      * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element or `undefined` if the element is not found.
@@ -2001,7 +1988,6 @@ export namespace IModelDb {
           const element = this._iModel[_nativeDb].readInstance(readProps, options) as T;
           if (typeof element.jsonProperties === "string") {
             element.jsonProperties = JSON.parse(element.jsonProperties);
-            element.jsonProperties = this.removeNullValues(element.jsonProperties); // Remove null values from json
           }
           return element;
         } else {
