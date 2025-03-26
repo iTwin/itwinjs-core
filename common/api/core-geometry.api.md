@@ -266,6 +266,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    emitTangents(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, tangOpts?: TangentOptions): void;
     endPoint(result?: Point3d): Point3d;
     extendRange(range: Range3d, transform?: Transform): void;
     extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void;

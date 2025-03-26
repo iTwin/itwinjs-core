@@ -901,6 +901,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result;
   }
+  /** Override of [[CurvePrimitive.emitTangents]] for Arc3d. */
   public override emitTangents(
     spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, tangOpts?: TangentOptions,
   ): void {
