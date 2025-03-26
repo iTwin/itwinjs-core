@@ -109,17 +109,20 @@ export class IModelTile extends Tile {
 
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
     try {
+      const classifiers = this.tree.layerHandler?.layerClassifiers;
       content = await this.iModelTree.decoder.decode({
         stream: streamBuffer,
         options: { tileId: this.contentId },
         system,
         isCanceled,
         sizeMultiplier,
-        tileData: {
-          ecefTransform: this.tree.iModel.getEcefTransform(),
-          range: this.range,
-          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
-        },
+        ...(classifiers?.size ? {
+          tileData: {
+            ecefTransform: this.tree.iModel.getEcefTransform(),
+            range: this.range,
+            layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+          },
+        } : {}),
       });
     } catch {
       //
