@@ -18,6 +18,7 @@ import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @beta
 export enum AbstractSchemaItemType {
@@ -764,9 +765,9 @@ export interface FormatSet {
 // @beta
 export interface FormatsProvider {
     // (undocumented)
-    addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
+    addFormat(name: string, formatProps: SchemaItemFormatProps, unitSystem?: string): Promise<void>;
     // (undocumented)
-    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
+    getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
     onCacheCleared: BeUiEvent<void>;
     // (undocumented)
@@ -1896,8 +1897,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
     // (undocumented)
     clearFormatCache(): Promise<void>;
-    // (undocumented)
-    getFormat(id: string): Promise<SchemaItemFormatProps | undefined>;
+    getFormat(id: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
     onCacheCleared: BeUiEvent<void>;
     // (undocumented)

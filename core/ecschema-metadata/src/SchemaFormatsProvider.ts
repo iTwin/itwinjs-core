@@ -15,6 +15,7 @@ import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { BeUiEvent } from "@itwin/core-bentley";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
+import { UnitSystemKey } from "@itwin/core-quantity";
 
 /**
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
@@ -46,7 +47,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * Try retrieving the format from schemas. If the format is not part of the base Formats schema, but from a KindOfQuantity, the format will be constructed
    * from the default presentation format of that KindOfQuantity.
    */
-  private async getFormatFromSchema(id: string): Promise<SchemaItemFormatProps | undefined> {
+  private async getFormatFromSchema(id: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(id);
     const schemaKey = new SchemaKey(schemaName);
     const schema = await this._context.getSchema(schemaKey);
@@ -62,13 +63,31 @@ export class SchemaFormatsProvider implements FormatsProvider {
       }
       return format.toJSON(true);
     }
-    return this.getKindOfQuantityFormatFromSchema(itemKey);
+    return this.getKindOfQuantityFormatFromSchema(itemKey, unitSystem);
   }
 
-  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<SchemaItemFormatProps | undefined> {
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
     const kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
 
     if (!kindOfQuantity) {
+      return undefined;
+    }
+    // Find the first presentation format that matches the provided unit system. Else, use the first entry.
+    if (unitSystem) {
+      const unitSystemGroupNames = getUnitSystemGroupNames(unitSystem);
+      const presentationFormats = kindOfQuantity.presentationFormats;
+      for (const system of unitSystemGroupNames) {
+        for (const format of presentationFormats) {
+          const unit = format.units && format.units[0][0];
+          if (!unit) {
+            continue;
+          }
+          const currentUnitSystem = await unit.unitSystem;
+          if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
+            return getFormatProps(format);
+          }
+        }
+      }
       return undefined;
     }
     const defaultFormat = kindOfQuantity.defaultPresentationFormat;
@@ -79,15 +98,16 @@ export class SchemaFormatsProvider implements FormatsProvider {
   }
 
   /**
-   *
+   * Retrieves a Format from the cache or from the schema. If retrieving from the schema,
+   * an optional unitSystem can be provided to get the the
    * @param id The full name of the Format.
    * @returns
    */
-  public async getFormat(id: string): Promise<SchemaItemFormatProps | undefined> {
+  public async getFormat(id: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
     if (this._formatCache.has(id)) {
       return this._formatCache.get(id);
     }
-    return this.getFormatFromSchema(id);
+    return this.getFormatFromSchema(id, unitSystem);
   }
 
   /**
@@ -107,4 +127,18 @@ export class SchemaFormatsProvider implements FormatsProvider {
     this._formatCache.clear();
     this.onCacheCleared.emit();
   }
+}
+
+function getUnitSystemGroupNames(unitSystem?: UnitSystemKey) {
+  switch (unitSystem) {
+    case "imperial":
+      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+    case "metric":
+      return ["SI", "METRIC", "INTERNATIONAL", "FINANCE"];
+    case "usCustomary":
+      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"];
+    case "usSurvey":
+      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+  }
+  return [];
 }

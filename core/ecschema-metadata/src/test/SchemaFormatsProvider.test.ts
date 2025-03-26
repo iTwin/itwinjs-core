@@ -137,7 +137,7 @@ describe("SchemaFormatsProvider", () => {
 
   });
 
-  it("should format a length quantity to kilometers given a KoQ and unit provider", async () => {
+  it("should format a length quantity to kilometers given a KoQ and unit provider with no unit system provided", async () => {
     const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
     expect(formatProps).not.to.be.undefined;
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
@@ -147,5 +147,26 @@ describe("SchemaFormatsProvider", () => {
     const result = formatSpec.applyFormatting(50);
     expect(result).to.equal("0.05 km");
 
+  });
+
+  it("should format a length quantity to feet given a KoQ, unit provider and the imperial unit system", async () => {
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG", "imperial");
+    expect(formatProps).not.to.be.undefined;
+    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
+    const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(50);
+    expect(result).to.equal("164'0 1/2\"");
+  });
+
+  it("retrieve different presentation formats from a KoQ based on different unit systems", async () => {
+    const formatPropsImperial = await formatsProvider.getFormat("AecUnits.LENGTH_LONG", "imperial");
+    expect(formatPropsImperial).not.to.be.undefined;
+    expect(formatPropsImperial!.composite?.units[0].name).to.equal("Units.FT");
+
+    const formatPropsMetric = await formatsProvider.getFormat("AecUnits.LENGTH_LONG", "metric");
+    expect(formatPropsMetric).not.to.be.undefined;
+    expect(formatPropsMetric!.composite?.units[0].name).to.equal("Units.M"); // Doesn't return Units.KM because KM is in Metric, not SI, and algorithm finds SI first.
   });
 });

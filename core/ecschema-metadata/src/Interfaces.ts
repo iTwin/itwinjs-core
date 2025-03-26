@@ -101,8 +101,8 @@ export interface HasMixins {
  * @beta
  */
 export interface FormatsProvider {
-  getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
-  addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
+  getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
+  addFormat(name: string, formatProps: SchemaItemFormatProps, unitSystem?: string): Promise<void>;
   removeFormat(name: string): Promise<void>;
 
   onFormatUpdated: BeUiEvent<string>;
