@@ -31,11 +31,11 @@ import {
   QueryRowProxy,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
-import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
-import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
-import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
-import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";
-import { normalizeVersion } from "../presentation-backend/Utils";
+import { configureForPromiseResult } from "@itwin/presentation-common/test-utils";
+import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain.js";
+import * as RulesetElements from "../presentation-backend/domain/RulesetElements.js";
+import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder.js";
+import { normalizeVersion } from "../presentation-backend/Utils.js";
 
 describe("RulesetEmbedder", () => {
   let embedder: RulesetEmbedder;

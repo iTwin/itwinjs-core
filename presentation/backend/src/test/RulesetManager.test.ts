@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { RegisteredRuleset } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform.js";
+import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
 
 describe("RulesetManager", () => {
   let manager: RulesetManagerImpl;

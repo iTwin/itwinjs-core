@@ -7,12 +7,13 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { PresentationError } from "@itwin/presentation-common";
-import { Presentation, SelectionManager } from "../presentation-frontend";
-import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
-import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { PresentationManager } from "../presentation-frontend/PresentationManager";
-import * as selection from "../presentation-frontend/selection/SelectionManager";
-import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
+import { Presentation, SelectionManager } from "../presentation-frontend.js";
+import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
+import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
+import { PresentationManager } from "../presentation-frontend/PresentationManager.js";
+import * as selection from "../presentation-frontend/selection/SelectionManager.js";
+import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager.js";
+import { createStorage } from "@itwin/unified-selection";
 
 describe("Presentation", () => {
   const shutdownIModelApp = async () => {
@@ -90,12 +91,9 @@ describe("Presentation", () => {
     });
 
     it("initializes FavoritePropertiesManager with given props", async () => {
-      const constructorSpy = sinon.spy(favorites, "FavoritePropertiesManager");
-      const props: favorites.FavoritePropertiesManagerProps = {
-        storage: new NoopFavoritePropertiesStorage(),
-      };
-      await Presentation.initialize({ favorites: props });
-      expect(constructorSpy).to.be.calledOnceWithExactly(props);
+      const storage = new NoopFavoritePropertiesStorage();
+      await Presentation.initialize({ favorites: { storage } });
+      expect(Presentation.favoriteProperties.storage).to.eq(storage);
     });
 
     it("calls registered initialization handlers", async () => {
@@ -107,12 +105,11 @@ describe("Presentation", () => {
 
     /* eslint-disable @typescript-eslint/no-deprecated */
     it("initializes SelectionManager with given props", async () => {
-      const constructorSpy = sinon.spy(selection, "SelectionManager");
-      const props: selection.SelectionManagerProps = {
-        scopes: moq.Mock.ofType<SelectionScopesManager>().object,
-      };
-      await Presentation.initialize({ selection: props });
-      expect(constructorSpy).to.be.calledOnceWithExactly(props);
+      const scopes = moq.Mock.ofType<SelectionScopesManager>().object;
+      const selectionStorage = createStorage();
+      await Presentation.initialize({ selection: { scopes, selectionStorage } });
+      expect(Presentation.selection.scopes).to.eq(scopes);
+      expect(Presentation.selection.selectionStorage).to.eq(selectionStorage);
     });
 
     it("initializes SelectionScopesManager's locale callback to return PresentationManager's activeLocale", async () => {

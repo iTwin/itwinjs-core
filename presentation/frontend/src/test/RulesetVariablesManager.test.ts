@@ -9,8 +9,8 @@ import * as moq from "typemoq";
 import { Id64 } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
 import { RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
-import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
+import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler.js";
+import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager.js";
 
 describe("RulesetVariablesManager", () => {
   let vars: RulesetVariablesManagerImpl;

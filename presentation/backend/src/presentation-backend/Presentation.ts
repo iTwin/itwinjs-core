@@ -10,11 +10,11 @@ import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DisposeFunc, Logger } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
-import { PresentationIpcHandler } from "./PresentationIpcHandler";
-import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
-import { PresentationRpcImpl } from "./PresentationRpcImpl";
-import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { PresentationIpcHandler } from "./PresentationIpcHandler.js";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager.js";
+import { PresentationRpcImpl } from "./PresentationRpcImpl.js";
+import { FactoryBasedTemporaryStorage } from "./TemporaryStorage.js";
 
 /**
  * Properties that can be used to configure [[Presentation]] API.
@@ -93,7 +93,7 @@ export class Presentation {
   private static _disposeIModelOpenedListener: DisposeFunc | undefined;
   private static _rpcImpl: PresentationRpcImpl | undefined;
 
-  /* istanbul ignore next */
+  /* c8 ignore next */
   private constructor() {}
 
   /** Properties used to initialize the presentation framework */
@@ -132,13 +132,14 @@ export class Presentation {
       // by default, manager is disposed after 1 hour of being unused
       unusedValueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
       // add some logging
-      onDisposedSingle: /* istanbul ignore next */ (id: string) =>
+      /* c8 ignore next 5 */
+      onDisposedSingle: (id: string) =>
         Logger.logInfo(
           PresentationBackendLoggerCategory.PresentationManager,
           `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage!.values.length}.`,
         ),
-      onDisposedAll: /* istanbul ignore next */ () =>
-        Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
+      /* c8 ignore next */
+      onDisposedAll: () => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
     });
 
     if (this._initProps.enableSchemasPreload) {

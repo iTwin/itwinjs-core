@@ -456,6 +456,16 @@ export enum ECObjectsStatus {
     UnableToLocateSchema = 35071
 }
 
+// @internal (undocumented)
+export namespace ECSchemaNamespaceUris {
+    const // (undocumented)
+    SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
+    const // (undocumented)
+    SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
+    const // (undocumented)
+    SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
+}
+
 // @internal
 export interface ECSpecVersion {
     // (undocumented)
@@ -746,6 +756,18 @@ export class Format extends SchemaItem {
     protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
     // (undocumented)
     get uomSeparator(): string;
+}
+
+// @beta
+export interface FormatSet {
+    // (undocumented)
+    formats: {
+        [kindOfQuantityId: string]: SchemaItemFormatProps;
+    };
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    name: string;
 }
 
 // @internal (undocumented)

@@ -2,18 +2,19 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
+  CompressedClassInfoJSON,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
-  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -38,15 +39,16 @@ import {
   NodePathElement,
   Paged,
   PagedResponse,
-  PresentationIpcEvents,
   Prioritized,
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
+  SelectClassInfoJSON,
   UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
+import { deepReplaceNullsToUndefined, PresentationIpcEvents } from "@itwin/presentation-common/internal";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import {
   createDefaultNativePlatform,
   NativePlatformDefinition,
@@ -56,10 +58,16 @@ import {
   NativePresentationKeySetJSON,
   NativePresentationUnitSystem,
   PresentationNativePlatformResponseError,
-} from "./NativePlatform";
-import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
+} from "./NativePlatform.js";
+import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager.js";
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import elementPropertiesRuleset from "./primary-presentation-rules/ElementProperties.PresentationRuleSet.json" with { type: "json" };
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager.js";
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import bisSupplementalRuleset from "./supplemental-presentation-rules/BisCore.PresentationRuleSet.json" with { type: "json" };
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import funcSupplementalRuleset from "./supplemental-presentation-rules/Functional.PresentationRuleSet.json" with { type: "json" };
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils.js";
 
 /** @internal */
 export class PresentationManagerDetail implements Disposable {
@@ -201,10 +209,11 @@ export class PresentationManagerDetail implements Disposable {
       rulesetId: "ElementProperties",
       ...requestOptions,
     };
-    const reviver = (key: string, value: any) => {
-      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
-    };
-    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params), reviver));
+    const json: {
+      sources: SelectClassInfoJSON<string>[];
+      classesMap: { [id: string]: CompressedClassInfoJSON };
+    } = JSON.parse(await this.request(params));
+    return deepReplaceNullsToUndefined(json.sources.map((sourceJson) => SelectClassInfo.fromCompressedJSON(sourceJson, json.classesMap)));
   }
 
   public async getContentSetSize(
@@ -360,6 +369,7 @@ async function withOptionalDiagnostics(
       responseDiagnostics = e.diagnostics;
     }
     throw e;
+    /* c8 ignore next */
   } finally {
     if (responseDiagnostics) {
       const diagnostics = { logs: [responseDiagnostics] };
@@ -379,18 +389,9 @@ interface RequestParams {
 }
 
 function setupRulesets(nativePlatform: NativePlatformDefinition, supplementalRulesetDirectories: string[], primaryRulesetDirectories: string[]): void {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const elementPropertiesRuleset: Ruleset = require("./primary-presentation-rules/ElementProperties.PresentationRuleSet.json");
   nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
-
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const bisSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/BisCore.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(bisSupplementalRuleset));
-
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const funcSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/Functional.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(funcSupplementalRuleset));
-
   nativePlatform.setupSupplementalRulesetDirectories(collateAssetDirectories(supplementalRulesetDirectories));
   nativePlatform.setupRulesetDirectories(collateAssetDirectories(primaryRulesetDirectories));
 }
@@ -482,7 +483,6 @@ export function bisElementInstanceKeysProcessor(imodel: IModelDb, classInstances
 
 function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: InstanceKey): void {
   let set = classInstancesMap.get(key.className);
-  // istanbul ignore else
   if (!set) {
     set = new Set();
     classInstancesMap.set(key.className, set);
@@ -582,7 +582,7 @@ function parseUpdateInfo(info: UpdateInfo | undefined) {
 
   const parsedInfo: UpdateInfo = {};
   for (const fileName in info) {
-    // istanbul ignore if
+    /* c8 ignore next 3 */
     if (!info.hasOwnProperty(fileName)) {
       continue;
     }
@@ -607,5 +607,5 @@ export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
 }
 
 /** @internal */
-// istanbul ignore next
+/* c8 ignore next */
 export function noopUpdatesHandler(_info: UpdateInfo | undefined) {}

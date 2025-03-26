@@ -15,16 +15,16 @@ import {
   createTestPropertyInfo,
   createTestRelatedClassInfo,
   createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/cjs/test";
+} from "@itwin/presentation-common/test-utils";
 import {
   createFieldOrderInfos,
   FavoritePropertiesManager,
   FavoritePropertiesOrderInfo,
   FavoritePropertiesScope,
   getFieldInfos,
-  IFavoritePropertiesStorage,
-} from "../../presentation-frontend";
-import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+  PropertyFullName,
+} from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
+import { IFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
 
 describe("FavoritePropertiesManager", () => {
   let manager: FavoritePropertiesManager;

@@ -9,13 +9,7 @@ import chaiJestSnapshot from "chai-jest-snapshot";
 import chaiSubset from "chai-subset";
 import sinonChai from "sinon-chai";
 import sinon from "sinon";
-import sourceMapSupport from "source-map-support";
 import path from "path";
-
-// see https://github.com/babel/babel/issues/4605
-sourceMapSupport.install({
-  environment: "node",
-});
 
 // setup chai
 chai.use(chaiAsPromised);
@@ -23,6 +17,7 @@ chai.use(chaiJestSnapshot);
 chai.use(sinonChai);
 chai.use(chaiSubset);
 
+import { takeCoverage } from "node:v8";
 export const mochaHooks = {
   beforeAll() {
     chaiJestSnapshot.resetSnapshotRegistry();
@@ -39,5 +34,7 @@ export const mochaHooks = {
   afterEach() {
     sinon.restore();
   },
-  afterAll() {},
+  afterAll() {
+    takeCoverage();
+  },
 };
