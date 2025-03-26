@@ -19,6 +19,7 @@ Table of contents:
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
     - [Localization assets in `@itwin/presentation-common`](#localization-assets-in-itwinpresentation-common)
+    - [Internal APIs](#internal-apis)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
@@ -59,7 +60,7 @@ Table of contents:
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
-      - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
+      - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
 
 ## Selection set
 
@@ -133,6 +134,10 @@ The `@itwin/presentation-common` delivers a localization file used by either `@i
 
 - Frontend looks for localization assets under `lib/public/locales` directory.
 - Backend used to look for localization assets under `lib/cjs/assets/locales` directory. This directory has been changed to `lib/assets/locales` to avoid duplication between `cjs` and `esm` builds. Anyone looking for localization assets in code can find then using `@itwin/presentation-common/locales/en/Presentation.json` import path.
+
+### Internal APIs
+
+The Presentation packages exported a number of `@internal` APIs through the public barrel files. These APIs were never intended for consumers' use and have been removed from the public barrels to avoid accidental usage.
 
 ## Google Maps 2D tiles API
 
