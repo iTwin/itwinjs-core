@@ -33,10 +33,7 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
-
-const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
-const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
-
+import { ECSchemaNamespaceUris } from "../Constants";
 /**
  * @beta
  */
@@ -695,7 +692,7 @@ export class Schema implements CustomAttributeContainerProps {
       throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaJson: { [value: string]: any } = {};
-    schemaJson.$schema = SCHEMAURL3_2_JSON; // $schema is required
+    schemaJson.$schema = ECSchemaNamespaceUris.SCHEMAURL3_2_JSON; // $schema is required
     schemaJson.name = this.name; // name is required
     schemaJson.version = this.schemaKey.version.toString(true);
     schemaJson.alias = this.alias; // alias is required
@@ -727,7 +724,7 @@ export class Schema implements CustomAttributeContainerProps {
       throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaMetadata = schemaXml.createElement("ECSchema");
-    schemaMetadata.setAttribute("xmlns", SCHEMAURL3_2_XML);
+    schemaMetadata.setAttribute("xmlns", ECSchemaNamespaceUris.SCHEMAURL3_2_XML);
     schemaMetadata.setAttribute("version", this.schemaKey.version.toString());
     schemaMetadata.setAttribute("schemaName", this.name);
     schemaMetadata.setAttribute("alias", this.alias ? this.alias : "");
