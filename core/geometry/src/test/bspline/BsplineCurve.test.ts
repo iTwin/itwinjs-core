@@ -923,7 +923,7 @@ describe("BsplineCurve", () => {
     let tangent: CurveLocationDetail | undefined;
     let hintPoint: Point3d | undefined;
 
-    const captureGeometry = () => {
+    const captureGeometry = (hintPoint?: Point3d, tangents?: CurveLocationDetail[], tangent?: CurveLocationDetail) => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.1, dx, dy);
       if (hintPoint)
@@ -948,21 +948,28 @@ describe("BsplineCurve", () => {
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(1, tangents!.length, "1 tangent found");
     ck.testCoordinate(0.5, tangents![0].fraction, "tangent fraction");
-    captureGeometry();
+    captureGeometry(undefined, tangents);
 
     dx += 7;
+    spacePoint = Point3d.create(2, 3);
+    tangents = bspline.allTangents(spacePoint);
+    ck.testCoordinate(2, tangents!.length, "2 tangent found");
+    ck.testCoordinate(0.0792257, tangents![0]!.fraction, "closest tangent fraction is 0.0792257");
+    ck.testCoordinate(1 - 0.0792257, tangents![1]!.fraction, "closest tangent fraction is 1- 0.0792257");
+    captureGeometry(undefined, tangents);
+    dy += 5;
     spacePoint = Point3d.create(2, 3);
     hintPoint = Point3d.create(0, 2);
     tangent = bspline.closestTangent(spacePoint, { hintPoint });
     ck.testDefined(tangent, "tangent is defined");
     ck.testCoordinate(0.0792257, tangent!.fraction, "closest tangent fraction is 0.0792257");
-    captureGeometry();
+    captureGeometry(hintPoint, undefined, tangent);
     dy += 5;
     hintPoint = Point3d.create(5, 2);
     tangent = bspline.closestTangent(spacePoint, { hintPoint });
     ck.testDefined(tangent, "tangent is defined");
     ck.testCoordinate(1 - 0.0792257, tangent!.fraction, "closest tangent fraction is 1 - 0.0792257");
-    captureGeometry();
+    captureGeometry(hintPoint, undefined, tangent);
 
     // space point inside non-convex closed curve; 2 tangents
     dx += 7;
@@ -977,8 +984,7 @@ describe("BsplineCurve", () => {
     tangents = bspline.allTangents(spacePoint);
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
-    hintPoint = undefined;
-    captureGeometry();
+    captureGeometry(undefined, tangents);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "ClosestTangent");
     expect(ck.getNumErrors()).toBe(0);

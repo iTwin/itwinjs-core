@@ -551,7 +551,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * tangent at P and the `TangentOptions.viewNormal` (if not provided, default view normal (0,0,1) is used). This is
    * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.viewNormal`.
    * @param spacePoint point in space.
-   * @param announceTangent callback to announce tangents.
+   * @param announceTangent callback to announce tangent(s). For example, the callback can find all tangents or just
+   * the closest tangent.
    * @param tangOpts (optional) tangent options.
    */
   public emitTangents(

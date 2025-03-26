@@ -23,8 +23,6 @@ import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
  * @public
  */
 export interface TangentOptions {
-  /** A callback function to announce tangent(s). For example, the callback can find all tangents or just the closest tangent. */
-  announceTangent?: (tangent: CurveLocationDetail) => any;
   /** A point to be used to find the closest tangent to that point. */
   hintPoint?: Point3d,
   /** View plane normal. Default is(0, 0, 1). */
