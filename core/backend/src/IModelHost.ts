@@ -475,6 +475,10 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
+    if (!options.enableNativeInstanceFunctions) {
+      options.enableNativeInstanceFunctions = true;
+    }
+
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);
 

@@ -1993,6 +1993,7 @@ export namespace IModelDb {
       try {
         if (IModelHost.configuration?.enableNativeInstanceFunctions) {
           const options = {
+            ...loadProps,
             useJsNames: true,
           }
           const readProps = this.tryGetReadProps<T>(loadProps);
