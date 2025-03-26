@@ -27,24 +27,26 @@
       "import": "./lib/esm/presentation-common.js",
       "require": "./lib/cjs/presentation-common.js"
     },
-    "./locales/*": {
-      "import": "./lib/assets/locales/*",
-      "require": "./lib/assets/locales/*"
+    "./internal": {
+      "import": "./lib/esm/presentation-common-internal.js",
+      "require": "./lib/cjs/presentation-common-internal.js"
     },
     "./test-utils": {
       "import": "./lib/esm/test/index.js",
       "require": "./lib/cjs/test/index.js"
     },
+    "./locales/*": {
+      "import": "./lib/assets/locales/*",
+      "require": "./lib/assets/locales/*"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
     "build": "npm run -s ruleset-json-schema && npm run -s build:assets && npm run -s build:public && npm run -s build:cjs && npm run -s build:esm",
-    "build:cjs": "internal-tools create-cjs-package-json -o ./lib/cjs && tsc -p tsconfig.cjs.json",
+    "build:cjs": "internal-tools build-cjs",
     "build:esm": "tsc -p tsconfig.esm.json",
     "build:assets": "cpx \"./assets/**/*\" ./lib/assets && npm run -s pseudolocalize:assets",
     "build:public": "cpx \"./assets/**/*\" ./lib/public && npm run -s pseudolocalize:public",
-    "build:watch": "npm run -s ruleset-json-schema && npm run -s watch",
-    "watch": "npm run -s build:cjs -- -w",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "cover": "c8 npm -s test",
     "docs": "npm run -s docs:reference && npm run -s docs:changelog",
@@ -53,13 +55,12 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=lib/esm/presentation-common",
     "ruleset-json-schema": "npm run -s ruleset-json-schema:generate && npm run -s ruleset-json-schema:post-process",
-    "ruleset-json-schema:generate": "typescript-json-schema ./tsconfig.json Ruleset --noExtraProps --required --strictNullChecks --validationKeywords deprecated --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts > ./Ruleset.schema.json",
+    "ruleset-json-schema:generate": "typescript-json-schema ./src/presentation-common/rules/**/*.ts Ruleset --noExtraProps --required --strictNullChecks --validationKeywords deprecated > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.cjs --path ./Ruleset.schema.json",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --enable-source-maps --config ./.mocharc.json",
-    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
     "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {

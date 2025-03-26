@@ -10,7 +10,8 @@
 import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Id64, Id64Arg, Id64Array } from "@itwin/core-bentley";
 import { IModelConnection, SelectableIds, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
-import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import { BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import { AsyncTasksTracker } from "@itwin/presentation-common/internal";
 import {
   createStorage,
   CustomSelectable,

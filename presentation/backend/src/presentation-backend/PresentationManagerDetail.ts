@@ -9,12 +9,12 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
+  CompressedClassInfoJSON,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
-  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -39,14 +39,15 @@ import {
   NodePathElement,
   Paged,
   PagedResponse,
-  PresentationIpcEvents,
   Prioritized,
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
+  SelectClassInfoJSON,
   UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
+import { deepReplaceNullsToUndefined, PresentationIpcEvents } from "@itwin/presentation-common/internal";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import {
   createDefaultNativePlatform,
@@ -59,7 +60,13 @@ import {
   PresentationNativePlatformResponseError,
 } from "./NativePlatform.js";
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager.js";
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import elementPropertiesRuleset from "./primary-presentation-rules/ElementProperties.PresentationRuleSet.json" with { type: "json" };
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager.js";
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import bisSupplementalRuleset from "./supplemental-presentation-rules/BisCore.PresentationRuleSet.json" with { type: "json" };
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import funcSupplementalRuleset from "./supplemental-presentation-rules/Functional.PresentationRuleSet.json" with { type: "json" };
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils.js";
 
 /** @internal */
@@ -202,10 +209,11 @@ export class PresentationManagerDetail implements Disposable {
       rulesetId: "ElementProperties",
       ...requestOptions,
     };
-    const reviver = (key: string, value: any) => {
-      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
-    };
-    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params), reviver));
+    const json: {
+      sources: SelectClassInfoJSON<string>[];
+      classesMap: { [id: string]: CompressedClassInfoJSON };
+    } = JSON.parse(await this.request(params));
+    return deepReplaceNullsToUndefined(json.sources.map((sourceJson) => SelectClassInfo.fromCompressedJSON(sourceJson, json.classesMap)));
   }
 
   public async getContentSetSize(
@@ -380,12 +388,6 @@ interface RequestParams {
   cancelEvent?: BeEvent<() => void>;
 }
 
-// @ts-ignore TS complains about `with` in CJS builds, but not ESM
-import elementPropertiesRuleset from "./primary-presentation-rules/ElementProperties.PresentationRuleSet.json" with { type: "json" };
-// @ts-ignore TS complains about `with` in CJS builds, but not ESM
-import bisSupplementalRuleset from "./supplemental-presentation-rules/BisCore.PresentationRuleSet.json" with { type: "json" };
-// @ts-ignore TS complains about `with` in CJS builds, but not ESM
-import funcSupplementalRuleset from "./supplemental-presentation-rules/Functional.PresentationRuleSet.json" with { type: "json" };
 function setupRulesets(nativePlatform: NativePlatformDefinition, supplementalRulesetDirectories: string[], primaryRulesetDirectories: string[]): void {
   nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
   nativePlatform.registerSupplementalRuleset(JSON.stringify(bisSupplementalRuleset));

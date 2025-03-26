@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import deepEqual from "deep-equal";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import deepEqual from "deep-equal";
 import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -50,7 +50,6 @@ import {
   Paged,
   PageOptions,
   PresentationError,
-  PresentationIpcEvents,
   PrimitiveTypeDescription,
   PropertiesFieldJSON,
   PropertyInfoJSON,
@@ -69,6 +68,7 @@ import {
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
+import { PresentationIpcEvents } from "@itwin/presentation-common/internal";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
