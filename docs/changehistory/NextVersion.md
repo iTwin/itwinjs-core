@@ -14,12 +14,14 @@ Table of contents:
     - [Text Block Margins](#text-block-margins)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
+    - [Draping models onto reality data](#draping-models-onto-reality-data)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
+  - [Quantity Formatting](#quantity-formatting)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -104,6 +106,14 @@ Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a singl
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
 
+### Draping models onto reality data
+
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
+
+Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
+
+![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
+
 ## Back-end image conversion
 
 @itwin/core-backend provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
@@ -153,6 +163,14 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 ```
 
 > Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+
+## Quantity Formatting
+
+Following APIs have been added to support persistence:
+
+- [FormatSet]($ecschema-metadata) defines an interface to support loading/saving [Format]($ecschema-metadata).
+
+Learn more at the [Quantity](../learning/quantity/index.md#persistence) learnings article for examples and use cases.
 
 ## API deprecations
 
