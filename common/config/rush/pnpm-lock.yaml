@@ -11,7 +11,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 4.11.22
+      '@bentley/imodeljs-native': 4.11.26
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
       '@itwin/core-bentley': workspace:*
@@ -63,7 +63,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 4.11.22
+      '@bentley/imodeljs-native': 4.11.26
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
@@ -3725,8 +3725,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/4.11.22:
-    resolution: {integrity: sha512-HWdqMsuirbW1d3oYHGF9kld+S84FQueiixQkBfteysi0pTFtN8xzkX4nLobaGIQxecSnZxbm4ylYSAJNODdQwg==}
+  /@bentley/imodeljs-native/4.11.26:
+    resolution: {integrity: sha512-lvJWjAPnvtO8eDLqF2h8RUk1TLX2N6+3zEOeHA/gr6G2cumGvflJb2BQ5NF1LgTZ9paBdPA3pcZnFweJgmIC2Q==}
     requiresBuild: true
     dev: false
 
