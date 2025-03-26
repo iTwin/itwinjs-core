@@ -8,6 +8,7 @@ import { SchemaContext } from "../../Context";
 import { PrimitiveType } from "../../ECObjects";
 import { ECClass, MutableClass } from "../../Metadata/Class";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -21,7 +22,7 @@ describe("Property Inheritance", () => {
     //         |
     //  [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -76,7 +77,7 @@ describe("Property Inheritance", () => {
     //         |
     //  [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -132,7 +133,7 @@ describe("Property Inheritance", () => {
     //         |               /
     //         [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -214,7 +215,7 @@ describe("Property Inheritance", () => {
     //         |
     //  [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -297,7 +298,7 @@ describe("Property Inheritance", () => {
     //             [H:P2]
     // We are using the labels to tell the properties apart which have been overwritten
     const testSchemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",

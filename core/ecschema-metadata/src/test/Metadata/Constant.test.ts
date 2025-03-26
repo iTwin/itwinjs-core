@@ -12,6 +12,7 @@ import { Phenomenon } from "../../Metadata/Phenomenon";
 import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -252,7 +253,7 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(true, true);
 
-      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      expect(constantSerialization.$schema).eql(ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       expect(constantSerialization.name).eql("TestConstant");
       expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
@@ -277,7 +278,7 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJSON(true, true);
 
-      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      expect(constantSerialization.$schema).eql(ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       expect(constantSerialization.name).eql("TestConstant");
       expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
