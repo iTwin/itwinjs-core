@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./AnalyticalElements";
-export * from "./AnalyticalModels";
-export * from "./AnalyticalRelationships";
-export * from "./AnalyticalSchema";
+export * from "./AnalyticalElements.js";
+export * from "./AnalyticalModels.js";
+export * from "./AnalyticalRelationships.js";
+export * from "./AnalyticalSchema.js";
 
 /** @docs-package-description
  * The `@itwin/analytical-backend` package contains classes for working with analytical schemas on the backend.
