@@ -113,16 +113,16 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
   it("CircleTangentLLL", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
-    const lineXAxis = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 0, 0, 1);
-    const lineYAxis = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 0, 1, 0);
+    const lineXAxis = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 0, 0, 1)!;
+    const lineYAxis = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 0, 1, 0)!;
     const a = 1;
     const b = 0.8;
     const lineA0 = -4.0;
     const lineA1 = 4.0;
-    const lineDiagonal11 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 1, a, a);
-    const lineY1 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 0, 1);
-    const lineQ11 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 1, a, b);
-    const lineR = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(5, 4, a, -b);
+    const lineDiagonal11 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 1, a, a)!;
+    const lineY1 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 0, 1)!;
+    const lineQ11 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 1, a, b)!;
+    const lineR = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(5, 4, a, -b)!;
     let x0 = 0;
     for (const lines of [
       [lineXAxis,lineYAxis,lineY1],
@@ -207,11 +207,11 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,3,2);
     const pointY4 = UnboundedCircle2dByCenterAndRadius.createXYRadius (3,4,0);
-    const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0, 0,1);
-    const axisX4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (2,4, 0,1);
-    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (0,1,1,0);
-    const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0,-1,4);
-    const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (-3,1,3,3);
+    const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0, 0,1)!;
+    const axisX4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (2,4, 0,1)!;
+    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (0,1,1,0)!;
+    const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0,-1,4)!;
+    const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (-3,1,3,3)!;
 
     const allLinePairs = [
       [axisX, axisY],
@@ -244,11 +244,11 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius (-7,5,0);
     const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius (8,3,0);
 
-    const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0, 0,1);
-    const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (2,10, 0,1);
-    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (0,1,1,0);
-    const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0,-1,4);
-    const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (-3,1,3,3);
+    const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0, 0,1)!;
+    const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (2,10, 0,1)!;
+    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (0,1,1,0)!;
+    const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0,-1,4)!;
+    const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (-3,1,3,3)!;
 
     const allCirclePairs = [
       [circleA, circleB],
@@ -560,5 +560,101 @@ it("LineCircleIntersection", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "LineCircleIntersection");
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+it("CircleTangentLLR", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0, 0,1)!;
+  const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (2,10, 0,1)!;
+  const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (0,1,1,0)!;
+  const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0,-1,4)!;
+  const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (-3,1,3,3)!;
+
+  const allLines = [axisX, axisY, axisX10, line3, line4];
+
+  let x0 = 0;
+  let y0 = 0;
+  const xStep = 100;
+  const yStep = 100;
+  for (let i = 0; i < allLines.length; i++){
+    y0 = 0;
+    for (let j = i+1; j < allLines.length; j++){
+      for (const radius of [1,5]){
+        const circles = ConstrainedConstruction.circlesTangentLLR (allLines[i], allLines[j], radius);
+        outputCircleMarkup (ck, allGeometry, x0, y0, circles, [allLines[i], allLines[j]], 0);
+      }
+      y0 += yStep;
+    }
+    x0 += xStep;
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentLLR");
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+it("CircleTangentCLR", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+  const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0, 0,1)!;
+  const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (2,10, 0,1)!;
+  const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (0,1,1,0)!;
+  const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (1,0,-1,4)!;
+  const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY (-3,1,3,3)!;
+
+  const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,1);
+  const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,3,1);
+  const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,-1,0.2);
+  const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,-1,4);
+
+  const allLines = [axisX, axisY, axisX10, line3, line4];
+  const allCircles = [circleA, circleB, circleC, circleD];
+
+  let x0 = 0;
+  let y0 = 0;
+  const xStep = 100;
+  const yStep = 100;
+  for (const circle of allCircles){
+    y0 = 0;
+    for (const line of allLines){
+      for (const radius of [1]){
+        const circles = ConstrainedConstruction.circlesTangentCLR (circle, line, radius);
+        outputCircleMarkup (ck, allGeometry, x0, y0, circles, [circle, line], 0);
+      }
+      y0 += yStep;
+    }
+    x0 += xStep;
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCLR");
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+it("CircleTangentCCR", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+
+  const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,1);
+  const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,3,1);
+  const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,-1,0.2);
+  const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius (2,-1,4);
+
+  const allCircles = [circleA, circleB, circleC, circleD];
+
+  let x0 = 0;
+  let y0 = 0;
+  const xStep = 40;
+  const yStep = 40;
+  for (let i = 0; i < allCircles.length; i++){
+    y0 = 0;
+    for (let j = i+1; j < allCircles.length; j++){
+      for (const radius of [1,6]){
+        const circles = ConstrainedConstruction.circlesTangentCCR (allCircles[i], allCircles[j], radius);
+        outputCircleMarkup (ck, allGeometry, x0, y0, circles, [allCircles[i], allCircles[j]], 0);
+        y0 += yStep;
+      }
+    }
+    x0 += xStep;
+  }
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCR");
   expect(ck.getNumErrors()).toBe(0);
 });

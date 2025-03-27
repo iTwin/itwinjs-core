@@ -41,11 +41,16 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
    * @param normalY y componnet of normal vector
    * @returns new line object.
    */
-  public static createPointXYNormalXY (pointX: number, pointY: number, normalX: number, normalY: number): UnboundedLine2dByPointAndNormal{
-    return new UnboundedLine2dByPointAndNormal (Point2d.create (pointX, pointY), Vector2d.create (normalX, normalY));
+  public static createPointXYNormalXY (pointX: number, pointY: number, normalX: number, normalY: number): UnboundedLine2dByPointAndNormal | undefined {
+    const unitVector = Vector2d.create (normalX, normalY).normalize();
+    if (unitVector === undefined)
+      return undefined;
+    return new UnboundedLine2dByPointAndNormal (Point2d.create (pointX, pointY), unitVector);
   }
   /**
    * Create an UnboundedLine2dByPointAndNormal from a point on the line and a normal vector.
+   * * The xy data from the inputs is copied to the line.
+   * * i.e. the inputs are NOT captured.
    * @param point any point on the line
    * @param normal the normal vector
    * @returns new line object.
@@ -154,6 +159,18 @@ return new UnboundedLine2dByPointAndNormal (
     Point2d.create (this.point.x - newOrigin.x, this.point.y - newOrigin.y),
     Vector2d.create (unitNormal.x, unitNormal.y));
 }
+/**
+ * Return a new implicit line with its reference point shifted by given multiple of its normal vector.
+ * * The shift is applied directly to the existing normal -- no normalization or test for zero.
+ * @param shiftFactor multiplier for normal.
+ * @return shifted line
+*/
+public cloneShifted (shiftFactor: number): UnboundedLine2dByPointAndNormal | undefined{
+  return UnboundedLine2dByPointAndNormal.createPointNormal (
+    this.point.plusScaled (this.normal, shiftFactor),
+    this.normal);
+  }
+
 /**
  * Compute the intersection of two lines.
  * * Each can be offset.

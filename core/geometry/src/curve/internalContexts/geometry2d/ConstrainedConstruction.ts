@@ -572,6 +572,129 @@ export class ConstrainedConstruction {
         return undefined;
     return UnboundedLine2dByPointAndNormal.createPointNormal (midPoint, unitAB);
   }
+  /**
+   * compute circles of specified radius tangent to each of the lines
+   * * There are normally 4 circles
+   * * The undefined case occurs when th elines are parallel.
+   * @param lineA first line
+   * @param lineB second line
+   * @param radius radius of tangent circles
+   * @returns array of circles with annotated tangencies
+   */
+  public static circlesTangentLLR (
+    lineA: UnboundedLine2dByPointAndNormal,
+    lineB: UnboundedLine2dByPointAndNormal,
+    radius: number
+  ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    if (Geometry.isSmallMetricDistance (radius))
+      return undefined;
+    const offsetsA = [
+      lineA.cloneShifted (radius)!,
+      lineA.cloneShifted(-radius)!
+      ];
+    const offsetsB = [
+      lineB.cloneShifted (radius)!,
+      lineB.cloneShifted(-radius)!
+      ];
+    const result = [];
+    for (const offsetA of offsetsA){
+      for (const offsetB of offsetsB){
+        const p = offsetA?.interesectUnboundedLine2dByPointAndNormalWithOffsets (offsetB);
+        if (p !== undefined){
+          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (p, radius);
+          if (!isThisCirclePresent (result, newCircle)){
+            const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+            markup.appendClosePoint(newCircle.center, lineA, newCircle.center, newCircle.radius);
+            markup.appendClosePoint(newCircle.center, lineB, newCircle.center, newCircle.radius);
+            result.push(markup);
+            }
+        }
+      }
+    }
+    return result.length > 0 ? result : undefined;
+  }
+  /**
+   * compute circles of specified radius tangent to both a line and an arc
+   * * There can be 0 to 8 circles
+   * * The undefined case occurs when the smallest distance from circle to line exceeds radius.
+   * @param circleA the circle
+   * @param lineB the line
+   * @param radius radius of tangent circles
+   * @returns array of circles with annotated tangencies
+   */
+  public static circlesTangentCLR (
+    circleA: UnboundedCircle2dByCenterAndRadius,
+    lineB: UnboundedLine2dByPointAndNormal,
+    radius: number
+  ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    if (Geometry.isSmallMetricDistance (radius))
+      return undefined;
+    const offsetsA = [
+      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius + radius),
+      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius - radius)];
+    const offsetsB = [
+      lineB.cloneShifted (radius)!,
+      lineB.cloneShifted(-radius)!];
+
+    const result = [];
+    for (const offsetA of offsetsA){
+      for (const offsetB of offsetsB){
+        const points = offsetA.intersectLine (offsetB);
+        for (const p of points){
+          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (p, radius);
+          if (!isThisCirclePresent (result, newCircle)){
+            const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+            markup.appendClosePoint(newCircle.center, circleA, newCircle.center, newCircle.radius);
+            markup.appendClosePoint(newCircle.center, lineB, newCircle.center, newCircle.radius);
+            result.push(markup);
+            }
+        }
+      }
+    }
+    return result.length > 0 ? result : undefined;
+  }
+
+  /**
+   * compute circles of specified radius tangent to both circles
+   * * There can be 0 to 8 circles
+   * * The undefined case is when the smallest distance between the circles exceeds the requested radius.
+   * @param circleA the first circle
+   * @param circleB the second circle
+   * @param radius radius of tangent circles
+   * @returns array of circles with annotated tangencies
+   */
+  public static circlesTangentCCR (
+    circleA: UnboundedCircle2dByCenterAndRadius,
+    circleB: UnboundedCircle2dByCenterAndRadius,
+    radius: number
+  ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    if (Geometry.isSmallMetricDistance (radius))
+      return undefined;
+    const offsetsA = [
+      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius + radius),
+      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius - radius)];
+    const offsetsB = [
+      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleB.center, circleB.radius + radius),
+      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleB.center, circleB.radius - radius)];
+
+    const result = [];
+    for (const offsetA of offsetsA){
+      for (const offsetB of offsetsB){
+        const points = offsetA.intersectCircle (offsetB);
+        for (const p of points){
+          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (p, radius);
+          if (!isThisCirclePresent (result, newCircle)){
+            const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+            markup.appendClosePoint(newCircle.center, circleA, newCircle.center, newCircle.radius);
+            markup.appendClosePoint(newCircle.center, circleB, newCircle.center, newCircle.radius);
+            result.push(markup);
+            }
+        }
+      }
+    }
+    return result.length > 0 ? result : undefined;
+  }
+
 }
 /**
  * If distance is near zero metric, return an array containing only valueA.
