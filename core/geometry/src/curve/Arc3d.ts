@@ -917,7 +917,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       if (distanceSquaredXYToPoint < 1.0) {
         // the point is inside the ellipse
       } else {
-        const distanceToTangency = Math.sqrt(distanceSquaredXYToPoint - 1.0);
+        // distanceToTangencySquared + unitCircleRadiusSquared = distanceSquaredXYToPoint
+        const unitCircleRadiusSquared = 1.0;
+        const distanceToTangency = Math.sqrt(distanceSquaredXYToPoint - unitCircleRadiusSquared);
         const alpha = Math.atan2(localCenterToPoint.y, localCenterToPoint.x);
         const beta = Math.atan2(distanceToTangency, 1);
         for (const theta of [alpha + beta, alpha - beta]) {
