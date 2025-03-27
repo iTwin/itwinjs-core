@@ -6,7 +6,7 @@
 import { assert, describe, expect, it } from "vitest";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
 import { Constant } from "../../Constant";
-import { CurveFactory, CurveLocationDetail, CurvePrimitive } from "../../core-geometry";
+import { CurveFactory, CurveLocationDetail } from "../../core-geometry";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
