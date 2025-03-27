@@ -583,10 +583,7 @@ export namespace IModelJson {
     /** Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2). */
     expectedClosure?: number;
     /**
-     * Boolean flag indicating if the facets are viewable from the back.
-     * * Default value is true.
-     * * Set to false only if the mesh is known to be a closed volume with outward normals,
-     * indicating it is amenable to backface culling for improved display performance.
+     * The [[PolyfaceData.twoSided]] flag.
      */
     twoSided?: boolean;
     /** Optional analytical data at the vertices of the mesh */

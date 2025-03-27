@@ -44,10 +44,7 @@ export abstract class Polyface extends GeometryQuery {
    */
   public abstract createVisitor(numWrap: number): PolyfaceVisitor;
   /**
-   * Boolean flag indicating if the facets are viewable from the back.
-   * * Default value is true.
-   * * Set to false only if the mesh is known to be a closed volume with outward normals,
-   * indicating it is amenable to backface culling for improved display performance.
+   * The [[PolyfaceData.twoSided]] flag.
    */
   public get twoSided() {
     return this.data.twoSided;

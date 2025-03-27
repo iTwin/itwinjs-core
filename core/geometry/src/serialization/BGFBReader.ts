@@ -104,7 +104,7 @@ export class BGFBReader {
 
   /**
   * Extract an interpolating curve
-  * @param variant read position in the flat buffer.
+  * @param header read position in the flat buffer.
   */
   public readInterpolationCurve3d(header: BGFBAccessors.InterpolationCurve): InterpolationCurve3d | undefined {
     const xyzArray = header.fitPointsArray();
@@ -129,7 +129,7 @@ export class BGFBReader {
 
   /**
    * Extract an akima curve
-   * @param variant read position in the flat buffer.
+   * @param header read position in the flat buffer.
    */
   public readAkimaCurve3d(header: BGFBAccessors.AkimaCurve): AkimaCurve3d | undefined {
     const xyzArray = header.pointsArray();

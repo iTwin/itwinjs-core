@@ -76,12 +76,7 @@ export class PolyfaceData {
    * shared edge is hidden, then the mesh has `edgeVisible = [true,true,false, false,true,true]`.
    */
   public edgeVisible: boolean[];
-  /**
-   * Boolean flag indicating if the facets are viewable from the back.
-   * * Default value is true.
-   * * Set to false only if the mesh is known to be a closed volume with outward normals,
-   * indicating it is amenable to backface culling for improved display performance.
-   * */
+  /** The [[twoSided]] flag. */
   private _twoSided: boolean;
   /**
    * Flag indicating if the mesh closure is unknown (0), open sheet (1), closed solid (2).
