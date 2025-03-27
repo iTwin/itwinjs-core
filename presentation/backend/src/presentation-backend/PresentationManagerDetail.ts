@@ -69,6 +69,13 @@ import bisSupplementalRuleset from "./supplemental-presentation-rules/BisCore.Pr
 import funcSupplementalRuleset from "./supplemental-presentation-rules/Functional.PresentationRuleSet.json" with { type: "json" };
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils.js";
 
+/**
+ * Produce content descriptor that is not intended for querying content. Allows the implementation to omit certain
+ * operations to make obtaining content descriptor faster.
+ * @internal
+ */
+export const DESCRIPTOR_ONLY_CONTENT_FLAG = 1 << 9;
+
 /** @internal */
 export class PresentationManagerDetail implements Disposable {
   private _disposed: boolean;
@@ -195,7 +202,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      contentFlags: contentFlags ?? ContentFlags.DescriptorOnly, // only set "descriptor only" flag if there are no flags provided
+      contentFlags: contentFlags ?? DESCRIPTOR_ONLY_CONTENT_FLAG, // only set "descriptor only" flag if there are no flags provided
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     return this.request(params);

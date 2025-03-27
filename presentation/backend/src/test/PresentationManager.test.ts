@@ -94,7 +94,12 @@ import {
   PresentationNativePlatformResponseError,
 } from "../presentation-backend/NativePlatform.js";
 import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager.js";
-import { getKeysForContentRequest, ipcUpdatesHandler, noopUpdatesHandler } from "../presentation-backend/PresentationManagerDetail.js";
+import {
+  DESCRIPTOR_ONLY_CONTENT_FLAG,
+  getKeysForContentRequest,
+  ipcUpdatesHandler,
+  noopUpdatesHandler,
+} from "../presentation-backend/PresentationManagerDetail.js";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager.js";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
@@ -1325,7 +1330,7 @@ describe("PresentationManager", () => {
             keys: getKeysForContentRequest(keys),
             selection: testData.selectionInfo,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
-            contentFlags: ContentFlags.DescriptorOnly,
+            contentFlags: DESCRIPTOR_ONLY_CONTENT_FLAG,
           },
         };
 

@@ -61,7 +61,7 @@ import packageJson from "../../../package.json" with { type: "json" };
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import { Presentation } from "./Presentation.js";
 import { PresentationManager } from "./PresentationManager.js";
-import { getRulesetIdObject } from "./PresentationManagerDetail.js";
+import { DESCRIPTOR_ONLY_CONTENT_FLAG, getRulesetIdObject } from "./PresentationManagerDetail.js";
 import { TemporaryStorage } from "./TemporaryStorage.js";
 
 const packageJsonVersion = packageJson.version;
@@ -317,18 +317,12 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     return this.makeRequest(token, "getContentDescriptor", requestOptions, async (options) => {
       options = {
         ...options,
-        contentFlags: (options.contentFlags ?? 0) | ContentFlags.DescriptorOnly, // always append the "descriptor only" flag when handling request from the frontend
+        contentFlags: (options.contentFlags ?? 0) | DESCRIPTOR_ONLY_CONTENT_FLAG, // always append the "descriptor only" flag when handling request from the frontend
         keys: KeySet.fromJSON(options.keys),
       };
-      if (options.transport === "unparsed-json") {
-        // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
-        // bypassing unnecessary deserialization and serialization.
-        return Presentation.getManager(requestOptions.clientId).getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
-      } else {
-        // Support for older frontends that still expect a parsed descriptor
-        const descriptor = await Presentation.getManager(requestOptions.clientId).getContentDescriptor(options);
-        return descriptor?.toJSON();
-      }
+      // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
+      // bypassing unnecessary deserialization and serialization.
+      return Presentation.getManager(requestOptions.clientId).getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
     });
   }
 
