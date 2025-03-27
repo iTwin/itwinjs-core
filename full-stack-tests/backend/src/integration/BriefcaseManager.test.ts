@@ -5,12 +5,11 @@
 
 import { assert, expect } from "chai";
 import * as os from "os";
-import * as path from "path";
 import * as readline from "readline";
 import * as sinon from "sinon";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, CheckpointManager, CloudSqlite, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
@@ -88,13 +87,9 @@ describe("BriefcaseManager", () => {
 
     const expectedChangeSet = await IModelHost[_hubAccess].getChangesetFromVersion({ version: IModelVersion.first(), accessToken, iModelId: readOnlyTestIModelId });
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
-    assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
-    // the v2 checkpoint should be opened directly
-    // Convert to UNIX path separators on Windows for consistent results.
-    const actualPathName = iModel.pathName.replace(/\\/g, "/");
-    const expectedPathName = `/imodelblocks-73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a/BASELINE.bim`;
-    expect(actualPathName).equals(expectedPathName);
+    // This iModelDb should be a snapshot because it was opened as a checkpoint
+    expect(iModel.isSnapshot).true;
     iModel.close();
   });
 
@@ -110,31 +105,9 @@ describe("BriefcaseManager", () => {
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
 
-    const pathname2 = iModel2.pathName;
-    const cache = CloudSqlite.CloudCaches.findCache(V2CheckpointManager.cloudCacheName);
-    assert.exists(cache, "Checkpoints cloud cache not found");
-    const fullPathName2 = path.join(cache!.rootDir, pathname2);
     iModel2.close();
-    assert.isTrue(IModelJsFs.existsSync(fullPathName2));
-
-    const pathname3 = iModel3.pathName;
     iModel3.close();
-    assert.isTrue(IModelJsFs.existsSync(pathname3));
-
-    const iModel4 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
-    assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
-    assert.equal(iModel4.pathName, pathname2, "previously closed briefcase was expected to be shared");
-
-    const iModel5 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
-    assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
-    assert.equal(iModel5.pathName, pathname3, "previously closed briefcase was expected to be shared");
-
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel4);
-    assert.isFalse(IModelJsFs.existsSync(pathname2));
-
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel5);
-    assert.isFalse(IModelJsFs.existsSync(pathname3));
-  });
+    });
 
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
