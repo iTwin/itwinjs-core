@@ -8,13 +8,13 @@ import * as path from "path";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@itwin/core-backend";
 import { IModel } from "@itwin/core-common";
-import { Aggregate, Aluminum, Asphalt, Concrete, PhysicalMaterialSchema, Steel } from "../physical-material-backend";
+import { Aggregate, Aluminum, Asphalt, Concrete, PhysicalMaterialSchema, Steel } from "../physical-material-backend.js";
 
 describe("PhysicalMaterialSchema", () => {
-  const outputDir = path.join(__dirname, "output");
+  const outputDir = path.join(import.meta.dirname, "output");
 
   before(async () => {
-    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: path.join(import.meta.dirname, ".cache") });
     PhysicalMaterialSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {
       IModelJsFs.mkdirSync(outputDir);
