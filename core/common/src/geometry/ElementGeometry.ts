@@ -453,7 +453,7 @@ export namespace ElementGeometry {
         } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
         } else if (entry.frame) {
-          const frame = FrameGeometry.computeCircleFrame(entry.range, entry.transform);
+          const frame = FrameGeometry.computeCircle(entry.range, entry.transform);
           result = frame.every((curve) => this.appendGeometryQuery(curve));
         } else {
           result = false;

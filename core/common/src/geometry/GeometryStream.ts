@@ -363,7 +363,7 @@ export class GeometryStreamBuilder {
       } else if (entry.separator) {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       } else if (entry.frame) {
-        const frame = FrameGeometry.computeCapsuleFrame(entry.range, entry.transform); //0.5
+        const frame = FrameGeometry.computeCapsule(entry.range, entry.transform); //0.5
         result = frame.every((curve) => this.appendGeometry(curve));
       } else {
         result = false;
