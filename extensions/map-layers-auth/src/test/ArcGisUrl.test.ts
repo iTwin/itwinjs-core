@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as sinon from "sinon";
-import { ArcGisUrl } from "../map-layers-auth";
+import chai from "chai";
+import sinon from "sinon";
+import { ArcGisUrl } from "../map-layers-auth.js";
 
 describe("ArcGisUrl", () => {
   const sandbox = sinon.createSandbox();

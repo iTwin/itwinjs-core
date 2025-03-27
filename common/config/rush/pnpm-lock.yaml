@@ -1982,6 +1982,9 @@ importers:
       fetch-mock:
         specifier: ~11.1.3
         version: 11.1.3
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
