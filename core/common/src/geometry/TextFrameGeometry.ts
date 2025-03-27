@@ -71,6 +71,24 @@ export namespace FrameGeometry {
   // Equilateral Triangle
 
   // Diamond
+  export const computeDiamond = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+    const range = Range2d.fromJSON(rangeProps);
+    const offset = (range.xLength() + range.yLength()) / 2;
+    const center = range.center;
+
+    const points = [
+      Point3d.createFrom({ x: center.x, y: center.y + offset }),
+      Point3d.createFrom({ x: center.x + offset, y: center.y }),
+      Point3d.createFrom({ x: center.x, y: center.y - offset }),
+      Point3d.createFrom({ x: center.x - offset, y: center.y }),
+      Point3d.createFrom({ x: center.x, y: center.y + offset }),
+    ];
+
+    const frame = LineString3d.createPoints(points);
+
+    const transform = Transform.fromJSON(transformProps);
+    return [frame.cloneTransformed(transform)];
+  }
 
   // Square
   export const computeSquare = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
