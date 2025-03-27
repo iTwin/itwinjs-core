@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AngleSweep, AnyCurvePrimitive, Arc3d, LineString3d, Point3d, Range2d, Range2dProps, Transform, TransformProps } from "@itwin/core-geometry";
+import { Angle, AngleSweep, AnyCurvePrimitive, Arc3d, LineString3d, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d } from "@itwin/core-geometry";
 
 // I don't love where this is.
 
@@ -69,6 +69,33 @@ export namespace FrameGeometry {
   }
 
   // Equilateral Triangle
+  export const computeTriangle = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+    const range = Range2d.fromJSON(rangeProps);
+
+    const xLength = range.xLength();
+    const yLength = range.yLength();
+    const center = range.center;
+    const points: Point3d[] = [];
+
+    const magnitude = (xLength > yLength) ? (xLength * Math.sqrt(3) + yLength) / 2 : (yLength * Math.sqrt(3) + xLength) / 2;
+
+    const v1 = Vector2d.create(0, magnitude);
+    const vectors = [
+      v1,
+      v1.rotateXY(Angle.createDegrees(120)),
+      v1.rotateXY(Angle.createDegrees(240)),
+      v1
+    ];
+
+    vectors.forEach((v) => {
+      points.push(Point3d.create(center.x + v.x, center.y + v.y));
+    });
+
+    const frame = LineString3d.createPoints(points);
+
+    const transform = Transform.fromJSON(transformProps);
+    return [frame.cloneTransformed(transform)];
+  }
 
   // Diamond
   export const computeDiamond = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
