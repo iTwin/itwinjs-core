@@ -6,9 +6,10 @@
  * @module Annotation
  */
 
-import { GeometryQuery, XYZProps } from "@itwin/core-geometry";
+import { AnyCurvePrimitive, Range2d, Range2dProps, Transform, TransformProps, XYZProps } from "@itwin/core-geometry";
 import { TextStringProps } from "../geometry/TextString";
 import { TextStyleColor } from "./TextStyle";
+import { ColorDef } from "../ColorDef";
 
 /**
  * A single entry in a [[TextBlockGeometryProps]], representing one of the following primitive types:
@@ -21,8 +22,9 @@ export type TextBlockGeometryPropsEntry = {
   text: TextStringProps;
   separator?: never;
   color?: never;
-  shape?: never;
+  borderColor?: never;
   fillColor?: never;
+  frame?: never;
 } | {
   text?: never;
   separator: {
@@ -30,26 +32,39 @@ export type TextBlockGeometryPropsEntry = {
     endPoint: XYZProps;
   };
   color?: never;
-  shape?: never;
+  borderColor?: never;
   fillColor?: never;
+  frame?: never;
 } | {
   text?: never;
   separator?: never;
   color: TextStyleColor;
-  shape?: never;
+  borderColor?: never;
   fillColor?: never;
+  frame?: never;
 } | {
   text?: never;
   separator?: never;
   color?: never;
-  shape: XYZProps[];
+  borderColor: TextStyleColor;
   fillColor?: never;
+  frame?: never;
 } | {
   text?: never;
   separator?: never;
   color?: never;
-  shape?: never;
+  borderColor?: never;
   fillColor: TextStyleColor;
+  frame?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  borderColor?: never;
+  fillColor?: never;
+  transform: TransformProps;
+  range: Range2dProps;
+  frame: "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "capsule" | "roundedRectangle";
 };
 
 /**

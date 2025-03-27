@@ -22,6 +22,7 @@ import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { FrameGeometry } from "./TextFrameGeometry";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
@@ -449,8 +450,13 @@ export namespace ElementGeometry {
           }
 
           result = this.appendGeometryParamsChange(params);
-        } else {
+        } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
+        } else if (entry.frame) {
+          const frame = FrameGeometry.computeCircleFrame(entry.range, entry.transform);
+          result = frame.every((curve) => this.appendGeometryQuery(curve));
+        } else {
+          result = false;
         }
 
         if (!result) {

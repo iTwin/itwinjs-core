@@ -8,7 +8,7 @@
 
 import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
-import { Box, LineSegment3d, Loop, Point3d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
+import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
 
@@ -201,14 +201,18 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
     });
   }
 
-  let shape = layout.range.corners3d(true);
-  shape = documentTransform.multiplyPoint3dArray(shape);
-  context.entries.push({
-    fillColor: ColorDef.blue.toJSON(),
+  // context.entries.push({
+  //   fillColor: ColorDef.blue.withTransparency(100).toJSON(),
+  // });
 
-  });
+  // context.entries.push({
+  //   borderColor: ColorDef.black.toJSON(),
+  // });
+
   context.entries.push({
-    shape: shape.map((point) => point.toJSON()),
+    frame: "capsule",
+    transform: documentTransform.toJSON(),
+    range: layout.range.toJSON(),
   });
 
   return { entries: context.entries };
