@@ -21,9 +21,9 @@ export namespace FrameGeometry {
   // RoundedRectangle
   export const computeRoundedRectangle = (rangeProps: Range2dProps, transformProps: TransformProps, radiusFactor: number = 0.5): AnyCurvePrimitive[] => {
     const range = Range2d.fromJSON(rangeProps);
-    const radius = range.yLength() * radiusFactor * (Math.sqrt(2) / 2);
+    const radius = range.yLength() * radiusFactor * Math.sqrt(2);
     // We're going to circumscribe the range with our rounded edges. The corners of the range will fall on 45 degree angles.
-    const radiusOffsetFactor = radius / Math.sqrt(2);
+    const radiusOffsetFactor = range.yLength() * radiusFactor;
 
     // These values are the origins of the circles
     const inLeft = range.low.x + radiusOffsetFactor;
