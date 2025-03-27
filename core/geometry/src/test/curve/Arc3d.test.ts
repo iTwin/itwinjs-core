@@ -6,7 +6,7 @@
 import { assert, describe, expect, it } from "vitest";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
 import { Constant } from "../../Constant";
-import { CurveFactory, CurveLocationDetail } from "../../core-geometry";
+import { CurveFactory, CurveLocationDetail, CurvePrimitive } from "../../core-geometry";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -1467,7 +1467,7 @@ describe("ApproximateArc3d", () => {
 
     const captureGeometry = () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx, dy);
-      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.1, dx, dy);
+      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx, dy);
       if (hintPoint)
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
       if (tangents)
@@ -1651,6 +1651,70 @@ describe("ApproximateArc3d", () => {
     captureGeometry();
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "AllTangentsAndClosestTangent");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("LineTangentPointArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const sweep1 = AngleSweep.createStartEndDegrees(-40, 90);
+    const sweep2 = AngleSweep.createStartEndDegrees(125, 210);
+    const sweep3 = AngleSweep.createStartEndDegrees(215, 400);
+    const sweep4 = AngleSweep.createStartEndDegrees(185, 20);
+    const arc0 = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 0, 0.5, 4, 0);
+    const arcs = [];
+    for (const sweep of [sweep1, sweep2, sweep3, sweep4]) {
+      const arc = arc0.clone();
+      arc.sweep = sweep;
+      arcs.push(arc);
+    }
+    let dx = 0;
+    const arc1 = Arc3d.createXYZXYZXYZ(0, 0, 0, 15, 0, 0, 0, 8, 0);
+    let spacePoint = Point3d.create(0, 0, 0);
+    for (const arc of arcs) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx);
+      for (let fraction = 0; fraction < 1; fraction += 0.067) {
+        spacePoint = arc1.fractionToPoint(fraction);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx);
+        const tangents = arc.allTangents(spacePoint);
+        if (tangents)
+          for (const tng of tangents) {
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx);
+          }
+      }
+      dx += 40;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "LineTangentPointArc");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("LineTangentPointCircle", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const circleA = Arc3d.createUnitCircle();
+    const arcB = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 0, 0.5, 4, 0);
+    const pointP1 = Point3d.create(4, 0);
+    const pointP2 = Point3d.create(4, 4);
+    const pointP3 = Point3d.create(8, 0);
+    let dx = 0;
+    let dy = 0;
+    for (const arc of [circleA, arcB]) {
+      dy = 0;
+      for (const spacePoint of [pointP1, pointP2, pointP3]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx, dy);
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx, dy);
+        const tangents = arc.allTangents(spacePoint);
+        if (tangents)
+          for (const tng of tangents) {
+            GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, tng.point, 0.1, dx, dy);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(spacePoint, tng.point), dx, dy);
+          }
+        dy += 10;
+      }
+      dx += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "LineTangentPointCircle");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

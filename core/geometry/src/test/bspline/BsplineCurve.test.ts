@@ -925,7 +925,7 @@ describe("BsplineCurve", () => {
 
     const captureGeometry = () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
-      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, spacePoint, 0.1, dx, dy);
+      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.1, dx, dy);
       if (hintPoint)
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, hintPoint, 0.2, dx, dy);
       if (tangents)
