@@ -73,6 +73,27 @@ export namespace FrameGeometry {
   // Diamond
 
   // Square
+  export const computeSquare = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+    const range = Range2d.fromJSON(rangeProps);
+
+    // Extend range
+    const xLength = range.xLength() / 2;
+    const yLength = range.yLength() / 2;
+    const center = range.center;
+    if (xLength > yLength) {
+      range.extendPoint({ x: center.x, y: center.y + xLength });
+      range.extendPoint({ x: center.x, y: center.y - xLength });
+    } else {
+      range.extendPoint({ x: center.x + yLength, y: center.y });
+      range.extendPoint({ x: center.x - yLength, y: center.y });
+    }
+
+    const points = range.corners3d(true);
+    const frame = LineString3d.createPoints(points);
+
+    const transform = Transform.fromJSON(transformProps);
+    return [frame.cloneTransformed(transform)];
+  }
 
   // Pentagon
 
