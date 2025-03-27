@@ -1772,27 +1772,19 @@ export namespace IModelDb {
       if (!this._iModel.isOpen)
         return undefined;
 
-      let elementId: string | undefined;
+      let modelId: string | undefined;
       let classFullName: string | undefined;
 
       if (id !== undefined) {
-        [elementId, classFullName] = this._iModel.withPreparedStatement("SELECT ECClassId FROM Bis.Element WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
+        [modelId, classFullName] = this._iModel.withPreparedStatement("SELECT ECClassId FROM Bis.Model WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
           stmt.bindId(1, id);
           return stmt.step() === DbResult.BE_SQLITE_ROW ? [id, stmt.getValue(0).getClassNameForClassId()] : [id, undefined];
         });
-      } else if (code !== undefined) {
-        [elementId, classFullName] = this._iModel.withPreparedStatement("SELECT ECInstanceId, ECClassId FROM Bis.Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=? LIMIT 1", (stmt: ECSqlStatement) => {
-          stmt.bindId(1, code.spec);
-          stmt.bindId(2, code.scope);
-          code.value !== undefined ? stmt.bindString(3, code.value) : stmt.bindNull(3);
-          return stmt.step() === DbResult.BE_SQLITE_ROW ? [stmt.getValue(0).getId(), stmt.getValue(1).getClassNameForClassId()] : [undefined, undefined];
-        });
       }
-
-      if (elementId === undefined || classFullName === undefined)
+      if (modelId === undefined || classFullName === undefined)
         return undefined;
 
-      return { id: elementId, classFullName } as T;
+      return { id: modelId, classFullName } as T;
     }
 
     /** Read the properties for a Model as a json string.
@@ -1809,7 +1801,7 @@ export namespace IModelDb {
           const readProps = this.tryGetReadProps<T>(modelIdArg);
           if (undefined === readProps)
             throw new IModelError(IModelStatus.NotFound, `Element=${modelIdArg.id}`);
-          return this._iModel[_nativeDb].readInstance(modelIdArg, options) as T;
+          return this._iModel[_nativeDb].readInstance(readProps, options) as T;
         } else {
           return this._iModel[_nativeDb].getModel(modelIdArg) as T;
         }
