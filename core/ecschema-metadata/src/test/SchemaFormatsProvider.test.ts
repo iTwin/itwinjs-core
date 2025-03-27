@@ -71,7 +71,7 @@ describe("SchemaFormatsProvider", () => {
 
   it("should add a format", async () => {
     const spy = Sinon.spy();
-    formatsProvider.onFormatUpdated.addListener(spy);
+    formatsProvider.onFormatChanged.addListener(spy);
     const format: SchemaItemFormatProps = {
       label: "NewFormat",
       type: "Fractional",
@@ -84,12 +84,12 @@ describe("SchemaFormatsProvider", () => {
     const retrievedFormat = await formatsProvider.getFormat(formatName);
     expect(retrievedFormat).to.equal(format);
     expect(spy.calledWith(formatName)).to.be.true;
-    formatsProvider.onFormatUpdated.removeListener(spy);
+    formatsProvider.onFormatChanged.removeListener(spy);
   });
 
   it("should add a format whose KindOfQuantity already exists in a schema", async () => {
     const spy = Sinon.spy();
-    formatsProvider.onFormatUpdated.addListener(spy);
+    formatsProvider.onFormatChanged.addListener(spy);
     const existingKoq = "AecUnits.LENGTH";
     const defaultFormatProps = await formatsProvider.getFormat(existingKoq);
     expect(defaultFormatProps).not.to.be.undefined;
@@ -103,12 +103,12 @@ describe("SchemaFormatsProvider", () => {
     const retrievedFormat = await formatsProvider.getFormat(existingKoq);
     expect(retrievedFormat!.description).to.equal("Test");
     expect(spy.calledWith(existingKoq)).to.be.true;
-    formatsProvider.onFormatUpdated.removeListener(spy);
+    formatsProvider.onFormatChanged.removeListener(spy);
   });
 
   it("should remove a format from cache", async () => {
     const spy = Sinon.spy();
-    formatsProvider.onFormatUpdated.addListener(spy);
+    formatsProvider.onFormatChanged.addListener(spy);
     const format: SchemaItemFormatProps = {
       label: "NewFormat",
       type: "Fractional",
@@ -122,7 +122,7 @@ describe("SchemaFormatsProvider", () => {
     expect(retrievedFormat).to.equal(format);
     expect(spy.calledWith(formatName)).to.be.true;
 
-    formatsProvider.onFormatUpdated.removeListener(spy);
+    formatsProvider.onFormatChanged.removeListener(spy);
   });
 
   it("should format a length quantity to meters given a KoQ and unit provider", async () => {

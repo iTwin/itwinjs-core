@@ -765,17 +765,11 @@ export interface FormatSet {
 // @beta
 export interface FormatsProvider {
     // (undocumented)
-    addFormat(name: string, formatProps: SchemaItemFormatProps, unitSystem?: string): Promise<void>;
-    // (undocumented)
     getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
-    onCacheCleared: BeUiEvent<void>;
+    onFormatChanged: BeUiEvent<string>;
     // (undocumented)
-    onFormatRemoved: BeUiEvent<string>;
-    // (undocumented)
-    onFormatUpdated: BeUiEvent<string>;
-    // (undocumented)
-    removeFormat(name: string): Promise<void>;
+    onFormatsChanged: BeUiEvent<string[]>;
 }
 
 // @internal (undocumented)
@@ -1897,13 +1891,13 @@ export class SchemaFormatsProvider implements FormatsProvider {
     addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
     // (undocumented)
     clearFormatCache(): Promise<void>;
-    getFormat(id: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined>;
+    getFormat(name: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
     onCacheCleared: BeUiEvent<void>;
     // (undocumented)
-    onFormatRemoved: BeUiEvent<string>;
+    onFormatChanged: BeUiEvent<string>;
     // (undocumented)
-    onFormatUpdated: BeUiEvent<string>;
+    onFormatsChanged: BeUiEvent<string[]>;
     // (undocumented)
     removeFormat(name: string): Promise<void>;
 }

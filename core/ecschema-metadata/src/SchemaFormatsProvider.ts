@@ -24,8 +24,8 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 export class SchemaFormatsProvider implements FormatsProvider {
   private _context: SchemaContext;
   private _formatCache: Map<string, SchemaItemFormatProps> = new Map();
-  public onFormatUpdated = new BeUiEvent<string>();
-  public onFormatRemoved = new BeUiEvent<string>();
+  public onFormatChanged = new BeUiEvent<string>();
+  public onFormatsChanged = new BeUiEvent<string[]>();
   public onCacheCleared = new BeUiEvent<void>();
   /**
    *
@@ -100,14 +100,14 @@ export class SchemaFormatsProvider implements FormatsProvider {
   /**
    * Retrieves a Format from the cache or from the schema. If retrieving from the schema, and the format is part of a KindOfQuantity,
    * an optional UnitSystemKey can be provided to get the first presentation format in the KindOfQuantity that matches the unit system.
-   * @param id The full name of the Format.
+   * @param name The full name of the Format or KindOfQuantity.
    * @returns
    */
-  public async getFormat(id: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
-    if (this._formatCache.has(id)) {
-      return this._formatCache.get(id);
+  public async getFormat(name: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
+    if (this._formatCache.has(name)) {
+      return this._formatCache.get(name);
     }
-    return this.getFormatFromSchema(id, unitSystem);
+    return this.getFormatFromSchema(name, unitSystem);
   }
 
   /**
@@ -115,17 +115,18 @@ export class SchemaFormatsProvider implements FormatsProvider {
    */
   public async addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void> {
     this._formatCache.set(name, formatProps);
-    this.onFormatUpdated.emit(name);
+    this.onFormatChanged.emit(name);
   }
 
   public async removeFormat(name: string): Promise<void> {
     this._formatCache.delete(name);
-    this.onFormatRemoved.emit(name);
+    this.onFormatChanged.emit(name);
   }
 
   public async clearFormatCache(): Promise<void> {
+    const keys = Array.from(this._formatCache.keys());
     this._formatCache.clear();
-    this.onCacheCleared.emit();
+    this.onFormatsChanged.emit(keys);
   }
 }
 

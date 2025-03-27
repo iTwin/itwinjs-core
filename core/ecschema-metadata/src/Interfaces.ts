@@ -102,10 +102,7 @@ export interface HasMixins {
  */
 export interface FormatsProvider {
   getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
-  addFormat(name: string, formatProps: SchemaItemFormatProps, unitSystem?: string): Promise<void>;
-  removeFormat(name: string): Promise<void>;
 
-  onFormatUpdated: BeUiEvent<string>;
-  onFormatRemoved: BeUiEvent<string>;
-  onCacheCleared: BeUiEvent<void>;
+  onFormatChanged: BeUiEvent<string>;
+  onFormatsChanged: BeUiEvent<string[]>;
 }
