@@ -1,6 +1,6 @@
 {
   // Comments are allowed here!
-  "testBundle": "./lib/cjs/test/webpack/bundled-tests.js",
+  "testBundle": "./lib/esm/test/webpack/bundled-tests.js",
   // "instrumentedTestBundle": "./lib/cjs/test/webpack/bundled-tests.instrumented.js",
   "ports": {
     "frontend": 3000,

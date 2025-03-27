@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
-import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
+import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms.js";
+import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup.js";
 import { RenderClipVolume, SpatialViewState } from "@itwin/core-frontend";
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
-import { ModelMetadata } from "./BatchedTilesetReader";
+import { ModelMetadata } from "./BatchedTilesetReader.js";
 
 /** Groups the set of spatial models included in a [[BatchedSpatialTileTreeReferences]] based on their display settings.
  * This ensures that models are displayed correctly, while using batching to reduce the number of draw calls to a minimum.

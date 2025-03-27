@@ -5,8 +5,8 @@
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl, ObtainGraphicRepresentationUrlArgs } from "./GraphicRepresentationProvider";
-import { loggerCategory } from "../LoggerCategory";
+import { obtainGraphicRepresentationUrl, ObtainGraphicRepresentationUrlArgs } from "./GraphicRepresentationProvider.js";
+import { loggerCategory } from "../LoggerCategory.js";
 
 /** Arguments supplied  to [[obtainIModelTilesetUrl]].
  * @beta

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ModelDisplayTransform, ModelDisplayTransformProvider } from "@itwin/core-frontend";
-import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
+import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms.js";
 import { Transform } from "@itwin/core-geometry";
 
 describe("ModelGroupDisplayTransforms", () => {

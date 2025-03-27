@@ -7,8 +7,8 @@ import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Transform } from "@itwin/core-geometry";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import { ModelDisplayTransform,  RenderClipVolume } from "@itwin/core-frontend";
-import { groupModels, ModelGroupingContext } from "../ModelGroup";
-import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
+import { groupModels, ModelGroupingContext } from "../ModelGroup.js";
+import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms.js";
 
 interface ModelSettings {
   transform?: ModelDisplayTransform;

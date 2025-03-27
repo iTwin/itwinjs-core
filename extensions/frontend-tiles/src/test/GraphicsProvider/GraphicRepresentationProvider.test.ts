@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, use } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as sinon from "sinon";
+import chaiAsPromised from "chai-as-promised";
+import sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { createGraphicRepresentationsQueryUrl, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { createGraphicRepresentationsQueryUrl, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider.js";
 
 use(chaiAsPromised);
 

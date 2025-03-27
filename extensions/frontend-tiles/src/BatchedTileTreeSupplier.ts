@@ -8,9 +8,9 @@ import { RenderSchedule } from "@itwin/core-common";
 import {
   IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
 } from "@itwin/core-frontend";
-import { loggerCategory } from "./LoggerCategory";
-import { BatchedTilesetReader, BatchedTilesetSpec } from "./BatchedTilesetReader";
-import { BatchedTileTree } from "./BatchedTileTree";
+import { loggerCategory } from "./LoggerCategory.js";
+import { BatchedTilesetReader, BatchedTilesetSpec } from "./BatchedTilesetReader.js";
+import { BatchedTileTree } from "./BatchedTileTree.js";
 
 /** @internal */
 export interface BatchedTileTreeId {

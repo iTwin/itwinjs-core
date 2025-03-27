@@ -10,10 +10,10 @@ import {
   GraphicBranch, GraphicBuilder,  IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
-import { loggerCategory } from "./LoggerCategory";
-import { BatchedTileTree } from "./BatchedTileTree";
-import { frontendTilesOptions } from "./FrontendTiles";
-import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache";
+import { loggerCategory } from "./LoggerCategory.js";
+import { BatchedTileTree } from "./BatchedTileTree.js";
+import { frontendTilesOptions } from "./FrontendTiles.js";
+import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache.js";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {
