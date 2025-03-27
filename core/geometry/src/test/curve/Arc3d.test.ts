@@ -1628,7 +1628,27 @@ describe("ApproximateArc3d", () => {
     ck.testUndefined(tangent, "tangent is undefined");
     captureGeometry();
 
-    // TODO: add tests with extend === true
+    // test extend === true
+    dx += 10;
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    arc = Arc3d.createXYEllipse(Point3d.create(0, 0), 3, 2, AngleSweep.createStartEndDegrees(180, 270));
+    spacePoint = Point3d.create(3, 2);
+    tangents = arc.allTangents(spacePoint, { extend: true });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(3, tangents![0].fraction, "first tangent fraction");
+    ck.testCoordinate(2, tangents![1].fraction, "second tangent fraction");
+    captureGeometry();
+    dy += 7;
+    spacePoint = Point3d.create(4, 0);
+    tangents = arc.allTangents(spacePoint, { extend: true });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(2.46010691, tangents![0].fraction, "first tangent fraction");
+    ck.testCoordinate(1.53989309, tangents![1].fraction, "second tangent fraction");
+    captureGeometry();
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "AllTangentsAndClosestTangent");
     expect(ck.getNumErrors()).toBe(0);
