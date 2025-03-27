@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider";
+import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider.js";
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { expect } from "chai";
-import { CountriesDataset } from "./CountriesDataset";
+import { CountriesDataset } from "./CountriesDataset.js";
 import { MapCartoRectangle } from "@itwin/core-frontend";
 import { base64StringToUint8Array } from "@itwin/core-bentley";
 

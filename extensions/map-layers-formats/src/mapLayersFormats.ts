@@ -8,11 +8,11 @@
  */
 import { assert } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat";
-import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool";
+import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat.js";
+import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool.js";
 import { Localization } from "@itwin/core-common";
-import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat";
-import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat";
+import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat.js";
+import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat.js";
 
 /** Configuration options.
  * @beta

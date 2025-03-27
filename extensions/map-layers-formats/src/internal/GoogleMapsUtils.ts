@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@itwin/core-frontend";
-import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat";
+import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerProps, MapLayerProviderProperties } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
-import { GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps";
+import { GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 

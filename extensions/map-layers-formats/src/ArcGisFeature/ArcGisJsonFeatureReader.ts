@@ -7,8 +7,8 @@ import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/a
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisGeometryReaderJSON, FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
-import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
-import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
+import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader.js";
+import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse.js";
 
 /** @internal */
 export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {

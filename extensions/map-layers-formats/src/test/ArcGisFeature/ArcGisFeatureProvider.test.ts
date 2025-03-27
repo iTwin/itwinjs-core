@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, ServerError } from "@itwin/core-common";
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
-import * as sinon from "sinon";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
+import sinon from "sinon";
 import { ArcGisGetServiceJsonArgs, ArcGISImageryProvider, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
-import { NewYorkDataset } from "./NewYorkDataset";
+import { NewYorkDataset } from "./NewYorkDataset.js";
 import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
-import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
+import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse.js";
 import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
-import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
-import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
-import { EsriPMS } from "../../ArcGisFeature/EsriSymbology";
-import * as moq from "typemoq";
-import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider";
+import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader.js";
+import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader.js";
+import { EsriPMS } from "../../ArcGisFeature/EsriSymbology.js";
+import moq from "typemoq";
+import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider.js";
 import fetchMock from "fetch-mock";
 
 const expect = chai.expect;

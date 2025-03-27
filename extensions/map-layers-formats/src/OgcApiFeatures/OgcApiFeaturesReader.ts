@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Transform } from "@itwin/core-geometry";
-import { GeoJSONGeometryReader } from "../GeoJSON/GeoJSONGeometryReader";
+import { GeoJSONGeometryReader } from "../GeoJSON/GeoJSONGeometryReader.js";
 import * as Geojson from "geojson";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { FeatureInfoReader } from "../Feature/FeatureInfoReader";
+import { FeatureInfoReader } from "../Feature/FeatureInfoReader.js";
 import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicPrimitive, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
 
 /** @internal */

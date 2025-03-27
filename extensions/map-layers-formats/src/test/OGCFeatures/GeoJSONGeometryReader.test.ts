@@ -5,8 +5,8 @@
 
 import * as sinon from "sinon";
 import * as chai from "chai";
-import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
-import { MockGeometryRenderer } from "./Mocks";
+import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader.js";
+import { MockGeometryRenderer } from "./Mocks.js";
 import { deflateCoordinates } from "@itwin/core-frontend";
 describe("GeoJSONGeometryReader", () => {
 

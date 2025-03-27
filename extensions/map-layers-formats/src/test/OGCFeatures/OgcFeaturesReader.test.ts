@@ -6,12 +6,12 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { OgcApiFeaturesReader, ReadOgcApiFeaturesInfoOptions } from "../../OgcApiFeatures/OgcApiFeaturesReader";
-import { PhillyDataset } from "./PhillyDataset";
-import { FakeSymbGeomRenderer, MockFeatureSymbologyRenderer, MockGeometryRenderer, MockGraphicsRenderer } from "./Mocks";
-import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
+import { OgcApiFeaturesReader, ReadOgcApiFeaturesInfoOptions } from "../../OgcApiFeatures/OgcApiFeaturesReader.js";
+import { PhillyDataset } from "./PhillyDataset.js";
+import { FakeSymbGeomRenderer, MockFeatureSymbologyRenderer, MockGeometryRenderer, MockGraphicsRenderer } from "./Mocks.js";
+import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader.js";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { CountriesDataset } from "./CountriesDataset";
+import { CountriesDataset } from "./CountriesDataset.js";
 
 describe("OgcApiFeaturesReader", () => {
   const sandbox = sinon.createSandbox();

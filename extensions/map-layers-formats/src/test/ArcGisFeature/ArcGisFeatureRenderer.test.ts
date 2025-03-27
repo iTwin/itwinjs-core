@@ -5,12 +5,12 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { fakeContext } from "./Mocks";
-import { ArcGisSimpleSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { fakeContext } from "./Mocks.js";
+import { ArcGisSimpleSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer.js";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
 import { Point3d, Transform } from "@itwin/core-geometry";
-import { TestUtils } from "./TestUtils";
-import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer";
+import { TestUtils } from "./TestUtils.js";
+import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer.js";
 
 describe("FeatureCanvasRenderer", () => {
 

@@ -7,16 +7,16 @@ import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, Se
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Range2d, Transform } from "@itwin/core-geometry";
 import { ArcGisErrorCode, ArcGISImageryProvider, ArcGISServiceMetadata, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, setRequestTimeout } from "@itwin/core-frontend";
-import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
-import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader";
-import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader";
-import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureQuery, ArcGisFeatureResultType, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery.js";
+import { ArcGisPbfFeatureReader } from "./ArcGisPbfFeatureReader.js";
+import { ArcGisJsonFeatureReader } from "./ArcGisJsonFeatureReader.js";
+import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse.js";
+import { ArcGisFeatureReader } from "./ArcGisFeatureReader.js";
 
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology";
-import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
-import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
-import { ArcGisSymbologyCanvasRenderer } from "./ArcGisSymbologyRenderer";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSLSProps, EsriSymbol } from "./EsriSymbology.js";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology.js";
+import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer.js";
+import { ArcGisSymbologyCanvasRenderer } from "./ArcGisSymbologyRenderer.js";
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
 
 /**

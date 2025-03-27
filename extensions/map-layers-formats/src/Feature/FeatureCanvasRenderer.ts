@@ -5,7 +5,7 @@
 
 import { Transform } from "@itwin/core-geometry";
 import { FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer } from "@itwin/core-frontend";
-import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
+import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer.js";
 
 /** @internal */
 export class FeatureCanvasRenderer extends FeatureGeometryBaseRenderer implements FeatureSymbolizedRenderer {

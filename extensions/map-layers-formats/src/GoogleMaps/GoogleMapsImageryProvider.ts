@@ -8,10 +8,10 @@
 
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
-import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession } from "./GoogleMaps";
+import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession } from "./GoogleMaps.js";
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
-import { GoogleMapsDecorator } from "./GoogleMapDecorator";
-import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
+import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
+import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 const levelToken = "{level}";
 const rowToken = "{row}";

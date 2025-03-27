@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset.js";
 import * as chai from "chai";
-import { EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
+import { EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology.js";
 const expect = chai.expect;
 
 describe("EsriSymbology", () => {
