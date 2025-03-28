@@ -168,9 +168,9 @@ export namespace FrameGeometry {
 
     const curves = [
       LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]), // top
-      Arc3d.createXY(Point3d.create(inLeft, range.center.y), radius, leftHalfCircle), // top right
+      Arc3d.createXY(Point3d.create(inLeft, range.center.y), radius, leftHalfCircle), // left
       LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
-      Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle), // top right
+      Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle), // right
     ];
 
     const transform = Transform.fromJSON(transformProps);
