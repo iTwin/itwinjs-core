@@ -81,10 +81,10 @@ export namespace FrameGeometry {
 
     const v1 = Vector2d.create(0, magnitude);
     const vectors = [
-      v1,
-      v1.rotateXY(Angle.createDegrees(120)),
-      v1.rotateXY(Angle.createDegrees(240)),
-      v1
+      v1, // top
+      v1.rotateXY(Angle.createDegrees(120)), // left
+      v1.rotateXY(Angle.createDegrees(240)), // right
+      v1 // top
     ];
 
     vectors.forEach((v) => {
@@ -104,11 +104,11 @@ export namespace FrameGeometry {
     const center = range.center;
 
     const points = [
-      Point3d.createFrom({ x: center.x, y: center.y + offset }),
-      Point3d.createFrom({ x: center.x + offset, y: center.y }),
-      Point3d.createFrom({ x: center.x, y: center.y - offset }),
-      Point3d.createFrom({ x: center.x - offset, y: center.y }),
-      Point3d.createFrom({ x: center.x, y: center.y + offset }),
+      Point3d.createFrom({ x: center.x, y: center.y + offset }), // top
+      Point3d.createFrom({ x: center.x + offset, y: center.y }), // right
+      Point3d.createFrom({ x: center.x, y: center.y - offset }), // bottom
+      Point3d.createFrom({ x: center.x - offset, y: center.y }), // left
+      Point3d.createFrom({ x: center.x, y: center.y + offset }), // top
     ];
 
     const frame = LineString3d.createPoints(points);
