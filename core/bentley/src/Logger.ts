@@ -279,14 +279,20 @@ export class Logger {
     return BentleyError.getErrorMessage(err) + stack;
   }
 
-  /** Log the specified exception. The special "ExceptionType" property will be added as metadata.
+  /** Log the specified exception.
+   * For legacy [[BentleyError]] exceptions, the special "exceptionType" property will be added as metadata. Otherwise, all enumerable members of the exception are logged as metadata.
    * @param category  The category of the message.
    * @param err  The exception object.
    * @param log The logger output function to use - defaults to Logger.logError
    */
   public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>" };
+      // For backwards compatibility, log BentleyError old way
+      if (BentleyError.isError(err))
+        return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>" };
+
+      // return a copy of the error, with non-enumerable members `message` and `stack` removed, as "metadata" for log.
+      return { ...err };
     });
   }
 
