@@ -187,7 +187,7 @@ export class V2CheckpointManager {
     return container;
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer | undefined }> {
     let v2props: V2CheckpointAccessProps | undefined;
     try {
       v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);

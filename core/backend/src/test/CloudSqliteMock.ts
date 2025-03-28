@@ -35,10 +35,10 @@ export class CloudContainerMock {
   public queryDatabase() {
     return undefined;
   }
-  public attach(): { dbName: string, container: CloudSqlite.CloudContainer } {
+  public attach(): { dbName: string, container: CloudSqlite.CloudContainer | undefined } {
     const dbName = path.join(BriefcaseManager.getBriefcaseBasePath(this.createArgs.checkpoint.iModelId), this.createArgs.dbName);
     this.downloadCheckpoint(dbName);
-    return { dbName, container: undefined } as any as { dbName: string, container: CloudSqlite.CloudContainer };
+    return { dbName, container: undefined };
   }
 }
 

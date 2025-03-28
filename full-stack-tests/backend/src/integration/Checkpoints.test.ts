@@ -287,6 +287,9 @@ describe("Checkpoints", () => {
       });
 
       const container = (await containerSpy.returnValues[0]).container;
+      if (container === undefined) {
+        assert.fail("Container is undefined");
+      }
       let stats = container.queryBcvStats({ addClientInformation: true });
       const populatedCacheslots = stats.populatedCacheslots;
       // Opening the database causes some blocks to be downloaded.
