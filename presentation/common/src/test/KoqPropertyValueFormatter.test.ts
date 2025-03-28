@@ -15,7 +15,7 @@ import {
   SchemaProps,
   UnitSystemProps,
 } from "@itwin/ecschema-metadata";
-import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyValueFormatter";
+import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyValueFormatter.js";
 
 describe("KoqPropertyValueFormatter", () => {
   let formatter: KoqPropertyValueFormatter;

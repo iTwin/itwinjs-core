@@ -15,7 +15,7 @@ import { Key, Keys, NodeKey } from "@itwin/presentation-common";
  * package. A similar method to this in the new system is `Selectables.load()`.
  */
 export class SelectionHelper {
-  // istanbul ignore next
+  /* c8 ignore next */
   private constructor() {}
 
   /**

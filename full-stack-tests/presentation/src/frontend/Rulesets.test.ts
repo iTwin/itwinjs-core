@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { initialize, resetBackend, terminate } from "../IntegrationTests";
-import { collect } from "../Utils";
-import { TestIModelConnection } from "../IModelSetupUtils";
+import { initialize, resetBackend, terminate } from "../IntegrationTests.js";
+import { collect } from "../Utils.js";
+import { TestIModelConnection } from "../IModelSetupUtils.js";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",

@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ArrayPropertiesField, NestedContentField, NodePathElement, StructPropertiesField } from "../presentation-common";
-import { Content } from "../presentation-common/content/Content";
-import { DisplayValueGroup, NavigationPropertyValue } from "../presentation-common/content/Value";
-import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition";
-import { LocalizationHelper } from "../presentation-common/LocalizationHelper";
+import { ArrayPropertiesField, NestedContentField, NodePathElement, StructPropertiesField } from "../presentation-common.js";
+import { Content } from "../presentation-common/content/Content.js";
+import { DisplayValueGroup, NavigationPropertyValue } from "../presentation-common/content/Value.js";
+import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition.js";
+import { LocalizationHelper } from "../presentation-common/LocalizationHelper.js";
 import {
   createTestArrayPropertiesContentField,
   createTestCategoryDescription,
@@ -22,7 +22,7 @@ import {
   createTestPropertyInfo,
   createTestSimpleContentField,
   createTestStructPropertiesContentField,
-} from "./_helpers";
+} from "./_helpers/index.js";
 
 function getTestLocalizedString(key: string) {
   if (key.includes(":")) {

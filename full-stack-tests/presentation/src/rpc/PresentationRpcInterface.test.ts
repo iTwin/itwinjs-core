@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { RpcManager } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
-import { TestIModelConnection } from "../IModelSetupUtils";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { TestIModelConnection } from "../IModelSetupUtils.js";
 
 describe("PresentationRpcInterface", () => {
   let imodel: IModelConnection;

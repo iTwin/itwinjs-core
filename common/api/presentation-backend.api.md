@@ -69,9 +69,6 @@ export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOp
     requestContextSupplier?: () => TContext;
 }
 
-// @internal (undocumented)
-export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOptions | undefined>): DiagnosticsOptions | undefined;
-
 // @public
 export interface ContentCacheConfig {
     size?: number;
@@ -85,20 +82,8 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Disk;
 }
 
-// @internal (undocumented)
-export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
-
-// @internal (undocumented)
-export function getLocalizedStringEN(key: string): string;
-
 // @public
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
-
-// @public
-export interface HierarchyCacheConfigBase {
-    // (undocumented)
-    mode: HierarchyCacheMode;
-}
 
 // @public
 export enum HierarchyCacheMode {
@@ -130,9 +115,6 @@ export interface MultiElementPropertiesResponse<TParsedContent = ElementProperti
 
 // @public @deprecated
 export type MultiManagerPresentationProps = PresentationProps;
-
-// @internal (undocumented)
-export function normalizeVersion(version?: string): string;
 
 // @public
 export class Presentation {
@@ -292,12 +274,6 @@ export interface PresentationProps extends Omit<PresentationManagerProps, "enabl
     unusedClientLifetime?: number;
 }
 
-// @public @deprecated
-export type PresentationPropsBase = PresentationProps;
-
-// @internal (undocumented)
-export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
-
 // @public
 export class RulesetEmbedder {
     constructor(props: RulesetEmbedderProps);
@@ -327,15 +303,6 @@ export interface RulesetManager {
     remove(ruleset: RegisteredRuleset | [string, string]): boolean;
 }
 
-// @internal
-export class RulesetManagerImpl implements RulesetManager {
-    constructor(getNativePlatform: () => NativePlatformDefinition);
-    add(ruleset: Ruleset): RegisteredRuleset;
-    clear(): void;
-    get(id: string): RegisteredRuleset | undefined;
-    remove(ruleset: RegisteredRuleset | [string, string]): boolean;
-}
-
 // @public
 export interface RulesetVariablesManager {
     getBool(variableId: string): boolean;
@@ -352,33 +319,6 @@ export interface RulesetVariablesManager {
     setInts(variableId: string, value: number[]): void;
     setString(variableId: string, value: string): void;
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
-    unset(variableId: string): void;
-}
-
-// @internal
-export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
-    constructor(getNativeAddon: () => NativePlatformDefinition, rulesetId: string);
-    getBool(variableId: string): boolean;
-    getId64(variableId: string): Id64String;
-    getId64s(variableId: string): Id64String[];
-    getInt(variableId: string): number;
-    getInts(variableId: string): number[];
-    getString(variableId: string): string;
-    // (undocumented)
-    getValue(variableId: string, type: VariableValueTypes): VariableValue;
-    // (undocumented)
-    getValueInternal(variableId: string, type: VariableValueTypes): VariableValue;
-    setBool(variableId: string, value: boolean): void;
-    setId64(variableId: string, value: Id64String): void;
-    setId64s(variableId: string, value: Id64String[]): void;
-    setInt(variableId: string, value: number): void;
-    setInts(variableId: string, value: number[]): void;
-    setString(variableId: string, value: string): void;
-    // (undocumented)
-    setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
-    // (undocumented)
-    setValueInternal(variableId: string, type: VariableValueTypes, value: VariableValue): void;
-    // (undocumented)
     unset(variableId: string): void;
 }
 

@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { Presentation, PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Diagnostics, DiagnosticsLogEntry, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
+import { initialize, terminate } from "../IntegrationTests.js";
 
 describe("Diagnostics", async () => {
   const ruleset: Ruleset = {

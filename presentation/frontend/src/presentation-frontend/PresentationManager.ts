@@ -11,14 +11,11 @@ import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  buildElementProperties,
   ClientDiagnosticsAttribute,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
-  ContentFormatter,
   ContentInstanceKeysRequestOptions,
-  ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentUpdateInfo,
@@ -49,8 +46,6 @@ import {
   Paged,
   PagedResponse,
   PageOptions,
-  PresentationIpcEvents,
-  RpcRequestsHandler,
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
@@ -58,12 +53,19 @@ import {
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "./IpcRequestsHandler";
-import { FrontendLocalizationHelper } from "./LocalizationHelper";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import {
+  buildElementProperties,
+  ContentFormatter,
+  ContentPropertyValueFormatter,
+  PresentationIpcEvents,
+  RpcRequestsHandler,
+} from "@itwin/presentation-common/internal";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
+import { IpcRequestsHandler } from "./IpcRequestsHandler.js";
+import { FrontendLocalizationHelper } from "./LocalizationHelper.js";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager.js";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
+import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -267,7 +269,7 @@ export class PresentationManager implements Disposable {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -280,14 +282,14 @@ export class PresentationManager implements Disposable {
   /** @note This is only called in native apps after changes in iModels */
   private async handleUpdateAsync(report: UpdateInfo) {
     for (const imodelKey in report) {
-      // istanbul ignore if
+      /* c8 ignore next 3 */
       if (!report.hasOwnProperty(imodelKey)) {
         continue;
       }
 
       const imodelReport = report[imodelKey];
       for (const rulesetId in imodelReport) {
-        // istanbul ignore if
+        /* c8 ignore next 3 */
         if (!imodelReport.hasOwnProperty(rulesetId)) {
           continue;
         }
@@ -503,7 +505,7 @@ export class PresentationManager implements Disposable {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
     const result = await this._requestsHandler.getContentSources(rpcOptions);
-    return SelectClassInfo.listFromCompressedJSON(result.sources, result.classesMap);
+    return result.sources.map((sourceJson) => SelectClassInfo.fromCompressedJSON(sourceJson, result.classesMap));
   }
 
   /** Retrieves the content descriptor which describes the content and can be used to customize it. */
@@ -570,7 +572,7 @@ export class PresentationManager implements Disposable {
       firstPage = firstPageResponse?.contentSet;
     }
 
-    // istanbul ignore if
+    /* c8 ignore next 3 */
     if (!descriptor) {
       return undefined;
     }
@@ -809,7 +811,7 @@ const stripTransientElementKeys = (keys: KeySet) => {
   copy.add(keys, (key) => {
     // the callback is not going to be called with EntityProps as KeySet converts them
     // to InstanceKeys, but we want to keep the EntityProps case for correctness
-    // istanbul ignore next
+    /* c8 ignore next 3 */
     const isTransient =
       (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) ||
       (Key.isEntityProps(key) && key.classFullName === TRANSIENT_ELEMENT_CLASSNAME);
