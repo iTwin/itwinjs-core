@@ -37,7 +37,7 @@ exports.handler = async (argv) => {
     // transpile
     execSync(`tsc -p ${tsconfigPath}`, { stdio: "inherit", shell: true });
     // emit module type to out dir
-    fs.writeFileSync(path.join(outDir, "package.json"), `{ "type": "commojs" }`);
+    fs.writeFileSync(path.join(outDir, "package.json"), `{ "type": "commonjs" }`);
   } catch (e) {
     console.error(e);
   } finally {
