@@ -6097,7 +6097,7 @@ export class V2CheckpointManager {
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
-        container: CloudSqlite.CloudContainer;
+        container: CloudSqlite.CloudContainer | undefined;
     }>;
     // (undocumented)
     static cleanup(): void;
