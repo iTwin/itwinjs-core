@@ -6,11 +6,11 @@
 import { ByteStream } from "@itwin/core-bentley";
 import { Base64EncodedString } from "@itwin/core-common";
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
+import { arcgisFeatureFormats } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
 import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse.js";
 import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen.js";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
-import { arcgisFeatureFormats } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
 
 describe("ArcGisFeatureResponse", () => {
 

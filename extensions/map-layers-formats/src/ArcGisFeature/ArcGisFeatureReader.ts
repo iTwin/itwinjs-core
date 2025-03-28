@@ -5,8 +5,8 @@
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { ArcGisResponseData } from "./ArcGisFeatureResponse.js";
 import { FeatureInfoReader } from "../Feature/FeatureInfoReader.js";
+import { ArcGisResponseData } from "./ArcGisFeatureResponse.js";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry reader,
  * needed by the [[ArcGisFeatureProvider]].

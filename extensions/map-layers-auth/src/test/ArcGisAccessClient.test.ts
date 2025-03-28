@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
+import fetchMock from "fetch-mock";
 import sinon from "sinon";
 import { ArcGisAccessClient, ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth.js";
-import fetchMock from "fetch-mock";
 
 describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();

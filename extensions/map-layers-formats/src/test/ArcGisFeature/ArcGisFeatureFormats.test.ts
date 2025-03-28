@@ -12,9 +12,9 @@ import {
   MapLayerSourceStatus,
 } from "@itwin/core-frontend";
 import { expect } from "chai";
+import sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
 import { esriFeatureSampleSource } from "./Mocks.js";
-import * as sinon from "sinon";
 
 describe("ArcGisFeatureFormats", () => {
 

@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import { expect } from "chai";
-import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { OgcApiFeaturesReader, ReadOgcApiFeaturesInfoOptions } from "../../OgcApiFeatures/OgcApiFeaturesReader.js";
-import { PhillyDataset } from "./PhillyDataset.js";
-import { FakeSymbGeomRenderer, MockFeatureSymbologyRenderer, MockGeometryRenderer, MockGraphicsRenderer } from "./Mocks.js";
-import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader.js";
 import { ImageMapLayerSettings } from "@itwin/core-common";
+import { MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { expect } from "chai";
+import sinon from "sinon";
+import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader.js";
+import { OgcApiFeaturesReader, ReadOgcApiFeaturesInfoOptions } from "../../OgcApiFeatures/OgcApiFeaturesReader.js";
 import { CountriesDataset } from "./CountriesDataset.js";
+import { FakeSymbGeomRenderer, MockFeatureSymbologyRenderer, MockGeometryRenderer, MockGraphicsRenderer } from "./Mocks.js";
+import { PhillyDataset } from "./PhillyDataset.js";
 
 describe("OgcApiFeaturesReader", () => {
   const sandbox = sinon.createSandbox();

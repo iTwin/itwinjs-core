@@ -4,21 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import sinon from "sinon";
-import { NewYorkDataset } from "./NewYorkDataset.js";
-import { ArcGisClassBreaksSymbologyRenderer, ArcGisDashLineStyle, ArcGisSymbologyCanvasRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer.js";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
-import { EarthquakeSince1970Dataset } from "./EarthquakeSince1970Dataset.js";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology.js";
-import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset.js";
-
+import { ColorDef } from "@itwin/core-common";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { TestUtils } from "./TestUtils.js";
+import sinon from "sinon";
 import moq from "typemoq";
-import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
-import { ColorDef } from "@itwin/core-common";
 import { DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider.js";
+import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
+import { ArcGisClassBreaksSymbologyRenderer, ArcGisDashLineStyle, ArcGisSymbologyCanvasRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer.js";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology.js";
+import { EarthquakeSince1970Dataset } from "./EarthquakeSince1970Dataset.js";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset.js";
+import { NewYorkDataset } from "./NewYorkDataset.js";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
+import { TestUtils } from "./TestUtils.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

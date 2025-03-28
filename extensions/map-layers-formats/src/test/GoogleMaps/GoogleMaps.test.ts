@@ -3,18 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
 import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
-import { expect } from "chai";
-import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider.js";
-import { GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats.js";
-import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils.js";
-
-import { fakeJsonFetch } from "../TestUtils.js";
-import { LogoDecoration } from "../../GoogleMaps/GoogleMapDecorator.js";
 import { DecorateContext, Decorations, IconSprites, IModelApp, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite } from "@itwin/core-frontend";
-import { Range3d } from "@itwin/core-geometry";
 import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
+import { Range3d } from "@itwin/core-geometry";
+import { expect } from "chai";
+import sinon from "sinon";
+import { LogoDecoration } from "../../GoogleMaps/GoogleMapDecorator.js";
+import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider.js";
+import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils.js";
+import { GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats.js";
+import { fakeJsonFetch } from "../TestUtils.js";
 
 
 class FakeMapTile extends MapTile  {

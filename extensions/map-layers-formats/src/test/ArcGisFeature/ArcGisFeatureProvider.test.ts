@@ -3,24 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSourceFormat, ServerError } from "@itwin/core-common";
+import { ArcGisGetServiceJsonArgs, ArcGISImageryProvider, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
-import sinon from "sinon";
-import { ArcGisGetServiceJsonArgs, ArcGISImageryProvider, ArcGisUtilities, FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, IModelConnection, MapLayerFeatureInfo, MapLayerImageryProviderStatus, QuadId, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
-import { NewYorkDataset } from "./NewYorkDataset.js";
-import { base64StringToUint8Array, Logger } from "@itwin/core-bentley";
-import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
-import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse.js";
-import { Angle, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
-import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader.js";
-import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader.js";
-import { EsriPMS } from "../../ArcGisFeature/EsriSymbology.js";
-import moq from "typemoq";
-import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider.js";
 import fetchMock from "fetch-mock";
+import sinon from "sinon";
+import moq from "typemoq";
+import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
+import { ArcGisFeatureProvider, DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider.js";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats, ArcGisFeatureResultType, ArcGisGeometry } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
+import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse.js";
+import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader.js";
+import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader.js";
+import { EsriPMS } from "../../ArcGisFeature/EsriSymbology.js";
+import { NewYorkDataset } from "./NewYorkDataset.js";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

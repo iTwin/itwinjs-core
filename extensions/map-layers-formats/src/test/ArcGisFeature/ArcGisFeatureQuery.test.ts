@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import { ArcGisExtent, arcgisFeatureFormats, ArcGisFeatureQuery } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
 
 describe("ArcGisFeatureQuery", () => {

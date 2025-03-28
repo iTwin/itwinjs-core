@@ -5,8 +5,8 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { deflateCoordinates, FeatureGeometryRenderer } from "@itwin/core-frontend";
+import GeoJson from "geojson";
 import { Coord, GeoJSONGeometryUtils, MultiPath, MultiRingCoords, RingCoords } from "./GeoJSONGeometry.js";
-import * as GeoJson from "geojson";
 
 const loggerCategory = "MapLayersFormats.GeoJSONGeometryReader";
 

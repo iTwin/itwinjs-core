@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
-import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology.js";
-import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
-import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer.js";
-import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer.js";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import * as Geojson from "geojson";
-import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology.js";
-import { OgcApiFeaturesReader } from "./OgcApiFeaturesReader.js";
-import { RandomMapColor } from "../Feature/RandomMapColor.js";
+import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
+import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
+import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
+import Geojson from "geojson";
+import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer.js";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology.js";
 import { DefaultMarkerIcon } from "../Feature/DefaultMarkerIcon.js";
+import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer.js";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology.js";
+import { RandomMapColor } from "../Feature/RandomMapColor.js";
+import { OgcApiFeaturesReader } from "./OgcApiFeaturesReader.js";
 
 const loggerCategory = "MapLayersFormats.OgcApiFeatures";
 const dataUrlHeaderToken = "base64,";

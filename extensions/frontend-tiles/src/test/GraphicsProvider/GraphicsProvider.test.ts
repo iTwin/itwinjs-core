@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Cartographic, EcefLocation } from "@itwin/core-common";
+import { BlankConnection, IModelApp } from "@itwin/core-frontend";
+import { Range3d } from "@itwin/core-geometry";
 import { expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
-import { Range3d } from "@itwin/core-geometry";
-import { Cartographic, EcefLocation } from "@itwin/core-common";
-import { BlankConnection, IModelApp } from "@itwin/core-frontend";
 import { MeshExport, MeshExports, queryMeshExports } from "../../FrontendTiles.js";
 import { obtainIModelTilesetUrl } from "../../GraphicsProvider/GraphicsProvider.js";
 

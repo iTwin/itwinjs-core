@@ -8,8 +8,8 @@
 
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerTokenEndpoint } from "@itwin/core-frontend";
-import { ArcGisOAuth2Token, ArcGisTokenClientType } from "./ArcGisTokenGenerator.js";
 import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType } from "./ArcGisOAuth2Endpoint.js";
+import { ArcGisOAuth2Token, ArcGisTokenClientType } from "./ArcGisTokenGenerator.js";
 import { ArcGisTokenManager } from "./ArcGisTokenManager.js";
 import { ArcGisUrl } from "./ArcGisUrl.js";
 

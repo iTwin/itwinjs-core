@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { SpatialViewState } from "@itwin/core-frontend";
+import { Range3d } from "@itwin/core-geometry";
 import { ModelMetadata } from "./BatchedTilesetReader.js";
 
 export class BatchedModels {

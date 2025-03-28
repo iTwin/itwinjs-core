@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64Set, Id64String } from "@itwin/core-bentley";
+import { Tileset3dSchema as schema, ViewFlagOverrides } from "@itwin/core-common";
+import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
 import {
   Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d,
 } from "@itwin/core-geometry";
-import { Tileset3dSchema as schema, ViewFlagOverrides } from "@itwin/core-common";
-import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
-import { BatchedTileTreeParams } from "./BatchedTileTree.js";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile.js";
+import { BatchedTileTreeParams } from "./BatchedTileTree.js";
 
 /** @internal */
 export interface ModelMetadataProps {

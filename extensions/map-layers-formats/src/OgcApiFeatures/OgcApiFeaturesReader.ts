@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Transform } from "@itwin/core-geometry";
-import { GeoJSONGeometryReader } from "../GeoJSON/GeoJSONGeometryReader.js";
-import * as Geojson from "geojson";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { FeatureInfoReader } from "../Feature/FeatureInfoReader.js";
 import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicPrimitive, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
+import { Transform } from "@itwin/core-geometry";
+import Geojson from "geojson";
+import { FeatureInfoReader } from "../Feature/FeatureInfoReader.js";
+import { GeoJSONGeometryReader } from "../GeoJSON/GeoJSONGeometryReader.js";
 
 /** @internal */
 export type OgcFeaturePropertyType = "string" | "number" | "integer" | "datetime" | "geometry" | "boolean";

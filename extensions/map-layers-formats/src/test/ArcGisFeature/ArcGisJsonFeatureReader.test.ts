@@ -5,19 +5,19 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
-import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
-import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader.js";
-import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
-import { fakeContext } from "./Mocks.js";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
-import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer.js";
-import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset.js";
-import { EsriSFS } from "../../ArcGisFeature/EsriSymbology.js";
-import { TestUtils } from "./TestUtils.js";
-import { ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer.js";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { assert, expect } from "chai";
+import sinon from "sinon";
+import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat.js";
+import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
+import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader.js";
+import { ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer.js";
+import { EsriSFS } from "../../ArcGisFeature/EsriSymbology.js";
+import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer.js";
+import { fakeContext } from "./Mocks.js";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset.js";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset.js";
+import { TestUtils } from "./TestUtils.js";
 
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 

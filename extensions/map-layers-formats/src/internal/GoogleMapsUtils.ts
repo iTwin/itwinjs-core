@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp } from "@itwin/core-frontend";
-import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerProps, MapLayerProviderProperties } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
 import { Angle } from "@itwin/core-geometry";
 import { GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps.js";
+import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
