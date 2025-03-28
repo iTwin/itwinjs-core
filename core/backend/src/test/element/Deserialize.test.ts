@@ -23,8 +23,12 @@ describe("Element Deserialize", () => {
     sinon.restore();
   });
 
-  it("should correctly set globalOrigin for GeometricModel2d", async () => {
+  it("should properly read an Element and deserialize it", async () => {
+    // get an element
 
+    // deserialize the element
+
+    // verify the element was deserialized correctly
   });
 
 });
