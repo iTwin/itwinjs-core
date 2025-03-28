@@ -548,8 +548,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * Search for all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve
    * and emit tangent points according to the given `announceTangent` callback.
    * * Strictly speaking the tangent line is in the plane through `P` whose normal is the cross product of the curve
-   * tangent at P and the `TangentOptions.viewNormal` (if not provided, default view normal (0,0,1) is used). This is
-   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.viewNormal`.
+   * tangent at P and the `TangentOptions.vectorToEye` (if not provided, default view normal (0,0,1) is used). This is
+   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.vectorToEye`.
    * @param spacePoint point in space.
    * @param announceTangent callback to announce tangent(s). For example, the callback can find all tangents or just
    * the closest tangent.
@@ -558,14 +558,14 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public emitTangents(
     spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, tangOpts?: TangentOptions,
   ): void {
-    const strokeHandler = new AnnounceTangentStrokeHandler(spacePoint, announceTangent, tangOpts?.viewNormal);
+    const strokeHandler = new AnnounceTangentStrokeHandler(spacePoint, announceTangent, tangOpts?.vectorToEye);
     this.emitStrokableParts(strokeHandler, tangOpts?.strokeOptions);
   }
   /**
    * Search for all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve.
    * * Strictly speaking the tangent line is in the plane through `P` whose normal is the cross product of the curve
-   * tangent at P and the `TangentOptions.viewNormal` (if not provided, default view normal (0,0,1) is used). This is
-   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.viewNormal`.
+   * tangent at P and the `TangentOptions.vectorToEye` (if not provided, default view normal (0,0,1) is used). This is
+   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.vectorToEye`.
    * @param spacePoint point in space.
    * @param tangOpts (optional) tangent options.
    * @returns an array of details of all tangent points or undefined if no tangent was found.
@@ -588,8 +588,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * and then find point `P` which is closest to `TangentOptions.hintPoint`. If `TangentOptions.hintPoint` is not
    * provided, find point `P` which is closest to `spacePoint`.
    * * Strictly speaking the tangent line is in the plane through `P` whose normal is the cross product of the curve
-   * tangent at P and the `TangentOptions.viewNormal` (if not provided, default view normal (0,0,1) is used). This is
-   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.viewNormal`.
+   * tangent at P and the `TangentOptions.vectorToEye` (if not provided, default view normal (0,0,1) is used). This is
+   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.vectorToEye`.
    * @param spacePoint point in space.
    * @param tangOpts (optional) tangent options.
    * @returns the detail of the closest tangent point or undefined if no tangent was found.

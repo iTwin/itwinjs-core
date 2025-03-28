@@ -906,7 +906,27 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, tangOpts?: TangentOptions,
   ): void {
     const centerToPoint = Vector3d.createStartEnd(this.centerRef, spacePoint);
-    const localCenterToPoint = this.matrixRef.multiplyInverse(centerToPoint);
+    let localCenterToPoint: Vector3d | undefined;
+    const vectorToEye = tangOpts?.vectorToEye;
+    if (vectorToEye) {
+      const viewToWorld = Matrix3d.createRigidViewAxesZTowardsEye(vectorToEye.x, vectorToEye.y, vectorToEye.z);
+      // Convert the spacePoint into the arc's default system in which
+      // vector U is column 0,
+      // vector V is column 1,
+      // column 2 of viewToWorld is column 2.
+      const arcToView = Matrix3d.createColumns(
+        this.matrixRef.getColumn(0), this.matrixRef.getColumn(1), viewToWorld.getColumn(2),
+      );
+      localCenterToPoint = arcToView.multiplyInverse(centerToPoint);
+    } else {
+      // Convert the spacePoint into the arc's default system in which
+      // vector U is column 0,
+      // vector V is column 1,
+      // cross product of column 0 and 1 (or maybe a scale of it) is column 2.
+      localCenterToPoint = this.matrixRef.multiplyInverse(centerToPoint)!;
+    }
+    if (localCenterToPoint === undefined)
+      return;
     // localCenterToPoint is measured in the (de-skewed and descaled) coordinate system of the arc U and V axes.
     // that is, the arc is now a unit circle.
     // angle alpha is from the local x axis to localCenterToPoint.

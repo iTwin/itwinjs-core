@@ -1578,7 +1578,7 @@ describe("ApproximateArc3d", () => {
     hintPoint = undefined;
     arc = Arc3d.create(Point3d.create(0, 0), Vector3d.create(4, 0, 0), Vector3d.create(0, 0, 2));
     spacePoint = Point3d.create(4, 0, 2);
-    tangents = arc.allTangents(spacePoint, { viewNormal: Vector3d.create(0, 1, 0) });
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 1, 0) });
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
     ck.testCoordinate(0.25, tangents![0].fraction, "first tangent fraction is 0.25");
@@ -1587,44 +1587,57 @@ describe("ApproximateArc3d", () => {
     dy += 7;
     tangents = undefined;
     hintPoint = Point3d.create(5, 0, 1);
-    tangent = arc.closestTangent(spacePoint, { hintPoint, viewNormal: Vector3d.create(0, 1, 0) });
+    tangent = arc.closestTangent(spacePoint, { hintPoint, vectorToEye: Vector3d.create(0, 1, 0) });
     ck.testDefined(tangent, "tangent is defined");
     ck.testCoordinate(0, tangent!.fraction, "closest tangent fraction is 0");
     captureGeometry();
     dy += 7;
     spacePoint = Point3d.create(4, 1, 2);
     hintPoint = Point3d.create(0, 1, 1);
-    tangent = arc.closestTangent(spacePoint, { hintPoint, viewNormal: Vector3d.create(0, 1, 0) });
+    tangent = arc.closestTangent(spacePoint, { hintPoint, vectorToEye: Vector3d.create(0, 1, 0) });
     ck.testDefined(tangent, "tangent is defined");
     ck.testCoordinate(0.25, tangent!.fraction, "closest tangent fraction is 0.25");
     captureGeometry();
 
-    // tangents parallel to ellipse axes in 3d with view normal = (1, 1, 1), i.e, right isometric view
+    // tangents in 3d with view normal = (-1, -1, 1), i.e., isometric view
     dx += 10;
     dy = 0;
     tangent = undefined;
     hintPoint = undefined;
     arc = Arc3d.createXYEllipse(Point3d.create(0, 0), 3, 2);
     spacePoint = Point3d.create(3, 2, 1);
-    tangents = arc.allTangents(spacePoint, { viewNormal: Vector3d.create(1, 1, 1) });
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(-1, -1, 1) });
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
-    // ck.testCoordinate(0.25, tangents![0].fraction, "first tangent fraction is 0.25");
-    // ck.testCoordinate(0, tangents![1].fraction, "second tangent fraction is 0");
+    ck.testCoordinate(0.301335, tangents![0].fraction, "first tangent fraction is 0.301335");
+    ck.testCoordinate(0.967367, tangents![1].fraction, "second tangent fraction is 0.967367");
+    captureGeometry();
+    // tangents in 3d with view normal = (1, -1, 1), i.e., right isometric view
+    dy += 7;
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(1, -1, 1) });
+    ck.testDefined(tangents, "tangents is defined");
+    ck.testCoordinate(2, tangents!.length, "2 tangents found");
+    ck.testCoordinate(0.329181, tangents![0].fraction, "first tangent fraction is 0.329181");
+    ck.testCoordinate(0.037694, tangents![1].fraction, "second tangent fraction is 0.037694");
+    captureGeometry();
+    // tangents in 3d with view normal = (1, 1, 1); space point is inside ellipse from this view; no tangents
+    dy += 7;
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(1, 1, 1) });
+    ck.testUndefined(tangents, "tangents is undefined");
     captureGeometry();
 
     // space point inside ellipse in 3d; no tangent
     dx += 10;
     dy = 0;
     spacePoint = Point3d.create(2, 0, 0);
-    tangents = arc.allTangents(spacePoint, { viewNormal: Vector3d.create(0, 1, 0) });
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 1, 0) });
     ck.testUndefined(tangents, "tangents is undefined");
     captureGeometry();
     dy += 7;
     tangents = undefined;
     spacePoint = Point3d.create(2, 1, 0);
     hintPoint = Point3d.create(0, 4, 1);
-    tangent = arc.closestTangent(spacePoint, { hintPoint, viewNormal: Vector3d.create(0, 1, 0) });
+    tangent = arc.closestTangent(spacePoint, { hintPoint, vectorToEye: Vector3d.create(0, 1, 0) });
     ck.testUndefined(tangent, "tangent is undefined");
     captureGeometry();
 

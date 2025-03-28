@@ -25,8 +25,8 @@ import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 export interface TangentOptions {
   /** A point to be used to find the closest tangent to that point. */
   hintPoint?: Point3d,
-  /** View plane normal. Default is(0, 0, 1). */
-  viewNormal?: Vector3d,
+  /** Vector to eye. Tangents are seen in a view plane perpendicular to vectorToEye. Default is(0, 0, 1). */
+  vectorToEye?: Vector3d,
   /** Stroke options. */
   strokeOptions?: StrokeOptions,
   /**
@@ -47,7 +47,7 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
   private _curve: CurvePrimitive | undefined;
   private _announceTangent: (tangent: CurveLocationDetail) => any;
   private _spacePoint: Point3d;
-  private _viewNormal: Vector3d;
+  private _vectorToEye: Vector3d;
   // fraction and function value on one side of an interval that may bracket a root
   private _fractionA: number = 0;
   private _functionA: number = 0;
@@ -59,11 +59,11 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, viewNormal?: Vector3d) {
+  public constructor(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, vectorToEye?: Vector3d) {
     super();
     this._announceTangent = announceTangent;
     this._spacePoint = spacePoint;
-    this._viewNormal = viewNormal ?? Vector3d.unitZ();
+    this._vectorToEye = vectorToEye ?? Vector3d.unitZ();
     this._workRay = Ray3d.createZero();
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
@@ -159,7 +159,7 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
       this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
     else
       return undefined;
-    const cross = this._viewNormal.unitCrossProduct(this._workRay.direction);
+    const cross = this._vectorToEye.unitCrossProduct(this._workRay.direction);
     return cross ? cross.dotProductStartEnd(this._workRay.origin, this._spacePoint) : undefined;
   }
   public evaluate(fraction: number): boolean {
