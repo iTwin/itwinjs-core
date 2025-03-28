@@ -19,7 +19,7 @@ export namespace FrameGeometry {
   }
 
   // RoundedRectangle
-  export const computeRoundedRectangle = (rangeProps: Range2dProps, transformProps: TransformProps, radiusFactor: number = 0.5): AnyCurvePrimitive[] => {
+  export const computeRoundedRectangle = (rangeProps: Range2dProps, transformProps: TransformProps, radiusFactor: number = 0.25): AnyCurvePrimitive[] => {
     const range = Range2d.fromJSON(rangeProps);
     const radius = range.yLength() * radiusFactor * Math.sqrt(2);
     // We're going to circumscribe the range with our rounded edges. The corners of the range will fall on 45 degree angles.
@@ -45,13 +45,13 @@ export namespace FrameGeometry {
 
     const curves = [
       LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]), // top
-      LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
+      Arc3d.createXY(Point3d.create(inLeft, inTop), radius, q2), // top left
       LineString3d.create([Point3d.create(exLeft, inBottom), Point3d.create(exLeft, inTop)]), // left
+      Arc3d.createXY(Point3d.create(inLeft, inBottom), radius, q3), // bottom left
+      LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
+      Arc3d.createXY(Point3d.create(inRight, inBottom), radius, q4), // bottom right
       LineString3d.create([Point3d.create(exRight, inBottom), Point3d.create(exRight, inTop)]), // right
       Arc3d.createXY(Point3d.create(inRight, inTop), radius, q1), // top right
-      Arc3d.createXY(Point3d.create(inLeft, inTop), radius, q2), // top left
-      Arc3d.createXY(Point3d.create(inLeft, inBottom), radius, q3), // bottom left
-      Arc3d.createXY(Point3d.create(inRight, inBottom), radius, q4), // bottom right
     ];
 
     const transform = Transform.fromJSON(transformProps);
@@ -168,8 +168,8 @@ export namespace FrameGeometry {
 
     const curves = [
       LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]), // top
-      LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
       Arc3d.createXY(Point3d.create(inLeft, range.center.y), radius, leftHalfCircle), // top right
+      LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
       Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle), // top right
     ];
 
