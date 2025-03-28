@@ -9,7 +9,8 @@
 
 import { Id64Arg } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, KeySet, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import { RpcRequestsHandler } from "@itwin/presentation-common/internal";
 
 /**
  * Properties for creating [[SelectionScopesManager]].

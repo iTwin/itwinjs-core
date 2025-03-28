@@ -9,12 +9,12 @@ import sinon from "sinon";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, IModelConnection } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
-import { createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
+import { createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
 import { Presentation } from "@itwin/presentation-frontend";
 import { createStorage } from "@itwin/unified-selection";
-import { TestIModelConnection } from "../../IModelSetupUtils";
-import { initialize, terminate } from "../../IntegrationTests";
-import { waitFor } from "../../Utils";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { waitFor } from "../../Utils.js";
 
 describe("Selection manager", () => {
   describe("with custom unified selection storage", () => {

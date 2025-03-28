@@ -6,11 +6,11 @@
  * @module PresentationRules
  */
 
-import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
-import { ContentInstancesOfSpecificClassesSpecification } from "./ContentInstancesOfSpecificClassesSpecification";
-import { ContentRelatedInstancesSpecification } from "./ContentRelatedInstancesSpecification";
-import { ContentModifiersList } from "./modifiers/ContentModifier";
-import { SelectedNodeInstancesSpecification } from "./SelectedNodeInstancesSpecification";
+import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification.js";
+import { ContentInstancesOfSpecificClassesSpecification } from "./ContentInstancesOfSpecificClassesSpecification.js";
+import { ContentRelatedInstancesSpecification } from "./ContentRelatedInstancesSpecification.js";
+import { ContentModifiersList } from "./modifiers/ContentModifier.js";
+import { SelectedNodeInstancesSpecification } from "./SelectedNodeInstancesSpecification.js";
 
 /**
  * Used for serializing array of [[ContentSpecification]]

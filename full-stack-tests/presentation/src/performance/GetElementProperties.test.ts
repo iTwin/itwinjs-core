@@ -26,7 +26,7 @@ describe("#performance Element properties loading", () => {
     }
     testIModelName = process.env.TEST_IMODEL;
 
-    await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: join(import.meta.dirname, ".cache") });
     Presentation.initialize({
       useMmap: true,
       workerThreadsCount: os.availableParallelism(),

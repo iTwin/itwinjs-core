@@ -9,10 +9,10 @@ import { assert, BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import { Content, Item, KeySet, PageOptions } from "@itwin/presentation-common";
 import { Presentation as PresentationBackend, PresentationManager } from "@itwin/presentation-backend";
 import { Presentation as PresentationFrontend } from "@itwin/presentation-frontend";
-import { initialize } from "../../IntegrationTests";
-import { collect } from "../../Utils";
-import { createContentTestSuite } from "./Utils";
-import { createTestContentDescriptor, createTestContentItem, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { initialize } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { createContentTestSuite } from "./Utils.js";
+import { createTestContentDescriptor, createTestContentItem, ResolvablePromise } from "@itwin/presentation-common/test-utils";
 
 createContentTestSuite({ skipInitialize: true })("Error handling", ({ getDefaultSuiteIModel }) => {
   const frontendTimeout = 50;

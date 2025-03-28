@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix draping to reality bug",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

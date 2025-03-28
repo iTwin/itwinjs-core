@@ -5,8 +5,8 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 
 import { expect } from "chai";
-import { createTestECInstanceKey, createTestECInstancesNodeKey, createTestNodeKey } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionHelper } from "../../presentation-frontend";
+import { createTestECInstanceKey, createTestECInstancesNodeKey, createTestNodeKey } from "@itwin/presentation-common/test-utils";
+import { SelectionHelper } from "../../presentation-frontend.js";
 
 describe("SelectionHelper", () => {
   describe("getKeysForSelection", () => {

@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
-import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils";
+import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils.js";
 
 describe("getElementKey", () => {
   const imodel = moq.Mock.ofType<IModelDb>();

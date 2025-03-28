@@ -147,6 +147,7 @@ public;class;EmbeddedFileLink
 beta;interface;EmbedFontFileArgs
 public;class;Entity
 public;type;EntityClassType
+public;class;EntityJsClassMap
 alpha;namespace;EntityReferences
 internal;function;isValid
 internal;function;makeInvalid
@@ -284,6 +285,7 @@ deprecated;enum;LockState
 internal;interface;LockStatusExclusive
 internal;interface;LockStatusShared
 internal;class;MetaDataRegistry
+deprecated;class;MetaDataRegistry
 public;class;Model
 public;class;ModelSelector
 internal;class;ModelSelectorRefersToModels
@@ -353,6 +355,7 @@ public;class;RpcTrace
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
+public;class;SchemaMap
 internal;type;SchemaMatchType
 public;class;Schemas
 internal;namespace;SchemaSync
