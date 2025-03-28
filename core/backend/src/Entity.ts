@@ -12,6 +12,10 @@ import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
 
+export interface RawECInstance {
+  instance: any;
+}
+
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
  * An Entity is typically instantiated from an [EntityProps]($common) and can be converted back to this representation via [[Entity.toJSON]].
@@ -76,6 +80,14 @@ export class Entity {
    */
   public static instantiate(subclass: typeof Entity, props: EntityProps, iModel: IModelDb): Entity {
     return new subclass(props, iModel);
+  }
+
+  public static deserialize(instance: RawECInstance): EntityProps {
+    const props = {
+        classFullName: instance.instance.classFullName,
+        id: instance.instance.id,
+    }
+    return props;
   }
 
   /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
