@@ -6,7 +6,7 @@
  * @module Workspace
  */
 
-import { AccessToken, BeEvent, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, Logger, Mutable, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { SQLiteDb } from "../SQLiteDb";
@@ -14,6 +14,31 @@ import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./S
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { _implementationProhibited } from "../internal/Symbols";
+
+export interface WorkspaceError extends Error {
+  readonly key: string;
+}
+
+export namespace WorkspaceError {
+  export const scope = "itwin-workspace-error";
+  export type Key =
+    "already-exists" |
+    "already-published" |
+    "container-exists" |
+    "does-not-exist" |
+    "invalid-name" |
+    "no-cloud-container" |
+    "resource-exists" |
+    "too-large" |
+    "write-error";
+
+  export function throwError(key: Key, msg: string): never {
+    const e = new Error(msg) as Mutable<WorkspaceError>;
+    e.key = key;
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw e;
+  }
+}
 
 /** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's [[WorkspaceDb]]s.
  * A valid `WorkspaceContainerId` must conform to the following constraints:
@@ -58,25 +83,18 @@ export type WorkspaceDbFullName = string;
 /** A [semver](https://github.com/npm/node-semver) string describing the version of a [[WorkspaceDb]], e.g., "4.2.11".
  * @beta
  */
-export type WorkspaceDbVersion = string;
+export type WorkspaceDbVersion = CloudSqlite.DbVersion;
 
 /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[WorkspaceDbVersion]]s,
  * e.g., ">=1.2.7 <1.3.0".
  * @beta
  */
-export type WorkspaceDbVersionRange = string;
+export type WorkspaceDbVersionRange = CloudSqlite.DbVersionRange;
 
 /** Specifies the name and version of a [[WorkspaceDb]].
  * @beta
  */
-export interface WorkspaceDbNameAndVersion {
-  /** The name of the [[WorkspaceDb]]. If omitted, it defaults to "workspace-db". */
-  readonly dbName?: WorkspaceDbName;
-  /** The range of acceptable versions of the [[WorkspaceDb]] of the specified [[dbName]].
-   * If omitted, it defaults to the newest available version.
-   */
-  readonly version?: WorkspaceDbVersionRange;
-}
+export type WorkspaceDbNameAndVersion = Optional<CloudSqlite.DbNameAndVersion, "dbName">;
 
 /** Properties that specify how to load a [[WorkspaceDb]] within a [[WorkspaceContainer]].
  * @beta

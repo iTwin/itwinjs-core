@@ -11,7 +11,7 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, Mutable, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
@@ -21,7 +21,34 @@ import { RpcTrace } from "./rpc/tracing";
 
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
-// spell:ignore logmsg httpcode daemonless cachefile cacheslots ddthh
+// spell:ignore logmsg httpcode daemonless cachefile cacheslots ddthh cloudsqlite premajor preminor prepatch
+
+export interface CloudSqliteError extends Error {
+  readonly key: string;
+  readonly details?: CloudSqliteError.ErrorDetails;
+}
+
+export namespace CloudSqliteError {
+  export interface ErrorDetails {
+    readonly dbName: string;
+    readonly version?: string;
+  }
+  export const scope = "itwin-cloudsqlite-error";
+  export type Key =
+    "not-a-function" |
+    "invalid-name" |
+    "no-version-available" |
+    "service-not-available"
+
+  export function throwError(key: Key, msg: string, details?: CloudSqlite.LoadProps): never {
+    const e = new Error(msg) as Mutable<CloudSqliteError>;
+    e.key = key;
+    if (details)
+      e.details = details;
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
+    throw e;
+  }
+}
 
 /**
  * Types for accessing SQLite databases stored in cloud containers.
@@ -33,6 +60,12 @@ export namespace CloudSqlite {
   const logError = (msg: string) => Logger.logError("CloudSqlite", msg);
 
   export type RequestTokenArgs = Optional<BlobContainer.RequestTokenProps, "userToken">;
+
+  function verifyService<T>(serviceName: string, service: T | undefined): T {
+    if (undefined === service)
+      CloudSqliteError.throwError("service-not-available", `${serviceName} service is not available`);
+    return service;
+  }
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
    * If the service is unavailable or returns an error, an empty token is returned.
@@ -42,10 +75,7 @@ export namespace CloudSqlite {
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
-    if (BlobContainer.service === undefined) {
-      throw new Error(`BlobContainer.service is not defined`);
-    }
-    const response = await BlobContainer.service.requestToken({ ...args, userToken });
+    const response = await verifyService("BlobContainer", BlobContainer.service).requestToken({ ...args, userToken });
     return response?.token ?? "";
   }
 
@@ -56,6 +86,18 @@ export namespace CloudSqlite {
     writeLockHeldBy?: string;
   }
 
+  export function noLeadingOrTrailingSpaces(name: string, msg: string) {
+    if (name.trim() !== name)
+      CloudSqliteError.throwError("invalid-name", `${msg} [${name}] may not have leading or trailing spaces`);
+  }
+
+  export function validateDbName(dbName: DbName) {
+    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
+      CloudSqliteError.throwError("invalid-name", `invalid dbName: [${dbName}]`);
+
+    noLeadingOrTrailingSpaces(dbName, "dbName");
+  }
+
   /**
    * Create a new CloudContainer from a ContainerAccessProps. For non-public containers, a valid accessToken must be provided before the container
    * can be used (e.g. via [[CloudSqlite.requestToken]]).
@@ -64,6 +106,9 @@ export namespace CloudSqlite {
    */
   export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel, tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken> }): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainerInternal;
+    ["timer", "refreshPromise", "onConnected", "onDisconnect"].forEach((member) => {
+      Object.defineProperty(container, member, { enumerable: false, writable: true })
+    });
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
     container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
 
@@ -258,7 +303,7 @@ export namespace CloudSqlite {
     readonly version?: DbVersionRange;
   }
 
-  export interface SemverDbProps extends DbNameAndVersion {
+  export interface LoadProps extends DbNameAndVersion {
     readonly container: CloudContainer;
     /** If true, allow semver [prerelease versions](https://github.com/npm/node-semver?tab=readme-ov-file#prerelease-tags), e.g., "1.4.2-beta.0".
      * By default, only released version are allowed.
@@ -268,17 +313,33 @@ export namespace CloudSqlite {
     readonly prefetch?: boolean;
   }
 
+  /**
+   * The release increment for a version number, used as part of [[CreateNewDbVersionArgs]] to specify the kind of version to create.
+   * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
+   * @beta
+   */
+  export type SemverIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+
+  /**
+   * Arguments supplied to [[CloudSqlite.createNewDbVersion]].
+   * @beta
+   */
+  export interface CreateNewDbVersionArgs {
+    readonly container: CloudContainer;
+    /**
+     */
+    readonly fromDb: DbFullName;
+    /** The type of version increment to apply to the source version. */
+    readonly versionType: SemverIncrement;
+    /** For prerelease versions, a string that becomes part of the version name. */
+    readonly identifier?: string;
+  }
+
   /** The name of a CloudSqlite database within a CloudContainer. */
   export interface DbNameProp {
     /** the name of the database within the CloudContainer.
      * @note names of databases within a CloudContainer are always **case sensitive** on all platforms.*/
     dbName: DbFullName;
-  }
-
-  /** Properties for accessing a database within a CloudContainer */
-  export interface DbProps extends DbNameProp {
-    /** the name of the local file to access the database for uploading and downloading */
-    localFileName: LocalFileName;
   }
 
   export type TransferDirection = "upload" | "download";
@@ -299,7 +360,10 @@ export namespace CloudSqlite {
     minRequests?: number;
   }
 
-  export type TransferDbProps = DbProps & TransferProgress & CloudHttpProps;
+  export interface TransferDbProps extends DbNameProp, TransferProgress, CloudHttpProps {
+    /** the name of the local file to access the database for uploading and downloading */
+    localFileName: LocalFileName;
+  };
 
   /** Properties for creating a CloudCache. */
   export interface CacheProps extends CloudHttpProps {
@@ -815,17 +879,21 @@ export namespace CloudSqlite {
     // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
     const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
     if (!semVersion)
-      throw new Error("invalid version specification");
+      CloudSqliteError.throwError("invalid-name", "invalid version specification");
     version = semVersion;
     return version;
   }
 
+  export function isSemverPrerelease(version: string) {
+    return semver.major(version) === 0 || semver.prerelease(version);
+  }
+
   /** Create a dbName for a WorkspaceDb from its base name and version. This will be in the format "name:version" */
-  export function makeDbFileName(dbName: DbName, version?: DbVersion): DbName {
+  export function makeSemverName(dbName: DbName, version?: DbVersion): DbName {
     return `${dbName}:${validateDbVersion(version)}`;
   }
 
-  export function resolveDbFileName(props: SemverDbProps): DbFullName {
+  export function querySemverMatch(props: LoadProps): DbFullName {
     const dbName = props.dbName;
     const dbs = props.container.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
@@ -845,18 +913,18 @@ export namespace CloudSqlite {
       if (version)
         return `${dbName}:${version}`;
     } catch { }
-    throwWorkspaceDbLoadError(`No version of '${dbName}' available for "${range}"`, props);
+
+    CloudSqliteError.throwError("no-version-available", `No version of '${dbName}' available for "${range}"`, props);
   }
 
-  export async function createNewDbVersion(args: CreateNewWorkspaceDbVersionArgs): Promise<{ oldDb: DbNameAndVersion, newDb: DbNameAndVersion }> {
-    const oldName = resolveDbFileName(args.fromProps);
-    const oldDb = parseDbFileName(oldName);
+  export async function createNewDbVersion(args: CreateNewDbVersionArgs): Promise<{ oldDb: DbNameAndVersion, newDb: DbNameAndVersion }> {
+    const oldDb = parseDbFileName(args.fromDb);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
-      throwWorkspaceDbLoadError("invalid version", args.fromProps ?? {});
+      CloudSqliteError.throwError("invalid-name", `cannot create new version for ${args.fromDb}`);
 
-    const newName = makeDbFileName(oldDb.dbName, newVersion);
-    await cloudContainer.copyDatabase(oldName, newName);
+    const newName = makeSemverName(oldDb.dbName, newVersion);
+    await args.container.copyDatabase(args.fromDb, newName);
     // return the old and new db names and versions
     return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
   }
@@ -1023,13 +1091,8 @@ export namespace CloudSqlite {
      * @note the current user must have administrator rights to create containers.
      */
     protected static async createBlobContainer(args: Omit<BlobContainer.CreateNewContainerProps, "userToken">): Promise<CloudSqlite.ContainerProps> {
-      const service = BlobContainer.service;
-      if (undefined === service)
-        throw new Error("no BlobContainer service available");
-      const auth = IModelHost.authorizationClient;
-      if (undefined === auth)
-        throw new Error("no authorization client available");
-
+      const service = verifyService("BlobContainer", BlobContainer.service)
+      const auth = verifyService("Authorization Client", IModelHost.authorizationClient);
       const userToken = await auth.getAccessToken();
       const cloudContainer = await service.create({ scope: args.scope, metadata: args.metadata, userToken });
       return { baseUri: cloudContainer.baseUri, containerId: cloudContainer.containerId, storageType: cloudContainer.provider };
@@ -1106,7 +1169,7 @@ export namespace CloudSqlite {
     private getDbMethod(methodName: string): (...args: any[]) => any {
       const fn = (this._cloudDb as any)[methodName];
       if (typeof fn !== "function")
-        throw new Error(`illegal method name ${methodName}`);
+        CloudSqliteError.throwError("not-a-function", `illegal method name ${methodName}`);
       return fn;
     }
 
