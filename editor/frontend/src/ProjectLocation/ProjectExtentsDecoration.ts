@@ -18,9 +18,9 @@ import {
   Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { EditTools } from "../EditTool";
-import { basicManipulationIpc } from "../EditToolIpc";
-import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
+import { EditTools } from "../EditTool.js";
+import { basicManipulationIpc } from "../EditToolIpc.js";
+import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation.js";
 
 function translateMessage(key: string) {
   return EditTools.translate(`ProjectLocation:Message.${key}`);

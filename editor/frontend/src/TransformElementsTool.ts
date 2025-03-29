@@ -12,8 +12,8 @@ import { GeometricElementProps, isPlacement2dProps, PersistentGraphicsRequestPro
 import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, GraphicBranch, IModelApp, IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner } from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { EditTools } from "./EditTool";
-import { basicManipulationIpc } from "./EditToolIpc";
+import { EditTools } from "./EditTool.js";
+import { basicManipulationIpc } from "./EditToolIpc.js";
 
 /** Geometric element id, placement, and RenderGraphic managed by [[TransformGraphicsProvider]].
  * @beta
