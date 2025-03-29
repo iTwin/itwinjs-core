@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { Content, ContentFlags, ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { collect } from "../../Utils";
-import { describeContentTestSuite } from "./Utils";
+import { collect } from "../../Utils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Input Keys", ({ getDefaultSuiteIModel }) => {
   it("associates content items with given input keys", async () => {

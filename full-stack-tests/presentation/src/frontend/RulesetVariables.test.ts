@@ -7,9 +7,9 @@ import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { initialize, resetBackend, terminate } from "../IntegrationTests";
-import { collect } from "../Utils";
-import { TestIModelConnection } from "../IModelSetupUtils";
+import { initialize, resetBackend, terminate } from "../IntegrationTests.js";
+import { collect } from "../Utils.js";
+import { TestIModelConnection } from "../IModelSetupUtils.js";
 
 describe("Ruleset Variables", async () => {
   let variables: RulesetVariablesManager;

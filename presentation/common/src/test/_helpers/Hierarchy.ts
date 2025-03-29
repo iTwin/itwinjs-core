@@ -12,9 +12,9 @@ import {
   NodeKey,
   NodePathElement,
   StandardNodeTypes,
-} from "../../presentation-common";
-import { createTestLabelDefinition } from "./Content";
-import { createTestECInstanceKey } from "./EC";
+} from "../../presentation-common.js";
+import { createTestLabelDefinition } from "./Content.js";
+import { createTestECInstanceKey } from "./EC.js";
 
 /** @internal Used for testing only. */
 export const createTestNodeKey = (props?: Partial<NodeKey>) => ({

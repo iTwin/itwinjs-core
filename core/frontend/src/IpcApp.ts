@@ -6,12 +6,13 @@
  * @module NativeApp
  */
 
-import { IModelStatus, PickAsyncMethods } from "@itwin/core-bentley";
+import { BentleyError, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel, RemoveFunction,
+  BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
+  RemoveFunction,
 } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { _callIpcChannel } from "./common/internal/Symbols";
+import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**
  * Options for [[IpcApp.startup]]
@@ -86,26 +87,30 @@ export class IpcApp {
    * @param methodName  the name of a method implemented by the backend handler.
    * @param args arguments to `methodName`
    * @return a Promise with the return value from `methodName`
-   * @note If the backend implementation throws an exception, this method will throw a [[BackendError]] exception
-   * with the `errorNumber` and `message` from the backend.
-   * @note Ipc is only supported if [[isValid]] is true.
+   * @note If the backend implementation throws an exception, this method will throw an exception with its contents
    * @internal Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
 
-    if (undefined !== retVal.iTwinError) {
-      const error = new Error();
-      if (retVal.iTwinError.stack === undefined)
-        delete retVal.iTwinError.stack;
-      Object.assign(error, retVal.iTwinError);
-      throw error;
-    } else if (undefined !== retVal.error) {
-      const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
-      err.stack = retVal.error.stack;
-      throw err;
+    if (retVal.error === undefined)
+      return retVal.result; // method was successful
+
+    // backend threw an exception, rethrow one on frontend
+    const err = retVal.error;
+    if (!JsonUtils.isObject(err)) {
+      // Exception wasn't an object?
+      throw retVal.error; // eslint-disable-line @typescript-eslint/only-throw-error
     }
-    return retVal.result;
+
+    // Note: for backwards compatibility, if the exception was from a BentleyError on the backend, throw an exception of type `BackendError`.
+    if (!BentleyError.isError(err))
+      throw Object.assign(new Error(typeof err.message === "string" ? err.message : "unknown error"), err);
+
+    const trimErr = { ...err } as any;
+    delete trimErr.iTwinErrorId // these are methods on BackendError and will cause Object.assign to fail.
+    delete trimErr.loggingMetadata;
+    throw Object.assign(new BackendError(err.errorNumber, err.iTwinErrorId.key, err.message, err.loggingMetadata), trimErr);
   }
 
   /** @internal

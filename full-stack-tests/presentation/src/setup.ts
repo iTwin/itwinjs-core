@@ -6,12 +6,6 @@
 // eslint-disable-next-line no-console
 console.log(`Backend PID: ${process.pid}`);
 
-// see https://github.com/babel/babel/issues/4605
-import sourceMapSupport from "source-map-support";
-sourceMapSupport.install({
-  environment: "node",
-});
-
 // setup chai
 import * as chai from "chai";
 import chaiJestSnapshot from "chai-jest-snapshot";

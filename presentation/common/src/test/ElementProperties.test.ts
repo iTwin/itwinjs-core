@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { PropertyValueFormat } from "../presentation-common/content/TypeDescription";
-import { buildElementProperties } from "../presentation-common/ElementProperties";
+import { PropertyValueFormat } from "../presentation-common/content/TypeDescription.js";
+import { buildElementProperties } from "../presentation-common/ElementProperties.js";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
@@ -15,7 +15,7 @@ import {
   createTestECInstanceKey,
   createTestNestedContentField,
   createTestSimpleContentField,
-} from "./_helpers";
+} from "./_helpers/index.js";
 
 describe("buildElementProperties", () => {
   it("sets class label", () => {

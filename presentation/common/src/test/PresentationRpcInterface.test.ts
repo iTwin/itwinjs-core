@@ -19,8 +19,8 @@ import {
   PresentationRpcInterface,
   PresentationStatus,
   SelectionScopeRpcRequestOptions,
-} from "../presentation-common";
-import { FieldDescriptorType } from "../presentation-common/content/Fields";
+} from "../presentation-common.js";
+import { FieldDescriptorType } from "../presentation-common/content/Fields.js";
 import {
   ComputeSelectionRpcRequestOptions,
   ContentInstanceKeysRpcRequestOptions,
@@ -29,9 +29,9 @@ import {
   HierarchyLevelDescriptorRpcRequestOptions,
   PresentationRpcResponseData,
   SingleElementPropertiesRpcRequestOptions,
-} from "../presentation-common/PresentationRpcInterface";
-import { createTestContentDescriptor } from "./_helpers/Content";
-import { createTestECInstanceKey, createTestECInstancesNodeKey } from "./_helpers";
+} from "../presentation-common/PresentationRpcInterface.js";
+import { createTestContentDescriptor } from "./_helpers/Content.js";
+import { createTestECInstanceKey, createTestECInstancesNodeKey } from "./_helpers/index.js";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {

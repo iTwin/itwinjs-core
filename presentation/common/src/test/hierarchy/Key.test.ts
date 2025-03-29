@@ -3,7 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { NodeKey, StandardNodeTypes } from "../../presentation-common/hierarchy/Key";
+import { NodeKey, StandardNodeTypes } from "../../presentation-common/hierarchy/Key.js";
 import {
   createTestECClassGroupingNodeKey,
   createTestECInstanceKey,
@@ -11,7 +11,7 @@ import {
   createTestECPropertyGroupingNodeKey,
   createTestLabelGroupingNodeKey,
   createTestNodeKey,
-} from "../_helpers";
+} from "../_helpers/index.js";
 
 describe("NodeKey", () => {
   describe("isInstancesNodeKey", () => {

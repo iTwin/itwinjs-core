@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { TestIModelConnection } from "../../IModelSetupUtils";
-import { initialize, terminate, testLocalization } from "../../IntegrationTests";
-import { collect } from "../../Utils";
-import { printRuleset } from "../Utils";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
+import { initialize, terminate, testLocalization } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { printRuleset } from "../Utils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;

@@ -37,16 +37,15 @@ import {
   KeySet,
   NodeKey,
   Paged,
-  PresentationIpcEvents,
   PropertyValueFormat,
   RegisteredRuleset,
-  RpcRequestsHandler,
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
+import { PresentationIpcEvents, RpcRequestsHandler } from "@itwin/presentation-common/internal";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
@@ -59,18 +58,18 @@ import {
   createTestNodePathElement,
   createTestPropertiesContentField,
   createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/cjs/test";
+} from "@itwin/presentation-common/test-utils";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
-import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
-import { Presentation } from "../presentation-frontend/Presentation";
+import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler.js";
+import { Presentation } from "../presentation-frontend/Presentation.js";
 import {
   IModelContentChangeEventArgs,
   IModelHierarchyChangeEventArgs,
   PresentationManager,
   PresentationManagerProps,
-} from "../presentation-frontend/PresentationManager";
-import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
-import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
+} from "../presentation-frontend/PresentationManager.js";
+import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager.js";
+import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
