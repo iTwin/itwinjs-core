@@ -6,25 +6,48 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
+import { VariantCurveExtendParameter } from "../CurveExtendMode";
 import { CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { StrokeOptions } from "../StrokeOptions";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
 
 /**
- * Context for searching for the closest point to a CurvePrimitive.
+ * Optional arguments for to find tangent(s) to curve from a point.
+ * @public
+ */
+export interface TangentOptions {
+  /** A point to be used to find the closest tangent to that point. */
+  hintPoint?: Point3d,
+  /** Vector to eye. Tangents are seen in a view plane perpendicular to vectorToEye. Default is(0, 0, 1). */
+  vectorToEye?: Vector3d,
+  /** Stroke options. */
+  strokeOptions?: StrokeOptions,
+  /**
+   * Variable to specify how to extend the curve according to variant type:
+   *  false: do not extend the curve (default).
+   *  true: extend the curve at both start and end.
+   *  CurveExtendOptions: extend the curve in the specified manner at both start and end.
+   *  CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored.
+   */
+  extend?: VariantCurveExtendParameter,
+}
+
+/**
+ * Context for searching for the tangent(s) to a CurvePrimitive.
  * @internal
  */
-export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implements IStrokeHandler {
+export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implements IStrokeHandler {
   private _curve: CurvePrimitive | undefined;
-  private _closestPoint: CurveLocationDetail | undefined;
+  private _announceTangent: (tangent: CurveLocationDetail) => any;
   private _spacePoint: Point3d;
-  private _extend: VariantCurveExtendParameter;
+  private _vectorToEye: Vector3d;
   // fraction and function value on one side of an interval that may bracket a root
   private _fractionA: number = 0;
   private _functionA: number = 0;
@@ -33,31 +56,17 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   private _functionB: number = 0;
   private _numThisCurve: number = 0;
   // scratch vars to use within methods
-  private _workPoint: Point3d;
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail) {
+  public constructor(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, vectorToEye?: Vector3d) {
     super();
+    this._announceTangent = announceTangent;
     this._spacePoint = spacePoint;
-    this._workPoint = Point3d.create();
+    this._vectorToEye = vectorToEye ?? Vector3d.unitZ();
     this._workRay = Ray3d.createZero();
-    this._closestPoint = result;
-    this._extend = extend ?? false;
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
-  }
-  public claimResult(): CurveLocationDetail | undefined {
-    if (this._closestPoint) {
-      this._newtonSolver.setX(this._closestPoint.fraction);
-      this._curve = this._closestPoint.curve;
-      if (this._newtonSolver.runIterations()) {
-        let fraction = this._newtonSolver.getX();
-        fraction = CurveExtendOptions.correctFraction(this._extend, fraction);
-        this.announceSolutionFraction(fraction);
-      }
-    }
-    return this._closestPoint;
   }
   public needPrimaryGeometryForStrokes() {
     return true;
@@ -74,8 +83,6 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
   ): void {
     this.startCurvePrimitive(cp);
-    this.announceSolutionFraction(0.0); // test start point as closest
-    this.announceSolutionFraction(1.0); // test end point as closest
     if (numStrokes < 1)
       numStrokes = 1;
     const df = 1.0 / numStrokes;
@@ -86,30 +93,28 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     }
   }
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
-    const distance = this._spacePoint.distance(point);
-    if (this._closestPoint && distance > this._closestPoint.a)
-      return;
-    this._closestPoint = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point, this._closestPoint);
-    this._closestPoint.a = distance;
+    const tangent = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point);
     if (this._parentCurvePrimitive !== undefined)
-      this._closestPoint.curve = this._parentCurvePrimitive;
+      tangent.curve = this._parentCurvePrimitive;
+    this._announceTangent(tangent);
   }
   public announceSegmentInterval(
     cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
   ): void {
-    let localFraction = this._spacePoint.fractionOfProjectionToLine(point0, point1, 0.0);
-    // only consider extending the segment if the immediate caller says we are at endpoints
-    if (!this._extend)
-      localFraction = Geometry.clampToStartEnd(localFraction, 0.0, 1.0);
-    else {
-      if (fraction0 !== 0.0)
-        localFraction = Math.max(localFraction, 0.0);
-      if (fraction1 !== 1.0)
-        localFraction = Math.min(localFraction, 1.0);
+    let fraction: number;
+    let point: Point3d;
+    const distance0 = this._spacePoint.distance(point0);
+    const distance1 = this._spacePoint.distance(point1);
+    if (distance0 < distance1) {
+      fraction = fraction0;
+      point = point0;
+    } else {
+      fraction = fraction1;
+      point = point1;
     }
-    this._workPoint = point0.interpolate(localFraction, point1);
-    const globalFraction = Geometry.interpolate(fraction0, localFraction, fraction1);
-    this.announceCandidate(cp, globalFraction, this._workPoint);
+    const value = this.evaluateFunction(undefined, (fraction0 + fraction1) / 2, cp);
+    if (value !== undefined && Geometry.isSmallMetricDistance(value))
+      this.announceCandidate(cp, fraction, point);
   }
   /**
    * Given a function `f` and (unordered) fractions `a` and `b`, search for and announce a root of `f` in this
@@ -120,11 +125,9 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
    * this method can miss a root of `f`.
    */
   private searchInterval() {
-    if (this._functionA * this._functionB > 0)
-      return; // stroke segment has no root; ASSUME the function has no root either
-    if (this._functionA === 0)
+    if (Geometry.isSmallMetricDistanceSquared(this._functionA))
       this.announceSolutionFraction(this._fractionA);
-    if (this._functionB === 0)
+    if (Geometry.isSmallMetricDistanceSquared(this._functionB))
       this.announceSolutionFraction(this._fractionB);
     // by the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
     if (this._functionA * this._functionB < 0) {
@@ -142,12 +145,13 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
   }
   /**
    * Evaluate the univariate real-valued function for which we are finding roots.
-   * * For finding the closest point to curve X from point Q, this function is `f(t) := Q-X(t) dot X'(t)`.
+   * * For finding the tangents to curve X from point Q as seen in a view plane perpendicular to normal, this
+   * function is `f(t) := (Q - X(t)) dot (X'(t) cross normal)`.
    * * Either `pointAndDerivative` must be defined, or both `fraction` and `curve`.
    * @param pointAndDerivative pre-evaluated curve
    * @param fraction fraction at which to evaluate `curve`
    * @param curve curve to evaluate at `fraction`
-   */
+  */
   private evaluateFunction(pointAndDerivative?: Ray3d, fraction?: number, curve?: CurvePrimitive): number | undefined {
     if (pointAndDerivative)
       this._workRay.setFrom(pointAndDerivative);
@@ -155,7 +159,8 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
       this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
     else
       return undefined;
-    return this._workRay.dotProductToPoint(this._spacePoint);
+    const cross = this._vectorToEye.unitCrossProduct(this._workRay.direction);
+    return cross ? cross.dotProductStartEnd(this._workRay.origin, this._spacePoint) : undefined;
   }
   public evaluate(fraction: number): boolean {
     let curve = this._curve;
@@ -175,8 +180,7 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
     this._functionA = this._functionB;
     this._fractionA = this._fractionB;
   }
-  public announcePointTangent(point: Point3d, fraction: number, tangent: Vector3d) {
-    this._workRay.set(point, tangent);
-    this.announceRay(fraction, this._workRay);
+  public announcePointTangent(_point: Point3d, _fraction: number, _tangent: Vector3d) {
+    assert(false, "this should not be called");
   }
 }
