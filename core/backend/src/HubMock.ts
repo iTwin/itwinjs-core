@@ -19,6 +19,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
 import { TokenArg } from "./IModelDb";
 import { _getHubAccess, _setHubAccess } from "./internal/Symbols";
+import { CloudSqliteMock } from "./test/CloudSqliteMock";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
@@ -87,6 +88,7 @@ export class HubMock {
 
     IModelHost[_setHubAccess](this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
+    CloudSqliteMock.startup();
   }
 
   /** Stop a HubMock that was previously started with [[startup]]
@@ -96,6 +98,7 @@ export class HubMock {
     if (this.mockRoot === undefined)
       return;
 
+    CloudSqliteMock.shutdown();
     HubMock._iTwinId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
@@ -214,8 +217,16 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
   }
 
-  public static async queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
-    return undefined;
+  public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    return {
+      accountName: "none",
+      sasToken: "none",
+      containerId: Guid.createValue(),
+      dbName: `${arg.changeset.index ?? 0}.bim`,
+      storageType: "mock",
+      isMock: true,
+      checkpoint: arg,
+    } as V2CheckpointAccessProps;
   }
 
 

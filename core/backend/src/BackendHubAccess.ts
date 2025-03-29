@@ -8,11 +8,11 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
+  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
   LockState as CommonLockState, IModelError, IModelVersion,
   LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
+import { CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import type { TokenArg } from "./IModelDb";
 
 /** Exception thrown if lock cannot be acquired.
@@ -212,13 +212,6 @@ export interface BackendHubAccess {
 
   /** get an array of the briefcases assigned to a user. */
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
-
-  /**
-   * Download a v1 checkpoint
-   * @deprecated in 3.x. V1 checkpoints are deprecated. Download V2 checkpoint using [[V2CheckpointManager.downloadCheckpoint]].
-   * @internal
-   */
-  downloadV1Checkpoint: (arg: DownloadRequest) => Promise<ChangesetIndexAndId>;
 
   /** Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists. */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;
