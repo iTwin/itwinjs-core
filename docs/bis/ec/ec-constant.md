@@ -17,3 +17,19 @@ Defines a constant that can be referenced in a Unit's definition.
 **numerator** The numerator for the constant value being defined.
 
 **denominator** The denominator for the constant value being defined.
+
+## Examples
+
+```xml
+<Constant typeName="PI" phenomenon="LENGTH_RATIO" definition="ONE" numerator="3.1415926535897932384626433832795" displayLabel="Pi"/>
+```
+
+```json
+"PI": {
+  "schemaItemType": "Constant",
+  "label": "Pi",
+  "phenomenon": "Units.LENGTH_RATIO",
+  "definition": "ONE",
+  "numerator": 3.141592653589793
+},
+```

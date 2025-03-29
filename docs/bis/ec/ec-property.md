@@ -36,7 +36,7 @@ ECProperties may have [Custom Attributes](./ec-custom-attributes.md) applied and
 
 An ECPrimitiveProperty models a property, with a limited set of [primitive value types](./primitive-types.md) and [ECEnumerations](./ec-enumeration.md), in an [ECClass](./ec-class.md) and may be used in any type of [ECClass](./ec-class.md).
 
-### Additional Optional Attributes
+### Primitive Property Additional Optional Attributes
 
 **minimumValue** The minimum valid value for this property. Supported for primitive types int, long, and double.
 
@@ -48,11 +48,28 @@ An ECPrimitiveProperty models a property, with a limited set of [primitive value
 
 **extendedTypeName** The name of an extended type to associate with this property. See Extended Types section for more info. An extended type is a special, in memory handler for values with the extended type specified. The extended type may not change the storage of the value and the basic type will be used if the extended type cannot be found.
 
+### Primitive Property Example
+
+```xml
+<ECProperty propertyName="OverallHeight" typeName="double" kindOfQuantity="AECU:LENGTH_SHORT"/>
+```
+
+```json
+{
+  "name": "OverallHeight",
+  "type": "PrimitiveProperty",
+  "description": "Overall Height of the Door",
+  "label": "Overall Height",
+  "kindOfQuantity": "AecUnits.LENGTH_SHORT",
+  "typeName": "double"
+},
+```
+
 ## ECPrimitiveArrayProperty
 
 A Primitive Array Property (`ECArrayProperty`) models an array of primitive values of the same type indexed by a 64 bit unsigned integer. The array may have a minimum and maximum number of entries specified and supports sparse indexes. Array properties may have any type that is valid for a primitive property.
 
-### Additional Optional Attributes
+### Primitive Array Property Additional Optional Attributes
 
 **minOccurs** defaults to 0. Indicates the minimum number of elements in the array.
 
@@ -60,19 +77,70 @@ A Primitive Array Property (`ECArrayProperty`) models an array of primitive valu
 
 **extendedTypeName** The name of an extended type to associate with this property. See Extended Types section for more info.
 
+### Primitive Array Property Example
+
+```xml
+<ECArrayProperty propertyName="PropertyNames" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+```
+
+```json
+{
+  "name": "PropertyNames",
+  "type": "PrimitiveArrayProperty",
+  "typeName": "string",
+  "minOccurs": 0,
+  "maxOccurs": 2147483647
+}
+```
+
 ## ECStructProperty
 
 A Struct Property (`ECStructProperty`) models a complex property whose value is an embedded instance of an [ECStructClass](./ec-struct-class), polymorphism is not supported. The typeName of the property has to be set to an [ECStructClass](./ec-struct-class.md).
+
+## Struct Property Example
+
+```xml
+<ECStructProperty propertyName="AtPosition" typeName="DistanceExpression"/>
+```
+
+```json
+{
+  "name": "AtPosition",
+  "type": "StructProperty",
+  "label": "At-Position",
+  "typeName": "LinearReferencing.DistanceExpression"
+},
+```
+
+See [EC Struct Class](./ec-struct-class.md) for struct class definition information.
 
 ## ECStructArrayProperty
 
 A Struct Array Property (`ECStructArrayProperty`) models an array of values of embedded instances of an ECStructClass, polymorphism is not supported. The typeName of the property has to be set to an [ECStructClass](./ec-struct-class.md).
 
-### Additional Optional Attributes
+### Struct Array Property Additional Optional Attributes
 
 **minOccurs** defaults to 0. Indicates the minimum number of elements in the array.
 
 **maxOccurs** Indicates the maximum number of elements in an ECArrayProperty. Use "unbounded" for arrays with no upper limit.
+
+### Struct Array Property Example
+
+```xml
+<ECStructArrayProperty propertyName="Forces" typeName="LinearForce" displayLabel="Forces" description="Force values." />
+```
+
+```json
+{
+  "name": "Forces",
+  "type": "StructArrayProperty",
+  "description": "Force values.",
+  "label": "Forces",
+  "typeName": "StructuralAnalysis.LinearForce",
+  "minOccurs": 0,
+  "maxOccurs": 2147483647
+}
+```
 
 ## ECNavigationProperty
 
@@ -87,8 +155,23 @@ Addition rules apply to navigation properties:
 - Must reference the root relationship in a hierarchy.
 - The referenced relationship may not be overridden by property overrides in derived classes[].
 
-### Additional Optional Attributes
+### Navigation Property Additional Optional Attributes
 
 **relationshipName** The relationship this navigation property traverses to the get the related instance.
 
 **direction** The direction to traverse the referenced relationship
+
+### Navigation Property Example
+
+```xml
+<ECNavigationProperty propertyName="Parent" relationshipName="ElementOwnsChildElements" direction="backward" />
+```
+
+```json
+{
+  "name": "Parent",
+  "type": "NavigationProperty",
+  "relationshipName": "BisCore.ElementOwnsChildElements",
+  "direction": "Backward"
+},
+```

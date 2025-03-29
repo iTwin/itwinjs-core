@@ -80,11 +80,11 @@ The below represents the string literal syntax. All italicized values are to be 
   - For example, the second override listed would affect the label of the second unit
 - The character `]` is not allowed, if this character is desired, a new [Format](./ec-format.md) is required.
 
-### Examples
+### Format override Examples
 
-  #### The format string `f:DefaultRealU[u:M][u:CM][u:MM]` will override the first unit to be `u:M`, the second unit to be `u:CM` and the third unit to be `u:MM`
+The format string `f:DefaultRealU[u:M][u:CM][u:MM]` will override the first unit to be `u:M`, the second unit to be `u:CM` and the third unit to be `u:MM`
 
-  #### For the format `f:AmerFI` (which has `FT` as a first unit and `IN` as a second unit), valid overrides must specify both units in the correct order:
+For the format `f:AmerFI` (which has `FT` as a first unit and `IN` as a second unit), valid overrides must specify both units in the correct order:
 
 | Intention             | Invalid way                        | Valid way                        |
 |-----------------------|------------------------------------|----------------------------------|
@@ -92,8 +92,9 @@ The below represents the string literal syntax. All italicized values are to be 
 | Override first Label  | f:AmerFI[u:FT&#124;feet]           | f:AmerFI[u:FT&#124;feet][u:IN]   |
 | Change units          | f:AmerFI[u:M&#124;m][u:CM&#124;cm] | Never Valid                      |
 
- #### Format overrides with null/empty unit labels
-  - Consider the below units and format:
+#### Format overrides with null/empty unit labels
+
+Consider the below units and format:
 
   ```json
       "TestUnit": { "schemaItemType": "Unit", "label": "TestUnitLabel" },
@@ -106,12 +107,54 @@ The below represents the string literal syntax. All italicized values are to be 
         }
       }
   ```
-  - If the unit label override is kept unset `TestFormat[TestUnitMajor]`, the final label will default to the unit's display label `TestUnitMajorLabel`.
-  - If the unit label override is set to an empty string `TestFormat[TestUnitMajor|]`, the final label will set to an empty string.
-  - If the unit label override is set to a valid `TestFormat[TestUnitMajor|centimetre]`, the final label will be the overriden string `centimetre`.
 
-### Updating KindOfQuantity on ECProperty
+- If the unit label override is kept unset `TestFormat[TestUnitMajor]`, the final label will default to the unit's display label `TestUnitMajorLabel`.
+- If the unit label override is set to an empty string `TestFormat[TestUnitMajor|]`, the final label will set to an empty string.
+- If the unit label override is set to a valid `TestFormat[TestUnitMajor|centimetre]`, the final label will be the overriden string `centimetre`.
+
+## Updating KindOfQuantity on ECProperty
 
 The KindOfQuantity assigned to a property can be switched to any other KindOfQuantity that has the same persistence unit.  In some scenarios, you may need to remove or change the persistence unit of an [ECProperty](./ec-property.md) within your iModel schema.
 
 For detailed steps on how to update the KindOfQuantity on an [ECProperty](./ec-property.md), see our guide on [Updating KindOfQuantity on an ECProperty](update-koq-on-property.md). This guide provides comprehensive instructions for using the `AllowUnitChange` [Custom Attribute](./ec-custom-attributes.md) to modify KindOfQuantity effectively.
+
+## Example
+
+```xml
+<ECEntityClass typeName="Door">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECProperty propertyName="OverallHeight" typeName="double" kindOfQuantity="LENGTH_SHORT"/>
+</ECEntityClass>
+
+<KindOfQuantity typeName="LENGTH_SHORT" displayLabel="Short Length" persistenceUnit="u:M" relativeError="0.01" presentationUnits="f:DefaultRealU(2)[u:MM];f:DefaultRealU(4)[u:CM];f:AmerFI;f:AmerFI(16);f:DefaultRealU(4)[u:IN]"/>
+```
+
+```json
+"Door": {
+  "schemaItemType": "EntityClass",
+  "baseClass": "BisCore.PhysicalElement",
+  "properties": [
+    {
+      "name": "OverallHeight",
+      "type": "PrimitiveProperty",
+      "description": "Overall Height of the Door",
+      "label": "Overall Height",
+      "kindOfQuantity": "LENGTH_SHORT",
+      "typeName": "double"
+    }
+  ]
+},
+"LENGTH_SHORT": {
+  "schemaItemType": "KindOfQuantity",
+  "label": "Short Length",
+  "relativeError": 0.01,
+  "persistenceUnit": "Units.M",
+  "presentationUnits": [
+    "Formats.DefaultRealU(2)[Units.MM]",
+    "Formats.DefaultRealU(4)[Units.CM]",
+    "Formats.AmerFI",
+    "Formats.AmerFI(16)",
+    "Formats.DefaultRealU(4)[Units.IN]"
+  ]
+},
+```
