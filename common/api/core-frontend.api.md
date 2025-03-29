@@ -4364,6 +4364,8 @@ export interface GraphicTemplate {
     readonly [_implementationProhibited]: unknown;
     // @internal (undocumented)
     readonly [_nodes]: GraphicTemplateNode[];
+    // @internal (undocumented)
+    isGltf?: boolean;
     readonly isInstanceable: boolean;
 }
 
@@ -8261,9 +8263,15 @@ export interface RenderGraphicTileTreeArgs {
 // @beta
 export interface RenderInstances {
     // @internal (undocumented)
+    readonly [_featureIds]?: Uint8Array;
+    // @internal (undocumented)
     readonly [_featureTable]?: PackedFeatureTable;
     // @internal (undocumented)
     readonly [_implementationProhibited]: "renderInstances";
+    // @internal (undocumented)
+    readonly [_range]?: LowAndHighXYZ;
+    // @internal (undocumented)
+    readonly [_symbologyOverrides]?: Uint8Array;
     // @internal (undocumented)
     readonly [_transformCenter]: XYAndZ;
     // @internal (undocumented)
