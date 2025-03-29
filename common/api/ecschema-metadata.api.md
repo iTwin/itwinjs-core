@@ -6,6 +6,7 @@
 
 import { BaseFormat } from '@itwin/core-quantity';
 import { BentleyError } from '@itwin/core-bentley';
+import { BeUiEvent } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
@@ -17,6 +18,7 @@ import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @beta
 export enum AbstractSchemaItemType {
@@ -768,6 +770,16 @@ export interface FormatSet {
     label: string;
     // (undocumented)
     name: string;
+}
+
+// @beta
+export interface FormatsProvider {
+    // (undocumented)
+    getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    onFormatChanged: BeUiEvent<string>;
+    // (undocumented)
+    onFormatsChanged: BeUiEvent<string[]>;
 }
 
 // @internal (undocumented)
@@ -1881,6 +1893,23 @@ export class SchemaContext {
     // (undocumented)
     get locaters(): ISchemaLocater[];
     schemaExists(schemaKey: SchemaKey): boolean;
+}
+
+// @beta
+export class SchemaFormatsProvider implements FormatsProvider {
+    constructor(contextOrLocater: ISchemaLocater);
+    addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
+    // (undocumented)
+    clearFormatCache(): Promise<void>;
+    getFormat(name: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    onCacheCleared: BeUiEvent<void>;
+    // (undocumented)
+    onFormatChanged: BeUiEvent<string>;
+    // (undocumented)
+    onFormatsChanged: BeUiEvent<string[]>;
+    // (undocumented)
+    removeFormat(name: string): Promise<void>;
 }
 
 // @internal

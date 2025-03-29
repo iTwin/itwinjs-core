@@ -6,7 +6,9 @@
  * @module Metadata
  */
 
+import { BeUiEvent } from "@itwin/core-bentley";
 import { DelayedPromise } from "./DelayedPromise";
+import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { ECClass, StructClass } from "./Metadata/Class";
 import { Constant } from "./Metadata/Constant";
 import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
@@ -93,4 +95,14 @@ export interface WithSchemaKey {
 export interface HasMixins {
   mixins: LazyLoadedMixin[];
   getMixinsSync(): Iterable<Mixin>;
+}
+
+/** This interface is implemented by a class that would provide formats for use in formatting quantities.
+ * @beta
+ */
+export interface FormatsProvider {
+  getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
+
+  onFormatChanged: BeUiEvent<string>;
+  onFormatsChanged: BeUiEvent<string[]>;
 }
