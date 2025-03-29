@@ -22,7 +22,7 @@ import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 
 /**
- * A LinearSweep is
+ * A RotationalSweep is:
  * * A planar contour (any Loop, Path, or parityRegion)
  * * An axis vector.
  *   * The planar contour is expected to be in the plane of the axis vector
