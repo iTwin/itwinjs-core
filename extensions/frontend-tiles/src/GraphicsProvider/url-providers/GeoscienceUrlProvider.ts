@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@itwin/core-bentley";
-import { loggerCategory } from "../../LoggerCategory";
+import { loggerCategory } from "../../LoggerCategory.js";
 
 /**
  * Represents the arguments required for geoscience operations.

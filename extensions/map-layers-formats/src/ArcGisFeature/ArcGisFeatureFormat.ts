@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisUtilities, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs } from "@itwin/core-frontend";
-import { ArcGisFeatureProvider } from "./ArcGisFeatureProvider";
+import { ArcGisFeatureProvider } from "./ArcGisFeatureProvider.js";
 
 /** @internal */
 export class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider";
-import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import { expect } from "chai";
-import { CountriesDataset } from "./CountriesDataset";
-import { MapCartoRectangle } from "@itwin/core-frontend";
 import { base64StringToUint8Array } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { MapCartoRectangle } from "@itwin/core-frontend";
+import { expect } from "chai";
+import sinon from "sinon";
+import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider.js";
+import { CountriesDataset } from "./CountriesDataset.js";
 
 function stubFetchMetadata(sandbox: sinon.SinonSandbox, urlContent: { [url: string]: string }  ) {
 

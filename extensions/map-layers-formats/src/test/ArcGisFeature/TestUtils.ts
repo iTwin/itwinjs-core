@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider";
-import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
-import { ArcGisSymbologyCanvasRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
-import { EsriRenderer } from "../../ArcGisFeature/EsriSymbology";
+import { DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider.js";
+import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery.js";
+import { ArcGisSymbologyCanvasRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer.js";
+import { EsriRenderer } from "../../ArcGisFeature/EsriSymbology.js";
 
 /**
 * @internal

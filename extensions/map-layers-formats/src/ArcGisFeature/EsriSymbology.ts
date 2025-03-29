@@ -5,7 +5,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { FeatureSymbology } from "../Feature/FeatureSymbology";
+import { FeatureSymbology } from "../Feature/FeatureSymbology.js";
 
 /** Convert a channel array [r, g, b, a] to ColorDef
  * @internal

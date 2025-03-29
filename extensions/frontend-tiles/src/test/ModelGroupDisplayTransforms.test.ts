@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ModelDisplayTransform, ModelDisplayTransformProvider } from "@itwin/core-frontend";
-import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
 import { Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms.js";
 
 describe("ModelGroupDisplayTransforms", () => {
   it("detects whether groupings have changed", () => {

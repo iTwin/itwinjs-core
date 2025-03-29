@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
 import {
   GltfDataType, GltfMeshPrimitive, GltfReader, GltfReaderArgs, GltfReaderResult,
 } from "@itwin/core-frontend";
+import { Range3d } from "@itwin/core-geometry";
 
 interface BatchedTileReaderArgs extends GltfReaderArgs {
   modelId: Id64String;
