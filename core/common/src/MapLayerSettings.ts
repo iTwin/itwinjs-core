@@ -546,19 +546,21 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   public readonly drapeTarget: ModelMapLayerDrapeTarget;
   public readonly modelId: Id64String;
   public override get source(): string { return this.modelId; }
+  public readonly drapeModels?: Id64Array;
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.Globe) {
+    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.Globe, drapeModels?: Id64Array) {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
     this.drapeTarget = drapeTarget;
+    this.drapeModels = drapeModels;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground, json.drapeTarget);
+    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground, json.drapeTarget, json.drapeModels);
   }
 
   /** return JSON representation of this MapLayerSettings object */
@@ -567,6 +569,8 @@ export class ModelMapLayerSettings extends MapLayerSettings {
     props.modelId = this.modelId;
     if (this.drapeTarget !== ModelMapLayerDrapeTarget.Globe)
       props.drapeTarget = this.drapeTarget;
+    if (this.drapeTarget === ModelMapLayerDrapeTarget.IModel && this.drapeModels)
+      props.drapeModels = this.drapeModels;
     return props;
   }
 
@@ -583,6 +587,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
     const props = super.cloneProps(changedProps) as ModelMapLayerProps;
     props.modelId = changedProps.modelId ?? this.modelId;
     props.drapeTarget = changedProps.drapeTarget ?? this.drapeTarget;
+    props.drapeModels = changedProps.drapeModels ?? this.drapeModels;
     return props;
   }
 

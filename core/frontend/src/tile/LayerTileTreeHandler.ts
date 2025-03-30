@@ -64,6 +64,12 @@ export class LayerTileTreeHandler {
       if(this._ref.modelId === layerTreeRef.layerSettings.modelId) {
         return;
       }
+
+      const drapeModels = layerTreeRef.layerSettings.drapeModels;
+      if (Array.isArray(drapeModels) && drapeModels.length > 0) {
+        if (!drapeModels.includes(this._ref.modelId))
+          return;
+      }
     }
 
     const classifier = context.addPlanarClassifier(`MapLayer ${this._ref.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
