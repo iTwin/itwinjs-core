@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "change editor-common to pure esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}

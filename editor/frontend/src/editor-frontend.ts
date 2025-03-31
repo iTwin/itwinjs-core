@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export * from "./CreateElementTool";
-export * from "./EditTool";
-export * from "./EditToolIpc";
-export * from "./ModifyElementTool";
-export * from "./ProjectLocation/ProjectExtentsDecoration";
-export * from "./ProjectLocation/ProjectGeolocation";
-export * from "./TransformElementsTool";
-export * from "./UndoRedoTool";
+export * from "./CreateElementTool.js";
+export * from "./EditTool.js";
+export * from "./EditToolIpc.js";
+export * from "./ModifyElementTool.js";
+export * from "./ProjectLocation/ProjectExtentsDecoration.js";
+export * from "./ProjectLocation/ProjectGeolocation.js";
+export * from "./TransformElementsTool.js";
+export * from "./UndoRedoTool.js";
 
 /** @docs-package-description
  * The editor-frontend package contains frontend capabilities for editing iModels.
