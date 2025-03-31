@@ -76,6 +76,7 @@ export const initialize = async (props?: {
   const outputRoot = setupTestsOutputDirectory();
 
   const backendInitProps: PresentationBackendProps = {
+    // @ts-expect-error internal prop
     id: `test-${Guid.createValue()}`,
     requestTimeout: DEFAULT_BACKEND_TIMEOUT,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],

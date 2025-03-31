@@ -29,6 +29,10 @@
       "import": "./lib/esm/presentation-backend.js",
       "require": "./lib/cjs/presentation-backend.js"
     },
+    "./internal": {
+      "import": "./lib/esm/presentation-backend-internal.js",
+      "require": "./lib/cjs/presentation-backend-internal.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
