@@ -9,7 +9,7 @@
 import { firstValueFrom } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64Array } from "@itwin/core-bentley";
+import { BeEvent, Id64Array } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
@@ -67,12 +67,13 @@ import {
   LocalizationHelper,
 } from "@itwin/presentation-common/internal";
 import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper.js";
-import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform.js";
+import { NativePlatformRequestTypes } from "./NativePlatform.js";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail.js";
 import { RulesetManager } from "./RulesetManager.js";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
 import { SelectionScopesHelper } from "./SelectionScopesHelper.js";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
 
 /**
  * Presentation hierarchy cache mode.
@@ -316,19 +317,6 @@ export interface PresentationManagerProps {
   useMmap?: boolean | number;
 
   /**
-   * An identifier which helps separate multiple presentation managers. It's
-   * mostly useful in tests where multiple presentation managers can co-exist
-   * and try to share the same resources, which we don't want. With this identifier
-   * set, managers put their resources into id-named subdirectories.
-   *
-   * @internal
-   */
-  id?: string;
-
-  /** @internal */
-  addon?: NativePlatformDefinition;
-
-  /**
    * Localization function to localize data returned by presentation manager when it's used directly on the backend (as opposed to when used through RPC, where
    * data is localized on the frontend). Defaults to English localization.
    *
@@ -369,7 +357,6 @@ export class PresentationManager {
   constructor(props?: PresentationManagerProps) {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
-
     this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
   }
 
@@ -393,9 +380,9 @@ export class PresentationManager {
     this[Symbol.dispose]();
   }
 
-  /** @internal */
-  public setOnManagerUsedHandler(handler: () => void) {
-    this._detail.setOnManagerUsedHandler(handler);
+  /** An event, that this manager raises whenever any request is made on it. */
+  public get onUsed(): BeEvent<() => void> {
+    return this._detail.onUsed;
   }
 
   /** Properties used to initialize the manager */
@@ -413,21 +400,15 @@ export class PresentationManager {
    * @param rulesetId Id of the ruleset to get variables manager for
    */
   public vars(rulesetId: string): RulesetVariablesManager {
-    return new RulesetVariablesManagerImpl(this.getNativePlatform, rulesetId);
+    return new RulesetVariablesManagerImpl(() => this._detail.getNativePlatform(), rulesetId);
   }
-
-  /** @internal */
-  public getNativePlatform = (): NativePlatformDefinition => {
-    return this._detail.getNativePlatform();
-  };
 
   /** @internal */
   /* c8 ignore next 3 */
-  public getDetail(): PresentationManagerDetail {
+  public get [_presentation_manager_detail](): PresentationManagerDetail {
     return this._detail;
   }
 
-  /** @internal */
   public getRulesetId(rulesetOrId: Ruleset | string) {
     return this._detail.getRulesetId(rulesetOrId);
   }
