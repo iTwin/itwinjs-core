@@ -1478,7 +1478,7 @@ export enum PropertyType {
 }
 
 // @public (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
 
 // @public (undocumented)
 export namespace PropertyTypeUtils {
