@@ -8,7 +8,7 @@
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ImageryMapLayerFormat, MapLayerImageryProvider } from "@itwin/core-frontend";
-import { GoogleMapsImageryProvider } from "./GoogleMapsImageryProvider";
+import { GoogleMapsImageryProvider } from "./GoogleMapsImageryProvider.js";
 
 export class GoogleMapsMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "GoogleMaps";
