@@ -71,7 +71,6 @@ export class CloudSqliteMock {
         if (direction === "download") {
           container.downloadCheckpoint(props.localFileName);
         } else {
-          debugger; // eslint-disable-line no-debugger
           throw new Error("Mock transferDb only supports download");
         }
       } else {
