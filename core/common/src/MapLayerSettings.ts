@@ -544,9 +544,12 @@ export class ModelMapLayerSettings extends MapLayerSettings {
    * @beta
    */
   public readonly drapeTarget: ModelMapLayerDrapeTarget;
+  /**  If [[drapeTarget]] is [[ModelMapLayerDrapeTarget.IModel]], specifies a list of models within the iModel which will receive the draping.
+   * @beta
+   */
+  public readonly drapeModels?: Id64Array;
   public readonly modelId: Id64String;
   public override get source(): string { return this.modelId; }
-  public readonly drapeModels?: Id64Array;
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
