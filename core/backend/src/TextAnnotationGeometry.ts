@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextAnnotationFrame, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
@@ -201,19 +201,33 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
     });
   }
 
-  // context.entries.push({
-  //   fillColor: ColorDef.blue.withTransparency(100).toJSON(),
-  // });
+  return { entries: context.entries };
+}
 
-  // context.entries.push({
-  //   borderColor: ColorDef.black.toJSON(),
-  // });
+function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frame?: TextAnnotationFrame): TextBlockGeometryProps {
+  const context: GeometryContext = { entries: [] };
 
-  context.entries.push({
-    frame: "capsule",
-    transform: documentTransform.toJSON(),
-    range: layout.range.toJSON(),
-  });
+  if (frame && frame !== "none") {
+    context.entries.push({
+      border: {
+        shape: frame,
+        width: 1,
+        color: ColorDef.black.toJSON(),
+        transform: documentTransform.toJSON(),
+        range: layout.range.toJSON(),
+      }
+    });
+
+    context.entries.push({
+      fill: {
+        shape: frame,
+        // color: ColorDef.red.toJSON(),
+        color: "background",
+        transform: documentTransform.toJSON(),
+        range: layout.range.toJSON(),
+      }
+    });
+  }
 
   return { entries: context.entries };
 }
@@ -253,5 +267,8 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   const transform = args.annotation.computeTransform(dimensions);
 
   const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
-  return produceTextBlockGeometry(layout, transform, anchorPoint);
+  const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint);
+  const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
+  const entries = [...textBlockGeometry.entries, ...frameGeometry.entries];
+  return { entries };
 }

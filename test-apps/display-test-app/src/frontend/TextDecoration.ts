@@ -24,6 +24,7 @@ class TextEditor implements Decorator {
   public rotation = 0;
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
+  public frame: TextAnnotationFrame = "none";
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
@@ -109,6 +110,10 @@ class TextEditor implements Decorator {
     };
   }
 
+  public setFrame(frame: string) {
+    if (frame as TextAnnotationFrame) this.frame = (frame as TextAnnotationFrame);
+  }
+
   public async update(): Promise<void> {
     if (!this._iModel) {
       throw new Error("Invoke `dta text init` first");
@@ -124,6 +129,7 @@ class TextEditor implements Decorator {
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
       offset: this.offset,
+      frame: this.frame,
     });
 
     const rpcProps = this._iModel.getRpcProps();
@@ -335,6 +341,10 @@ export class TextDecorationTool extends Tool {
       }
       case "debug": {
         editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
+        break;
+      }
+      case "frame": {
+        editor.setFrame(inArgs[1])
         break;
       }
 

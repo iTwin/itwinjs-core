@@ -7,7 +7,7 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
@@ -443,18 +443,34 @@ export namespace ElementGeometry {
           }
 
           result = this.appendGeometryParamsChange(params);
-        } else if (entry.fillColor) {
-          const params = new GeometryParams(Id64.invalid);
-          if (entry.fillColor !== "subcategory") {
-            params.fillColor = ColorDef.fromJSON(entry.color);
-          }
-
-          result = this.appendGeometryParamsChange(params);
         } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
-        } else if (entry.frame) {
-          const frame = FrameGeometry.computeCircle(entry.range, entry.transform);
-          result = frame.every((curve) => this.appendGeometryQuery(curve));
+        } else if (undefined !== entry.fill) {
+          const params = new GeometryParams(Id64.invalid);
+
+          if (entry.fill.color === "background") {
+            params.backgroundFill = BackgroundFill.Solid;
+            params.fillDisplay = FillDisplay.Blanking;
+          } else if (entry.fill.color !== "subcategory") {
+            params.fillColor = ColorDef.fromJSON(entry.fill.color);
+            params.fillDisplay = FillDisplay.Blanking;
+          }
+
+          const frame = FrameGeometry.computeFrame(entry.fill.shape, entry.fill.range, entry.fill.transform);
+          const loop = Loop.createArray(frame);
+
+          result = this.appendGeometryParamsChange(params) && this.appendGeometryQuery(loop);
+        } else if (undefined !== entry.border) {
+          const params = new GeometryParams(Id64.invalid);
+          if (entry.border.color !== "subcategory") {
+            params.fillColor = ColorDef.fromJSON(entry.border.color);
+            params.fillDisplay = FillDisplay.Blanking;
+          }
+
+          const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform);
+          const path = Path.createArray(frame);
+
+          result = this.appendGeometryParamsChange(params) && this.appendGeometryQuery(path);
         } else {
           result = false;
         }

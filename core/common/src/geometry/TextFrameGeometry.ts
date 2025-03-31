@@ -4,10 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Angle, AngleSweep, AnyCurvePrimitive, Arc3d, LineString3d, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d } from "@itwin/core-geometry";
+import { TextAnnotationFrame } from "../annotation/TextAnnotation";
 
 // I don't love where this is.
 
 export namespace FrameGeometry {
+  export const computeFrame = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+    switch (frame) {
+      case "none": return [];
+      case "line": return [];
+      case "rectangle": return FrameGeometry.computeRectangle(rangeProps, transformProps);
+      case "circle": return FrameGeometry.computeCircle(rangeProps, transformProps);
+      case "equilateralTriangle": return FrameGeometry.computeTriangle(rangeProps, transformProps);
+      case "diamond": return FrameGeometry.computeDiamond(rangeProps, transformProps);
+      case "square": return FrameGeometry.computeSquare(rangeProps, transformProps);
+      case "pentagon": return [];
+      case "hexagon": return [];
+      case "capsule": return FrameGeometry.computeCapsule(rangeProps, transformProps);
+      case "roundedRectangle": return FrameGeometry.computeRoundedRectangle(rangeProps, transformProps);
+    }
+  }
+
   // Rectangle
   export const computeRectangle = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
     const range = Range2d.fromJSON(rangeProps);
