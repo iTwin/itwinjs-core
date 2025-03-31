@@ -275,7 +275,7 @@ export abstract class IModelConnection extends IModel {
       return this.createRPCQueryReader(ecsql, params, config)
     }
     const parsedParams = params ? this.parseBinderToArgs(params) : undefined
-    return this._iModelReadApi.runQuery({query: ecsql, args: parsedParams, options: {includeMetadata: config?.includeMetaData}});
+    return this._iModelReadApi.runQuery({ query: ecsql, args: parsedParams, options: { includeMetadata: config?.includeMetaData }});
   }
 
   private hasUnsupportedQueryOptions(options: QueryOptions): boolean {
@@ -381,7 +381,7 @@ export abstract class IModelConnection extends IModel {
    */
   public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
-    const reader = this.createQueryReader(ecsql, params, builder.getOptions()); // eslint-disable-line @typescript-eslint/no-deprecated
+    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
       yield reader.formatCurrentRow();
   }
@@ -401,7 +401,7 @@ export abstract class IModelConnection extends IModel {
    */
 
   public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) { // eslint-disable-line @typescript-eslint/no-deprecated
+    for await (const row of this.createQueryReader(`select count(*) from (${ecsql})`, params)) {
       return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
@@ -425,7 +425,7 @@ export abstract class IModelConnection extends IModel {
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
   public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) { // eslint-disable-line @typescript-eslint/no-deprecated
+    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -502,7 +502,7 @@ export abstract class IModelConnection extends IModel {
   /** Request mass properties for multiple elements from the backend.
    * @deprecated in 4.11. Use [[IModelConnection.getMassProperties]].
    */
-  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {  // eslint-disable-line @typescript-eslint/no-deprecated
+  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
   }
 
@@ -1198,7 +1198,7 @@ export namespace IModelConnection {
       }
 
       const placements = new Array<Placement & { elementId: Id64String }>();
-      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) { // eslint-disable-line @typescript-eslint/no-deprecated
+      for await (const queryRow of this._iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         const row = queryRow.toRow();
         const origin = [row.x, row.y, row.z];
         const bbox = {
