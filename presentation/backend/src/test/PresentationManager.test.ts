@@ -94,11 +94,17 @@ import {
   PresentationNativePlatformResponseError,
 } from "../presentation-backend/NativePlatform.js";
 import { HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerProps } from "../presentation-backend/PresentationManager.js";
-import { getKeysForContentRequest, ipcUpdatesHandler, noopUpdatesHandler } from "../presentation-backend/PresentationManagerDetail.js";
+import {
+  DESCRIPTOR_ONLY_CONTENT_FLAG,
+  getKeysForContentRequest,
+  ipcUpdatesHandler,
+  noopUpdatesHandler,
+} from "../presentation-backend/PresentationManagerDetail.js";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager.js";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
 import { stubECSqlReader } from "./Helpers.js";
+import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
 
 describe("PresentationManager", () => {
   before(async () => {
@@ -148,7 +154,7 @@ describe("PresentationManager", () => {
       it("creates without props", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         using manager = new PresentationManager();
-        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+        expect((manager[_presentation_manager_detail].getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
         expect(constructorSpy).to.be.calledOnceWithExactly({
           id: "",
           taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -179,6 +185,7 @@ describe("PresentationManager", () => {
           uomSeparator: "",
         };
         const props: PresentationManagerProps = {
+          // @ts-expect-error internal prop
           id: "test-id",
           presentationAssetsRoot: "/test",
           workerThreadsCount: testThreadsCount,
@@ -199,9 +206,9 @@ describe("PresentationManager", () => {
           mode: HierarchyCacheMode.Memory,
         };
         using manager = new PresentationManager(props);
-        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+        expect((manager[_presentation_manager_detail].getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
         expect(constructorSpy).to.be.calledOnceWithExactly({
-          id: props.id,
+          id: "test-id",
           taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
           updateCallback: noopUpdatesHandler,
           cacheConfig: expectedCacheConfig,
@@ -219,7 +226,7 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         {
           using manager = new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Disk } } });
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+          expect((manager[_presentation_manager_detail].getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -240,7 +247,7 @@ describe("PresentationManager", () => {
         const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
         {
           using manager = new PresentationManager({ caching: { hierarchies: cacheConfig } });
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+          expect((manager[_presentation_manager_detail].getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -258,7 +265,7 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         {
           using manager = new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Hybrid } } });
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+          expect((manager[_presentation_manager_detail].getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -285,7 +292,7 @@ describe("PresentationManager", () => {
         };
         {
           using manager = new PresentationManager({ caching: { hierarchies: cacheConfig } });
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+          expect((manager[_presentation_manager_detail].getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
@@ -309,8 +316,11 @@ describe("PresentationManager", () => {
 
     it("uses addon implementation supplied through props", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      using manager = new PresentationManager({ addon: nativePlatformMock.object });
-      expect(manager.getNativePlatform()).eq(nativePlatformMock.object);
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: nativePlatformMock.object,
+      });
+      expect(manager[_presentation_manager_detail].getNativePlatform()).eq(nativePlatformMock.object);
     });
 
     describe("addon setup based on props", () => {
@@ -323,7 +333,11 @@ describe("PresentationManager", () => {
         const dirs = ["test1", "test2", "test2"];
         const addonDirs = ["test1", "test2"];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using _pm = new PresentationManager({ addon: addon.object, rulesetDirectories: dirs });
+        using _pm = new PresentationManager({
+          // @ts-expect-error internal prop
+          addon: addon.object,
+          rulesetDirectories: dirs,
+        });
         addon.verifyAll();
       });
 
@@ -332,7 +346,11 @@ describe("PresentationManager", () => {
         const addonDirs = ["test1", "test2"];
         addon.setup((x) => x.setupSupplementalRulesetDirectories(addonDirs)).verifiable();
         {
-          using _pm = new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs });
+          using _pm = new PresentationManager({
+            // @ts-expect-error internal prop
+            addon: addon.object,
+            supplementalRulesetDirectories: dirs,
+          });
         }
         addon.verifyAll();
       });
@@ -362,7 +380,10 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = "test-ruleset-id";
       const unitSystem = "metric";
-      using manager = new PresentationManager({ addon: addonMock.object });
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addonMock.object,
+      });
       addonMock
         .setup(async (x) =>
           x.handleRequest(
@@ -384,7 +405,11 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = "test-ruleset-id";
       const unitSystem = "usSurvey";
-      using manager = new PresentationManager({ addon: addonMock.object, defaultUnitSystem: unitSystem });
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addonMock.object,
+        defaultUnitSystem: unitSystem,
+      });
       addonMock
         .setup(async (x) =>
           x.handleRequest(
@@ -406,7 +431,11 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = "test-ruleset-id";
       const unitSystem = "usCustomary";
-      using manager = new PresentationManager({ addon: addonMock.object, defaultUnitSystem: "metric" });
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addonMock.object,
+        defaultUnitSystem: "metric",
+      });
       expect(manager.activeUnitSystem).to.not.eq(unitSystem);
       addonMock
         .setup(async (x) =>
@@ -426,18 +455,21 @@ describe("PresentationManager", () => {
     });
   });
 
-  describe("setOnManagerUsedHandler", () => {
+  describe("`onUsed` event", () => {
     it("invokes when making presentation requests", async () => {
       const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
       const imodelMock = moq.Mock.ofType<IModelDb>();
-      const manager = new PresentationManager({ addon: addonMock.object });
-      const managerUsedSpy = sinon.spy();
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addonMock.object,
+      });
 
       addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({ result: `{"nodes":[]}` }));
-
       addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({ result: "{}" }));
 
-      manager.setOnManagerUsedHandler(managerUsedSpy);
+      const managerUsedSpy = sinon.spy();
+      manager.onUsed.addListener(managerUsedSpy);
+
       await manager.getNodes({ imodel: imodelMock.object, rulesetOrId: "RulesetId" });
       expect(managerUsedSpy).to.be.calledOnce;
       await manager.getContent({ imodel: imodelMock.object, rulesetOrId: "RulesetId", keys: new KeySet([]), descriptor: {} });
@@ -449,7 +481,10 @@ describe("PresentationManager", () => {
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
 
     it("returns variables manager", () => {
-      const manager = new PresentationManager({ addon: addon.object });
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addon.object,
+      });
       const vars = manager.vars("test-ruleset-id");
       expect(vars).to.be.instanceOf(RulesetVariablesManagerImpl);
     });
@@ -459,7 +494,10 @@ describe("PresentationManager", () => {
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
 
     it("returns rulesets manager", () => {
-      const manager = new PresentationManager({ addon: addon.object });
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addon.object,
+      });
       expect(manager.rulesets()).to.be.instanceOf(RulesetManagerImpl);
     });
   });
@@ -467,7 +505,10 @@ describe("PresentationManager", () => {
   describe("dispose", () => {
     it("calls native platform dispose when manager is disposed", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new PresentationManager({ addon: nativePlatformMock.object });
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: nativePlatformMock.object,
+      });
       manager[Symbol.dispose]();
       manager[Symbol.dispose]();
       // note: verify native platform's `dispose` called only once
@@ -476,9 +517,12 @@ describe("PresentationManager", () => {
 
     it("throws when attempting to use native platform after disposal", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new PresentationManager({ addon: nativePlatformMock.object });
+      using manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: nativePlatformMock.object,
+      });
       manager[Symbol.dispose]();
-      expect(() => manager.getNativePlatform()).to.throw(Error);
+      expect(() => manager[_presentation_manager_detail].getNativePlatform()).to.throw(Error);
     });
   });
 
@@ -487,7 +531,10 @@ describe("PresentationManager", () => {
 
     beforeEach(() => {
       const addon = moq.Mock.ofType<NativePlatformDefinition>();
-      manager = new PresentationManager({ addon: addon.object });
+      manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addon.object,
+      });
     });
 
     afterEach(() => {
@@ -507,7 +554,10 @@ describe("PresentationManager", () => {
     it("returns correct id when input is a ruleset and in one-backend-one-frontend mode", async () => {
       sinon.stub(IpcHost, "isValid").get(() => true);
       sinon.stub(IpcHost, "handle");
-      manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
+      manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: moq.Mock.ofType<NativePlatformDefinition>().object,
+      });
       const ruleset: Ruleset = { id: "test", rules: [] };
       expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
     });
@@ -519,7 +569,10 @@ describe("PresentationManager", () => {
     let manager: PresentationManager;
 
     beforeEach(() => {
-      manager = new PresentationManager({ addon: addonMock.object });
+      manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addonMock.object,
+      });
       addonMock.reset();
     });
 
@@ -591,6 +644,7 @@ describe("PresentationManager", () => {
       const diagnosticsCallback = sinon.spy();
       const diagnosticsContext = {};
       manager = new PresentationManager({
+        // @ts-expect-error internal prop
         addon: addonMock.object,
         diagnostics: {
           perf: true,
@@ -628,6 +682,7 @@ describe("PresentationManager", () => {
       const diagnosticsCallback = sinon.spy();
       const diagnosticsContext = {};
       manager = new PresentationManager({
+        // @ts-expect-error internal prop
         addon: addonMock.object,
         diagnostics: {
           perf: true,
@@ -675,6 +730,7 @@ describe("PresentationManager", () => {
       const managerDiagnosticsCallback = sinon.spy();
       const managerDiagnosticsContext = {};
       manager = new PresentationManager({
+        // @ts-expect-error internal prop
         addon: addonMock.object,
         diagnostics: {
           perf: true,
@@ -800,10 +856,11 @@ describe("PresentationManager", () => {
     function recreateManager(props?: Partial<PresentationManagerProps>) {
       manager && manager[Symbol.dispose]();
       manager = new PresentationManager({
+        // @ts-expect-error internal prop
         addon: nativePlatformMock.object,
         ...props,
       });
-      sinon.stub(manager.getDetail(), "rulesets").value(
+      sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
           add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
         }),
@@ -1325,7 +1382,7 @@ describe("PresentationManager", () => {
             keys: getKeysForContentRequest(keys),
             selection: testData.selectionInfo,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
-            contentFlags: ContentFlags.DescriptorOnly,
+            contentFlags: DESCRIPTOR_ONLY_CONTENT_FLAG,
           },
         };
 
@@ -3361,8 +3418,12 @@ describe("PresentationManager", () => {
     describe("getLocalizedString", () => {
       it("Passes getLocalizedString to manager and uses it", async () => {
         const getLocalizedStringSpy = sinon.spy();
-        manager = new PresentationManager({ addon: nativePlatformMock.object, getLocalizedString: getLocalizedStringSpy });
-        sinon.stub(manager.getDetail(), "rulesets").value(
+        manager = new PresentationManager({
+          // @ts-expect-error internal prop
+          addon: nativePlatformMock.object,
+          getLocalizedString: getLocalizedStringSpy,
+        });
+        sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
             add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
           }),
@@ -3404,7 +3465,10 @@ describe("PresentationManager", () => {
     beforeEach(() => {
       addon.reset();
       imodel.reset();
-      manager = new PresentationManager({ addon: addon.object });
+      manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addon.object,
+      });
     });
 
     afterEach(() => {
@@ -3428,7 +3492,10 @@ describe("PresentationManager", () => {
     beforeEach(() => {
       addon.reset();
       imodel.reset();
-      manager = new PresentationManager({ addon: addon.object });
+      manager = new PresentationManager({
+        // @ts-expect-error internal prop
+        addon: addon.object,
+      });
     });
 
     afterEach(() => {

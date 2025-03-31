@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { ArrayPropertiesField, NestedContentField, NodePathElement, StructPropertiesField } from "../presentation-common.js";
 import { Content } from "../presentation-common/content/Content.js";
 import { DisplayValueGroup, NavigationPropertyValue } from "../presentation-common/content/Value.js";
-import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition.js";
+import { COMPOSITE_LABEL_DEFINITION_TYPENAME, LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition.js";
 import { LocalizationHelper } from "../presentation-common/LocalizationHelper.js";
 import {
   createTestArrayPropertiesContentField,
@@ -363,7 +363,7 @@ describe("LocalizationHelper", () => {
             createTestLabelDefinition({ rawValue: "@namespace:LocalizedValue@" }),
           ],
         },
-        typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME,
+        typeName: COMPOSITE_LABEL_DEFINITION_TYPENAME,
       };
       const result = localizationHelper.getLocalizedLabelDefinition(labelDefinition);
       (result.rawValue as LabelCompositeValue).values.forEach((value) => {

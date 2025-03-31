@@ -70,6 +70,8 @@ import {
 } from "../presentation-frontend/PresentationManager.js";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager.js";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager.js";
+import { imodelInitializationHandlers } from "../presentation-frontend/IModelConnectionInitialization.js";
+import { _presentation_manager_ipcRequestsHandler, _presentation_manager_rpcRequestsHandler } from "../presentation-frontend/InternalSymbols.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
@@ -112,6 +114,7 @@ describe("PresentationManager", () => {
   function recreateManager(props?: Partial<PresentationManagerProps>) {
     manager && manager[Symbol.dispose]();
     manager = PresentationManager.create({
+      // @ts-expect-error internal prop
       rpcRequestsHandler: rpcRequestsHandlerMock.object,
       ...props,
     });
@@ -119,7 +122,7 @@ describe("PresentationManager", () => {
 
   const mockI18N = () => {
     i18nMock.reset();
-    Presentation.setLocalization(i18nMock.object);
+    sinon.replaceGetter(Presentation, "localization", () => i18nMock.object);
     const resolvedPromise = new Promise<void>((resolve) => resolve());
     i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => resolvedPromise);
     i18nMock.setup((x) => x.getLocalizedString(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
@@ -170,37 +173,41 @@ describe("PresentationManager", () => {
 
     it("sets custom RpcRequestsHandler if supplied with props", async () => {
       const handler = moq.Mock.ofType<RpcRequestsHandler>();
-      const props = { rpcRequestsHandler: handler.object };
-      const mgr = PresentationManager.create(props);
-      expect(mgr.rpcRequestsHandler).to.eq(handler.object);
+      const mgr = PresentationManager.create({
+        // @ts-expect-error internal prop
+        rpcRequestsHandler: handler.object,
+      });
+      expect(mgr[_presentation_manager_rpcRequestsHandler]).to.eq(handler.object);
     });
 
     it("sets RpcRequestsHandler clientId if supplied with props", async () => {
       const props = { clientId: "some client id" };
       const mgr = PresentationManager.create(props);
-      expect(mgr.rpcRequestsHandler.clientId).to.eq(props.clientId);
+      expect(mgr[_presentation_manager_rpcRequestsHandler].clientId).to.eq(props.clientId);
     });
 
     it("sets RpcRequestsHandler timeout if supplied with props", async () => {
       const props = { requestTimeout: 123 };
       const mgr = PresentationManager.create(props);
-      expect(mgr.rpcRequestsHandler.timeout).to.eq(props.requestTimeout);
+      expect(mgr[_presentation_manager_rpcRequestsHandler].timeout).to.eq(props.requestTimeout);
     });
 
     it("sets custom IpcRequestsHandler if supplied with props", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       sinon.stub(IpcApp, "addListener");
       const handler = moq.Mock.ofType<IpcRequestsHandler>();
-      const props = { ipcRequestsHandler: handler.object };
-      const mgr = PresentationManager.create(props);
-      expect(mgr.ipcRequestsHandler).to.eq(handler.object);
+      const mgr = PresentationManager.create({
+        // @ts-expect-error internal prop
+        ipcRequestsHandler: handler.object,
+      });
+      expect(mgr[_presentation_manager_ipcRequestsHandler]).to.eq(handler.object);
     });
 
     it("creates RpcRequestsHandler and IpcRequestsHandler with same client id", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       sinon.stub(IpcApp, "addListener");
       const mgr = PresentationManager.create();
-      expect(mgr.rpcRequestsHandler.clientId).to.eq(mgr.ipcRequestsHandler?.clientId);
+      expect(mgr[_presentation_manager_rpcRequestsHandler].clientId).to.eq(mgr[_presentation_manager_ipcRequestsHandler]?.clientId);
     });
 
     it("starts listening to update events", async () => {
@@ -217,8 +224,9 @@ describe("PresentationManager", () => {
   });
 
   describe("onConnection", () => {
-    it("calls `startiModelInitialization`", async () => {
-      const spy = sinon.stub(manager, "startIModelInitialization");
+    it("calls `startIModelInitialization`", async () => {
+      const spy = sinon.spy();
+      imodelInitializationHandlers.add({ startInitialization: spy, ensureInitialized: async () => {} });
       const onCloseEvent = new BeEvent();
       const imodelMock = moq.Mock.ofType<IModelConnection>();
       imodelMock.setup((x) => x.onClose).returns(() => onCloseEvent);
@@ -411,6 +419,7 @@ describe("PresentationManager", () => {
       sinon.stub(IpcApp, "addListener");
       manager[Symbol.dispose]();
       manager = PresentationManager.create({
+        // @ts-expect-error internal prop
         rpcRequestsHandler: rpcRequestsHandlerMock.object,
       });
       await manager.getNodesCount({
@@ -639,7 +648,7 @@ describe("PresentationManager", () => {
 
     it("calls `ensureIModelInitialized`", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureIModelInitialized = stub;
+      imodelInitializationHandlers.add({ startInitialization: () => {}, ensureInitialized: stub });
 
       const result = createTestContentDescriptor({ fields: [] });
       const options = createTestOptions();
@@ -756,7 +765,7 @@ describe("PresentationManager", () => {
 
     it("calls `ensureIModelInitialized`", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureIModelInitialized = stub;
+      imodelInitializationHandlers.add({ startInitialization: () => {}, ensureInitialized: stub });
       const testOptions = createTestOptions();
       await manager.getContentDescriptor(testOptions);
       expect(stub).to.be.calledOnce;
@@ -846,7 +855,7 @@ describe("PresentationManager", () => {
   describe("getContent", () => {
     it("calls `ensureIModelInitialized`", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureIModelInitialized = stub;
+      imodelInitializationHandlers.add({ startInitialization: () => {}, ensureInitialized: stub });
       const keyset = new KeySet();
       const descriptor = createTestContentDescriptor({ fields: [] });
       const result = {
@@ -1032,7 +1041,7 @@ describe("PresentationManager", () => {
   describe("getContentAndContentSize", () => {
     it("calls `ensureIModelInitialized`", async () => {
       const stub = sinon.fake.returns(Promise.resolve());
-      manager.ensureIModelInitialized = stub;
+      imodelInitializationHandlers.add({ startInitialization: () => {}, ensureInitialized: stub });
       const keyset = new KeySet();
       const descriptor = createTestContentDescriptor({ fields: [] });
       const result = {
