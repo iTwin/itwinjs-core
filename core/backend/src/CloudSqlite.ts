@@ -39,6 +39,7 @@ export namespace CloudSqlite {
       CloudSqliteError.throwError("service-not-available", { message: `${serviceName} service is not available` });
     return service;
   }
+
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
    * If the service is unavailable or returns an error, an empty token is returned.
