@@ -9,9 +9,10 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import {
   BriefcaseDb, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   SpatialCategory, SubjectOwnsPartitionElements,
+  ViewAttachment,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, constructDetailedError, constructITwinError, ElementProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, CodeProps, constructDetailedError, constructITwinError, ElementProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SubCategoryAppearance, ViewAttachmentProps, ViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -25,6 +26,7 @@ import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
+import { SheetViewState } from "@itwin/core-frontend";
 
 /* eslint-disable no-console */
 
@@ -85,6 +87,12 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async throwITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void> {
     const error = constructITwinError(namespace, errorKey, message, metadata);
     throw error;
+  }
+
+  public async createAndInsertViewAttachment(key: string, viewAttachmentProps: ViewAttachmentProps): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    const viewAttachment = new ViewAttachment(viewAttachmentProps, iModelDb);
+    return iModelDb.elements.insertElement(viewAttachment.toJSON());
   }
 }
 

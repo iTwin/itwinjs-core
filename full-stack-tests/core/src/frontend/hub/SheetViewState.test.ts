@@ -9,6 +9,7 @@ import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
 import { HydrateViewStateResponseProps, Placement2d, ViewAttachmentProps } from "@itwin/core-common";
+import { coreFullStackTestIpc } from "../Editing";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -178,6 +179,21 @@ describe("Sheet views (#integration)", () => {
       await testOnScreenViewport(sheetViewId, imodel, 40, 30, async (vp) => {
 
         // Create a sheet view
+
+        // const attachmentProps: ViewAttachmentProps = {
+        //   id: "outOfView",
+        //   category: attachmentCategoryId,
+        //   model: imodel.models.getDefaultModelId(),
+        //   code: { spec: "0x1a", scope: imodel.models.getDefaultModelId(), value: "outOfView" },
+        //   classFullName: ViewAttachment.classFullName,
+        //   placement: {
+        //     origin: { x: 100, y: 0 },
+        //     angle: 0,
+        //   },
+        //   view: sheetView,
+        // }
+
+
         const sheetView = await imodel.views.load(sheetViewId) as SheetViewState;
         const viewAttachmentProps = sheetView.viewAttachmentProps;
 
@@ -192,6 +208,8 @@ describe("Sheet views (#integration)", () => {
           id: "outOfView"
         };
 
+        await coreFullStackTestIpc.createAndInsertViewAttachment(imodel.key, newAttachmentProps);
+
         // Create a new sheet view with the new attachment
         const viewProps = sheetView.toProps();
         viewProps.viewDefinitionProps.id = "newSheetView";
@@ -199,19 +217,22 @@ describe("Sheet views (#integration)", () => {
         const newSheetView = SheetViewState.createFromProps(viewProps, imodel);
 
         // Load the new sheet view
-        const options: HydrateViewStateResponseProps = {
-          sheetViewAttachmentProps: [newAttachmentProps],
-          sheetViewViews: [viewProps],
-        }
+        // const options: HydrateViewStateResponseProps = {
+        //   sheetViewAttachmentProps: [newAttachmentProps],
+        //   sheetViewViews: [viewProps],
+        // }
 
-        // await newSheetView.load();
-        await newSheetView.postload(options);
+        await newSheetView.load();
+        // await newSheetView.postload(options);
 
         // Attach the new sheet view to the viewport (which creates the attachment)
         newSheetView.attachToViewport(vp);
+        vp.renderFrame();
 
         // check if the attachment exists
+        console.log("newSheetView.attachments", newSheetView.attachments);
         expect (newSheetView.attachments).not.to.be.undefined;
+
         const attachment = newSheetView.attachments![0] as unknown as Attachment;
         expect(attachment).not.to.be.undefined;
       });

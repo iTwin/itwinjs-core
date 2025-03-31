@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, LoggingMetaData } from "@itwin/core-bentley";
-import { CodeProps, ITwinError, SubCategoryAppearance } from "@itwin/core-common";
+import { CodeProps, ITwinError, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
 
 export const fullstackIpcChannel = "full-stack-tests/fullStackIpc";
 export interface FullStackTestIpc {
@@ -13,4 +13,5 @@ export interface FullStackTestIpc {
   closeAndReopenDb(key: string): Promise<void>;
   throwDetailedError<T>(details:Omit<T, keyof ITwinError>, namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void>;
   throwITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void>;
+  createAndInsertViewAttachment(key: string, viewAttachmentProps: ViewAttachmentProps): Promise<Id64String>;
 }
